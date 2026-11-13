@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bg3gk/gatekit/schemas/bridge/serve.schema.json",
+  "title": "A host offering to answer questions (serve_<side>.json)",
+  "type": "object",
+  "required": ["tick", "kinds"],
+  "properties": {
+    "tick": {
+      "type": "integer",
+      "description": "Grows by one every second while the host serves. The game cannot read file timestamps, so it watches this change; unchanged for three seconds means the host is gone."
+    },
+    "kinds": { "type": "array", "items": { "type": "string" }, "description": "The question kinds this host answers." },
+    "agent": { "type": "string", "description": "What is answering, for the game to show a player." }
+  },
+  "additionalProperties": true
+}

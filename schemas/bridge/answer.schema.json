@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bg3gk/gatekit/schemas/bridge/answer.schema.json",
+  "title": "Bridge answer (res_<side>_<id>.json)",
+  "type": "object",
+  "required": ["id", "ok"],
+  "properties": {
+    "id": { "type": "string" },
+    "side": { "enum": ["server", "client"] },
+    "ok": { "type": "boolean" },
+    "result": { "description": "What the chunk returned, as JSON. Absent when nil." },
+    "error": { "type": "string", "description": "Present when ok is false: message and Lua traceback." },
+    "log": { "type": "array", "items": { "type": "string" }, "description": "Lines passed to GK.Log." }
+  },
+  "additionalProperties": true
+}

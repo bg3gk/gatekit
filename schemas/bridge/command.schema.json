@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bg3gk/gatekit/schemas/bridge/command.schema.json",
+  "title": "Bridge command (one line of queue_<side>.jsonl)",
+  "type": "object",
+  "required": ["seq", "id", "code"],
+  "properties": {
+    "seq": { "type": "integer", "minimum": 1, "description": "Strictly increasing per side; microseconds since 1970 or last+1." },
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$", "description": "Unique per command; names the answer file." },
+    "code": { "type": "string", "description": "Lua chunk to run." },
+    "ui": { "type": "boolean", "default": false, "description": "Run inside Ext.UI.Defer (client only)." },
+    "t": { "type": "number", "description": "Seconds since 1970 when written (host bookkeeping)." }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bg3gk/gatekit/schemas/bridge/state.schema.json",
+  "title": "Bridge heartbeat (state_<side>.json)",
+  "type": "object",
+  "required": ["side", "boot"],
+  "properties": {
+    "side": { "enum": ["server", "client"] },
+    "boot": { "type": "number", "description": "Monotonic ms when this Lua state started; changes on reset." },
+    "time": { "type": "number", "description": "Monotonic ms of this beat." },
+    "gameState": { "type": ["string", "null"] },
+    "queue": { "type": "integer", "description": "Protocol version; 1 = docs/contracts/bridge-protocol.md." },
+    "done": { "type": "integer", "description": "Highest seq this side has started." }
+  },
+  "additionalProperties": true
+}

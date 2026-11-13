@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bg3gk/gatekit/schemas/bridge/tell.schema.json",
+  "title": "The host's answer to a question (tell_<side>_<id>.json)",
+  "type": "object",
+  "required": ["id", "ok"],
+  "properties": {
+    "id": { "type": "string" },
+    "ok": { "type": "boolean" },
+    "result": { "description": "The answer, defined per kind. Absent when ok is false." },
+    "error": { "type": "string", "description": "Present when ok is false: why the host could not answer." }
+  },
+  "additionalProperties": true
+}

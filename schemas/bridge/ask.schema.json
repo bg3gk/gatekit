@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bg3gk/gatekit/schemas/bridge/ask.schema.json",
+  "title": "A question from the game (ask_<side>_<id>.json)",
+  "type": "object",
+  "required": ["id", "kind"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$", "description": "Unique per question; names the answer file." },
+    "kind": { "type": "string", "description": "What is being asked; the host answers only the kinds it announces in serve_<side>.json." },
+    "deadline": { "type": "number", "minimum": 0, "description": "Seconds the game waits before falling back." },
+    "payload": { "description": "The question itself, defined per kind." }
+  },
+  "additionalProperties": true
+}
