@@ -1,0 +1,20 @@
+[
+  {
+    "name": "bg3_gold",
+    "description": "How much gold a party member carries. Copy this file under a name that does not start with '_' and it becomes a tool of `gatekit mcp` at once - see src/GateKit.Mcp/README.md.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "who": {"type": "string", "description": "character uuid; the host when left out"}
+      }
+    },
+    "side": "server",
+    "lua": "local who = GK.Character(args.who); return who and who.Gold or 0"
+  },
+  {
+    "name": "bg3_party_names",
+    "description": "The names of the party, straight from one bridge call.",
+    "side": "server",
+    "function": "Party"
+  }
+]
