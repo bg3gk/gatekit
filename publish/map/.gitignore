@@ -1,0 +1,34 @@
+# Nothing of the data is ever committed here. It travels as release assets, which can be deleted
+# in one click - which is the whole point of this repository being separate.
+#
+# Everything is ignored, and the few files this repository really holds are let back in one by one.
+# A database or an asset therefore cannot be committed by accident, not even with `git add -A`,
+# and not even under a name nobody thought of.
+*
+
+!.gitignore
+!README.md
+!LICENSE
+!NOTICE
+!.github/
+!.github/**
+
+# `git add -f` overrides any ignore file, and nothing written here can stop it; what this file does
+# guarantee is that no ordinary `git add`, and no `git add -A`, picks a database up. These patterns
+# repeat the obvious shapes so that an exception added above by mistake still does not let one in.
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite-wal
+*.sqlite-shm
+*.zst
+*.zst.[0-9][0-9][0-9]
+*.zip
+*.7z
+*.tar
+*.gz
+*.pak
+*.lsf
+*.lsx
+*.loca
+manifest.json
