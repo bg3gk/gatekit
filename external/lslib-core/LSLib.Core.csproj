@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The managed core of LSLib (https://github.com/Norbyte/lslib, MIT, submodule at ../lslib),
+    compiled from its own sources: packages (.pak), read and written, resources (.lsf/.lsx) and
+    localization (.loca).
+    The upstream LSLib.csproj cannot be referenced as it is: it references LSLibNative (C++/CLI,
+    Windows only) and runs Windows-only parser generators before every build. Everything compiled
+    here is managed and builds on Linux; LZ4, Zstd and zlib come from managed packages.
+    Upstream files are used unchanged; Shims.cs replaces the one native call they make.
+  -->
+  <PropertyGroup>
+    <AssemblyName>LSLib.Core</AssemblyName>
+    <RootNamespace>LSLib</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Third-party code: built as upstream writes it, without our warning policy. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>0</WarningLevel>
+    <NoWarn>$(NoWarn);CS0168;CS0169;CS0219;CS0414;CS0649;CS1998;CS8981;SYSLIB0001;SYSLIB0011;CA1416</NoWarn>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Upstream>$(MSBuildThisFileDirectory)../lslib/LSLib/LS/</Upstream>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(Upstream)Common.cs" Link="LS/Common.cs" />
+    <Compile Include="$(Upstream)BinUtils.cs" Link="LS/BinUtils.cs" />
+    <Compile Include="$(Upstream)Compression.cs" Link="LS/Compression.cs" />
+    <Compile Include="$(Upstream)FileManager.cs" Link="LS/FileManager.cs" />
+    <Compile Include="$(Upstream)Localization.cs" Link="LS/Localization.cs" />
+    <Compile Include="$(Upstream)Matrix.cs" Link="LS/Matrix.cs" />
+    <Compile Include="$(Upstream)NodeAttribute.cs" Link="LS/NodeAttribute.cs" />
+    <Compile Include="$(Upstream)PackageCommon.cs" Link="LS/PackageCommon.cs" />
+    <Compile Include="$(Upstream)PackageFormat.cs" Link="LS/PackageFormat.cs" />
+    <Compile Include="$(Upstream)PackageReader.cs" Link="LS/PackageReader.cs" />
+    <Compile Include="$(Upstream)PackageWriter.cs" Link="LS/PackageWriter.cs" />
+    <Compile Include="$(Upstream)Resource.cs" Link="LS/Resource.cs" />
+    <Compile Include="$(Upstream)Enums/*.cs" LinkBase="LS/Enums" />
+    <Compile Include="$(Upstream)Resources/LSF/*.cs" LinkBase="LS/Resources/LSF" />
+    <Compile Include="$(Upstream)Resources/LSX/*.cs" LinkBase="LS/Resources/LSX" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- GateKit lists packages LSLib cannot open whole (see GamePackages.ListOnly). -->
+    <InternalsVisibleTo Include="GateKit.GameData" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="K4os.Compression.LZ4" Version="1.3.8" />
+    <PackageReference Include="K4os.Compression.LZ4.Streams" Version="1.3.8" />
+    <PackageReference Include="System.IO.Hashing" Version="9.0.2" />
+    <PackageReference Include="ZstdSharp.Port" Version="0.8.5" />
+  </ItemGroup>
+</Project>

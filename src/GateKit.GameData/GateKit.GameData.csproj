@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The offline index of the game's data: reads the game's packages directly and writes one SQLite file. -->
+  <PropertyGroup>
+    <RootNamespace>GateKit.GameData</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />
+    <PackageReference Include="System.CommandLine" Version="2.0.15" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../external/lslib-core/LSLib.Core.csproj" />
+    <ProjectReference Include="../GateKit.Release/GateKit.Release.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="GateKit.GameData.Tests" />
+  </ItemGroup>
+</Project>

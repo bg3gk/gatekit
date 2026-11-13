@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Turning a built database into release assets, and installing one back from a release.
+       Depends on nothing else of GateKit, so the index, the symbols and the stand can all use it. -->
+  <PropertyGroup>
+    <RootNamespace>GateKit.Release</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />
+    <PackageReference Include="System.CommandLine" Version="2.0.15" />
+    <!-- .NET 10's System.IO.Compression has Brotli, Deflate and zlib, but no Zstandard; this is the
+         managed port LSLib already uses to read the game's packages, so it costs no new dependency. -->
+    <PackageReference Include="ZstdSharp.Port" Version="0.8.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="GateKit.Release.Tests" />
+  </ItemGroup>
+</Project>
