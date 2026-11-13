@@ -1,0 +1,162 @@
+<!doctype html>
+<!--
+  Every GateKit brand image is this one page, rendered by a headless browser (make-brand.sh).
+
+  ?mode=banner   1280x320  README banner: the lockup on the left, transparent on the right where
+                           the demo (image or GIF) is laid in by ffmpeg
+  ?mode=og       1280x640  social preview card: the lockup, and a still image on the right that
+                           comes in out of transparency
+  ?mode=square   1024x1024 the emblem on the field: avatars of the organisation and repositories
+
+  Other parameters: logo, game (folder url with the game's own assets: QuadraatOffcPro-Bold.ttf,
+  QuadraatOffcPro-Italic.ttf and the motto mark <mark>.png), mark (its name), title, motto (A|B|C),
+  tagline (line 1|line 2), image (og; also a preview demo in banner mode).
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: transparent; overflow: hidden; }
+  .page { position: relative; overflow: hidden; }
+
+  /* ---- shared materials ---- */
+  .fieldfill {
+    background:
+      radial-gradient(ellipse var(--glow-w) var(--glow-h) at var(--glow-x) var(--glow-y), rgba(140,60,235,.26), transparent 70%),
+      radial-gradient(ellipse 140% 130% at 30% 50%, transparent 55%, rgba(0,0,0,.45) 100%),
+      linear-gradient(180deg, #211D29 0%, #15121B 100%);
+  }
+  .grain { position: absolute; inset: 0; opacity: .07; mix-blend-mode: overlay; filter: url(#grain); pointer-events: none; }
+  .emblem { filter: drop-shadow(0 0 18px rgba(150,70,255,.35)) drop-shadow(0 8px 12px rgba(0,0,0,.6)); }
+
+  .title { font-family: GameTitle, FreeMotto, serif; line-height: 1; letter-spacing: .01em; white-space: nowrap; margin-left: -.02em; }
+  .title span {
+    display: inline-block;
+    background: linear-gradient(180deg, #FFFFFF 0%, #ECE7F4 30%, #B9AFCB 47%, #4E4560 54%, #8C82A0 62%, #DCD5E8 82%, #F6F2FB 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 -1px 0 rgba(255,255,255,.35)) drop-shadow(0 2px 0 #0B0910) drop-shadow(0 6px 10px rgba(0,0,0,.65))
+            drop-shadow(0 0 3px rgba(196,150,255,.65)) drop-shadow(0 0 22px rgba(140,60,235,.55)) drop-shadow(0 0 48px rgba(110,40,200,.35));
+  }
+  .rule { height: 1px; width: 100%; background: linear-gradient(90deg, #D9AE62, rgba(217,174,98,.45) 55%, transparent); box-shadow: 0 0 6px rgba(217,174,98,.35); }
+  .motto {
+    font-family: GameMotto, FreeMotto, serif; letter-spacing: .26em; text-transform: uppercase; white-space: nowrap;
+    display: flex; align-items: center;
+    background: linear-gradient(180deg, #F3D9A0, #B98B45); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .motto img { display: inline-block; filter: drop-shadow(0 0 4px rgba(217,174,98,.45)); }
+  .motto i { display: inline-block; transform: rotate(45deg); background: #C79A52; box-shadow: 0 0 6px rgba(199,154,82,.6); }
+  .tagline { font-family: GameText, FreeText, serif; color: #BDB5C9; }
+  .lockup { position: absolute; top: 50%; transform: translateY(-50%); display: flex; align-items: center; }
+  .words { display: flex; flex-direction: column; }
+
+  /* ---- banner 1280x320 ---- */
+  .banner { width: 1280px; height: 320px; --glow-w: 300px; --glow-h: 240px; --glow-x: 138px; --glow-y: 160px; }
+  .banner .field, .banner .grain {
+    position: absolute; inset: 0;
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 600px, rgba(0,0,0,.85) 680px, rgba(0,0,0,.35) 830px, transparent 960px);
+            mask-image: linear-gradient(90deg, #000 0, #000 600px, rgba(0,0,0,.85) 680px, rgba(0,0,0,.35) 830px, transparent 960px);
+  }
+  .banner .lockup { left: 40px; gap: 22px; }
+  .banner .emblem { width: 196px; height: 196px; }
+  .banner .title { font-size: 96px; margin-bottom: 14px; }
+  .banner .rule { margin: 0 0 14px 1px; }
+  .banner .motto { font-size: 18px; gap: 14px; margin: 0 0 12px 1px; }
+  .banner .motto i { width: 5px; height: 5px; }
+  .banner .motto img { width: 21px; height: 21px; }
+  .banner .tagline { font-size: 19px; line-height: 1.42; margin-left: 1px; }
+
+  /* ---- og card 1280x640 ---- */
+  .og { width: 1280px; height: 640px; --glow-w: 560px; --glow-h: 420px; --glow-x: 260px; --glow-y: 260px; }
+  .og .field { position: absolute; inset: 0; }
+  .og .shot {
+    position: absolute; top: 0; right: 0; width: 600px; height: 640px; background-size: cover; background-position: center;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.25) 18%, rgba(0,0,0,.8) 45%, #000 68%);
+            mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.25) 18%, rgba(0,0,0,.8) 45%, #000 68%);
+    filter: saturate(.92) brightness(.9);
+  }
+  .og .shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(10,8,14,.55), transparent 30%, transparent 75%, rgba(10,8,14,.45)); }
+  .og .lockup { left: 64px; display: block; }
+  .og .head { display: flex; align-items: center; gap: 22px; margin: 0 0 22px -6px; }
+  .og .emblem { width: 150px; height: 150px; }
+  .og .title { font-size: 116px; margin: 0; }
+  .og .rule { margin: 0 0 20px 2px; }
+  .og .motto { font-size: 21px; gap: 16px; margin: 0 0 16px 2px; }
+  .og .motto i { width: 7px; height: 7px; }
+  .og .motto img { width: 27px; height: 27px; }
+  .og .tagline { font-size: 23px; line-height: 1.42; margin-left: 2px; }
+  .og .repo { position: absolute; left: 56px; bottom: 34px; font-family: GameMotto, FreeMotto, serif; font-size: 18px; letter-spacing: .12em; color: #8E86A0; }
+  .og .repo b { color: #CFC7DB; font-weight: inherit; }
+
+  /* ---- square avatar 1024x1024 ---- */
+  .square { width: 1024px; height: 1024px; --glow-w: 640px; --glow-h: 640px; --glow-x: 512px; --glow-y: 500px; }
+  .square .field, .square .grain { position: absolute; inset: 0; }
+  .square .emblem { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 960px; height: 960px; }
+</style>
+<style>
+  /* All text is set in the game's own UI face, Quadraat Offc Pro, taken from the user's copy of
+     the game (?game=<folder url>); it is Larian's licensed font and never committed.
+     Without it the free Cinzel and Alegreya in fonts/ (SIL Open Font License) stand in. */
+  @font-face { font-family: FreeMotto; src: url('fonts/Cinzel-SemiBold.ttf'); }
+  @font-face { font-family: FreeText; src: url('fonts/Alegreya-Italic.ttf'); }
+</style>
+<script>
+  const q = new URLSearchParams(location.search);
+  const game = q.get('game');
+  if (game) document.write(`<style>
+    @font-face { font-family: GameTitle; src: url('${game}/QuadraatOffcPro-Bold.ttf'); }
+    @font-face { font-family: GameMotto; src: url('${game}/QuadraatOffcPro-Bold.ttf'); }
+    @font-face { font-family: GameText; src: url('${game}/QuadraatOffcPro-Italic.ttf'); }
+  </style>`);
+</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></svg>
+<div class="page" id="page"></div>
+<template id="lockup">
+  <div class="lockup">
+    <img class="emblem" alt="">
+    <div class="words">
+      <div class="title"><span></span></div>
+      <div class="rule"></div>
+      <div class="motto"></div>
+      <div class="tagline"></div>
+    </div>
+  </div>
+</template>
+<script>
+  const mode = q.get('mode') || 'banner';
+  const logo = q.get('logo') || '../../assets/brand/logo.png';
+  const page = document.getElementById('page');
+  page.className = 'page ' + mode;
+  const add = (cls, parent = page) => { const e = document.createElement('div'); e.className = cls; parent.appendChild(e); return e; };
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+  if (mode === 'square') {
+    add('field fieldfill'); add('grain');
+    const img = document.createElement('img'); img.className = 'emblem'; img.src = logo; page.appendChild(img);
+  } else {
+    if (mode === 'banner' && q.get('image')) {
+      const d = add('demo'); d.style.cssText = `position:absolute;inset:0;background:center/cover url('${q.get('image')}')`;
+    }
+    add('field fieldfill');
+    if (mode === 'og' && q.get('image')) { const s = add('shot'); s.style.backgroundImage = `url('${q.get('image')}')`; add('shade'); }
+    add('grain');
+    page.appendChild(document.getElementById('lockup').content.cloneNode(true));
+    if (mode === 'og') {   // the emblem goes into one row with the title
+      const head = document.createElement('div'); head.className = 'head';
+      const words = page.querySelector('.words');
+      head.append(page.querySelector('.emblem'), page.querySelector('.title'));
+      words.prepend(head);
+      page.querySelector('.lockup').prepend(words);
+    }
+    page.querySelector('.emblem').src = logo;
+    page.querySelector('.title span').textContent = q.get('title') || 'GateKit';
+    page.querySelector('.motto').innerHTML = (q.get('motto') || 'Map|Extend|Automate').split('|').map(esc)
+      .join(game && q.get('mark') ? ` <img src="${game}/${q.get('mark')}.png" alt=""> ` : ' <i></i> ');
+    page.querySelector('.tagline').innerHTML = (q.get('tagline') ||
+      'Map the entire engine. Extend or hook any system.|Script the game yourself, or let an AI agent play it.').split('|').map(esc).join('<br>');
+    if (mode === 'og' && q.get('repo')) { const r = add('repo'); r.innerHTML = 'github.com/<b>' + esc(q.get('repo')) + '</b>'; }
+  }
+</script>
+</body>
+</html>

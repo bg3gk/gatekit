@@ -1,0 +1,47 @@
+#!/usr/bin/env sh
+# Keeps commit messages to the project's rule, whatever wrote them: see .github/thrall.md.
+#
+#   1. An AI assistant is never a co-author by its own name. Whichever one helped — Claude, GPT,
+#      Copilot, Gemini, Cursor, any other — the co-author is GateKit Thrall, the name this
+#      project speaks under.
+#   2. A commit whose author is the bot ends with the signature line.
+#
+# Turn it on with:  git config core.hooksPath .githooks
+set -eu
+
+message_file=$1
+root=$(git rev-parse --show-toplevel)
+identity="$root/.github/thrall-identity"
+[ -f "$identity" ] || exit 0
+
+value() { sed -n "s/^$1=//p" "$identity" | head -1; }
+name=$(value NAME)
+email=$(value EMAIL)
+signature=$(value SIGNATURE)
+trailer="Co-Authored-By: $name <$email>"
+
+# --- 1. no assistant signs under its own name -------------------------------------------------
+# Drop every Co-Authored-By naming a known assistant, then put ours back once if any was there.
+assistants='[Cc]laude\|GPT\|ChatGPT\|OpenAI\|Codex\|Copilot\|Gemini\|Cursor\|Windsurf\|Devin\|anthropic\.com\|openai\.com'
+if grep -q "^Co-Authored-By:.*\($assistants\)" "$message_file"; then
+  kept="$message_file.gatekit"
+  grep -v "^Co-Authored-By:.*\($assistants\)" "$message_file" > "$kept"
+  mv "$kept" "$message_file"
+  if ! grep -qF "$trailer" "$message_file"; then
+    # trailers are one block: a blank line before it, none inside it
+    last=$(tail -1 "$message_file")
+    case "$last" in
+      '' | [A-Za-z]*-*:\ * | [A-Za-z]*:\ *) ;;
+      *) printf '\n' >> "$message_file" ;;
+    esac
+    printf '%s\n' "$trailer" >> "$message_file"
+  fi
+fi
+
+# --- 2. the bot signs what goes out under its name --------------------------------------------
+author=$(git var GIT_AUTHOR_IDENT 2>/dev/null | sed -n 's/.*<\(.*\)>.*/\1/p')
+case "$author" in
+  "$email"|*gatekit-thrall*)
+    grep -qF "$signature" "$message_file" || printf '\n%s\n' "$signature" >> "$message_file"
+    ;;
+esac

@@ -1,0 +1,41 @@
+#!/usr/bin/env sh
+# GateKit, run from the repository without installing anything.
+#
+#   ./gatekit doctor
+#   ./gatekit --instance mine up
+#
+# The README, the getting-started page and AGENTS.md all open with `./gatekit …`, and without
+# this there is nothing of that name to run: after `dotnet build` the program is several folders
+# down, under a configuration and a target framework, which is not something a first-time reader
+# should have to know.
+#
+# It uses a build if there is one and builds once if there is not, preferring Release over Debug
+# so that a developer who has both gets the faster one. `dotnet run` is deliberately not used for
+# every call: it re-evaluates the project each time, which costs a second or two on a command
+# meant to be typed over and over.
+set -eu
+
+here=$(cd "$(dirname "$0")" && pwd)
+project="$here/src/GateKit.Cli"
+
+exe=""
+for configuration in Release Debug; do
+    for candidate in "$project/bin/$configuration"/*/gatekit "$project/bin/$configuration"/*/gatekit.exe; do
+        [ -x "$candidate" ] || continue
+        exe="$candidate"
+        break
+    done
+    [ -n "$exe" ] && break
+done
+
+if [ -z "$exe" ]; then
+    echo "building GateKit once (this does not happen again)..." >&2
+    dotnet build "$project" -c Release --nologo >&2
+    for candidate in "$project/bin/Release"/*/gatekit "$project/bin/Release"/*/gatekit.exe; do
+        [ -x "$candidate" ] && exe="$candidate" && break
+    done
+fi
+
+[ -n "$exe" ] || { echo "GateKit did not build; run 'dotnet build' and read what it says" >&2; exit 1; }
+
+exec "$exe" "$@"
