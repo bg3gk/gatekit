@@ -1,0 +1,103 @@
+{
+  "component": "ls::GameplaySoundEventRequestBusComponent",
+  "ext_name": "GameplaySoundEventRequestBus",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "GameplaySoundEventBusRequest",
+      "size": 48,
+      "fields": [
+        {
+          "name": "SubjectValue",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "ls::GameplaySoundEventRequest: a Variant<EntityHandle, SoundObjectHandle> value (passed to SoundRoutingSystem::PostEvent as the target)."
+        },
+        {
+          "name": "SubjectType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessPlayRequests (GameEngine.dll+0x89AFD0) branches on byte +8: 0 = entity (FUN_18089a6a0), 1 = sound object handle (PostEvent)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "variant index occupies a qword"
+        },
+        {
+          "name": "Event",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Passed to SoundRoutingSystem::PostEvent as the event (element + 0x10)."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Optional value: used (passed to PostEvent) only when the byte at +0x18 is set, otherwise 0."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Has-value flag of field_14."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "Pointer passed to PostEvent (probably a sound callback)."
+        },
+        {
+          "name": "PlayByResource",
+          "offset": 40,
+          "type": "bool",
+          "source": "game",
+          "evidence": "Assert text in ProcessPlayRequests: 'PostEvent with m_PlayByResource set to true is not currently supported' when this byte is set."
+        },
+        {
+          "name": "_Pad29",
+          "offset": 41,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "stride 0x30"
+        }
+      ]
+    }
+  ],
+  "summary": "Bus of sound event (play) requests - one entity holds it; macOS element type ls::GameplaySoundEventRequest. Same element as ecl::platform::SoundPlayRequestBusComponent (Coverage.h).",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<GameplaySoundEventBusRequest>",
+      "source": "inferred",
+      "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessPlayRequests (GameEngine.dll+0x89AFD0) iterates the component's +0 for *(int*)(+0xC) elements, stride 0x30, asserting 'More than one gameplay sound request bus exists!'. Live capacity 0..1."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "field_14 / field_20 meaning."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

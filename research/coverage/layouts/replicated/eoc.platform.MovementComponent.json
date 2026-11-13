@@ -1,0 +1,48 @@
+{
+  "component": "eoc::platform::MovementComponent",
+  "ext_name": "PlatformMovement",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Type",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x91B560: member 1, raw 8-byte write at +0; Toolkit eoc::platform::MovePlatform (EoCShared.dll+0xDBD980) compares the 8 bytes with 0 (move to target branch) and 1 (move on spline branch), anything else returns result 4. macOS default zero."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x91B560: member 2, raw 1-byte write at +8"
+    },
+    {
+      "name": "field_9",
+      "offset": 9,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x91B560: member 3, raw 1-byte write at +9"
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "alignment padding; nothing serialized or initialised here"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Type is probably an enum read as 8 bytes (0 = MoveToTarget, 1 = MoveOnSpline); the two bytes are probably bools (moving/paused?) - not established."
+  ],
+  "seen": false,
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

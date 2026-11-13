@@ -1,0 +1,265 @@
+{
+  "component": "navcloud::PathInternalComponent",
+  "ext_name": "NavcloudPathInternal",
+  "size": 176,
+  "seen": true,
+  "summary": "Server (9 instances): A* search state of a navcloud path request, created by navcloud::PathfindingSystem::ProcessRequests (macOS: placement PathInternalComponent::PathInternalComponent(), then start/goal TilePos from FindValidTilePos) and advanced by ProcessSearches. Members: start and goal navcloud::TilePos (24 bytes each), an open-list ls::BinaryHeap<navcloud::NodeHeap>, a DynamicArray<navcloud::NodeFull> of visited nodes (36 bytes), and a HashMap<navcloud::TilePos, int32> from tile to node index. The heap and the tile->node map are written out member by member (their key/element types are structs of this file).",
+  "structs": [
+    {
+      "name": "NavcloudPathInternalTilePos",
+      "size": 24,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "navcloud::TilePos is 6 ints (Windows constructor bg3.exe+0x5F0980 sets 12 ints of +0..+0x30 to 0x7FFFFFFF = two invalid TilePos; macOS ProcessSearches tests three 0x7FFFFFFF ints for an invalid tile). Probably region Vector3i + tile Vector3i; live 0..5"
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "live 1/3/0x7FFFFFFF"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "live 1/2/0x7FFFFFFF"
+        },
+        {
+          "name": "field_C",
+          "offset": 12,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "live small and negative values"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "live 0..3"
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "live small and negative values"
+        }
+      ]
+    },
+    {
+      "name": "NavcloudPathInternalNode",
+      "size": 36,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "macOS ProcessRequests appends a NodeFull with *(uint64*)(e+0) = 0xFFFFFFFF00000000 -> +0 = 0"
+        },
+        {
+          "name": "Parent",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "initialised to -1 for the start node (no parent) - inferred from the A* shape"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "macOS: *(uint8*)(e+8) = 0"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "padding"
+        },
+        {
+          "name": "Tile",
+          "offset": 12,
+          "type": "NavcloudPathInternalTilePos",
+          "source": "inferred",
+          "evidence": "macOS: the start TilePos (6 ints) copied to e+0xC..e+0x24. Stride 0x24 confirmed on Windows: constructor allocates 0x1200 bytes for capacity 0x80"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Start",
+      "offset": 0,
+      "type": "NavcloudPathInternalTilePos",
+      "source": "inferred",
+      "evidence": "macOS ProcessRequests: comp+0x00..0x18 = FindValidTilePos(request start); Windows ctor bg3.exe+0x5F0980 sets +0..+0x18 to 0x7FFFFFFF"
+    },
+    {
+      "name": "Goal",
+      "offset": 24,
+      "type": "NavcloudPathInternalTilePos",
+      "source": "inferred",
+      "evidence": "macOS ProcessRequests: comp+0x18..0x30 = FindValidTilePos(request goal); Windows ctor sets +0x18..+0x30 to 0x7FFFFFFF"
+    },
+    {
+      "name": "OpenHeap",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "macOS: BinaryHeap<navcloud::NodeHeap>::Add(comp+0x30, cost); Windows ctor allocates 0x400 bytes (0x80 x 8-byte NodeHeap), destructor bg3.exe+0x6C7450 frees *(comp+0x30). Live heap"
+    },
+    {
+      "name": "OpenHeapSize",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "dtor sets *(uint32*)(comp+0x38) = 0 before freeing; live 1. Note: this container keeps size before capacity (unlike Array<T>)"
+    },
+    {
+      "name": "OpenHeapCapacity",
+      "offset": 60,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Windows ctor writes 0x80 after allocating 0x400 bytes; live always 0x80"
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "second 8-byte-element buffer of the heap (Windows ctor allocates 0x400 bytes, capacity 0x80 at +0x4C; dtor frees it). Live heap"
+    },
+    {
+      "name": "field_48",
+      "offset": 72,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "count of the +0x40 buffer (dtor zeroes it); live 0"
+    },
+    {
+      "name": "field_4C",
+      "offset": 76,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "capacity of the +0x40 buffer: ctor writes 0x80; live 0x80"
+    },
+    {
+      "name": "Nodes",
+      "offset": 80,
+      "type": "Array<NavcloudPathInternalNode>",
+      "source": "inferred",
+      "evidence": "macOS: DynamicArray<navcloud::NodeFull>::Reallocate(comp+0x50), capacity at +0x58, size at +0x5C, stride 0x24. Windows ctor: alloc 0x1200, *(uint64*)(comp+0x58) = 0x80 (capacity 128, size 0). Live capacity 0x80, size 1"
+    },
+    {
+      "name": "NodeIndexByTile_HashKeys",
+      "offset": 96,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "HashMap<TilePos, int32> keys: macOS ~PathInternalComponent destroys HashTable<navcloud::TilePos, navcloud::HashTableOps> at +0x60 and frees the values buffer at +0x90; Windows dtor calls the HashSet destructor bg3.exe+0x582AD0 on +0x60 and frees +0x90; ctor initialises +0x60 with bg3.exe+0x5F3580. Live heap"
+    },
+    {
+      "name": "NodeIndexByTile_HashKeysSize",
+      "offset": 104,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count; live 0xC1"
+    },
+    {
+      "name": "_Pad6C",
+      "offset": 108,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "padding; live 0"
+    },
+    {
+      "name": "NodeIndexByTile_NextIds",
+      "offset": 112,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "HashSet chain array; live capacity 1 size 1"
+    },
+    {
+      "name": "NodeIndexByTile_Keys",
+      "offset": 128,
+      "type": "Array<NavcloudPathInternalTilePos>",
+      "source": "inferred",
+      "evidence": "macOS ProcessRequests: HashTable<TilePos>::Ensure(comp+0x60, start) and uses *(int*)(comp+0x88) (key capacity) / +0x8C (key count); live capacity 1 size 1"
+    },
+    {
+      "name": "NodeIndexByTile_Values",
+      "offset": 144,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "macOS: values buffer reallocated to capacity*4 bytes and *(int32*)(values + index*4) = 0 (node index of the tile); Windows dtor frees *(comp+0x90). Live heap"
+    },
+    {
+      "name": "NodeIndexByTile_ValuesSize",
+      "offset": 152,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "macOS: *(int*)(comp+0x98) = key capacity when the values buffer grows; live 1"
+    },
+    {
+      "name": "_Pad9C",
+      "offset": 156,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "padding; live 0"
+    },
+    {
+      "name": "field_A0",
+      "offset": 160,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "not set by the Windows ctor; live 0, 0xFFFFFFFF and others"
+    },
+    {
+      "name": "field_A4",
+      "offset": 164,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Windows ctor sets byte +0xA4 = 0; live byte 0 always 0"
+    },
+    {
+      "name": "_PadA5",
+      "offset": 165,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "padding; live garbage"
+    },
+    {
+      "name": "field_A8",
+      "offset": 168,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Windows ctor sets *(uint32*)+0xA8 = 0; live 0"
+    },
+    {
+      "name": "_PadAC",
+      "offset": 172,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "padding; live garbage"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "members of navcloud::TilePos (6 ints) and NodeHeap (8 bytes) not established",
+    "the +0x30/+0x40 pair keeps size before capacity: confirm which uint32 is which",
+    "fields +0xA0..+0xAC"
+  ],
+  "minutes": 15,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

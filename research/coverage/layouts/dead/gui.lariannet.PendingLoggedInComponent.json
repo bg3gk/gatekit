@@ -1,0 +1,38 @@
+{
+  "component": "gui::lariannet::PendingLoggedInComponent",
+  "ext_name": "GuiLariannetPendingLoggedIn",
+  "size": 32,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Client-only (registry size 32 on the client row, none on the server). Created by gui::lariannet::AuthorisationSystem (per-frame update bg3.exe+0x12E1650, creator bg3.exe+0x12E2000) on a new entity when the Larian.net login state reported by FUN_1412E1470 changes; the same update then calls AuthorisationSystem::LoggedOff(view) when +0 is false, or AuthorisationSystem::LoggedOn(view, STDString const&) with +8 when it is true, which set the VMGameData properties LarianNetIsConnected / LarianNetUserName. Not saved.",
+  "fields": [
+    {
+      "name": "LoggedIn",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x12E1650 line 141: *comp = byte from FUN_1412E1470 (copied from the login record's +0 when its +1 is set); line 264: if *comp == 0 -> AuthorisationSystem::LoggedOff, else LoggedOn. Creator writes 0."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "creator zeroes +0..+7 as one qword; padding before the string"
+    },
+    {
+      "name": "UserName",
+      "offset": 8,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x12E2000: +8 byte 0, +0x18 size 0, +0x1C capacity 0xF (small-string ls::STDString, 24 bytes); destructor FUN_1405CDB20 frees +8 when capacity > 15. Line 142-148: STDString::STDString(comp+8, name); passed to AuthorisationSystem::LoggedOn, which fills the VMGameData property c_LarianNetUserNameId (named macOS signature)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 7,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

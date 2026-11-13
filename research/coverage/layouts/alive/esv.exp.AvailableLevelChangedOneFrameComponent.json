@@ -1,0 +1,54 @@
+{
+  "component": "esv::exp::AvailableLevelChangedOneFrameComponent",
+  "ext_name": "ServerExpAvailableLevelChanged",
+  "size": 16,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event when a character's available level changes (level-up became possible after XP from dialogues/fights). Holds eoc::exp::ObjectLevelChangedEvent entries; read by esv::progression::ManagementSystem::Update.",
+  "structs": [
+    {
+      "name": "AvailableLevelChangedEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::exp::ExperienceSystem::SignalAvailableLevelChange (EoCServer.dll+0x700F30) builds eoc::exp::ObjectLevelChangedEvent: +0 = the entity handle argument."
+        },
+        {
+          "name": "OldLevel",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "+8 = the int argument; the function returns an error without an event when it equals the AvailableLevelComponent level, so it is the level before the change."
+        },
+        {
+          "name": "NewLevel",
+          "offset": 12,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "+0xC = AvailableLevelComponent.Level (the current, new level)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "Array<AvailableLevelChangedEntry>",
+      "source": "inferred",
+      "evidence": "16-byte DynamicArray (bg3.exe creator FUN_142b75d70 zeroes it, array destructor). UpdateExperience (EoCServer.dll+0x701E50) collects DynamicArray<eoc::exp::ObjectLevelChangedEvent> (stride 0x10) from SignalAvailableLevelChange; component = that list by name. Live (26 instances): heap pointer, capacity 1, size 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which of +8/+0xC is old vs new rests on the early-out comparison only."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

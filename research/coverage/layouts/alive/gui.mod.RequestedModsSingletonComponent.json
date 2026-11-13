@@ -1,0 +1,34 @@
+{
+  "component": "gui::mod::RequestedModsSingletonComponent",
+  "ext_name": "GuiModRequestedMods",
+  "size": 96,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Requested",
+      "offset": 0,
+      "type": "HashSet<uint64_t>",
+      "source": "inferred",
+      "evidence": "Windows bg3.exe+0x127C520 (= NoesisGameUI.dll gui::mod::RequestSystem::AddRequestedMods; component via storage index DAT_14631f268, stride 0x60) clears the set at +0 (buckets memset to -1, sizes +0x1C/+0x2C zeroed) and inserts every 8-byte key of its first map argument with bg3.exe+0x721030. Adder bg3.exe+0x127EF30 allocates 0x60 and zeroes two HashSets; destructor bg3.exe+0x6C6A10 destroys +0x30 and +0 with trivial keys."
+    },
+    {
+      "name": "UpdateRequested",
+      "offset": 48,
+      "type": "HashSet<uint64_t>",
+      "source": "inferred",
+      "evidence": "Same Windows function clears the set at +0x30 (key count +0x5C, NextIds size +0x4C) and inserts every 8-byte key of its second map argument (HashMap<unsigned __int64, gui::mod::RequestSystem::UpdateRequest> in the NoesisGameUI.dll version); it runs when either set's key count or either map is non-empty."
+    }
+  ],
+  "summary": "Client mod browser: ids of mods with pending requests from gui::mod::RequestSystem - downloads/info requests and update requests. Singleton, empty in all samples (idle).",
+  "confidence": "high",
+  "open_questions": [
+    "Which requests exactly feed the first set (download vs item-info): the maps are locals of RequestSystem::Update."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Windows bg3.exe+0x127C520 (reached through the storage index DAT_14631f268) clears and refills both sets with 8-byte keys via bg3.exe+0x721030, confirming the two HashSet<uint64_t> at +0 and +0x30.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

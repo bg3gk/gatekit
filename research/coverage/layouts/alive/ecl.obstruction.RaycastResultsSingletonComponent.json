@@ -1,0 +1,82 @@
+{
+  "component": "ecl::obstruction::RaycastResultsSingletonComponent",
+  "ext_name": "ClientObstructionRaycastResultsSingleton",
+  "size": 136,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ObstructionCharacterFadeInfo",
+      "size": 24,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x18D24C0 copies 16 bytes (4 dwords) +0..+0xF and one qword +0x10 from each ls::MPList page entry (stride 0x18) into the component array; macOS names the list ls::MPList<ecl::obstruction::CharacterFadeInfo> (RaycastSystem::CollectCharacterFadeInfos). Members not decoded."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "second half of the 16-byte block copied as dwords."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "qword copied at +0x10."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "FadeTargets",
+      "offset": 0,
+      "type": "std::array<HashSet<EntityHandle>, 2>",
+      "source": "inferred",
+      "evidence": "Game RaycastSystem update bg3.exe+0x18D07F0 (system vtable bg3.exe+0x5616C88, update thunk bg3.exe+0x7576E0) clears two 0x30-byte HashSets at +0 and +0x30 (memset buckets to -1, NextIds/keys size = 0). bg3.exe+0x18D1AC0 picks set number cVar = splitscreen player index (byte +0x2268 of the player object) at component + idx*0x30 and looks up 8-byte keys that pass the EntityHandle validity test (>>54 < 0x41, != 0xFFC0000000000000) - keys at plVar[4] stride 8. Live: set 0 holds 1-2 entities (buckets 7/13), set 1 empty."
+    },
+    {
+      "name": "CharacterFadeInfos",
+      "offset": 96,
+      "type": "std::array<Array<ObstructionCharacterFadeInfo>, 2>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18D07F0 zeroes the sizes of two 16-byte arrays at +0x60 and +0x70; bg3.exe+0x18D24C0 appends 0x18-byte elements to component + (idx+6)*0x10 per splitscreen player. Live: +0x60 has capacity 1/16/32, size 0."
+    },
+    {
+      "name": "AnyActive",
+      "offset": 128,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18D07F0 sets +0x80 to 1 when some entry (stride 0x40) of a singleton looked up via DAT_1462DB698 has a non-zero count at +0x1EC, else 0; the raycast passes (bg3.exe+0x18D0B70, +0x18D1860) only run when it is set. Live: 1 in all 5 samples."
+    },
+    {
+      "name": "IsDisabled",
+      "offset": 129,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18D07F0 stores (setting byte +0x1CE of the system's config object == 0) at +0x81. Live: 0. The name/polarity is a guess."
+    },
+    {
+      "name": "_Pad82",
+      "offset": 130,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "padding to 136."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "CharacterFadeInfo members (24 bytes) not decoded.",
+    "Meaning of +0x80/+0x81 (the object holding +0x1CE and the singleton with +0x1EC counters were not identified); readers: ecl::obstruction::FadeSystem::Update / AddFadingEntity."
+  ],
+  "minutes": 12,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

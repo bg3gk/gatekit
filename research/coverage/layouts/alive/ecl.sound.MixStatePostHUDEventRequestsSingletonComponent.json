@@ -1,0 +1,61 @@
+{
+  "component": "ecl::sound::MixStatePostHUDEventRequestsSingletonComponent",
+  "ext_name": "ClientSoundMixStatePostHUDEventRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "MixStatePostSoundEventRequest",
+      "size": 12,
+      "fields": [
+        {
+          "name": "Event",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Element is ls::PostSoundEventRequest (IndexedStorage<ls::PostSoundEventRequest> in MixStateSystem::PostMixEvent, EoCClient.dll+0xDA55F0): FixedString event name built from the mix state at +0."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "PostMixEvent writes 3, UIPrioritySystem::SendMuffleEvent writes 0; copied as 4 bytes by EoCClient.dll+0xD4E0A0. Possibly SoundEventType (3 = HUD) - not confirmed."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "PostMixEvent and SendMuffleEvent write 2; copied as one byte by EoCClient.dll+0xD4E0A0."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Stride 0xC (ProcessPostHUDEventRequests, EoCClient.dll+0xDBE200)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<MixStatePostSoundEventRequest>",
+      "source": "inferred",
+      "evidence": "MixStateSystem::ProcessSingletonRequests (EoCClient.dll+0xDA6680) clears the singleton's IndexedStorage<ls::PostSoundEventRequest> (FUN_180d48a60) and moves FrameData+0x60 into it; InterfaceSystem::ProcessPostHUDEventRequests (EoCClient.dll+0xDBE200) walks it with stride 0xC and forwards each element to GameplayGlobalSoundRequestsSingletonComponent."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of PostSoundEventRequest +4 (uint32) and +8 (byte).",
+    "Only empty instances were seen."
+  ],
+  "minutes": 5,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

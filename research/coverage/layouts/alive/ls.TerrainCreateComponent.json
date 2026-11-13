@@ -1,0 +1,25 @@
+{
+  "component": "ls::TerrainCreateComponent",
+  "ext_name": "TerrainCreate",
+  "size": 8,
+  "seen": true,
+  "summary": "Client terrain streaming: the object a terrain entity is created from, consumed by ls::TerrainVisualLoaderSystem::ProcessCreateRequests (Toolkit GameEngine.dll+0x1F08C0) and the stream loader (StreamSystemLoadHelper::UpdateLoadRequests<TerrainLoaderRegisteredComponent, TerrainLoadComponent, TerrainObject>). Seen alive at level load, character creation and level-swap teleports.",
+  "fields": [
+    {
+      "name": "Object",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Game creator bg3.exe+0x3BA4BB0 allocates 8 bytes, writes 0 and registers no destructor (non-owning pointer). Toolkit GameEngine.dll+0x1F08C0: the view's first component has stride 8; its pointer is dereferenced at +0x20 to a description whose bytes +0x8C/+0x8E/+0x92 decide Visual flags 1/2/4 of the created ls::Terrain, and the pointer itself is stored into the Terrain at +0xD8. Live: 8 heap pointers. Pointee type not named (a terrain template/game object)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Pointee class (holds at +0x20 a terrain description with visibility/shadow flags)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "25 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

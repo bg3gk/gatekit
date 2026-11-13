@@ -1,0 +1,84 @@
+{
+  "component": "ls::ugc::ModDependenciesResultOneFrameComponent",
+  "ext_name": "UgcModDependenciesResult",
+  "size": 32,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame result of a mod.io dependency query (client only, registry total 32). ls::PublishingSystem (per-frame update bg3.exe+0x3BDE2A0; Toolkit GameEngine.dll ls::PublishingSystem::Process*Requests) creates it on a new entity from a request queued by the matching HandleUGC... callback of the mod.io back-end; the same frame also gets a UGCRequestResultOneFrameComponent with the net::UGCResult and request Guid. Request queue filled by HandleUGCItemDependencies(unsigned __int64, DynamicArray<net::UGCModDependency>, net::UGCResult, bool); drained by bg3.exe+0x3BDFC80 (request stride 0x58: id +0, UGCResult +8, array +0x30, bool +0x40, Guid +0x48).",
+  "structs": [
+    {
+      "name": "UgcModDependenciesResultDependency",
+      "size": 80,
+      "fields": [
+        {
+          "name": "ModId",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; first member is the 64-bit mod id (SE's UGCModDependency.DependencyHandle)"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; SE's UGCModDependency has only DependencyName here - this build has three strings"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50"
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "ModId",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BE2350 (AllocRaw 0x20) zeroes +0; bg3.exe+0x3BDFC80 stores request qword +0 (mod id) here."
+    },
+    {
+      "name": "Dependencies",
+      "offset": 8,
+      "type": "Array<UgcModDependenciesResultDependency>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3BDFC80 copies the request's DynamicArray<net::UGCModDependency> (+0x30) into +8 with FUN_1438bada0 (element 0x50). Creator zeroes +8/+0x10."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator zeroes byte +0x18; bg3.exe+0x3BDFC80 copies request byte +0x40 = the trailing bool of HandleUGCItemDependencies / macOS OnUGCDependenciesReceived(..., UGCResult, bool)."
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to 32"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the bool at +0x18; names of the 0x50-byte dependency element beyond the id (SE's UGCModDependency{DependencyHandle, DependencyName} is 32 bytes - this build's element is 0x50 with three strings).",
+    "Not seen alive."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

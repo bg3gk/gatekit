@@ -1,0 +1,54 @@
+{
+  "component": "esv::trap::NotificationEventOneFrameComponent",
+  "ext_name": "ServerTrapNotificationEvent",
+  "size": 24,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Event of esv::trap::DisarmSystem for the story: StoryGameEventManager::OnTrapDisarmNotification raises the Osiris event RequestCanDisarmTrap(_Character, _Item, _RequestID) when Type is 0; StoryCharacterEventManager::OnTrapDisarmNotification raises StartedTrapDisarming / StoppedTrapDisarming for 1 / 2. Created by bg3.exe+0x2CF8420 (AllocRaw 0x18: +0 byte 3, +8 null handle, +0x10 = 0) from the disarming state machine bg3.exe+0x2CF6EF0. The registry does not flag it as one-frame. Saved: model ls::model::game::traps::v0::NotificationEventOneFrameComponent (24 bytes: Type, TrapToDisarm, RequestId). Same layout as esv::lock::NotificationEventOneFrameComponent (layouts/dead).",
+  "fields": [
+    {
+      "name": "Type",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "Savegame model member 0 (m_Type). Creator writes 3; bg3.exe+0x2CF6EF0 writes 0 (line 262), 1 (395), 2 (483). Toolkit StoryGameEventManager::OnTrapDisarmNotification (EoCServer.dll+0xEDE100) tests byte +0 == 0; StoryCharacterEventManager (EoCServer.dll+0xEF7750) dispatches 1 / 2. Enum without an SE declaration."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "not written"
+    },
+    {
+      "name": "TrapToDisarm",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Model member 1 (m_TrapToDisarm). Creator writes the null handle; writers copy DisarmingStateComponent.TrapToDisarm (lines 263, 396, 484). Passed as the _Item of RequestCanDisarmTrap (Toolkit reads +8)."
+    },
+    {
+      "name": "RequestId",
+      "offset": 16,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "Model member 2 (m_RequestId). Writers store the counter DAT_1462C8918 at +0x10 (lines 266, 399, 487); Toolkit passes the dword at +0x10 as _RequestID (INTEGER) of RequestCanDisarmTrap."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "padding to 24"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of Type 3 (creator default)."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

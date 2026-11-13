@@ -1,0 +1,25 @@
+{
+  "component": "esv::item::animation::RequestSingletonComponent",
+  "ext_name": "ServerItemAnimationRequests",
+  "size": 64,
+  "seen": true,
+  "summary": "Server singleton: requested item animation states per item (doors, chests, levers), ls::HashMap<EntityHandle, eoc::item::animation::EAnimationState>. Written by esv::item::animation::RequestsSystem, read by esv::item::animation::StateTransitionSystem. Seen.py context: idle levels (lives with the world).",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, uint16_t>",
+      "source": "inferred",
+      "evidence": "macOS names ls::HashMap<ls::ID<ecs::EntityHandleTraits>, eoc::item::animation::EAnimationState> for the item animation systems; EAnimationState is a 16-bit value (StateToString((ushort)...) in EoCServer.dll+0x13B03A0 StateTransitionSystem::FinalizeState, which looks the item's entity up in a map (FUN_18021F230 = EntityHandle key find, hash = handle % bucket count). Live: 4 instances, bucket count 0x2F/0x185 at +8, keys cap 0x20/0x100 at +0x18 and +0x28, values count at +0x38 - the 64-byte HashMap shape."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Value width assumed from EAnimationState being 16-bit (as in esv::item::animation::StateComponent); not checked with a value stride in this map."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

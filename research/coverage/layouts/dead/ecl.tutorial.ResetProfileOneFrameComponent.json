@@ -1,0 +1,27 @@
+{
+  "component": "ecl::tutorial::ResetProfileOneFrameComponent",
+  "ext_name": "ClientTutorialResetProfile",
+  "size": 4,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request on the client to reset the tutorial state of a profile, carrying one FixedString. Created by the tutorial reset system update bg3.exe+0x1ABEFB0 (which also creates ecl::tutorial::ShowResetMessageRequestOneFrameComponent and handles the server's eoc::notification::ResetTutorialsMessageRequestNotificationComponent); read by gui code via bg3.exe+0x718D50 (registration shared with ecl::profile::ClearedShownTutorialsOneFrameComponent). Never seen alive. Registry total 4 (client row).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x1ABFBD0 (AllocRaw 4) stores 0xFFFFFFFF; destructor bg3.exe+0x698FE0 DecRefs +0 in the global string table. bg3.exe+0x1ABEFB0 (lines ~287-306) creates one component per element of a collected FixedString array (stride 4) and assigns the element with IncRef/DecRef. What the FixedString names (profile / tutorial category) is not established."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the FixedString (the array it is copied from is filled earlier in bg3.exe+0x1ABEFB0 from a query not decoded).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

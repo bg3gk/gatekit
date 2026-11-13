@@ -1,0 +1,54 @@
+{
+  "component": "esv::tutorial::ActionResourceEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialActionResourceEventRequestsSingleton",
+  "size": 32,
+  "structs": [
+    {
+      "name": "ActionResourceEventRequestsEntry",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x34198D0 (ActionResourceSystem update) stores the party member entity at +0; ValidateSystem bg3.exe+0x3427CE0 reads +0 of every variant entry as the entity"
+        },
+        {
+          "name": "Resource",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x34198D0 copies the 16-byte ResourceId of eoc::ActionResourceEventsOneFrameComponent events (ActionResourceSetValueRequest: Guid, double Amount, double OldAmount; stride 0x20)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Depleted",
+      "offset": 0,
+      "type": "Array<ActionResourceEventRequestsEntry>",
+      "source": "inferred",
+      "evidence": "ValidateSystem::Update helper bg3.exe+0x3426F70 (macOS esv::tutorial::ValidateSystem::Update) copies every request array into ls::Variant<ActionResource_Depleted, ActionResource_Gained, ActiveRoll_Advantage, ActiveRoll_Disadvantage, ActiveRoll_Dialog, AttackHit_Immunity, AttackHit_Resistance, AttackHit_Vulnerable, DualWielding_Enabled, Functor, HotbarSlot_Added, HotbarSlot_Removed, MagicPockets, MetaMagic_Gained, Save_Quicksave, UIEvent, UserAction_Activated> (full name from the macOS symbol of DynamicArray<Variant<...>>); variant index written at +0x18 of each 32-byte entry; +0 -> index 0 ActionResource_Depleted (bg3.exe+0x34283D0), element stride 0x18; destructor FUN_14069b690 frees 2 arrays"
+    },
+    {
+      "name": "Gained",
+      "offset": 16,
+      "type": "Array<ActionResourceEventRequestsEntry>",
+      "source": "inferred",
+      "evidence": "ValidateSystem::Update helper bg3.exe+0x3426F70 (macOS esv::tutorial::ValidateSystem::Update) copies every request array into ls::Variant<ActionResource_Depleted, ActionResource_Gained, ActiveRoll_Advantage, ActiveRoll_Disadvantage, ActiveRoll_Dialog, AttackHit_Immunity, AttackHit_Resistance, AttackHit_Vulnerable, DualWielding_Enabled, Functor, HotbarSlot_Added, HotbarSlot_Removed, MagicPockets, MetaMagic_Gained, Save_Quicksave, UIEvent, UserAction_Activated> (full name from the macOS symbol of DynamicArray<Variant<...>>); variant index written at +0x18 of each 32-byte entry; +0x10 -> index 1 ActionResource_Gained (bg3.exe+0x34284B0), stride 0x18"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "names follow the Variant index; the update's float comparisons (Amount>0 && OldAmount<=0 -> +0; Amount<OldAmount -> +0x10) read as the opposite, possibly Ghidra's double-compare rendering"
+  ],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Filled by esv::tutorial::ActionResourceSystem from eoc::ActionResourceEventsOneFrameComponent of party members, drained by ValidateSystem. Live: two allocated arrays, size 0-1.",
+  "seen": true,
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,73 @@
+{
+  "component": "eoc::trigger::TreeComponent",
+  "ext_name": "TriggerTree",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "TriggerTreeEntityRTree",
+      "size": 80,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "std::array<uint64_t, 7>",
+          "source": "unknown",
+          "evidence": "ls::EntityRTree internals (80 bytes = stride 0x50 in FUN_181037f10, EoCShared.dll+0x1037F10). Not decoded."
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "ls::EntityRTree internals."
+        },
+        {
+          "name": "Count",
+          "offset": 60,
+          "type": "uint32_t",
+          "source": "toolkit",
+          "evidence": "ls::EntityRTree::IsEmpty (GameEngine.dll+0x9C1C50) returns *(int*)(this+0x3C) == 0 - Toolkit accessor names it Count."
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "std::array<uint64_t, 2>",
+          "source": "unknown",
+          "evidence": "ls::EntityRTree internals."
+        }
+      ]
+    },
+    {
+      "name": "TriggerTreeLevelData",
+      "size": 2960,
+      "fields": [
+        {
+          "name": "Trees",
+          "offset": 0,
+          "type": "std::array<TriggerTreeEntityRTree, 37>",
+          "source": "inferred",
+          "evidence": "eoc::trigger::TreeComponent::LevelData (macOS name) is ls::StaticArray<ls::EntityRTree,37> (assert text in EoCShared.dll+0x1037F10, index = eoc::ETriggerType, element = index*0x50). eoc::trigger::GetTriggersOfTypeAtPosition (EoCShared.dll+0x1038040) indexes the values with stride 0xB90 = 37*0x50."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Levels",
+      "offset": 0,
+      "type": "HashMap<FixedString, TriggerTreeLevelData>",
+      "source": "inferred",
+      "evidence": "macOS: ls::HashMap<ls::FixedString, eoc::trigger::TreeComponent::LevelData> destructor next to the component's ComponentOps. eoc::trigger::GetTriggersOfTypeAtPosition (EoCShared.dll+0x1038040) hashes the level FixedString (ls::FixedString::GetHash, bucket count at +8), finds the index, checks it against the value count at +0x38 and takes the value at *(+0x30) + index*0xB90. Live (client and server, 4 instances each): bucket count 5, 1-2 keys, value array pointer + count."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Internals of ls::EntityRTree (80 bytes) are not decoded beyond Count at +0x3C."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

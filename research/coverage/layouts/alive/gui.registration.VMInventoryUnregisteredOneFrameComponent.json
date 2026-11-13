@@ -1,0 +1,25 @@
+{
+  "component": "gui::registration::VMInventoryUnregisteredOneFrameComponent",
+  "ext_name": "GuiRegistrationVMInventoryUnregistered",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Object",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x44D530 (VMInventoryRegistrationSystem::Update): RemoveInventoryObject, then a new entity per removed object gets this component holding the ref-counted pointer (AddRef/Release at lines ~1027-1030). Value type Noesis::Ptr<gui::VMInventory> (the Data singleton's value type), written as void*. Live: 48 instances, all heap pointers."
+    }
+  ],
+  "summary": "One-frame event on a fresh entity: carries the gui::VMInventory view-model object that was just removed from VMInventoryDataSingletonComponent, so UI code can drop it (seen in fights, deaths, dialogues and spell casts, i.e. whenever inventory entities go away).",
+  "confidence": "medium",
+  "open_questions": [
+    "Holds a Noesis::Ptr<gui::VMInventory>; exposed as an opaque pointer."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

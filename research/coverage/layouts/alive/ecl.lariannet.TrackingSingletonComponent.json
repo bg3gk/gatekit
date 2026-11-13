@@ -1,0 +1,110 @@
+{
+  "component": "ecl::lariannet::TrackingSingletonComponent",
+  "ext_name": "ClientLariannetTrackingSingleton",
+  "size": 128,
+  "seen": true,
+  "fields": [
+    {
+      "name": "LoggedIn",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1A840 (user-event case 1, the login result; Toolkit OnLoggedIn(Result<void>)): writes the event's success byte to +0 and sets +1; on success also assigns a STDString from LarianNetAPIManager to the optional at +8. bg3.exe+0x1B1A3A0 (~ProcessUserEvents) clears +1 each frame."
+    },
+    {
+      "name": "HasLoggedIn",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "has-value flag of the optional bool at +0 (set by bg3.exe+0x1B1A840, cleared by bg3.exe+0x1B1A3A0)"
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "alignment of the STDString at +8"
+    },
+    {
+      "name": "LoggingInfo",
+      "offset": 8,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1A840 assigns a STDString to +8 (FUN_14118fb90, optional assign); bg3.exe+0x1B1A3A0 destroys it as a 24-byte STDString (buffer +8, size +0x18, capacity +0x1C) and clears +0x20"
+    },
+    {
+      "name": "HasLoggingInfo",
+      "offset": 32,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "has-value flag of the optional STDString at +8 (bg3.exe+0x1B1A3A0 tests and clears +0x20)"
+    },
+    {
+      "name": "_Pad21",
+      "offset": 33,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment"
+    },
+    {
+      "name": "CommunityPlatformConnected",
+      "offset": 40,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1A3A0 user-event case 0 (Toolkit OnCommunityPlatformConnected(EPlatform)): copies the event byte to +0x28 and sets +0x29 when it changed"
+    },
+    {
+      "name": "HasCommunityPlatformConnected",
+      "offset": 41,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "has-value flag, set in case 0 and cleared by bg3.exe+0x1B1A3A0"
+    },
+    {
+      "name": "UGCPermissions",
+      "offset": 42,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1A3A0 case 4 (Toolkit OnUGCPermissionsChanged(bool)): +0x2A = (event byte == 0), +0x2B = 1"
+    },
+    {
+      "name": "HasUGCPermissions",
+      "offset": 43,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "has-value flag, cleared by bg3.exe+0x1B1A3A0"
+    },
+    {
+      "name": "_Pad2C",
+      "offset": 44,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "alignment of the Array at +0x30"
+    },
+    {
+      "name": "Errors",
+      "offset": 48,
+      "type": "Array<STDString>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1A3A0 case 2 (Toolkit OnError(char const*)): FUN_140E90A70(+0x30, string) appends with stride 0x18 and STDString copy; cleared each frame by FUN_140E907E0(+0x30)"
+    },
+    {
+      "name": "PlatformConnections",
+      "offset": 64,
+      "type": "HashMap<uint8_t, bool>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1A3A0 case 3 (Toolkit OnPlatformConnected/Disconnected(Result<EPlatform>)): FUN_140CB11A0(+0x40, key) is a HashSet insert with 1-byte keys (hash = key byte % buckets, keys compared as bytes, key array at +0x60); the value byte (event +10) goes into the byte array at +0x70 (capacity +0x78, element stride 1). Clear: memset buckets (+0x40, count +0x48) to 0xFF, zero +0x5C and +0x6C. Ends at 0x80 = size."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "lsnet::EPlatform values (keys of PlatformConnections) are not enumerated; names are inferred from the Toolkit's TrackingSystem methods"
+  ],
+  "second_pass": "Every offset and width read from the Windows per-frame code: bg3.exe+0x1B1A3A0 (ProcessUserEvents, all five event kinds and the per-frame reset) and bg3.exe+0x1B1A840 (login result); the platform map turned out to have 1-byte keys (bg3.exe+0xCB11A0 hash insert), not 4-byte.",
+  "minutes": 14,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

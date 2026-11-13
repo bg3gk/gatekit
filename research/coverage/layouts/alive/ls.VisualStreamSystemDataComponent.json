@@ -1,0 +1,76 @@
+{
+  "component": "ls::VisualStreamSystemDataComponent",
+  "ext_name": "VisualStreamSystemData",
+  "size": 16,
+  "seen": true,
+  "summary": "Array of 320-byte streaming views (camera position + cull planes) that the stream loader uses for load priorities (ls::StreamSystemLoadHelper::ProcessLoadRequests iterates the query of this component, builds TCullPlanes from each element and calls ls::sse::CalculateLoadPriority with the element's position). Live: 5 samples, one element each.",
+  "structs": [
+    {
+      "name": "VisualStreamSystemDataView",
+      "size": 320,
+      "fields": [
+        {
+          "name": "Position",
+          "offset": 0,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Toolkit GameEngine.dll+0xA19230 passes the element address as 'Vector3f const&' (camera position) to ls::sse::CalculateLoadPriority. Toolkit offset only."
+        },
+        {
+          "name": "_Pad0C",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "elements are 16-byte aligned (allocator alignment 0x10)"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "glm::vec4",
+          "source": "unknown",
+          "evidence": "not read in the functions examined"
+        },
+        {
+          "name": "Planes",
+          "offset": 32,
+          "type": "std::array<glm::vec4, 16>",
+          "source": "inferred",
+          "evidence": "Toolkit: sse::CreateCullPlanes((Vector4f*)(elem+0x20), span, count) with count read from elem+0x120 (Toolkit offsets)."
+        },
+        {
+          "name": "NumPlanes",
+          "offset": 288,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Toolkit: count of planes passed to CreateCullPlanes, read at elem+0x120."
+        },
+        {
+          "name": "field_124",
+          "offset": 292,
+          "type": "uint8_t[28]",
+          "source": "unknown",
+          "evidence": "rest of the 0x140 stride, not read in the functions examined"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Views",
+      "offset": 0,
+      "type": "Array<VisualStreamSystemDataView>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3D07C50 allocates 0x10 bytes zeroed; destructor bg3.exe+0x3B742C0 -> bg3.exe+0x3B81AF0 reallocates with param*0x140 bytes (alignment 0x10) and copies elements 0x140 bytes apart (POD). Live: heap pointer at +0, capacity 1 / size 1 at +8/+C."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element member offsets come from the Toolkit build only (stride 0x140 is confirmed in bg3.exe); Toolkit iterates this component with a 0x18 storage stride, so its build may differ.",
+    "Meaning of elem+0x10 and elem+0x124..0x13F."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

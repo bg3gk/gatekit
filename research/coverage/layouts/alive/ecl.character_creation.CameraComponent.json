@@ -1,0 +1,47 @@
+{
+  "component": "ecl::character_creation::CameraComponent",
+  "ext_name": "ClientCharacterCreationCamera",
+  "size": 32,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ActiveCameraTrigger",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Windows creator bg3.exe+0x201CEB0 (AllocRaw 0x20) builds an empty ls::STDString: byte 0 at +0, size 0 at +0x10, capacity 0xF at +0x14 (24-byte small-string shape). The macOS ecl::character_creation::SessionCameraSubsystem::UpdateActiveCameraTrigger(DummyDefinitionComponent const&, CameraComponent&, Environment const&, bool) compares the string with the camera trigger name chosen from the preset/trigger pack and assigns it (STDString::operator=) when it differs: the name of the active character-creation camera trigger. Live: empty."
+    },
+    {
+      "name": "TriggerIndex",
+      "offset": 24,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Windows creator writes 0 here (upper half of the 8-byte store at +0x14). macOS UpdateActiveCameraTrigger reads the int right after the string as the index (0..2) of one of the three trigger names of the preset (trigger pack). Windows offset follows from the 24-byte Windows string; the width is the macOS one (hint). Live 0."
+    },
+    {
+      "name": "field_1C",
+      "offset": 28,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Windows creator writes byte 0 at +0x1C. macOS UpdateActiveCameraTrigger sets the byte after the index to 1 when the trigger changed while the subsystem flag (subsystem +8, then cleared) was set, else to 0 - probably an instant (non-blended) camera switch. Live 0."
+    },
+    {
+      "name": "_Pad1D",
+      "offset": 29,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "tail padding (live 0xFFFFFF garbage)"
+    }
+  ],
+  "summary": "Character-creation camera state of the local session. situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "confidence": "medium",
+  "open_questions": [
+    "Width of TriggerIndex (4 bytes) and the meaning of field_1C come from the macOS UpdateActiveCameraTrigger; the Windows twin of that function was not found (the Windows creator only zeroes +0x18 inside an 8-byte store)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Windows creator bg3.exe+0x201CEB0 fixes the 24-byte STDString and the zeroed +0x18/+0x1C; the macOS SessionCameraSubsystem::UpdateActiveCameraTrigger names the string (active camera trigger) and the trigger index after it. Not high: the index width and the flag rest on macOS.",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

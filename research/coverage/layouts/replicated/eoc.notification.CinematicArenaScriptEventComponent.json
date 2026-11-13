@@ -1,0 +1,40 @@
+{
+  "component": "eoc::notification::CinematicArenaScriptEventComponent",
+  "ext_name": "NotificationCinematicArenaScriptEvent",
+  "size": 56,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x98BCB0 member 1: 16-byte scratch write at +0; macOS default str q0,[x23]."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x98BCB0 member 2: 16-byte scratch write at +0x10."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "STDString",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x98BCB0 member 3: bg3.exe+0x4016480 writes an int32 length read at +0x10 then the bytes (inline when capacity at +0x14 <= 15): the 24-byte STDString layout; 0x20+24 = 56 = registered size."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+    "Read by ecl::timeline::ArenaDecisionSystem (GetPosition, ProcessSpellCastEvents, ShouldConsiderEvent) - not read; names of the two Guids and the string (event name?) not established."
+  ],
+  "seen": false,
+  "minutes": 4,
+  "functions_read": 0,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

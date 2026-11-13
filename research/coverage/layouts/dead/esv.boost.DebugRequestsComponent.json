@@ -1,0 +1,119 @@
+{
+  "component": "esv::boost::DebugRequestsComponent",
+  "ext_name": "ServerBoostDebugRequests",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Per-entity list of boosts added through debug requests, kept by esv::BoostSystem: an Array of 64-byte boost entries (boost description + boost source + boost parameters). bg3.exe+0x3199530 (called from bg3.exe+0x31970A0, esv::BoostSystem per-frame chain) creates the component (bg3.exe+0x31ACF60, AllocRaw 0x10) for an entity that has pending add requests, appends the 0x40-stride entries and removes matching entries for remove requests (0x48 stride: the same entry + a bool at +0x40); an UpdatedEvent one-frame companion (esv::boost::DebugRequestsUpdatedEventOneFrameComponent) is registered beside it. Same element type and destructor (bg3.exe+0x22B08E0) as esv::boost::StoryRequestsComponent. Never seen alive. Registry total 16 (server row).",
+  "structs": [
+    {
+      "name": "BoostDebugRequestsEntry",
+      "size": 64,
+      "fields": [
+        {
+          "name": "Boost",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Element destructor FUN_140708f10 DecRefs three FixedStrings at +0/+4/+8 = SE eoc::BoostDescription (Base/ExposedTypes.h: Boost, Params, Params2); bg3.exe+0x31A2C80 compares the three ints."
+        },
+        {
+          "name": "Params",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE BoostDescription.Params"
+        },
+        {
+          "name": "Params2",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE BoostDescription.Params2"
+        },
+        {
+          "name": "_Pad0C",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to the 8-aligned BoostSource."
+        },
+        {
+          "name": "SourceType",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE BoostSource.Type (enum BoostSourceType, 1 byte); bg3.exe+0x31A2C80 compares `(char)` at +0x10."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "SourceCause",
+          "offset": 20,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE BoostSource.Cause; the array destructor bg3.exe+0x22E4620 DecRefs the FixedString at element +0x14; compared as int."
+        },
+        {
+          "name": "SourceEntity",
+          "offset": 24,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE BoostSource.Entity; compared as a qword at +0x18."
+        },
+        {
+          "name": "SourceStatus",
+          "offset": 32,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE BoostSource.Status (ComponentHandle, 8 bytes); compared as a qword at +0x20."
+        },
+        {
+          "name": "Owner",
+          "offset": 40,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE BoostParameters.Owner; two qwords compared at +0x28/+0x30."
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "SE BoostParameters.field_10 (not compared by the remover)."
+        },
+        {
+          "name": "_Pad39",
+          "offset": 57,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to the element stride 0x40."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Boosts",
+      "offset": 0,
+      "type": "Array<BoostDebugRequestsEntry>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x31ACF60 (AllocRaw 0x10) zeroes +0, +8 and the size at +0xC (Array pattern). Destructor bg3.exe+0x22B08E0 -> bg3.exe+0x22E4620(p, 0): element stride 0x40, DecRef of +0x14 and FUN_140708f10 on +0 (BoostDescription), then frees the buffer. bg3.exe+0x3199530 walks requests with stride 0x40 and passes them to bg3.exe+0x31A2A90 (append) or matches entries field by field in bg3.exe+0x31A2C80 (remove)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The entry equals SE BoostDescription + BoostSource + BoostParameters laid end to end (12+4 pad+24+24); field_38 (BoostParameters.field_10) meaning unknown.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 12,
+  "functions_read": 7,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

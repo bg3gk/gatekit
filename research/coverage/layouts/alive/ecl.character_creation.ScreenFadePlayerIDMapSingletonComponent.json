@@ -1,0 +1,33 @@
+{
+  "component": "ecl::character_creation::ScreenFadePlayerIDMapSingletonComponent",
+  "ext_name": "ClientCharacterCreationScreenFadePlayerIDMap",
+  "size": 128,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "HashMap<int16_t, Guid>",
+      "source": "unknown",
+      "evidence": "Windows bg3.exe+0x1D14010 (character_creation system, query of this singleton) looks a 16-bit player id up in it: buckets +0 (count +8), next ids +0x10, keys +0x20 compared as shorts (stride 2), values +0x30 with stride 0x10; a missing key gets a value from FUN_144130aa0 (a new 16-byte id) inserted by FUN_141d17220, and the 16 bytes are handed to the screen-fade request (with 0.5 s). Creator bg3.exe+0x1D161C0 zeroes 0x80 bytes; destructor bg3.exe+0x682800 frees both maps without element destructors. macOS instantiates ls::HashMap<short, ls::Guid>. Live (idle): empty."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "HashMap<int16_t, Guid>",
+      "source": "unknown",
+      "evidence": "Second map, same shape: bg3.exe+0x1D14010 uses buckets +0x40 (count +0x48), next ids +0x50, short keys +0x60 and 16-byte values +0x70 for the second list of player ids of the request (param +0x18, count +0x24), creating a missing entry the same way. Live: empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which fade each map tracks (the two request lists of bg3.exe+0x1D14010; the second is processed only when the request flag +1 is set) - names stay field_0 / field_40."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Both 64-byte maps settled as HashMap<int16_t, Guid> from the Windows reader bg3.exe+0x1D14010 (2-byte key stride, 16-byte value stride at +0x20/+0x30 and +0x60/+0x70), matching the macOS HashMap<short, Guid> instantiation.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

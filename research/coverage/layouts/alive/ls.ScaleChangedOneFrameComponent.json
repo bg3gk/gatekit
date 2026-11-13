@@ -1,0 +1,25 @@
+{
+  "component": "ls::ScaleChangedOneFrameComponent",
+  "ext_name": "ScaleChanged",
+  "size": 12,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame marker of the transform pipeline (sibling of ls::TranslateChangedOneFrameComponent / ls::RotateChangedOneFrameComponent), added when an entity's scale changes (seen around locked doors/chests, dialogues, level change). Holds one vec3.",
+  "fields": [
+    {
+      "name": "Scale",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3C795F0 (one-frame default add, TypeIndex<ls::ScaleChangedOneFrameComponent>_OneFrameComponentTypeIdContext): ComponentFrameStorageAllocRaw(.., 0xC, ..) then zeroes +0 (8 bytes) and +8 (4 bytes) - three floats. Live: server samples (1,1,1) and (1.2,1.2,1.2); client samples uniform-looking floats 0..2.15 (e.g. 0.01, 0.6, 0.9) - a per-axis scale."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Previous or new scale (default is 0,0,0, not 1,1,1): the writer that fills it with a real value was not found."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "32 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

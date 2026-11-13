@@ -1,0 +1,41 @@
+{
+  "component": "esv::character::EntityMovingFinishedEventOneFrameComponent",
+  "ext_name": "ServerCharacterEntityMovingFinishedEvent",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame event raised by esv::CharacterManager when a character's move toward an entity (pick-up / drop) ends. Created by bg3.exe+0x33351A0 (AllocRaw 0x10) in the CharacterManager per-frame update bg3.exe+0x3320D90, which copies a 16-byte record (8-byte handle + 1-byte value) gathered by bg3.exe+0x3333610 from esv::character::EntityMovingComponent holders. Read by esv::pickup::PickUpExecutionFinishedSystem (ProcessSuccessfullyFinishedMoves) and esv::drop::DropEntityEndUpSystem (Toolkit). Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x33351A0 writes 0xffc0000000000000 (null EntityHandle) at +0; writer bg3.exe+0x3320D90 copies the record's first qword. Toolkit esv::pickup::PickUpExecutionFinishedSystem::ProcessSuccessfullyFinishedMoves (EoCServer.dll+0xD46D70) uses +0 as the key of a per-entity map (FUN_1809a3c30(&map, component))."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator writes byte 2 at +8; writer bg3.exe+0x3320D90 copies one byte: `*(undefined1 *)(puVar14 + 1) = *(undefined1 *)(puVar12 + 1)`. The Toolkit reader stores `*(undefined4 *)(component + 8)` next to the entity in its map (a result/state code; the Toolkit build reads 4 bytes, bg3.exe writes 1)."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 16."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the byte at +8 (default 2; probably a move result enum). Whether it is wider than one byte (Toolkit reads 4 bytes).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

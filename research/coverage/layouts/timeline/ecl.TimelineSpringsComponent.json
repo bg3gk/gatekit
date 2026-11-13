@@ -1,0 +1,32 @@
+{
+  "component": "ecl::TimelineSpringsComponent",
+  "ext_name": "ClientTimelineSprings",
+  "size": 8,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "The add-or-get helper bg3.exe+0x6D53A0 allocates 8 bytes and writes one 64-bit 0xFFFFFFFFFFFFFFFF over them; all 21 live instances still hold 0xFFFFFFFF in both halves. No reader or other writer was found."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Same single 64-bit store of -1 in bg3.exe+0x6D53A0; live value always 0xFFFFFFFF."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Whether this is two 32-bit values or one 64-bit value: only the default -1 (one 64-bit store in bg3.exe+0x6D53A0) and one live instance holding -1 are known.",
+    "No reader on Windows, in the Toolkit or on macOS (only ImmediateWorldCache Add/Get/Remove instantiations; the related aspk class is ecl::TLSprings). A cutscene with spring/cloth simulation on a dummy is needed."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the author's confidence is low: types fit the live data, meanings are not established",
+  "second_pass": "No new source: macOS has only the generic Add/Get/Remove instantiations for the type and nothing in bg3.exe reads it, so the 8 bytes stay two unnamed int32 with default -1."
+}

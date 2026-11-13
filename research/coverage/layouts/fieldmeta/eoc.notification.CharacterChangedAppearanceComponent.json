@@ -1,0 +1,39 @@
+{
+  "component": "eoc::notification::CharacterChangedAppearanceComponent",
+  "ext_name": "NotificationCharacterChangedAppearance",
+  "size": 312,
+  "fields": [
+    {
+      "name": "Definition",
+      "offset": 0,
+      "type": "character_creation::ChangeAppearanceDefinitionBase",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_Definition (eoc::character_creation::ChangeAppearanceDefinition), position 1 of 3 in the macOS serializer TypeList; serializer bg3.exe+0x98F630 writes the definition via bg3.exe+0xABD610 (string +0, bytes +0x18/+0x19, Guids +0x20/+0x30, byte +0x40, Appearance +0x48 via bg3.exe+0xAD93E0) at +0x0 in the same order"
+    },
+    {
+      "name": "CharacterGUID",
+      "offset": 288,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_CharacterGUID (ls::Guid), position 2 of 3 in the macOS serializer TypeList; serializer bg3.exe+0x98F630 writes 16 bytes at +0x120 in the same order"
+    },
+    {
+      "name": "StartTime",
+      "offset": 304,
+      "type": "int64_t",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_StartTime (long long), position 3 of 3 in the macOS serializer TypeList; serializer bg3.exe+0x98F630 writes 8 bytes at +0x130 in the same order"
+    }
+  ],
+  "external_types": {
+    "character_creation::ChangeAppearanceDefinitionBase": "Script Extender GameDefinitions/Components/CharacterCreation.h; same layout (Name, BodyType 0x18, BodyShape 0x19, RootTemplate 0x20, Voice 0x30, Identity 0x40, Visual 0x48), 0x120 bytes, matches bg3.exe+0xABD610"
+  },
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

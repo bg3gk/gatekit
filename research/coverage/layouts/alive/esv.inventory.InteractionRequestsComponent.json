@@ -1,0 +1,173 @@
+{
+  "component": "esv::inventory::InteractionRequestsComponent",
+  "ext_name": "ServerInventoryInteractionRequests",
+  "size": 80,
+  "seen": true,
+  "summary": "Server component (one instance, singleton-like) collecting the frame's inventory interaction requests (esv::inventory::InteractionRequestSystem::GatherRequests fills it; GroupSystem::ProcessInventoryRequests and RewardManager read it, macOS). Seen once in an idle level, empty. First of a chain: InteractionRequests -> InteractionRequestsWithGroup -> InteractionRequestsWithStack.",
+  "structs": [
+    {
+      "name": "InvInteractionRequestsContainerRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Inventory",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Element of IndexedStorage<esv::inventory::ContainerInteractionRequestData> (Toolkit asserts in EoCServer.dll+0xFD58B0 and StackSystem::ProcessInventoryRequests, allocation size 0x10). Same layout as SE ContainerInteractionRequestData (Inventory.h): EntityHandle Inventory + std::variant<ContainerSortData, ContainerScatterData>."
+        },
+        {
+          "name": "ActionData0",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant storage byte 0: ContainerSortData::SortType or ContainerScatterData::ToParent (SE Inventory.h). InteractionRequestSystem::GatherRequests (EoCServer.dll+0xFC7B40) writes the dword at +8 as 0x0101xxxx when it queues a scatter request."
+        },
+        {
+          "name": "ActionData1",
+          "offset": 9,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant storage byte 1: ContainerScatterData::MainInventory."
+        },
+        {
+          "name": "ActionData2",
+          "offset": 10,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant storage byte 2: ContainerScatterData::OnlyDropOnDeathItems."
+        },
+        {
+          "name": "ActionType",
+          "offset": 11,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "std::variant index (0 = Sort, 1 = Scatter): GatherRequests stores 1 in byte +0xB for scatter requests."
+        },
+        {
+          "name": "_Pad12",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Padding to the 0x10 element size."
+        }
+      ]
+    },
+    {
+      "name": "InvInteractionRequestsMemberRequest",
+      "size": 224,
+      "fields": [
+        {
+          "name": "Inventory",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Element of IndexedStorage<esv::inventory::MemberInteractionRequestData> (Toolkit asserts in GroupSystem::ProcessInventoryRequests EoCServer.dll+0xFD6760; AllocateInternal(n, 0xe0, 8)). SE MemberInteractionRequestData: EntityHandle Inventory; int Amount; std::variant<MemberAddData, MemberMoveToSlotData, MemberTransferData, MemberDropData, MemberEquipmentRequestFailedData, MemberRemoveData> Action."
+        },
+        {
+          "name": "Amount",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "SE MemberInteractionRequestData::Amount; GroupSystem copies the dword at element+8 next to the handle at +0."
+        },
+        {
+          "name": "_Pad12",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Alignment padding before the 8-aligned variant."
+        },
+        {
+          "name": "ActionData",
+          "offset": 16,
+          "type": "std::array<uint64_t, 25>",
+          "source": "unknown",
+          "evidence": "std::variant storage, 200 bytes: bg3.exe FUN_1422e29e0 destroys element+0x10 with FUN_1422d5900 when the index byte (element+0x10+200) is 3 (MemberDropData, which holds an optional FixedString). Not decodable without a variant type."
+        },
+        {
+          "name": "ActionType",
+          "offset": 216,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index at element+0xD8 (checked against 3 by the element destructor; GroupSystem tests element[0xd8] == 0 for MemberAddData)."
+        },
+        {
+          "name": "_Pad217",
+          "offset": 217,
+          "type": "std::array<uint8_t, 7>",
+          "source": "inferred",
+          "evidence": "Padding to the 0xE0 stride."
+        }
+      ]
+    },
+    {
+      "name": "InvInteractionRequestsNotifyRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Container",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "IndexedStorage<esv::inventory::NotifyInteractionRequestData> (Toolkit assert), copied as 16 bytes, allocation 0x10. SE NotifyInteractionRequestData: EntityHandle Container, Actor."
+        },
+        {
+          "name": "Actor",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Second member of SE NotifyInteractionRequestData."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "ContainerInteractions",
+      "offset": 0,
+      "type": "Array<InvInteractionRequestsContainerRequest>",
+      "source": "inferred",
+      "evidence": "bg3.exe creator 0x34760A0 zeroes five 16-byte arrays (0x50); destructor FUN_1422cf8a0 clears +0,+0x10,+0x40 with the generic trivial-array clear FUN_1405bd630 and +0x20,+0x30 with FUN_1422e29e0 (stride 0xE0, variant element). GroupSystem::ProcessInventoryRequests copies +0 and +0x10 with FUN_180fd58b0 (IndexedStorage<ContainerInteractionRequestData>, alloc 0x10). Name from SE InteractionRequestSystem::ContainerInteractions."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Array<InvInteractionRequestsContainerRequest>",
+      "source": "unknown",
+      "evidence": "Second ContainerInteractionRequestData array: same copy function FUN_180fd58b0 as +0. Role (e.g. deferred vs. immediate) not established."
+    },
+    {
+      "name": "MemberInteractions",
+      "offset": 32,
+      "type": "Array<InvInteractionRequestsMemberRequest>",
+      "source": "inferred",
+      "evidence": "GroupSystem::ProcessInventoryRequests iterates source+0x20 (pointer ppuVar33[4], count +0x2C, stride 0xE0) as MemberInteractionRequestData; destructor uses the 0xE0 variant-element clear."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "Array<InvInteractionRequestsMemberRequest>",
+      "source": "unknown",
+      "evidence": "Second MemberInteractionRequestData array: GroupSystem copies source+0x30 to target+0x30 element by element (AllocateInternal(n, 0xe0, 8), FUN_180f26a60). Role not established."
+    },
+    {
+      "name": "NotifyInteractions",
+      "offset": 64,
+      "type": "Array<InvInteractionRequestsNotifyRequest>",
+      "source": "inferred",
+      "evidence": "GroupSystem copies source+0x40 to target+0x40 with assert IndexedStorage<esv::inventory::NotifyInteractionRequestData>, stride 0x10. Name from SE InteractionRequestSystem::NotifyInteraction."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Why there are two container and two member arrays (+0x10, +0x30).",
+    "The member variant (200 bytes) is left opaque."
+  ],
+  "minutes": 17,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Not settled: the creator/destructor shapes of the first pass stand (bg3.exe); the bg3.exe GroupSystem update (bg3.exe+0x239CA50) was opened but the roles of the duplicate arrays (+0x10, +0x30) were not traced. Script Extender's MemberInteractionRequestData variant includes DropMovement (~0x98 bytes), so the 200-byte variant storage seen in bg3.exe is consistent with it."
+}

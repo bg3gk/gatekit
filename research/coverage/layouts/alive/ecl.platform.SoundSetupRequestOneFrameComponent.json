@@ -1,0 +1,39 @@
+{
+  "component": "ecl::platform::SoundSetupRequestOneFrameComponent",
+  "ext_name": "ClientPlatformSoundSetupRequest",
+  "size": 56,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame request added by the per-frame update of ecl::platform::SoundSystem (bg3.exe+0x196AA30, step 1) to moving platforms whose template defines sounds: the set of the template's two sound FixedStrings and one float. Consumed like ls::GameplaySoundSetupRequestOneFrameComponent (same HashSet<FixedString> start). Born live with a platform/item step (no companions).",
+  "fields": [
+    {
+      "name": "Sounds",
+      "offset": 0,
+      "type": "HashSet<FixedString>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x196B8E0 (0x38 bytes) zeroes a 48-byte HashSet; bg3.exe+0x196AA30 fills it from the two FixedStrings at template +0xC0 and +0xC8 (IncRef each, 4-byte keys). Live: 3 instances, buckets 5, keys capacity/size 2/2."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Creator writes -1.0 (0xBF800000); bg3.exe+0x196AA30 then copies the 4-byte value at template +0xD0. Live -1.0. Probably a duration/range (ls::GameplaySoundSetupRequest uses -1 for 'no duration'), not established."
+    },
+    {
+      "name": "_Pad34",
+      "offset": 52,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Never written by the creator; live garbage (0xFFFFFFFF / float-looking) - tail padding."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the float at +0x30 (template +0xD0)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "14 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

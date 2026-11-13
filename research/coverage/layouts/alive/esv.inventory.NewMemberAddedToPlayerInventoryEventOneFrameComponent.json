@@ -1,0 +1,25 @@
+{
+  "component": "esv::inventory::NewMemberAddedToPlayerInventoryEventOneFrameComponent",
+  "ext_name": "ServerInventoryNewMemberAddedToPlayerInventoryEvent",
+  "size": 8,
+  "seen": true,
+  "summary": "One-frame event born when an item enters a player's inventory (potion, thrown dagger picked back up by Osi.ToInventory, containers, dialogue rewards). Consumed by Toolkit esv::inventory::NewInventoryMemberSystem::NewItemsUpdate (EoCServer.dll+0xF05E50, Added query) and by esv::notification::System, which produces eoc::notification::NewMemberAddedToPlayerInventoryNotificationComponent. Registered with size 8, no destructor (bg3.exe+0x34A2C00).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "8 bytes, trivial (bg3.exe+0x34A2C00). Live: entity handles, one of them the host character 0x7C3 (others in the 0x02000000 high range). Whether it is the receiving character/inventory or the item is not established from code."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the handle (player character / inventory vs added item)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

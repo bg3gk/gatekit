@@ -1,0 +1,24 @@
+{
+  "component": "ecl::player_management::PlayerIdToPlayerInputIndexMappingSingletonComponent",
+  "ext_name": "ClientPlayerManagementPlayerIdToPlayerInputIndexMappingSingleton",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Mapping",
+      "offset": 0,
+      "type": "HashMap<int16_t, uint8_t>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x796F20 (0x40); destructor bg3.exe+0x5C4870 frees trivial values at +0x30 and the key set. Toolkit TrackingSystem handler EoCClient.dll+0x550080 (PlayerInputIndexChangedEvent) inserts the short player id key and stores one byte value per key (value storage reallocated with element size 1, assert 'IndexedStorage<enum ls::EInputPlayerIndex>'). Value is ls::EInputPlayerIndex (1 byte, no SE enum). Live: one key."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "EInputPlayerIndex values not declared in SE."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

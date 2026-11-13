@@ -1,0 +1,24 @@
+{
+  "component": "ls::photo_mode::BrightnessComponent",
+  "ext_name": "PhotoModeBrightness",
+  "size": 4,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Client photo mode: the brightness chosen in the photo-mode UI; ls::photo_mode::PhotoModeSystem::ProcessUIChanges writes it and ecl::photo_mode::BrightnessSystem applies it while photo mode is active. Never seen alive.",
+  "fields": [
+    {
+      "name": "Brightness",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1AF0010 (AllocRaw 4) writes 0 (0.0f), no destructor. Toolkit EoCClient.dll+0x59EED0 (BrightnessSystem::UpdateBrightness) compares the component's float with the system's pending ls::Optional<float> (difference > FLT_EPSILON) and stores the new float into it."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

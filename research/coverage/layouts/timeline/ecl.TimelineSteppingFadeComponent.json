@@ -1,0 +1,38 @@
+{
+  "component": "ecl::TimelineSteppingFadeComponent",
+  "ext_name": "ClientTimelineSteppingFade",
+  "size": 8,
+  "fields": [
+    {
+      "name": "SteppingBlendTime",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D5C440 and bg3.exe+0x1D68790 (ecl::TimelineSystem) create (bg3.exe+0x1D72330) or fetch (bg3.exe+0x7053F0) the component on an actor and copy the 4 bytes at +0x88 of the timeline actor data returned by ls::Timeline::GetActorData (element stride 0xF8) - the member Script Extender's actor-data struct in Components/Timeline.h names SteppingBlendTime (followed by field_8C)."
+    },
+    {
+      "name": "Enabled",
+      "offset": 4,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creator writes 0; both writers do 'if (byte +4 == 0) byte +4 = 1' right after fetching/creating. bg3.exe+0x1D5D1A0 removes the component when the actor leaves."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "alignment / tail padding"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the bool: only ever set to 1 by the writers; the reader (query callback bg3.exe+0x1D85CA0 with eoc::TimelineActorDataComponent) was not read, so 'Enabled' is a guess.",
+    "Never alive in the captures."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

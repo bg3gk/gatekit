@@ -1,0 +1,25 @@
+{
+  "component": "ls::TranslateChangedOneFrameComponent",
+  "ext_name": "TranslateChangedOneFrame",
+  "size": 12,
+  "seen": true,
+  "summary": "One-frame marker added by ls::TransformSystem::Update for every entity whose translate changed this frame; holds the translate before the first change of the frame. Read by sound, triggers, sight, gravity, spatial grid systems.",
+  "fields": [
+    {
+      "name": "PreviousTranslate",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "ls::TransformSystem::Update (bg3.exe+0x3C77860) walks a map EntityHandle -> 12-byte value at TransformSystem+0x70 (keys +0x90, values +0xA0 stride 0xC) and for each live entity calls the creator bg3.exe+0x3C79320, copying 8+4 bytes into the component. TransformSystem::SetTranslate (GameEngine.dll+0x620930, matched bg3.exe+0x3C78310) inserts the component's old Translate (TransformComponent+0x10) into that map only if the entity is not in it yet. Live: client world coordinates; server values include 0 (fresh entities)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Game member name."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

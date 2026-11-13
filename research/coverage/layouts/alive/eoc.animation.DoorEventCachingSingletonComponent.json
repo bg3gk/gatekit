@@ -1,0 +1,46 @@
+{
+  "component": "eoc::animation::DoorEventCachingSingletonComponent",
+  "ext_name": "AnimationDoorEventCachingSingleton",
+  "size": 192,
+  "seen": true,
+  "fields": [
+    {
+      "name": "IncomingClosedDoors",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Gathering set of door-closed animation events: DoorEventCachingSystem update bg3.exe+0x7581A0 copies it into +0x60 with bg3.exe+0x12CF600 (iterates the source keys with stride 8 and inserts them with the 8-byte-key insert bg3.exe+0x721030) and then clears it. Destroyed with the plain-key HashSet destructor bg3.exe+0x582AD0 by the component destructor bg3.exe+0xD73580 (singleton creator bg3.exe+0x1CC1770, 0xC0 bytes)."
+    },
+    {
+      "name": "IncomingOpenedDoors",
+      "offset": 48,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Gathering set of door-opened events: bg3.exe+0x7581A0 copies it into +0x90 with bg3.exe+0x12CF600 (8-byte keys) and clears it. Destroyed with the plain-key HashSet destructor bg3.exe+0x582AD0 by the component destructor bg3.exe+0xD73580 (singleton creator bg3.exe+0x1CC1770, 0xC0 bytes)."
+    },
+    {
+      "name": "ClosedDoors",
+      "offset": 96,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Ready set read by ecl::legacy::item::DoorClosedSystem (update bg3.exe+0x1921780 -> bg3.exe+0x1921910): looks an entity id up in buckets +0x60 / count +0x68 and keys +0x80 with stride 8. Cleared at the start of each caching frame. Destroyed with the plain-key HashSet destructor bg3.exe+0x582AD0 by the component destructor bg3.exe+0xD73580 (singleton creator bg3.exe+0x1CC1770, 0xC0 bytes)."
+    },
+    {
+      "name": "OpenedDoors",
+      "offset": 144,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Ready set read by ecl::legacy::item::DoorOpenedSystem (update bg3.exe+0x1922E50 -> bg3.exe+0x1922FE0): buckets +0x90 / count +0x98, next ids +0xA0, keys +0xB0 with stride 8, the key being an entity of its own list. Destroyed with the plain-key HashSet destructor bg3.exe+0x582AD0 by the component destructor bg3.exe+0xD73580 (singleton creator bg3.exe+0x1CC1770, 0xC0 bytes)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are ours (open/closed from the two door systems that read +0x90 and +0x60); the keys are 8-byte entity ids compared with door entities - EntityHandle by use, not by a game name."
+  ],
+  "minutes": 16,
+  "functions_read": 11,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "All four 48-byte sets confirmed on Windows with 8-byte keys: the caching update bg3.exe+0x7581A0 copies +0 -> +0x60 and +0x30 -> +0x90 through an 8-byte-stride copy (bg3.exe+0x12CF600), and DoorClosedSystem (bg3.exe+0x1921910) / DoorOpenedSystem (bg3.exe+0x1922FE0) look entities up in +0x60 / +0x90; names given from that roles.",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

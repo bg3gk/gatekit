@@ -1,0 +1,40 @@
+{
+  "component": "esv::SetGravityActiveRequestOneFrameComponent",
+  "ext_name": "ServerSetGravityActiveRequest",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "Server one-frame request to switch gravity on for an item, with the instigator; read by esv::GravitySystem (and GravitySystemHelper::SetItemGravity per the macOS names). Written by the per-frame update of esv::ItemManager (bg3.exe+0x33AC3B0) and restored from saves (model game.gravity.v0.SetGravityActiveRequestOneFrameComponent, 16 bytes; loader bg3.exe+0x25D77A0). Same layout as SE's esv::SetGravityActiveRequest (Components\\Data.h: bool Active; EntityHandle Instigator). Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Active",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x33AC3B0: AllocRaw(0x10) through a byte pointer: `*p = 0; *(uint64*)(p + 8) = 0xFFC0000000000000; ... *p = 1` - a byte flag set to true. Name from SE's SetGravityActiveRequest.Active (the request struct of esv::GravitySystem)."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment of the handle; the save loader copies 16 bytes as four dwords."
+    },
+    {
+      "name": "Instigator",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Writer stores the null handle 0xFFC0000000000000 at +8. Name from SE's SetGravityActiveRequest.Instigator."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

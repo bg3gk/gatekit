@@ -1,0 +1,27 @@
+{
+  "component": "esv::party::NewPartyOneFrameComponent",
+  "ext_name": "ServerPartyNewParty",
+  "size": 48,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame marker on a party entity that the server party system has just created (bg3.exe+0x2BBBED0: creates eoc::party::CompositionComponent, then this component, and copies a set of entities into it with bg3.exe+0x127E900). The set is the group of entities gathered for the new party in bg3.exe+0x2BBFD20. Toolkit readers: esv::party::PartySystem::ProcessCreatedParties / CreateParty. Never seen alive. Registry total 48 (server row).",
+  "fields": [
+    {
+      "name": "Members",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2BC4C20 (AllocRaw 0x30, destructor thunk_FUN_140582ad0 = the HashSet destructor) zeroes the HashSet shape: qwords +0/+8, +0x10/+0x18 with dword +0x1C, +0x20/+0x28 with dword +0x2C. bg3.exe+0x127E900 iterates the source set's keys (+0x20, count +0x2C, stride 8) and inserts each with bg3.exe+0x721030, which hashes `*key % buckets` and compares 8-byte keys - an EntityHandle set. The keys are entities from the regrouping list (bg3.exe+0x2BBFD20 lines 79-100). Name inferred."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The name Members is inferred (the set is the entities that end up in the new party); no game name.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

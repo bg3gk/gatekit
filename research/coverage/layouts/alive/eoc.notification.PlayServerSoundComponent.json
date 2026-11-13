@@ -1,0 +1,60 @@
+{
+  "component": "eoc::notification::PlayServerSoundComponent",
+  "ext_name": "NotificationPlayServerSound",
+  "size": 32,
+  "seen": true,
+  "summary": "Replicated request from the server to play a sound on a character's client; routed by ecl::ServerSoundSystem::RouteCharacterServerRequests (macOS). Born live in many dialogues, scripted events (explosions, collapses), idle and item use.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Serializer bg3.exe+0x995AE0 member 1: 16 bytes at +0. macOS RouteCharacterServerRequests looks the two qwords at +0/+8 up in a HashMap<Guid, EntityHandle> (uuid -> handle) to find the character."
+    },
+    {
+      "name": "SoundEvent",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Serializer member 2: ecs::sync::Serialize(FixedString*) at +0x10; RouteCharacterServerRequests passes it to character::SoundSystem::PlaySound / PlayerManager::PlaySoundForLocalPlayer."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Serializer member 3: 4 bytes at +0x14. Live 0..2."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Serializer member 4: 1 byte at +0x18; when set, RouteCharacterServerRequests resolves the sound through the current sound bank (type 9) and may play it as an external SFX instead."
+    },
+    {
+      "name": "LocalPlayerOnly",
+      "offset": 25,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Serializer member 5: 1 byte at +0x19; macOS default strb wzr at +0x19; when set, RouteCharacterServerRequests calls PlayerManager::PlaySoundForLocalPlayer / PlayExternalSoundForLocalPlayer instead of the character sound system."
+    },
+    {
+      "name": "_Pad1A",
+      "offset": 26,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "tail padding to 32; live garbage (sometimes pointer-shaped)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of field_14 and field_18."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

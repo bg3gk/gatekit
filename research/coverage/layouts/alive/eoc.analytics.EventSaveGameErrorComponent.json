@@ -1,0 +1,60 @@
+{
+  "component": "eoc::analytics::EventSaveGameErrorComponent",
+  "ext_name": "AnalyticsEventSaveGameError",
+  "size": 24,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Result",
+      "offset": 0,
+      "type": "EventSaveGameErrorString",
+      "source": "inferred",
+      "evidence": "The whole component is one string: EoCClient.dll+0xD3CCA0 ecl::GameAnalyticsSystem::RecordSaveGameErrorEvent takes the component as `STDString const*` (ls::STDString::ToChar(param_3)) and records it in the \"save_game_result\" event. Live: inline text \"LoadSucceeded\"/\"SaveSucceeded\" in bytes 0..12, 0xD (13 = length) at +0x10, 0xF (15 = inline capacity) at +0x14. Same 24-byte string type the confirmed fieldmeta layouts call STDString (eoc::analytics::EventCombatTurnComponent)."
+    }
+  ],
+  "structs": [
+    {
+      "name": "EventSaveGameErrorString",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Ptr",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "heap pointer to the characters when Capacity > 15; otherwise bytes 0..15 hold the characters inline (live: \"LoadSucceeded\" inline). Equals the 24-byte game string used as STDString in se-fork\\coverage\\layouts\\fieldmeta\\eoc.analytics.EventCombatTurnComponent.json."
+        },
+        {
+          "name": "InlineTail",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bytes 8..15 of the 16-byte inline buffer (live: \"eded\\0\" of LoadSucceeded); unused when the string is on the heap (live 0 in other components)"
+        },
+        {
+          "name": "Size",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "live 13 = strlen(\"LoadSucceeded\"); 0x24 = 36 for guid strings elsewhere"
+        },
+        {
+          "name": "Capacity",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "live 15 (inline), 47 for heap strings of 36 characters (MSVC growth 15 -> 47)"
+        }
+      ]
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name 'Result' inferred from the event name save_game_result; the analytics key string (DAT_1815642b8) was not resolved."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

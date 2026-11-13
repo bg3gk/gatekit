@@ -1,0 +1,55 @@
+{
+  "component": "gui::registration::VMPassiveRegisteredSingletonComponent",
+  "ext_name": "GuiRegistrationVMPassiveRegistered",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "GuiRegistrationRegisteredPassive",
+      "size": 16,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "NoesisGameUI.dll+0x453AD0: for tadpole powers written as the null EntityHandle (DAT_180ae6008); for eoc::PassiveComponent entries copied from PassiveComponent+0x10 (Script Extender calls that member Item) after FUN_180167170 (EntityWorld::HasComponent) succeeds on it - which component is tested was not established, so the meaning stays open."
+        },
+        {
+          "name": "PassiveId",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "NoesisGameUI.dll+0x453AD0: FixedString copy-constructed at element+8 from the tadpole power name or from PassiveComponent+4 (PassiveId); the grow loop moves elements with stride 0x10 and copies the FixedString at +8."
+        },
+        {
+          "name": "_Pad0C",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "alignment padding to the 16-byte stride (allocator FUN_1804533a0(n, 0x10, 8))."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Passives",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, GuiRegistrationRegisteredPassive>",
+      "source": "inferred",
+      "evidence": "Assert string in NoesisGameUI.dll+0x453AD0 (VMPassiveRegistrationSystem::Update): 'ls::HashMap<struct ls::ID<struct ecs::EntityHandleTraits>,struct gui::registration::RegisteredPassive,...>::EmplaceUniversal'; the macOS build names the same map (ls::HashMap<ls::ID<ecs::EntityHandleTraits>, gui::registration::RegisteredPassive>::EnsureNode). Key = the passive entity (also passed to VMPassiveDataSingletonComponent::CreateVM); values at +0x30 with stride 0x10, capacity at +0x38. bg3.exe+0x12B0950 allocates 0x40 and zeroes it as HashSet + values; destructor FUN_141207da0. HashMap = HashSet of keys (StaticArray<int32> buckets +0, Array<int32> NextIds +0x10, Array<key> Keys +0x20) followed by the values storage +0x30 (pointer + count at +0x38); live samples show exactly that shape (bucket counts 0x13/0x1D/0xC1/0x607 at +8, cap/size pairs at +0x18/+0x28, value count at +0x38)."
+    }
+  ],
+  "summary": "Client UI registry of passives that have a VMPassive: passive entity -> (entity, passive name). Filled by VMPassiveRegistrationSystem from eoc::PassiveComponent and tadpole powers. Singleton from game start (idle, level-change).",
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of RegisteredPassive+0 (EntityHandle copied from eoc::PassiveComponent+0x10, null for tadpole powers).",
+    "Element layout read from the Toolkit build (NoesisGameUI.dll); stride 16 matches the live value counts but bg3.exe's own update was not read."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "13 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

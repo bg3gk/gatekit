@@ -1,0 +1,118 @@
+{
+  "component": "ecl::spell_preview::TargetingComponent",
+  "ext_name": "ClientSpellPreviewTargeting",
+  "size": 56,
+  "seen": true,
+  "summary": "Targeting state of the spell preview. Born live in spells-3 (spell casts) and in the dialogue DEN_GoblinScouts_Captive, together with the other spell_preview components. Added by bg3.exe+0x1EEAF80 from the spell preview update (ecl::spell_preview::PreviewSystem); read by ecl::spell_preview::GetAimDirection (macOS) and by queries with spell_cast::TargetingComponent. Contains an embedded polymorphic target object (virtual table bg3.exe+0x54DB050) at +8. Partial layout.",
+  "structs": [
+    {
+      "name": "SpellPreviewTargetingTarget",
+      "size": 32,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Creator stores &PTR_FUN_1454db050 (bg3.exe+0x54DB050, 6 slots) at component +8; live a module address (0x7FF7...)."
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Slot 4 bg3.exe+0xF1CE00 checks the handle at +8 with IsEntityAlive; creator writes null handle 0xffc0000000000000; live null."
+        },
+        {
+          "name": "Target2",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Slots 3/4 (bg3.exe+0xF1CD90, +0xF1CE00) use the handle at +0x10 instead of/in addition to +8 when the byte at +0x18 is set; live 0."
+        },
+        {
+          "name": "HasTarget2",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Byte at +0x18 selects +0x10 over +8 in bg3.exe+0xF1CD90; creator writes 0 at component +0x20."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to 8"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "ProjectilePathIndex",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1EEAF80 writes 0xFFFFFFFF; macOS ecl::spell_preview::GetAimDirection uses it as an index (-1 = none, < count at +0x14) into the 0xA0-byte elements of ProjectilePathComponent. Destructor is trivial, so not a FixedString. Live -1."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator writes one byte 0 at +4; live low byte 0 (upper bytes vary: padding)."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "live garbage 0x01/0xFF"
+    },
+    {
+      "name": "Target",
+      "offset": 8,
+      "type": "SpellPreviewTargetingTarget",
+      "source": "inferred",
+      "evidence": "Embedded object with its own virtual table, see struct; creator writes vtable +8, null handle +0x10, 0 at +0x18, byte 0 at +0x20."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Creator writes 8 bytes 0; live 0."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator writes 8 bytes 0 at +0x30; live 0."
+    },
+    {
+      "name": "field_34",
+      "offset": 52,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator writes a byte 0 at +0x34 separately; live 0."
+    },
+    {
+      "name": "_Pad35",
+      "offset": 53,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding to 56"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Class of the embedded target object (vtable bg3.exe+0x54DB050) has no name; +0x28..+0x34 never seen non-zero."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found."
+}

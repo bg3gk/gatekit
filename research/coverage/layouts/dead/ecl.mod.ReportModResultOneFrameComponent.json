@@ -1,0 +1,48 @@
+{
+  "component": "ecl::mod::ReportModResultOneFrameComponent",
+  "ext_name": "ClientModReportModResult",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame result of reporting a mod (UGC report) on the client. Written by bg3.exe+0x1B23370, which handles a pending mod report (the report is also kept on disk as '<id>.lsx' and removed); registered by ecl::mod::PendingModReportsSystem (bg3.exe+0x755930) together with ecl::mod::PendingReportsSingletonComponent and ls::ugc::ReportModResultOneFrameComponent. Never seen alive. Registry total 16 (client row).",
+  "fields": [
+    {
+      "name": "ModId",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1B24260 (AllocRaw 0x10) zeroes the qword at +0. Writer bg3.exe+0x1B23370 stores `*(ulonglong*)p = uVar4`, the 64-bit key it removed from the pending-reports table (compared with `*(ulonglong*)(param_3[4] + i*8)`) and formatted into the report's file name '<id>.lsx' (FUN_14057e730 with the number). macOS PendingModReportsSystemHelper::SendReport(unsigned long long, net::EUGReportReason, ...) takes the mod id as unsigned long long."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator zeroes the uint16 at +8. bg3.exe+0x1B23370 writes `*(bool*)(p+8) = (char)*plVar25 == 0` (a flag of the pending entry, local_280) - probably success/accepted; then only when it is set does it call the report back-end."
+    },
+    {
+      "name": "field_9",
+      "offset": 9,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1B23370 writes 0 to +9, then (retry count < 10) the byte returned by virtual slot +0x20 of the UGC back-end object; else it calls slot +0x18 with the string. Probably a bool result."
+    },
+    {
+      "name": "_Pad10",
+      "offset": 10,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 16 (8-byte alignment of ModId)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the flags at +8 and +9 (success / sent?) not established; offsets and widths are.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

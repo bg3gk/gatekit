@@ -1,0 +1,69 @@
+{
+  "component": "ls::ClusterPhysicsContentComponent",
+  "ext_name": "ClusterPhysicsContent",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, ClusterPhysicsContentLoadDesc>",
+      "source": "inferred",
+      "evidence": "macOS GetComponentDestructor<ls::ClusterPhysicsContentComponent> is exactly ls::HashMap<ls::ID<EntityHandleTraits>, ls::ClusterPhysicsLoadDesc>::~HashMap - the component IS that map. Windows: adder bg3.exe+0x3E83870 allocates 0x40 and zeroes the HashMap members; destructor (thunk bg3.exe+0x3B71AA0 -> bg3.exe+0x3B7CFB0) walks the values (stride 0x38, count = key count +0x2C) releasing the FixedString at +0x30, frees the value array +0x30, the key array +0x20 (plain free, trivial keys: bg3.exe+0x2CEA520), NextIds +0x10 and buckets +0."
+    }
+  ],
+  "summary": "Client physics streaming: per-cluster map from content entity to its loaded physics data, kept by ls::ClusterPhysicsLoaderSystem (ApplyLoadResultToEntity, ProcessEntitiesToUnload, Update - Toolkit GameEngine.dll+0x11D680/+0x123D70/+0x128710). On every cluster entity of idle levels (born with the level).",
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the bool at +0x34 of the load description (SE calls the source member field_4)."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "structs": [
+    {
+      "name": "ClusterPhysicsContentLoadDesc",
+      "size": 56,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ls::ClusterPhysicsLoadDesc +0: Toolkit ls::ClusterPhysicsLoaderSystem::ViewToLoadDesc (GameEngine.dll+0x1289F0, returns ClusterPhysicsLoadDesc from EntityView<TransformComponent const, PhysicsResourceLoadDesciptionComponent const>) stores the view's entity here."
+        },
+        {
+          "name": "Transform",
+          "offset": 8,
+          "type": "Transform",
+          "source": "inferred",
+          "evidence": "ViewToLoadDesc copies five qwords (40 bytes) of the view's ls::TransformComponent (SE: Transform, 40 bytes) to +8..+0x30."
+        },
+        {
+          "name": "PhysicsTemplate",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "ViewToLoadDesc copy-constructs the FixedString at +0x30 from ls::PhysicsResourceLoadDesciptionComponent +0 (SE Physics.h: PhysicsTemplate). Windows component destructor bg3.exe+0x3B7CFB0 DecRefs the FixedString at +0x30 of every 0x38-byte value."
+        },
+        {
+          "name": "field_34",
+          "offset": 52,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "ViewToLoadDesc copies PhysicsResourceLoadDesciptionComponent +4 (SE: bool field_4) here."
+        },
+        {
+          "name": "_Pad35",
+          "offset": 53,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding to the 0x38 stride."
+        }
+      ]
+    }
+  ],
+  "second_pass": "The macOS component destructor names the type (HashMap<EntityHandle, ls::ClusterPhysicsLoadDesc>), the Toolkit ViewToLoadDesc gives the 0x38-byte value (entity, Transform, physics template, flag) and the Windows destructor bg3.exe+0x3B7CFB0 confirms the stride and the FixedString at +0x30; the raw value parts of the first version are replaced by the typed map.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

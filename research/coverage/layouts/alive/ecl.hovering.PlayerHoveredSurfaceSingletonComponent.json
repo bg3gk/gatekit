@@ -1,0 +1,68 @@
+{
+  "component": "ecl::hovering::PlayerHoveredSurfaceSingletonComponent",
+  "ext_name": "ClientHoveringPlayerHoveredSurfaceSingleton",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "HoveredSurfaceDetails",
+      "size": 24,
+      "fields": [
+        {
+          "name": "GroundSurfaceTemplate",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "EoCClient.dll ecl::GameInput::HandleHoverSurface: eoc::SurfaceTemplate::FetchTemplate(GetSurfaceType(0, tile)) (layer 0), nulled unless NeedsTooltip; stored at +0 by PlayerHoveredSurfaceSingletonSystem::LEGACY_HoveredSurfaceChanged"
+        },
+        {
+          "name": "CloudSurfaceTemplate",
+          "offset": 8,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "same, GetSurfaceType(1, tile) (layer 1), stored at +8"
+        },
+        {
+          "name": "GroundSurfaceIndex",
+          "offset": 16,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "eoc::AiGrid::GetSurface(tile, layer 0) passed as the ushort param_4, stored at +0x10"
+        },
+        {
+          "name": "CloudSurfaceIndex",
+          "offset": 18,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "eoc::AiGrid::GetSurface(tile, layer 1) passed as param_5, stored at +0x12"
+        },
+        {
+          "name": "_Pad20",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "element stride is 0x18 (allocation and copy loop in LEGACY_HoveredSurfaceChanged)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Surfaces",
+      "offset": 0,
+      "type": "HashMap<int16_t, HoveredSurfaceDetails>",
+      "source": "inferred",
+      "evidence": "Game element name ecl::hovering::HoveredSurfaceDetails (IndexedStorage string in EoCClient.dll ecl::hovering::PlayerHoveredSurfaceSingletonSystem::LEGACY_HoveredSurfaceChanged(short, SurfaceTemplate const*, SurfaceTemplate const*, ushort, ushort)); the short key is the player id passed by GameInput::HandleHoverSurface. PlayerHoveredSurfaceSingletonSystem::Update copies the system map into the singleton (checks singleton+0x2c, the key count). Live: all zero."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Layout from the Toolkit build; game copy not cross-checked",
+    "Key is a short player id (ecl player id); SE has no named type for it"
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

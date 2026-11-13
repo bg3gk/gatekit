@@ -1,0 +1,46 @@
+{
+  "component": "esv::item::EquippedEventOneFrameComponent",
+  "ext_name": "ServerItemEquippedEvent",
+  "size": 24,
+  "seen": true,
+  "summary": "Event entity created by the equipment system when an item is equipped (seen alive in the equipment, shove-throw, spells and death situations, where goblins were spawned with a longsword and the host was outfitted). bg3.exe+0x34FB760 walks an array of 0x18-byte records, creates one new entity per record and adds this component through bg3.exe+0x34FF800, which copies record+0 / +8 / +0x10. Read by esv::DualWieldingSystem (Toolkit EoCServer.dll+0x5EE1D0 EvaluateOnItemEquipped gets the slot byte and checks eoc::equipment::IsHandSlot).",
+  "fields": [
+    {
+      "name": "Item",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FF800: *(u64*)(comp+0) = *param_3 (record+0). Live: 22 different handles, none equal to the host 0x7C3 -> the equipped item (each spawned goblin gets a fresh longsword)."
+    },
+    {
+      "name": "Character",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FF800: *(u64*)(comp+8) = *param_4 (record+8). Live: includes the host character handle 0x7C3 (the equipment situation equips on the host) -> the character equipping the item."
+    },
+    {
+      "name": "Slot",
+      "offset": 16,
+      "type": "ItemSlot",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FF800: *(u8*)(comp+0x10) = *param_5 (record+0x10). Toolkit esv::DualWieldingSystem::Update passes the byte at +8 of its own event copy to eoc::equipment::IsHandSlot / EvaluateOnItemEquipped(slot). Live values 3 and 5 = MeleeMainHand / RangedMainHand. ItemSlot is uint8_t (Enumerations/Stats.inl)."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "never written by bg3.exe+0x34FF800; live bytes are leftovers (0xFF...)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Item vs Character order is taken from live data (host handle at +8), not from a named reader."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "37 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

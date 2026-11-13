@@ -1,0 +1,32 @@
+{
+  "component": "esv::patrol::SplinesComponent",
+  "ext_name": "ServerPatrolSplines",
+  "size": 128,
+  "seen": true,
+  "summary": "Server global component kept by esv::patrol::SplinesSystem: lookup tables between spline names and spline entities of the loaded levels, used by the crowd systems (esv::crowds::DetourSystem, PatrolSystem, SpawnSystem, DetourBuilderSystem). Seen.py context: idle levels (4 instances: one per world/level set).",
+  "fields": [
+    {
+      "name": "SplinesByName",
+      "offset": 0,
+      "type": "HashMap<FixedString, EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD98B50 esv::crowds::DetourSystem::GetSplineInfo(..., FixedString const& name, ...) finds the name in the component with FUN_18027F180 (FixedString hash % bucket count at +8) and reads the value at +0x30 (ls::IndexedStorage<ls::ID<EntityHandleTraits>>) as the spline entity whose ls::SplineComponent gives the node positions. EoCServer.dll+0xA4F430 SplinesSystem::Update ensures entries keyed by the spline's (merged UUID) FixedString. Live: buckets 0x11/0x185, keys cap 0x10/0x100, size 0xA/0xED."
+    },
+    {
+      "name": "SplineNames",
+      "offset": 64,
+      "type": "HashMap<EntityHandle, FixedString>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xA4F430: map at +0x40 keyed by the spline entity (FUN_18021E210 insert, FUN_18021F230 find with handle % bucket count) and values at +0x70 with stride 4 holding ls::FixedString (GetMergedUUID result assigned, FixedString copy on reallocation); removed entities are erased from both maps. Live: buckets 7/0xC1, keys cap 8/0x80, size 5/0x74."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Whether the FixedString is the spline's merged UUID or its name (GetMergedUUID is used on insert)."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

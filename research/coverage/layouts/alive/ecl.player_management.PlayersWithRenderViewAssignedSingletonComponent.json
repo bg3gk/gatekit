@@ -1,0 +1,29 @@
+{
+  "component": "ecl::player_management::PlayersWithRenderViewAssignedSingletonComponent",
+  "ext_name": "ClientPlayerManagementPlayersWithRenderViewAssignedSingleton",
+  "size": 96,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Assigned",
+      "offset": 0,
+      "type": "HashSet<int16_t>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x6C6A10 runs the HashSet destructor (bg3.exe+0x582AD0) on +0x30 and +0. Toolkit ecl::player_management::RenderViewTrackingSystem::Update (EoCClient.dll+0x54E3D0) -> handler EoCClient.dll+0x54BCA0: on ls::RenderViewAssignedEvent inserts the short player id into +0 and removes it from +0x30. Live: one key."
+    },
+    {
+      "name": "Removed",
+      "offset": 48,
+      "type": "HashSet<int16_t>",
+      "source": "inferred",
+      "evidence": "On ls::RenderViewRemovedEvent the handler removes the player id from +0 (if present) and inserts it into +0x30. Live: empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

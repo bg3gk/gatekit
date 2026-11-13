@@ -1,0 +1,41 @@
+{
+  "component": "ecl::thrown::ThrowerSoundEventOneFrameComponent",
+  "ext_name": "ClientThrownThrowerSoundEvent",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame sound event put on the thrower when a throw starts: the thrown entity, a sound-object selector and the sound event name. Created by ecl::thrown::SoundSystem::InitializeThrower (game bg3.exe+0x1E9D860, Toolkit EoCClient.dll+0xD5C060) and consumed by ecl::GameplaySoundSystem (macOS query ThrowerSoundEventOneFrameComponent + ls::SkeletonSoundObjectsComponent, i.e. posted on one of the thrower's skeleton sound objects). Never seen alive. Registry total 16 (client row).",
+  "fields": [
+    {
+      "name": "ThrownEntity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1E9EF30 (AllocRaw 0x10) writes 0xFFC0000000000000 (null handle). bg3.exe+0x1E9D860 creates it on the thrower (pIVar13) and writes `*p = *pIVar16`, the parallel entity of the same iteration (the thrown object)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator writes dword 1 at +8. bg3.exe+0x1E9D860 writes uVar7 = virtual slot +8 of the system's sound helper (param_1+0x10) called with (world, thrown entity), and passes the same value to slot +0x18 to get the FixedString below - probably which skeleton sound object (enum, 4 bytes) to post on."
+    },
+    {
+      "name": "SoundEvent",
+      "offset": 12,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator writes 0xFFFFFFFF at +0xC; destructor bg3.exe+0x69EE80 DecRefs +0xC. bg3.exe+0x1E9D860 assigns (IncRef/DecRef) the FixedString returned by sound-helper slot +0x18 (world, thrown entity, field_8) - the sound event to post."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "field_8: the enum returned by the sound helper slot +8 is not named.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

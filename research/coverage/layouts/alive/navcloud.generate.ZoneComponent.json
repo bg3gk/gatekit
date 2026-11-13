@@ -1,0 +1,33 @@
+{
+  "component": "navcloud::generate::ZoneComponent",
+  "ext_name": "NavcloudGenerateZone",
+  "size": 16,
+  "seen": true,
+  "summary": "Client-side navcloud generation zone placed in levels (an oriented box around the entity's Transform). Lives in every level from load on (up to 87 holders; TUT_Avernus_C, WLD_Main_A, SCL_Main_A), born with level loading, not with a gameplay action. Read only by navcloud::generate::GenerationSystem::Update (query TransformComponent + ZoneComponent), which takes the uint32 at +0 (handled only when < 3) and passes -v / +v of the vec3 at +4 to ls::GetOBBVertices with the entity's Transform, i.e. the vec3 is the box's half extents.",
+  "fields": [
+    {
+      "name": "Type",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "macOS navcloud::generate::GenerationSystem::Update (bg3_macos_x64+0x6A1E540) reads the uint32 at +0 of each zone (stride 0x10) and only processes zones with value < 3 (a zone shape/kind enum). Live (seen.py, 48 client instances): always 0. Windows registration bg3.exe+0x83700, creator size 16 from coverage.json."
+    },
+    {
+      "name": "Extents",
+      "offset": 4,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "same function: local = *(vec3*)(zone+4) with the sign bits flipped (^0x80000000) -> ls::GetOBBVertices(transform, -ext, +ext): half extents of an oriented box. Live samples: three floats 1.75..100 at +4/+8/+0xC on Windows, consistent with box sizes in metres."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the Type values 0..2 (box and other shapes?) - only 0 seen live.",
+    "Offsets come from macOS code plus Windows live samples (the floats sit at +4..+0xF on Windows); no Windows reader was decompiled field by field."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

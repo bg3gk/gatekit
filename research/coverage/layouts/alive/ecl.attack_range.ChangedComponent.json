@@ -1,0 +1,68 @@
+{
+  "component": "ecl::attack_range::ChangedComponent",
+  "ext_name": "ClientAttackRangeChanged",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AttackRangeChange",
+      "size": 24,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x79E5A0 copies 8 bytes from +0 of a 0x28-byte source record (values of a HashMap<EntityHandle, Array<record>> passed in param_3, keyed by the same entity) into +0 of each element (stride 0x18). Probably the source/attacker entity (macOS: TrackingSystemWrapper::GetInAttackRangeChangedSources) - not proven."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "4-byte copy from source +8 in bg3.exe+0x79E5A0."
+        },
+        {
+          "name": "field_C",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "4-byte copy from source +0xC."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "4-byte copy from source +0x10."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "4-byte copy from source +0x14."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Changes",
+      "offset": 0,
+      "type": "Array<AttackRangeChange>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x79EEC0 (16-byte storage, destructor thunk_FUN_1405946c0) zeroes pointer, capacity (+8) and size (+0xC). bg3.exe+0x79E5A0 gets or adds the component per entity (FUN_14079ed00 / FUN_14079eec0), resets size to 0, then appends elements of stride 0x18 with the usual grow check (capacity at +8, size at +0xC). Read by ecl::attack_range::EffectsSystem::PlayEffects (macOS, WorldView<..., attack_range::ChangedComponent const, ...>). Live: one allocated array, capacity 1, size 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the element members (entity + four dwords, copied from a 0x28-byte record of the attack-range tracking system); the four dwords may be a vec3 + float or ids."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "live check 2026-11-12: the raw bytes fit, but entity.<Name> gave nil on a holder captured in the same tick - the declaration (one-frame or not, the storage) needs a look before it ships"
+}

@@ -1,0 +1,36 @@
+{
+  "component": "ls::LightMovementComponent",
+  "ext_name": "LightMovement",
+  "size": 12,
+  "fields": [
+    {
+      "name": "Speed",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20051E0 (applies a LightDesc to a light entity) copies LightDesc+0x64 (SE: LightDesc::MovementSpeed) here and adds/removes the component according to LightDesc+0x6E (IsMoving); bg3.exe+0x3D3B370 uses it as frequency in three sines (x1, x1.1, x0.9)."
+    },
+    {
+      "name": "Amount",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20051E0 (applies a LightDesc to a light entity) copies LightDesc+0x68 (SE: LightDesc::MovementAmount) here; bg3.exe+0x3D3B370 multiplies the sines by it to get the positional offset stored in the light at +0xE0/+0xE4/.. and added to the transform."
+    },
+    {
+      "name": "Time",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3D3B370 adds the frame delta to it every update and uses it as the sine argument; creator bg3.exe+0x20069F0 is the twin of the flicker creator (which zeroes it) but its listing was not read line by line. Probe: 218.5 in all instances."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Initial value of Time read only by analogy with LightFlicker's creator."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

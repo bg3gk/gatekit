@@ -1,0 +1,41 @@
+{
+  "component": "ecl::NavigationCloudTrigger",
+  "ext_name": "ClientNavigationCloudTrigger",
+  "size": 128,
+  "seen": true,
+  "base": "AreaTrigger (GameDefinitions/Components/Trigger.h, sizeof 0x70) - declare as C++ base class like ecl::AtmosphereTrigger, not as a member",
+  "fields": [
+    {
+      "name": "Base",
+      "offset": 0,
+      "type": "AreaTrigger",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x189DF50 (the only writer of ecl__NavigationCloudTrigger___vftable_) calls the common trigger constructor FUN_143c11a30, ORs Flags (+0x18) with 2, sets the two vtables at +0/+8, zeroes Template +0x10 and calls CullTrigger::SetTemplate - the same prologue as ecl::PointTrigger/SpectatorTrigger. Live: +0x00/+0x08 module pointers, +0x10 template, +0x1C TriggerType FixedString, +0x20 entity handle 0x1400001_00001E63 + world pointer at +0x28, +0x30 Level, +0x34 PreviousLevel = -1, Transform identity (1.0 at +0x50, scale 1.0 at +0x60..+0x68) - matches SE's Trigger (Toolkit ls::Trigger accessors: Template +0x10, TriggerType +0x1C, EntityRef +0x20, CurrentLevel +0x30, PreviousLevel +0x34, HasCustomPoint +0x40, IsGlobal +0x41). Whether it derives from AreaTrigger or PointTrigger is not proven (both are empty in SE)."
+    },
+    {
+      "name": "Entity",
+      "offset": 112,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x189DF50 writes 0xffc0000000000000 (null handle) at +0x70, same as every ecl trigger (SE ecl::AtmosphereTrigger::Entity). Live: same handle as TriggerEntity at +0x20 (0x0140000100001E63)."
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Not written by the constructor bg3.exe+0x189DF50. Live: 0x44. The same unexplained trailing 8 bytes appear after the C++ object in all ecl trigger components of this batch (registry size = object end + 8); may be the GenerateType of NavigationCloudTriggerData or stale memory."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "What the 8 bytes at +0x78 are (live 0x44; NavigationCloudTriggerData::GenerateType is an int and could live here).",
+    "Area vs point trigger base (no difference in layout)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet"
+}

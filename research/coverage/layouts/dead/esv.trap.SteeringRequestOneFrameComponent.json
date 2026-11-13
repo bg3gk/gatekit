@@ -1,0 +1,82 @@
+{
+  "component": "esv::trap::SteeringRequestOneFrameComponent",
+  "ext_name": "ServerTrapSteeringRequest",
+  "size": 48,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Request to turn the disarmer towards the trap, created by esv::trap::DisarmSystem::ProcessDisarmRequests (bg3.exe+0x2CF5BC0 lines 288-317) and consumed by esv::steering::StateSystem::Update (macOS signature lists it next to esv::lock::SteeringRequestOneFrameComponent; game reader bg3.exe+0x302CB80). Creator bg3.exe+0x2CF9C70 (AllocRaw 0x30). Same creator defaults and writer pattern as esv::lock::SteeringRequestOneFrameComponent (layouts/dead) - field names follow that twin. Not saved.",
+  "fields": [
+    {
+      "name": "TargetEntity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0..+0xC; writer line 291-296: dwords +0/+4 = request element +0x10 (the trap item). First alternative storage of a target variant (entity or direction), as in the lock twin."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Writer stores 0 (puVar16[2]); third dword of the variant storage."
+    },
+    {
+      "name": "TargetType",
+      "offset": 12,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Writer stores dword 1 at +0xC (puVar16[3]) - variant index 1 = entity, as in the lock twin."
+    },
+    {
+      "name": "_PadD",
+      "offset": 13,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "upper bytes of that dword"
+    },
+    {
+      "name": "Flags",
+      "offset": 16,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator writes dword 0 at +0x10; not written by the trap writer. Name as in the lock twin (copied into the steering state)."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "not written"
+    },
+    {
+      "name": "RequestId",
+      "offset": 24,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x18/+0x20; writer lines 306-313 store a new Guid (FUN_144130D80) and copy it into DisarmingStateComponent.SteeringTransactionId (lines 315-317); bg3.exe+0x2CF6EF0 compares the steering state's Guid with it."
+    },
+    {
+      "name": "Lifetime",
+      "offset": 40,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator writes 0x4B18967F (9999999.0); writer sets 1.0 (puVar16[10] = 0x3F800000). Same as the lock twin (copied into esv::steering::LifetimeComponent)."
+    },
+    {
+      "name": "_Pad2C",
+      "offset": 44,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "not written"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names follow esv::lock::SteeringRequestOneFrameComponent; the steering consumer was not re-read for the trap twin."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

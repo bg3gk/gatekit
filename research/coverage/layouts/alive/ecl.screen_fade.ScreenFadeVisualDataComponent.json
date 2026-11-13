@@ -1,0 +1,67 @@
+{
+  "component": "ecl::screen_fade::ScreenFadeVisualDataComponent",
+  "ext_name": "ClientScreenFadeVisualData",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ScreenFadeVisualData",
+      "size": 12,
+      "fields": [
+        {
+          "name": "FadeStyle",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "ecl::screen_fade::ScreenFadeSystem::FinalizeScreenFadeVisualDataComponent (EoCClient.dll+0x7E85E0) writes the minimum of ScreenFadeData.FadeStyle (+0x11 of each fade, start value 2) over the player's fades."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Float follows at +4."
+        },
+        {
+          "name": "Opacity",
+          "offset": 4,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same function: the fade amount computed from IntensityLevel (1.0/0.8/0.6/0.4/0.2) and the fade timer progress, written as float at +4."
+        },
+        {
+          "name": "HasSpin",
+          "offset": 8,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Same function: set when any fade has HasSpin (+0x14) set."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Element stride 0xC (reallocation copies 12 bytes per element)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "HashMap<int16_t, ScreenFadeVisualData>",
+      "source": "inferred",
+      "evidence": "Game name of the value: ecl::screen_fade::ScreenFadeVisualDataComponent::VisualData (IndexedStorage CheckBoundary string at EoCClient.dll+0x29BFA0). FinalizeScreenFadeVisualDataComponent hashes a short player id (FUN_18054ab40 with key % bucket count +0x8), keys at +0x20 (2 bytes), values at +0x30 with stride 0xC, size +0x2C, capacity +0x38. Live: bucket count 5 at +8."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names of VisualData are ours (FadeStyle/Opacity/HasSpin follow ScreenFadeData of eoc::screen_fade)."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

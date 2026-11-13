@@ -1,0 +1,25 @@
+{
+  "component": "esv::relation::TemporaryHostileRelationCreatedEventOneFrameComponent",
+  "ext_name": "ServerRelationTemporaryHostileRelationCreatedEvent",
+  "size": 48,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event: a set of entities towards which a temporary hostile relation was created this frame. Written by esv::hit::HitSystem::ProcessHitRequests (Toolkit EoCServer.dll+0x3CB050), which builds a local HashMap<EntityHandle, this component> (value stride 0x30), inserts the hit entity into each value set and adds one component per map key; read by esv::relation::RelationSystem (AddRemovedTempRelations). Seen.py context: dialogues/scenes that end in fights (DEN_AttackOnDen, HAV barricade, MOO execution), born with the Removed event and combat merge components.",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Toolkit ctor EoCServer.dll+0x50B5A0 zeroes the 48-byte HashSet shape (+0x1C and +0x2C dwords); move operator= EoCServer.dll+0x50B970 moves bucket table +0/+8, NextIds +0x10/+0x18/+0x1C and Keys +0x20/+0x28/+0x2C. ProcessHitRequests inserts with FUN_18021e210(set, hash, pIVar19) - the same generic 8-byte-key insert it uses for the entity keys of its map - so keys are entity handles. Live: 48 instances, heap pointers at +0/+0x10/+0x20, bucket count 5..17, keys 1..10. Whether the entities are the hit targets or the attackers is not established; the name is neutral."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which side the set holds (targets of the hit or attackers); the component is added to the map-key entities in ProcessHitRequests."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

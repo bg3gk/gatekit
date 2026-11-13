@@ -1,0 +1,45 @@
+{
+  "component": "esv::tutorial::UIEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialUIEventRequestsSingleton",
+  "size": 16,
+  "structs": [
+    {
+      "name": "UIEventRequestsEntry",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3425640 stores the first entity returned for the user (FUN_140f39d00)"
+        },
+        {
+          "name": "Event",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3425640 copies the request's Guid (macOS LEGACY_UIEventRequest argument)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "Array<UIEventRequestsEntry>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3425640 (UIEventSystem update) turns the system's {UserID, Guid} requests (macOS LEGACY_UIEventRequest(net::UserID const&, ls::Guid const&)) into 24-byte {entity of the user, Guid}; ValidateSystem index 15 UIEvent (bg3.exe+0x34290F0)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done).",
+  "seen": true,
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

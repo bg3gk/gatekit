@@ -1,0 +1,119 @@
+{
+  "component": "esv::placement::PlacementComponent",
+  "ext_name": "ServerPlacementPlacement",
+  "size": 64,
+  "seen": true,
+  "summary": "Per-entity placements being executed: a map from actor entity to its placement entry. Written by esv::placement::ExecutionSystem (ProcessPlacementRequests builds a local HashMap<EntityHandle, 0x78-byte entry>; ProcessPlacements walks keys/values of this 0x40 component), read by placement::ValidationSystem::GatherValidationRequests. Seen.py context: dialogues with several NPCs and scripted events; born with StateComponent, ValidationComponent and PlacementResultEvent.",
+  "structs": [
+    {
+      "name": "PlacementComponentEntry",
+      "size": 120,
+      "fields": [
+        {
+          "name": "Target",
+          "offset": 0,
+          "type": "std::array<uint32_t, 10>",
+          "source": "inferred",
+          "evidence": "Storage of a variant: a 40-byte Transform target (the Toolkit's ProcessPlacementRequests default-initialises an identity transform here) or, when TargetKind == 1, an EntityHandle at +0 (Windows esv::placement::ExecutionSystem bg3.exe+0x2F06990 walks this component's keys (+0x20, size +0x2C) and values (+0x30) with stride 0x78: if entry+0x28 == 1 the entity at +0 is used, otherwise a static null default). Declared as raw dwords because the alternatives overlay each other. ProcessPlacementRequests (EoCServer.dll+0x2FD330) default-initialises a new value with an identity transform (+0xC = 1.0f quat w, +0x1C/+0x20/+0x24 = 1.0f scale) and then copies the 40-byte transform from the EntityPlacement. When byte +0x28 == 1, ProcessPlacements / GatherValidationRequests treat the first 8 bytes as an entity (IsEntityAlive(value)) - a variant of transform or entity target."
+        },
+        {
+          "name": "TargetKind",
+          "offset": 40,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Byte +0x28 compared with 1 in ExecutionSystem::ProcessPlacements (EoCServer.dll+0x2FDDD0) and ValidationSystem::GatherValidationRequests before using +0 as an entity; zeroed on creation. Probably the variant index. Windows: Windows esv::placement::ExecutionSystem bg3.exe+0x2F06990 walks this component's keys (+0x20, size +0x2C) and values (+0x30) with stride 0x78: entry+0x28 compared with 1 before using +0 as an entity."
+        },
+        {
+          "name": "_Pad29",
+          "offset": 41,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "Zeroed on creation (+0x29 dword, +0x2D word, +0x2F byte overlap)."
+        },
+        {
+          "name": "field_2C",
+          "offset": 44,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Set to 0 when filled."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Zeroed on creation; then the qword +0x30 is copied from the request."
+        },
+        {
+          "name": "field_34",
+          "offset": 52,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "High half of that qword."
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "ls::Guid::Guid() constructed at +0x38 on creation; copied as two qwords. Windows: bg3.exe+0x2F06990 generates a Guid into entry+0x38 when it is zero and passes it as the RequestId of esv::placement::SteeringRequestOneFrameComponent; compares it with the steering state's Guid."
+        },
+        {
+          "name": "State",
+          "offset": 72,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Windows esv::placement::ExecutionSystem bg3.exe+0x2F06990 walks this component's keys (+0x20, size +0x2C) and values (+0x30) with stride 0x78: entry+0x48 is set to 1 (started), compared with 1 and 2, and set to 3 at the end (line ~80 of the walk): a small state, not a bool (first version: bool)."
+        },
+        {
+          "name": "_Pad49",
+          "offset": 73,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Alignment of the 4-aligned transform at +0x4C; never written."
+        },
+        {
+          "name": "ActorTransform",
+          "offset": 76,
+          "type": "std::array<float, 10>",
+          "source": "inferred",
+          "evidence": "Windows esv::placement::ExecutionSystem bg3.exe+0x2F06990 walks this component's keys (+0x20, size +0x2C) and values (+0x30) with stride 0x78: copies the 40 bytes of the actor's transform (FUN_140E5A590, 5 qwords) to entry+0x4C..+0x73 and sets the flag +0x74: storage of an optional ls::Transform (position, rotation quaternion, scale), left uninitialised while the flag is 0, so declared as plain floats. The first version (from the Toolkit) placed copied qwords at +0x50..+0x74."
+        },
+        {
+          "name": "HasActorTransform",
+          "offset": 116,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Windows esv::placement::ExecutionSystem bg3.exe+0x2F06990 walks this component's keys (+0x20, size +0x2C) and values (+0x30) with stride 0x78: entry+0x74 set to 1 (if 0) when ActorTransform is stored; zeroed on creation."
+        },
+        {
+          "name": "_Pad75",
+          "offset": 117,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Tail padding to the 0x78 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Placements",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, PlacementComponentEntry>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2F07A00 allocates 0x40 and zeroes the HashMap shape (dwords +0x1C/+0x2C); destructor bg3.exe+0x5C4870 frees the values at +0x30 then destroys the set part. ProcessPlacements and GatherValidationRequests read keys *(c+0x20), size *(c+0x2C) as entity handles and values *(c+0x30). Value stride 0x78 is taken from the local map built in ExecutionSystem::ProcessPlacementRequests (index*0x78) that is not proven to be moved into this component. Live: bucket table 5, one key/value per instance. Windows: bg3.exe+0x2F06990 reads keys at +0x20 (8 bytes each, count +0x2C) and values at +0x30 with stride 0x78."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meanings of entry +0x2C, +0x30 (copied qword) and of TargetKind values other than 1; names are inferred."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Windows ExecutionSystem bg3.exe+0x2F06990 confirms the HashMap<EntityHandle, 0x78-byte entry> shape and corrects the entry's tail: +0x48 is a state byte (1..3), +0x4C an optional actor Transform with its flag at +0x74; +0 is a Transform-or-entity variant selected by +0x28 (declared raw).",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: not saved or replicated."
+}

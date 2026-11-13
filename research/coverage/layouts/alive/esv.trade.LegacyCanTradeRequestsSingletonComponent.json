@@ -1,0 +1,23 @@
+{
+  "component": "esv::trade::LegacyCanTradeRequestsSingletonComponent",
+  "ext_name": "ServerTradeLegacyCanTradeRequests",
+  "size": 64,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Singleton of legacy (Osiris) can-trade requests, drained by esv::trade::CanTradeSystem::ProcessLegacyCanTradeRequests. Lives from level load.",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, bool>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD2C6B0 walks keys (+0x20, stride 8, IsEntityAlive) and 1-byte values (+0x30, pcVar7++), sorting each entity into the can-trade or cannot-trade set of the frame data by the byte. Creator bg3.exe+0x314AF00 zeroes 0x40. Live: 5..0x61 buckets, up to 0x40 keys."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

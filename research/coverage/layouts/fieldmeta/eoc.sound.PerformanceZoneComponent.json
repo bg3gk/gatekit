@@ -1,0 +1,52 @@
+{
+  "component": "eoc::sound::PerformanceZoneComponent",
+  "ext_name": "SoundPerformanceZone",
+  "size": 128,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Replication reader bg3.exe+0x9117D0 reads +0 with bg3.exe+0x4017180 (entity reader); no FieldMeta name"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x9117D0 reads +8 with bg3.exe+0x4016110 (FixedString reader)"
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment)"
+    },
+    {
+      "name": "PerformersByInstrumentType",
+      "offset": 16,
+      "type": "HashMap<uint8_t, HashSet<EntityHandle>>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::HashMap<enum EMusicalInstrumentType,class ls::HashSet<struct ls::ID<struct ecs::EntityHandleTraits>,struct ls::HashTableOpsDefault>,struct ls::HashTableOpsDefault> eoc::sound::PerformanceZoneComponent::*,16>; macOS m_PerformersByInstrumentType. Key enum EMusicalInstrumentType is read as 1 byte by bg3.exe+0xA8F290 (values 0..11 per the InstrumentType valuelist, see eoc::stats::MusicalInstrumentComponent); value stride 0x30."
+    },
+    {
+      "name": "PausedPerformers",
+      "offset": 80,
+      "type": "HashSet<EntityHandle>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::HashSet<struct ls::ID<struct ecs::EntityHandleTraits>,struct ls::HashTableOpsDefault> eoc::sound::PerformanceZoneComponent::*,80>; macOS m_PausedPerformers"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the entity and FixedString at +0/+8."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,24 @@
+{
+  "component": "eoc::status::ExternalStatusBackupComponent",
+  "ext_name": "StatusExternalStatusBackup",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "StatusTargets",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x1984660 allocates 0x30 bytes and zeroes the 48-byte HashSet shape (bucket pointer/count, next-id array, key array; size at +0x2C). bg3.exe+0x1982FA0 (ecl::StatusSystem, macOS writers ecl::StatusSystem::Update/ProcessStatusMachineRequest/UpdateStatusTickingOwnership) builds, per entity, a set of 0x30-byte sets: for each status pointer in that entity's status machine (+0x1F0/+0x1FC) it inserts the status's +0x20 member (ecl::Status.Target in SE Status.h) via FUN_140721030, then gets-or-adds the component on the entity and copies the set in. On the other path it walks the key array (ptr +0x20, count +0x2C, stride 8) and passes each key to FUN_141980420, which calls ecs::EntityWorld::IsEntityAlive on it - keys are EntityHandles. Live: bucket count 5, 1-2 keys."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Exact meaning of the set: the entities targeted by statuses of this entity's status machine that are kept as a backup for ticking ownership (name inferred from the +0x20 = Target member of ecl::Status)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "27 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

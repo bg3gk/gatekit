@@ -1,0 +1,32 @@
+{
+  "component": "esv::party::DetachedFromGroupEventOneFrameComponent",
+  "ext_name": "ServerPartyDetachedFromGroupEvent",
+  "size": 24,
+  "seen": true,
+  "summary": "Server event: an entity left its party group (seen on party split and in the DEN_HarpyMeal_CharmedVictim scene where a charmed companion walks off). Created by the party data system (esv::party::DataSystem::Update / ProcessRecipeRequests on macOS); read by esv::StoryCharacterEventManager (Osiris events).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2BC5200 (add helper, 0x18 bytes) sets +0 to the null handle 0xFFC0000000000000; bg3.exe+0x2BC2690 stores *local_40 (an entity handle) there; live entity handles"
+    },
+    {
+      "name": "Group",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2BC2690 copies a 16-byte id (param_5, written only when non-zero) to +8/+0x10 - the old party group's Guid (cf. EntityTransferData.Group in SE Party.h); live: the same 16 bytes in all 3 instances"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "is the entity the character or the party (the caller's argument was not traced)"
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

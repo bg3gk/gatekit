@@ -1,0 +1,39 @@
+{
+  "component": "eoc::animation::RefreshAnimationRequestOneFrameComponent",
+  "ext_name": "AnimationRefreshAnimationRequest",
+  "size": 16,
+  "seen": true,
+  "summary": "Request to refresh a character's animation blueprint/action animation, placed on a separate request entity. Created by esv::animation::BlueprintRefreshSystem::CreateRefreshActionRequest (server; game copy bg3.exe+0x784880 also used by the client) and read by ecl/esv::death::CharacterSystem::Update. Born live in many dialogues, events and the first fight (on both sides).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x785470 writes the null handle; bg3.exe+0x784880 / EoCServer.dll CreateRefreshActionRequest create a new entity and copy the character's handle (param ID<EntityHandleTraits> const&) here. Live entity handles."
+    },
+    {
+      "name": "Action",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "EoCServer.dll esv::animation::BlueprintRefreshSystem::CreateRefreshActionRequest writes its eoc::ERefreshActionAnim parameter (enum, 4 bytes) at +8; bg3.exe+0x784880 writes an int32 there. Live 0..2."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding to 16 (creator zeroes 8 bytes at +8); live 0"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Values of eoc::ERefreshActionAnim not listed."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

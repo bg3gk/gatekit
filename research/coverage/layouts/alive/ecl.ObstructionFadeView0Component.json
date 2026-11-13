@@ -1,0 +1,82 @@
+{
+  "component": "ecl::ObstructionFadeView0Component",
+  "ext_name": "ClientObstructionFadeView0",
+  "size": 20,
+  "seen": true,
+  "reuses": "identical to ecl::TimelineFadeView0Component (Coverage.h, sizeof 20) - same fade-view template",
+  "fields": [
+    {
+      "name": "TargetValue",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x18F4970 is the same template as the CharacterOutOfSight/RoomTrigger view creators: writes 0 here; meaning from TimelineFadeView0 (Coverage.h). Live 0 (5 instances)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x18F4970 writes 0x40800000 = 4.0 (puVar4[1]); live 4.0. Probably fade speed (as in TimelineFadeView0)."
+    },
+    {
+      "name": "Immediate",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F4970 writes 0; meaning from TimelineFadeView0. Live 0."
+    },
+    {
+      "name": "field_9",
+      "offset": 9,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Written 0 by the creator template. Live 0."
+    },
+    {
+      "name": "field_A",
+      "offset": 10,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x18F4970 writes 1 at +10. Live 1."
+    },
+    {
+      "name": "_PadB",
+      "offset": 11,
+      "type": "uint8_t[1]",
+      "source": "unknown",
+      "evidence": "padding before the float at +0xC (live garbage 0x26)"
+    },
+    {
+      "name": "CurrentValue",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F4970 writes 1.0 (puVar4[3] = 0x3f800000); meaning from TimelineFadeView0. Live 1.0."
+    },
+    {
+      "name": "Active",
+      "offset": 16,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creator template writes 1; meaning from TimelineFadeView0. Live low byte 1."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "tail padding to 0x14 (live: garbage 0x000000 / 0x0005A2 / 0xFFFFFF)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "field_4 / field_9 / field_A meaning (same open items as TimelineFadeView0).",
+    "No ObstructionFadeView1Component was in the batch; only View0 seen."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "31 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

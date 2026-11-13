@@ -1,0 +1,46 @@
+{
+  "component": "esv::item::UnequippedEventOneFrameComponent",
+  "ext_name": "ServerItemUnequippedEvent",
+  "size": 24,
+  "seen": true,
+  "summary": "Twin of esv::item::EquippedEventOneFrameComponent, born in the same steps (equipment, shove-throw, spells, death). bg3.exe+0x34FB760 creates one entity per 0x18-byte unequip record and adds this component through bg3.exe+0x34FF980 (same body as the Equipped adder: copies record+0, +8 and the byte at +0x10). Read by esv::DualWieldingSystem (EvaluateOnItemUnequipped with the slot byte) and esv::status::recovery::RecoverySystem.",
+  "fields": [
+    {
+      "name": "Item",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FF980 copies record+0 to +0. Live: 21 handles, never the host 0x7C3 -> the unequipped item."
+    },
+    {
+      "name": "Character",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FF980 copies record+8 to +8. Live: includes the host 0x7C3 -> the character."
+    },
+    {
+      "name": "Slot",
+      "offset": 16,
+      "type": "ItemSlot",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FF980 copies the byte record+0x10; Toolkit DualWieldingSystem::Update passes it to IsHandSlot / EvaluateOnItemUnequipped. Live value 3 (MeleeMainHand). ItemSlot is uint8_t."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "never written; live bytes are leftovers."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Item vs Character order is taken from live data, as for the Equipped event."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "27 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

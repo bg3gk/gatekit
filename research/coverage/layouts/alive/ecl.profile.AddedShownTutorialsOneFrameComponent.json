@@ -1,0 +1,22 @@
+{
+  "component": "ecl::profile::AddedShownTutorialsOneFrameComponent",
+  "ext_name": "ClientProfileAddedShownTutorialsOneFrame",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ShownTutorials",
+      "offset": 0,
+      "type": "HashMap<FixedString, HashSet<Guid>>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1AB7DC0 (0x40 bytes); destructor bg3.exe+0x6D11C0 runs the HashSet destructor on each value (stride 0x30) then frees values and keys. Toolkit gui::tutorial::HasBeenShownSystem::Update (NoesisGameUI.dll+0x46F910) reads component instances with stride 0x40, walks keys at +0x20 with stride 4 and passes each to ecl::PlayerManager::GetPlayerIdByProfile(FixedString) - profile ids - pairing each with a 0x30 value from +0x30. ecl::profile::ManagementSystem keeps the same data typed HashSet<ls::Guid> per key (EoCClient.dll+0x5CA000). Live: one key with one set."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "11 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

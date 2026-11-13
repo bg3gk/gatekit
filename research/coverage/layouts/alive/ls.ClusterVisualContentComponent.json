@@ -1,0 +1,77 @@
+{
+  "component": "ls::ClusterVisualContentComponent",
+  "ext_name": "ClusterVisualContent",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Content",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, ClusterVisualContentLoadDesc>",
+      "source": "inferred",
+      "evidence": "ls::HashMap (64 bytes; creator bg3.exe+0x3E75D70 zeroes 0x40). Windows destructor bg3.exe+0x3B714B0 -> bg3.exe+0x3B7D060 walks the values at +0x30 with stride 0x38 for the key count at +0x2C, DecRefs a FixedString at value+0x30, frees them, then destroys the plain-key HashSet (bg3.exe+0x582AD0). Windows ClusterLoadHelper bg3.exe+0x3E6CA60 inserts an 8-byte entity key (FUN_143e756b0) and fills the 0x38-byte value; macOS destructor (bg3_macos_x64+0x6BCCDF0) is identical. Key: the content entity (same handle as value+0)."
+    }
+  ],
+  "summary": "Client visual streaming: per-cluster map from content entity to its loaded visual data, kept by ls::ClusterVisualLoaderSystem (ApplyLoadResultToEntity, ProcessEntitiesToUnload, Update - Toolkit GameEngine.dll+0xA11EF0/+0xA17500/+0xA189D0). On every cluster entity of idle levels (born with the level).",
+  "confidence": "high",
+  "open_questions": [
+    "The map member's name is not in game data ('Content' is descriptive); the value struct's member names follow ls::VisualLoadDesciptionComponent of Script Extender and Toolkit ViewToLoadDesc."
+  ],
+  "minutes": 10,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "structs": [
+    {
+      "name": "ClusterVisualContentLoadDesc",
+      "size": 56,
+      "evidence": "ls::ClusterVisualLoadDesc (macOS DynamicArray<ls::ClusterVisualLoadDesc>; the loader appends the component's values, 7 qwords each, to it in ClusterVisualLoaderSystem::Update bg3_macos_x64+0x6BB8790)",
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Windows bg3.exe+0x3E6CA60 writes the content entity (the same handle that is the map key) at +0 of each 0x38-byte value; Toolkit ls::ClusterVisualLoaderSystem::ViewToLoadDesc (GameEngine.dll+0xA18C90) stores the view's entity at +0."
+        },
+        {
+          "name": "Transform",
+          "offset": 8,
+          "type": "Transform",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3E6CA60 copies five qwords (+0x08..+0x2F) from the entity's ls::TransformComponent; ViewToLoadDesc copies the 40-byte Transform at +8."
+        },
+        {
+          "name": "VisualTemplate",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Windows destructor bg3.exe+0x3B7D060 DecRefs a FixedString at +0x30 of every 0x38-byte value; ViewToLoadDesc copies ls::VisualLoadDesciptionComponent.VisualTemplate (+0) here."
+        },
+        {
+          "name": "Flags",
+          "offset": 52,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3E6CA60 copies 2 bytes to +0x34; ViewToLoadDesc copies VisualLoadDesciptionComponent+4 (Script Extender: VisualLoadFlags Flags, 2 bytes)."
+        },
+        {
+          "name": "RenderChannel",
+          "offset": 54,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3E6CA60 copies 1 byte to +0x36; ViewToLoadDesc copies VisualLoadDesciptionComponent+6 (Script Extender: RenderChannel, 1-byte enum)."
+        },
+        {
+          "name": "_Pad37",
+          "offset": 55,
+          "type": "uint8_t[1]",
+          "source": "inferred",
+          "evidence": "padding to 0x38"
+        }
+      ]
+    }
+  ],
+  "second_pass": "Value type settled as ls::ClusterVisualLoadDesc (0x38 bytes: entity, Transform, VisualTemplate, Flags, RenderChannel) from the Windows destructor bg3.exe+0x3B7D060 (stride 0x38, FixedString at +0x30) and the Windows writer bg3.exe+0x3E6CA60, matching Toolkit ViewToLoadDesc.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

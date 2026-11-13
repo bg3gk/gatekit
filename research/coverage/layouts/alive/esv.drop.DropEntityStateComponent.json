@@ -1,0 +1,97 @@
+{
+  "component": "esv::drop::DropEntityStateComponent",
+  "ext_name": "ServerDropEntityState",
+  "size": 64,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Server state of one drop/throw request on the character that drops entities (born in the 'shove-throw' step together with the other esv::drop types). Built by esv::drop::DropEntityRequestSystem::AddDropEntityComponent from an EntityDropRequest (LEGACY_RequestDropEntities(entity, entities, Vector3f, Optional<Quaternionf>)).",
+  "structs": [
+    {
+      "name": "DropEntityStateEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::drop::DropEntityDescription (name from ls::IndexedStorage<struct esv::drop::DropEntityDescription> assert in AddDropEntityComponent, EoCServer.dll+0x9AE3B0): +0 = the dropped entity of the request's entity list (stride 0x10); AddDropEntityComponent later adds a component with the dropper handle to each of them."
+        },
+        {
+          "name": "Amount",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Second qword of the request element = ls::Optional<int> amount (LEGACY_RequestDropEntity(..., Optional<int> const&); LEGACY_RequestDropEntities stores 0 in the flag byte +0xC). AddDropEntityComponent clears the flag byte (local_170._0_5_) when no split is needed."
+        },
+        {
+          "name": "HasAmount",
+          "offset": 12,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Flag byte of the Optional<int> (LEGACY_RequestDropEntities writes 0 at element+0xC)."
+        },
+        {
+          "name": "_Pad0D",
+          "offset": 13,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding to the 0x10 stride"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "Array<DropEntityStateEntry>",
+      "source": "inferred",
+      "evidence": "AddDropEntityComponent (EoCServer.dll+0x9AE3B0) appends 16-byte DropEntityDescription elements to the new component's array at +0 (capacity +8, size +0xC). Live (2 instances): heap pointer, capacity 1, size 1. Windows save loader converter bg3.exe+0x27769C0 appends 16-byte elements: EntityHandle from the saved EntityId at +0, int32 at +8 and its flag byte at +0xC only when the saved optional is set."
+    },
+    {
+      "name": "Position",
+      "offset": 16,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "AddDropEntityComponent: plVar17[2] = request+8 (8 bytes) and +0x18 = request+0x10; LEGACY_RequestDropEntities fills request+8..+0x14 from its Vector3f const& argument. Live floats 56.25/17.24/104.8 and 127.2/54.65/-420.2 (world positions). Windows loader converter bg3.exe+0x27769C0 stores the level-transformed vec3 (bg3.exe+0x2772030) as 8 bytes at +0x10 and 4 at +0x18."
+    },
+    {
+      "name": "Rotation",
+      "offset": 28,
+      "type": "std::array<float, 4>",
+      "source": "inferred",
+      "evidence": "Value storage of an ls::Optional<Quaternionf>. Windows save loader bg3.exe+0x25E3880 (model ls::model::game::drop::v1::DropEntityStateComponent, 64 bytes) via converter bg3.exe+0x27769C0: when the model's flag is set, rotates the model quaternion by the level transform (bg3.exe+0x27744C0) and stores 16 bytes at +0x1C, then sets +0x2C = 1; the default constructor does NOT initialise +0x1C..+0x2B, so the four floats are garbage while HasRotation is 0 (that is why the raw check found 'not an ordinary float'). Declared as std::array<float, 4> rather than glm::quat for that reason. AddDropEntityComponent copies request+0x14..+0x24 here."
+    },
+    {
+      "name": "HasRotation",
+      "offset": 44,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Flag of the Optional<Quaternionf> (request+0x24 -> +0x2C). Live 0 in both instances (throw had no rotation)."
+    },
+    {
+      "name": "_Pad2D",
+      "offset": 45,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding (live garbage bytes)"
+    },
+    {
+      "name": "RequestGuid",
+      "offset": 48,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "AddDropEntityComponent stores the ls::Guid::Generate() result at plVar17[6..7]; DropEntityExecuteSystem::ProcessWaitingForActionResourceSpending (EoCServer.dll+0x9B4590) compares state+0x30 with the Guid of eoc::ActionResourceSpendEventOneFrameComponent elements and copies it into DropEntityExecutionComponent+0. Live: equals DropEntityExecution+0 and ActionResourceSpendRequestOneFrame+0. Windows loader converter bg3.exe+0x27769C0 defaults +0x30..+0x3F from the null Guid DAT_14625aad0 and the loader copies 16 bytes there."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the Optional<int32> per entity (stack amount to drop is assumed); the savegame model has no member names."
+  ],
+  "minutes": 17,
+  "functions_read": 7,
+  "status": "confirmed",
+  "second_pass": "Offsets and widths confirmed by the Windows save loader bg3.exe+0x25E3880 and its converter bg3.exe+0x27769C0 (16-byte entries {EntityHandle, Optional<int32>}, vec3 at +0x10, optional quaternion +0x1C with flag +0x2C, Guid +0x30). Rotation is now std::array<float, 4>: it is the storage of an optional that the constructor leaves uninitialised, which made the raw check fail on glm::quat.",
+  "raw_check": "14 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

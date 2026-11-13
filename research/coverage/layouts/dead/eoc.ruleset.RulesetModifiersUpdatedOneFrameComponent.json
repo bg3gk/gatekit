@@ -1,0 +1,77 @@
+{
+  "component": "eoc::ruleset::RulesetModifiersUpdatedOneFrameComponent",
+  "ext_name": "RulesetModifiersUpdated",
+  "size": 64,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame event on the ruleset entity after esv::ruleset::RulesetModifierSystem::DoUpdateRulesets changed ruleset modifiers: a HashMap from the modifier's Guid to eoc::ruleset::ChangedRulesetModifier (two 8-byte variant values). Read by esv::status::DifficultySystem, esv::ai::combat::AiModifiersSystem, esv::SpellSystem and esv::StoryGameEventManager::OnRulesetModifiersChanged. Never seen alive. Registry total 64 on both rows; no savegame model, not replicated.",
+  "structs": [
+    {
+      "name": "RulesetModifiersUpdatedValue",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Value",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Toolkit copy of an element EoCShared.dll+0x18EAA0: index 1/2 copy 4 bytes from +0 (int / float), 3 copies a FixedString at +0, 4 copies one byte (bool). Union storage of std::variant<uint8_t(None), int32_t, float, FixedString, bool> - the same variant as RulesetModifiersComponent.Modifiers in SE Components.h."
+        },
+        {
+          "name": "Type",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same function: `this[4] = src[4]` then switch on it (0 none, 1 int, 2 float, 3 FixedString, 4 bool); macOS ~ChangedRulesetModifier (bg3_macos_x64+0x585D4D0) releases the FixedString only when byte +4 == 3."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "alignment to 8 (the second value starts at +8)."
+        }
+      ]
+    },
+    {
+      "name": "RulesetModifiersUpdatedChange",
+      "size": 16,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "RulesetModifiersUpdatedValue",
+          "source": "unknown",
+          "evidence": "eoc::ruleset::ChangedRulesetModifier (name from the Toolkit assert 'ls::IndexedStorage<struct eoc::ruleset::ChangedRulesetModifier ...>'), 0x10 bytes per element (allocated `count * 0x10`, align 4). First variant: +0 value, +4 type. Probably the old value - order not established."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "RulesetModifiersUpdatedValue",
+          "source": "unknown",
+          "evidence": "Second variant: +8 value, +0xC type (EoCShared.dll+0x18EAA0 `this[0xc] = src[0xc]`, copies +8). Probably the new value."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Modifiers",
+      "offset": 0,
+      "type": "HashMap<Guid, RulesetModifiersUpdatedChange>",
+      "source": "inferred",
+      "evidence": "Toolkit constructor EoCShared.dll+0x334AF0 zeroes 0x40 bytes with the HashMap pattern (counts at +0x1C/+0x2C); copy constructor EoCShared.dll+0x334A10 copies the key set with FUN_1800de640 (asserts name ls::IndexedStorage<int> twice and ls::IndexedStorage<ls::Guid> - buckets, next, Guid keys) and the values at +0x30 as IndexedStorage<eoc::ruleset::ChangedRulesetModifier> of 0x10-byte elements; destructor EoCShared.dll+0x347BD0 frees +0x30, +0x20, +0x10, +0. Game creator bg3.exe+0x2F2FBF0 (AllocRaw 0x40) moves (ptr, int, int) triples at +0, +0x10, +0x20, +0x30 from its argument - same shape on the Windows game side; registry 64 = HashMap size."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which of the two variants is the old and which the new value is not established (both named field_0/field_8).",
+    "Variant index 0 is an empty alternative (SE comment 'First variant is void'); typed as uint8_t Type here.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

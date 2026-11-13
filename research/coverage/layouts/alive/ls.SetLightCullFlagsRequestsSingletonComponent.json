@@ -1,0 +1,54 @@
+{
+  "component": "ls::SetLightCullFlagsRequestsSingletonComponent",
+  "ext_name": "SetLightCullFlagsRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "summary": "Client singleton queue of light cull-flag changes (which views/passes a light is culled from), filled by ecl::invisibility::EffectSystem::ApplyVisibilityToEntities (Toolkit EoCClient.dll+0xAF6F50; macOS: ecl::invisibility::EffectSystem::Update writes ls::SetLightCullFlagsRequestsSingletonComponent) and drained by the renderer side. Element type ls::LightCullFlagRequest (assert string).",
+  "structs": [
+    {
+      "name": "SetLightCullFlagsRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Light",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ApplyVisibilityToEntities: element +0 = local_a0 = *puVar11, the key being iterated (entity handles of a per-light hash map, the light entities whose visibility is applied)."
+        },
+        {
+          "name": "Flags",
+          "offset": 8,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "Same push: puVar1[1] = CONCAT62(garbage, local_144[0]) - a 16-bit flag word, bits 0x200 and 0x400 set/cleared from per-view visibility bytes, the rest filled by EffectSystemHelper vfunc +0x28."
+        },
+        {
+          "name": "_PadA",
+          "offset": 10,
+          "type": "uint8_t[6]",
+          "source": "unknown",
+          "evidence": "upper 6 bytes of the second qword are not meaningful (CONCAT62 with stack garbage)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<SetLightCullFlagsRequest>",
+      "source": "inferred",
+      "evidence": "ApplyVisibilityToEntities: grow check capacity (+8) vs size (+0xC), IndexedStorage<ls::LightCullFlagRequest>::CheckBoundary, element stride 0x10 (*plVar12 + i*0x10). Live: heap pointer, capacity 0x20..0x100, size 0 (drained)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of individual flag bits (0x200/0x400 are per-view visibility bits)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

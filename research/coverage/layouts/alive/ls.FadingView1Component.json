@@ -1,0 +1,40 @@
+{
+  "component": "ls::FadingView1Component",
+  "ext_name": "FadingView1",
+  "size": 8,
+  "seen": true,
+  "summary": "Resolved fade of an entity for render view 1, written by ecl::FadeResolveSystem from all ecl::*FadeView1Component sources; the entity is also put into ls::FadingEntitiesForRenderingSingletonComponent.",
+  "fields": [
+    {
+      "name": "Opacity",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Windows creator bg3.exe+0x18EC020 (ComponentFrameStorage element size 8, TypeIndex<ls::FadingView1Component>) stores 0x3F800000 (1.0f) at +0; bg3.exe+0x18E2BF0 (fade resolve, View1 branch) sets it to 0 when the entity's 2-byte request says so. Toolkit ls::IsFading (GameEngine.dll+0x74B7B0, WorldView<..., FadingView0Component const, FadingView1Component const, ...>) reads the float and returns 'fading' when it is below 0.49. Live: 0, 0.5, 1."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Windows creator bg3.exe+0x18EC020 writes byte 1 at +4 (1-byte store); bg3.exe+0x18E2BF0 copies the second byte of the entity's 2-byte request into it. No reader of it was found (IsFading reads only the float). Live: 0 or 1."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Never written by the creator (live garbage); padding to 8."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name and meaning of the bool at +4 (no reader found; same as Script Extender's FadingView0Component.field_4 in Coverage.h)."
+  ],
+  "minutes": 5,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Offsets and widths settled from the Windows View1 creator bg3.exe+0x18EC020 (8-byte element, 1.0f at +0, byte 1 at +4) and the resolve writer bg3.exe+0x18E2BF0; Toolkit ls::IsFading confirms the float is the opacity compared with 0.49.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

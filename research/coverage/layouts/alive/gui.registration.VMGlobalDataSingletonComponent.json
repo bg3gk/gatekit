@@ -1,0 +1,25 @@
+{
+  "component": "gui::registration::VMGlobalDataSingletonComponent",
+  "ext_name": "GuiRegistrationVMGlobalData",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "GameObject",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x4475C0 VMGlobalDataSingletonComponent::CreateVM() asserts '*this == 0' ('can only be called once'), allocates gui::VMGameData (operator_new(0xcd8)) and stores it at *this with Release of the old value; InternalGetGameObject / LEGACY_GetGameObject (NoesisGameUI.dll+0x3347C0) return it; InternalGetLongRest (+0x4476E0) reads *(*this + 0x420). Value is Noesis::Ptr<gui::VMGameData>. Live: 5 instances, heap pointer."
+    }
+  ],
+  "summary": "Client UI root: the single gui::VMGameData view-model (the Noesis data context of the game UI). Singleton from game start (idle, level-change).",
+  "confidence": "high",
+  "open_questions": [
+    "Noesis::Ptr<gui::VMGameData> exposed as void*."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

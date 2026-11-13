@@ -1,0 +1,32 @@
+{
+  "component": "esv::zone::FinishedEventOneFrameComponent",
+  "ext_name": "ServerZoneFinishedEvent",
+  "size": 16,
+  "seen": true,
+  "summary": "Server one-frame event that a spell zone finished. esv::zone::DestructionSystem::ProcessFinishedSurfaceActions (EoCServer.dll+0x114CA70) creates a new entity per finished zone, adds this component (FUN_18114a310) with +0 = the zone entity and +8 = esv::zone::SpellComponent +0 of that zone, then destroys the zone entity. Seen alive when a Mud Mephit cast a spell, together with zone::CreateRequest/SpellComponent.",
+  "fields": [
+    {
+      "name": "Zone",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x114CA70 line 171: *event = the iterated zone entity (the one destroyed right after, line 189). Live entity handles."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "line 185: event[1] = *SpellComponent (SpellComponent +0, the zone's caster/source handle from CreationParams +8). Live equal to SpellComponent +0 samples."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name of the second handle (caster?) - same member as esv::zone::SpellComponent field_0."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

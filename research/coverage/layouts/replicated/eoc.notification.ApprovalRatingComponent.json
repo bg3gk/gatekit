@@ -1,0 +1,46 @@
+{
+  "component": "eoc::notification::ApprovalRatingComponent",
+  "ext_name": "NotificationApprovalRating",
+  "size": 40,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x98B060: 16 raw bytes at the FieldMeta offset global DAT_14627FFE8 (0: the next member is at +0x10); Windows creator bg3.exe+0x2DF24E0 (ComponentFrameStorageAllocRaw 0x28) zeroes +0..+0xF."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x98B060: 4 raw bytes at +0x10; Windows creator bg3.exe+0x2DF24E0 (ComponentFrameStorageAllocRaw 0x28) writes 0."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "TranslatedString",
+      "source": "inferred",
+      "evidence": "Windows replication writer bg3.exe+0x98B060: the 2-byte Version at +0x18, then ecs::sync::Serialize(FixedString) at +0x14 - the Handle of a TranslatedString; the ArgumentString is not replicated. Windows creator bg3.exe+0x2DF24E0 (ComponentFrameStorageAllocRaw 0x28) stores a FixedString at +0x14, a 0 word at +0x18 and constructs the second RuntimeStringHandle at +0x1C (the call is labelled TranslatedString::TranslatedString; it is the ArgumentString ctor), so +0x14..+0x23 is SE TranslatedString (two 8-byte RuntimeStringHandles, 4-aligned)."
+    },
+    {
+      "name": "_Pad24",
+      "offset": 36,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding (size 0x28)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the Guid at +0 (character or approver?) and the int at +0x10 (rating change?); no FieldMeta names, no savegame model."
+  ],
+  "seen": false,
+  "minutes": 11,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "20 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "second_pass": "Settled on Windows: the replication writer bg3.exe+0x98B060 gives +0 (16), +0x10 (4) and the Handle at +0x14, the creator bg3.exe+0x2DF24E0 shows the ArgumentString at +0x1C; the earlier 'not aligned to 8' error is gone now that TranslatedString is 4-aligned in the generator."
+}

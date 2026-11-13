@@ -1,0 +1,96 @@
+{
+  "component": "esv::inventory::ReplicateInventoriesRequestComponent",
+  "ext_name": "ServerInventoryReplicateInventoriesRequest",
+  "size": 80,
+  "seen": true,
+  "summary": "Request component written by esv::inventory::ManagementSystem::ProcessInventoryRequests (macOS writer; Toolkit EoCServer.dll+0xF693A0), queried with InventoriesCreatedSingleton / InventoriesDestroyedSingleton. One holder, idle level. Shape: an Array of trivial elements followed by a HashMap with trivial values (the macOS build also lists a non-trivial destructor ~ReplicateInventoriesRequestComponent). Element/value types not established -> raw parts.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Array data pointer: destructor bg3.exe+0x22AC410 ends with the trivial array clear bg3.exe+0x5BD630 on +0 and frees it. Live: 0 (empty) in all 5 samples."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Array capacity."
+    },
+    {
+      "name": "field_c",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Array size."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "HashMap bucket table: adder bg3.exe+0x346CFD0 zeroes a HashMap at +0x10 (sizes at +0x2C/+0x3C); destructor frees +0x40 (values) then the HashSet destructor on +0x10. Live: heap pointer."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count. Live 0x301 / 0x3001 / 0x7..."
+    },
+    {
+      "name": "_Pad1C",
+      "offset": 28,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "padding (live 0)."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "NextIds. Live capacity 0x200/0x2000, size 0."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "keys (8-byte; EntityHandle assumed - ManagementSystem works with HashMap<ID<EntityHandleTraits>, ...>). Live capacity 0x200, size 0."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "value array pointer (trivial values, type unknown). Live heap."
+    },
+    {
+      "name": "field_48",
+      "offset": 72,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "value capacity (live 0x200)."
+    },
+    {
+      "name": "field_4c",
+      "offset": 76,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "value size (live 0)."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Element type of the Array at +0 and value type of the map (macOS: ManagementSystem keeps HashMap<EntityHandle, CreationData(0x10)> and HashMap<EntityHandle, EntityHandle> locally - one of them may be the shape)."
+  ],
+  "minutes": 10,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the author's confidence is low: types fit the live data, meanings are not established",
+  "second_pass": "Not settled in this pass: element type of the Array at +0 and value type of the map at +0x10 not established; it is not saved (no savegame model)."
+}

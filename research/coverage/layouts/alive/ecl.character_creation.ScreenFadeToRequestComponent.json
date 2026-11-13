@@ -1,0 +1,27 @@
+{
+  "component": "ecl::character_creation::ScreenFadeToRequestComponent",
+  "ext_name": "ClientCharacterCreationScreenFadeToRequest",
+  "size": 64,
+  "seen": true,
+  "reuses": "ScreenFadeCreationData (GameDefinitions/Components/Camera.h); same layout as ecl::camera::ScreenFadeToRequestManualOneFrameComponent",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<int16_t, ScreenFadeCreationData>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D15E90 (character_creation System load) allocates 0x40 bytes, zeroes a HashMap and registers destructor bg3.exe+0x5C4870, which frees the values buffer at +0x30 without element destructors and then the key set (FUN_140582ad0) - a HashMap with trivially destructible values. ecl::screen_fade::ScreenFadeSystem::ProcessScreenFadeToRequests (EoCClient.dll+0x7EB620) walks every fade-to request component of its WorldView (which lists character_creation::ScreenFadeToRequestComponent) as 0x40-byte components with int16 keys at +0x20 (stride 2, user/player id) and 0x20-byte values at +0x30 - the same shape SE declares for camera::ScreenFadeToRequestManualOneFrameComponent. macOS default ctor: 64 zero bytes. Live (idle): all zero."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The fade-to loops in ProcessScreenFadeToRequests were not individually matched to this component's type index; the identification rests on the destructor (trivial values) plus the shared value stride 0x20.",
+    "ScreenFadeCreationData itself still has field_10..field_1C unknowns in Camera.h."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "hold": "uses types declared elsewhere (ScreenFadeCreationData): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

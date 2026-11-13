@@ -1,0 +1,55 @@
+{
+  "component": "ls::photo_mode::VignetteComponent",
+  "ext_name": "PhotoModeVignette",
+  "size": 24,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Photo-mode vignette (client only; registry total 24 on the client row). Written by ecl::photo_mode::VignetteSystem (per-frame update bg3.exe+0x7672D0, apply step bg3.exe+0x1B07560) from its pending ls::Optional<VignetteRequest>, filled by VignetteSystem::LEGACY_UpdateVignette(bool, Vector3f, float, float) from the photo-mode UI (NoesisGameUI.dll+0x71E170: selected vignette's colour, VignetteIntensity, VignettePower). Never seen alive.",
+  "fields": [
+    {
+      "name": "Enabled",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B07560: stride 0x18; compares/copies byte +0 with request+0 (LEGACY_UpdateVignette param 1). The UI passes `selectedVignette+0x70 == 0` (a flag of the selected vignette entry, probably 'is the None entry')."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding before the vec3 at +4"
+    },
+    {
+      "name": "Color",
+      "offset": 4,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B07560 compares floats +4,+8,+0xC as a squared distance (vector) with request+4..+0xC (LEGACY_UpdateVignette's Vector3f, copied as 8+4 bytes); the UI takes the three floats at selectedVignette+0x60..0x68 (the vignette resource's colour, cf. SE PhotoModeVignette.Color)."
+    },
+    {
+      "name": "Intensity",
+      "offset": 16,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B07560 compares/copies float +0x10; the UI passes VM +0x998 whose symbol 'VignetteIntensity' sits at +0x99C (NoesisGameUI.dll+0x715A00); request default 1.0 (0x3f800000)."
+    },
+    {
+      "name": "Power",
+      "offset": 20,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B07560 compares/copies float +0x14; the UI passes VM +0x9B0 whose symbol 'VignettePower' sits at +0x9B4; request default 10.0 (0x41200000). macOS default constructor stores one 8-byte value at +0x10 (both floats) and zeroes +0..+0xF."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names come from the photo-mode UI properties; the meaning of the bool (enabled vs. 'none selected' inverted) is inferred.",
+    "Not seen alive."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,26 @@
+{
+  "component": "eoc::notification::UnsheathUserRequestFailedComponent",
+  "ext_name": "NotificationUnsheathUserRequestFailed",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2DF10A0 (size 0x10, two zero qwords). The server notification system bg3.exe+0x2DF53B0 (message kind 0x2F) fills it with the 16 bytes returned by bg3.exe+0x2B8DC50 for the entity handle in the message: that helper returns the entity's ls::uuid::Component value (bg3.exe+0x107E6F0) or the null Guid when the handle is invalid or has no uuid. So the component carries the Guid of the entity the failed sheathe/unsheathe request was about."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures.",
+    "Whether the entity is the character or the weapon (the sender of message kind 0x2F was not found; the character is likely)."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "The single 16-byte member is established on Windows (creator bg3.exe+0x2DF10A0, notification system bg3.exe+0x2DF53B0 copying the uuid Guid of the message's entity); the replication serializer (bg3.exe+0x99ADC0) has no macOS field names.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

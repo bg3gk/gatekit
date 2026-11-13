@@ -1,0 +1,268 @@
+{
+  "component": "ls::LightProbeComponent",
+  "ext_name": "LightProbe",
+  "size": 240,
+  "class_size": 240,
+  "base": "MoveableObject (Render.h) - +0..+0x7F",
+  "structs": [
+    {
+      "name": "LightProbeComponentCapture",
+      "size": 112,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "std::array<uint64_t, 14>",
+          "source": "unknown",
+          "evidence": "ls::LightProbeCapture (Toolkit name); element stride 0x70 in ls::LightProbeComponent::UnloadCaptures (GameEngine.dll+0x7B6F00) and in its IndexedStorage<class ls::LightProbeCapture> assert; members (textures, LightProbeCapture::DisconnectTextures / Unload) not mapped."
+        }
+      ]
+    }
+  ],
+  "seen": true,
+  "summary": "Light probe render object stored behind a pointer (registry inline size 8, object 0xF0 bytes). Offsets from the Toolkit's exported accessors and ls::LightProbeComponent::UnloadCaptures (GameEngine.dll+0x7B6F00); they all agree with the live sample.",
+  "fields": [
+    {
+      "name": "VMT",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "live: always the same executable address (virtual table); MoveableObject base"
+    },
+    {
+      "name": "WorldTransform",
+      "offset": 8,
+      "type": "Transform",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout (WorldTransform); live: quaternion (0,0,0,1) at +8..+0x17, world position at +0x18, scale 1,1,1 at +0x24."
+    },
+    {
+      "name": "LocalTransform",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout; live 0."
+    },
+    {
+      "name": "Scene",
+      "offset": 56,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout; live heap pointer, equal to AssociatedScene."
+    },
+    {
+      "name": "WorldBoundMin",
+      "offset": 64,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout (AABound WorldBound, min); live: world position minus the radius."
+    },
+    {
+      "name": "WorldBoundMax",
+      "offset": 76,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout (AABound WorldBound, max)."
+    },
+    {
+      "name": "BaseBoundMin",
+      "offset": 88,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout (AABound BaseBound, min); live -Radius on every axis."
+    },
+    {
+      "name": "BaseBoundMax",
+      "offset": 100,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout (BaseBound, max); live +Radius."
+    },
+    {
+      "name": "MinLODDistance",
+      "offset": 112,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout; live 0."
+    },
+    {
+      "name": "MaxLODDistance",
+      "offset": 116,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout; live FLT_MAX."
+    },
+    {
+      "name": "SceneIndex",
+      "offset": 120,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "SE MoveableObject (GameDefinitions/Render.h) layout; live small indices."
+    },
+    {
+      "name": "field_7C",
+      "offset": 124,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "between MoveableObject.SceneIndex and the first Toolkit accessor (+0x80); live varied values (0..0xFFFFFFFF)"
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "live: 48 different entity handles (high bits 0x01400001 / 0x01C00002); no Toolkit accessor."
+    },
+    {
+      "name": "UUID",
+      "offset": 136,
+      "type": "FixedString",
+      "source": "toolkit",
+      "evidence": "Toolkit UUID +0x88; live FixedString indices."
+    },
+    {
+      "name": "LightingTriggerID",
+      "offset": 140,
+      "type": "FixedString",
+      "source": "toolkit",
+      "evidence": "Toolkit LightingTriggerID +0x8C."
+    },
+    {
+      "name": "Intensity",
+      "offset": 144,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit GetIntensity +0x90; live 0.5 / 1."
+    },
+    {
+      "name": "ScatteringIntensityScale",
+      "offset": 148,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit +0x94; live 1."
+    },
+    {
+      "name": "Radius",
+      "offset": 152,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit GetRadius +0x98; live 7..12 = BaseBound half extent."
+    },
+    {
+      "name": "Size",
+      "offset": 156,
+      "type": "glm::vec3",
+      "source": "toolkit",
+      "evidence": "Toolkit Size +0x9C; live 10..80."
+    },
+    {
+      "name": "TransitionDistance",
+      "offset": 168,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit +0xA8; live 2..8."
+    },
+    {
+      "name": "InfiniteCapture",
+      "offset": 172,
+      "type": "bool",
+      "source": "toolkit",
+      "evidence": "Toolkit GetInfiniteCapture +0xAC; live 1."
+    },
+    {
+      "name": "_PadAD",
+      "offset": 173,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "LightProbeType",
+      "offset": 176,
+      "type": "uint32_t",
+      "source": "toolkit",
+      "evidence": "Toolkit GetLightProbeType (enum ls::ELightProbeType) +0xB0; live 1."
+    },
+    {
+      "name": "LightProbeShape",
+      "offset": 180,
+      "type": "uint32_t",
+      "source": "toolkit",
+      "evidence": "Toolkit GetLightProbeShape (enum ls::ELightProbeShape) +0xB4; live 0."
+    },
+    {
+      "name": "CaptureType",
+      "offset": 184,
+      "type": "uint32_t",
+      "source": "toolkit",
+      "evidence": "Toolkit GetCaptureType (enum ls::ELightProbeCaptureType) +0xB8; live 2."
+    },
+    {
+      "name": "Enabled",
+      "offset": 188,
+      "type": "bool",
+      "source": "toolkit",
+      "evidence": "Toolkit GetEnabled +0xBC; live 1."
+    },
+    {
+      "name": "_PadBD",
+      "offset": 189,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "Template",
+      "offset": 192,
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "Toolkit GetTemplate (ls::LightProbeTemplate const*) +0xC0."
+    },
+    {
+      "name": "AssociatedScene",
+      "offset": 200,
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "Toolkit GetAssociatedScene +0xC8; live equals Scene at +0x38."
+    },
+    {
+      "name": "CapturesLoaded",
+      "offset": 208,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ls::LightProbeComponent::UnloadCaptures fires an LOD change event only when this byte is set (and Scene != null) and clears it after destroying the captures; live 1."
+    },
+    {
+      "name": "_PadD1",
+      "offset": 209,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "Captures",
+      "offset": 216,
+      "type": "Array<LightProbeComponentCapture>",
+      "source": "toolkit",
+      "evidence": "Toolkit Captures (DynamicArray<ls::LightProbeCapture>) +0xD8; size at +0xE4, stride 0x70 (UnloadCaptures); live capacity 3, size 3."
+    },
+    {
+      "name": "field_E8",
+      "offset": 232,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "live varied values or 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Members of ls::LightProbeCapture (0x70 bytes).",
+    "field_7C, field_80, field_E8 unknown.",
+    "Registry stores a pointer (inline 8)."
+  ],
+  "minutes": 8,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

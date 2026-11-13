@@ -1,0 +1,50 @@
+{
+  "component": "esv::one_time_reward::SendToCampChestRequestOneFrameComponent",
+  "ext_name": "ServerOneTimeRewardSendToCampChestRequest",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "structs": [
+    {
+      "name": "OneTimeRewardSendToCampChestReward",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Template",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Toolkit RewardSystem::GiveItems: element FixedString copied from the reward record's FixedString (+0x18 of a 32-byte record) - probably an item template id. Element type is esv::one_time_reward::Reward (named in an IndexedStorage CheckBoundary string)."
+        },
+        {
+          "name": "Amount",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "GiveItems: element +4 = the count returned by FUN_1813ce3c0 (number of items still to give)."
+        }
+      ]
+    }
+  ],
+  "summary": "One-frame request of esv::one_time_reward::RewardSystem::GiveItems (Toolkit EoCServer.dll+0x13CE600) to send one-time reward items to the camp chest; read by esv::camp::ChestSystem (ProcessSendToCampRequests). GiveItems builds a DynamicArray<esv::one_time_reward::Reward> (8-byte elements) and moves it into this component. Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Rewards",
+      "offset": 0,
+      "type": "Array<OneTimeRewardSendToCampChestReward>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x35B35A0 (AllocRaw 0x10) zeroes qword +0, qword +8 and dword +0xC (Array shape). GiveItems: the component returned by FUN_1813cd3c0 receives `*p = data; *(int*)(p+8) = capacity; *(int*)(p+0xC) = size` of the local array whose element stride is 8 (this_00 + n*8 - 8 FixedString, -4 int)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Reward member names inferred; Template might be another kind of id.",
+    "Offsets of the element rest on the Toolkit build; the game's creator agrees on the Array shape.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

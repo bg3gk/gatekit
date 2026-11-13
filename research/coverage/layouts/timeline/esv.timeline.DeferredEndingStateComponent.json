@@ -1,0 +1,60 @@
+{
+  "component": "esv::timeline::DeferredEndingStateComponent",
+  "ext_name": "ServerTimelineDeferredEndingState",
+  "size": 88,
+  "fields": [
+    {
+      "name": "Fade",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3306BF0 (esv::TimelineSystem, Toolkit ProcessDeferredEndRequests) creates the component (bg3.exe+0x3313FD0: empty string, capacity 15) on the timeline entity of each deferred end request and assigns 'request string + \"_\" + text of the FixedString at request +0x18'. bg3.exe+0x2D10600 / 0x2D10A20 copy it into the screen-fade request and the player fade-in event."
+    },
+    {
+      "name": "Duration",
+      "offset": 24,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3306BF0 copies the dword at request +0x1C; bg3.exe+0x2D10600 reads it as float: copied to the screen-fade-to request (+0x1C), and the maximum + 1.0 becomes the timeout of esv::timeline::FadedInUsersComponent."
+    },
+    {
+      "name": "_Pad1C",
+      "offset": 28,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "Users",
+      "offset": 32,
+      "type": "HashSet<UserId>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3306BF0 copies the set from request +0x20 (bg3.exe+0x5DF700); bg3.exe+0x2D10600 and 0x2D10A20 walk its key array (+0x40, count at +0x4C) with stride 4, one screen-fade request / fade-in event per element, stored as the user id."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x3306BF0 copies the dword at request +0x50; bg3.exe+0x2D10A20 passes it on to esv::timeline::PlayerFadeInEventOneFrameComponent+0x20."
+    },
+    {
+      "name": "_Pad54",
+      "offset": 84,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "field_50: probably the dialog instance id (live values 1..0x11C, passed on to esv::timeline::PlayerFadeInEventOneFrameComponent+0x20 and to the GameplayEventSystem callback), not proven.",
+    "The producer of the deferred end requests (system map with keys at +0x6B8 and 0x58-byte values at +0x6C8) was not found."
+  ],
+  "minutes": 14,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "All offsets and widths come from Windows code (bg3.exe+0x3306BF0, 0x2D10600, 0x2D10A20) and agree with 24 live instances (long STDString at +0, float 6.0/-1.0 at +0x18, HashSet<UserId> with one key at +0x20, small ints at +0x50). STDString is a builtin of generate.py now (24 bytes), so the earlier external_types override was removed.",
+  "raw_check": "24 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

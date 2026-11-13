@@ -1,0 +1,139 @@
+{
+  "component": "ls::ClusterPhysicsAlwaysLoadedComponent",
+  "ext_name": "ClusterPhysicsAlwaysLoaded",
+  "size": 232,
+  "seen": true,
+  "fields": [
+    {
+      "name": "DataKeys",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x29CDD0 on +0, whose assert names IndexedStorage<ls::ClusterAlwaysLoadedPhysicsData, mem::s_TagHashTable> for the values; key array freed like the other EntityHandle-keyed maps (key type assumed EntityHandle). Live: bucket count 5..0x1D at +8, cap/size at +0x18/+0x28, value capacity at +0x38. Key part of a ls::HashMap (buckets +0, NextIds +0x10, Keys +0x20)."
+    },
+    {
+      "name": "DataValues",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Value storage of the same HashMap (IndexedStorage<ls::ClusterAlwaysLoadedPhysicsData, s_TagHashTable>); element size not established, so spelled out as raw parts."
+    },
+    {
+      "name": "DataValueCapacity",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Value storage capacity of the same HashMap (live: equals the key capacity)."
+    },
+    {
+      "name": "_Pad3C",
+      "offset": 60,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Padding of the value storage (always 0 live)."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "HashMap<EntityHandle, uint32_t>",
+      "source": "unknown",
+      "evidence": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x29CB00 on +0x40: a HashMap whose value IndexedStorage is <unsigned int, s_TagHashTable>; key type assumed EntityHandle. Live: always empty (all zero)."
+    },
+    {
+      "name": "Frame",
+      "offset": 128,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "By analogy with ls::ClusterVisualLoadedComponent (GameEngine.dll+0xA0B900 compares +0x80 with the current frame index and resets the modified list when it changes); the destructor skips +0x80..+0x88. Live: low dword always 0."
+    },
+    {
+      "name": "field_84",
+      "offset": 132,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Not touched by the destructor; live values vary (0..0xFFFFFFFF), possibly uninitialised padding."
+    },
+    {
+      "name": "ModifiedPairs",
+      "offset": 136,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x299D60 on +0x88: ls::Array<ls::ClusterPhysicsAlwaysLoadedComponent::ModifiedPair> (IndexedStorage assert); element size not read (the visual twin's ModifiedPair is 16 bytes). Live: all zero."
+    },
+    {
+      "name": "ModifiedPairsCapacity",
+      "offset": 144,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Capacity of the same ls::Array."
+    },
+    {
+      "name": "ModifiedPairsSize",
+      "offset": 148,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Size of the same ls::Array."
+    },
+    {
+      "name": "InitDataKeys",
+      "offset": 152,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x29CDD0 on +0x98 (same map type as +0). Live: prime bucket counts at +0xA0, key/next capacities but size 0 (cleared map). Key part of a ls::HashMap (buckets +0, NextIds +0x10, Keys +0x20)."
+    },
+    {
+      "name": "InitDataValues",
+      "offset": 200,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Value storage of the same HashMap (IndexedStorage<ls::ClusterAlwaysLoadedPhysicsData>); element size not established, so spelled out as raw parts."
+    },
+    {
+      "name": "InitDataValueCapacity",
+      "offset": 208,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Value storage capacity of the same HashMap (live: equals the key capacity)."
+    },
+    {
+      "name": "_PadD4",
+      "offset": 212,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Padding of the value storage (always 0 live)."
+    },
+    {
+      "name": "PendingData",
+      "offset": 216,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x298C70 on +0xD8: ls::Array<ls::ClusterAlwaysLoadedPhysicsData> (IndexedStorage assert, s_TagCluster), cleared and freed. Live: heap pointer, capacity 0..4, size 0."
+    },
+    {
+      "name": "PendingDataCapacity",
+      "offset": 224,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Capacity of the same ls::Array."
+    },
+    {
+      "name": "PendingDataSize",
+      "offset": 228,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Size of the same ls::Array."
+    }
+  ],
+  "summary": "Client physics streaming: bookkeeping of a cluster's always-loaded physics (two HashMaps of ls::ClusterAlwaysLoadedPhysicsData, a uint32 map, a frame stamp, a per-frame ModifiedPair list and a pending-data array); used by phx::PhysXDisableSimulationSystem::ProcessChangedClusters and the cluster physics loader. On cluster entities of idle levels.",
+  "confidence": "medium",
+  "open_questions": [
+    "Element size/members of ls::ClusterAlwaysLoadedPhysicsData and of ModifiedPair not established (macOS has DynamicArray<ClusterAlwaysLoadedPhysicsInitData> and <ClusterAlwaysLoadedPhysicsData>), hence raw value pointers.",
+    "Key types of the maps assumed EntityHandle.",
+    "Field names (Data, InitData, PendingData, Frame) are inferred placeholders."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

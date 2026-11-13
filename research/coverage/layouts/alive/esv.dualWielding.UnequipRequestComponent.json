@@ -1,0 +1,25 @@
+{
+  "component": "esv::dualWielding::UnequipRequestComponent",
+  "ext_name": "ServerDualWieldingUnequipRequests",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Array<EntityHandle>>",
+      "source": "inferred",
+      "evidence": "esv::DualWieldingSystem::GenerateUnequipRequests (EoCServer.dll+0x5EE3A0) assigns the frame map with EoCServer.dll+0x5ECBC0: key set copied by the 8-byte-key HashSet copy (EoCServer.dll+0x28E830), values allocated with (n, 0x10, 8) and typed by the assert ls::IndexedStorage<class ls::DynamicArray<struct ls::ID<struct ecs::EntityHandleTraits>>> (element arrays of 8-byte handles). bg3.exe destructor bg3.exe+0x591CF0 -> bg3.exe+0x5BD8A0 frees each 16-byte Array value. Key = character, values = items to unequip (inferred). Live (seen.py, idle): one instance, all bytes zero (empty container)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Key meaning (character) inferred."
+  ],
+  "minutes": 4,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

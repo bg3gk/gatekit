@@ -1,0 +1,47 @@
+{
+  "component": "ecl::mod::SyncRequestSingletonComponent",
+  "ext_name": "ClientModSyncRequestSingleton",
+  "size": 120,
+  "seen": true,
+  "fields": [
+    {
+      "name": "MissingMods",
+      "offset": 0,
+      "type": "HashSet<uint64_t>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xBE4440 ecl::mod::SubscriptionSyncSystem::ProcessMissingSubscriptions clears the set at component+0 (thunk_FUN_180AE0EC0) and inserts (FUN_1801C9060, HashSet insert) the publish handle of each subscribed UGC mod that is not among ls::ModManager::GetAvailableMods. Live: empty."
+    },
+    {
+      "name": "SyncedMods",
+      "offset": 48,
+      "type": "HashSet<uint64_t>",
+      "source": "inferred",
+      "evidence": "ProcessPendingSubscriptions (EoCClient.dll+0xBE5240) clears component+0x30 and inserts the last pending publish handle when ls::ModManager::HasModWithPublishHandle is true. Live: empty."
+    },
+    {
+      "name": "PendingMods",
+      "offset": 96,
+      "type": "Array<uint64_t>",
+      "source": "inferred",
+      "evidence": "ls::DynamicArray<unsigned __int64> at +0x60 (size +0x6C): ProcessMissingSubscriptions appends Module::GetPublishHandle values not yet in it; ProcessPendingSubscriptions takes the last one and RemoveLast()s it. Live: empty."
+    },
+    {
+      "name": "LastSyncTime",
+      "offset": 112,
+      "type": "double",
+      "source": "inferred",
+      "evidence": "ProcessPendingSubscriptions processes one pending mod only when GameTime.Time - *(double*)(component+0x70) >= 2.0 and then stores the current game time there. macOS default: str xzr [x23,#0x70]; live 0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Field names are descriptive guesses from the code paths; read by gui::mod::RequestSystem::ProcessDependencyResponses (NoesisGameUI.dll, not opened)."
+  ],
+  "second_pass": "Confirmed on Windows: bg3.exe+0x1B0D3B0 clears the HashSet at +0 (FUN_1405C4330) and appends qwords to the Array at +0x60 (size +0x6C, capacity +0x68); the per-frame entry bg3.exe+0x767770 clears the set at +0x30, takes the last array element, inserts it with FUN_140721030 (uint64 keys: key % buckets, qword compare) and stores the double game time at +0x70 after the 2.0 s check.",
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

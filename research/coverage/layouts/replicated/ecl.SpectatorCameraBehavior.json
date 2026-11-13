@@ -1,0 +1,160 @@
+{
+  "component": "ecl::SpectatorCameraBehavior",
+  "ext_name": "ClientSpectatorCameraBehavior",
+  "size": 136,
+  "structs": [
+    {
+      "name": "SpectatorCameraBehaviorSettings",
+      "size": 52,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "std::array<uint32_t, 6>",
+          "source": "unknown",
+          "evidence": "macOS ctor zeroes +0..+0x18 (and +0x34..+0x4C for the second copy)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "macOS ctor 1.0 (q0 constant 0x10786F610 = 1.0, 0, 2.8, 0)."
+        },
+        {
+          "name": "field_1C",
+          "offset": 28,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "macOS ctor 0.0."
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "macOS ctor 2.8."
+        },
+        {
+          "name": "field_24",
+          "offset": 36,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "macOS ctor 0.0."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "macOS ctor 0.0 (d8 constant 0x10786DB38 = 0.0, 10.0)."
+        },
+        {
+          "name": "field_2C",
+          "offset": 44,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "macOS ctor 10.0."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "macOS ctor 5.0 (0x40A00000)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "SpectatorCameraBehaviorSettings",
+      "source": "unknown",
+      "evidence": "macOS default ctor writes the same 52-byte pattern (zero x24, 1.0, 0, 2.8, 0, 0, 10.0, 5.0) at +0 and at +0x34."
+    },
+    {
+      "name": "field_34",
+      "offset": 52,
+      "type": "SpectatorCameraBehaviorSettings",
+      "source": "unknown",
+      "evidence": "second copy of the pattern (stur q0 +0x4C, d8 +0x5C, 5.0 +0x64)."
+    },
+    {
+      "name": "field_68",
+      "offset": 104,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "macOS ctor x3 = 0x0100000040A00000 at +0x64: bytes +0x68..+0x6A = 0."
+    },
+    {
+      "name": "field_69",
+      "offset": 105,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "macOS ctor 0."
+    },
+    {
+      "name": "field_6A",
+      "offset": 106,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "macOS ctor 0."
+    },
+    {
+      "name": "field_6B",
+      "offset": 107,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "macOS ctor 1 (top byte of x3)."
+    },
+    {
+      "name": "_Pad6C",
+      "offset": 108,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+    },
+    {
+      "name": "field_70",
+      "offset": 112,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "macOS ctor dup 0xFFC0000000000000 (q1) over +0x70..+0x80: two null handles."
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "second null handle."
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "macOS ctor 0."
+    },
+    {
+      "name": "_Pad84",
+      "offset": 132,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "no serializer (ser.py: NO REPLICATED) and no FieldMeta; widths of the zeroed parts and all names unknown; grouping into two 52-byte settings blocks is inferred from the identical default pattern",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "seen": false,
+  "minutes": 8,
+  "functions_read": 0,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the author's confidence is low: types fit the live data, meanings are not established",
+  "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet"
+}

@@ -1,0 +1,54 @@
+{
+  "component": "esv::ai::swarm::GroupsComponent",
+  "ext_name": "ServerAiSwarmGroups",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AiSwarmGroupsGroup",
+      "size": 56,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "esv::ai::swarm::Group (macOS name). FUN_1816a5f50 copies it with FixedString::operator= when compacting; macOS ~GroupsComponent releases a FixedString at element +0."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "Members",
+          "offset": 8,
+          "type": "HashSet<EntityHandle>",
+          "source": "inferred",
+          "evidence": "FUN_1816a5f50 removes the entity from the ls::HashTable<ls::ID<ecs::EntityHandleTraits>> at element +8 and drops the group when its size (+0x34) is 0."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Groups",
+      "offset": 0,
+      "type": "HashMap<FixedString, AiSwarmGroupsGroup>",
+      "source": "inferred",
+      "evidence": "macOS name: ls::HashMap<ls::FixedString, esv::ai::swarm::Group> (AddMember/RemoveMember). EoCServer.dll FUN_1816a5f50 (called from esv::ai::swarm::GroupSystem::Update): hashes a FixedString key, values at +0x30 with stride 0x38. Live: bucket count 0x1D..0xC1, key arrays of capacity 0x20/0x80."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "name of Group +0"
+  ],
+  "summary": "AI swarm groups singleton (idle levels).",
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

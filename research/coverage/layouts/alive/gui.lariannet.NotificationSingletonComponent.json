@@ -1,0 +1,27 @@
+{
+  "component": "gui::lariannet::NotificationSingletonComponent",
+  "ext_name": "GuiLariannetNotificationSingleton",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Notifications",
+      "offset": 0,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x12DDA60 allocates 0x10 bytes; destructor bg3.exe+0x12078F0 -> bg3.exe+0x1208320 resizes to 0 with 8-byte elements, releasing each through the reference-counted object's interface at +0x10 (slot +0x20). Reader: gui::notification::SystemNotificationSystem (registration bg3.exe+0x11F94F0, update bg3.exe+0x11FB950 -> bg3.exe+0x12E2330) walks the array (ptr +0, size +0xC) and passes every element to Noesis::BaseCollection::Add - the elements are Noesis::Ptr<> to Noesis::BaseComponent view-model objects. Written by gui::crossplay::CrossplayFriendSystem::Update (macOS WorldView)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The concrete Noesis view-model class of the elements is not named."
+  ],
+  "summary": "Client GUI singleton (crossplay / Larian.net friend notifications), empty in samples.",
+  "seen": true,
+  "minutes": 5,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Windows reader bg3.exe+0x12E2330 (SystemNotificationSystem) adds each 8-byte element to a Noesis collection, confirming an Array of Noesis object pointers (ref-counted, released by the destructor bg3.exe+0x1208320).",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

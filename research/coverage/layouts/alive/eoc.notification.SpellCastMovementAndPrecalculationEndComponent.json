@@ -1,0 +1,45 @@
+{
+  "component": "eoc::notification::SpellCastMovementAndPrecalculationEndComponent",
+  "ext_name": "NotificationSpellCastMovementAndPrecalculationEnd",
+  "size": 24,
+  "seen": true,
+  "fields": [
+    {
+      "name": "SpellCastGuid",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "serializers bg3.exe+0x9968D0 / 0x996A00 / 0x9965E0 / 0x9967E0: member 1 = raw 16 bytes at +0 (DAT_14627ff80). Live: same Guid values as SpellCastDestroyedComponent (spell cast id)."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "serializer member 2 = 1 byte at +0x10. Live 0/1. Read by ecl::movement::DashingSystem (registration bg3.exe+0x726190 queries Accepted + this component + spell_cast::StateComponent)."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "alignment padding; server samples hold stale bytes"
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "serializer member 3 = 4 bytes at +0x14. Live always 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the flag at +0x10 and the 4-byte value at +0x14 (int or float; always 0 live)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

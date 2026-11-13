@@ -1,0 +1,45 @@
+{
+  "component": "eoc::platform::MoveToTargetComponent",
+  "ext_name": "PlatformMoveToTarget",
+  "size": 40,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x91D220 (slot 2 of bg3.exe+0x551D640) writes 12 raw bytes at +0x0 at the FieldMeta offset global DAT_1462803C8 (0: the next member is at +0xC)."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x91D220 (slot 2 of bg3.exe+0x551D640) writes 12 raw bytes at +0xC."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x91D220 (slot 2 of bg3.exe+0x551D640) writes 4 raw bytes at +0x18."
+    },
+    {
+      "name": "LastServerPosition",
+      "offset": 28,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "Windows replication writer bg3.exe+0x91D220 (slot 2 of bg3.exe+0x551D640) writes 12 raw bytes at +0x1C. Toolkit EoCClient.dll: ls::FieldMeta<class Vector3f eoc::platform::MoveToTargetComponent::*,28>; macOS ls::FieldMeta<Vector3f eoc::platform::MoveToTargetComponent::*, &eoc::platform::MoveToTargetComponent::m_LastServerPosition>; bg3.exe+0x91D220 writes 12 bytes at +0x1C"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the vec3s at +0 and +0xC (start / target?) and of the 4-byte value at +0x18 (float speed or int?)."
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Every offset and width is settled by the Windows replication writer bg3.exe+0x91D220 (12, 12, 4, 12 bytes at 0, 0xC, 0x18, 0x1C); LastServerPosition's offset 28 is also the Toolkit FieldMeta offset."
+}

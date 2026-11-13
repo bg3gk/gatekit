@@ -1,0 +1,25 @@
+{
+  "component": "esv::script::LevelLoadStartedComponent",
+  "ext_name": "ServerScriptLevelLoadStarted",
+  "size": 4,
+  "seen": true,
+  "summary": "Singleton-like component of esv::script::LevelLoadSystem (Toolkit EoCServer.dll+0xE94830 Update, WorldView<LevelLoadStartedComponent, eoc::gamestate::RunningComponent const>; game update bg3.exe+0x345F1A0): holds the name of the level whose load started, for the script side. Seen.py context: born at level-change and in the character-creation level (SYS_CC_I).",
+  "fields": [
+    {
+      "name": "Level",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x345F610 allocates 4 bytes and writes 0xFFFFFFFF (null FixedString); bg3.exe+0x345F1A0 assigns the system's FixedString member (+0x10) with IncRef/DecRef; Toolkit LevelLoadSystem::Update does FixedString::operator=(component, this+0x10) then FixedString::Reset(this+0x10). Live: FixedString-shaped indices. That the string is the level name is inferred from the system and the context (level change)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Whether the FixedString is the level name or another level-load key (not checked live against the level name)."
+  ],
+  "minutes": 4,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

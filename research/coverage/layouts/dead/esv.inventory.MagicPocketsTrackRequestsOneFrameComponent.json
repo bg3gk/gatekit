@@ -1,0 +1,27 @@
+{
+  "component": "esv::inventory::MagicPocketsTrackRequestsOneFrameComponent",
+  "ext_name": "ServerInventoryMagicPocketsTrackRequests",
+  "size": 48,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request set of esv::inventory::MagicPocketsTrackingSystem (Toolkit users CreateMagicPocketsMovementRequests, ProcessInventoryChanges, Update): entities whose magic-pocket (shared/camp inventory) tracking must be updated. Created on a new event entity by bg3.exe+0x239D110 and filled with every live entity of a list. Never seen alive. Registry total 48 (server row).",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3502800 (AllocRaw 0x30) zeroes +0..+0x2F in the HashSet pattern; destructor thunk of bg3.exe+0x582AD0 frees +0x20, +0x10, +0. Writer bg3.exe+0x239D110 lines 31-41 insert every alive ls::ID<ecs::EntityHandleTraits> of its input array with bg3.exe+0x721030 (HashSet<8-byte> insert)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which entities (containers or items) the set holds is not established.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

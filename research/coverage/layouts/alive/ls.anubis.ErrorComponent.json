@@ -1,0 +1,25 @@
+{
+  "component": "ls::anubis::ErrorComponent",
+  "ext_name": "AnubisError",
+  "size": 24,
+  "seen": true,
+  "summary": "Error text of an Anubis (behaviour script) tree. Born on NPC entities whose Anubis script failed (seen in WLD/CTY dialogue and tavern situations, up to 4 holders). Queries of ls::anubis::System and EventStorage::ForwardEventToListeners exclude or skip entities that hold it.",
+  "fields": [
+    {
+      "name": "Error",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x383B310 (the add helper, storage size 0x18) zeroes the 24 bytes and calls ls::STDString::STDString(this, string_view) on the component itself; live samples: +0 heap pointer, +8 zero, +0x10 size 0xD4..0x17F (u32), +0x14 capacity (u32) - an STDString of 212..383 characters"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "the text itself was not read live; the name 'Error' is from the component name"
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

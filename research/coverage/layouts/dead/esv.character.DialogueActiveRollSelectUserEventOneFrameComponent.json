@@ -1,0 +1,26 @@
+{
+  "component": "esv::character::DialogueActiveRollSelectUserEventOneFrameComponent",
+  "ext_name": "ServerCharacterDialogueActiveRollSelectUserEvent",
+  "size": 4,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame event of esv::CharacterManager: during a dialogue active roll a user is selected for a character. Created by bg3.exe+0x3334990 (AllocRaw 4) from the CharacterManager per-frame helper bg3.exe+0x3323880, which writes a 4-byte user id taken from an entry (+0xC) of a user list; read by esv::user::AssignmentSystemHelper::AssignToUser (macOS index, Toolkit EoCServer.dll+0x158E470). Never seen alive (seen.py has no samples). Registry total 4 (server row). Not saved, not replicated.",
+  "fields": [
+    {
+      "name": "User",
+      "offset": 0,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3334990 (ComponentFrameStorageAllocRaw size 4) writes DAT_14617ceac, the global default UserID (same default as esv::character_creation::SessionOwnerComponent and ecl::StartTurnRequestReactionOneFrameComponent layouts). Writer bg3.exe+0x3323880 line ~657: `*puVar19 = *(undefined4 *)((longlong)pppuVar24 + 0xc)` - the user id of the entry whose user is not yet in a local set; the reader is esv::user::AssignmentSystemHelper::AssignToUser."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples); the field could be a user index instead of a full UserId, but the default is the UserID default global."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

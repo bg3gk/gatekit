@@ -1,0 +1,55 @@
+{
+  "component": "ls::SkeletonSoundObjectTransformComponent",
+  "ext_name": "SkeletonSoundObjectTransform",
+  "size": 44,
+  "seen": true,
+  "summary": "Transform of a per-bone sound object child entity of a character (head, feet, hands... sound emitters, see ls::SkeletonSoundObjectsComponent), created by ecl::SkeletonSoundObjectSystem::CreateChildEntity and updated by UpdateSkeletonSoundObjects; read by ls::SoundTransformSystem, ecl::SoundSystem, ecl::sound::AutoFoleySystem and ls::SoundOcclusionSystem.",
+  "fields": [
+    {
+      "name": "Rotation",
+      "offset": 0,
+      "type": "glm::quat",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0xDE5870 (component add called from ecl::SkeletonSoundObjectSystem::CreateChildEntity, EoCClient.dll+0xDEC3D0; AllocRaw 0x2C) copies the first 16 bytes of the ls::Transform argument (its rotation quaternion) to +0. Live: unit quaternions."
+    },
+    {
+      "name": "Position",
+      "offset": 16,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Same add: +0x10..+0x1B = Transform+0x10 (translation). Live: world coordinates (43.55, 17.64, 426.4)."
+    },
+    {
+      "name": "PreviousPosition",
+      "offset": 28,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Same add: +0x1C..+0x27 initialised with the same translation as Position. Live: values slightly behind Position (43.16 vs 43.55) - the position of the previous update (name inferred)."
+    },
+    {
+      "name": "SoundObjectIndex",
+      "offset": 40,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Same add: byte +0x28 = *param_5, the ls::ESoundObjectIndex argument of CreateChildEntity (also passed to Skeleton::GetActivationRangeForSoundObject). Live: low byte 1..4."
+    },
+    {
+      "name": "_Pad29",
+      "offset": 41,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "tail padding (live bytes vary)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "PreviousPosition role not confirmed in the update code (UpdateSkeletonSoundObjects works through a lambda not opened).",
+    "Read from the Toolkit build (EoCClient.dll)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "live check 2026-11-13: the first quaternion part is not an ordinary float on 68 live instances - the layout is contradicted by the game"
+}

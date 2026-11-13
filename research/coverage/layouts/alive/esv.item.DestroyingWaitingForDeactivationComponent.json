@@ -1,0 +1,33 @@
+{
+  "component": "esv::item::DestroyingWaitingForDeactivationComponent",
+  "ext_name": "ServerItemDestroyingWaitingForDeactivation",
+  "size": 2,
+  "seen": true,
+  "summary": "Server state of esv::item::DestructionSystem (the only writer, macOS index): an item being destroyed waits until it is deactivated (Toolkit EoCServer.dll+0x141DC90 DestructionSystem::Update calls a helper whose only string is 'anonymous-namespace::HandleWaitingForDeactivation'). Savegame model ls::model::game::death::v0/v1::DestroyingWaitingForDeactivationComponent. Seen.py context: item-destroy situation (1 instance).",
+  "fields": [
+    {
+      "name": "SnapToGround",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "The only saved member (model ls::model::game::death::v1::DestroyingWaitingForDeactivationComponent, size 1, alignment 1): the Windows loader bg3.exe+0x25EBA50 stores (saved byte != 0) into byte 0. Creator bg3.exe+0x33CD980 copies a byte (+0x31 of its third argument). Toolkit HandleWaitingForDeactivation (EoCServer.dll+0x141C230, ItemDestructionSystem.cpp): when byte 0 != 0 it calls EoCServer.dll+0x141D340, which puts the item on the ground (AiGrid::FillInHeight, PhysicsPositionBySweep, TransformSystem::SetTranslate/SetRotate) before the component is removed. Name inferred from that."
+    },
+    {
+      "name": "field_1",
+      "offset": 1,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Not saved. Creator bg3.exe+0x33CD980 writes the uint16 1 then overwrites byte 0 -> byte 1 = 0; the save loader bg3.exe+0x25EBA50 writes CONCAT11(1, ...) -> byte 1 = 1. Toolkit HandleWaitingForDeactivation: when byte 1 == 0 it first requires the item to be inactive (no ActiveComponent; asserts 'Active item missing an ActiveComponent' otherwise) and keeps waiting; when byte 1 != 0 it skips that wait. So: 'deactivation already happened / skip the wait' (set for components restored from a save)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are inferred (the model has no member names); the source structure of the creator's byte (+0x31 of its argument) was not identified."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Windows creator bg3.exe+0x33CD980 and save loader bg3.exe+0x25EBA50 (model v1, 1 byte) fix two bool bytes; the Toolkit HandleWaitingForDeactivation shows byte 0 triggers placing the item on the ground and byte 1 skips the wait for deactivation (1 when loaded from a save).",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

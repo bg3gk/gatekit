@@ -1,0 +1,26 @@
+{
+  "component": "ecl::spell_preview::HighlightsComponent",
+  "ext_name": "ClientSpellPreviewHighlights",
+  "size": 48,
+  "seen": true,
+  "summary": "Set of entities highlighted by the spell preview of the spell being targeted. Born live in situation spells-3 (GK.Stage.Cast of Shout_HealingWord_Mass, Target_Invisibility, Shout_Blur ...) together with spell_preview::EffectsComponent, ForceComponent, SurfaceTilesComponent, TargetingComponent and spell_cast::TargetingComponent. Added by bg3.exe+0x1EEAC60 (called from the spell preview update bg3.exe+0x1ED9230, part of ecl::spell_preview::PreviewSystem, per-frame update bg3.exe+0x1ED8BE0); removed by bg3.exe+0x1ED97C0; read by ecl::CharacterTask_Spell::GetTaskInfo (bg3.exe+0x1FBBD40 via bg3.exe+0x1FBE230).",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1EEAC60 allocates 0x30 and zeroes it; registration bg3.exe+0x646430 (size word 0x300030) sets destructor bg3.exe+0x582AD0, which frees three buffers at +0x0, +0x10 and +0x20 (the HashSet bucket table, next-id array and key array). ecl::CharacterTask_Spell::GetTaskInfo bg3.exe+0x1FBBD40 iterates the keys at +0x20 with stride 8 and count at +0x2C, passing each to IsEntityAlive / Legacy_IsInvisible: keys are EntityHandles. Live: one empty instance (all zero)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Only an empty set was seen live; which entities get highlighted (targets in the area?) not checked."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

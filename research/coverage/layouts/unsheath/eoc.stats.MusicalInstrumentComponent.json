@@ -1,0 +1,23 @@
+{
+  "component": "eoc::stats::MusicalInstrumentComponent",
+  "ext_name": "MusicalInstrument",
+  "size": 1,
+  "fields": [
+    {
+      "name": "InstrumentType",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2EC4770; its caller bg3.exe+0x2EC4490 takes the item's stats object, checks that stat attribute at global bg3.exe+0x617531C (Slot) equals 0x10 (ItemSlot::MusicalInstrument) and stores the integer value of the stat attribute named by the FixedString global bg3.exe+0x6253568 (FUN_14102aee0). Stats data: Armor entries have 'InstrumentType' (ARM_Instrument_Lute: Lute, ARM_Instrument_Lyre: Lyre) and ValueLists.txt defines valuelist InstrumentType: None=0, Bagpipes=1, Drum=2, Dulcimer=3, Flute=4, Lute=5, Lyre=6, Horn=7, Shawm=8, Violin=9, Musicbox=10, Saxophone=11. Live: 5 on ARM_Instrument_Lute_B, 6 on SCL_SpidersLyre - matches Lute/Lyre. Replicated component."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Script Extender declares no InstrumentType enumeration (no 'Bagpipes' anywhere in GameDefinitions); a new enum (uint8_t) with the twelve values above would be needed for a typed field. The attribute name behind bg3.exe+0x6253568 was not resolved offline; identification rests on the stats value list matching both live values."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

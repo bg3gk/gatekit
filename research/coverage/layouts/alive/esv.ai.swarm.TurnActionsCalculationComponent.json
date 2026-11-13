@@ -1,0 +1,394 @@
+{
+  "component": "esv::ai::swarm::TurnActionsCalculationComponent",
+  "ext_name": "ServerAiSwarmTurnActionsCalculation",
+  "size": 320,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AiSwarmTurnActionsCalculationSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as Script Extender SpellId (Base/ExposedTypes.h: SpellMetaId + Prototype), size 0x38. "
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SpellSourceType (1 byte); macOS default ctor stores the Sentinel byte at +8; live value 0x17 when empty"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId::Source"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId::ProgressionSource"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SpellId::Prototype"
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Live 0..2. The esv::ai::swarm::TurnActionsCalculation object starts at +8 (copy ctor EoCServer.dll+0xBC0E70 and game dtor bg3.exe+0x30B9EA0 offsets + 8 match the live sample)."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "TargetIndex",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "TurnActionsCalculation +0 (int); name from the replicated debug copy eoc::ai::swarm::ReplicatedDebugCalculation m_TargetIndex (macOS FieldMeta), mapped by order. Live 3..0xC."
+    },
+    {
+      "name": "CastPosition",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "TurnActionsCalculation +4 (16 bytes copied, Optional<vec3>); ReplicatedDebugCalculation m_CastPosition by order. Live world coordinates, flag 1."
+    },
+    {
+      "name": "HasCastPosition",
+      "offset": 24,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ls::Optional flag of CastPosition"
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "field_1c",
+      "offset": 28,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "TurnActionsCalculation +0x14: optional 8-byte value (FixedString copied with its ctor + int), flag at +0x1C (game dtor bg3.exe+0x30B9EA0 releases it when the flag is set) - probably an Optional<esv::ai::swarm::PathID>."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Second half of that optional (live 0..0xE3D)."
+    },
+    {
+      "name": "field_24",
+      "offset": 36,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Its optional flag (live 0/1)."
+    },
+    {
+      "name": "_Pad25",
+      "offset": 37,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "MoveSpellIntermediary",
+      "offset": 40,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "TurnActionsCalculation +0x20 (16 bytes); ReplicatedDebugCalculation m_MoveSpellIntermediary by order."
+    },
+    {
+      "name": "HasMoveSpellIntermediary",
+      "offset": 52,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ls::Optional flag of MoveSpellIntermediary"
+    },
+    {
+      "name": "_Pad35",
+      "offset": 53,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "MoveSpellAttackCastPosition",
+      "offset": 56,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "TurnActionsCalculation +0x30 (16 bytes); ReplicatedDebugCalculation m_MoveSpellAttackCastPosition by order."
+    },
+    {
+      "name": "HasMoveSpellAttackCastPosition",
+      "offset": 68,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ls::Optional flag of MoveSpellAttackCastPosition"
+    },
+    {
+      "name": "_Pad45",
+      "offset": 69,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "field_48",
+      "offset": 72,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Optional 8-byte value (FixedString + int) with flag at +8, like field_1c; game dtor releases the FixedString when the flag is set."
+    },
+    {
+      "name": "field_4c",
+      "offset": 76,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Second half of the optional value."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Optional flag."
+    },
+    {
+      "name": "_Pad51",
+      "offset": 81,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "field_54",
+      "offset": 84,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Optional 8-byte value (FixedString + int) with flag at +8, like field_1c; game dtor releases the FixedString when the flag is set."
+    },
+    {
+      "name": "field_58",
+      "offset": 88,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Second half of the optional value."
+    },
+    {
+      "name": "field_5c",
+      "offset": 92,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Optional flag."
+    },
+    {
+      "name": "_Pad5D",
+      "offset": 93,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "MoveSpell",
+      "offset": 96,
+      "type": "AiSwarmTurnActionsCalculationSpellId",
+      "source": "inferred",
+      "evidence": "TurnActionsCalculation +0x58: Optional<{SpellId, vec3, vec3}> (flag +0xA8); eoc::spell::SpellId copy ctor; ReplicatedDebugCalculation m_MoveSpell."
+    },
+    {
+      "name": "MoveSpellStart",
+      "offset": 152,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Calc +0x90 (copied with the SpellId); m_MoveSpellStart by order."
+    },
+    {
+      "name": "MoveSpellEnd",
+      "offset": 164,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Calc +0x9C; m_MoveSpellEnd by order."
+    },
+    {
+      "name": "HasMoveSpell",
+      "offset": 176,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Calc +0xA8: flag guarding the SpellId (dtor/copy)."
+    },
+    {
+      "name": "_PadB1",
+      "offset": 177,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "MovementPoints",
+      "offset": 184,
+      "type": "double",
+      "source": "inferred",
+      "evidence": "Calc +0xB0 (8 bytes); m_MovementPoints (double) by order; live 18.0 / -1.0 (the debug builder defaults it to -1.0)."
+    },
+    {
+      "name": "DashSpell",
+      "offset": 192,
+      "type": "AiSwarmTurnActionsCalculationSpellId",
+      "source": "inferred",
+      "evidence": "Calc +0xB8: SpellId (copy ctor, always destroyed); m_DashSpell by order. Live FixedStrings at +0xC0/+0xF0."
+    },
+    {
+      "name": "PathDistanceXZ",
+      "offset": 248,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Calc +0xF0 (8 bytes: float + flag); m_PathDistanceXZ (Optional<float>). Live 3.5 / 33.5 with flag 1."
+    },
+    {
+      "name": "HasPathDistanceXZ",
+      "offset": 252,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Optional flag."
+    },
+    {
+      "name": "_PadFD",
+      "offset": 253,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "field_100",
+      "offset": 256,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Calc +0xF8 (16 bytes). Live world coordinates with flag 1 in 16 of 48 samples."
+    },
+    {
+      "name": "field_100_set",
+      "offset": 268,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "ls::Optional flag of field_100"
+    },
+    {
+      "name": "_Pad10D",
+      "offset": 269,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "field_110",
+      "offset": 272,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Calc +0x108 (16 bytes). Live zero."
+    },
+    {
+      "name": "field_110_set",
+      "offset": 284,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "ls::Optional flag of field_110"
+    },
+    {
+      "name": "_Pad11D",
+      "offset": 285,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "PathPoints",
+      "offset": 288,
+      "type": "Array<glm::vec3>",
+      "source": "inferred",
+      "evidence": "Calc +0x118: copy ctor allocates count * 0xC (IndexedStorage<Vector3f>); m_PathPoints by order. Live heap, capacity 4..0x40."
+    },
+    {
+      "name": "ReachablePosition",
+      "offset": 304,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Calc +0x128 (16 bytes, last member); m_ReachablePosition by order. Live zero."
+    },
+    {
+      "name": "HasReachablePosition",
+      "offset": 316,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ls::Optional flag of ReachablePosition"
+    },
+    {
+      "name": "_Pad13D",
+      "offset": 317,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_0 (8-byte header before the TurnActionsCalculation)",
+    "names come from ReplicatedDebugCalculation by member order - not proven one-to-one",
+    "the three PathID-like optionals and two optional vec3 (+0x100, +0x110)",
+    "The Optional<{FixedString,int}> members could be named from esv::ai::swarm::CalculateActionsSystem (macOS named) where they are filled."
+  ],
+  "summary": "AI swarm turn calculation per member (idle levels).",
+  "minutes": 12,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Re-checked against the replicated debug copy eoc::ai::swarm::ReplicatedDebugCalculation (macOS FieldMeta names): the still-unnamed members (three Optional<FixedString,int>, two Optional<vec3>, the leading int) have no counterpart there; nothing else names them."
+}

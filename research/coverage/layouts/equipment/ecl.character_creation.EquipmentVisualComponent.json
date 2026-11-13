@@ -1,0 +1,53 @@
+{
+  "component": "ecl::character_creation::EquipmentVisualComponent",
+  "ext_name": "ClientCCEquipmentVisual",
+  "size": 112,
+  "fields": [
+    {
+      "name": "Source",
+      "offset": 0,
+      "type": "uint64_t[12]",
+      "source": "inferred",
+      "evidence": "Raw storage (0x60 bytes) of a std::variant whose index byte is Kind at +0x60. The system update bg3.exe+0x2078490 (query EquipmentVisual + CurrentVisual + ls::Visual, stride 0x70) switches on the byte at +0x60: 0 -> bg3.exe+0x2078F10 / bg3.exe+0x207A290, which read +0 as an array and +0x10 as a Guid; 1 -> bg3.exe+0x207A690 / bg3.exe+0x2079980, which read +0 as an entity handle and +0x8 as a Guid. Two overlapping interpretations of the same bytes selected by an index byte placed after the largest one (0x60) is the layout of std::variant (as in esv::inventory::EquipmentRequest in Script Extender). Creator bg3.exe+0x201BB30 builds alternative 0 (all zero, index 0). Alternative 0 (Kind 0, 96 bytes, built by the creator): +0x0 Array<FixedString> EquipmentSets (Alternative 0 (kind byte at component+0x60 == 0). bg3.exe+0x2078F10 and bg3.exe+0x207A290 walk +0x0 as an array of 4-byte elements (size at +0xC) and look each one up through the virtual call +0x28 of the manager at *(system+0x58)+0x390; the result holds a list of groups, each with a list of FixedString item names (first one taken) - an equipment set.); +0x10 Guid Template (bg3.exe+0x2078F10 tests the two qwords at +0x10/+0x18 for non-zero, prints them with \"%08x-%04hx-%04hx-%04hx-%04hx%04hx%04hx\" and passes the string to ecl::GetRootOrGlobalGameObjectTemplate - the template of the character the equipment is shown on.); +0x20 HashMap<ItemSlot, FixedString> SlotOverrides (Creator bg3.exe+0x201BB30 zeroes +0x20..+0x60 in the hash map pattern. bg3.exe+0x207A290 (param_4 = component+0x20) looks the slot of every item of the sets up in it: hash by the 1-byte slot value, keys compared as single bytes at [4], values 4 bytes each at [6] (FixedString). Same type as the map at +0x18 of ecl::character_creation::DummyDefinitionComponent in Script Extender.). Alternative 1 (Kind 1, 24 bytes): +0x0 EntityHandle Entity (Alternative 1 (kind byte == 1). bg3.exe+0x207A690 and bg3.exe+0x2079980 pass the qword at +0 as an entity to bg3.exe+0xAFB090 / bg3.exe+0x7851C0 (ecl::Character lookup) and iterate its equipment with bg3.exe+0x11055D0 - the character whose equipment is copied onto the dummy.); +0x8 Guid Template (bg3.exe+0x207A690 prints the 16 bytes at +0x8 with the Guid format string and resolves them with ecl::GetRootOrGlobalGameObjectTemplate.). Written as raw 8-aligned storage because the build has no variant type; read Kind before interpreting it."
+    },
+    {
+      "name": "Kind",
+      "offset": 96,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Variant index byte: the system update bg3.exe+0x2078490 switches on the byte at +0x60 (0 = equipment sets + template + slot overrides, 1 = entity + template); creator bg3.exe+0x201BB30 leaves it 0."
+    },
+    {
+      "name": "_Pad61",
+      "offset": 97,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding up to the 8-aligned bool at +0x68"
+    },
+    {
+      "name": "NeedsUpdate",
+      "offset": 104,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2078490: when the byte at +0x68 is non-zero the equipment visuals are requested according to the kind (the two calls above) and the byte is cleared. Creator writes 0."
+    },
+    {
+      "name": "_Pad69",
+      "offset": 105,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "tail padding; the creator writes one byte at +0x68"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures (character creation was not opened).",
+    "What the FixedString values of the slot overrides (alternative 0, +0x20) are (item template or visual resource) was not followed; whether alternative 1 has members after +0x18 is unknown (nothing reads there) - both are inside the raw storage, so the layout itself is settled."
+  ],
+  "minutes": 18,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "The std::variant (not buildable, it needed external_types) is now written as 96 bytes of raw 8-aligned storage plus the index byte Kind at +0x60, padding and NeedsUpdate at +0x68, with both alternatives described in the evidence; every offset comes from bg3.exe (creator bg3.exe+0x201BB30, system update bg3.exe+0x2078490 and its four helpers).",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

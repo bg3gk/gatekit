@@ -1,0 +1,90 @@
+{
+  "component": "ls::ClusterPhysicsLoadedComponent",
+  "ext_name": "ClusterPhysicsLoaded",
+  "size": 184,
+  "seen": true,
+  "summary": "Client physics streaming: the loaded physics of a cluster (physics twin of ls::ClusterVisualLoadedComponent, layouts\\alive\\ls.ClusterVisualLoadedComponent.json, same size 0xB8 and same member shapes). Written by ls::ClusterLoadHelper<ls::ClusterPhysicsLoaderSystem::LoadOps>::ProcessClusterLoadResult / ProcessContentChanges and ClusterPhysicsLoaderSystem::ApplyLoadResultToEntity (Toolkit GameEngine.dll+0x120E90, +0x11D680); read by phx::PhysXDisableSimulationSystem and phx::PhysXSceneAttacherSystem. macOS names RemoveEntityFromCluster<ls::ClusterPhysicsData, ClusterPhysicsContentComponent, ClusterPhysicsLoadedComponent>. Seen alive on cluster entities of idle levels.",
+  "fields": [
+    {
+      "name": "Data",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, void*>",
+      "source": "inferred",
+      "evidence": "macOS ~ClusterPhysicsLoadedComponent: HashTable<ls::ID<EntityHandleTraits>, HashTableOpsDefault>::~HashTable(this) and frees the values at +0x30 - entity-handle keys. Values are 8-byte ls::ClusterPhysicsData (IndexedStorage<ls::ClusterPhysicsData> with stride 8 in GameEngine.dll+0x110640; Toolkit ProcessClusterLoadResult GameEngine.dll+0x120E90 writes '*(+0x30 + idx*8) = *loadResultData'), written as void* like the visual twin's values (opaque handle/pointer). Windows creator bg3.exe+0x3E77300 zeroes the map, destructor bg3.exe+0x3B714C0 destroys the key set (bg3.exe+0x582AD0) and frees the value buffer at +0x30."
+    },
+    {
+      "name": "Versions",
+      "offset": 64,
+      "type": "HashMap<EntityHandle, uint32_t>",
+      "source": "inferred",
+      "evidence": "macOS destructor: HashTable<ID<EntityHandleTraits>> at +0x40, values freed at +0x70. Toolkit GameEngine.dll+0x120E90 inserts into +0x40 (GameEngine.dll+0xED330) and stores a uint32 per key in the value storage at +0x70 (IndexedStorage<unsigned int, s_TagHashTable>, stride 4), keeping the larger of the stored and the new load result's counter (puVar14[2]) - name inferred from that max-update. Windows destructor frees +0x70 and destroys the set at +0x40."
+    },
+    {
+      "name": "Frame",
+      "offset": 128,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Toolkit GameEngine.dll+0x1158E0 compares *(int*)(this+0x80) with the frame index (param_2+0x10), stores the new one and clears the ModifiedPair list (+0x94 size). Live: frame-counter-like values."
+    },
+    {
+      "name": "_Pad84",
+      "offset": 132,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "alignment before the 8-byte aligned array at +0x88; not written (live garbage)."
+    },
+    {
+      "name": "ModifiedPairs",
+      "offset": 136,
+      "type": "Array<ClusterPhysicsLoadedModifiedPair>",
+      "source": "inferred",
+      "evidence": "Array of ls::ClusterPhysicsLoadedComponent::ModifiedPair (16-byte elements, Toolkit realloc GameEngine.dll+0x126630 uses count << 4; cleared each frame by GameEngine.dll+0x1158E0; destroyed by GameEngine.dll+0x10EB90 / Windows bg3.exe+0x3B714C0 at +0x88)."
+    },
+    {
+      "name": "Added",
+      "offset": 152,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "Toolkit GameEngine.dll+0x120E90 pushes the load result's 8-byte ls::ClusterPhysicsData here (GameEngine.dll+0x110640(this+0x98, ...), IndexedStorage<ls::ClusterPhysicsData>, stride 8) when a key is new. Windows destructor frees +0x98."
+    },
+    {
+      "name": "Removed",
+      "offset": 168,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "Same function pushes the replaced ClusterPhysicsData (old map value) into +0xA8 before overwriting it. Windows destructor frees +0xA8."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What ls::ClusterPhysicsData (8 bytes) holds - written as void*; the uint32 values of the second map are a load counter by their max-update, not named by the game."
+  ],
+  "minutes": 10,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "confirmed",
+  "structs": [
+    {
+      "name": "ClusterPhysicsLoadedModifiedPair",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ls::ClusterPhysicsLoadedComponent::ModifiedPair (IndexedStorage asserts in GameEngine.dll+0x11DA90 / +0x126630, stride 16): the Toolkit ClusterLoadHelper code GameEngine.dll+0x1217C0 appends {content entity key, previous Data value} - +0 is the entity key it just looked up in the Data map."
+        },
+        {
+          "name": "Data",
+          "offset": 8,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Same append: the 8-byte ls::ClusterPhysicsData value the Data map held for that entity (*local_11e0, from GameEngine.dll+0x11B7D0(map+0x30, idx))."
+        }
+      ]
+    }
+  ],
+  "second_pass": "macOS destructor names both maps' entity keys, the Toolkit cluster physics loader (GameEngine.dll+0x120E90, +0x1217C0, +0x1158E0; no strings in this layout, so Toolkit and Windows offsets agree with the Windows destructor bg3.exe+0x3B714C0) gives the value widths (8-byte ClusterPhysicsData, uint32), the frame stamp and the 16-byte ModifiedPair {entity, old data}; +0x84 is padding.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

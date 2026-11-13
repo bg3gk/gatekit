@@ -1,0 +1,46 @@
+{
+  "component": "esv::ai::swarm::MembersChangedComponent",
+  "ext_name": "ServerAiSwarmMembersChanged",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AiSwarmMembersChange",
+      "size": 8,
+      "fields": [
+        {
+          "name": "OldSwarmGroup",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "esv::ai::swarm::MemberSystem::UpdateMembers (EoCServer.dll+0x16A3080): for each entity of the request map it reads the current group FixedString from the entity's eoc::ai::swarm::MemberComponent (FUN_180bbf0c0, Empty when absent) and, when it differs from the requested one, writes it to value +0."
+        },
+        {
+          "name": "NewSwarmGroup",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same function writes the requested group (value of the HashMap<EntityHandle, FixedString> argument) to value +4; the pair is then copied into the singleton and into the entity's MemberChangedEvent."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Changes",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, AiSwarmMembersChange>",
+      "source": "inferred",
+      "evidence": "UpdateMembers gets this singleton (FUN_1816a1ce0), clears it (FUN_18169ab10 / FUN_180226330) and for every alive entity inserts the entity as key (FUN_1816a1770(singleton, entity)) and assigns two FixedStrings to the returned 8-byte value. Adder bg3.exe+0x3258980 allocates 0x40 bytes and zeroes them. Live: 4 instances of cleared maps (bucket count 29/43, key/value capacity 32, size 0)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Old/New order rests on one function (pair written as {current, requested})."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

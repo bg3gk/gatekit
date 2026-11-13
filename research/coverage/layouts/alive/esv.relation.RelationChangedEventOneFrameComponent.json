@@ -1,0 +1,58 @@
+{
+  "component": "esv::relation::RelationChangedEventOneFrameComponent",
+  "ext_name": "ServerRelationRelationChangedEvent",
+  "size": 40,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Event of esv::relation::RelationSystem (per-frame update bg3.exe+0x2C1D0F0): a relation between two Guid-identified parties (factions or characters) changed. Registered with an ordinary (not one-frame) type index in bg3.exe; cleared by RelationSystem::ClearOneFrameComponents. Seen.py context: dialogues and trigger zones that change factions (DEN, GOB, UND), idle levels.",
+  "fields": [
+    {
+      "name": "SourceFaction",
+      "offset": 0,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "Toolkit ctor EoCServer.dll+0x50B550 constructs ls::Guid at +0; operator= EoCServer.dll+0x50B950 copies two qwords. Live: 18 distinct random 16-byte values (faction-like Guids, the same set as +0x10). | Name: Osiris event RelationChanged((FACTION)_SourceFaction, (FACTION)_TargetFaction, (INTEGER)_NewRelation, (INTEGER)_Permanent) (story_header, gameindex.py osiris). esv::StoryGameEventManager::Init bg3.exe+0x308BBE0 connects the handler bg3.exe+0x3093790 to this component's signal; the handler pushes, in this order, Guid +0, Guid +0x10, (int)byte +0x20, (bool)byte +0x21: first parameter = Guid +0.",
+      "legacy": "field_0"
+    },
+    {
+      "name": "TargetFaction",
+      "offset": 16,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "Toolkit ctor constructs ls::Guid at +0x10; operator= copies +0x10/+0x18. Live: 17 distinct values from the same set as +0. | Name: Osiris event RelationChanged((FACTION)_SourceFaction, (FACTION)_TargetFaction, (INTEGER)_NewRelation, (INTEGER)_Permanent) (story_header, gameindex.py osiris). esv::StoryGameEventManager::Init bg3.exe+0x308BBE0 connects the handler bg3.exe+0x3093790 to this component's signal; the handler pushes, in this order, Guid +0, Guid +0x10, (int)byte +0x20, (bool)byte +0x21: second parameter = Guid +0x10.",
+      "legacy": "field_10"
+    },
+    {
+      "name": "NewRelation",
+      "offset": 32,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "Toolkit ctor writes the uint16 0x0032 at +0x20, i.e. byte +0x20 = 50; operator= copies bytes +0x20 and +0x21 separately. Live byte values 0x00, 0x32 (50), 0x64 (100): a relation value on the 0..100 scale (50 = neutral default) - probably the new relation, not proven. | Name: Osiris event RelationChanged((FACTION)_SourceFaction, (FACTION)_TargetFaction, (INTEGER)_NewRelation, (INTEGER)_Permanent) (story_header, gameindex.py osiris). esv::StoryGameEventManager::Init bg3.exe+0x308BBE0 connects the handler bg3.exe+0x3093790 to this component's signal; the handler pushes, in this order, Guid +0, Guid +0x10, (int)byte +0x20, (bool)byte +0x21: third parameter = byte +0x20 widened to int (Toolkit ctor default 50; live 0 / 50 / 100).",
+      "legacy": "field_20"
+    },
+    {
+      "name": "Permanent",
+      "offset": 33,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Ctor default 0 (high byte of 0x0032); operator= copies it separately. Live 0/1. | Name: Osiris event RelationChanged((FACTION)_SourceFaction, (FACTION)_TargetFaction, (INTEGER)_NewRelation, (INTEGER)_Permanent) (story_header, gameindex.py osiris). esv::StoryGameEventManager::Init bg3.exe+0x308BBE0 connects the handler bg3.exe+0x3093790 to this component's signal; the handler pushes, in this order, Guid +0, Guid +0x10, (int)byte +0x20, (bool)byte +0x21: fourth parameter = (byte +0x21 != 0).",
+      "legacy": "field_21"
+    },
+    {
+      "name": "_Pad22",
+      "offset": 34,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "Never copied by operator=; live garbage. Registry size 40 (0x28)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which Guid is the source and which the target party; whether +0x20 is the new or the old relation value; meaning of the +0x21 flag."
+  ],
+  "minutes": 6,
+  "functions_read": 5,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Settled by the Osiris event RelationChanged: the story handler bg3.exe+0x3093790, connected to this component by esv::StoryGameEventManager::Init, passes the four members in the event's parameter order."
+}

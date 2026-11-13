@@ -1,0 +1,75 @@
+{
+  "component": "ecl::timeline::ClearScreenFadeRequestOneFrameComponent",
+  "ext_name": "ClientTimelineClearScreenFadeRequest",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TimelineClearScreenFadeData>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D756A0 zeroes a 16-byte array. bg3.exe+0x1D6C6A0 (ecl::TimelineSystem, last step of the update) appends 0x20-byte elements (grow helper bg3.exe+0x6DA440, 'size * 0x20', size at +0xC) for every entry of the frame data's clear-request map. Element = SE's ClearScreenFadeData (Components/Camera.h), redeclared under a name unique to the component."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Element member names are SE's (ClearScreenFadeData); +0x10 is filled with a fade duration although SE calls it FadeSpeed; +0x18 and +0x1C are unnamed.",
+    "Never alive in the captures."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "structs": [
+    {
+      "name": "TimelineClearScreenFadeData",
+      "size": 32,
+      "fields": [
+        {
+          "name": "FadeId",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D6C6A0 (ecl::TimelineSystem, last step of the update) writes the 16-byte key of the frame data's clear-request map (array at frame data +0xB0, stride 0x10). SE ClearScreenFadeData.FadeId (Components/Camera.h)."
+        },
+        {
+          "name": "FadeSpeed",
+          "offset": 16,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D6C6A0 (ecl::TimelineSystem, last step of the update): the request's optional float (value +8, has-value byte +0xC) or the default ls::GlobalSwitches +0x1328. SE names this member FadeSpeed; here it is filled with a fade duration."
+        },
+        {
+          "name": "FadeTime",
+          "offset": 20,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D6C6A0 (ecl::TimelineSystem, last step of the update): 4 bytes written 0 (low half of a 5-byte constant 0x1_00000000). SE ClearScreenFadeData.FadeTime."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1D6C6A0 (ecl::TimelineSystem, last step of the update): one byte written 1 (fifth byte of that constant); bytes +0x19..+0x1B keep whatever the local held. SE ClearScreenFadeData.field_18."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "not written (stale bytes of the local copied whole); alignment of the int at +0x1C"
+        },
+        {
+          "name": "field_1C",
+          "offset": 28,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1D6C6A0 (ecl::TimelineSystem, last step of the update): copied from a local (uStack_22c) that only the preceding loop zeroes - not set by this request. SE ClearScreenFadeData.field_1C."
+        }
+      ]
+    }
+  ],
+  "second_pass": "Settled from the only writer bg3.exe+0x1D6C6A0 (ecl::TimelineSystem, last step of the update): a 0x20-stride array of {Guid, float, uint32 0, byte 1, int32}; external type ClearScreenFadeData replaced by an identical struct declared in the file.",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

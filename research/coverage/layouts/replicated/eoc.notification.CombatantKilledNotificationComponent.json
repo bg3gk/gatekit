@@ -1,0 +1,61 @@
+{
+  "component": "eoc::notification::CombatantKilledNotificationComponent",
+  "ext_name": "NotificationCombatantKilled",
+  "size": 40,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x8FDE20 member 1: 16-byte scratch write at +0 (killed combatant?); macOS default zero."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x8FDE20 member 2: 16-byte scratch write at +0x10."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x8FDE20 member 3: 1-byte write at +0x20."
+    },
+    {
+      "name": "field_21",
+      "offset": 33,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x8FDE20 member 4: 1-byte write at +0x21."
+    },
+    {
+      "name": "field_22",
+      "offset": 34,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x8FDE20 member 5: 1-byte write at +0x22; macOS default strb w17,[x23,#0x22] (non-zero default, value not resolved)."
+    },
+    {
+      "name": "_Pad23",
+      "offset": 35,
+      "type": "uint8_t[5]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+    "Meaning of the Guids and the three bytes (bools or small enums) not established."
+  ],
+  "seen": false,
+  "minutes": 3,
+  "functions_read": 0,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Replicated without macOS FieldMeta names; not settled."
+}

@@ -1,0 +1,23 @@
+{
+  "component": "ecl::summon::AnimationRequestComponent",
+  "ext_name": "ClientSummonAnimationRequest",
+  "size": 4,
+  "seen": true,
+  "summary": "Client timer for a summon's spawn animation request. Born live in situation spells-5 (summoning spells). Created by bg3.exe+0x19619E0 with 6.0; the per-frame update of ecl::summon::AnimationSystem (bg3.exe+0x1961220) subtracts the frame time and removes the component when it reaches 0.",
+  "fields": [
+    {
+      "name": "Timer",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x19619E0 writes 0x40C00000 (6.0f); bg3.exe+0x1961220 does value -= GameTime delta (+8), and when <= 0 queues the entity for removal of the component. Live 6.0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

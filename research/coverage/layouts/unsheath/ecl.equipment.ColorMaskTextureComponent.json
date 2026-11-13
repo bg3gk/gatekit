@@ -1,0 +1,25 @@
+{
+  "component": "ecl::equipment::ColorMaskTextureComponent",
+  "ext_name": "ClientEquipmentColorMaskTexture",
+  "size": 8,
+  "fields": [
+    {
+      "name": "Texture",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "A pointer to an rf::Texture (vertex colour mask texture). Creator bg3.exe+0x19942A0 (size 8, default 0/null). Windows bg3.exe+0x19926F0 (EquipmentVisualsSystem update): the loop over the removed-tag query (DAT_1463354c4 = Spec<..., Removed<ColorMaskTextureComponent>, RemovedTag>) passes component base + index*8 (8-byte stride) to bg3.exe+0x3CAF7F0, which reads *param as a key, does nothing when it is 0, else looks it up in the ls::VisualSystem resource table under its critical section and frees the entry. The macOS twin of the same loop (EquipmentVisualsSystem::Update, bg3_macos_x64+0x34E1840) does `if (Texture* t = comp) { VisualSystem::FlushVisualSetSlotUpdateForVisualResource(t); rf::DataLoader::RemoveTexture((Texture**)comp); }`; ls::VisualSetSlots::UpdateVertexColorMaskTexture(Visual const*, rf::Texture*&, ...) fills it. Script Extender's ecl::Character hides a void* VertexColorMaskTexture of the same kind."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the capture (needs an equipment visual with a vertex colour mask, i.e. a dyed or colour-masked item on a dummy). The name Texture is descriptive; the game names only the type (rf::Texture*)."
+  ],
+  "minutes": 17,
+  "functions_read": 11,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "The single 8-byte member is a pointer to an rf::Texture, not a texture id: the Windows removal loop of bg3.exe+0x19926F0 passes the slot (stride 8) to the texture release bg3.exe+0x3CAF7F0, matching macOS EquipmentVisualsSystem::Update, which calls rf::DataLoader::RemoveTexture(Texture**) on it.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

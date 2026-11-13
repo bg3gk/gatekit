@@ -1,0 +1,25 @@
+{
+  "component": "ls::PhysicsSkinnedConnectionComponent",
+  "ext_name": "PhysicsSkinnedConnection",
+  "size": 48,
+  "fields": [
+    {
+      "name": "AttachmentInfos",
+      "offset": 0,
+      "type": "uint64_t[6]",
+      "source": "game",
+      "evidence": "A HashSet<ls::AttachmentInfo> (48 bytes) written as an opaque block: the build allows no struct of the layout's own as a hash-set key. Windows type name ls::FieldMeta<class ls::HashSet<struct ls::AttachmentInfo,struct ls::HashTableOpsDefault> ls::PhysicsSkinnedConnectionComponent::*,0>; macOS m_AttachmentInfos. Windows replication writer bg3.exe+0x3AB46A0 passes the member (FieldMeta offset global DAT_1462D06C8) to bg3.exe+0x3AB7120, which writes the key count from +0x2C and walks the key array at +0x20 with stride 0x10 - the HashSet shape (buckets +0, next +0x10, keys +0x20). Key ls::AttachmentInfo, 16 bytes: +0 EntityHandle (entity writer FUN_144017090 at the never-assigned offset global DAT_1462D06E8, so 0; the reader builds fresh keys from the null-handle constant), +8 FixedString, +0xC FixedString (ecs::sync::Serialize(FixedString) on both; default -1). Member names of AttachmentInfo unknown."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Kept opaque (uint64_t[6]) because HashSet<own struct> is not allowed in the build; the key struct {EntityHandle, FixedString, FixedString} is established from bg3.exe+0x3AB7120 and could become HashSet<AttachmentInfo> once Script Extender declares ls::AttachmentInfo with a hash.",
+    "Names and meaning of the AttachmentInfo members."
+  ],
+  "minutes": 10,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "The Windows replication writer bg3.exe+0x3AB46A0 / bg3.exe+0x3AB7120 confirms one 48-byte HashSet at +0 with 16-byte keys {EntityHandle, FixedString, FixedString}; written as an opaque block because the build forbids an own struct as a hash-set key."
+}

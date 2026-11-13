@@ -1,0 +1,55 @@
+{
+  "component": "esv::pickup::SuccessfullyPickedUpSingletonComponent",
+  "ext_name": "ServerPickupSuccessfullyPickedUp",
+  "size": 64,
+  "seen": true,
+  "summary": "Server singleton: items that arrived in their target inventory this frame, grouped per entity (esv::inventory_transfer::TransferFinishedDescription lists). Written by esv::pickup::PickUpExecutionFinishedSystem::ProcessSuccessfullyFinishedMoves, read by esv::combat_log::CombatLogSystem (ProcessPickUpFinishedRequests). Seen.py context: idle level.",
+  "structs": [
+    {
+      "name": "PickedUpTransferFinished",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Item",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xD46D70: element +0 = the entity of the iterated moved item (query entity list +0x40)."
+        },
+        {
+          "name": "Amount",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Element +8 = dword +8 of the item's move-finished component in the first loop, the constant 1 in the second loop (single items)."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x10 stride (IndexedStorage<esv::inventory_transfer::TransferFinishedDescription>)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "PickedUp",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Array<PickedUpTransferFinished>>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD46D70 PickUpExecutionFinishedSystem::ProcessSuccessfullyFinishedMoves builds a 64-byte local map (8 zeroed qwords), FUN_1809a3c30(map, &componentEntity) ensures a value per 8-byte key (the first qword of the item's moving-finished component, an entity) and appends ls::IndexedStorage<esv::inventory_transfer::TransferFinishedDescription> (stride 0x10) elements to that value array; if the map is non-empty it is merged into the singleton (FUN_180d45470(singleton, map)). Live (idle): all zero."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The key entity: taken from +0 of the item's esv::character/item EntityMovingFinishedEventOneFrameComponent - probably the picker or the target inventory.",
+    "FUN_180d45470 (merge into the singleton) not read: the singleton is assumed to have the same HashMap type as the local map."
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

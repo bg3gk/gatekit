@@ -1,0 +1,25 @@
+{
+  "component": "ls::VisualLoaderRegisteredComponent",
+  "ext_name": "VisualLoaderRegistered",
+  "size": 4,
+  "seen": true,
+  "summary": "Slot index of a visual in the structure-of-arrays tables of ls::StreamSystemLoadHelper (written by StreamSystemLoadHelper::UpdateLoadRequests<VisualLoaderRegisteredComponent, VisualStreamLoadComponent, ...> and Unregister). Default -1 = not registered.",
+  "fields": [
+    {
+      "name": "Index",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3B9B810 allocates 4 bytes and writes 0xFFFFFFFF. macOS writers are only ls::StreamSystemLoadHelper::UpdateLoadRequests/Unregister<...VisualLoaderRegisteredComponent...>; StreamSystemLoadHelper::Unregister(int) (GameEngine.dll+0xA1A890) swap-removes element 'index' from its parallel arrays at +0x00/+0x10/+0x20/+0x30/+0x40/+0x50/+0x60. Live: 48 distinct small values 0..0x2E2."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Member name (Index/Slot) not given by the game."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

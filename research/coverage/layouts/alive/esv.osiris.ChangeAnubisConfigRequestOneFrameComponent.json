@@ -1,0 +1,25 @@
+{
+  "component": "esv::osiris::ChangeAnubisConfigRequestOneFrameComponent",
+  "ext_name": "ServerOsirisChangeAnubisConfigRequest",
+  "size": 24,
+  "seen": true,
+  "summary": "Server one-frame request from Osiris story scripts to switch an entity's Anubis (AI behaviour) config. Added by the per-frame update of esv::LegacyRequestProxySystem (bg3.exe+0x3148B50) from queued legacy requests; a related ls::anubis::ScriptCmdChangeAnubisConfigOneFrameComponent exists. Seen.py context: level events (S_GOB_SpiderNest_EventTrigger), level changes, dialogues, scenes - story scripts changing AI.",
+  "fields": [
+    {
+      "name": "Config",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x314B420 (AllocRaw 0x18) zeroes 24 bytes, then moves a string in: copies 16 bytes (inline buffer / heap pointer) and the 8-byte size/capacity pair from its argument, resetting the source to an empty SSO string (size 0, capacity 0xF). bg3.exe+0x3148B50 builds that argument with ls::STDString::STDString(char*). Live (24): +0 heap pointers (or inline text), +0x10 size 13..35, +0x14 capacity 15..47."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Content of the string (config name vs. full Anubis config id) not read live."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "44 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

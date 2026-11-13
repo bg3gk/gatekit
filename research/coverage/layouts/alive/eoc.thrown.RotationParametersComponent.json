@@ -1,0 +1,48 @@
+{
+  "component": "eoc::thrown::RotationParametersComponent",
+  "ext_name": "ThrownRotationParameters",
+  "size": 56,
+  "seen": true,
+  "summary": "Replicated rotation parameters of a thrown object (how it spins in flight), written by esv::thrown::ThrowAnimationSystem::ProcessApplyRotationParams (Toolkit EoCServer.dll) and copied into ecl::thrown::CurrentRotationComponent on the client. Born live in shove-throw.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Serializer bg3.exe+0x8EF080 member 1: 12 bytes at +0 (DAT_1462805a8 base). Live (0, -18.8, 0) / (0, -24.2, 0) (angular speed?)."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Serializer member 2: 12 bytes at +0xC; copied to ecl::thrown::CurrentRotationComponent +0 by bg3.exe+0x1A25F70. Live (0, 0, 1.5708)."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "glm::vec4",
+      "source": "unknown",
+      "evidence": "Serializer member 3: 16 bytes at +0x18. Live (0, 0.70, 0, 0.46) - not a unit quaternion, so kept as vec4."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "glm::vec4",
+      "source": "unknown",
+      "evidence": "Serializer member 4: 16 bytes at +0x28. Live equal to field_18. macOS default writes 1.0 (w1) at +0x34 (hint only)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the four members; whether the 16-byte members are quaternions (live values are not normalised).",
+    "Toolkit esv::thrown::ThrowAnimationSystem::ProcessApplyRotationParams writes it; its named locals would name the four members."
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Replicated without macOS FieldMeta names; not settled."
+}

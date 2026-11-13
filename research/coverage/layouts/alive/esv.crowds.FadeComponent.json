@@ -1,0 +1,30 @@
+{
+  "component": "esv::crowds::FadeComponent",
+  "ext_name": "ServerCrowdsFade",
+  "size": 8,
+  "seen": true,
+  "summary": "Fade-out timer of an Act 3 crowd character (ambient civilians of the lower city) being despawned by esv::crowds::SpawnSystem; seen in many lower-city scenarios. Saved: model game.crowds.v1.FadeComponent (8 bytes, alignment 4), loaded by copying two 4-byte members (bg3.exe+0x25FC520).",
+  "fields": [
+    {
+      "name": "Duration",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD76F00 SpawnSystem::UpdateFade adds the component with *comp = 3.0f (0x40400000); later the entity is queued for destruction when comp[0] <= comp[1]; live always 3.0"
+    },
+    {
+      "name": "Timer",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "UpdateFade compares +0 with +4 (stride 8) and the fade ends when the elapsed time at +4 reaches +0; live 0..3.0 rising"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "36 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,37 @@
+{
+  "component": "esv::timeline::BackgroundActorRequestOneFrameComponent",
+  "ext_name": "ServerTimelineBackgroundActorRequest",
+  "size": 40,
+  "fields": [
+    {
+      "name": "Actor",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3312010 and bg3.exe+0x3307120 create the component on a new entity (bg3.exe+0x33141A0) for a creation actor of type 0x20 and store the actor entity (first member of the creation actor value, checked alive just before)."
+    },
+    {
+      "name": "Timeline",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Both writers copy 16 bytes from the Guid at the start of the timeline's synced control (the same pointer is passed as the timeline Guid to actor registration bg3.exe+0x330CEC0 and compared with eoc::SyncedTimelineActorControlComponent.Timeline at +0x10)."
+    },
+    {
+      "name": "ActorGuid",
+      "offset": 24,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Both writers copy the 16-byte key of the actors map (the actor Guid that esv::ServerTimelineActorDataComponent.Actor receives in the other branch). bg3.exe+0x2DF53B0 (notification system, case 0x2A) copies +8..+0x28 into eoc::notification::TimelineBackgroundActorRequestComponent."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures (no background actors in the recorded dialogue)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

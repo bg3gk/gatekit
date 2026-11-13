@@ -1,0 +1,38 @@
+{
+  "component": "ecl::CombatTimelineShownOneFrameComponent",
+  "ext_name": "ClientCombatTimelineShown",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Player",
+      "offset": 0,
+      "type": "PlayerId",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1F23240 writes a 16-bit 0; bg3.exe+0x1F22980 (ecl::TimelinePostSystem) creates a new event entity when the first player is added to the Array<PlayerId> at +0x120 of ecl::CombatTimelineDataComponent (size +0x12C == 0 before the push) and stores the 2-byte player id here."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "alignment before the entity handle"
+    },
+    {
+      "name": "Entity",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator writes the null-handle constant DAT_146174970; the writer copies qword 0 of ecl::CombatTimelineDataComponent (its 'Entity' member in the existing layout)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

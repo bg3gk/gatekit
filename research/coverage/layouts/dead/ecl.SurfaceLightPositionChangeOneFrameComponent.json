@@ -1,0 +1,26 @@
+{
+  "component": "ecl::SurfaceLightPositionChangeOneFrameComponent",
+  "ext_name": "ClientSurfaceLightPositionChange",
+  "size": 12,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "One-frame notice that a surface light must move, read by ecl::SurfaceLightSystem::Update.",
+  "fields": [
+    {
+      "name": "Position",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1BA0340 allocates 12 bytes and copies 8 + 4 bytes from its third argument; the caller bg3.exe+0x1B9C300 passes a vec3 taken from +8..+0x14 of a position record. macOS SurfaceLightSystem::Update lambda takes a Vector3f const&."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether it is a world position or an offset (named from the component name)."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

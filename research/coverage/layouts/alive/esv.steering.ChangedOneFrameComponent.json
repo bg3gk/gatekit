@@ -1,0 +1,90 @@
+{
+  "component": "esv::steering::ChangedOneFrameComponent",
+  "ext_name": "ServerSteeringChanged",
+  "size": 48,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame copy of the steering request (esv::steering::Request, 0x30 bytes) that esv::steering::StateSystem started this frame for an entity (Toolkit EoCServer.dll+0x9BC9C0 StateSystem::ProcessBeginRequests copies the whole request into it after WasAborted(request Guid) is false). Requests come from lock/trap/placement SteeringRequestOneFrameComponents. Seen.py context: born at the first shove/throw step (thrown items turn to a direction) and in dialogues where characters turn.",
+  "structs": [
+    {
+      "name": "SteeringChangedTarget",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Data",
+          "offset": 0,
+          "type": "std::array<uint32_t, 3>",
+          "source": "inferred",
+          "evidence": "Storage of ls::Variant<eoc::steering::ToDirection, eoc::steering::ToEntity> (Toolkit name text in EoCServer.dll+0x9BC060): ToDirection writes a normalized vec3 (x, y, z floats; ProcessBeginRequests normalizes position deltas into +0/+8); ToEntity holds an EntityHandle in +0 (checked for validity after FUN_1809bc060 when index == 1). Live: floats such as 0xBF7FFFFF (-1.0) and handles."
+        },
+        {
+          "name": "Type",
+          "offset": 12,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index at +0xC (FUN_1809bc060 switches on it: 0 = ToDirection, 1 = ToEntity). Live: 0/1."
+        },
+        {
+          "name": "_PadD",
+          "offset": 13,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "SteeringChangedTarget",
+      "source": "inferred",
+      "evidence": "Request +0..+0xF copied as two qwords (EoCServer.dll+0x9BC9C0)."
+    },
+    {
+      "name": "Flags",
+      "offset": 16,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Request +0x10 (4 bytes) copied; ProcessSteering tests bits 1, 2, 4, 8 of the same value in StateComponent (+0x10). Live: 0 or 0xF."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "not copied; live garbage"
+    },
+    {
+      "name": "RequestId",
+      "offset": 24,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Request +0x18 Guid (ls::Guid::Guid constructs it when a request is built; WasAborted(.., Guid* request+0x18)); copied to LifetimeComponent +0 by ProcessLifetime. Live: random 16 bytes."
+    },
+    {
+      "name": "Lifetime",
+      "offset": 40,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Request +0x28 float, default 0x4B18967F (9999999.0) then set to 1.0 in the built request; ProcessLifetime copies it into LifetimeComponent +0x10, which counts down. Live: 1, 1.5, 2.31, 9999999."
+    },
+    {
+      "name": "_Pad2C",
+      "offset": 44,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "not copied; live garbage"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the Flags bits.",
+    "Names are inferred; ToEntity's exact payload (handle only?) not verified."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,45 @@
+{
+  "component": "ecl::TimelineAnimationStateComponent",
+  "ext_name": "ClientTimelineAnimationState",
+  "size": 8,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Used as a boolean: the update bg3.exe+0x1D51750 (query {ls::VisualComponent, this, eoc::TimelineActorDataComponent}) passes it to bg3.exe+0x1D51B60, which calls the visibility-request helper bg3.exe+0x426C9A0 with visible = (field_0 == 0) for every matching attached effect. Not initialised by the add-or-get helper bg3.exe+0x6D4580 (live instances hold 01/02/05/10/FF.. - partly garbage), so kept as uint8_t. Which state it stands for (playing / hidden) was not established."
+    },
+    {
+      "name": "NeedsUpdate",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x6D4580 creates the component with 0 here; bg3.exe+0x1D51750 skips the entity when it is 0 and writes 0 back after at least one attached effect was processed."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "alignment of the FixedString; live bytes are garbage"
+    },
+    {
+      "name": "AnimationName",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Created as invalid (0xFFFFFFFF) by bg3.exe+0x6D4580 (all 21 live instances hold 0xFFFFFFFF). bg3.exe+0x1D51B60 compares it with +0x30 of the ls::EffectComponent of each entity attached to the dummy visual (attachment flag bit 10); +0x30 is EffectComponent::AnimationName in Script Extender's Effect.h. Only effects with an equal name get the visibility request."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of field_0 and who writes field_0 / AnimationName: no writer was found through the type index (the writer reaches the component through a query pointer).",
+    "The probe shows byte 1 with values other than 0/1 on some instances (00/02/14/74), although the constructor writes 0 - either garbage from a creation path that does not run the constructor or the field is wider than a bool."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

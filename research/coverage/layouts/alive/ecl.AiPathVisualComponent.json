@@ -1,0 +1,23 @@
+{
+  "component": "ecl::AiPathVisualComponent",
+  "ext_name": "ClientAiPathVisual",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "VisualIndex",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1EA6210 (from AiPathVisualSystem step bg3.exe+0x1EA4E00) writes -1. The drawing step bg3.exe+0x1EA51E0 of ecl::AiPathVisualSystem reads it as *(int*)(array + i*4): when -1 it allocates a 0x140-byte path render object, puts it into the system's pool (pointer array at system+0x100, occupancy bitset at system+0xF0) and stores the slot index back into the component; otherwise it uses pool[index]. The per-frame update bg3.exe+0x1EA4C30 frees pool slots of removed entities. So: slot of this entity's path visual in the system pool, -1 = none. Live -1."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "second_pass": "Settled from ecl::AiPathVisualSystem's drawing step bg3.exe+0x1EA51E0, which reads the int as a pool slot (-1 = allocate a new path visual) and writes the new slot index back.",
+  "minutes": 4,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

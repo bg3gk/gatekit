@@ -1,0 +1,30 @@
+{
+  "component": "eoc::crowds::ProxyTransformComponent",
+  "ext_name": "CrowdsProxyTransform",
+  "size": 16,
+  "seen": true,
+  "summary": "Server-side position and heading of a crowd proxy (ambient crowd member in Baldur's Gate / Moonrise). Written by esv::crowds::ProxyTransformSystem (per-frame update bg3.exe+0x35686B0); read by esv::crowds::DetourSystem, PatrolSystem and SpawnSystem (macOS). Born live in lower-city dialogues and item uses (only server instances).",
+  "fields": [
+    {
+      "name": "Position",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x35686B0 copies 8+4 bytes at +0 and +8 as one vector together with +0xC; live world coordinates (-309.9, 7.3, 17.5)."
+    },
+    {
+      "name": "Rotation",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x35686B0 compares fmodf(angle + 2pi, 2pi) with fmodf(*(+0xC) + 2pi, 2pi) and writes the new angle to +0xC when it changed: a heading (yaw) in radians. Live 0.06 .. -2.96."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,38 @@
+{
+  "component": "eoc::notification::SpellCastFailedComponent",
+  "ext_name": "NotificationSpellCastFailed",
+  "size": 24,
+  "seen": true,
+  "fields": [
+    {
+      "name": "SpellCastGuid",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "serializers bg3.exe+0x997FA0 / 0x998130 / 0x997D10 / 0x997EE0: member 1 = raw 16 bytes at +0 (DAT_14627ff40). Live: the same Guid values as SpellCastDestroyed / SpellCastMovementAndPrecalculationEnd (spell cast id)."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "serializer member 2 = 1 byte at +0x10 (written with size 1 in bg3.exe+0x997EE0). Live values 2, 5, 6: a small enum, probably the failure reason; no SE enum identified."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding to the Guid's 8-byte alignment (size 24); server samples hold stale bytes there"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning/enum of the byte at +0x10 (failure reason?). Client reader: bg3.exe+0x7606E0 (Accepted + SpellCastFailed query) not read."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

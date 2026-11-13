@@ -1,0 +1,25 @@
+{
+  "component": "ls::trigger::UpdatedInsideOfComponent",
+  "ext_name": "TriggerUpdatedInsideOf",
+  "size": 16,
+  "seen": true,
+  "summary": "Client singleton of ecl::trigger::TrackingSystem: the entities whose IsInsideOfComponent changed this update (sibling of ls::trigger::UpdatedContainerComponent, Array<EntityHandle> Updates in Trigger.h). Read by the trigger SightSystem helper (macOS (anonymous)::UpdateHelperComponent).",
+  "fields": [
+    {
+      "name": "Updates",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1AAF380 allocates 0x10 bytes zeroed, destructor bg3.exe+0x686280 is the plain POD-array destructor. Toolkit ecl::trigger::TrackingSystem::Update (EoCClient.dll+0x9329C0) gets the singleton, clears it (IndexedStorage<ls::ID<ecs::EntityHandleTraits>> bounds checks, size at +0xC set to 0), reserves and appends every 8-byte key of the local HashSet of updated entities. Live: heap pointer, capacity 0x23..0x47B, size 0 at sampling time."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Game member name; why live size is always 0 (probably consumed and cleared the same frame)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "17 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

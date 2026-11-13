@@ -1,0 +1,23 @@
+{
+  "component": "ecl::screen_fade::MovieFadeMovieToGUIDSingletonComponent",
+  "ext_name": "ClientScreenFadeMovieFadeMovieToGUIDSingleton",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "MovieToFadeId",
+      "offset": 0,
+      "type": "HashMap<FixedString, Guid>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1915600 (0x40); destructor bg3.exe+0x5F3470 frees values at +0x30 and the key set. Toolkit ecl::screen_fade::MovieSystem::ProcessCountdownRequest (EoCClient.dll+0x7F1990, MovieFadeMovieToGUIDSingletonComponent const&) hashes a movie FixedString (FixedString::GetHash) against it; ProcessUpdateMovieToGUIDTable (EoCClient.dll+0x7F29F0) inserts FixedString keys and 16-byte values under 'IndexedStorage<ls::Guid, s_TagHashTable>'. Live: empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

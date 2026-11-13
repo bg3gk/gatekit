@@ -1,0 +1,71 @@
+{
+  "component": "ecl::character_creation::CommandQueueComponent",
+  "ext_name": "ClientCharacterCreationCommandQueue",
+  "size": 32,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CCCommandQueueDefinitionCommand",
+      "size": 112,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2035B10 appends a command (stride 0x70, grow bg3.exe+0x6DACE0) and writes the handle of the entity it is iterating at element +0, the variant at +8 (FUN_14070ee80) and the variant index 0x1C at +0x68."
+        },
+        {
+          "name": "Command",
+          "offset": 8,
+          "type": "uint8_t[96]",
+          "source": "inferred",
+          "evidence": "ls::Variant storage of ecl::character_creation::DefinitionCommand (SetModeFlagsCommand, SetNameCommand, ... SetFeatCommand: 50 alternatives, macOS names); destroyed/moved through FUN_14070de30/FUN_14070dba0 at element+8"
+        },
+        {
+          "name": "CommandType",
+          "offset": 104,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "variant index: copied separately at element+0x68 by bg3.exe+0x6DACE0 before the storage move"
+        },
+        {
+          "name": "_Pad69",
+          "offset": 105,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "padding to the 16-byte aligned stride 0x70"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "FieldRequests",
+      "offset": 0,
+      "type": "Array<uint64_t>",
+      "source": "inferred",
+      "evidence": "Array with 8-byte elements: bg3.exe+0x1D13E50 drains a request list of 16-byte {EntityHandle, 8-byte value} entries (system +0x800, count +0x80C), gets this component through bg3.exe+0x1D17060 (component +0 of the CommandQueue storage, AllocRaw size 0x20) and appends the 8-byte value with stride 8 (grow FUN_1405c4620, size at +0xC). The destructor bg3.exe+0x6A93D0 frees it without per-element work. The value is most likely an ls::EnumFlags<ecl::character_creation::EDefinitionField> (the macOS command processor keeps a DynamicArray of those, 8-byte stride) - not proven, so written as uint64_t. Live empty."
+    },
+    {
+      "name": "Commands",
+      "offset": 16,
+      "type": "Array<CCCommandQueueDefinitionCommand>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x6A93D0 resizes it to 0 with bg3.exe+0x6DACE0: stride 0x70, 16-byte aligned alloc, element destroyed at +8. Element type ecl::character_creation::DefinitionCommand (macOS DynamicArray<DefinitionCommand> stride 0x70 too). Live empty."
+    }
+  ],
+  "summary": "Queue of character-editor commands (UI -> DefinitionCommandProcessor::ProcessCommands). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the 8-byte values of FieldRequests (EnumFlags<EDefinitionField> by the macOS hint).",
+    "Members inside the DefinitionCommand variant (50 alternatives) - kept as raw storage plus the index byte, as variants are written."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "The first array was settled on Windows as 8-byte elements (bg3.exe+0x1D13E50 appends the 8-byte value of each queued request through bg3.exe+0x1D17060); the Commands array (stride 0x70, variant at +8, index at +0x68) stands on the Windows destructor bg3.exe+0x6A93D0 / resize bg3.exe+0x6DACE0 read before. Element +0 is an EntityHandle (bg3.exe+0x2035B10 writes the iterated entity there when queuing a portrait command).",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

@@ -1,0 +1,1116 @@
+[
+ {
+  "label": "jump",
+  "server": "local p = GK.Stage.Position(); p[1] = p[1] + 4; return GK.Stage.Cast(\"Projectile_Jump\", p)",
+  "wait": 4
+ },
+ {
+  "label": "dash",
+  "server": "return GK.Stage.Cast(\"Shout_Dash\")",
+  "wait": 4
+ },
+ {
+  "label": "hide",
+  "server": "return GK.Stage.Cast(\"Shout_Hide\")",
+  "wait": 4
+ },
+ {
+  "label": "disengage",
+  "server": "return GK.Stage.Cast(\"Shout_Disengage\")",
+  "wait": 4
+ },
+ {
+  "label": "help",
+  "server": "return GK.Stage.Cast(\"Target_Help\")",
+  "wait": 4
+ },
+ {
+  "label": "dip",
+  "server": "return GK.Stage.Cast(\"Target_Dip\")",
+  "wait": 4
+ },
+ {
+  "label": "shove-throw",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "return GK.Stage.Cast(\"Target_Shove\", Scene[1])",
+    "wait": 4
+   },
+   {
+    "server": "GK.Stage.Outfit({ \"dagger\" }) return true",
+    "wait": 2
+   },
+   {
+    "server": "local d = GK.Find(GK.Stage.Templates.dagger)[1]; Osi.Drop(d); ScenePick = d; return d",
+    "wait": 2
+   },
+   {
+    "server": "Osi.UseSpell(\"{host}\", \"Throw_Throw\", Scene[2], ScenePick); return true",
+    "wait": 5
+   },
+   {
+    "server": "Osi.ToInventory(ScenePick, \"{host}\", 1, 1, 0); return true",
+    "wait": 2
+   }
+  ]
+ },
+ {
+  "label": "spells-1",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_FireBolt\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Projectile_FireBolt\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_FireBolt\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Projectile_FireBolt\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_MagicMissile\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Projectile_MagicMissile\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_MagicMissile\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Projectile_MagicMissile\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_SacredFlame\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_SacredFlame\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_SacredFlame\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_SacredFlame\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Zone_BurningHands\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Zone_BurningHands\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Zone_BurningHands\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Zone_BurningHands\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Zone_Thunderwave\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Zone_Thunderwave\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Zone_Thunderwave\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Zone_Thunderwave\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_Fireball\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Projectile_Fireball\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_Fireball\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Projectile_Fireball\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_HoldPerson\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_HoldPerson\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_HoldPerson\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_HoldPerson\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Sleep\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Sleep\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Sleep\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Sleep\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "spells-2",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "if Ext.Stats.Get(\"Target_Grease\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Grease\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Grease\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_Grease\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_FogCloud\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_FogCloud\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_FogCloud\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_FogCloud\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Darkness\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Darkness\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Darkness\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_Darkness\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_MistyStep\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_MistyStep\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_MistyStep\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_MistyStep\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_MageArmor\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_MageArmor\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_MageArmor\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_MageArmor\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_Shield_Wizard\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_Shield_Wizard\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_Shield_Wizard\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_Shield_Wizard\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Bless\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Bless\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Bless\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Bless\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_CureWounds\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_CureWounds\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_CureWounds\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_CureWounds\"); return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "spells-3",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "if Ext.Stats.Get(\"Shout_HealingWord_Mass\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_HealingWord_Mass\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_HealingWord_Mass\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_HealingWord_Mass\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Invisibility\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Invisibility\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Invisibility\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Invisibility\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_Blur\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_Blur\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_Blur\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_Blur\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_MirrorImage\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_MirrorImage\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_MirrorImage\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_MirrorImage\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Haste\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Haste\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Haste\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Haste\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_FeatherFall\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_FeatherFall\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_FeatherFall\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_FeatherFall\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_SpeakWithAnimals\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_SpeakWithAnimals\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_SpeakWithAnimals\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_SpeakWithAnimals\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_DisguiseSelf\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_DisguiseSelf\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_DisguiseSelf\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_DisguiseSelf\"); return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "spells-4",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "if Ext.Stats.Get(\"Shout_FalseLife\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_FalseLife\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_FalseLife\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_FalseLife\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Light\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Light\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Light\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Light\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_ArmorOfAgathys\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_ArmorOfAgathys\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_ArmorOfAgathys\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_ArmorOfAgathys\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_HuntersMark\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_HuntersMark\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_HuntersMark\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_HuntersMark\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Hex\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Hex\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Hex\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Hex\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Command_Halt\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Command_Halt\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Command_Halt\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Command_Halt\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Bane\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Bane\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Bane\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Bane\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_FaerieFire\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_FaerieFire\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_FaerieFire\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_FaerieFire\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "spells-5",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "if Ext.Stats.Get(\"Target_Entangle\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Entangle\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Entangle\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_Entangle\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Web\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Web\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Web\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_Web\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_SpikeGrowth\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_SpikeGrowth\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_SpikeGrowth\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_SpikeGrowth\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Wall_WallOfFire\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Wall_WallOfFire\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Wall_WallOfFire\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Wall_WallOfFire\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_SpiritualWeapon_Greatsword\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_SpiritualWeapon_Greatsword\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_SpiritualWeapon_Greatsword\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_SpiritualWeapon_Greatsword\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_FlamingSphere\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_FlamingSphere\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_FlamingSphere\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_FlamingSphere\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_FindFamiliar_Cat\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_FindFamiliar_Cat\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_FindFamiliar_Cat\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_FindFamiliar_Cat\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_ConjureElemental_Minor\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_ConjureElemental_Minor\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_ConjureElemental_Minor\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_ConjureElemental_Minor\", p); return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "spells-6",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "if Ext.Stats.Get(\"Target_AnimateDead_Skeleton\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_AnimateDead_Skeleton\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_AnimateDead_Skeleton\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_AnimateDead_Skeleton\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_WildShape_Badger\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_WildShape_Badger\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_WildShape_Badger\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_WildShape_Badger\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_Rage\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_Rage\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_Rage\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_Rage\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_ActionSurge\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_ActionSurge\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_ActionSurge\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_ActionSurge\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_SecondWind\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_SecondWind\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_SecondWind\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_SecondWind\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_LayOnHands\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_LayOnHands\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_LayOnHands\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_LayOnHands\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_BardicInspiration\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_BardicInspiration\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_BardicInspiration\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_BardicInspiration\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_GuidingBolt\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_GuidingBolt\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_GuidingBolt\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_GuidingBolt\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "spells-7",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_EldritchBlast\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Projectile_EldritchBlast\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_EldritchBlast\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Projectile_EldritchBlast\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_ScorchingRay\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Projectile_ScorchingRay\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Projectile_ScorchingRay\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Projectile_ScorchingRay\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Counterspell\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Counterspell\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Counterspell\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Counterspell\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Polymorph\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Polymorph\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Polymorph\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Polymorph\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_DimensionDoor\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_DimensionDoor\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_DimensionDoor\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_DimensionDoor\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Teleportation_ArcaneGate\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Teleportation_ArcaneGate\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Teleportation_ArcaneGate\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Teleportation_ArcaneGate\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Silence\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Silence\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Silence\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_Silence\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_CallLightning\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_CallLightning\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_CallLightning\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_CallLightning\", p); return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "spells-8",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "if Ext.Stats.Get(\"Shout_SpiritGuardians\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_SpiritGuardians\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_SpiritGuardians\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_SpiritGuardians\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Fly\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Fly\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Fly\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Fly\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_SpeakWithDead\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_SpeakWithDead\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_SpeakWithDead\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_SpeakWithDead\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Knock\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Knock\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Knock\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Knock\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_MageHand\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_MageHand\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_MageHand\") == nil then return false end Osi.RestoreParty(\"{host}\"); local p = GK.Stage.Position(); p[1] = p[1] + 5; GK.Stage.Cast(\"Target_MageHand\", p); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Banishment\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Banishment\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Banishment\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Banishment\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Blight\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Target_Blight\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Target_Blight\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Target_Blight\", Scene[1 + math.random(0, 2)]); return true",
+    "wait": 4
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_Thunderwave\") == nil then return \"no such spell\" end GK.Stage.Teach(\"Shout_Thunderwave\"); return true",
+    "wait": 0.6
+   },
+   {
+    "server": "if Ext.Stats.Get(\"Shout_Thunderwave\") == nil then return false end Osi.RestoreParty(\"{host}\"); GK.Stage.Cast(\"Shout_Thunderwave\"); return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "statuses-1",
+  "server": "Scene = GK.Stage.Spawn{ template = \"human\", count = 1, distance = 4 } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "GK.Stage.Status(\"BURNING\", Scene[1], 1); GK.Stage.Status(\"BURNING\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"PRONE\", Scene[1], 1); GK.Stage.Status(\"PRONE\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"SLEEPING\", Scene[1], 1); GK.Stage.Status(\"SLEEPING\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"BLINDED\", Scene[1], 1); GK.Stage.Status(\"BLINDED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"POISONED\", Scene[1], 1); GK.Stage.Status(\"POISONED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"FRIGHTENED\", Scene[1], 1); GK.Stage.Status(\"FRIGHTENED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"CHARMED\", Scene[1], 1); GK.Stage.Status(\"CHARMED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"PARALYZED\", Scene[1], 1); GK.Stage.Status(\"PARALYZED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"STUNNED\", Scene[1], 1); GK.Stage.Status(\"STUNNED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"INVISIBLE\", Scene[1], 1); GK.Stage.Status(\"INVISIBLE\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"WET\", Scene[1], 1); GK.Stage.Status(\"WET\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"BLEEDING\", Scene[1], 1); GK.Stage.Status(\"BLEEDING\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"SILENCED\", Scene[1], 1); GK.Stage.Status(\"SILENCED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "for _, s in ipairs(GK.Stage.Statuses()) do end return true",
+    "wait": 1
+   }
+  ]
+ },
+ {
+  "label": "statuses-2",
+  "server": "Scene = GK.Stage.Spawn{ template = \"human\", count = 1, distance = 4 } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "GK.Stage.Status(\"HASTE\", Scene[1], 1); GK.Stage.Status(\"HASTE\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"SLOW\", Scene[1], 1); GK.Stage.Status(\"SLOW\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"ENTANGLED\", Scene[1], 1); GK.Stage.Status(\"ENTANGLED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"WEB\", Scene[1], 1); GK.Stage.Status(\"WEB\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"DOWNED\", Scene[1], 1); GK.Stage.Status(\"DOWNED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"KNOCKED_OUT\", Scene[1], 1); GK.Stage.Status(\"KNOCKED_OUT\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"DRUNK\", Scene[1], 1); GK.Stage.Status(\"DRUNK\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"BLESS\", Scene[1], 1); GK.Stage.Status(\"BLESS\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"BANE\", Scene[1], 1); GK.Stage.Status(\"BANE\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"ACID\", Scene[1], 1); GK.Stage.Status(\"ACID\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"FROZEN\", Scene[1], 1); GK.Stage.Status(\"FROZEN\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"ENSNARED\", Scene[1], 1); GK.Stage.Status(\"ENSNARED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"RESTRAINED\", Scene[1], 1); GK.Stage.Status(\"RESTRAINED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "for _, s in ipairs(GK.Stage.Statuses()) do end return true",
+    "wait": 1
+   }
+  ]
+ },
+ {
+  "label": "statuses-3",
+  "server": "Scene = GK.Stage.Spawn{ template = \"human\", count = 1, distance = 4 } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "GK.Stage.Status(\"PETRIFIED\", Scene[1], 1); GK.Stage.Status(\"PETRIFIED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"CONFUSED\", Scene[1], 1); GK.Stage.Status(\"CONFUSED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"FEARED\", Scene[1], 1); GK.Stage.Status(\"FEARED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"LEVITATE\", Scene[1], 1); GK.Stage.Status(\"LEVITATE\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"FLY\", Scene[1], 1); GK.Stage.Status(\"FLY\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"ENLARGE\", Scene[1], 1); GK.Stage.Status(\"ENLARGE\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"REDUCE\", Scene[1], 1); GK.Stage.Status(\"REDUCE\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"RAGE\", Scene[1], 1); GK.Stage.Status(\"RAGE\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"DIFFICULT_TERRAIN\", Scene[1], 1); GK.Stage.Status(\"DIFFICULT_TERRAIN\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"DARKNESS\", Scene[1], 1); GK.Stage.Status(\"DARKNESS\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"OFF_BALANCED\", Scene[1], 1); GK.Stage.Status(\"OFF_BALANCED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "GK.Stage.Status(\"DAZED\", Scene[1], 1); GK.Stage.Status(\"DAZED\", nil, 1); return true",
+    "wait": 1.2
+   },
+   {
+    "server": "for _, s in ipairs(GK.Stage.Statuses()) do end return true",
+    "wait": 1
+   }
+  ]
+ },
+ {
+  "label": "death",
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 3, faction = \"enemy\", distance = 6, equipment = { \"longsword\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "GK.Stage.Damage(500, Scene[1], \"Fire\"); GK.Stage.Kill(Scene[2]); return true",
+    "wait": 4
+   },
+   {
+    "server": "GK.Stage.Resurrect(Scene[2]); return true",
+    "wait": 4
+   },
+   {
+    "server": "GK.Stage.Status(\"DOWNED\", nil, 2); return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "transform",
+  "server": "return GK.Stage.Transform(\"goblin\")",
+  "wait": 4,
+  "then": [
+   {
+    "server": "return GK.Stage.Untransform()",
+    "wait": 3
+   }
+  ]
+ },
+ {
+  "label": "level-up",
+  "server": "Osi.AddExplorationExperience(\"{host}\", 6000); return true",
+  "wait": 5
+ },
+ {
+  "label": "containers",
+  "server": "Scene = GK.Stage.Spawn{ template = \"chest\", distance = 2, items = { \"potion\", \"dagger\" } } return Scene",
+  "wait": 2,
+  "then": [
+   {
+    "server": "Osi.Use(\"{host}\", Scene[1], \"\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "Osi.MoveAllItemsTo(Scene[1], \"{host}\", 1, 1, 0, 1); return true",
+    "wait": 3
+   },
+   {
+    "server": "GK.Stage.Lock(Scene[1]); Osi.Use(\"{host}\", Scene[1], \"\"); return true",
+    "wait": 4
+   },
+   {
+    "server": "GK.Stage.Lock(Scene[1], false); return true",
+    "wait": 2
+   }
+  ]
+ },
+ {
+  "label": "items",
+  "server": "GK.Stage.Outfit({ \"torch\", \"shortbow\", \"leather\", \"helmet\" }); return true",
+  "wait": 4,
+  "then": [
+   {
+    "server": "for _, name in ipairs({ \"scroll_fireball\", \"thieves_tools\", \"potion\" }) do Osi.TemplateAddTo(GK.Stage.Templates[name], \"{host}\", 3, 1) end return true",
+    "wait": 3
+   },
+   {
+    "server": "local p = GK.Find(GK.Stage.Templates.potion)[1]; Osi.Drop(p); ScenePick = p; return p",
+    "wait": 3
+   },
+   {
+    "server": "Osi.ToInventory(ScenePick, \"{host}\", 1, 1, 0); return true",
+    "wait": 3
+   },
+   {
+    "ui": "return GK.Command(\"SwitchWeaponSetCommand\")",
+    "wait": 2
+   },
+   {
+    "ui": "return GK.Command(\"SwitchWeaponSetCommand\")",
+    "wait": 2
+   }
+  ]
+ },
+ {
+  "label": "turn-based",
+  "server": "return GK.Stage.TurnBased(true)",
+  "wait": 4,
+  "then": [
+   {
+    "server": "return GK.Stage.TurnBased(false)",
+    "wait": 3
+   }
+  ]
+ },
+ {
+  "label": "surfaces",
+  "server": "for i, kind in ipairs({ \"SurfaceWater\", \"SurfaceOil\", \"SurfaceWeb\", \"SurfacePoison\", \"SurfaceAcid\", \"SurfaceBlood\", \"SurfaceGrease\", \"SurfaceWaterFrozen\", \"SurfaceWaterElectrified\", \"SurfaceFire\" }) do local p = GK.Stage.Position(); p[1] = p[1] + 8 + i * 3; pcall(GK.Stage.Surface, kind, 1.5, p) end return true",
+  "wait": 6
+ },
+ {
+  "label": "key-I",
+  "ui": "return GK.Key(\"I\")",
+  "wait": 2.5,
+  "then": [
+   {
+    "ui": "return GK.Key(\"I\")",
+    "wait": 1.5
+   }
+  ]
+ },
+ {
+  "label": "key-M",
+  "ui": "return GK.Key(\"M\")",
+  "wait": 2.5,
+  "then": [
+   {
+    "ui": "return GK.Key(\"M\")",
+    "wait": 1.5
+   }
+  ]
+ },
+ {
+  "label": "key-J",
+  "ui": "return GK.Key(\"J\")",
+  "wait": 2.5,
+  "then": [
+   {
+    "ui": "return GK.Key(\"J\")",
+    "wait": 1.5
+   }
+  ]
+ },
+ {
+  "label": "key-K",
+  "ui": "return GK.Key(\"K\")",
+  "wait": 2.5,
+  "then": [
+   {
+    "ui": "return GK.Key(\"K\")",
+    "wait": 1.5
+   }
+  ]
+ },
+ {
+  "label": "key-N",
+  "ui": "return GK.Key(\"N\")",
+  "wait": 2.5,
+  "then": [
+   {
+    "ui": "return GK.Key(\"N\")",
+    "wait": 1.5
+   }
+  ]
+ },
+ {
+  "label": "key-L",
+  "ui": "return GK.Key(\"L\")",
+  "wait": 2.5,
+  "then": [
+   {
+    "ui": "return GK.Key(\"L\")",
+    "wait": 1.5
+   }
+  ]
+ },
+ {
+  "label": "key-TAB",
+  "ui": "return GK.Key(\"TAB\")",
+  "wait": 2.5,
+  "then": [
+   {
+    "ui": "return GK.Key(\"TAB\")",
+    "wait": 1.5
+   }
+  ]
+ },
+ {
+  "label": "photo-mode",
+  "ui": "return GK.Command(\"TogglePhotoModeCommand\")",
+  "wait": 4,
+  "then": [
+   {
+    "ui": "return GK.Command(\"TogglePhotoModeCommand\")",
+    "wait": 3
+   }
+  ]
+ },
+ {
+  "label": "quicksave",
+  "ui": "return GK.Command(\"QuickSaveCommand\")",
+  "wait": 8
+ },
+ {
+  "label": "talk-us",
+  "server": "GK.Stage.OnStage(\"6ca92237-eb1e-4ed8-a1ee-18b3bef21558\"); return GK.Stage.Talk(\"S_TUT_Lab_TrappedDevourer\")",
+  "wait": 8,
+  "reset": true
+ },
+ {
+  "label": "talk-laezel",
+  "server": "GK.Stage.OnStage(\"201a0ee6-6411-4564-aaea-1ca057bfea04\"); return GK.Stage.Talk(\"S_TUT_GithGuide\")",
+  "wait": 8,
+  "reset": true
+ },
+ {
+  "label": "talk-shadowheart",
+  "server": "return GK.Stage.Talk(\"S_Player_ShadowHeart\")",
+  "wait": 8,
+  "reset": true
+ },
+ {
+  "label": "first-fight",
+  "server": "return GK.Stage.Visit(\"07f1512b-efe9-4eb8-8ade-783435e9d7c9\")",
+  "wait": 6,
+  "then": [
+   {
+    "server": "return GK.Stage.Fight({ \"07f1512b-efe9-4eb8-8ade-783435e9d7c9\", \"5c5bd50b-147e-42e5-93cb-59a754df91ec\", \"38d1ce2f-4f19-4266-971d-61f08bc1a895\" })",
+    "wait": 5
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   }
+  ],
+  "reset": true
+ },
+ {
+  "label": "helm",
+  "server": "return GK.Stage.Visit(\"ed103005-fd71-457d-ae6c-39654bbd8f2e\")",
+  "wait": 15,
+  "then": [
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   },
+   {
+    "server": "return GK.Stage.EndTurn()",
+    "wait": 3
+   }
+  ],
+  "reset": true
+ }
+]

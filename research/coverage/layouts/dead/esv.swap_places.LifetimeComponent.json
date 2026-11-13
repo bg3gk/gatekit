@@ -1,0 +1,40 @@
+{
+  "component": "esv::swap_places::LifetimeComponent",
+  "ext_name": "ServerSwapPlacesLifetime",
+  "size": 16,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Put by esv::swap_places::RequestSystem on the helper entity it creates for a batch of swap-places requests (the same entity gets esv::swap_places::RequestOneFrameComponent and a 0x18-element request array component); counts down 4 seconds, then the entity is destroyed. Creator bg3.exe+0x2E9F3F0 (called from bg3.exe+0x2E9E370 = ProcessSwapPlacesRequests); countdown in bg3.exe+0x2E9F130 (third step of the per-frame update bg3.exe+0x2E9DEF0; Toolkit EoCServer.dll+0x5D7810 RequestSystem::CleanupSwapPlacesRequests does the same). No savegame model.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2E9F3F0: AllocRaw(0x10), *puVar5 = *param_2, the same handle that is the key of the component's entity map (FUN_14077e0c0(.., &entity)) - the entity the component is added to (created by FUN_14401aff0 in bg3.exe+0x2E9E370). macOS default constructor stores a 16-byte constant at +0 then 4.0f at +8 (null handle default, hint only)."
+    },
+    {
+      "name": "Lifetime",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2E9F3F0 writes 0x40800000 (4.0f); bg3.exe+0x2E9F130 line 141: *(float*)(c+8) -= *(float*)(GameTime+8); if <= 0 the entity is destroyed (Toolkit CleanupSwapPlacesRequests the same)."
+    },
+    {
+      "name": "_Pad12",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Not written by the creator (AllocRaw memory, only +0 and +8 stored); alignment padding to 16."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether +0 is really meant as a self handle or some other entity that happens to equal it at creation (only caller passes the new entity)."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

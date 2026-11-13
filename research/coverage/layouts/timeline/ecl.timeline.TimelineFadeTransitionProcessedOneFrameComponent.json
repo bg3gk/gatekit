@@ -1,0 +1,23 @@
+{
+  "component": "ecl::timeline::TimelineFadeTransitionProcessedOneFrameComponent",
+  "ext_name": "ClientTimelineFadeTransitionProcessed",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Timeline",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D70FF0 zeroes 16 bytes; bg3.exe+0x1D4C8A0 (ecl::TimelineSystem) creates an event entity for each finished transition-fade record and copies the record's 16-byte Guid. ecl::TimelineFadeTransitionSystem (bg3.exe+0x1D93BE0) uses the first 16 bytes of this event as the key of TimelineFadeTransitionSingletonComponent::Transitions (HashMap<Guid, ..>, see that layout)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

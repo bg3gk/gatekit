@@ -1,0 +1,23 @@
+{
+  "component": "ecl::PlayersInTimelineGlobalComponent",
+  "ext_name": "ClientPlayersInTimelineGlobal",
+  "size": 64,
+  "fields": [
+    {
+      "name": "Timelines",
+      "offset": 0,
+      "type": "HashMap<PlayerId, Guid>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D7A710 zero-initialises a 64-byte hash map (hash set of keys + value array); destructor bg3.exe+0x5C4870 frees the value array at +0x30 without per-element destructors. Key = 2 bytes: bg3.exe+0x1D34EC0 (ecl::sound::SneakStateSystem update) walks the key array at +0x20 as shorts (count at +0x2C) and matches them against a set of player ids. Value = 16 bytes: lookup bg3.exe+0x1D159C0 (key short, hashed by value) returns values + index*0x10; bg3.exe+0x1D99430 compares the two qwords of the value with +0x08/+0x10 of a 0xA8-byte component (eoc::TimelineDataComponent::InstanceId). Singleton getter bg3.exe+0x1D3DAA0 confirms stride 0x40. Probe: 1 key, value capacity 1 (one local player in a dialogue)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The Guid is taken to be the timeline instance id (it is compared with TimelineDataComponent+0x08 = InstanceId); the function that inserts entries (inside ecl::TimelineSystem, registered by bg3.exe+0x732470) was not read."
+  ],
+  "minutes": 12,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,26 @@
+{
+  "component": "esv::crowds::DetourCacheComponent",
+  "ext_name": "ServerCrowdsDetourCache",
+  "size": 64,
+  "seen": true,
+  "summary": "Server-only, on crowd character triggers (48 holders seen, from level load). Built by esv::crowds::DetourBuilderSystem::BuildDetours (per-frame update bg3.exe+0x355CCE0) and read by esv::crowds::DetourSystem::GetSplineInfo / FindNextMainSplineTarget: a map from a spline name (FixedString) to the entity holding the ls::SplineComponent of that detour route.",
+  "fields": [
+    {
+      "name": "SplinesByName",
+      "offset": 0,
+      "type": "HashMap<FixedString, EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD98B50 DetourSystem::GetSplineInfo(world, FixedString const& name, ...): looks the name up in the component with FixedString::GetHash % *(uint32*)(comp+8) (HashSet<FixedString> lookup FUN_18027f180), takes value index i from the values at comp+0x30 (8-byte element), and resolves it with EntityWorld get-component to an object whose +8 is the SplineTemplate (ls::SplineComponent). 64 bytes = HashMap layout. Live: buckets heap / count 5, NextIds and Keys capacity 1 size 1, values heap with size 1"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "the value is used as an entity handle (looked up with GetComponent); it could also be a 64-bit id of another kind",
+    "name of the member"
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

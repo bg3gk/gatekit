@@ -1,0 +1,32 @@
+{
+  "component": "esv::status::DeactivationEventOneFrameComponent",
+  "ext_name": "ServerStatusDeactivationEvent",
+  "size": 16,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Status deactivation event of esv::status::ExecutionSystem, put on a fresh event entity; seen whenever statuses come and go (spells, fights, dialogues).",
+  "fields": [
+    {
+      "name": "Owner",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2C57530 defaults both qwords to the null handle 0xFFC0000000000000. EoCServer.dll+0x97BD70 (ExecutionSystem::ProcessStatusActivation) creates an entity, adds the event and writes +0 = the handle FUN_18096f180 returns for the status entity (its owner/target character). Live: character-range handles."
+    },
+    {
+      "name": "Status",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Same writer stores the status entity itself (*pIVar14 of the processed status list) at +8. Live: 48 distinct, higher handles (status entities)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Deactivation writer not read; layout assumed identical to ActivationEvent (same creator shape and live pattern)."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

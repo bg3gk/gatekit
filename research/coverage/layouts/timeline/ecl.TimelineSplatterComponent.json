@@ -1,0 +1,75 @@
+{
+  "component": "ecl::TimelineSplatterComponent",
+  "ext_name": "ClientTimelineSplatter",
+  "size": 36,
+  "structs": [
+    {
+      "name": "TimelineSplatterState",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Blood",
+          "offset": 0,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Toolkit build, EoCClient.dll+0xA96FA0 (character branch of ecl::TLPreviewDummyHelpers::PrePrepareDummy): copied from float 0 of eoc::splatter::StateComponent (Blood in esv::splatter::SplatterState, Visual.h)."
+        },
+        {
+          "name": "Dirt",
+          "offset": 4,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same function: copied from float 2 of eoc::splatter::StateComponent (Dirt) - floats 1 and 2 are swapped compared with esv::splatter::SplatterState, which is why that struct is not reused."
+        },
+        {
+          "name": "Bruises",
+          "offset": 8,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same function: copied from float 1 of eoc::splatter::StateComponent (Bruises). bg3.exe+0x196F710 passes +8 and +0xC (with +0 and +4) to the visual splatter update bg3.exe+0x196D540."
+        },
+        {
+          "name": "Sweat",
+          "offset": 12,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same function: copied from float 3 of eoc::splatter::StateComponent (Sweat)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "State",
+      "offset": 0,
+      "type": "TimelineSplatterState",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x6D50D0 creates the component as 36 zero bytes (all 4 live instances are zero - clean characters). EoCClient.dll+0xA96FA0 fills floats 0..3 from the source character's eoc::splatter::StateComponent when the dummy is prepared; bg3.exe+0x196F710 (queries {this, ls::VisualComponent} with a modified-tag, and {eoc::splatter::UpdateAttachmetsRequestOneFrameComponent, this, ls::VisualComponent}) applies these four values to the dummy's visual and to its attachments."
+    },
+    {
+      "name": "InitialState",
+      "offset": 16,
+      "type": "TimelineSplatterState",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0xA96FA0 writes the same four values a second time into floats 4..7 in the same order. Only that writer was seen, so 'initial' (the copy taken from the character, as opposed to the one a timeline splatter key may change) is an interpretation."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Zeroed as one 32-bit store by bg3.exe+0x6D50D0; never written by the dummy preparation; live 0. No reader found."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Order of the four values relies on (a) the Toolkit build of the copy routine, which may differ from the game build, and (b) Script Extender's field order of esv::splatter::SplatterState. A live dummy of a bloodied character would settle it.",
+    "field_20: 4 bytes (float, or a bool with padding).",
+    "ecl::dummy::SplatterComponent (Dummy.h) is a different, 20-byte structure."
+  ],
+  "minutes": 10,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

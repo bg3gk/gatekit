@@ -1,0 +1,25 @@
+{
+  "component": "gui::registration::VMItemUnregisteredOneFrameComponent",
+  "ext_name": "GuiRegistrationVMItemUnregistered",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Object",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x462DD0 (VMItemRegistrationSystem::Update): ExistsItemObject/InternalGetItemObject -> Noesis collection, RemoveItemObject; then for each object EntityCommandBuffer::CreateEntity and AddComponent (FUN_18045ce90) whose 8-byte slot receives the object with AddRef/Release; bg3.exe+0x1299240 allocates 8 bytes and zeroes them. Value type Noesis::Ptr<gui::VMItem> (the Data singleton's value type), written as void*. Live: 48 instances, all heap pointers."
+    }
+  ],
+  "summary": "One-frame event on a fresh entity: carries the gui::VMItem view-model object that was just removed from VMItemDataSingletonComponent, so UI code can drop it (seen in fights, deaths, dialogues and spell casts, i.e. whenever item entities go away).",
+  "confidence": "high",
+  "open_questions": [
+    "Holds a Noesis::Ptr<gui::VMItem>; exposed as an opaque pointer."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,48 @@
+{
+  "component": "esv::character_creation::UserAvatarCreatedOneFrameComponent",
+  "ext_name": "ServerCCUserAvatarCreated",
+  "size": 24,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Character creation event: a user's avatar was created. Written by bg3.exe+0x37913D0 on a new event entity; esv::StoryGameEventManager::OnUserAvatarCreated (Toolkit EoCServer.dll+0xEDE5C0) turns it into Osiris event 0xA2 with parameters (+0x10, +0, +8) - the story event UserAvatarCreated((INTEGER)_UserID, (CHARACTER)_Avatar, (CHARACTER)_Daisy) from the game's Osiris data (gatekit about UserAvatarCreated). Registered as a normal component although named OneFrame; the clean-up list bg3.exe+0x3797CF0 removes it together with CharacterSelectedForUser / CompanionSelectedForUser / CreationFinished. Never seen alive. Registry total 24 (server row).",
+  "fields": [
+    {
+      "name": "Avatar",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Creator bg3.exe+0x3796550 (AllocRaw 0x18) writes 0xffc0000000000000 at +0; writer bg3.exe+0x37913D0 line 132 `*puVar8 = uVar13` (a character handle). OnUserAvatarCreated passes HUB::Get(+0) as the 2nd Osiris parameter = _Avatar of the game's Osiris event UserAvatarCreated."
+    },
+    {
+      "name": "Daisy",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Creator writes 0xffc0000000000000 at +8; writer line 133 `puVar8[1] = uVar12` (from bg3.exe+0x3791C80, a second character). OnUserAvatarCreated passes HUB::Get(+8) as the 3rd parameter = _Daisy of the Osiris event."
+    },
+    {
+      "name": "UserID",
+      "offset": 16,
+      "type": "UserId",
+      "source": "game",
+      "evidence": "Creator writes DAT_14617ceac (default UserID) at +0x10; writer line 131 `*(undefined4 *)(puVar8 + 2) = *puVar6`. OnUserAvatarCreated passes the dword at +0x10 as the 1st parameter = _UserID of the Osiris event."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 24."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names come from the Osiris event's parameter names (game data), not from a C++ member list.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

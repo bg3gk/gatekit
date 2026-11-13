@@ -1,0 +1,28 @@
+{
+  "component": "esv::multiplayer::ScriptOverridesSingletonComponent",
+  "ext_name": "ServerMultiplayerScriptOverrides",
+  "size": 4,
+  "seen": false,
+  "summary": "Singleton of script (Osiris) overrides for multiplayer: created and updated by the per-frame update of esv::multiplayer::ScriptOverridesSystem (bg3.exe+0x2F3E220) on a fresh singleton entity; read by (anonymous)::PartyIsFull, esv::JoiningProtocol::SendRefuseMessage, esv::assignment::FindAvatarAssignmentForProfileID / FindBestAvatarForProfileID and esv::drop::DropEntityRequestSystem (macOS names). Never seen alive. Registry total 4 (server row).",
+  "fields": [
+    {
+      "name": "MaxPartySize",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2F3E220 lines 205-221: AllocRaw(4), default `*c = 4`, then `*c = *param_3` (the overriding value); when the singleton exists it only does `*c = *param_3`. Default 4 is the game's party size limit and macOS (anonymous)::PartyIsFull reads this singleton and ends with `return count <= limit`. Name inferred."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name inferred from the default 4 and the PartyIsFull reader; the Osiris call that sets it was not traced.",
+    "Signedness not established (int32 vs uint32).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

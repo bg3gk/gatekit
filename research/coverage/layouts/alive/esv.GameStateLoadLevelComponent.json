@@ -1,0 +1,89 @@
+{
+  "component": "esv::GameStateLoadLevelComponent",
+  "ext_name": "ServerGameStateLoadLevel",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Pointer to an object: bg3.exe creator bg3.exe+0x3011710 zeroes it; the bg3.exe load state machine (DoLoad, bg3.exe+0x2B4F280, state 5) sets byte +0x19 of the pointed object to 1 when loading finishes. Live: a heap pointer in all 6 samples."
+    },
+    {
+      "name": "LevelData",
+      "offset": 8,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "bg3.exe creator zeroes +8 (pointer), +0x10 (capacity/size), +0x14 (size) - the Array pattern. bg3.exe+0x2B4F8E0 (~ RootLevelSystem::Preload) appends 8-byte ls::LevelData* (array grow FUN_1405c4620 on +8, size +0x14); DoLoad state 1 waits until ls::LevelData::IsLoading is false for every element, state 5 releases them and sets the size to 0. Live: empty."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "DoLoad state 2 passes &+0x18 as the third argument of the level load (bg3.exe+0x3C5A9C0 ~ ls::Level::Load(level, 1, FixedString const&)); bg3.exe+0x2B4FAB0 (~ RootLevelSystem::LoadLevel) copies it into a component of the new root-level entity (bg3.exe+0x412E090). Creator: -1 (null). Live: FixedString indices."
+    },
+    {
+      "name": "LevelName",
+      "offset": 28,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "DoLoad state 2: LevelManager GetOrCreateLevel(bg3.exe+0x3C14640, &+0x1C); state 3 broadcasts it (IncRef/DecRef); Preload looks the level data up by it; LoadLevel passes it to bg3.exe+0x3C14A90 (SetActiveLevel). Creator: -1. Live: FixedString indices (WLD_Main_A etc.)."
+    },
+    {
+      "name": "WaitFrames",
+      "offset": 32,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2B4FAB0 (LoadLevel) resets +0x20 to 0 while some entity is still busy and otherwise increments it; after more than 5 it proceeds. Creator 0; live 0."
+    },
+    {
+      "name": "LevelCreated",
+      "offset": 36,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "DoLoad state 2 sets +0x24 = 1 after the level loaded and local templates were added (Toolkit RootLevelSystem::CreateLevel does the same); state 5 checks it before releasing templates. Creator: 2-byte zero at +0x24."
+    },
+    {
+      "name": "LoadFailed",
+      "offset": 37,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Set to 1 by DoLoad when a step fails (then state = 5) and by LoadLevel before activation, then = !activate(); state 5 calls the failure handler bg3.exe+0x3011600 when it is set; only when 0 the root-level entity is created."
+    },
+    {
+      "name": "_Pad26",
+      "offset": 38,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "Never initialised by the creator (live 0x00/0xFF/0x02 garbage): padding."
+    },
+    {
+      "name": "State",
+      "offset": 40,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "DoLoad switches on the dword at +0x28 (0 preload, 1 wait for level data, 2 create level, 3 broadcast, 4 load/activate, 5 finish) and advances it; creator 0; live 0."
+    },
+    {
+      "name": "_Pad2C",
+      "offset": 44,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "Never initialised by the creator (live 0x7FF4..., 0xFFFFFFFF garbage): padding to 0x30."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What +0 points to and what +0x18 names (passed to Level::Load and stored on the root-level entity)."
+  ],
+  "summary": "Seen once at a level change (WLD_Main_A). Written by esv::RootLevelSystem::Update/LoadLevel/DoLoad (macOS + Toolkit).",
+  "minutes": 10,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "All offsets and widths read in bg3.exe: the creator bg3.exe+0x3011710 (defaults and what it leaves uninitialised), the load state machine bg3.exe+0x2B4F280 (state dword at +0x28, flags +0x24/+0x25, level-data array at +8, names at +0x18/+0x1C) and its helpers Preload bg3.exe+0x2B4F8E0 and LoadLevel bg3.exe+0x2B4FAB0 (counter at +0x20); the first version's +0x26 uint16 and +0x2C FixedString are padding.",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

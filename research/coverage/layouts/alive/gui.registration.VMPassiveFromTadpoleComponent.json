@@ -1,0 +1,23 @@
+{
+  "component": "gui::registration::VMPassiveFromTadpoleComponent",
+  "ext_name": "GuiRegistrationVMPassiveFromTadpole",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "PassiveId",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x12B0630 (creator) allocates 4 bytes and writes 0xFFFFFFFF (null FixedString); NoesisGameUI.dll+0x453AD0 (VMPassiveRegistrationSystem::Update, lines ~610-660): for each FixedString in ecl::tadpole_tree::StatePowerContainerComponent that the UT helper accepts, a new entity is created, this component is added and FixedString::operator= copies the power's FixedString into it; the same FixedString then goes into RegisteredPassive.PassiveId. Live: 44 instances, FixedString-shaped values."
+    }
+  ],
+  "summary": "Client UI: a helper entity standing for a tadpole (illithid) power shown as a passive in the UI; holds the power's passive name. Created by VMPassiveRegistrationSystem from ecl::tadpole_tree::StatePowerContainerComponent; seen in character creation, scenes, dialogues and idle.",
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "44 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

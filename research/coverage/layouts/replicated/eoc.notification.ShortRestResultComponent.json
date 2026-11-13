@@ -1,0 +1,27 @@
+{
+  "component": "eoc::notification::ShortRestResultComponent",
+  "ext_name": "NotificationShortRestResult",
+  "size": 2,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9922E0: single raw 2-byte write at +0 (one member; members are written one by one, so not two separate bytes); macOS default strh wzr [x23]"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Could be a 2-byte enum or a small struct of two bytes serialized as one member; meaning unknown."
+  ],
+  "seen": false,
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

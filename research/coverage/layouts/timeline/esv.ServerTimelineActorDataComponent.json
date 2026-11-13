@@ -1,0 +1,38 @@
+{
+  "component": "esv::ServerTimelineActorDataComponent",
+  "ext_name": "ServerTimelineActorData",
+  "size": 40,
+  "fields": [
+    {
+      "name": "Actor",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3312010 (called per entry of a HashMap<Guid, ...> of the timeline's actors from bg3.exe+0x3308CB0) creates the component (bg3.exe+0x3316120) on the actor's entity and copies the 16-byte map key here; the same key is passed as the actor Guid to the actor-data creation bg3.exe+0x330CEC0, and in the sibling branch it is stored after the timeline Guid of a request. Live: two different GUIDs for the two actors."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Array<uint32_t>",
+      "source": "unknown",
+      "evidence": "Copied with the array copy bg3.exe+0x2FBE710, whose element size is 4 (allocation count*4, 4-byte plain copies without reference counting - so not FixedString) from the first array of the component returned by bg3.exe+0x3311E10 for the timeline entity. bg3.exe+0x3308E10 treats the timeline as still waiting (keeps esv::ServerTimelineCreationConfirmationComponent) while any actor of that timeline has a non-empty array (size at +0x1C != 0). Live: pointer, capacity 1, size 1 on both instances. Most likely the users (UserId) that still have to confirm the actor, not proven."
+    },
+    {
+      "name": "Timeline",
+      "offset": 32,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3312010 stores the timeline entity (first field of the timeline query result) here; bg3.exe+0x3308E10 compares it with the timeline entity being checked. Live: the same entity handle on both instances."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "What the 4-byte array elements are (UserId / peer id / player index): read the elements of a live instance.",
+    "Removed together with eoc::SyncedTimelineActorControlComponent and eoc::timeline::ActorVisualDataComponent in bg3.exe+0x330ACB0."
+  ],
+  "minutes": 9,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

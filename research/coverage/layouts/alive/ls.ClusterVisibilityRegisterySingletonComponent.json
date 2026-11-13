@@ -1,0 +1,27 @@
+{
+  "component": "ls::ClusterVisibilityRegisterySingletonComponent",
+  "ext_name": "ClusterVisibilityRegistery",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ClusterOfContent",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, EntityHandle>",
+      "source": "inferred",
+      "evidence": "ls::HashMap (64 bytes): creator bg3.exe+0x3E72FD0 zeroes 0x40 bytes; destructor bg3.exe+0x5C4870 frees the value storage at +0x30 without element destructor and destroys the plain-key HashSet at +0 (bg3.exe+0x582AD0). Windows ClusterLoadHelper<ClusterVisualLoaderSystem::LoadOps> (bg3.exe+0x3E6CA60, gets the singleton through bg3.exe+0x3E6EC40 = query DAT_1463d3bec) inserts the 8-byte entity handles of each cluster's ClusterContentComponent key array (+0x20, 8-byte stride) with FUN_141d3c100 and stores an 8-byte value per key: '*(undefined8 *)(*(longlong *)(map + 0x30) + idx * 8) = ...'; key array read as 8-byte elements at +0x20/+0x2C. macOS ProcessContentChanges (bg3_macos_x64+0x6BBC590) compares the value (an ls::ID<EntityHandleTraits>) with the cluster entity being processed and removes keys of removed content; its destructor names the key table ls::HashTable<ls::ID<ecs::EntityHandleTraits>, ls::ClusterHashTableOps>. So: content entity -> the cluster entity that owns it. Note: the game hashes these keys with ClusterHashTableOps (key % bucket count) - the layout is that of Script Extender's HashMap, lookups from Lua must use the same hash."
+    }
+  ],
+  "summary": "Client streaming singleton: a large hash map (tens of thousands of entries) used by the cluster visual loader (ls::ClusterVisualLoaderSystem); lives from game start.",
+  "confidence": "high",
+  "open_questions": [
+    "Name of the map member (not in any game data); 'ClusterOfContent' describes what the code does.",
+    "Script Extender's HashMap<EntityHandle,...> lookup must hash like ls::ClusterHashTableOps (plain value % bucket count) for Lua lookups to work - check before exposing find()."
+  ],
+  "minutes": 12,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled as HashMap<EntityHandle, EntityHandle>: the Windows cluster loader (bg3.exe+0x3E6CA60) inserts 8-byte content-entity keys and writes 8-byte values at +0x30, the Windows destructor shows trivial values, and the macOS ProcessContentChanges shows the value is the owning cluster entity.",
+  "raw_check": "25 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

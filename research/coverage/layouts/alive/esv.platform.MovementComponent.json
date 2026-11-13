@@ -1,0 +1,32 @@
+{
+  "component": "esv::platform::MovementComponent",
+  "ext_name": "ServerPlatformMovement",
+  "size": 8,
+  "seen": true,
+  "summary": "Server state of a moving platform: the FixedString of the running movement request. Written by esv::platform::MovementSystem (macOS index: only writer MovementSystem::Update). Seen.py context: level change.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Registration bg3.exe+0x26FE670 sets the destructor bg3.exe+0x698FE0, which releases a FixedString at +0 (GlobalStringTable DecRef unless -1). Live 0x02502591 = the FixedString at +0x30 of esv::platform::MovementRequestComponent of the same step (the story event / movement id passed to StoryGameEventManager)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "macOS default ctor stores wzr at +4 after the FixedString. Live 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the dword at +4."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

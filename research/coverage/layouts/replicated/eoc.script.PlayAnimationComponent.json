@@ -1,0 +1,66 @@
+{
+  "component": "eoc::script::PlayAnimationComponent",
+  "ext_name": "ScriptPlayAnimation",
+  "size": 64,
+  "structs": [
+    {
+      "name": "AnimationSequenceSimpleNameSet",
+      "size": 48,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Array<FixedString>",
+          "source": "unknown",
+          "evidence": "bg3.exe+0xA82550 (writes count at +0xC, then ecs::sync::Serialize(FixedString) per 4-byte element from the pointer at +0) called on +0"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "Array<FixedString>",
+          "source": "unknown",
+          "evidence": "bg3.exe+0xA82550 on +0x10"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "Array<FixedString>",
+          "source": "unknown",
+          "evidence": "bg3.exe+0xA82550 on +0x20"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Animations",
+      "offset": 0,
+      "type": "AnimationSequenceSimpleNameSet",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x932FA0: members at +0/+0x10/+0x20 each through the Array<FixedString> writer bg3.exe+0xA82550; Toolkit esv::script::AnimationSystem::ProcessAnimationEvents (EoCServer.dll+0x2AAFF0) assigns an ls::AnimationSequenceSimpleNameSet (game type name) to +0. macOS default zeroes all 64 bytes."
+    },
+    {
+      "name": "RequestId",
+      "offset": 48,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x932FA0: last member, raw 16-byte write at +0x30; the same Toolkit function stores ls::Guid::Generate() there for every new request (a request/instance id)",
+      "legacy": "field_30"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "The three arrays of the name set are probably start/loop/end animation names - order not established.",
+    "names pass 2: AnimationSequenceSimpleNameSet's three FixedString arrays are not named."
+  ],
+  "seen": false,
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "RequestId: the Toolkit writer stores ls::Guid::Generate() here for every new request (see evidence). No FieldMeta names."
+}

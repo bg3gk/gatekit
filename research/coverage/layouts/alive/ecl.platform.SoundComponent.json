@@ -1,0 +1,29 @@
+{
+  "component": "ecl::platform::SoundComponent",
+  "ext_name": "ClientPlatformSound",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "StartSound",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x67FC50 DecRefs FixedStrings at +4 and +0. Toolkit ecl::platform::SoundSystem::ProcessInitializeSounds (EoCClient.dll+0xB409C0) copies LevelTemplate+0x110 here and +0x118 into +4 - in SE's LevelTemplate these are MovablePlatformStartSound / MovablePlatformStopSound. SoundSystem::PlaySound (EoCClient.dll+0xB408B0) posts +0 when its bool is true, +4 otherwise. Live: valid FixedString indices."
+    },
+    {
+      "name": "StopSound",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Second FixedString, from LevelTemplate MovablePlatformStopSound (see StartSound)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,75 @@
+{
+  "component": "navcloud::PathRequestComponent",
+  "ext_name": "NavcloudPathRequest",
+  "size": 104,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Not replicated. Windows adder bg3.exe+0x1EEB910 (allocates 0x68 bytes for the type) zeroes +0 and +8; the AI caller bg3.exe+0x305BF70 copies a 16-byte value from bg3.exe+0x4130AA0 here, the other caller bg3.exe+0x3357210 leaves it 0. Live: always 0 (3 instances). 16 bytes; Guid by width."
+    },
+    {
+      "name": "Level",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Adder writes 0xFFFFFFFF (null FixedString). bg3.exe+0x305BF70 stores the FixedString at +8 of a component of the requesting entity (ls::LevelComponent's LevelName in Script Extender) with IncRef/DecRef; bg3.exe+0x3357210 assigns a FixedString via bg3.exe+0x412E090. Live: an FS index."
+    },
+    {
+      "name": "Start",
+      "offset": 20,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Adder zeroes +0x14..+0x1F. bg3.exe+0x305BF70 copies the requester's current position (its +0x6C..+0x74) here. Live: (48.75, 18.3, -420.8)."
+    },
+    {
+      "name": "Goal",
+      "offset": 32,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Adder zeroes +0x20..+0x2B. bg3.exe+0x305BF70 copies the requester's +0x38..+0x40 (the destination), bg3.exe+0x3357210 a computed target position. Live: (51.25, 17.21, -415.8), a few metres from Start."
+    },
+    {
+      "name": "field_2C",
+      "offset": 44,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Adder 0. Both callers store the result of bg3.exe+0x2AE4B10(world, entity) here. Live: 0."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Adder: 6. bg3.exe+0x305BF70 stores a byte read from another component of the entity (2 when absent); bg3.exe+0x3357210 a byte result. Live: 0."
+    },
+    {
+      "name": "_Pad31",
+      "offset": 49,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "Never written by the Windows adder (only the byte at +0x30 is set), live bytes here vary (0x10 at +0x31, 0x01/0x80 at +0x34..+0x37): uninitialised padding before the 8-aligned set."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "HashSet<EntityHandle>",
+      "source": "unknown",
+      "evidence": "Adder zeroes +0x38..+0x67. Both callers insert EntityHandles with bg3.exe+0x1136A10, a HashSet insert (buckets pointer/count at +0, next-ids array at +0x10, 8-byte keys at +0x20, hash = key % bucket count); bg3.exe+0x3357210 inserts the requester and the target. Live: buckets pointer with count 5, two 2-element arrays. Probably entities the path search ignores."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Server-only in the samples (client row also registers 104 bytes).",
+    "Offsets/widths of every member are established by the Windows adder and the two writers; names of field_0, field_2C, field_30, field_38 are not. Name 'Level' assumes the source component is ls::LevelComponent.",
+    "Guid at +0: by width only (always zero live)."
+  ],
+  "seen": true,
+  "minutes": 12,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

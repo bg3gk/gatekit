@@ -1,0 +1,140 @@
+{
+  "component": "ecl::ModuleLoadComponent",
+  "ext_name": "ClientModuleLoad",
+  "size": 40,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "One module (mod set) being loaded by the client, driven step by step by ecl::ModuleLoadSystem (per-frame update bg3.exe+0x18B61B0); the first 0x18 bytes are an ls::ModuleSettings handed to the mod manager.",
+  "structs": [
+    {
+      "name": "ModuleLoadModuleShortDesc",
+      "size": 120,
+      "equals": "Script Extender ModuleShortDesc (GameDefinitions/Module.h)",
+      "fields": [
+        {
+          "name": "ModuleUUIDString",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE ModuleShortDesc layout; element stride 0x78 confirmed by the component destructor bg3.exe+0x6B8230 (eh_vector_destructor_iterator size 0x78, element dtor bg3.exe+0x5BCEF0)."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "alignment of the Guid"
+        },
+        {
+          "name": "ModuleUUID",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE layout"
+        },
+        {
+          "name": "Name",
+          "offset": 24,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "SE layout"
+        },
+        {
+          "name": "ModVersion",
+          "offset": 48,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE Version (64-bit)"
+        },
+        {
+          "name": "PublishVersion",
+          "offset": 56,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE Version (64-bit)"
+        },
+        {
+          "name": "Hash",
+          "offset": 64,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "SE layout"
+        },
+        {
+          "name": "Folder",
+          "offset": 88,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "SE layout"
+        },
+        {
+          "name": "PublishHandle",
+          "offset": 112,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE layout"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "VMT",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x184A520 writes &PTR_FUN_1454c2bb0 at +0: the ls::ModuleSettings virtual table (SE ModuleSettings: VMT + Array<ModuleShortDesc> Mods). The update passes the component start to the mod manager (Windows FUN_143BC7870(modManager, comp); macOS ls::ModManager::LoadMod(mgr, (ModuleSettings*)comp))."
+    },
+    {
+      "name": "Mods",
+      "offset": 8,
+      "type": "Array<ModuleLoadModuleShortDesc>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +8 (pointer) and +0x10 (capacity/size); destructor bg3.exe+0x6B8230 destroys a new[]-allocated array at +8 with 0x78-byte elements. SE ModuleSettings.Mods."
+    },
+    {
+      "name": "Progress",
+      "offset": 24,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator zeroes (4 bytes). bg3.exe+0x18B61B0 stores a float from a per-state table (0, 5, ..., 90, 100) here on each state change - loading progress in percent."
+    },
+    {
+      "name": "LoadLocalization",
+      "offset": 28,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creator writes 0 as a byte at +0x1C; bg3.exe+0x18B61B0 state 0 reads the byte and passes it to the localization load job (macOS: ecl::ModuleLoadSystem::DoLoadLoca(bool))."
+    },
+    {
+      "name": "_Pad1D",
+      "offset": 29,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "State",
+      "offset": 32,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes (4 bytes at +0x20); bg3.exe+0x18B61B0 switches on it (case 0, 1, 2, 3, ...) and writes the next state."
+    },
+    {
+      "name": "_Pad24",
+      "offset": 36,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding to 40"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "ModuleShortDesc members inside the 0x78-byte element are SE's (only the stride is checked here)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

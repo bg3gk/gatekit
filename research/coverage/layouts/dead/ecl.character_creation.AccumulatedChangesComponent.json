@@ -1,0 +1,318 @@
+{
+  "component": "ecl::character_creation::AccumulatedChangesComponent",
+  "ext_name": "ClientCCAccumulatedChanges",
+  "size": 776,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "The game's eoc::character_creation::AccumulatedChanges (0x308 bytes) for a character-creation / level-up session: filled by eoc::character_creation::FillAccumulatedChanges and moved in by bg3.exe+0x2027B00 (FUN_142019970 = move-assign); read by the definition command processor. Containers established from the Windows destructor bg3.exe+0x6CF740 and move-assign bg3.exe+0x2019970; element types named from the macOS destructor.",
+  "structs": [
+    {
+      "name": "AccumulatedChangesRawArray",
+      "size": 16,
+      "equals": "the memory shape of an SE Array<T> (pointer, capacity, size) for an element type not established",
+      "fields": [
+        {
+          "name": "Buf",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "array data pointer (freed by the destructors listed on the fields that use this struct)"
+        },
+        {
+          "name": "Capacity",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Array capacity (+8), as in SE Array"
+        },
+        {
+          "name": "Size",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Array size (+0xC), as in SE Array"
+        }
+      ]
+    },
+    {
+      "name": "AccumulatedChangesClassInfo",
+      "size": 40,
+      "equals": "eoc::character_creation::ClassInfo (no SE declaration)",
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "first 16 bytes (copied as 4+4+4+4 in EoCShared FillAccumulatedChanges); probably the class Guid"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "AccumulatedChangesRawArray",
+          "source": "inferred",
+          "evidence": "array at +0x10 cleared/freed by FUN_1405BD630 in the element destructor of bg3.exe+0x6DA6D0 (stride 0x28); element type unknown"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "4-byte member moved by bg3.exe+0x6DA6D0 (+0x20)"
+        },
+        {
+          "name": "_Pad24",
+          "offset": 36,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to 0x28"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "LimitedAbilities",
+      "offset": 0,
+      "type": "std::array<AccumulatedChangesRawArray, 7>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x6CE6F0 (ctor) zeroes 0..0x70 and runs a vector ctor 7 x 0x10; destructor bg3.exe+0x6CF740 ends with eh_vector_destructor_iterator(this, 0x10, 7, FUN_140591800 = array clear+free). macOS: StaticArray<DynamicArray<eoc::character_creation::LimitedAbility>,7>. Element size not established, so the arrays are raw."
+    },
+    {
+      "name": "field_70",
+      "offset": 112,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_88",
+      "offset": 136,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_90",
+      "offset": 144,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_98",
+      "offset": 152,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_A0",
+      "offset": 160,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_A8",
+      "offset": 168,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_B0",
+      "offset": 176,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_B8",
+      "offset": 184,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_C0",
+      "offset": 192,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_C8",
+      "offset": 200,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_D0",
+      "offset": 208,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_D8",
+      "offset": 216,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_E0",
+      "offset": 224,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: zeroed by the ctor, copied as 8-byte values by the move-assign bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_E8",
+      "offset": 232,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "plain data: copied as 4-byte values by bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_EC",
+      "offset": 236,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "plain data: copied as 4-byte values by bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_F0",
+      "offset": 240,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "plain data: copied as 4-byte values by bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_F4",
+      "offset": 244,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "plain data: copied as 4-byte values by bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_F8",
+      "offset": 248,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain data: copied as one 8-byte value by bg3.exe+0x2019970"
+    },
+    {
+      "name": "SpellMap0",
+      "offset": 256,
+      "type": "HashMap<FixedString, AccumulatedChangesRawArray>",
+      "source": "inferred",
+      "evidence": "64-byte hash map at +0x100: move-assigned by FUN_142019DC0; destructor destroys 16-byte values at +0x30 with FUN_1405BD630 (array clear, FUN_1405BD8A0 loop stride 0x10), frees them and the key set. macOS ~AccumulatedChanges: HashTable<FixedString> keys with DynamicArray<eoc::character_creation::SpellInfo> values (keys from macOS only)."
+    },
+    {
+      "name": "SpellMap1",
+      "offset": 320,
+      "type": "HashMap<FixedString, AccumulatedChangesRawArray>",
+      "source": "inferred",
+      "evidence": "64-byte hash map at +0x140: move-assigned by FUN_142019DC0; destructor destroys 16-byte values at +0x30 with FUN_1405BD630 (array clear, FUN_1405BD8A0 loop stride 0x10), frees them and the key set. macOS ~AccumulatedChanges: HashTable<FixedString> keys with DynamicArray<eoc::character_creation::SpellInfo> values (keys from macOS only)."
+    },
+    {
+      "name": "SpellMap2",
+      "offset": 384,
+      "type": "HashMap<FixedString, AccumulatedChangesRawArray>",
+      "source": "inferred",
+      "evidence": "64-byte hash map at +0x180: move-assigned by FUN_142019DC0; destructor destroys 16-byte values at +0x30 with FUN_1405BD630 (array clear, FUN_1405BD8A0 loop stride 0x10), frees them and the key set. macOS ~AccumulatedChanges: HashTable<FixedString> keys with DynamicArray<eoc::character_creation::SpellInfo> values (keys from macOS only)."
+    },
+    {
+      "name": "SpellMap3",
+      "offset": 448,
+      "type": "HashMap<FixedString, AccumulatedChangesRawArray>",
+      "source": "inferred",
+      "evidence": "64-byte hash map at +0x1C0: move-assigned by FUN_142019DC0; destructor destroys 16-byte values at +0x30 with FUN_1405BD630 (array clear, FUN_1405BD8A0 loop stride 0x10), frees them and the key set. macOS ~AccumulatedChanges: HashTable<FixedString> keys with DynamicArray<eoc::character_creation::SpellInfo> values (keys from macOS only)."
+    },
+    {
+      "name": "ActionResources",
+      "offset": 512,
+      "type": "HashMap<Guid, AccumulatedChangesRawArray>",
+      "source": "inferred",
+      "evidence": "64-byte hash map at +0x200: destructor FUN_1406D08A0 destroys 16-byte values (+0x30, count +0x2C) with FUN_1407081E0 and the key set; move-assign walks the same. macOS: ls::HashMap<ls::Guid, ls::DynamicArray<eoc::character_creation::AccumulatedChanges::ActionResourceInfo>> (keys from macOS only)."
+    },
+    {
+      "name": "field_240",
+      "offset": 576,
+      "type": "HashSet<FixedString>",
+      "source": "inferred",
+      "evidence": "48-byte set at +0x240 (moved by FUN_140591950, destroyed before the array at +0x270); macOS ~AccumulatedChanges: HashTable<FixedString> at +0x240 (key type from macOS)."
+    },
+    {
+      "name": "Classes",
+      "offset": 624,
+      "type": "Array<AccumulatedChangesClassInfo>",
+      "source": "inferred",
+      "evidence": "Destructor resizes the array at +0x270 to 0 with bg3.exe+0x6DA6D0 (stride 0x28) and frees it; macOS: DynamicArray<eoc::character_creation::ClassInfo>."
+    },
+    {
+      "name": "field_280",
+      "offset": 640,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "plain 8-byte value copied by bg3.exe+0x2019970"
+    },
+    {
+      "name": "field_288",
+      "offset": 648,
+      "type": "HashSet<Guid>",
+      "source": "inferred",
+      "evidence": "48-byte set (destroyed with FUN_140582AD0, copied with FUN_1405DF700); macOS: HashTable<Guid> at +0x288."
+    },
+    {
+      "name": "field_2B8",
+      "offset": 696,
+      "type": "AccumulatedChangesRawArray",
+      "source": "inferred",
+      "evidence": "trivially destructible array (FUN_1405BD630 + Free in the destructor, FUN_140591830 move); element type unknown"
+    },
+    {
+      "name": "field_2C8",
+      "offset": 712,
+      "type": "AccumulatedChangesRawArray",
+      "source": "inferred",
+      "evidence": "as field_2B8"
+    },
+    {
+      "name": "field_2D8",
+      "offset": 728,
+      "type": "HashSet<FixedString>",
+      "source": "inferred",
+      "evidence": "48-byte set ending at 0x308 (moved by FUN_140591950); macOS: HashTable<FixedString> at +0x2D8."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element types of every array are unknown on the Windows side (LimitedAbility, SpellInfo, ActionResourceInfo, the two arrays at +0x2B8/+0x2C8): declared as raw pointer/capacity/size.",
+    "Hash key types (FixedString/Guid) come from the macOS destructor's template names; offsets and container widths are Windows.",
+    "0x70..0x100 plain data members are unnamed (widths from the move-assign copy pattern only).",
+    "Member names SpellMap0..3 / ActionResources / Classes / LimitedAbilities follow the macOS element type names, not the game's member names."
+  ],
+  "minutes": 18,
+  "functions_read": 9,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not re-opened in depth this pass (budget): container offsets and widths stay from the Windows destructor bg3.exe+0x6CF740 and move-assign bg3.exe+0x2019970; element types of the arrays are still not established on Windows."
+}

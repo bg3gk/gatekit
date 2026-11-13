@@ -1,0 +1,32 @@
+{
+  "component": "ls::HiZComponent",
+  "ext_name": "HiZ",
+  "size": 24,
+  "seen": true,
+  "summary": "Hierarchical-Z (occlusion) data of a render view entity; macOS names ls::DynamicArray<ls::UniquePtr<ls::HiZComponent::RenderViewData>>.",
+  "fields": [
+    {
+      "name": "RenderViews",
+      "offset": 0,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "Registration bg3.exe+0x3B5ED50: size 0x18, align 8, destructor bg3.exe+0x3B792A0 destroys the elements of the array at +0 (owned pointers) and frees its buffer; macOS template DynamicArray<UniquePtr<ls::HiZComponent::RenderViewData>>. Live: capacity 1, size 1."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Not touched by the destructor (plain data); live heap-like pointers, small values or 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_10: pointer or two 32-bit values."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

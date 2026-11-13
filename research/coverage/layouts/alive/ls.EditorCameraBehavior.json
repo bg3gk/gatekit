@@ -1,0 +1,152 @@
+{
+  "component": "ls::EditorCameraBehavior",
+  "ext_name": "EditorCameraBehavior",
+  "size": 64,
+  "seen": true,
+  "summary": "Camera behaviour of the editor (free) camera; seen on camera entities in every level and in dialogues. The member boundaries come from the Toolkit's move-assignment operator, which copies member by member: 4@0, 1@4, 1@5, 1@6, 4@8, 4@0xC, 4@0x10, 1@0x14, 4@0x18, 8@0x1C, 8@0x24, 4@0x2C, 8@0x30, 4@0x38, 4@0x3C (bytes 7 and 0x15-0x17 are not copied = padding). Defaults from the macOS constructor (offsets agree with operator=). Registration bg3.exe+0x3B5CE40: size/alignment word 0x400040 (size 0x40), no destructor.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) writes +input / -input on input events 0x1B / 0x1C (one axis of camera movement); ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; macOS default 0; live 0."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) stores the InputValue byte of event 0x10 here; macOS default 0; live 0."
+    },
+    {
+      "name": "field_5",
+      "offset": 5,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) stores event 0x11 here and acts when both field_5 and field_6 are set (mouse warp / capture); live 0."
+    },
+    {
+      "name": "field_6",
+      "offset": 6,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) stores event 0x12 here (pair of field_5); live 0."
+    },
+    {
+      "name": "_Pad7",
+      "offset": 7,
+      "type": "uint8_t[1]",
+      "source": "inferred",
+      "evidence": "not copied by operator=; live holds garbage 0..0xFF"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) writes +x / -x of the input value on events 0x21 / 0x22 (rotation axis); default 0; live 0."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) writes +x / -x on events 0x23 / 0x24; default 0; live 0."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "macOS default 1.0 (w1 = 0x3F800000); ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; live always 1.0 (a speed multiplier?)."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "macOS default 1 (strb); operator= copies one byte; live always 1."
+    },
+    {
+      "name": "_Pad15",
+      "offset": 21,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "not copied by operator=; live garbage"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) writes the difference of two input values on events 0x17 / 0x18 (pfVar5[6]); default 0; live 0."
+    },
+    {
+      "name": "field_1C",
+      "offset": 28,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies +0x1C..+0x2B as two 8-byte moves; default 0; live 0."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "see field_1C; live 0."
+    },
+    {
+      "name": "field_24",
+      "offset": 36,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "see field_1C; live 0."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "see field_1C; live 0."
+    },
+    {
+      "name": "field_2C",
+      "offset": 44,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; default 0; live 0."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 8 bytes; default 0; live 0."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; macOS default 0 (stp wzr, w3); live 0."
+    },
+    {
+      "name": "field_3C",
+      "offset": 60,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; macOS default 3; live always 3. The class has statics s_Off/Low/Medium/HighSpeed{Move,Rot}Damping (macOS names) - possibly the current speed level."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of every member: the input event ids of OnInputEditorCameraBehavior were not mapped to names, and the update function that consumes the members was not read.",
+    "Whether +0x1C..+0x2F are floats (two vec3?) or other 4-byte values - all zero live."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

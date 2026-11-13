@@ -1,0 +1,227 @@
+{
+  "component": "esv::active_roll::WaitingComponent",
+  "ext_name": "ServerActiveRollWaiting",
+  "size": 80,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server state of an active roll (dice roll with modifiers) that waits before it starts: the start request (Guid + byte, the same pair as esv::active_roll::StartRequestOneFrameComponent), two entity handles each followed by a list of 0x58-byte modifier entries, and a countdown. esv::active_roll::ModifierSystem::ProcessStartRequests creates it; ProcessWaitingActiveRollComponents (Toolkit EoCServer.dll+0xE44880; game ~bg3.exe+0x32D5CF0) finishes it at once when both lists are empty, otherwise subtracts the frame time from the countdown and, when it reaches 0, re-issues the request from +0/+0x10 (ActiveRollRequestData) and removes the component. Never seen alive. Registry total 80 (server row).",
+  "structs": [
+    {
+      "name": "ActiveRollWaitingSourceInfo",
+      "size": 56,
+      "equals": "Script Extender ModifierSourceInfo (Components/Roll.h, 0x38 bytes), redeclared with enums as their underlying types",
+      "fields": [
+        {
+          "name": "SourceType",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE ModifierSourceInfo.SourceType (BoostSourceType, uint8_t); bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves the dword at entry +8 as one value."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding before the FixedString at +4."
+        },
+        {
+          "name": "Cause",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves entry +0xC and resets the source to 0xFFFFFFFF; FUN_1407A19F0(entry + 8) DecRefs +4 of the info - a FixedString. SE name."
+        },
+        {
+          "name": "StackId",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves entry +0x10 and resets it to 0xFFFFFFFF; FUN_1407A19F0 DecRefs +8 of the info. SE name."
+        },
+        {
+          "name": "StackPriority",
+          "offset": 12,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves the dword at entry +0x14. SE name."
+        },
+        {
+          "name": "Equipment",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves the qword at entry +0x18. SE name."
+        },
+        {
+          "name": "Status",
+          "offset": 24,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves the qword at entry +0x20; SE ComponentHandle Status (8 bytes)."
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves one byte at entry +0x28; SE field_20."
+        },
+        {
+          "name": "_Pad21",
+          "offset": 33,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding before the 8-byte handle."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves the qword at entry +0x30; SE field_28."
+        },
+        {
+          "name": "Source",
+          "offset": 48,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves the qword at entry +0x38; SE Source."
+        }
+      ]
+    },
+    {
+      "name": "ActiveRollWaitingEntry",
+      "size": 88,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves one byte at +0."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding before the 8-aligned info."
+        },
+        {
+          "name": "SourceInfo",
+          "offset": 8,
+          "type": "ActiveRollWaitingSourceInfo",
+          "source": "inferred",
+          "evidence": "+8..+0x40: the move of bg3.exe+0x22E1500 matches SE ModifierSourceInfo member for member (byte, two FixedStrings reset to -1, int, three handles and a byte), and the entry destructor FUN_1407A19F0 is called with entry + 8 and releases exactly the two FixedStrings at info +4 / +8."
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves 16 bytes at +0x40 as four dwords; a Guid by width (probably the modifier Guid)."
+        },
+        {
+          "name": "field_50",
+          "offset": 80,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves one byte at +0x50."
+        },
+        {
+          "name": "field_51",
+          "offset": 81,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x22E1500 (array resize of the 0x58-byte entries) moves one byte at +0x51."
+        },
+        {
+          "name": "_Pad52",
+          "offset": 82,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "never moved; padding to the stride 0x58."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "RequestId",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x32DD060 (AllocRaw 0x50) zeroes +0/+8. Toolkit ProcessWaitingActiveRollComponents passes `comp` and `comp + 0x10` to FUN_180e3b3b0, which stores 16 bytes from the first and one byte from the second into an ActiveRollRequestData (0x18) - the same pair as SE esv::active_roll::StartRequestOneFrameComponent {Guid field_0; uint8_t field_10} (Components/Roll.h); ProcessStartRequests copies 16 bytes + the byte at +0x10 the same way."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator writes byte 0 at +0x10; copied with the Guid as ActiveRollRequestData's byte (StartRequestOneFrameComponent.field_10)."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding before the 8-byte handle."
+    },
+    {
+      "name": "Entity1",
+      "offset": 24,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator writes 0xffc0000000000000 (null EntityHandle) at +0x18. Meaning not established."
+    },
+    {
+      "name": "Entries1",
+      "offset": 32,
+      "type": "Array<ActiveRollWaitingEntry>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x20/+0x28 and the size at +0x2C; destructor bg3.exe+0x22A8EC0 calls bg3.exe+0x22E1500(comp+0x20, 0) (element stride 0x58) and frees the buffer. Toolkit ProcessWaitingActiveRollComponents tests `*(int*)(comp+0x2C) == 0` (array size)."
+    },
+    {
+      "name": "Entity2",
+      "offset": 48,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator writes 0xffc0000000000000 (null EntityHandle) at +0x30. Meaning not established."
+    },
+    {
+      "name": "Entries2",
+      "offset": 56,
+      "type": "Array<ActiveRollWaitingEntry>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x38/+0x40 and the size at +0x44; destructor calls bg3.exe+0x22E1500(comp+0x38, 0) (same element type). Toolkit tests `*(int*)(comp+0x44) == 0`."
+    },
+    {
+      "name": "TimeLeft",
+      "offset": 72,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator writes 0x3f800000 (1.0f) at +0x48; Toolkit ProcessWaitingActiveRollComponents: `t = *(float*)(comp+0x48) - *(float*)(gameTime+8); *(float*)(comp+0x48) = t; if (t <= 0) { start roll; remove component }`."
+    },
+    {
+      "name": "_Pad4C",
+      "offset": 76,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 0x50."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meanings of the entry's byte at +0, Guid at +0x40 and bytes at +0x50/+0x51 (widths established by the Windows move).",
+    "Meaning of the handles at +0x18 / +0x30 (probably roller and target, each with its list of possible modifiers).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 12,
+  "functions_read": 6,
+  "status": "declared",
+  "second_pass": "The 0x58-byte list entry was decoded from the Windows resize/move bg3.exe+0x22E1500 and its element destructor FUN_1407A19F0: a byte, an SE ModifierSourceInfo at +8, a Guid at +0x40 and two bytes; the component's own offsets were already from the Windows creator bg3.exe+0x32DD060 and destructor.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it",
+  "names_pass_2": "No game names: not saved, not replicated; the ModifierSourceInfo members follow SE."
+}

@@ -1,0 +1,25 @@
+{
+  "component": "esv::script::IsMovingToTargetComponent",
+  "ext_name": "ServerScriptIsMovingToTarget",
+  "size": 4,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Marks an entity that a script moves to a target; created by the per-frame update of esv::script::MoveToTargetSystem (bg3.exe+0x2EA7090) for each entity of its pending list when missing, before the move request (0x14-byte records) is handed to a virtual handler.",
+  "fields": [
+    {
+      "name": "RequestId",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2EA73A0 allocates 4 bytes and writes 0. Toolkit esv::script::MoveToTargetSystem::UpdateRequests (EoCServer.dll+0x55FBF0) passes the component pointer as the uint& out-parameter of MoveToTargetHelper::MoveToTarget (EoCServer.dll+0x55F720), which hands it to esv::BehaviourMachine::SetState(..., uint* param_3, ...) (EoCServer.dll+0xA6CB00: writes 0 or the id of the behaviour state request); for entities whose move is no longer pending it reads the 4-byte value (column stride 4) and passes it to the helper's stop slot (+0x10) before removing the component. Windows bg3.exe+0x2EA7090 lines 146-148 read the same 4-byte value (stride 4) for that slot. Name inferred: the id of the move behaviour request."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "declared",
+  "second_pass": "Toolkit MoveToTargetSystem::UpdateRequests / MoveToTargetHelper::MoveToTarget show the 4 bytes are the uint request id returned by BehaviourMachine::SetState and later used to stop the move; the Windows update bg3.exe+0x2EA7090 reads the same 4-byte value.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

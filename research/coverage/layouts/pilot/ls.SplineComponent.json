@@ -1,0 +1,48 @@
+{
+  "component": "ls::SplineComponent",
+  "ext_name": "Spline",
+  "size": 24,
+  "fields": [
+    {
+      "name": "Id",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1859A60 allocates 0x10 bytes, IncRefs a FixedString and stores it at +0; destructor bg3.exe+0x185C6C0 DecRefs +0 and frees. The value comes from bg3.exe+0x18551E0: the template's FixedString at +0x10 (SE: GameObjectTemplate::Id), or the result of FUN_143c5e880(template Id, a FixedString of another component of the entity) in one branch. Confirmed: the object written there is {IncRef'd FixedString at +0, 8-byte template pointer at +8}."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "alignment; never written by creator/setter (bg3.exe+0x1853E90), varies between two probe passes of the same instances = uninitialised."
+    },
+    {
+      "name": "Template",
+      "offset": 8,
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor 'get Template : ls::SplineTemplate const *' at +8; the game agrees: bg3.exe+0x1859A60 and setter bg3.exe+0x1853E90 store the template pointer (the object whose vtable is called in bg3.exe+0x18551E0) at +8; probe shows a heap pointer in all instances."
+    },
+    {
+      "name": "_Pad10",
+      "offset": 16,
+      "type": "uint8_t[8]",
+      "source": "inferred",
+      "evidence": "Not part of the object: the registry size of an object stored behind a pointer is the object's size + 8 (convention of ecl::CameraLockTrigger and the other pointer-held types). bg3.exe+0x1859A60 allocates the object with 0x10 bytes (FUN_1441BEB10(..., 0x10, ...)) and stores only its pointer in an 8-byte ECS slot (ComponentFrameStorageAllocRaw(storage, 8, ...)); live samples past +0x10 hold unrelated heap data."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Exact meaning of the FixedString (plain template Id vs. a combined/level-scoped id built by FUN_143c5e880).",
+    "No SE type for ls::SplineTemplate exists, hence void*.",
+    "Needs the proxy form of declaration (object behind a pointer) in the generator, as for the triggers."
+  ],
+  "minutes": 13,
+  "functions_read": 10,
+  "status": "hypothesis",
+  "status_reason": "the raw check failed: client: registered size 24, layout says 16; server: registered size 24, layout says 16",
+  "oneFrame": false,
+  "class_size": 16,
+  "second_pass": "Settled on Windows: bg3.exe+0x1859A60 allocates a 16-byte object {FixedString Id, SplineTemplate*} and stores only its pointer in an 8-byte ECS slot, so the registered 24 is object + 8; size set to 24 with class_size 16, as for other pointer-held types."
+}

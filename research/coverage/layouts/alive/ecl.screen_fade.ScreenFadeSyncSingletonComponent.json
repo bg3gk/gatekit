@@ -1,0 +1,60 @@
+{
+  "component": "ecl::screen_fade::ScreenFadeSyncSingletonComponent",
+  "ext_name": "ClientScreenFadeSyncSingleton",
+  "size": 144,
+  "seen": true,
+  "fields": [
+    {
+      "name": "PlayerHasFades",
+      "offset": 0,
+      "type": "HashMap<int16_t, uint8_t>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x682800: frees values +0x70 and key set +0x40, then values +0x30 and key set +0 (two hash maps with trivial values). Toolkit EoCClient.dll+0x7DA130 (from ScreenFadeSyncingSystem::Update, EoCClient.dll+0x7D9CA0) gets a byte value by each short player id of ScreenFadeComponent (FUN_1807d9420), sets it to 1 when one of the player's fades in state 1-2 is not yet sync state 3, else 0; clears all to 0 when ScreenFadeComponent is empty. Live: 1-2 keys."
+    },
+    {
+      "name": "FadeSyncStates",
+      "offset": 64,
+      "type": "HashMap<Guid, uint8_t>",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x7DA370 emplaces by fade Guid under 'ls::HashMap<ls::Guid, enum eoc::screen_fade::EScreenFadeSyncState>::EmplaceUniversal' with 1-byte values (IndexedStorage<EScreenFadeSyncState>); Update advances the values 0->1->2->3 as UI frame ids change. EScreenFadeSyncState is 1 byte, not declared in SE."
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "ScreenFadeSyncingSystem::Update copies UIFrameIdSingletonComponent dword +4 here (old value compared to decide state 1->2). Live: small counter values."
+    },
+    {
+      "name": "field_84",
+      "offset": 132,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Update copies UIFrameIdSingletonComponent dword +0 here (old value compared to decide state 2->3)."
+    },
+    {
+      "name": "Changed",
+      "offset": 136,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x7DA130 sets +0x88 to 0, then ORs in 1 whenever a PlayerHasFades value changes."
+    },
+    {
+      "name": "_Pad89",
+      "offset": 137,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "size 0x90 (8-byte alignment)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the two frame-id copies (+0x80, +0x84) and their exact pairing with UIFrameId fields.",
+    "Exact meaning of the PlayerHasFades byte (waiting-for-sync flag)."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "25 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,91 @@
+{
+  "component": "esv::multiplayer::DropInApprovalNewRequestsSingletonComponent",
+  "ext_name": "ServerMultiplayerDropInApprovalNewRequests",
+  "size": 48,
+  "seen": true,
+  "summary": "Server singleton of the drop-in (join game) approval flow: the approval requests that arrived this frame, as eoc::multiplayer::DropInRequestInfo (user, request Guid, player name). Cleared and refilled by esv::multiplayer::DropInApprovalSystem::ProcessApprovalRequests. Seen.py context: idle level (singleton exists from world creation; never seen non-empty - single-player test stand).",
+  "structs": [
+    {
+      "name": "DropInNewRequestInfo",
+      "size": 48,
+      "fields": [
+        {
+          "name": "UserID",
+          "offset": 0,
+          "type": "UserId",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x2D8760 ProcessApprovalRequests builds the element on the stack: +0 = dword +0x3C of the incoming esv::multiplayer::PlayerConnectInfo (the user id; default Unassigned). Windows bg3.exe+0x2F38A90 builds the same element: +0 = PlayerConnectInfo+0x3C, +8 = two 8-byte halves of a generated Guid, +0x18 = STDString copy of PlayerConnectInfo+0x20 (size +0x28, capacity +0x2C = 0xF); clearing walks the elements with stride 0x30 and frees the string."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "RequestId",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "A fresh ls::Guid::Generate() per request (the same Guid is stored at +0x58 of the pending PlayerConnectInfo). Windows bg3.exe+0x2F38A90 builds the same element: +0 = PlayerConnectInfo+0x3C, +8 = two 8-byte halves of a generated Guid, +0x18 = STDString copy of PlayerConnectInfo+0x20 (size +0x28, capacity +0x2C = 0xF); clearing walks the elements with stride 0x30 and frees the string."
+        },
+        {
+          "name": "Name",
+          "offset": 24,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "STDString copied from +0x20 of the PlayerConnectInfo; the destructor loop over the set calls ~STDString at element +0x18 (stride 0x30, ls::IndexedStorage<eoc::multiplayer::DropInRequestInfo>). Windows bg3.exe+0x2F38A90 builds the same element: +0 = PlayerConnectInfo+0x3C, +8 = two 8-byte halves of a generated Guid, +0x18 = STDString copy of PlayerConnectInfo+0x20 (size +0x28, capacity +0x2C = 0xF); clearing walks the elements with stride 0x30 and frees the string."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "HashKeys",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "ls::HashTable<eoc::multiplayer::DropInRequestInfo> (macOS ~HashTable emitted right after this component's destructor) written out by hand, because a struct of this file may not be a HashSet key: bucket array (memset to 0xFF on clear)."
+    },
+    {
+      "name": "HashKeysSize",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Bucket count (read at +8 for the memset length)."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Padding."
+    },
+    {
+      "name": "NextIds",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "Collision chain array, cleared with FUN_1802261f0(+0x10)."
+    },
+    {
+      "name": "Requests",
+      "offset": 32,
+      "type": "Array<DropInNewRequestInfo>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x2D8760: when the singleton (getter FUN_1802D5E40) has size +0x2C != 0 it destroys the elements at +0x20 (stride 0x30), sets the size to 0, then inserts one DropInRequestInfo per request of the system's frame array (FUN_1802D4E60). Live (idle): all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "UserID is 4 bytes; whether it is a full UserId or a player id (same dword as PlayerConnectInfo +0x3C)."
+  ],
+  "minutes": 4,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Windows ProcessApprovalRequests bg3.exe+0x2F38A90 (getter bg3.exe+0x2F3AC30 of this type) clears the set (bucket memset at +0/+8, NextIds size +0x1C, elements +0x20 stride 0x30, size +0x2C) and inserts the 0x30-byte DropInRequestInfo built from each PlayerConnectInfo: every offset and width is established on Windows.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

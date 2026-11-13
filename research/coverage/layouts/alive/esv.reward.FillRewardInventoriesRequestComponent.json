@@ -1,0 +1,61 @@
+{
+  "component": "esv::reward::FillRewardInventoriesRequestComponent",
+  "ext_name": "ServerRewardFillRewardInventoriesRequest",
+  "size": 128,
+  "seen": true,
+  "summary": "Server singleton of esv::RewardManager: two per-entity maps used while filling reward inventories - lists of entities and lists of item transfer requests. Cleared and refilled by RewardManager::ProcessGiveRewardRequests; read by RewardManager::ProcessRewardGivenRequests and esv::inventory::InteractionRequestSystem. Seen.py context: singleton present in the idle level, all zero.",
+  "structs": [
+    {
+      "name": "FillRewardInventoriesTransfer",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Item",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::reward::TransferRewardsRequest +0 (see esv.reward.TransferRewardsRequestComponent.json): ID from the ForEachEntityInInventory callback."
+        },
+        {
+          "name": "Amount",
+          "offset": 8,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "unsigned short of the same callback."
+        },
+        {
+          "name": "_PadA",
+          "offset": 10,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "0x10-byte, 8-aligned element."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Array<EntityHandle>>",
+      "source": "unknown",
+      "evidence": "EoCServer.dll+0xD59250 ProcessGiveRewardRequests gets the singleton (EoCServer.dll+0xD53AD0, stride 0x80, error path names FillRewardInventoriesRequestComponent) and calls EoCServer.dll+0x3BD4B0 on +0 - destroys values asserting IndexedStorage<DynamicArray<ls::ID<ecs::EntityHandleTraits>>> (hash-table tag) - then clears it. Key type assumed EntityHandle (not seen directly)."
+    },
+    {
+      "name": "TransferRequests",
+      "offset": 64,
+      "type": "HashMap<EntityHandle, Array<FillRewardInventoriesTransfer>>",
+      "source": "inferred",
+      "evidence": "Same function calls EoCServer.dll+0xD57200 on +0x40: destroys values asserting IndexedStorage<DynamicArray<esv::reward::TransferRewardsRequest>>; macOS has only HashMap<ls::ID<EntityHandleTraits>, DynamicArray<TransferRewardsRequest>>. bg3.exe+0x30EFB40 allocates 0x80 and zeroes two HashMap shapes."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the entity lists at +0 and which entities key both maps."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

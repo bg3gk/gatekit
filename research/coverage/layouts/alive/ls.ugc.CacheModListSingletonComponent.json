@@ -1,0 +1,154 @@
+{
+  "component": "ls::ugc::CacheModListSingletonComponent",
+  "ext_name": "UgcCacheModListSingleton",
+  "size": 80,
+  "seen": true,
+  "summary": "Client cache of mod.io mod-list query results, ls::ugc::ModListCachedRequestSystem: HashMap<ls::ugc::ModItemListInfoID, ls::ugc::ModItemListInfoResponse> (macOS ~HashMap of that type) plus a DynamicArray<ModItemListInfoID> at +0x40 (pending queries, as in the sibling CacheModDependencies/CacheModInfo singletons). The map is written out member by member because its key is a struct. Response (0x18 bytes): Array of 0x140-byte mod entries + 8 bytes; the entry holds six STDStrings (+0x00..+0x78), Arrays at +0x98 (0x50-byte elements), +0xA8 and +0xB8 (STDString), +0xC8 (0x30-byte elements) and a HashSet at +0xD8 (dtor bg3.exe+0x38B5D20). Live: idle, all zero.",
+  "structs": [
+    {
+      "name": "UgcCacheModListQuery",
+      "size": 56,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Array<STDString>",
+          "source": "unknown",
+          "evidence": "ModItemListInfoID dtor bg3.exe+0x11FCB50: array at +0 cleared by bg3.exe+0x5C3E80 (stride 0x18, string reset) then freed"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "moved as 4 bytes by bg3.exe+0x11FC8C0"
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "moved as 1 byte"
+        },
+        {
+          "name": "field_15",
+          "offset": 21,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "moved as 1 byte"
+        },
+        {
+          "name": "_Pad16",
+          "offset": 22,
+          "type": "uint8_t[2]",
+          "source": "unknown",
+          "evidence": "padding"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "MSVC std::string (capacity at +0x2C reset to 0xF by the dtor)"
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "moved as 1 byte"
+        },
+        {
+          "name": "field_31",
+          "offset": 49,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "moved as 1 byte"
+        },
+        {
+          "name": "_Pad32",
+          "offset": 50,
+          "type": "uint8_t[6]",
+          "source": "unknown",
+          "evidence": "padding to 0x38"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "HashKeys",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "bucket array of the HashMap; creator bg3.exe+0x3BEF1F0 allocates 0x50 and zeroes it (HashMap pattern + Array at +0x40); destructor bg3.exe+0x3B7A730 ends with HashSet<ModItemListInfoID> dtor bg3.exe+0x11FC4C0 on +0"
+    },
+    {
+      "name": "HashKeysSize",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count"
+    },
+    {
+      "name": "_Pad0C",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "padding"
+    },
+    {
+      "name": "NextIds",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "hash chain array of ls::HashTable"
+    },
+    {
+      "name": "Keys",
+      "offset": 32,
+      "type": "Array<UgcCacheModListQuery>",
+      "source": "inferred",
+      "evidence": "keys ModItemListInfoID (0x38); macOS ls::HashMap<ModItemListInfoID, ModItemListInfoResponse>::~HashMap; Windows key count at +0x2C drives the value loop in bg3.exe+0x3B7D7D0"
+    },
+    {
+      "name": "Values",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "ModItemListInfoResponse per key, stride 0x18: bg3.exe+0x3B7D7D0 clears the Array at value+0 (bg3.exe+0x38BB8A0, element stride 0x140, element dtor bg3.exe+0x38B5D20) and frees it, then the dtor frees *(this+0x30)"
+    },
+    {
+      "name": "ValuesCapacity",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "size of the uninitialised value storage"
+    },
+    {
+      "name": "_Pad3C",
+      "offset": 60,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "padding"
+    },
+    {
+      "name": "RecentQueries",
+      "offset": 64,
+      "type": "Array<UgcCacheModListQuery>",
+      "source": "inferred",
+      "evidence": "Windows dtor bg3.exe+0x3B7A730 resizes +0x40 to 0 with bg3.exe+0x11FC8C0 (stride 0x38, moves exactly the ModItemListInfoID members) and frees it; macOS has DynamicArray<ls::ugc::ModItemListInfoID>; 'pending' role by analogy with the sibling cache singletons Role confirmed on Windows: bg3.exe+0x3BEE060 keeps the 0x38-stride array at +0x40 (count +0x4C) as an LRU list - 'while (10 < count)' it pops the last query, destroys it (bg3.exe+0x11FCB50) and removes its response from the map (key compare bg3.exe+0x15F83E0 over the 0x38-stride keys at +0x20) - capping the cache at 10 query results."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names of ModItemListInfoID (tags, counts, search text are guesses not written into names); layout of the 0x140-byte mod entry and of the 8 bytes after the response array (kept inside the raw value storage)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Container positions, the 0x38-byte query key (Windows destructor bg3.exe+0x11FCB50 and mover bg3.exe+0x11FC8C0) and the 0x18-byte response stride were already from Windows code; the role of the +0x40 array is now settled from bg3.exe+0x3BEE060 as an LRU list capped at 10 entries.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

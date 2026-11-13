@@ -1,0 +1,33 @@
+{
+  "component": "ls::SoundOcclusionGameplaySettingsRequestOneFrameComponent",
+  "ext_name": "SoundOcclusionGameplaySettingsRequest",
+  "size": 8,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Client one-frame request to ls::SoundOcclusionSystem: two bit masks OR-ed into the sound-occlusion settings singleton (ls::SoundOcclusionSettingsComponent +0x264/+0x268, unknown in SE). Never seen alive.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x1E61D30 (AllocRaw 8) writes 0, no destructor. Toolkit GameEngine.dll+0x8C4ED0 (ls::SoundOcclusionSystem::ProcessSettingsChanges) iterates the added requests (stride 8) and ORs dword +0 into SoundOcclusionSettingsComponent+0x264."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Same function ORs dword +4 into SoundOcclusionSettingsComponent+0x268."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the two masks select (the matching settings dwords are unknown in SE too)."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

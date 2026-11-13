@@ -1,0 +1,96 @@
+{
+  "component": "ecl::multiplayer::AttemptsToJoinSingletonComponent",
+  "ext_name": "ClientMultiplayerAttemptsToJoinSingleton",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "DropInToApproveInfoClient",
+      "size": 2,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "Variant alternative 0 (ecl::multiplayer::ToApproveInfoClient): UpdateComponents (EoCClient.dll+0x5AB710) copies exactly 2 bytes for it. Probably a user/player number."
+        }
+      ]
+    },
+    {
+      "name": "DropInToApproveInfoHost",
+      "size": 56,
+      "fields": [
+        {
+          "name": "UserId",
+          "offset": 0,
+          "type": "UserId",
+          "source": "inferred",
+          "evidence": "ProcessDecisions (EoCClient.dll+0x5A9500) compares (*info >> 16) with the local peer id from the helper and appends (short)*info to DestroyPlayerRequests - a UserId (peer << 16 | user)."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "byte copied by UpdateComponents."
+        },
+        {
+          "name": "field_5",
+          "offset": 5,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "byte copied by UpdateComponents."
+        },
+        {
+          "name": "_Pad6",
+          "offset": 6,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "alignment."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "8 bytes copied by UpdateComponents."
+        },
+        {
+          "name": "Name",
+          "offset": 16,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "STDString::operator= in UpdateComponents; UpdateMessageBoxes (EoCClient.dll+0x5ABC00) copies it into the message box request as the text argument (player name shown in the drop-in prompt)."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "16 bytes copied as four dwords by UpdateComponents; type guessed from width (could be four ints)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Attempts",
+      "offset": 0,
+      "type": "HashMap<FixedString, std::variant<DropInToApproveInfoClient, DropInToApproveInfoHost>>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x5AB710 ecl::multiplayer::DropInApprovalSystem::UpdateComponents: keys stride 4 and removal looks keys up by ls::FixedString::GetHash; values stride 0x40 with the variant index byte at +0x38 (0 = client, 1 = host; destroying alt 1 destroys the STDString at +0x10); bounds assert names ls::IndexedStorage<ls::Variant<ecl::multiplayer::ToApproveInfoClient, ecl::multiplayer::ToApproveInfoHost>>. MSVC std::variant puts the index after the 0x38-byte largest alternative, i.e. the same layout. macOS default: zeroed 64 bytes; live: empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Members +4, +5, +8, +0x28 of ToApproveInfoHost and the 2-byte ToApproveInfoClient are unnamed.",
+    "The FixedString key is presumably the drop-in request id carried by eoc::notification::DropInApproval*NotificationComponent (+4)."
+  ],
+  "minutes": 12,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the layout file is not valid yet: type 'std::variant<DropInToApproveInfoClient, DropInToApproveInfoHost>' is not one generate.py knows the size of",
+  "hold": "uses types declared elsewhere (STDString, variant): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

@@ -1,0 +1,25 @@
+{
+  "component": "esv::floor::InTriggerComponent",
+  "ext_name": "ServerFloorInTrigger",
+  "size": 8,
+  "seen": true,
+  "summary": "Server-only, 8 bytes. Came alive in idle levels, first fight and when the host was put into event trigger zones (S_GOB_SpiderNest_EventTrigger, S_PLA_Tavern_StartCollapse, ...); at most 4 holders at once. Written only by esv::floor::FloorSystem::Update (macOS index). Holds one entity handle.",
+  "fields": [
+    {
+      "name": "Trigger",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2EFD350 allocates 8 bytes and writes 0xffc0000000000000 (the invalid EntityHandle) as default. Live: 11 instances, low dword 0x2E00..0x24F78 (entity index), high dword 0x01800001..0x0200000F (salt/type bits of entity handles) - always a valid handle. The name comes from the component's name (an entity that is in a floor trigger) and the context (born while the host stood in trigger zones); not confirmed in code."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Whether the handle is the trigger entity or another entity (e.g. the floor/level object); FloorSystem::Update was not read."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

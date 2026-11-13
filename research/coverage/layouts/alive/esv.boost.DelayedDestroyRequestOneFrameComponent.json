@@ -1,0 +1,24 @@
+{
+  "component": "esv::boost::DelayedDestroyRequestOneFrameComponent",
+  "ext_name": "ServerBoostDelayedDestroyRequest",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Boosts",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x318BE70 creates a new request entity (FUN_14401aff0, flag |1), adds this component through bg3.exe+0x31A07F0 (0x10 bytes; pointer, capacity +8, size +0xC zeroed) and moves into it an array built by bg3.exe+0x11E03F0 from a span of 8-byte elements (Alloc(n*8), stride 8). Matches Toolkit esv::BoostSystem::LEGACY_RequestDetachAndDestroyBoosts(Span<EntityHandle const>) - the boost entities to destroy. Live: heap pointer, capacity/size 0-8."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element type taken from the span size (8) and the Toolkit's LEGACY_RequestDetachAndDestroyBoosts signature; not checked that live elements are boost entities."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

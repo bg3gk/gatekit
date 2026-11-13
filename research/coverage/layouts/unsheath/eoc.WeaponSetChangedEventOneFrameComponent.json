@@ -1,0 +1,30 @@
+{
+  "component": "eoc::WeaponSetChangedEventOneFrameComponent",
+  "ext_name": "WeaponSetChangedEvent",
+  "size": 2,
+  "oneFrame": true,
+  "fields": [
+    {
+      "name": "OldWeaponSet",
+      "offset": 0,
+      "type": "WeaponSetType",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1A6D600 (size 2, default 0x0202 = Unknown,Unknown). bg3.exe+0x2B89760 (server): compares the requested set with the byte of eoc::WeaponSetComponent, stores the new one into the component and writes old (component value before) here. WeaponSetType is uint8_t (Melee=0, Ranged=1, Unknown=2). bg3.exe+0x1A6D200 (client) copies both bytes from a replicated 2-byte record."
+    },
+    {
+      "name": "NewWeaponSet",
+      "offset": 1,
+      "type": "WeaponSetType",
+      "source": "inferred",
+      "evidence": "Same place in bg3.exe+0x2B89760: the value just written to eoc::WeaponSetComponent."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the capture. Reader bg3.exe+0x1B528A0 (called from the unsheath resolver) only tests presence."
+  ],
+  "minutes": 4,
+  "functions_read": 4,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

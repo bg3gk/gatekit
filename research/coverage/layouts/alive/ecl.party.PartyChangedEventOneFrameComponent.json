@@ -1,0 +1,39 @@
+{
+  "component": "ecl::party::PartyChangedEventOneFrameComponent",
+  "ext_name": "ClientPartyPartyChangedEvent",
+  "size": 24,
+  "seen": true,
+  "summary": "Event entity written by ecl::party::PartySystem::Update (bg3.exe+0x1949EF0) and read by gui::AssignedCharactersSystem (macOS). The system collects a HashMap<EntityHandle, pair of EntityHandles> of members whose two party handles differ (old != new) and creates one event entity per entry. Born live in party/summon steps (with GroupsChangedEvent, summons).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x194B100 (0x18 bytes) initialises three null handles; bg3.exe+0x1949EF0 writes the 8-byte map key here. Live: entity handles."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Second handle of the map value (value[1]); the map only keeps entries whose two handles differ. Live: handle or 0/null. Probably the new or old party (view) entity - not established."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "First handle of the map value (value[0]). Live: handle or 0/null."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which of +8/+0x10 is the old and which the new party/group entity."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "23 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

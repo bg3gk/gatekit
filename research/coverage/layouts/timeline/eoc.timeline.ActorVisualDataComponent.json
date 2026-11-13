@@ -1,0 +1,34 @@
+{
+  "component": "eoc::timeline::ActorVisualDataComponent",
+  "ext_name": "TimelineActorVisualData",
+  "size": 8,
+  "fields": [
+    {
+      "name": "VisualResourceId",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Server writer bg3.exe+0x330CEC0 (after bg3.exe+0x33162A0 fetches the component for writing with replication) assigns it with the FixedString copy helper bg3.exe+0x412E090 from the actor's template +0x74 (visual template), then overrides it with +0x1A0 of the template's character-visual resource (resource type 0x1A) when that exists. Toolkit build EoCClient.dll+0xA96FA0 passes this field to ecl::TLPreviewDummy::SetVisualResourceId. Live (both sides): 0x20800541, a FixedString index. Game name: member 0 (m_VisualResourceId) of savegame model ls::model::game::timeline::v1::ActorVisualDataComponent; matched by the macOS Save (bg3_macos_x64+0x4E9FBF0): FixedString component +0 -> model +0.",
+      "legacy": "Visual"
+    },
+    {
+      "name": "OriginalCharacterTemplate",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "bg3.exe+0x330CEC0 assigns it from the actor's template +0x10 (template id). EoCClient.dll+0xA96FA0 copies it into the dummy's template-id field next to SetVisualResourceId. Live: 0x1D101B01. Game name: member 1 (m_OriginalCharacterTemplate) of savegame model ls::model::game::timeline::v1::ActorVisualDataComponent; matched by the macOS Save (bg3_macos_x64+0x4E9FBF0): FixedString component +4 -> model +0x10.",
+      "legacy": "Template"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Replicated (has a ReplicatedTypeContext); the server removes it together with esv::ServerTimelineActorDataComponent in bg3.exe+0x330ACB0.",
+    "Exact field names are descriptive; the Toolkit accessor for the component (EoCClient.dll+0xA8FD10) is unnamed."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "Both model members matched by the macOS Save (two FixedStrings, 8-byte component)."
+}

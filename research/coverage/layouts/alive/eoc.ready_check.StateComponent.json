@@ -1,0 +1,119 @@
+{
+  "component": "eoc::ready_check::StateComponent",
+  "ext_name": "ReadyCheckState",
+  "size": 176,
+  "seen": true,
+  "summary": "Server state of a running ready check (the party vote shown before e.g. the level swap teleporter to the lower city; born together with ecl::ready_check::Show/HideMessageBoxRequestOneFrameComponent, ecl::ui::MessageBoxResponseEventOneFrameComponent and eoc::ready_check::ResultEventOneFrameComponent). Written by esv::ready_check::OverseerSystem (ProcessRequests creates it, UpdateComponents counts the timers down and sets the result). Saved: model game.ready_check.v2.StateComponent; member names from the v1 model (savefields.py).",
+  "fields": [
+    {
+      "name": "EventId",
+      "offset": 0,
+      "type": "STDString",
+      "source": "game",
+      "evidence": "savegame model ready_check v1 StateComponent, member 0 (m_EventId); EoCServer.dll+0x2E22A0 OverseerSystem::ProcessRequests: STDString::operator=(state, request-0x18); live: heap ptr, size 0x17, capacity 0x1F"
+    },
+    {
+      "name": "TranslatedString",
+      "offset": 24,
+      "type": "TranslatedString",
+      "source": "game",
+      "evidence": "savegame model member 1 (m_TranslatedString); ProcessRequests: TranslatedString::operator=(state+0x18, request); live handle FixedString + version 1"
+    },
+    {
+      "name": "TransactionId",
+      "offset": 40,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "savegame model member 2 (m_TransactionId); ProcessRequests copies 16 bytes to +0x28..+0x37; UpdateComponents (EoCServer.dll+0x2E50D0) compares ls::Guid at state+0x28 with the user's transaction id; same Guid seen in ResultEventOneFrameComponent+0x18"
+    },
+    {
+      "name": "InitiatorUserId",
+      "offset": 56,
+      "type": "UserId",
+      "source": "game",
+      "evidence": "savegame model member 3 (m_InitiatorUserId); ProcessRequests writes a 4-byte value at +0x38; live 0x00010001 (a UserId)"
+    },
+    {
+      "name": "field_3c",
+      "offset": 60,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "not written in the functions read; live 0xFFFFFFFF (may be padding or a default -1)"
+    },
+    {
+      "name": "ParticipantUserIds",
+      "offset": 64,
+      "type": "HashSet<UserId>",
+      "source": "game",
+      "evidence": "savegame model member 4 (m_ParticipantUserIds); ProcessRequests inserts the owner UserID of each requested character into the set at +0x40 (FUN_180274920(state+0x40, .., &userId)); live: bucket count 5, next-ids 1/1, keys 1/1"
+    },
+    {
+      "name": "field_70",
+      "offset": 112,
+      "type": "HashSet<EntityHandle>",
+      "source": "unknown",
+      "evidence": "ProcessRequests inserts an entity obtained for the user (FUN_1802e1060) into +0x70; UpdateComponents iterates its keys (ptr +0x90, count +0x9C, 8-byte stride) and looks each up for eoc::party::ViewComponent / GetUserCharacters; perhaps the model's m_ResultSet, not established"
+    },
+    {
+      "name": "ResultVal",
+      "offset": 160,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model member 6 (m_ResultVal); UpdateComponents sets +0xA1 to 1 if 0 and stores the result bool at +0xA0 (an ls::Optional<bool>); live 0/0"
+    },
+    {
+      "name": "ResultValHasValue",
+      "offset": 161,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "flag of the optional ResultVal (see +0xA0)"
+    },
+    {
+      "name": "IsForced",
+      "offset": 162,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model member 7 (m_IsForced); ProcessRequests copies request+0x58 byte to +0xA2; UpdateComponents: if +0xA2 == 0 and a check passes, result code 4"
+    },
+    {
+      "name": "field_a3",
+      "offset": 163,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "not seen written; live 5"
+    },
+    {
+      "name": "Timer",
+      "offset": 164,
+      "type": "float",
+      "source": "game",
+      "evidence": "savegame model member 8 (m_Timer); ProcessRequests sets 30.0 (0x41F00000); UpdateComponents subtracts frame time while more than one participant and ends the check with code 7 when <= 0"
+    },
+    {
+      "name": "TimeoutTimer",
+      "offset": 168,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "ProcessRequests sets 120.0 (0x42F00000); UpdateComponents subtracts frame time every frame and finishes the check when <= 0; not in the v1 savegame model"
+    },
+    {
+      "name": "_PadAC",
+      "offset": 172,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "live garbage 0x7FF4"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "what the entity set at +0x70 holds (user entities?) and whether it is the model's m_ResultSet",
+    "+0x3C and +0xA3 meaning",
+    "v2 savegame model (32 bytes) member names unknown"
+  ],
+  "minutes": 14,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "No change. The component is saved today into ls::model::game::ready_check::v2::StateComponent (no member names; its Save bg3_macos_x64+0x4F71860 copies only EventId and TransactionId); the names already present come from the older v1 model. Not established: whether v1 m_ResultSet is the HashSet at +0x70 or the presence flag at +0xA1 (ResultSet/ResultVal look like a split Optional<bool>, which would make +0xA1 ResultSet) - no code maps v1 members to component offsets; field_3c, field_a3, TimeoutTimer and the HashSet at +0x70 are not in any model."
+}

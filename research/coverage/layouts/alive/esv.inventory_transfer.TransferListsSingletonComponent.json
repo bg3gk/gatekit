@@ -1,0 +1,47 @@
+{
+  "component": "esv::inventory_transfer::TransferListsSingletonComponent",
+  "ext_name": "ServerInventoryTransferLists",
+  "size": 64,
+  "seen": true,
+  "summary": "Singleton of the inventory-transfer feature (idle level, always present). The macOS build names its value type esv::inventory_transfer::TransferListsSingletonComponent::TransferListEntry (IndexedStorage<...TransferListEntry>::Destruct); Toolkit EoCServer.dll+0xD4B520 is the map's emplace (asserts 'ls::IndexedStorage<struct esv::inventory_transfer::TransferListsSingletonComponent::TransferListEntry,...s_TagHashTable>').",
+  "structs": [
+    {
+      "name": "TransferListsSingletonTransferListEntry",
+      "size": 24,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "EoCServer.dll+0xD4B520 relocation copies the first 8 bytes verbatim (trivial)."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "Array<EntityHandle>",
+          "source": "inferred",
+          "evidence": "relocation moves pointer/capacity/size at +8/+0x10/+0x14 and clears the source with FUN_18024a7a0 (resize of an IndexedStorage<ID<EntityHandleTraits>, s_TagECSContainers> elsewhere); bg3.exe destructor helper bg3.exe+0x22D8580 frees +8 of each 0x18-byte value."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Lists",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, TransferListsSingletonTransferListEntry>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x350FE80 initialises a 64-byte HashMap; destructor bg3.exe+0x22C5560 runs bg3.exe+0x22D8580 over the values (stride 0x18, frees the array at value+8), frees +0x30, then the HashSet part. Key type assumed EntityHandle (8-byte keys hashed with the default ops). Live: one instance with bucket count 5 and capacity 1, size 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key type and the meaning of TransferListEntry+0 (an entity handle or an id)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

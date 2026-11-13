@@ -1,0 +1,25 @@
+{
+  "component": "esv::triggers::stats::AreaLevelOverridesLoadedOneFrameComponent",
+  "ext_name": "ServerStatsAreaLevelOverridesLoaded",
+  "size": 48,
+  "seen": true,
+  "summary": "One-frame event added by esv::triggers::stats::LoadingSystem::LoadAreaLevelOverrides (EoCServer.dll+0x302BE0) when stats area triggers are loaded (seen alive on level change / teleport): for every collected entity it adds the component (FUN_1802ffb50) and copies one 0x30-byte ls::HashSet<ls::Guid> into it (FUN_1802ed000; the per-entity sets are an IndexedStorage<HashSet<Guid>> per the assert string). The Guids are AreaLevelOverride ids (eoc::AreaLevelOverrideManager is keyed by Guid). Read by esv::stats::AreaLevelSystem::UpdateAreaLevels.",
+  "fields": [
+    {
+      "name": "AreaLevelOverrides",
+      "offset": 0,
+      "type": "HashSet<Guid>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x302BE0 lines 420-446: per entity adds the component and copies a HashSet from an array of stride 0x30 (assert 'ls::IndexedStorage<class ls::HashSet<class ls::Guid,...>>'). Live matches the 48-byte HashSet shape: buckets ptr + count 5, NextIds ptr cap1/size1, Keys ptr cap1/size1 (Keys pointer = NextIds pointer - 0x10). Name of the meaning from eoc::AreaLevelOverrideManager::GetOverrideByID(Guid) (macOS symbols)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name is inferred (AreaLevelOverride ids) - not a game member name."
+  ],
+  "minutes": 6,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "15 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

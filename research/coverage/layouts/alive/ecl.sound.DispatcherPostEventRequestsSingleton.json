@@ -1,0 +1,74 @@
+{
+  "component": "ecl::sound::DispatcherPostEventRequestsSingleton",
+  "ext_name": "ClientSoundDispatcherPostEventRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ClientSoundPostEventRequest",
+      "size": 32,
+      "fields": [
+        {
+          "name": "SubjectValue",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "ls::Variant<EntityHandle, SoundObjectHandle(uint64)> storage: ecl::sound::DistantSoundSystem::ProcessSoundsActivated (EoCClient.dll+0xE81A40) stores the entity handle here; DispatcherSystem::Update (EoCClient.dll+0xDCA820) stores a sound object handle."
+        },
+        {
+          "name": "SubjectType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index: 0 = EntityHandle (DistantSoundSystem writes 0), 1 = sound object handle (DispatcherSystem writes 1)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Variant is 16 bytes; FixedString follows at +0x10."
+        },
+        {
+          "name": "Event",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "DispatcherSystem::Update destroys a FixedString at element+0x10 (stride 0x20, IndexedStorage<ecl::sound::PostEventRequest>) and fills it with FixedString::Create of the event name; DistantSoundSystem copies DistantSoundInfo.InitSound into it."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "DispatcherSystem writes 3, DistantSoundSystem writes 0 (an event type or flags)."
+        },
+        {
+          "name": "Callback",
+          "offset": 24,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "DispatcherSystem stores a pooled ls::SoundCallback object (vtable PTR_FUN_181580ff0) here; DistantSoundSystem stores 0."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ClientSoundPostEventRequest>",
+      "source": "inferred",
+      "evidence": "Game element name ecl::sound::PostEventRequest (IndexedStorage strings in ecl::sound::DispatcherSystem::Update, EoCClient.dll+0xDCA820): stride 0x20, FixedString at +0x10 destroyed when the singleton is cleared; the point-and-click path appends {sound object handle, variant index 1, event FixedString, 3, callback}."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_14 of the request (3 from the dispatcher)."
+  ],
+  "minutes": 6,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

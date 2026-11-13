@@ -1,0 +1,87 @@
+{
+  "component": "esv::inventory::StealingDataOneFrameComponent",
+  "ext_name": "ServerInventoryStealingData",
+  "size": 104,
+  "seen": true,
+  "summary": "One-frame record attached by esv::inventory::InteractionRequestSystem (game per-frame update bg3.exe+0x3473C80, Toolkit ProcessMemberRequests) to an item that changes hands, consumed by esv::StoryCharacterEventManager::OnInventoryInteraction -> ThrowCharacterStoleItem, which raises the Osiris event CharacterStoleItem((CHARACTER)_Character, (ITEM)_Item, (GUIDSTRING)_ItemRootTemplate, (REAL)_X, (REAL)_Y, (REAL)_Z, (CHARACTER)_OldOwner, (ITEM)_SrcContainer, (INTEGER)_Amount, (INTEGER)_GoldValue). Registered by bg3.exe+0x3476550 with size 0x68; destructor bg3.exe+0x22D03D0 releases the FixedString at +0x58 and the STDStrings at +0x40 and +0x18.",
+  "fields": [
+    {
+      "name": "OldOwner",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Adder bg3.exe+0x3476550 sets 0xFFC0000000000000 (null handle). Writer bg3.exe+0x3473C80 (line ~632) stores an entity looked up per item. Toolkit OnInventoryInteraction (EoCServer.dll+0xEF56D0) turns *component into the Character passed as _OldOwner of the Osiris event CharacterStoleItem (ThrowCharacterStoleItem param 3)."
+    },
+    {
+      "name": "Position",
+      "offset": 8,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Writer bg3.exe+0x3473C80 copies 8 + 4 bytes from +0x10/+0x18 of a component of the item (FUN_140e5a590: a translation); OnInventoryInteraction takes +8 (8 bytes) and +0x10 (4 bytes) as the default _X/_Y/_Z of CharacterStoleItem (replaced by the container's bound centre when there is one). Adder zeroes +8 and the dword +0x10."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Never written by the adder or the writer; alignment for the 8-aligned STDString at +0x18."
+    },
+    {
+      "name": "ItemName",
+      "offset": 24,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Writer: ls::STDString::STDString(+0x18, template name at GameObjectTemplate+0x20). ThrowCharacterStoleItem (EoCServer.dll+0xEFD300) builds the _Item GUIDSTRING from STDString +0x18 and Guid +0x30. Destructor/adder show ls::STDString (size +0x28, capacity +0x2C = 0xF)."
+    },
+    {
+      "name": "ItemUuid",
+      "offset": 48,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Writer copies 4 dwords from the item's uuid component (FUN_14107e6f0) to +0x30..+0x3F; ThrowCharacterStoleItem passes (Guid*)(+0x30) as the _Item parameter."
+    },
+    {
+      "name": "RootTemplateName",
+      "offset": 64,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Writer: STDString(+0x40, name of the ROOT template - the template is resolved through GlobalTemplateManager::GetTemplateRaw when it is an override); ThrowCharacterStoleItem builds the _ItemRootTemplate GUIDSTRING from +0x40 and FixedString +0x58. Capacity at +0x54 = 0xF in the adder."
+    },
+    {
+      "name": "RootTemplateId",
+      "offset": 88,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Writer: FixedString assign (FUN_14412e090) from root template +0x10 (its id); adder sets 0xFFFFFFFF; ThrowCharacterStoleItem uses it as the GUID part of _ItemRootTemplate."
+    },
+    {
+      "name": "Amount",
+      "offset": 92,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "Osiris CharacterStoleItem _Amount (ThrowCharacterStoleItem SetParamValue(+0x5C, INTEGER, 8)); writer stores the per-item amount of the request; adder default 1."
+    },
+    {
+      "name": "GoldValue",
+      "offset": 96,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "Osiris CharacterStoleItem _GoldValue (SetParamValue(+0x60, INTEGER, 9)); writer stores the result of FUN_144211d80(world, item, amount, ...) - the value of the stolen amount; adder default 0."
+    },
+    {
+      "name": "_Pad64",
+      "offset": 100,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Never written; tail padding to the 8-byte alignment of the 0x68-byte record."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 9,
+  "functions_read": 6,
+  "oneFrame": true,
+  "status": "confirmed",
+  "second_pass": "Every member is settled by the Windows writer bg3.exe+0x3473C80 and adder bg3.exe+0x3476550 plus the Toolkit consumer ThrowCharacterStoleItem, which maps each member to a parameter of the Osiris event CharacterStoleItem (_OldOwner, _X/_Y/_Z, _Item, _ItemRootTemplate, _Amount, _GoldValue).",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

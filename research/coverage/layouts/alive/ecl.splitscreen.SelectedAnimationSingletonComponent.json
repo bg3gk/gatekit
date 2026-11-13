@@ -1,0 +1,31 @@
+{
+  "component": "ecl::splitscreen::SelectedAnimationSingletonComponent",
+  "ext_name": "ClientSplitscreenSelectedAnimationSingleton",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Animation",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "ecl::splitscreen::AnimationSelectorSystem::Update (EoCClient.dll+0x841E40) writes puVar3[0] = 1 or 2 (undefined4*); ecl::splitscreen::AnimationSystem::Update (EoCClient.dll+0x852000) compares it with 1 and then snaps the animation state (0x20/2, no transition). Probably eoc::splitscreen::EUserSplitAnimation (macOS ComboBoxManager::AddComboItem<eoc::splitscreen::EUserSplitAnimation>), not declared in SE. Default 0, live 1."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "AnimationSelectorSystem::Update writes puVar3[1] = 2 when the goal is split (GoalSingleton byte 0 == 0) and the user option bit is clear, else 1. Not seen read in AnimationSystem::Update. Default 0, live 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Values of EUserSplitAnimation and which of the two fields is for merging vs splitting."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

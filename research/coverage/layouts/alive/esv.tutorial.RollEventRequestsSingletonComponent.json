@@ -1,0 +1,37 @@
+{
+  "component": "esv::tutorial::RollEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialRollEventRequestsSingleton",
+  "size": 48,
+  "fields": [
+    {
+      "name": "Advantage",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3422110 (RollSystem update over eoc::RequestedRollComponent) appends RequestedRoll.Roller (+0x20) when AdvantageType (+0x40) == 1; ValidateSystem index 2 ActiveRoll_Advantage (bg3.exe+0x3428D70)"
+    },
+    {
+      "name": "Disadvantage",
+      "offset": 16,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "appends Roller when AdvantageType == 2; index 3 ActiveRoll_Disadvantage (bg3.exe+0x3428E50)"
+    },
+    {
+      "name": "Dialog",
+      "offset": 32,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "appends Roller when RollContext (+0x54) == 1; index 4 ActiveRoll_Dialog (bg3.exe+0x3428F30); destructor FUN_1406c9c70 frees 3 arrays"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Filled by esv::tutorial::RollSystem.",
+  "seen": true,
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

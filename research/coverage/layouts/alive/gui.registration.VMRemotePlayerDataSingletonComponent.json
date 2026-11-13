@@ -1,0 +1,26 @@
+{
+  "component": "gui::registration::VMRemotePlayerDataSingletonComponent",
+  "ext_name": "GuiRegistrationVMRemotePlayerData",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Objects",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, void*>",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x44F9D0 (Toolkit, VMRemotePlayerDataSingletonComponent::CreateVM(EntityHandle const&), paired with bg3.exe+0x1663A70) hashes the EntityHandle key modulo the bucket count at this+8, asserts 'Tried to register a VMPlayer to the same entity twice', allocates a gui::VMPlayer (Noesis::BaseObject::operator_new(0x298)), inserts the key (FUN_1800f88d0) and stores the object in the values storage at this+0x30 (stride 8, capacity at this+0x38); IndexedStorage assert names the value type Noesis::Ptr<gui::VMPlayer> (8 bytes, written as void*). Destructor NoesisGameUI.dll+0x30B670 frees +0x30, +0x20, +0x10, +0 = HashSet(buckets +0, NextIds +0x10, Keys +0x20) + values +0x30. Toolkit also has HasPlayerObject(EntityHandle). Registry size 64 (coverage.json, client)."
+    }
+  ],
+  "summary": "Client UI (Noesis) registry: one gui::VMPlayer view-model per registered remote-player entity (other players in multiplayer), keyed by the entity; filled by gui::registration::VMPlayerRegistrationSystem::ProcessRemotePlayers. Singleton from game start; in the single-player samples (idle) it is always empty (all zero).",
+  "confidence": "high",
+  "open_questions": [
+    "Values are Noesis::Ptr<gui::VMPlayer>; exposed as void*. Never seen non-empty (no multiplayer sample)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

@@ -1,0 +1,195 @@
+{
+  "component": "ls::anubis::savegame::LoadingComponent",
+  "ext_name": "AnubisSavegameLoading",
+  "size": 232,
+  "seen": true,
+  "summary": "Server-side state of ls::anubis::System while it restores Anubis (behaviour script) trees from a savegame: the SavegameVisitor taken from ls::anubis::LoadRequestOneFrameComponent, an ls::anubis::savegame::Reader over the saved data, a set of entities and two flags. Seen in the same step as LoadRequestOneFrameComponent (level change through S_CTY_LevelSwapTeleporter_WYR).",
+  "structs": [
+    {
+      "name": "AnubisSavegameLoadingRawArray",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Buf",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "pointer half of an ls::Array (moved and zeroed together with the two counters)"
+        },
+        {
+          "name": "Capacity",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Array layout ptr/capacity/size; live values 0x20, 0x29, 0x3A2"
+        },
+        {
+          "name": "Size",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Array layout ptr/capacity/size"
+        }
+      ]
+    },
+    {
+      "name": "AnubisSavegameReader",
+      "size": 152,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x3828430 (Reader move) copies it first; live: heap pointer"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "AnubisSavegameLoadingRawArray",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x38284F0 moves 7 Array-shaped members at +0x8..+0x78 of the Reader (ptr, u32, u32); live +0x10 of the component: heap, 0x3A2/0x3A2"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "AnubisSavegameLoadingRawArray",
+          "source": "unknown",
+          "evidence": "same move function; live 0x20/0x20"
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "AnubisSavegameLoadingRawArray",
+          "source": "unknown",
+          "evidence": "same move function; live empty"
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "AnubisSavegameLoadingRawArray",
+          "source": "unknown",
+          "evidence": "same move function; live heap, 0x3C2/0x3C2"
+        },
+        {
+          "name": "field_48",
+          "offset": 72,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "same move function: pointer zeroed together with a u16 at +0x52 and a u32 at +0x54 (not an ordinary Array)"
+        },
+        {
+          "name": "field_50",
+          "offset": 80,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "live 9"
+        },
+        {
+          "name": "field_52",
+          "offset": 82,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "zeroed by the move; live 1"
+        },
+        {
+          "name": "field_54",
+          "offset": 84,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "zeroed by the move; live 0x20"
+        },
+        {
+          "name": "field_58",
+          "offset": 88,
+          "type": "AnubisSavegameLoadingRawArray",
+          "source": "unknown",
+          "evidence": "same move function; live empty"
+        },
+        {
+          "name": "field_68",
+          "offset": 104,
+          "type": "AnubisSavegameLoadingRawArray",
+          "source": "unknown",
+          "evidence": "same move function; live heap, 0x20/0x20"
+        },
+        {
+          "name": "field_78",
+          "offset": 120,
+          "type": "AnubisSavegameLoadingRawArray",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x3828430 moves it; macOS Reader::~Reader frees +0x78 after clearing its size; live heap 0x29/0x29"
+        },
+        {
+          "name": "TypeArrays",
+          "offset": 136,
+          "type": "AnubisSavegameLoadingRawArray",
+          "source": "game",
+          "evidence": "macOS ls::anubis::savegame::Reader::~Reader calls DynamicArray<ls::anubis::savegame::model::TypeArray>::Reallocate(this+0x88, 0); Windows move at bg3.exe+0x3828430 confirms an Array at +0x88; element size not established; live heap 0x29/0x29"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Visitor",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3839D90 (add helper, size 0xE8) copies param+0 first; live value equals ls::anubis::LoadRequestOneFrameComponent's SavegameVisitor* (stored by bg3.exe+0x2B1D4B0, esv::SessionLoadSystem)"
+    },
+    {
+      "name": "Reader",
+      "offset": 8,
+      "type": "AnubisSavegameReader",
+      "source": "game",
+      "evidence": "macOS ~LoadingComponent calls ls::anubis::savegame::Reader::~Reader(this+8); Windows bg3.exe+0x3839D90 moves +8..+0xA0 with bg3.exe+0x3828430 (0x98 bytes)"
+    },
+    {
+      "name": "Entities",
+      "offset": 160,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "macOS ~LoadingComponent: HashTable<ls::ID<ecs::EntityHandleTraits>, ls::anubis::AnubisHashTableOps>::~HashTable(this+0xA0); Windows bg3.exe+0x3839D90 moves three ptr/u32/u32 groups at +0xA0/+0xB0/+0xC0; live: bucket count 0x35, next-ids 0x20/0x20, keys 0x20/0x20 - the ls::HashSet shape"
+    },
+    {
+      "name": "field_d0",
+      "offset": 208,
+      "type": "AnubisSavegameLoadingRawArray",
+      "source": "unknown",
+      "evidence": "macOS ~LoadingComponent frees the pointer at +0xD0; Windows moves ptr/u32/u32 at +0xD0; live heap, capacity 0x20, size 0; element type not established"
+    },
+    {
+      "name": "field_e0",
+      "offset": 224,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x3839D90 copies one byte at +0xE0; live 0"
+    },
+    {
+      "name": "field_e1",
+      "offset": 225,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x3839D90 copies one byte at +0xE1; live 1"
+    },
+    {
+      "name": "_PadE2",
+      "offset": 226,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "never copied by the move; live garbage"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "element types of the Reader's arrays and of the array at +0xD0 (declared as raw ptr/capacity/size)",
+    "meaning of the two flags at +0xE0/+0xE1",
+    "is AnubisHashTableOps' HashTable exactly ls::HashSet (shape matches live)"
+  ],
+  "minutes": 12,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

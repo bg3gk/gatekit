@@ -1,0 +1,24 @@
+{
+  "component": "esv::inventory::StackEntityAmountChangedEventOneFrameComponent",
+  "ext_name": "ServerInventoryStackEntityAmountChangedEvent",
+  "size": 4,
+  "seen": true,
+  "summary": "One-frame event of esv::inventory::StackSystem, born whenever a stack's amount changes (potions, containers, thrown dagger picked up, scripted events in act 1). Registered with size 4 and no destructor (bg3.exe+0x34B30D0). Queried together with MemberAdded/MemberRemoved events by esv::camp::SupplySystem.",
+  "fields": [
+    {
+      "name": "AmountChange",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Only member (adder bg3.exe+0x34B30D0 allocates 4 bytes with ComponentFrameStorageAllocRaw and stores 0). Its only caller bg3.exe+0x34AD110 (part of esv::inventory::StackSystem) sums the amounts (+4 of each 8-byte stack element) of the stack after the change (uVar12) and before it (iVar14) and, when they differ, adds the event with *value = new - old: a signed difference of the stack's total amount. Live values 1..0x111 are increases."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 4,
+  "oneFrame": true,
+  "status": "confirmed",
+  "second_pass": "The writer bg3.exe+0x34AD110 (StackSystem stack merge) shows the one 4-byte member is the signed change of the stack's total amount (new sum minus old sum), stored only when non-zero; size and width from the adder bg3.exe+0x34B30D0.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

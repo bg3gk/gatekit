@@ -1,0 +1,25 @@
+{
+  "component": "esv::unsheath::UserRequestComponent",
+  "ext_name": "ServerUnsheathUserRequestPending",
+  "size": 4,
+  "fields": [
+    {
+      "name": "Count",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "NOT the float timer of the rest of the family. Creator bg3.exe+0x32F92E0: ComponentFrameStorageAllocRaw(storage, 4) and *(int*)p = 1 (storage registered with element size 4). bg3.exe+0x32F8B60 (per-frame update of esv::unsheath::UserRequestSystem): for every entity in the system's request array it does *(int*)FUN_1432f95a0(...) += 1 when the component exists, else creates it (=1); a second loop over the component storage (int stride 4) does -= 1 once per pass, after adding esv::unsheath::UserRequestFailedOneFrameComponent (bg3.exe+0x32F9180) when field +0x10 of a 0x20-byte companion component is not 1; a third loop removes the component when the int at stride 4 is 0. A counter of user sheathe/unsheathe requests still being processed."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The name Count is descriptive (no savegame model, not replicated). Which component is the 0x20-byte companion whose +0x10 decides the Failed signal was not named. ext_name avoids ServerUnsheathUserRequest, taken by the one-frame tag."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Width and offset settled on Windows: the creator bg3.exe+0x32F92E0 allocates 4 bytes and stores int 1, and the system update bg3.exe+0x32F8B60 increments, decrements and tests it for 0 as a 32-bit int with stride 4; the decrement loop also emits UserRequestFailedOneFrameComponent.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

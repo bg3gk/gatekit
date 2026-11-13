@@ -1,0 +1,24 @@
+{
+  "component": "ecl::sound::PreloadStateSingletonComponent",
+  "ext_name": "ClientSoundPreloadStateSingleton",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "RefCounts",
+      "offset": 0,
+      "type": "std::array<int32_t, 4>",
+      "source": "inferred",
+      "evidence": "ecl::sound::PreloadSystem::FinalizeLoadRequests (EoCClient.dll+0xD947A0) gets the singleton (FUN_180d91b60) and indexes it with FUN_180d943e0 = ls::StaticArray<int,4>::Get (asserts index < 4, returns base + index*4) by the request's preload-list byte; adds +1 (load) or -1 (unload) and calls IPreloadLegacyHelper when a count crosses 0. List 2 is the ModuleLoadEvent list (assert text) and is incremented directly at +8. Live: [0, 0, 1, 0] - one module-load preload active."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of preload lists 0, 1 and 3 (3 is used by PreloadSystem::ProcessCharacterCreationEvents; 2 = ModuleLoadEvent)."
+  ],
+  "minutes": 5,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

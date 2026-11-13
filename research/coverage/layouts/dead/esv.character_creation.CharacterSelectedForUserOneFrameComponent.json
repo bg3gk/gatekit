@@ -1,0 +1,40 @@
+{
+  "component": "esv::character_creation::CharacterSelectedForUserOneFrameComponent",
+  "ext_name": "ServerCCCharacterSelectedForUser",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Character creation event: a character was selected for a user. Created on a new event entity by bg3.exe+0x37966D0 (AllocRaw 0x10) from bg3.exe+0x3791690, which writes the character handle and the user id; esv::StoryCharacterEventManager::OnCharacterSelectedForUser (Toolkit EoCServer.dll+0xEF4370) turns it into the Osiris event CharacterSelectedForUser. Registered as a normal component although named OneFrame. Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Character",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x37966D0 writes 0xffc0000000000000 (null EntityHandle) at +0; writer bg3.exe+0x3791690 line 285 `*puVar9 = local_398` (the selected character, also returned through `*local_298`)."
+    },
+    {
+      "name": "User",
+      "offset": 8,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "Creator writes DAT_14617ceac (default UserID global) at +8; writer line 286 `*(undefined4 *)(puVar9 + 1) = param_4` (the user id argument)."
+    },
+    {
+      "name": "_Pad12",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 16."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

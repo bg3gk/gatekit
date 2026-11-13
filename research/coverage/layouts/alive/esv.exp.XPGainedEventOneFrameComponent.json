@@ -1,0 +1,61 @@
+{
+  "component": "esv::exp::XPGainedEventOneFrameComponent",
+  "ext_name": "ServerExpXPGainedEvent",
+  "size": 16,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event of experience gained (dialogue XP rewards and kills: born in dialog/spell steps). Holds the eoc::exp::ObjectGainedXPEvent list built by esv::exp::ExperienceSystem::UpdateExperience.",
+  "structs": [
+    {
+      "name": "XPGainedEventEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "UpdateExperience (EoCServer.dll+0x701E50) appends eoc::exp::ObjectGainedXPEvent (name from its IndexedStorage assert, stride 0x10): +0 = the entity of the EntityView<ExperienceComponent, AvailableLevelComponent> (view+0x28)."
+        },
+        {
+          "name": "Amount",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "+8 = the int XP argument of UpdateExperience (added to ExperienceComponent's current/next/total experience)."
+        },
+        {
+          "name": "field_C",
+          "offset": 12,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "+0xC = ExperienceComponent byte +0xC (SE ExperienceComponent.field_28), set to 1 when the gain reached the level cap branch, 0 otherwise."
+        },
+        {
+          "name": "_Pad0D",
+          "offset": 13,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding to the 0x10 stride"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "Array<XPGainedEventEntry>",
+      "source": "inferred",
+      "evidence": "16-byte DynamicArray (bg3.exe creator FUN_142b75c20 zeroes it and registers an array destructor). Element type eoc::exp::ObjectGainedXPEvent from the ExperienceSystem::UpdateExperience signature (DynamicArray<eoc::exp::ObjectGainedXPEvent>&); that the component wraps this array is inferred from the name. Live (48 instances): heap pointer, capacity 1, size 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Not traced which function moves the frame array into the component (element layout is from UpdateExperience)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

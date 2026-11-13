@@ -1,0 +1,54 @@
+{
+  "component": "ls::SetCharacterLightCullFlagsRequestsSingletonComponent",
+  "ext_name": "SetCharacterLightCullFlagsRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "summary": "Client singleton queue of cull-flag changes for character lights, filled by ecl::CharacterLightSystem (macOS: Update, SetupCharacterLightComponent; Toolkit EoCClient.dll+0xACA680 is in its WorldView) - the same request type as ls::SetLightCullFlagsRequestsSingletonComponent.",
+  "structs": [
+    {
+      "name": "SetCharacterLightCullFlagsRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Light",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Same element type ls::LightCullFlagRequest as SetLightCullFlagsRequestsSingletonComponent (EoCClient.dll+0xACA680 asserts IndexedStorage<ls::LightCullFlagRequest>; macOS has one DynamicArray<ls::LightCullFlagRequest>). +0 = light entity there (EoCClient.dll+0xAF6F50)."
+        },
+        {
+          "name": "Flags",
+          "offset": 8,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "16-bit flag word at +8 as in EoCClient.dll+0xAF6F50."
+        },
+        {
+          "name": "_PadA",
+          "offset": 10,
+          "type": "uint8_t[6]",
+          "source": "unknown",
+          "evidence": "padding."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<SetCharacterLightCullFlagsRequest>",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0xACA680 (CharacterLightSystem lighting setup, WorldView with SetCharacterLightCullFlagsRequestsSingletonComponent) pushes IndexedStorage<ls::LightCullFlagRequest> elements. Live: heap pointer, capacity 0x20..0x100, size 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Push in EoCClient.dll+0xACA680 not read field by field; element layout taken from the shared LightCullFlagRequest push of ApplyVisibilityToEntities."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

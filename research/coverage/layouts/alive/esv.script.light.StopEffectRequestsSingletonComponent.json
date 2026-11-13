@@ -1,0 +1,23 @@
+{
+  "component": "esv::script::light::StopEffectRequestsSingletonComponent",
+  "ext_name": "ServerScriptLightStopEffectRequests",
+  "size": 48,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Singleton of scripted-light effect entities to stop, filled by esv::script::light::EffectRequestSystem::UpdateScriptedLightEffects. Lives from level load; empty in the sample.",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2EAAB20 allocates 0x30, zeroes a HashSet and registers destructor thunk_FUN_140582ad0 (generic HashSet destructor: frees buckets, NextIds, Keys). UpdateScriptedLightEffects (EoCServer.dll+0x4EC920) inserts entity handles with FUN_18021e210 (the HashSet<EntityHandle> insert also used for DespawnSystem) and clears it with FUN_1804ebea0. Live: 48 zero bytes (empty set)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

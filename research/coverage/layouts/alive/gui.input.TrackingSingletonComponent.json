@@ -1,0 +1,48 @@
+{
+  "component": "gui::input::TrackingSingletonComponent",
+  "ext_name": "GuiInputTrackingSingleton",
+  "size": 56,
+  "fields": [
+    {
+      "name": "KeyBindingsRefreshed",
+      "offset": 0,
+      "type": "HashSet<int16_t>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x12B5A30 (gui::input::TrackingSystem update) drains its message queue (system+0x80): message variant index 0 inserts the 2-byte payload with bg3.exe+0x796C40 (hash of a short, keys compared as short at Keys + i*2) into component+0; the set is cleared each update (bg3.exe+0x5C4330) when its key count +0x2C is non-zero. macOS gui::input::TrackingSystem::OnKeyBindingsRefresh(short const&) is the handler taking a short. Creator bg3.exe+0x12B5EB0 zeroes +0..+0x30."
+    },
+    {
+      "name": "InputDevice",
+      "offset": 48,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "Message variant index 1 stores its 2-byte payload at +0x30 (*(undefined2*)(comp+0x30)); macOS TrackingSystem::OnUIInputDeviceChanged(ls::EInputDeviceID) - enum ls::EInputDeviceID written as its 2-byte integer."
+    },
+    {
+      "name": "InputDeviceChanged",
+      "offset": 50,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Message 1 sets the byte at +0x32 to 1 together with InputDevice; the update resets it to 0 the next frame; creator zeroes it."
+    },
+    {
+      "name": "_Pad33",
+      "offset": 51,
+      "type": "uint8_t[5]",
+      "source": "inferred",
+      "evidence": "alignment padding (never written)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the int16 keys are (player ids whose key bindings were refreshed, by the macOS handler name); names are inferred from the macOS signal handlers."
+  ],
+  "summary": "Client GUI singleton alive in every idle level; gui::input::TrackingSystem collects key-binding refreshes and input-device changes for the UI.",
+  "seen": true,
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Re-read the Windows update bg3.exe+0x12B5A30 and the insert bg3.exe+0x796C40: the set holds 2-byte keys, message 1 writes 2 bytes at +0x30 and the flag at +0x32 - every boundary is established on Windows.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

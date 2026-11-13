@@ -1,0 +1,54 @@
+{
+  "component": "ecl::StealthVFXComponent",
+  "ext_name": "ClientStealthVFX",
+  "size": 8,
+  "seen": true,
+  "class_size": 1240,
+  "summary": "Stealth visual effect of a player character (born when an invisibility potion was drunk / spells-3, with RequestStealthVFXPoseOneFrame). The component holds only a pointer to a 0x4D8-byte heap object (registry total 1248 = 8 + 0x4D8); ecl::StealthVFXSystem updates it.",
+  "fields": [
+    {
+      "name": "Data",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x19CD070 allocates 0x4D8 bytes (FUN_1441beb10), constructs a polymorphic object at +0 (FUN_141c73c90: vtable bg3.exe+0x566C6C8, EntityHandle null at +0xD0, second vtable bg3.exe+0x5529DB0 at +0xD8), a second part at +0x130 (FUN_14188a020), sets byte +0x4D0 = 0, then AllocRaw(8) and stores the pointer. Component destructor bg3.exe+0x69FC00."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The registry reports 1248 (= 8-byte pointer + 0x4D8 object) while this layout keeps size 8 as instructed; the pointer-stored components already confirmed (ecl.DeathEffectComponent: size 312, class_size 304, storage_size 8) declare the object instead - this one needs the same treatment and a decision on size.",
+    "The 0x3A0-byte sub-object at +0x130 (vtable bg3.exe+0x56114B8, constructor bg3.exe+0x188A020) is not identified; its members are not settled.",
+    "The first 0x130 bytes need SE's EffectHandler (an external type), which a generated layout may not use."
+  ],
+  "minutes": 13,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the raw check failed: client: registered size 1248, layout says 8",
+  "object": {
+    "size": 1240,
+    "parts": [
+      {
+        "offset": 0,
+        "size": 304,
+        "what": "an EffectHandler: built by FUN_141c73c90, the same constructor that builds the 0x130-byte object of ecl::DeathEffectComponent (layout ecl.DeathEffectComponent.json, SE Effect.h EffectHandler): vtable bg3.exe+0x566C6C8, EntityHandle at +0xD0, second vtable at +0xD8"
+      },
+      {
+        "offset": 304,
+        "size": 928,
+        "what": "a sub-object built by bg3.exe+0x188A020: vtable bg3.exe+0x56114B8, two null EntityHandles at +0x8/+0x10, two 0x170-byte blocks at +0x28 and +0x1A0 (FUN_1406a3f30), null EntityHandle at +0x348, a callback registered with ecl::EquipmentVisualsSystem (+0x340) and with the replication of eoc::character::EquipmentVisualComponent (+0x350) - a mirror of the character's equipment visuals; class not identified"
+      },
+      {
+        "offset": 1232,
+        "size": 1,
+        "what": "byte set to 0 by the creator bg3.exe+0x19CD070"
+      },
+      {
+        "offset": 1233,
+        "size": 7,
+        "what": "tail padding to 0x4D8"
+      }
+    ]
+  },
+  "second_pass": "Read the creator bg3.exe+0x19CD070 and the sub-object constructor bg3.exe+0x188A020: the slot holds a pointer to a 0x4D8-byte object = EffectHandler (same constructor FUN_141c73c90 as ecl::DeathEffectComponent's) + a 0x3A0-byte equipment-visual mirror at +0x130 + a byte at +0x4D0 (recorded under \"object\"). Not settled for the build: the sub-object is unidentified and the object needs SE's EffectHandler."
+}

@@ -1,0 +1,56 @@
+{
+  "component": "esv::PerItemPassiveRestoredCooldownComponent",
+  "ext_name": "ServerPerItemPassiveRestoredCooldown",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server list of restored per-item passive cooldowns: ls::DynamicArray<esv::PerItemPassiveRestoredCooldownComponent::Cooldown> (type name from the macOS symbols), each an entity and a passive name. Saved (model game.cooldown.v0.PerItemPassiveRestoredCooldownComponent, 16 bytes, written along with ls::model::core::v0::EntityId models); handled by esv::PerItemPassiveCooldownRestoreSystem. Never seen alive. Registry total 16 (server row).",
+  "structs": [
+    {
+      "name": "PerItemPassiveRestoredCooldownCooldown",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Model-to-component conversion bg3.exe+0x2774010: each element gets `*(uint64*)e = 0xFFC0000000000000` (null handle) and then `*e = FUN_144018730(..., modelEntry[0])` - an EntityHandle resolved from the saved EntityId. Name inferred."
+        },
+        {
+          "name": "Passive",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same function: `*(int*)(e + 8) = 0xFFFFFFFF` then CreateFromString(model string) stored at +8; element clear bg3.exe+0x6DB850 DecRefs +8 with stride 0x10. Name inferred from the component name."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to the 0x10 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Cooldowns",
+      "offset": 0,
+      "type": "Array<PerItemPassiveRestoredCooldownCooldown>",
+      "source": "inferred",
+      "evidence": "Storage set-up bg3.exe+0x27057E0: size 0x10, destructor bg3.exe+0x22D4810 -> FUN_1406DB850(p, 0) (stride 0x10, FixedString at +8). Savegame loader bg3.exe+0x2602AB0 builds the array with bg3.exe+0x2774010 and stores it with AllocRaw(0x10): `*p = buffer; *(int*)(p+8) = capacity; *(int*)(p+0xC) = size`."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names of the element are inferred (the macOS type is ...::Cooldown, member names unknown).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

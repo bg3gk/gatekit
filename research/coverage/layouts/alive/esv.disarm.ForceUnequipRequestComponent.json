@@ -1,0 +1,356 @@
+{
+  "component": "esv::disarm::ForceUnequipRequestComponent",
+  "ext_name": "ServerDisarmForceUnequipRequest",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ForceUnequipDropMovement",
+      "size": 152,
+      "fields": [
+        {
+          "name": "PathSettings",
+          "offset": 0,
+          "type": "uint8_t[80]",
+          "source": "inferred",
+          "evidence": "Script Extender path::Settings (Base/ExposedTypes.h: two std::variant members) copied with eoc::path::Settings::Settings (EoCServer.dll+0x37E4E0); variants cannot be written with the allowed types, kept opaque. Windows: destroyed by bg3.exe+0x5F3FD0 from the DropMovement destructor bg3.exe+0x21BCD00 (holds std::variant members; kept opaque)."
+        },
+        {
+          "name": "Position",
+          "offset": 80,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Equals Script Extender DropMovement (Components/Inventory.h) member Position; copied as 8+4 bytes at +0x50 (EoCServer.dll+0x37E4E0)."
+        },
+        {
+          "name": "Rotation",
+          "offset": 92,
+          "type": "glm::quat",
+          "source": "inferred",
+          "evidence": "Equals Script Extender DropMovement (Components/Inventory.h) member Rotation; copied as two qwords at +0x5C."
+        },
+        {
+          "name": "field_6C",
+          "offset": 108,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Equals Script Extender DropMovement (Components/Inventory.h) member field_6C."
+        },
+        {
+          "name": "IsInInventory",
+          "offset": 109,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Equals Script Extender DropMovement (Components/Inventory.h) member IsInInventory."
+        },
+        {
+          "name": "_Pad6E",
+          "offset": 110,
+          "type": "uint8_t[2]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "Target",
+          "offset": 112,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Equals Script Extender DropMovement (Components/Inventory.h) member Target; qword at +0x70."
+        },
+        {
+          "name": "field_78",
+          "offset": 120,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Equals Script Extender DropMovement (Components/Inventory.h) member field_78."
+        },
+        {
+          "name": "field_79",
+          "offset": 121,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Equals Script Extender DropMovement (Components/Inventory.h) member field_79."
+        },
+        {
+          "name": "field_7A",
+          "offset": 122,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Equals Script Extender DropMovement (Components/Inventory.h) member field_7A."
+        },
+        {
+          "name": "_Pad7B",
+          "offset": 123,
+          "type": "uint8_t[5]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "Event",
+          "offset": 128,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "Equals Script Extender DropMovement (Components/Inventory.h) member Event (STDString at +0x80, destroyed by bg3.exe+0x21BCD00). Windows: DropMovement destructor bg3.exe+0x21BCD00 frees the buffer at +0x80 when the capacity at +0x94 exceeds 15, then resets size +0x90 = 0 and capacity +0x94 = 15 - an ls::STDString (24 bytes), now declared with the build's STDString."
+        }
+      ]
+    },
+    {
+      "name": "ForceUnequipRequestData",
+      "size": 264,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::disarm::UnequipRequestData (name from the IndexedStorage assert in WeaponSystem::GenerateUnequipRequests, EoCServer.dll+0x37EF70): first qword copied separately; presumably the disarmed character."
+        },
+        {
+          "name": "Item",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Start of a Script Extender UnequipRequest (Components/Inventory.h) at +8: Item."
+        },
+        {
+          "name": "Inventory",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "UnequipRequest::Inventory (std::optional<EntityHandle>) value."
+        },
+        {
+          "name": "HasInventory",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag of Inventory."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Padding of the optional."
+        },
+        {
+          "name": "Slot",
+          "offset": 32,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "UnequipRequest::Slot (std::optional<int16_t>) value; copied as one dword with its flag (EoCServer.dll+0x37E650)."
+        },
+        {
+          "name": "HasSlot",
+          "offset": 34,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag of Slot."
+        },
+        {
+          "name": "_Pad23",
+          "offset": 35,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "TransferToOwner",
+          "offset": 36,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "UnequipRequest::TransferToOwner (byte copy at sub+0x14)."
+        },
+        {
+          "name": "IsPickupAction",
+          "offset": 37,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "UnequipRequest::IsPickupAction."
+        },
+        {
+          "name": "Type",
+          "offset": 38,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "UnequipRequest::Type (SE enum UnequipType, uint8_t)."
+        },
+        {
+          "name": "_Pad27",
+          "offset": 39,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "InventoryOwner",
+          "offset": 40,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "UnequipRequest::InventoryOwner (std::optional<EntityHandle>) value."
+        },
+        {
+          "name": "HasInventoryOwner",
+          "offset": 48,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag."
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "Position",
+          "offset": 56,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "UnequipRequest::Position (std::optional<glm::vec3>) value; four dwords copied at sub+0x28."
+        },
+        {
+          "name": "HasPosition",
+          "offset": 68,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag."
+        },
+        {
+          "name": "_Pad45",
+          "offset": 69,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "Level",
+          "offset": 72,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "UnequipRequest::Level (std::optional<FixedString>): bg3.exe+0x21B8540 DecRefs element+0x48 when the flag at +0x4C is set. Windows: element destructor bg3.exe+0x21B8540 (called by bg3.exe+0x22E1950 on element+0x28 with stride 0x108) DecRefs the FixedString at element+0x48 when the flag at +0x4C is set, and destroys the DropMovement at +0x50 (bg3.exe+0x21BCD00) when the flag at +0xE8 is set."
+        },
+        {
+          "name": "HasLevel",
+          "offset": 76,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag (element+0x4C). Windows: element destructor bg3.exe+0x21B8540 (called by bg3.exe+0x22E1950 on element+0x28 with stride 0x108) DecRefs the FixedString at element+0x48 when the flag at +0x4C is set, and destroys the DropMovement at +0x50 (bg3.exe+0x21BCD00) when the flag at +0xE8 is set."
+        },
+        {
+          "name": "_Pad4D",
+          "offset": 77,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "DropMovement",
+          "offset": 80,
+          "type": "ForceUnequipDropMovement",
+          "source": "inferred",
+          "evidence": "UnequipRequest::DropMovement (std::optional<DropMovement>) value: destroyed by bg3.exe+0x21BCD00 when the flag at element+0xE8 is set, copied by EoCServer.dll+0x37E4E0. Windows: element destructor bg3.exe+0x21B8540 (called by bg3.exe+0x22E1950 on element+0x28 with stride 0x108) DecRefs the FixedString at element+0x48 when the flag at +0x4C is set, and destroys the DropMovement at +0x50 (bg3.exe+0x21BCD00) when the flag at +0xE8 is set."
+        },
+        {
+          "name": "HasDropMovement",
+          "offset": 232,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag (element+0xE8). Windows: element destructor bg3.exe+0x21B8540 (called by bg3.exe+0x22E1950 on element+0x28 with stride 0x108) DecRefs the FixedString at element+0x48 when the flag at +0x4C is set, and destroys the DropMovement at +0x50 (bg3.exe+0x21BCD00) when the flag at +0xE8 is set."
+        },
+        {
+          "name": "_PadE9",
+          "offset": 233,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "ShapeshiftState",
+          "offset": 240,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "UnequipRequest::ShapeshiftState; two qwords copied at sub+0xE0."
+        },
+        {
+          "name": "IgnoreCombat",
+          "offset": 256,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE EquipSettings::IgnoreCombat (EquipSettings 7 bytes copied as dword+word+byte at sub+0xF0)."
+        },
+        {
+          "name": "IgnoreLocked",
+          "offset": 257,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE EquipSettings::IgnoreLocked."
+        },
+        {
+          "name": "OnlyMainHand",
+          "offset": 258,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE EquipSettings::OnlyMainHand."
+        },
+        {
+          "name": "AllowShapeshifted",
+          "offset": 259,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE EquipSettings::AllowShapeshifted."
+        },
+        {
+          "name": "Settings_field_4",
+          "offset": 260,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE EquipSettings::field_4."
+        },
+        {
+          "name": "BlockUnequip",
+          "offset": 261,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE EquipSettings::BlockUnequip."
+        },
+        {
+          "name": "CanSwapHands",
+          "offset": 262,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE EquipSettings::CanSwapHands."
+        },
+        {
+          "name": "field_FF",
+          "offset": 263,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE UnequipRequest::field_FF (byte at sub+0xF7)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ForceUnequipRequestData>",
+      "source": "inferred",
+      "evidence": "esv::disarm::WeaponSystem::GenerateUnequipRequests (EoCServer.dll+0x37EF70) rebuilds the array from the frame data: AllocateInternal(n, 0x108, 8), copies qword +0, qword +8 and the rest with EoCServer.dll+0x37E650 (Script Extender UnequipRequest layout from +8). bg3.exe destructor bg3.exe+0x22AA0B0 -> bg3.exe+0x22E1950 destroys each 0x108-byte element at +0x28 (bg3.exe+0x21B8540). Element = {EntityHandle, SE inventory UnequipRequest (0x100)}; the optional/variant members are flattened. Live (seen.py, idle): one instance, all bytes zero (empty container)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "DropMovement.PathSettings (80 bytes, SE path::Settings with std::variant members) stays opaque bytes: it cannot be written with the build's primitive types; the element is {EntityHandle, SE esv inventory UnequipRequest (0x100)} and is better declared by hand with SE's own UnequipRequest than generated.",
+    "Offsets of the members from +0x08 to +0x47 and from +0xF0 on rest on the Toolkit (EoCServer.dll+0x37EF70 / +0x37E650) and SE's UnequipRequest; on Windows only the stride 0x108, Level/HasLevel at +0x48/+0x4C, DropMovement at +0x50 with flag +0xE8 and the STDString inside it are confirmed.",
+    "Meaning of the first EntityHandle (+0) of the element."
+  ],
+  "minutes": 18,
+  "functions_read": 9,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Windows destructors bg3.exe+0x22E1950 -> bg3.exe+0x21B8540 -> bg3.exe+0x21BCD00 confirm the 0x108 stride, the optional Level (+0x48/+0x4C), the optional DropMovement (+0x50/+0xE8) and the STDString at DropMovement+0x80; the custom 24-byte string struct is replaced by STDString. Not settled for the build: the path settings stay opaque and the remaining members rest on the Toolkit."
+}

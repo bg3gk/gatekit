@@ -1,0 +1,25 @@
+{
+  "component": "gui::registration::VMCombatUnregisteredOneFrameComponent",
+  "ext_name": "GuiRegistrationVMCombatUnregistered",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Object",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x444AB0 (VMCombatRegistrationSystem::Update): for each removed combat, InternalGetCombatObject is collected into a Noesis collection and RemoveCombatObject is called; then for every collected object a new entity is created (EntityCommandBuffer::CreateEntity) and the component's pointer is set to the object with AddRef (vtbl+0x18 of the object's +0x10 base) / Release (+0x20) of the old value (lines ~224-227). Value type Noesis::Ptr<gui::VMCombat> (the Data singleton's value type), written as void*. Live: 48 instances, all heap pointers."
+    }
+  ],
+  "summary": "One-frame event on a fresh entity: carries the gui::VMCombat view-model object that was just removed from VMCombatDataSingletonComponent, so UI code can drop it (seen in fights, deaths, dialogues and spell casts, i.e. whenever combat entities go away).",
+  "confidence": "medium",
+  "open_questions": [
+    "Holds a Noesis::Ptr<gui::VMCombat>; exposed as an opaque pointer."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

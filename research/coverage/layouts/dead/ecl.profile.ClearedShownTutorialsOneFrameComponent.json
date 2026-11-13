@@ -1,0 +1,27 @@
+{
+  "component": "ecl::profile::ClearedShownTutorialsOneFrameComponent",
+  "ext_name": "ClientProfileClearedShownTutorialsOneFrame",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame notice that 'already shown' tutorial entries of the profile were cleared: an array of FixedString keys (the same kind of FixedString that keys the sibling ecl::profile::AddedShownTutorialsOneFrameComponent's HashMap<FixedString, HashSet<Guid>>). Read by gui::tutorial::HasBeenShownSystem::Update (Toolkit NoesisGameUI.dll+0x46F910, WorldView<AddedShownTutorialsOneFrameComponent const, ClearedShownTutorialsOneFrameComponent const>). Never seen alive. Registry total 16 (client row).",
+  "fields": [
+    {
+      "name": "ClearedTutorials",
+      "offset": 0,
+      "type": "Array<FixedString>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1AB7C70 (AllocRaw 0x10) zeroes 16 bytes as pointer + two uint32 (Array shape). Destructor bg3.exe+0x6CC770 calls bg3.exe+0x5C4050(p, 0) which walks elements with stride 4 and DecRefs each non-0xFFFFFFFF value in the global string table (FixedString), then frees the buffer at +0. Writer bg3.exe+0x1AB6F30 creates it when its pending list (count at system +0xB4) is not empty and copies that array in (FUN_14078c500). Name inferred from the component name."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the FixedStrings name exactly (tutorial category / tutorial id) is not established.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 5,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

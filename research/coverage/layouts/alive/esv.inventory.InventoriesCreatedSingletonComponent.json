@@ -1,0 +1,75 @@
+{
+  "component": "esv::inventory::InventoriesCreatedSingletonComponent",
+  "ext_name": "ServerInventoryInventoriesCreated",
+  "size": 128,
+  "seen": true,
+  "summary": "Server singleton of inventory management: inventories created this frame. Written by esv::inventory::ManagementSystem::ProcessInventoryRequests, read by TopOwnerSystem, WieldingSystem, WieldedSystem, InteractionSystem::GetMainInventory. Alive in idle levels.",
+  "structs": [
+    {
+      "name": "InvInventoriesCreatedData",
+      "size": 16,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "esv::inventory::CreationData (Toolkit HashMap assert name), byte +0 copied from the create request's byte +8 (requests with this byte < 2 are processed)."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Padding before the 16-bit field."
+        },
+        {
+          "name": "field_2",
+          "offset": 2,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "Copied from the create request's word +0xA."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Padding before the handle."
+        },
+        {
+          "name": "Owner",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Copied from the request's handle (+0), which is then used as the key of the owner -> inventories map."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Created",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, InvInventoriesCreatedData>",
+      "source": "inferred",
+      "evidence": "ManagementSystem::ProcessInventoryRequests (EoCServer.dll+0xF693A0) emplaces into the singleton at +0 with assert ls::HashMap<ls::ID<ecs::EntityHandleTraits>, esv::inventory::CreationData>::EmplaceUniversal and writes the 16-byte value (stride 0x10). bg3.exe destructor FUN_1422d0300 frees values at +0x30 raw (trivial). Live: bucket 0x301, values capacity 0x200."
+    },
+    {
+      "name": "OwnerInventories",
+      "offset": 64,
+      "type": "HashMap<EntityHandle, Array<EntityHandle>>",
+      "source": "inferred",
+      "evidence": "Same function: FUN_1803bad20(this+0x40, owner) returns an Array<EntityHandle> and the new inventory handle is appended. TopOwnerSystem::Update iterates keys at +0x60 and values at +0x70 (arrays of inventories) and calls SetInventoryTopOwner. bg3.exe destructor destroys values at +0x70 with FUN_1405bd8a0 (stride 0x10, each a DynamicArray)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of CreationData bytes +0 and +2."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

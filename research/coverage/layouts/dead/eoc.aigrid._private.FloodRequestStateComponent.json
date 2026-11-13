@@ -1,0 +1,27 @@
+{
+  "component": "eoc::aigrid::_private::FloodRequestStateComponent",
+  "ext_name": "AigridFloodRequestState",
+  "size": 2,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Internal state of an eoc::aigrid::FloodRequestComponent: the handle of the AI-grid flood request that is running. Added by eoc::aigrid::FloodRequestSystem::ProcessNewRequests with the value returned by eoc::AiGrid::RequestFlood (ls::TypeWrapSimple<unsigned short, eoc::AiFloodRequest::HandleClassname>). Never seen alive. Registry total 2 (client and server rows).",
+  "fields": [
+    {
+      "name": "RequestHandle",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0xF2DD60 (AllocRaw 2) stores `*(undefined2*)p = *param_3`. Game ProcessNewRequests bg3.exe+0xF2C150 calls it as FUN_140f2dd60(.., &entity, local_258) with local_258 the handle filled by the AiGrid request allocator FUN_140e56070. Toolkit ProcessNewRequests: `AiGrid::RequestFlood(...)` returns ls::TypeWrapSimple<unsigned short, eoc::AiFloodRequest::HandleClassname> into local_274, then adds this component with it (FUN_180e46310). macOS default strh (2 bytes)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "status": "declared",
+  "hold": "the type sits in a namespace called _private, which Script Extender's property-map generator does not resolve (build error in PropertyMapNames.inl)",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

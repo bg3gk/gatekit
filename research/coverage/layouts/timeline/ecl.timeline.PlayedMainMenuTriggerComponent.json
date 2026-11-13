@@ -1,0 +1,40 @@
+{
+  "component": "ecl::timeline::PlayedMainMenuTriggerComponent",
+  "ext_name": "ClientTimelinePlayedMainMenuTrigger",
+  "size": 56,
+  "fields": [
+    {
+      "name": "State",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1F02210: ComponentFrameStorageAllocRaw(storage, 0x38, ...), byte 0 at +0, then the set zeroed at +8..+0x37. bg3.exe+0x1F007A0 (ecl::timeline::MainMenuTimelineSystem) writes 1 after creating the event entities, and later compares it with 1 and 2: state 1 becomes 2 when the trigger's byte +0xA9 is in the system's active set, state 2 becomes 1 for byte +0xA8; the new value is propagated to MainMenuActiveEventComponent::State of every entity in Events."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "alignment / tail padding"
+    },
+    {
+      "name": "Events",
+      "offset": 8,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator zeroes 0x30 bytes in the set pattern at +8. The writer collects the created event entities in a local set (8-byte insert bg3.exe+0x721030) and moves it here (bg3.exe+0x5DF700(comp + 8, &set)); readers walk the key array (pointer +0x28, size +0x34) with 8-byte steps and fetch MainMenuActiveEventComponent / ActivateEventCameraRequestComponent from each."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "State values 1 / 2 are not named.",
+    "Never alive in the captures (main menu only)."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Settled on Windows: the creator bg3.exe+0x1F02210 allocates 0x38 bytes (byte at +0, 48-byte set at +8), and bg3.exe+0x1F007A0 moves a set of 8-byte entity keys into +8 and compares/writes the byte at +0 with 1 and 2.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

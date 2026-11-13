@@ -1,0 +1,150 @@
+{
+  "component": "ecl::sound::MusicStateSingletonComponent",
+  "ext_name": "ClientSoundMusicStateSingleton",
+  "size": 80,
+  "seen": true,
+  "structs": [
+    {
+      "name": "MusicStateRequest",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::sound::MusicRequest (stride 0x30). PrioritizeMusicRequests (EoCClient.dll+0xE05160) initialises +0 with the null entity handle 0xFFC0000000000000."
+        },
+        {
+          "name": "Event",
+          "offset": 8,
+          "type": "uint8_t[24]",
+          "source": "inferred",
+          "evidence": "ls::STDString (24 bytes, = Script Extender STDString) at +8: constructed with STDString::STDString in PrioritizeMusicRequests. Bytes because STDString is not an allowed primitive here."
+        },
+        {
+          "name": "Context",
+          "offset": 32,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "EMusicEventContext (default 7); PrioritizeMusicRequests takes the minimum of MusicPlayerData+0x60 (= current request +0x20) over all players."
+        },
+        {
+          "name": "field_24",
+          "offset": 36,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "Default -1.0 (0xBF800000)."
+        },
+        {
+          "name": "IsStart",
+          "offset": 40,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Default 1; asserted == 1 for stinger / state-trigger contexts (see MusicRequestsSingletonComponent layout)."
+        },
+        {
+          "name": "Is3D",
+          "offset": 41,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Asserted 0 for non-diegetic, 1 for diegetic requests in PrioritizeMusicRequests."
+        },
+        {
+          "name": "Player",
+          "offset": 42,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "Short player id used as the hash key into Players."
+        },
+        {
+          "name": "_Pad2C",
+          "offset": 44,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Stride 0x30."
+        }
+      ]
+    },
+    {
+      "name": "MusicStatePlayerData",
+      "size": 112,
+      "fields": [
+        {
+          "name": "PendingRequests",
+          "offset": 0,
+          "type": "HashMap<int32_t, MusicStateRequest>",
+          "source": "inferred",
+          "evidence": "Game: ecl::sound::MusicStateSingletonComponent::MusicPlayerData (value stride 0x70 in PrioritizeMusicRequests: pointer + 0x1C*4). Its first 64 bytes are initialised by FUN_180e03bd0 from a zeroed 64-byte object; macOS has ls::HashMap<ecl::sound::EMusicEventContext, ecl::sound::MusicRequest> (used by GetAnyOtherPendingRequestInContext). Key is the 4-byte enum."
+        },
+        {
+          "name": "Current",
+          "offset": 64,
+          "type": "MusicStateRequest",
+          "source": "inferred",
+          "evidence": "FUN_180e03dd0(data+0x40, request) copies a MusicRequest (null handle, STDString, context 7, -1.0, 1) into +0x40; PrioritizeMusicRequests reads data+0x60 (= +0x40 + Context offset 0x20)."
+        }
+      ]
+    },
+    {
+      "name": "MusicStateQueuedRequest",
+      "size": 40,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "ls::Variant<MusicStateSingletonComponent::MusicRequest2D, MusicRequestPositioned> (game names, macOS), stride 0x28 (FUN_18034e690). Alternative 0 (2D) has an STDString at +0; alternative 1 (Positioned) has 8 bytes (probably the emitter entity) then an STDString at +8."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t[24]",
+          "source": "unknown",
+          "evidence": "Rest of the variant payload (STDString of the 2D or positioned alternative)."
+        },
+        {
+          "name": "Type",
+          "offset": 32,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "FUN_18034e690 (element destructor) reads the variant index at +0x20: 0 = MusicRequest2D (string at +0), 1 = MusicRequestPositioned (string at +8)."
+        },
+        {
+          "name": "_Pad21",
+          "offset": 33,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Stride 0x28."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "HashMap<uint16_t, MusicStatePlayerData>",
+      "source": "inferred",
+      "evidence": "PrioritizeMusicRequests (EoCClient.dll+0xE05160) gets the singleton (FUN_180e01620), walks keys at +0x20 with stride 2 (short player ids) and values at +0x30 with stride 0x70, looks up by short key (bucket count +8) and inserts a fresh MusicPlayerData when missing. Live: 5 buckets, 1 player."
+    },
+    {
+      "name": "PostedRequests",
+      "offset": 64,
+      "type": "Array<MusicStateQueuedRequest>",
+      "source": "inferred",
+      "evidence": "PrioritizeMusicRequests destroys every element of the array at +0x40 (size +0x4C) and resets its size each frame; element type ls::Variant<MusicRequest2D, MusicRequestPositioned> (macOS DynamicArray instantiation and the CheckBoundary text in FUN_18034e690). Live: capacity 2-4, size 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "MusicRequest2D / MusicRequestPositioned member layout inside the variant (only the STDString positions are known).",
+    "MusicRequest +0x24 float meaning; STDString members declared as bytes."
+  ],
+  "minutes": 12,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

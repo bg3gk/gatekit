@@ -1,0 +1,39 @@
+{
+  "component": "eoc::timeline::LongRestComponent",
+  "ext_name": "TimelineLongRest",
+  "size": 16,
+  "fields": [
+    {
+      "name": "LongRestEntity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x330C7C0 (~esv::TimelineSystem::CreateTimeline) adds the component (bg3.exe+0x3312760, default null handle) to the timeline entity only for timeline type 6 and stores the 8 bytes at +0x100 of the creation parameters. The esv::rest::LongRestSystem reader bg3.exe+0x2BDCC00 (query LongRestComponent + SyncedTimelineControlComponent, stride 0x10) passes it to bg3.exe+0x26E9A00, which fetches eoc::rest::LongRestState of that entity."
+    },
+    {
+      "name": "LastNodeCompleted",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3309150 (esv::TimelineSystem, node-completed handling, branch for timeline type 6) sets it to 1 when the completed node Guid equals the NodeId of the last entry of the synced control's Nodes (stride 0x50), otherwise to 0. Created 0. bg3.exe+0x2BDCC00 tests the byte at +8 together with LongRestState+2."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are descriptive (no saved model, not replicated)."
+  ],
+  "minutes": 12,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "The long-rest system's reader bg3.exe+0x2BDCC00 (called from the per-frame update of esv::rest::LongRestSystem) walks the component with stride 0x10, resolves the handle at +0 to the entity's eoc::rest::LongRestState and tests the bool at +8: both members settled on Windows.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

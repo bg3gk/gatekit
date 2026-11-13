@@ -1,0 +1,38 @@
+{
+  "component": "esv::placement::ValidationComponent",
+  "ext_name": "ServerPlacementValidation",
+  "size": 3,
+  "seen": true,
+  "summary": "Validation state of a placement, written by esv::placement::ValidationSystem (GatherValidationRequests / ProcessValidationRequests, Toolkit EoCServer.dll+0x2F4790 / +0x2F5690), which checks every actor of the PlacementComponent map (alive, not incapacitated, not in repose, item not moved) and records an esv::placement::EFailureType per entity. Seen.py context: dialogues with several NPCs and scripted events.",
+  "fields": [
+    {
+      "name": "State",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2F0C7F0 (3 bytes) writes 0 (pending). The per-frame update of esv::placement::ValidationSystem bg3.exe+0x2F0AF60 writes 1 for every entity of its 'valid' list and 2 for every entity of its 'failed' list (via getter bg3.exe+0x2F0C960). Live 0, 1, 2."
+    },
+    {
+      "name": "Failure",
+      "offset": 1,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Payload of an optional failure code: bg3.exe+0x2F0AF60 stores the per-entity byte of the failed list (enum esv::placement::EFailureType, 1 byte) here together with State = 2. Left unwritten by the creator (stale while HasFailure is 0). Live 0, 2, 4, 0x0A."
+    },
+    {
+      "name": "HasFailure",
+      "offset": 2,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Engaged flag of that optional: the creator zeroes byte 2; bg3.exe+0x2F0AF60 sets it to 1 (if it was 0) when it stores Failure. Live 0/1."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "The Windows creator bg3.exe+0x2F0C7F0 and ValidationSystem's update bg3.exe+0x2F0AF60 show byte 0 is the state (0 pending, 1 valid, 2 failed) and bytes 1-2 are an optional EFailureType (value, engaged flag).",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

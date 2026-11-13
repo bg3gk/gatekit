@@ -1,0 +1,266 @@
+{
+  "component": "ls::ugc::QueryModListResultOneFrameComponent",
+  "ext_name": "UgcQueryModListResult",
+  "size": 24,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame result of a mod.io mod-list query (client only, registry total 24). ls::PublishingSystem (per-frame update bg3.exe+0x3BDE2A0; Toolkit GameEngine.dll ls::PublishingSystem::Process*Requests) creates it on a new entity from a request queued by the matching HandleUGC... callback of the mod.io back-end; the same frame also gets a UGCRequestResultOneFrameComponent with the net::UGCResult and request Guid. Request queue filled by HandleUGCFilesDetails(DynamicArray<net::PublishModInfo>, net::UGCResult, unsigned int); drained by bg3.exe+0x3BDEEE0 (request stride 0x50: array +0, UGCResult +0x10, u32 +0x38, Guid +0x40).",
+  "structs": [
+    {
+      "name": "UgcQueryModListResultDependency",
+      "size": 80,
+      "fields": [
+        {
+          "name": "ModId",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; first member is the 64-bit mod id (SE's UGCModDependency.DependencyHandle); macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): JSON 'mod_id'"
+        },
+        {
+          "name": "Name",
+          "offset": 8,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; SE's UGCModDependency has only DependencyName here - this build has three strings; macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): this argument is 'name'"
+        },
+        {
+          "name": "ThumbnailSmall",
+          "offset": 32,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): this argument is 'logo'.'thumb_320x180' via GetImageURL"
+        },
+        {
+          "name": "ThumbnailLarge",
+          "offset": 56,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): this argument is 'logo'.'thumb_1280x720' via GetImageURL"
+        }
+      ]
+    },
+    {
+      "name": "UgcQueryModListResultStringPair",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "element of PublishModInfo+0xC8 (0x30 bytes): two STDStrings copied by bg3.exe+0x3BDF700; net::UGCTag: macOS ParseModInfoFromModioJSON AppendEmplace(tag 'name', 'name_localized'); RequestGetGameTagsCallback fills tags from 'tag' / 'translations'"
+        },
+        {
+          "name": "LocalizedName",
+          "offset": 24,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "second STDString of the pair; net::UGCTag: macOS ParseModInfoFromModioJSON AppendEmplace(tag 'name', 'name_localized'); RequestGetGameTagsCallback fills tags from 'tag' / 'translations'"
+        }
+      ]
+    },
+    {
+      "name": "UgcQueryModListResultPublishModInfo",
+      "size": 320,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0) copies an STDString here (capacity word at +0x14 compared with 0xF); meaning: mod.io 'name' -> macOS +0x0 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "Metadata",
+          "offset": 24,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0) copies an STDString here (capacity word at +0x2C compared with 0xF); meaning: 'metadata_blob' parsed by net::CommunityUGCMetadata -> macOS +0x10 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "Author",
+          "offset": 48,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0) copies an STDString here (capacity word at +0x44 compared with 0xF); meaning: 'submitted_by'.'name_id' -> macOS +0x20 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "Description",
+          "offset": 72,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0) copies an STDString here (capacity word at +0x5C compared with 0xF); meaning: 'description_plaintext' (else 'summary') -> macOS +0x30 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "DownloadUrl",
+          "offset": 96,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0) copies an STDString here (capacity word at +0x74 compared with 0xF); meaning: file 'download'.'binary_url' -> macOS +0x40 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "FileName",
+          "offset": 120,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0) copies an STDString here (capacity word at +0x8C compared with 0xF); meaning: file 'filename' with the extension replaced by .pak -> macOS +0x50 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "Version",
+          "offset": 144,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 8-byte copy; meaning: file 'version' parsed by ls::Version::FromString -> macOS +0x60 (64-bit packed ls::Version) (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "Dependencies",
+          "offset": 152,
+          "type": "Array<UgcQueryModListResultDependency>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): FUN_1438bada0 copies an array of 0x50-byte elements (u64 + 3 STDStrings) - the same copier as the dependency list of ModDependenciesResult; probably the mod's dependencies; meaning: DynamicArray<net::UGCModDependency> (macOS PublishModInfo::Visit, +0x68) (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "ThumbnailsSmall",
+          "offset": 168,
+          "type": "Array<STDString>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): FUN_143be1000 copies an array of 0x18-byte STDStrings; meaning: 'logo'/'media.images' 'thumb_320x180' URLs (GetImageURL) appended -> macOS +0x78 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "ThumbnailsLarge",
+          "offset": 184,
+          "type": "Array<STDString>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): FUN_143be1000 copies an array of 0x18-byte STDStrings; meaning: 'logo'/'media.images' 'thumb_1280x720' URLs appended -> macOS +0x88 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "Tags",
+          "offset": 200,
+          "type": "Array<UgcQueryModListResultStringPair>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): array of 0x30-byte elements, each two STDStrings (copied inline); meaning: 'tags': DynamicArray<net::UGCTag> AppendEmplace(name, name_localized) -> macOS +0x98 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "Platforms",
+          "offset": 216,
+          "type": "HashSet<uint8_t>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): bucket table +0xD8 (int32 buckets, count +0xE0, FUN_1405c3e10 + memmove count<<2), next ids +0xE8 (FUN_140cbb290), keys +0xF8 copied byte by byte - a HashSet of 1-byte keys (an enum, e.g. platforms); meaning: HashTable<net::EUGCPlatform> (macOS PublishModInfo::Visit; file 'platforms') -> macOS +0xA8; key is the 1-byte enum net::EUGCPlatform (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "DateAdded",
+          "offset": 264,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 8-byte copy; meaning: mod 'date_added' (asUInt64) -> macOS +0xD8 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "FileDateAdded",
+          "offset": 272,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 8-byte copy; meaning: file 'date_added' -> macOS +0xE0 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "field_118",
+          "offset": 280,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 8-byte copy; meaning: 8-byte member of net::CommunityUGCMetadata copied from the parsed metadata_blob -> macOS +0xE8; meaning unknown (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "FileSize",
+          "offset": 288,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 8-byte copy; meaning: file 'filesize' (asUInt64) -> macOS +0xF0 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "ModId",
+          "offset": 296,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 8-byte copy; meaning: file 'mod_id' (asUInt64) -> macOS +0xF8 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "DownloadsTotal",
+          "offset": 304,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 4-byte copy; meaning: 'stats'.'downloads_total' -> macOS +0x100 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "SubscribersTotal",
+          "offset": 308,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 4-byte copy; meaning: 'stats'.'subscribers_total' -> macOS +0x104 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "RatingsPositive",
+          "offset": 312,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 4-byte copy; meaning: 'stats'.'ratings_positive' -> macOS +0x108 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "Mature",
+          "offset": 316,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 1-byte copy; meaning: 'maturity_option' != 0 -> macOS +0x10C (bool) (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "ExternalDependency",
+          "offset": 317,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): 1-byte copy; meaning: set to 1 when a tag is named 'External Dependency' -> macOS +0x10D (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+        },
+        {
+          "name": "_Pad13E",
+          "offset": 318,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "padding to 0x140"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Mods",
+      "offset": 0,
+      "type": "Array<UgcQueryModListResultPublishModInfo>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BE2040 (AllocRaw 0x18) zeroes +0/+8; bg3.exe+0x3BDEEE0 copies the request's DynamicArray<net::PublishModInfo> into +0 with FUN_1438baf30 (element 0x140)."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x3BDEEE0 stores request u32 +0x38 at +0x10 - the unsigned int of macOS OnUGCFilesDetails(Guid, DynamicArray<PublishModInfo>, UGCResult, unsigned int), probably the total result count.; macOS modio::response::ParseJSONFileList returns three unsigned counters (result_count / result_offset / result_total), one of which is passed on - not settled which"
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to 24"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "net::PublishModInfo +0x118: an 8-byte member taken from net::CommunityUGCMetadata, meaning unknown.",
+    "Not seen alive.",
+    "Which of result_count / result_offset / result_total the u32 at +0x10 is."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "status": "declared",
+  "second_pass": "Nested structs reordered so each is declared before use (that was the build error); offsets and widths were already established from the Windows copier bg3.exe+0x3BDF700 and the array copiers/destructors; member meanings named from the JSON keys of the macOS mod.io parsers (ParseModInfoFromModioJSON, ParseFileFromModioJSON, QueryDependenciesCallback), whose member order matches Windows one to one.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

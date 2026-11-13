@@ -1,0 +1,25 @@
+{
+  "component": "ecl::mod::ConsolesInfoSingletonComponent",
+  "ext_name": "ClientModConsolesInfoSingleton",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ConsoleVersions",
+      "offset": 0,
+      "type": "HashMap<uint64_t, std::optional<Version>>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xBE0E10 ecl::mod::ValidationSystem::ValidatePublishInfo gets this singleton (getter EoCClient.dll+0xBDD0F0, its error path names GetTypeName<ecl::mod::ConsolesInfoSingletonComponent>) and calls the map's get-or-insert FUN_1804BA830(component, &uint64 mod id): on a successful UGC request it stores an 8-byte value from the publish info (+0x98) at value+0 and sets value+8 = 1 (has-value), otherwise it clears value+8 - an Optional<8-byte> value. GatherConsoleRequests (EoCClient.dll+0xBDF910) looks uint64 mod ids up in the component's key HashSet (bucket count at +8) next to a HashMap<uint64, ls::Optional<ls::Version>> argument - same value type. macOS default: four zeroed 16-byte blocks; live (idle): empty map."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key is the published (UGC) mod id; whether the stored Version is the console build of the mod is inferred from the component name."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "hold": "uses types declared elsewhere (Version, optional): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

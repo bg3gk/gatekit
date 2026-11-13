@@ -1,0 +1,55 @@
+{
+  "component": "ecl::lariannet::TrackingUpdatedLobbiesSingletonComponent",
+  "ext_name": "ClientLariannetTrackingUpdatedLobbiesSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "LariannetLobbyUpdateData",
+      "size": 3,
+      "fields": [
+        {
+          "name": "CommunityType",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1B1B7E0 copies event byte +9 to element[i*3+0]; the event comes from TrackingSystem::OnLobbyListUpdated(net::ECommunityType, net::ELobbyListResult, bool) (Toolkit signature), first parameter"
+        },
+        {
+          "name": "ListResult",
+          "offset": 1,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "event byte +10 to element[i*3+1]; second parameter net::ELobbyListResult"
+        },
+        {
+          "name": "field_2",
+          "offset": 2,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "event byte +11 to element[i*3+2]; third parameter of OnLobbyListUpdated is a bool of unknown meaning"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Updates",
+      "offset": 0,
+      "type": "Array<LariannetLobbyUpdateData>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1B7E0 (~ProcessLobbiesEvents): sets the size (+0xC) of the view's component at +0x10 to 0 each frame, then per lobby-list event grows it (FUN_1406DDA40) and writes three bytes at index*3. Element name ecl::lariannet::LobbyUpdateData from the Toolkit's IndexedStorage assert. Live: all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Field names of LobbyUpdateData follow the parameter order of OnLobbyListUpdated; the order of the event bytes vs. parameters is assumed, the bool's meaning is unknown"
+  ],
+  "second_pass": "Element stride 3 and the three byte copies confirmed in the Windows per-frame code bg3.exe+0x1B1B7E0; byte names inferred from the Toolkit signature OnLobbyListUpdated(ECommunityType, ELobbyListResult, bool).",
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

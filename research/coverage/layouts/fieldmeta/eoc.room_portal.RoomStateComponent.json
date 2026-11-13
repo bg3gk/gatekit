@@ -1,0 +1,74 @@
+{
+  "component": "eoc::room_portal::RoomStateComponent",
+  "ext_name": "RoomPortalRoomState",
+  "size": 24,
+  "fields": [
+    {
+      "name": "HasBeenVisible",
+      "offset": 0,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Toolkit EoCClient.dll: ls::FieldMeta<bool eoc::room_portal::RoomStateComponent::*,0>; macOS ls::FieldMeta<bool eoc::room_portal::RoomStateComponent::*, &eoc::room_portal::RoomStateComponent::m_HasBeenVisible>. Offsets 0/1 assigned by macOS FieldMeta order (HasBeenVisible before IsRoomVisible)."
+    },
+    {
+      "name": "IsRoomVisible",
+      "offset": 1,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Toolkit ls::FieldMeta<bool eoc::room_portal::RoomStateComponent::*,1>; macOS ls::FieldMeta<bool eoc::room_portal::RoomStateComponent::*, &eoc::room_portal::RoomStateComponent::m_IsRoomVisible> (order assumption)"
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment)"
+    },
+    {
+      "name": "RoomConnections",
+      "offset": 8,
+      "type": "Array<RoomPortalConnection>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::DynamicArray<struct eoc::room_portal::Connection,struct ls::TaggedAllocator<int> > eoc::room_portal::RoomStateComponent::*,8>; macOS ls::FieldMeta<ls::DynamicArray<eoc::room_portal::Connection, ls::TaggedAllocator<int> > eoc::room_portal::RoomStateComponent::*, &eoc::room_portal::RoomStateComponent::m_RoomConnections>. Serializer bg3.exe+0x92D130 -> bg3.exe+0xA986E0, element stride 0x20."
+    }
+  ],
+  "structs": [
+    {
+      "name": "RoomPortalConnection",
+      "size": 32,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "bg3.exe+0xA986E0 writes 16 bytes at +0"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "entity at +0x10 (bg3.exe+0x4017090)"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "entity at +0x18"
+        }
+      ]
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which of the two bools is at +0 (order-based).",
+    "Names of the Connection members."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "16 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

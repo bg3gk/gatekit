@@ -1,0 +1,23 @@
+{
+  "component": "esv::pickup::PickUpSplitListComponent",
+  "ext_name": "ServerPickupPickUpSplitList",
+  "size": 16,
+  "seen": true,
+  "summary": "The entities a pick-up request was split into (stack split before transfer). Read by esv::pickup::PickUpExecutionSystem::ProcessTransferRequests (Toolkit EoCServer.dll+0xD4A630), which adds BeingPickedUpComponent to every listed entity; removed by PickUpSplitFinishedSystem (per-frame update bg3.exe+0x23A2070). Seen.py context: tree3 dialogue UND_PanicRoom_HiddenGnome.",
+  "fields": [
+    {
+      "name": "Items",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "ProcessTransferRequests reads the component (stride 0x10) as pointer *plVar14 and size *(int*)(plVar14+0xC), iterating 8-byte ls::ID<EntityHandleTraits> entries and adding a component to each. Destructor bg3.exe+0x686280 clears and frees the pointer at +0. Live: heap pointer, capacity 1, size 1."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,70 @@
+{
+  "component": "ls::anubis::debug::HistoryComponent",
+  "ext_name": "AnubisDebugHistory",
+  "size": 16,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Server Anubis debugging: history of events/steps of an entity's behaviour tree while the debugger is attached (written by ls::anubis::EventStorage::...::Dispatch and ls::anubis::System; removed by bg3.exe+0x3830880 when debugging ends). Never seen alive.",
+  "structs": [
+    {
+      "name": "AnubisDebugHistoryEntry",
+      "size": 40,
+      "equals": "ls::anubis::debug::HistoryComponent::HistoryEntry (macOS type name)",
+      "fields": [
+        {
+          "name": "Type",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "enum ls::anubis::debug::EHistoryEntryType (macOS DynamicArray<HistoryEntry>::AppendEmplace<EHistoryEntryType>(EHistoryEntryType&&) - the entry is built from it); bg3.exe+0x3839540 copies the dword at +0 of each 0x28-byte element when the array grows"
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding (not copied)"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x3839540: LS string at +8 (16-byte buffer, size +0x18, capacity +0x1C; reset to capacity 0xF and freed when capacity > 0xF)"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x3839540 copies a dword at +0x20"
+        },
+        {
+          "name": "_Pad24",
+          "offset": 36,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding (not copied)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entries",
+      "offset": 0,
+      "type": "Array<AnubisDebugHistoryEntry>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x383AE70 (AllocRaw 0x10) zeroes ptr/capacity/size; destructor bg3.exe+0x38502C0 resizes to 0 with bg3.exe+0x3839540 (stride 0x28) and frees the buffer. macOS: ls::DynamicArray<ls::anubis::debug::HistoryComponent::HistoryEntry>."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the string at +8 and the dword at +0x20 of an entry."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

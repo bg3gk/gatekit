@@ -1,0 +1,25 @@
+{
+  "component": "esv::repose::UsedEntitiesToCleanSingletonComponent",
+  "ext_name": "ServerReposeUsedEntitiesToClean",
+  "size": 48,
+  "seen": true,
+  "summary": "Server singleton of esv::repose::StateSystem (written by StateSystem::DoRepose / Update, gathered by StateSystem::GatherReposesToClean over dead entities): the set of entities used for reposing (sitting/lying objects, sockets) whose repose state must be cleaned up. Saved in savegames (ls::model game::repose v0, loaded by esv::repose::Loader). Seen.py context: singleton present in the idle level and act1-idle; samples held a set with 5 buckets and 1 key.",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D0BEF0 allocates 0x30 and zeroes the HashSet shape (+0 buckets, +0x10 next-ids array, +0x20 keys array); its destructor is thunk_FUN_140582ad0, the same routine that ValidatedPickUpRequestsSingletonComponent's destructor (bg3.exe+0x22B4AD0) applies to the key part of its HashMap<EntityHandle, Array<Guid>>. Live: +0 heap/+8 = 5, +0x10 and +0x20 arrays with capacity 1 / size 1. Key type EntityHandle is not seen directly (trivial 8-byte keys fit; the name says 'entities')."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key type not confirmed by an IndexedStorage assert; EntityHandle assumed from the name and the shared destructor."
+  ],
+  "minutes": 8,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,54 @@
+{
+  "component": "esv::profile::UpdateShownTutorialsRequestOneFrameComponent",
+  "ext_name": "ServerProfileUpdateShownTutorialsRequest",
+  "size": 64,
+  "seen": true,
+  "summary": "Server one-frame event of esv::profile::ManagementSystem: when tutorials were shown this frame, ProcessUpdateRequests creates an entity with this component and moves the system's HashMap<net::UserID, eoc::profile::UpdateShownTutorialsData> (system +0x50) into it; ClearOneFrameComponents removes it. Seen.py context: appears with dialogues, the first fight, jumps, spells, helm - moments when tutorial pop-ups fire; samples held 1 user.",
+  "structs": [
+    {
+      "name": "UpdateShownTutorialsRequestData",
+      "size": 56,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "eoc::profile::UpdateShownTutorialsData +0: constructed/destroyed as FixedString by EoCServer.dll+0x814940 / +0x816510."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Alignment of the set at +8."
+        },
+        {
+          "name": "Tutorials",
+          "offset": 8,
+          "type": "HashSet<Guid>",
+          "source": "inferred",
+          "evidence": "+8 buckets pointer, +0x18 next-ids array, +0x28 keys array (destroyed in that order by EoCServer.dll+0x816510); keys resized by EoCServer.dll+0x816EA0 asserting IndexedStorage<ls::Guid> (hash-table tag). Probably the shown tutorial ids."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Updates",
+      "offset": 0,
+      "type": "HashMap<UserId, UpdateShownTutorialsRequestData>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x815CA0 move-assigns a HashMap into the component (bucket array, next-ids, keys via EoCServer.dll+0x817040 asserting IndexedStorage<net::UserID>, values at +0x30). Values: IndexedStorage<eoc::profile::UpdateShownTutorialsData>, stride 0x38 (EoCServer.dll+0x814940). bg3.exe+0x2F37920 allocates 0x40. Live: buckets 5, one key."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the FixedString in UpdateShownTutorialsData."
+  ],
+  "minutes": 6,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "22 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

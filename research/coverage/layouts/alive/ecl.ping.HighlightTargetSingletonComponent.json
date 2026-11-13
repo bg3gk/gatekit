@@ -1,0 +1,53 @@
+{
+  "component": "ecl::ping::HighlightTargetSingletonComponent",
+  "ext_name": "ClientPingHighlightTargetSingleton",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "PingHighlightEffect",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Effect",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "first of std::pair<ls::ID<EntityHandleTraits>, float> (assert string in EoCClient.dll+0x694810). ProcessHighlightEffects (EoCClient.dll+0x694650) checks it is a live entity and, when the timer runs out, adds a component to it through the deferred EntityCommandBuffer (destroys the highlight effect)."
+        },
+        {
+          "name": "TimeLeft",
+          "offset": 8,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "second of the pair: ProcessHighlightEffects subtracts GameTime.DeltaTime (+8) each frame and removes the entry when <= 0."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "pair padding to the 16-byte value stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Highlights",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, PingHighlightEffect>",
+      "source": "inferred",
+      "evidence": "Type named by the game: ls::HashMap<ls::ID<ecs::EntityHandleTraits>, std::pair<ls::ID<ecs::EntityHandleTraits>, float>> (EmplaceUniversal assert in Toolkit EoCClient.dll+0x694810 ecl::ping::PingSystem::ProcessServerPingRequests, which inserts into the singleton from getter FUN_180690200). ProcessHighlightEffects walks keys (+0x20, stride 8) and values (+0x30, stride 0x10). Key = pinged target entity (inferred). macOS default: zeroed 64 bytes; live (idle): empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which component ProcessHighlightEffects adds to the effect entity on expiry (FUN_18068EF50) - assumed a destroy request."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

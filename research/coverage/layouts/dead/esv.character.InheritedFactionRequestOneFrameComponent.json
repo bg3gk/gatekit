@@ -1,0 +1,27 @@
+{
+  "component": "esv::character::InheritedFactionRequestOneFrameComponent",
+  "ext_name": "ServerCharacterInheritedFactionRequest",
+  "size": 8,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request to make a character inherit the faction of another entity (summon owner). Added inline by bg3.exe+0x3324CB0 (storage set up by bg3.exe+0x3336DC0, AllocRaw 8) once with the null handle and once with an entity handle from a list, next to esv::Character summon-owner calls (FUN_1435f79b0 / FUN_1435f7860). Consumed by esv::relation::RelationSystem::ProcessSetInheritedRequests (Toolkit EoCServer.dll+0x88AAE0), which writes the requested handle into eoc::relation::FactionComponent+0x28 (SE: SummonOwner). Never seen alive. Registry total 8 (server row).",
+  "fields": [
+    {
+      "name": "Owner",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3324CB0: ComponentFrameStorageAllocRaw(storage, 8) then `*puVar9 = DAT_146174970` (the null EntityHandle global) in one branch and `*puVar9 = *(undefined8 *)(lVar14 + lVar12 * 8)` (an entity of a handle list) in the other. Toolkit RelationSystem::ProcessSetInheritedRequests stores the gathered 8-byte value to FactionComponent+0x28, which SE names SummonOwner (EntityHandle)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The name: the handle is the entity whose faction is inherited (summoner / owner); the game's name is not known.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

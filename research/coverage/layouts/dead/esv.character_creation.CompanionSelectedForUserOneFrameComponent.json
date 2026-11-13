@@ -1,0 +1,40 @@
+{
+  "component": "esv::character_creation::CompanionSelectedForUserOneFrameComponent",
+  "ext_name": "ServerCCCompanionSelectedForUser",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Character creation event: a companion (origin) was selected for a user. Created on a new event entity by bg3.exe+0x37969B0 (AllocRaw 0x10) from bg3.exe+0x3791C80, which writes the companion handle and the user id; read by esv::StoryCharacterEventManager::Init's event handlers (Osiris). Registered as a normal component although named OneFrame. Twin of CharacterSelectedForUserOneFrameComponent. Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Companion",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x37969B0 writes 0xffc0000000000000 (null EntityHandle) at +0; writer bg3.exe+0x3791C80 line 340 `*puVar22 = *(undefined8 *)(uVar26 + 0x10)` (the companion's handle, also returned to the caller)."
+    },
+    {
+      "name": "User",
+      "offset": 8,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "Creator writes DAT_14617ceac (default UserID global) at +8; writer line 341 `*(undefined4 *)(puVar22 + 1) = param_4`."
+    },
+    {
+      "name": "_Pad12",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 16."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

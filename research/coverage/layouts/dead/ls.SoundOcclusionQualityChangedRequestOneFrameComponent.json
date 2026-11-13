@@ -1,0 +1,24 @@
+{
+  "component": "ls::SoundOcclusionQualityChangedRequestOneFrameComponent",
+  "ext_name": "SoundOcclusionQualityChangedRequest",
+  "size": 4,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Client one-frame request to ls::SoundOcclusionSystem carrying the new sound-occlusion quality option; copied into ls::SoundOcclusionSettingsComponent. Never seen alive.",
+  "fields": [
+    {
+      "name": "Quality",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1E61E90 (AllocRaw 4) writes 2, no destructor; Toolkit constructor GameEngine.dll+0x68E780 writes 2 too. ls::SoundOcclusionSystem::ProcessSettingsChanges (GameEngine.dll+0x8C4ED0, first query, stride 4) copies the dword into SoundOcclusionSettingsComponent+0x260 (SE: unknown dword, live always 2). The graphics option SE calls SoundOcclusionQuality (Misc.h, int) is the obvious source."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

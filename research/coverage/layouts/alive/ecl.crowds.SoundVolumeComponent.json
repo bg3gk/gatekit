@@ -1,0 +1,31 @@
+{
+  "component": "ecl::crowds::SoundVolumeComponent",
+  "ext_name": "ClientCrowdsSoundVolume",
+  "size": 56,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Members",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "ecl::crowds::SoundVolumeSystem::FinalizeCrowdMemberState (EoCClient.dll+0xE8EEB0) gets the component of a sound volume entity (getter EoCClient.dll+0xE84A40) and clears it as a hash set: buckets at +0 memset 0xFF (count +8), keys IndexedStorage<ls::ID<EntityHandleTraits>> with size at +0x2C reset, next ids IndexedStorage<int> size at +0x1C reset. Its key count (+0x2C) is sent as the crowd-size RTPC value (SoundManager vfunc +0xA8 / ls::SetSoundRTPCValue((float)count)). Written in FindPossibleNewMembers / ProcessMovedCrowdEntities per macOS."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Live (idle, 1 instance): a heap pointer while the set is empty; macOS default ctor stores 0 (str xzr,[x23,#0x30]). Not read in the functions opened; could be a pointer into the trigger or sound object."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "What the pointer at +0x30 refers to (read ProcessAddedSoundVolumes EoCClient.dll+0xE91A00 / bg3.exe+0x1DEFF20)."
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

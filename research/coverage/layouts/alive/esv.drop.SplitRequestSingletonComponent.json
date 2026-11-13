@@ -1,0 +1,62 @@
+{
+  "component": "esv::drop::SplitRequestSingletonComponent",
+  "ext_name": "ServerDropSplitRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ServerDropSplitRequest",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Item",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2E2E340 (DropEntityRequestSystem, per dropped entity) writes elem+0 = *puVar22, the 8-byte handle of the entity being dropped (the request's item); Toolkit esv::pickup::PickUpSplitRequestSystem::Update reads its stack amount. Element named by the game esv::inventory_transfer::SplitRequest (Toolkit IndexedStorage assert)."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2E2E340 copies 16 bytes (4 dwords) from the validator's result (vtable slot +8 of the request validator at system+0x68) into elem+8..+0x18; the Toolkit compares this value with ls::operator==(Guid) against action-resource spend events. Meaning not established."
+        },
+        {
+          "name": "Amount",
+          "offset": 24,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2E2E340 writes elem+0x18 = (int) of the request's second qword (the amount of the drop request, an ls::Optional<int> in the Toolkit's pick-up path), 4 bytes."
+        },
+        {
+          "name": "_Pad1C",
+          "offset": 28,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "Never written by bg3.exe+0x2E2E340; element stride 0x20 (bg3.exe+0x13C7560 copies 0x20-byte elements)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ServerDropSplitRequest>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2E2EE70 (DropEntityRequestSystem, reads the singleton by storage index DAT_146392d44) sets its size (+0xC) to 0 and appends the frame's requests with bg3.exe+0x13C7560 (stride 0x20, plain 32-byte copies); the elements are built in bg3.exe+0x2E2E340. Creator bg3.exe+0x2E2F820 allocates 0x10 and zeroes pointer/capacity/size. Live (seen.py, idle): empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the 16-byte value at +8 identifies (the Toolkit treats it as a Guid)."
+  ],
+  "minutes": 9,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Offsets and widths read in bg3.exe: the builder bg3.exe+0x2E2E340 writes +0 (8 bytes), +8 (16 bytes) and +0x18 (4 bytes) of each 0x20-byte element, and bg3.exe+0x2E2EE70/0x13C7560 copy the frame's elements into the singleton's array; only the meaning of +8 stays open.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

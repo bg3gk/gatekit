@@ -1,0 +1,55 @@
+{
+  "component": "esv::reward::TransferRewardsRequestComponent",
+  "ext_name": "ServerRewardTransferRewardsRequest",
+  "size": 64,
+  "seen": true,
+  "summary": "Server singleton of esv::RewardManager: per entity, the reward items (with stack amounts) to transfer, built by RewardManager::ProcessRewardGivenRequests and read by esv::inventory::ManagementSystem::ProcessInventoryRequests. Seen.py context: singleton present in the idle level, all zero.",
+  "structs": [
+    {
+      "name": "TransferRewardsRequestEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Item",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xD55990 (callback of eoc::inventory::ForEachEntityInInventory, signature (ID const&, unsigned short)) appends {entity, amount}; EoCServer.dll+0xD4FC30 copies *param_2 (ID) to +0."
+        },
+        {
+          "name": "Amount",
+          "offset": 8,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "The unsigned short of the same callback, stored at +8."
+        },
+        {
+          "name": "_PadA",
+          "offset": 10,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "Element is 0x10 bytes, 8-aligned (EoCServer.dll+0xD5B1C0 AllocateInternal(n, 0x10, 8))."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Array<TransferRewardsRequestEntry>>",
+      "source": "inferred",
+      "evidence": "macOS: ls::HashMap<ls::ID<ecs::EntityHandleTraits>, ls::DynamicArray<esv::reward::TransferRewardsRequest>> (DestroyValues/~HashMap) is the only reward map. EoCServer.dll+0xD5A0E0 ProcessRewardGivenRequests builds such a map locally (values destroyed by EoCServer.dll+0xD57200, assert IndexedStorage<DynamicArray<TransferRewardsRequest>>) and stores it into the singleton returned by EoCServer.dll+0xD54110 (stride 0x40; its error path names TransferRewardsRequestComponent). bg3.exe+0x30EFED0 allocates 0x40 and zeroes the HashMap shape."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which entity is the key (reward receiver or source inventory)."
+  ],
+  "minutes": 6,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

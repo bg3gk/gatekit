@@ -1,0 +1,236 @@
+{
+  "component": "eoc::timeline::steering::TimelineSteeringComponent",
+  "ext_name": "TimelineSteering",
+  "size": 120,
+  "fields": [
+    {
+      "name": "TurnMode",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Constructors bg3.exe+0x1D793C0 / reset bg3.exe+0x2054700 write 3. bg3.exe+0x20425F0 (timeline look-at event handler) builds a request with 'mode = 3; if (key.TurnMode != 0) mode = key.TurnMode' from aspk LookAtEventKey +0x24 (TurnMode in AllSpark.h) and bg3.exe+0x20547D0 stores it here. Probe: 3 in all 4 instances."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "alignment; probe shows garbage here"
+    },
+    {
+      "name": "Target",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Constructor writes the null handle constant DAT_146174970; bg3.exe+0x20547D0 copies the request's first 8 bytes (entity resolved from the key's Target Guid by FUN_143cbb2f0); bg3.exe+0x2054C00 resolves the look-at position from this entity. Probe: a live entity in one instance, null handle in the others."
+    },
+    {
+      "name": "TargetId",
+      "offset": 16,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20547D0 copies 16 bytes that bg3.exe+0x20425F0 took from LookAtEventKey +0x10 (Target Guid); bg3.exe+0x20425F0 compares the 16 bytes with the previous key's to detect a target change. Probe: GUID-like bytes in the instance that has a target."
+    },
+    {
+      "name": "Bone",
+      "offset": 32,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Default -1; destructor bg3.exe+0xD91000 DecRefs it; bg3.exe+0x20547D0 assigns the FixedString from LookAtEventKey +0x20 (Bone); bg3.exe+0x2054C00 looks the bone up on the target's visual."
+    },
+    {
+      "name": "TurnSpeedMultiplier",
+      "offset": 36,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Default 1.0; bg3.exe+0x20425F0 -> 0x20547D0 from LookAtEventKey +0x28."
+    },
+    {
+      "name": "TorsoTurnSpeedMultiplier",
+      "offset": 40,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Default 1.0; from LookAtEventKey +0x2C."
+    },
+    {
+      "name": "HeadTurnSpeedMultiplier",
+      "offset": 44,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Default 1.0; from LookAtEventKey +0x30. Probe: 1.0 or 0.2."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Default 1.0; bg3.exe+0x20547D0 copies request +0x20, which bg3.exe+0x20425F0 sets to 0. Probe: 0 or 1."
+    },
+    {
+      "name": "field_34",
+      "offset": 52,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Constructor writes 0 (upper half of the 8-byte write at 0x30); not written by bg3.exe+0x20547D0. Probe: always 0."
+    },
+    {
+      "name": "Weight",
+      "offset": 56,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Default 0; bg3.exe+0x20425F0: '(float) key.Weight' when the optional<double> at LookAtEventKey +0x38 is set, or forced to 1.0 in one branch; stored by bg3.exe+0x20547D0."
+    },
+    {
+      "name": "SafeZoneAngle",
+      "offset": 60,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Default 22.0; '(float) key.SafeZoneAngle' from the optional<double> at LookAtEventKey +0x48. Probe: 22 or 80."
+    },
+    {
+      "name": "HeadSafeZoneAngle",
+      "offset": 64,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Default 26.0; from the optional<double> at LookAtEventKey +0x58. Probe: 26 or 80."
+    },
+    {
+      "name": "Offset",
+      "offset": 68,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20547D0 copies 12 bytes taken from LookAtEventKey +0x68 (Offset); bg3.exe+0x2055500 rotates the three floats by a quaternion and adds them to TargetPosition."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Constructor writes 0; no writer found. Probe: always 0."
+    },
+    {
+      "name": "field_51",
+      "offset": 81,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x20547D0 copies request +0x3C, which bg3.exe+0x20425F0 sets to 1. Probe: 0 or 1."
+    },
+    {
+      "name": "Reset",
+      "offset": 82,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "From LookAtEventKey +0x74 (Reset). bg3.exe+0x20542C0: when set, the turn state at 0x64..0x6F is cleared (and the rotation applied at once for LookAtMode 4)."
+    },
+    {
+      "name": "TargetChanged",
+      "offset": 83,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20425F0 computes it: 1 when the target Guid, the Reset/TrackingMode pair or the bone differs from the previous key's, else 0."
+    },
+    {
+      "name": "HasRequest",
+      "offset": 84,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20425F0 sets the request byte to 1 only when the owner entity is valid, together with TargetChanged; constructor 0."
+    },
+    {
+      "name": "LookAtMode",
+      "offset": 85,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Constructor default 2 (dword 0x30200 at 0x54); from LookAtEventKey +0x75 (LookAtMode). bg3.exe+0x20542C0 compares with 4, bg3.exe+0x2055500 with '> 1'."
+    },
+    {
+      "name": "LookAtInterpMode",
+      "offset": 86,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Constructor default 3; from LookAtEventKey +0x76 (LookAtInterpMode). Probe: 3."
+    },
+    {
+      "name": "TrackingMode",
+      "offset": 87,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "From LookAtEventKey +0x25 (TrackingMode), request +0x51."
+    },
+    {
+      "name": "TargetPosition",
+      "offset": 88,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20542C0 calls bg3.exe+0x2054C00(&Target, &Bone, &this[0x58]), which writes the world position of the target (bone / bounds / transform translate); the result is then used to compute the turn angle. Probe: a world position (46.2, 17.0, -422.9)."
+    },
+    {
+      "name": "TurnState",
+      "offset": 100,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20542C0: small state machine 0 -> 1 (stores the two angles) -> 2 -> 0."
+    },
+    {
+      "name": "field_65",
+      "offset": 101,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x20542C0: tested to advance TurnState and cleared on each transition (a 'step finished' flag set elsewhere)."
+    },
+    {
+      "name": "Enabled",
+      "offset": 102,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Constructor writes 1; bg3.exe+0x20542C0 does nothing when it is 0. Probe: 1 in all instances."
+    },
+    {
+      "name": "_Pad67",
+      "offset": 103,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "alignment; probe 00/FF garbage"
+    },
+    {
+      "name": "TurnStartAngle",
+      "offset": 104,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20542C0 stores the entity's current yaw (atan2 of its rotation) here when TurnState goes 0 -> 1 and compares against it in state 1."
+    },
+    {
+      "name": "TurnAngleDelta",
+      "offset": 108,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20542C0 stores the wrapped angle difference to the target (compared with pi/4 beforehand), negates it on 1 -> 2."
+    },
+    {
+      "name": "field_70",
+      "offset": 112,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Constructor bg3.exe+0x1D793C0 writes one byte 0; no reader found."
+    },
+    {
+      "name": "_Pad71",
+      "offset": 113,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "tail padding; probe shows garbage (a stale pointer in one instance)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_30 / field_34 / field_50 / field_51 / field_70: no reader found.",
+    "TargetChanged / HasRequest / Enabled / TurnStartAngle / TurnAngleDelta are descriptive names from the code's behaviour, not known game names.",
+    "The component is registered on both sides; only the client users were read (server shares the layout by definition of an eoc type)."
+  ],
+  "minutes": 22,
+  "functions_read": 14,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: not replicated or saved; remaining members are not written by the look-at key handler."
+}

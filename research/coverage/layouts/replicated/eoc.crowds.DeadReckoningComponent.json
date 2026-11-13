@@ -1,0 +1,39 @@
+{
+  "component": "eoc::crowds::DeadReckoningComponent",
+  "ext_name": "CrowdsDeadReckoning",
+  "size": 20,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x9C8EA0/0x9C90A0 member 1: 12-byte scratch write at +0 (global offset DAT_14627fd50). macOS default ctor stp xzr,xzr,[x23] (zero)."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x9C8EA0/0x9C90A0 member 2: 4-byte scratch write at +0xC; default 0."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x9C8EA0/0x9C90A0 member 3: 4-byte scratch write at +0x10; macOS default str wzr,[x23,#0x10]."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+    "Types are guessed from widths (12-byte = position vector, 4-byte = float or uint32); only reader ecl::crowds::CrowdCharacterSystem::Update was not read."
+  ],
+  "seen": false,
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "54 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

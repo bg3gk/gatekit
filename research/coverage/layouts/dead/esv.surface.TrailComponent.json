@@ -1,0 +1,62 @@
+{
+  "component": "esv::surface::TrailComponent",
+  "ext_name": "ServerSurfaceTrail",
+  "size": 48,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "State of a surface trail left by a moving entity: created and read by esv::SurfaceManager::ProcessTrailRequests (bg3.exe+0x2CD12B0), which compares the entity's position with the stored last position against the surface's radius (surface+0x5A8) before extending the trail.",
+  "fields": [
+    {
+      "name": "SpellCastGuid",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2CD96A0 zeroes +0..+0x10. bg3.exe+0x2CD12B0 copies the 16 bytes at +0 of its StartSurfaceTrailRequest here; the request takes them from +0xA0 of a 200-byte spell-cast component of the caster (stride 200, the size of eoc::spell_cast::StateComponent in the registry) and existing trails are matched against them as two qwords (line ~296). Toolkit esv::SurfaceManager::ProcessTrailRequests (EoCServer.dll+0x6D4190) constructs that request member with ls::Guid::Guid. Name inferred: the Guid of the spell cast leaving the trail."
+    },
+    {
+      "name": "SurfaceType",
+      "offset": 16,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2CD12B0 copies 8 bytes from request +0x10, which the request takes from esv::spell_cast::MoveDuringCastUpdateEventOneFrameComponent+0x18 = its SurfaceTrail (Script Extender SpellCast.h: SurfaceType SurfaceType; float Radius). The same byte goes to the created surface action (+0x98, the surface type; Toolkit line 670). Enum SurfaceType (uint8_t)."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding inside the copied SurfaceTrail"
+    },
+    {
+      "name": "Radius",
+      "offset": 20,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "SurfaceTrail.Radius (request +0x14): the same float is stored as the surface action's radius (+0x5A8) and compared squared with the distance moved before the trail is extended (bg3.exe+0x2CD12B0; Toolkit ProcessTrailRequests lines 707-711)."
+    },
+    {
+      "name": "StartPosition",
+      "offset": 24,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2CD12B0 writes 8 bytes at +0x18 and a float at +0x20 from request +0x18..+0x20 = MoveDuringCastUpdateEvent.Position (the position where the trail starts); never rewritten."
+    },
+    {
+      "name": "LastPosition",
+      "offset": 36,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2CD12B0 initialises +0x24 (8 bytes) and +0x2C (float) with the same position, then with request +0x24 (MoveDuringCastUpdateEvent.AdjustedPosition) when the caster moved farther than Radius; the update path compares (comp+0x24/+0x28/+0x2C) - current position with radius^2 and stores the new position here when the trail grows (Toolkit lines 611-638 identical)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether the Guid at +0 is eoc::spell_cast::StateComponent.SpellCastGuid by name (Script Extender places SpellCastGuid at +0x90 of that component; the code reads +0xA0 of the 200-byte column) - the type and width are established, only the name rests on this."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "status": "declared",
+  "second_pass": "Windows ProcessTrailRequests (bg3.exe+0x2CD12B0) and the Toolkit version build a StartSurfaceTrailRequest from the spell cast (16-byte Guid) and esv::spell_cast::MoveDuringCastUpdateEvent (Position, AdjustedPosition, SurfaceTrail {SurfaceType, Radius}) and copy it member by member into the component: Guid, SurfaceType + Radius, start position, last position.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

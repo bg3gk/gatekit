@@ -1,0 +1,27 @@
+{
+  "component": "esv::party::PostReloadStoryUpdateEventOneFrameComponent",
+  "ext_name": "ServerPartyPostReloadStoryUpdateEvent",
+  "size": 64,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Event put on an entity by the per-frame update of esv::party::PartySystem (bg3.exe+0x2BB7AD0 -> 0x2BC35A0): the system's own pending map at PartySystem+0x140 is copied into the new component and then cleared. Script Extender names that system member PostReloadStorySetup (Party.h: HashMap<EntityHandle, glm::vec3>). No savegame model, not replicated.",
+  "fields": [
+    {
+      "name": "PostReloadStorySetup",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, glm::vec3>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2BC54E0 allocates 0x40 and zeroes three Array headers at +0/+0x10/+0x20 (HashSet) and one at +0x30; destructor bg3.exe+0x5C4870 frees the value array at +0x30 without element destructor, then FUN_140582ad0 (POD HashSet destructor: frees +0x20, +0x10, +0). bg3.exe+0x2BC3850 copies PartySystem+0x140 into it: HashSet copy, then values copied with stride 12 (8 + 4 bytes) = glm::vec3. Key width 8 not read directly; EntityHandle per Script Extender's PartySystem::PostReloadStorySetup (HashMap<EntityHandle, glm::vec3>), which is the map copied here. Second pass: the copy bg3.exe+0x2BC3850 (called by bg3.exe+0x2BC35A0 right after the creator, source PartySystem+0x140) copies the key set with FUN_141008810, whose key array copy FUN_1410092E0 moves 8-byte keys, then the values at +0x30 as 12-byte elements (one 8-byte and one 4-byte move per element, stride 0xC) - EntityHandle keys and glm::vec3 values."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Key type EntityHandle (8 bytes, plain copy) and value glm::vec3 (12 bytes) are established by width on Windows; the names follow Script Extender's PartySystem::PostReloadStorySetup."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "status": "declared",
+  "second_pass": "Widths settled on Windows: bg3.exe+0x2BC3850 copies 8-byte keys (FUN_141008810 / FUN_1410092E0) and 12-byte values into the 64-byte map, matching SE's HashMap<EntityHandle, glm::vec3> PostReloadStorySetup.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

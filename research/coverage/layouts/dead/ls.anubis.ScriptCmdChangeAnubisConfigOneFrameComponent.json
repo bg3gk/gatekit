@@ -1,0 +1,26 @@
+{
+  "component": "ls::anubis::ScriptCmdChangeAnubisConfigOneFrameComponent",
+  "ext_name": "AnubisScriptCmdChangeAnubisConfig",
+  "size": 24,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Server one-frame script command: switch an entity's Anubis (AI behaviour) config to the named one; consumed by the per-frame update of ls::anubis::ConfigSystem together with ls::anubis::ConfigComponent. Counterpart of esv::osiris::ChangeAnubisConfigRequestOneFrameComponent (SE: STDString Config). Never seen alive.",
+  "fields": [
+    {
+      "name": "Config",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3863AE0 (per-frame update of ls::anubis::ConfigSystem) walks the added rows of the query <ScriptCmdChangeAnubisConfigOneFrameComponent, ConfigComponent> with stride 0x18 and copies each one with ls::STDString::STDString(char*) into the first STDString of the ConfigComponent row (inline buffer when capacity +0x14 <= 0xF, else the heap pointer at +0). Registry size 24 = one LS string. Name as SE's esv::osiris::ChangeAnubisConfigRequestOneFrameComponent::Config."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The creator was not found among the type's users (only the generic registration helpers); the layout rests on the consumer."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

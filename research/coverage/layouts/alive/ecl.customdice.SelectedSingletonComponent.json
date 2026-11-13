@@ -1,0 +1,25 @@
+{
+  "component": "ecl::customdice::SelectedSingletonComponent",
+  "ext_name": "ClientCustomDiceSelected",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "SelectedDice",
+      "offset": 0,
+      "type": "HashMap<FixedString, Guid>",
+      "source": "inferred",
+      "evidence": "ecl::customdice::GetSelectedDiceForUser(WorldView<eoc::customdice::UsersDiceSingletonComponent const, ecl::customdice::SelectedSingletonComponent const>, TemplatesManager, PlayerManager, UserID) (EoCClient.dll+0x81CCE0) calls EoCClient.dll+0x81CD40: key = ecl::PlayerManager::GetPlayerProfileGUID (a FixedString, hashed with FixedString::GetHash, bucket count at +8), value = 16 bytes from the values array at +0x30 (FUN_1807F15C0) passed to TemplatesManager vfunc +0x28 (dice template lookup by Guid). For the default local user one singleton is looked up first, else the other; both have this shape. macOS default ctor: 64 zero bytes. Live (idle): bucket table (5 buckets), next ids/keys capacity 1 size 1, values pointer + count 1 - one entry."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which of the two lookups in EoCClient.dll+0x81CD40 is this component and which eoc::customdice::UsersDiceSingletonComponent (the type is the same either way).",
+    "Writer ecl::customdice::SelectionSystem::Update (EoCClient.dll+0x81B170) not read."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

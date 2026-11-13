@@ -1,0 +1,46 @@
+{
+  "component": "ls::ClusterIndexComponent",
+  "ext_name": "ClusterIndex",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "X",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0x13B160 (Toolkit, ls::ClusterSystem::SetupNewCluster(..., EntityHandle, Vector4i<int>, ...)) adds the component through FUN_18012c450 (SetupComponentFrameStorage size 0x10, type id DAT_180f0a6e4 registered by FUN_180016150 as ls::ClusterIndexComponent) and copies the Vector4i param_4[0..3] into it; then ClusterPositionX = param_4[0] * cellSize. Live: small signed ints (0..0xFFFFFFFF = -1)."
+    },
+    {
+      "name": "Y",
+      "offset": 4,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Same copy (param_4[1]); ClusterPositionY = param_4[1] * cellSize. Live: 0, 1, 0xB."
+    },
+    {
+      "name": "Z",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Same copy (param_4[2]); ClusterPositionZ = param_4[2] * cellSize. Live: small signed ints (down to -2)."
+    },
+    {
+      "name": "Level",
+      "offset": 12,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Same copy (param_4[3]); SetupNewCluster uses it as a size exponent: half-cell = 1 << param_4[3] (written to ClusterBoundMax), cell = 2 << param_4[3]; radius = cell*0.5*sqrt2 + half-cell. Live: 1..0x1C (0x1C probably the HLOD / cull-trigger special clusters). SE's ClusterChildIndexedComponent calls the same slot 'Radius'."
+    }
+  ],
+  "summary": "Client scene clustering: the integer cell key (x, y, z, level) of a cluster entity, the same Vector4i that keys ls::ClusterContainerComponent's HashMap<ivec4, EntityHandle>; set by ls::ClusterSystem::SetupNewCluster / SetupNewHLODCluster / SetupNewCullTriggerCluster. Lives in idle levels on every cluster entity.",
+  "confidence": "high",
+  "open_questions": [
+    "Name of the 4th member ('Level' here) is inferred; it is the power-of-two size exponent of the cell."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,39 @@
+{
+  "component": "ecl::SurfaceInstanceGroupTagComponent",
+  "ext_name": "ClientSurfaceInstanceGroupTag",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Adder bg3.exe+0x1BA07E0 (8-byte frame storage) defaults it to 0xFFFFFFFF; its only caller bg3.exe+0x1B9F130 then stores *param_1 (a 4-byte key of the surface instance group being created, from bg3.exe+0x1B9B000). Read by ecl::SurfaceManager::Update / RefreshDirtyMaterials (macOS, Toolkit EoCClient.dll+0xAD0670; query Spec<SurfaceInstanceGroupTagComponent, ls::InstancingGroupComponent>). Live: 10 different hash-like values (0x0EEAF7A6..0xA8FC15FD). Windows width: bg3.exe+0x1B9F130 line '*tag = *param_1' is a 4-byte store; param_1 is the instance-group record that its caller bg3.exe+0x1B9B000 looks up by the 4-byte key *(uint*)(param_3+4) (bg3.exe+0x1B9FF60), so +0 is that record's first dword (most likely its own key)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Adder defaults it to 0xFF; bg3.exe+0x1B9F130 stores the byte at +0xB0 of an object it works on (surface/layer descriptor, not identified). Live 0x0F in all 10 samples - possibly a surface layer/type index. Windows width: bg3.exe+0x1B9F130 '*(byte*)(tag+4) = *(byte*)(param_3+0xB0)' - a 1-byte store from the descriptor passed by the caller as *(param_1+0x70); the adder writes only this byte (0xFF), so +5..+7 stay uninitialised (live: varying garbage)."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "padding to 8: never written (the adder sets only +0..+4); live bytes vary (uninitialised)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meanings: the 32-bit value at +0 (hash-like key of the surface instance group) and the byte at +4 (copied from +0xB0 of the surface descriptor; 0x0F, 0x0C, 0x30, 0x31 seen)."
+  ],
+  "minutes": 15,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Widths confirmed on Windows: the adder bg3.exe+0x1BA07E0 defaults a 4-byte and a 1-byte member, and the writer bg3.exe+0x1B9F130 stores exactly 4 bytes at +0 and 1 byte at +4; the rest is uninitialised padding. Meanings stay open.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

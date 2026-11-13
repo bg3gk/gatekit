@@ -1,0 +1,74 @@
+{
+  "component": "esv::pickup::PickUpPermissionComponent",
+  "ext_name": "ServerPickupPickUpPermission",
+  "size": 48,
+  "seen": true,
+  "summary": "A pending permission request (Osiris may veto a pick-up) for a validated pick-up request. Added by esv::pickup::PickUpPermissionSystem::ProcessValidatedPickUpRequests (Toolkit EoCServer.dll+0xD3EAB0) to the request entity; answered through ScriptPermissionResponsesSingletonComponent (RequestId compared there). Seen.py context: tree3 dialogue UND_PanicRoom_HiddenGnome.",
+  "fields": [
+    {
+      "name": "EntityToPickUp",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "*puVar11 = esv::pickup::PickUpRequestComponent+8 (Target). Live 0x19F6D = request's +8. Game name: member 0 (m_EntityToPickUp) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): model EntityId +0 -> component +0.",
+      "legacy": "Target"
+    },
+    {
+      "name": "TargetInventory",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "puVar11[1] = PickUpRequestComponent+0. Live 0x13727. Game name: member 1 (m_TargetInventory) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): model EntityId +8 -> component +8.",
+      "legacy": "field_8"
+    },
+    {
+      "name": "PickUpRequestID",
+      "offset": 16,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "puVar11[2..3] = first 16 bytes of eoc::pickup::PickUpRequestComponent (stride 0x18; SE Data.h field_0 Guid). Live random 16 bytes. Game name: member 2 (m_PickUpRequestID) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): 16 bytes at model +0x10 -> component +0x10.",
+      "legacy": "RequestGuid"
+    },
+    {
+      "name": "ScriptRequestId",
+      "offset": 32,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "*(int*)(puVar11+4) = global counter DAT_18221449c, post-incremented - a unique permission request id (compared with esv::pickup ScriptPermissionResponse.RequestId). Live 256. Game name: member 3 (m_ScriptRequestId) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): int32 model +0x20 -> component +0x20.",
+      "legacy": "RequestId"
+    },
+    {
+      "name": "TimeLeft",
+      "offset": 36,
+      "type": "float",
+      "source": "game",
+      "evidence": "Set to 1.0f (0x3f800000) on creation. Live 1.0. Possibly a timeout/time left; not established. Game name: member 4 (m_TimeLeft) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): 4 bytes model +0x24 -> component +0x24 (a float, 1.0 at creation).",
+      "legacy": "field_24"
+    },
+    {
+      "name": "State",
+      "offset": 40,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Byte +0x28 set to 0 on creation; macOS default ctor zeroes the qword +0x28. Live 0 (+0x29.. garbage ff). Game name: member 5 (m_State) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): byte model +0x28 -> component +0x28.",
+      "legacy": "field_28"
+    },
+    {
+      "name": "_Pad29",
+      "offset": 41,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "Padding to 48."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the float at +0x24 and the byte at +0x28 (probably answered/timeout state)."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "All 6 model members matched by the Windows loader bg3.exe+0x258C0C0."
+}

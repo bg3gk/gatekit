@@ -1,0 +1,73 @@
+{
+  "component": "esv::spell::NewSpellsAddedFromCharacterCreationComponent",
+  "ext_name": "ServerSpellNewSpellsAddedFromCharacterCreation",
+  "size": 16,
+  "seen": true,
+  "summary": "Spells a character got from character creation / level-up (eoc::spell::MetaId list), added by esv::SpellSystem::ProcessNewSpellsPreparedFromCC (EoCServer.dll+0x1211240; game bg3.exe+0x3382A50) and read by SpellSystem's prepare logic (macOS: FilterQuery with StatsComponent, spell::ContainerComponent, BookPreparesComponent, PlayerPrepareSpellComponent). Seen.py context: born when Shadowheart was recruited (ShadowHeart_Recruitment_Den dialog) together with recruit/approval/character_creation::InitialLevelComponent/progression::LevelUpChanged.",
+  "structs": [
+    {
+      "name": "NewSpellsAddedFromCCSpellMetaId",
+      "size": 48,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same layout as SE SpellMetaId (Base/ExposedTypes.h) = eoc::spell::MetaId (0x30 bytes, IndexedStorage<struct eoc::spell::MetaId> assert in EoCServer.dll+0x357EF0)."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId _Pad"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.SourceType (SpellSourceType, 1-byte enum)"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment of the Guid"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.Source"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.ProgressionSource"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Spells",
+      "offset": 0,
+      "type": "Array<NewSpellsAddedFromCCSpellMetaId>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3392B50 allocates 0x10 zeroed (array). ProcessNewSpellsPreparedFromCC (EoCServer.dll+0x1211240) gets-or-adds the component and appends each 0x30-byte element with eoc::spell::MetaId::MetaId (FUN_180357ef0, IndexedStorage<eoc::spell::MetaId>). Live: heap pointer, capacity 4, size 4. The struct equals SE's SpellMetaId (swap later)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,109 @@
+{
+  "component": "esv::timeline::ScreenFadeToRequestOneFrameComponent",
+  "ext_name": "ServerTimelineScreenFadeToRequest",
+  "size": 16,
+  "structs": [
+    {
+      "name": "TimelineScreenFadeToRequest",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Fade",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D10600 copy-constructs it from the string at +0 of esv::timeline::DeferredEndingStateComponent (default: empty, capacity 15). Game struct name (macOS): esv::timeline::FadeToRequest."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2D10600 writes 0 (one byte). Toolkit esv::screen_fade::ScreenFadeSystem::ProcessScreenFadeToRequests (EoCServer.dll+0x39DF30) copies each 0x30-byte element into its own ScreenFadeToRequest, the struct LEGACY_ScreenFadeToRequest(name, bool, bool, float, float, EScreenFadeStyle, EScreenFadeIntensityLevel, net::UserID) fills: +0x18 goes to the request's +0x23 (the first bool argument of LEGACY_ScreenFadeToRequest). Probably eoc::screen_fade::ScreenFadeData.HasSpin, not proven."
+        },
+        {
+          "name": "field_19",
+          "offset": 25,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2D10600 writes 0 (one byte). Toolkit esv::screen_fade::ScreenFadeSystem::ProcessScreenFadeToRequests (EoCServer.dll+0x39DF30) copies each 0x30-byte element into its own ScreenFadeToRequest, the struct LEGACY_ScreenFadeToRequest(name, bool, bool, float, float, EScreenFadeStyle, EScreenFadeIntensityLevel, net::UserID) fills: +0x19 goes to the request's +0x22 (the second bool argument). Probably ScreenFadeData.IsTransparent, not proven."
+        },
+        {
+          "name": "_Pad1A",
+          "offset": 26,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Duration",
+          "offset": 28,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D10600 copies the float at +0x18 of the deferred ending state; the largest one + 1.0 becomes the timeout of esv::timeline::FadedInUsersComponent. Toolkit esv::screen_fade::ScreenFadeSystem::ProcessScreenFadeToRequests (EoCServer.dll+0x39DF30) copies each 0x30-byte element into its own ScreenFadeToRequest, the struct LEGACY_ScreenFadeToRequest(name, bool, bool, float, float, EScreenFadeStyle, EScreenFadeIntensityLevel, net::UserID) fills: +0x1C goes to the first float argument."
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2D10600 writes 0 (4 bytes). Toolkit esv::screen_fade::ScreenFadeSystem::ProcessScreenFadeToRequests (EoCServer.dll+0x39DF30) copies each 0x30-byte element into its own ScreenFadeToRequest, the struct LEGACY_ScreenFadeToRequest(name, bool, bool, float, float, EScreenFadeStyle, EScreenFadeIntensityLevel, net::UserID) fills: +0x20 goes to the second float argument (by order probably ScreenFadeData.WaitTime, not proven)."
+        },
+        {
+          "name": "FadeStyle",
+          "offset": 36,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D10600 writes 0 (one byte). Toolkit esv::screen_fade::ScreenFadeSystem::ProcessScreenFadeToRequests (EoCServer.dll+0x39DF30) copies each 0x30-byte element into its own ScreenFadeToRequest, the struct LEGACY_ScreenFadeToRequest(name, bool, bool, float, float, EScreenFadeStyle, EScreenFadeIntensityLevel, net::UserID) fills: +0x24 goes to the request's +0x20, the eoc::screen_fade::EScreenFadeStyle argument (stored as one byte)."
+        },
+        {
+          "name": "IntensityLevel",
+          "offset": 37,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D10600 writes 0 (one byte). Toolkit esv::screen_fade::ScreenFadeSystem::ProcessScreenFadeToRequests (EoCServer.dll+0x39DF30) copies each 0x30-byte element into its own ScreenFadeToRequest, the struct LEGACY_ScreenFadeToRequest(name, bool, bool, float, float, EScreenFadeStyle, EScreenFadeIntensityLevel, net::UserID) fills: +0x25 goes to the request's +0x21, the eoc::screen_fade::EScreenFadeIntensityLevel argument (stored as one byte)."
+        },
+        {
+          "name": "_Pad26",
+          "offset": 38,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "User",
+          "offset": 40,
+          "type": "UserId",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D10600 stores the 4-byte element of the deferred ending state's user set it iterates. Toolkit ProcessScreenFadeToRequests copies +0x28 into the request's net::UserID at +0."
+        },
+        {
+          "name": "_Pad2C",
+          "offset": 44,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "element stride 0x30"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TimelineScreenFadeToRequest>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D10600 (esv::timeline::FadeSystem, per entity with esv::timeline::DeferredEndingStateComponent) creates the component on that entity (bg3.exe+0x2D11EF0, zeroed 16 bytes) and appends one element of stride 0x30 per user of the deferred ending state (grow bg3.exe+0x22E6360, 'size * 0x30 + data')."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The two bools at +0x18/+0x19 and the float at +0x20 are always 0 from the timeline; which bool is HasSpin and which IsTransparent depends on the order kept by FinalizeComponents (not traced to the end)."
+  ],
+  "minutes": 21,
+  "functions_read": 9,
+  "oneFrame": true,
+  "status": "confirmed",
+  "second_pass": "Windows bg3.exe+0x2D10600 stores every member with its width (string, two bytes, two dwords, two bytes, user); the Toolkit consumer esv::screen_fade::ScreenFadeSystem::ProcessScreenFadeToRequests maps them to LEGACY_ScreenFadeToRequest's typed arguments, naming FadeStyle and IntensityLevel. STDString is a builtin of generate.py now (24 bytes), so the earlier external_types override was removed.",
+  "raw_check": "24 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

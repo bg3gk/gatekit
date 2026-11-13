@@ -1,0 +1,26 @@
+{
+  "component": "esv::inventory::EquipmentInteractionRequestsComponent",
+  "ext_name": "ServerInventoryEquipmentInteractionRequests",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<esv::inventory::MemberInteractionRequestData>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x34FF0B0 allocates 0x10 bytes; destructor bg3.exe+0x22CF870 -> bg3.exe+0x22E29E0 destroys elements with stride 0xE0 (variant destructor bg3.exe+0x22D5900 at element + 0x10) and frees the buffer. In bg3.exe+0x3473C80 (esv::inventory::InteractionRequestSystem, registration bg3.exe+0x2375A40, callback bg3.exe+0x239C720) the singleton (stride 0x10) is passed, when its size at +0x0C is non-zero, to bg3.exe+0x3474D70 - the very function that is then called for the system's own array at system + 0x20, which Script Extender declares as InteractionRequestSystem::MemberInteraction = Array<MemberInteractionRequestData> (Components/Inventory.h); that array is cleared with the same bg3.exe+0x22E29E0 and the same 0xE0 stride. So the element type is the existing esv::inventory::MemberInteractionRequestData (reuse, do not redeclare). Written by esv::inventory::EquipmentSystem (registration bg3.exe+0x2378C70 lists the component in its first, written, set). Probe: null/empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "sizeof(MemberInteractionRequestData) in Script Extender should come out as 0xE0 (EntityHandle, int Amount, variant whose largest member is MemberDropData); worth a static_assert when the component is added.",
+    "Which variant alternatives EquipmentSystem actually queues (probably MemberAddData / MemberEquipmentRequestFailedData) was not checked."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "hold": "uses esv::inventory::MemberInteractionRequestData of Inventory.h, which is included after Coverage.h",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

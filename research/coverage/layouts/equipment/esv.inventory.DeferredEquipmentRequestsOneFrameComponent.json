@@ -1,0 +1,68 @@
+{
+  "component": "esv::inventory::DeferredEquipmentRequestsOneFrameComponent",
+  "ext_name": "ServerInventoryDeferredEquipmentRequests",
+  "size": 80,
+  "oneFrame": false,
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ServerInventoryDeferredEquipmentRequest>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x34FF630 (size 0x50, all zero). bg3.exe+0x34FA630 (equipment system, processing of EquipmentSystem.Equipment at system+0x10, stride 0x110) creates the component on a new entity when requests could not be executed this frame and fills +0x0: allocates size*0x110 bytes, copies 8 bytes (EntityHandle) and then the 0x108-byte rest of every element with bg3.exe+0x34F5E70 - Script Extender's esv::inventory::EquipmentRequest {EntityHandle InventoryContainer; std::variant<EquipRequest, UnequipRequest> Action} (Components/Inventory.h, 0x110 bytes). The same function reads the component back on the next frame (stride 0x50, query bg3.exe+0x3501A70). The element is redeclared here (the variant as an opaque block plus its index byte) instead of naming the SE type."
+    },
+    {
+      "name": "SlotItems",
+      "offset": 16,
+      "type": "HashMap<EntityHandle, HashMap<uint8_t, EntityHandle>>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FA630 copies a 64-byte hash map into +0x10 (bg3.exe+0x1008810 for the key set with 8-byte keys, then values at +0x40 allocated as size*0x40). Every value is itself a hash map: its key set is copied by bg3.exe+0xF13E80 (keys are single bytes) and its values in a loop with stride 8. Reading side in the same function: the outer key goes to eoc::inventory::GetInventory as the owner entity, the inner byte key is passed as the slot to eoc::equipment::GetEquipmentEntityInSlot, the inner 8-byte value is checked with IsEntityAlive and compared with the entity found in the slot. So: owner -> (equipment slot -> item expected there). ItemSlot is 1 byte. The inner key is written as uint8_t (SE enum ItemSlot, underlying uint8_t)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures. The name SlotItems is descriptive.",
+    "Whether the inner byte key is exactly ItemSlot or another 1-byte slot numbering was not checked; the width is."
+  ],
+  "minutes": 17,
+  "functions_read": 6,
+  "status": "confirmed",
+  "structs": [
+    {
+      "name": "ServerInventoryDeferredEquipmentRequest",
+      "size": 272,
+      "fields": [
+        {
+          "name": "InventoryContainer",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x34FA630 copies 8 bytes (an EntityHandle) first for every 0x110-byte element; SE esv::inventory::EquipmentRequest.InventoryContainer (Components/Inventory.h)"
+        },
+        {
+          "name": "Action",
+          "offset": 8,
+          "type": "uint64_t[32]",
+          "source": "inferred",
+          "evidence": "Storage of std::variant<EquipRequest, UnequipRequest> (SE EquipmentRequest.Action), opaque because std::variant blocks the build. bg3.exe+0x34F5E70 (element copy used by bg3.exe+0x34FA630) switches on the index byte at variant +0x100: index 0 copies 24 bytes (SE EquipRequest: EntityHandle Item, bool CheckActionResourceCosts, ItemSlot Slot, bools, EquipSettings), index 1 copies the 0x100-byte UnequipRequest (Item, optional Inventory, optional Slot, flags, Type, optional InventoryOwner, optional Position, optional Level, optional DropMovement via bg3.exe+0x2E1D800, ShapeshiftState Guid at +0xE8, Settings, field_FF)."
+        },
+        {
+          "name": "ActionIndex",
+          "offset": 264,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x34F5E70 (element copy used by bg3.exe+0x34FA630): the variant's index byte (0 = EquipRequest, 1 = UnequipRequest) at element +0x108"
+        },
+        {
+          "name": "_Pad109",
+          "offset": 265,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to the 0x110 element stride"
+        }
+      ]
+    }
+  ],
+  "second_pass": "The element stride 0x110 and its variant (index byte at element +0x108, Equip 24 bytes / Unequip 0x100 bytes) are settled by bg3.exe+0x34F5E70; the 0x50-byte component (array + nested hash map) by the creator bg3.exe+0x34FF630 and bg3.exe+0x34FA630. External type replaced by a local struct with an opaque variant block.",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,169 @@
+{
+  "component": "esv::pickup::ValidatedPickUpRequestsSingletonComponent",
+  "ext_name": "ServerPickupValidatedPickUpRequests",
+  "size": 80,
+  "seen": true,
+  "summary": "Server singleton: pick-up requests that passed esv::pickup::PickUpRequestValidationSystem (ProcessLegacyPickupRequests copies each esv::pickup::PickUpRequest of LegacyPickUpRequestsSingletonComponent and appends its initial EPickUpRequestState), plus per-entity lists of request Guids to cancel. Consumed by esv::pickup::PickUpRequestSystem::ProcessValidatedPickUpRequests (HandleValidatedPickUpRequests on +0, HandleSpecificCancelledPickUpRequests on +0x10). Seen.py context: lives in the idle level from load on (singleton), all zero there.",
+  "structs": [
+    {
+      "name": "ValidatedPickUpRequestsEntry",
+      "size": 72,
+      "fields": [
+        {
+          "name": "Picker",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xD384C0 HandleValidatedPickUpRequests adds eoc::pickup::PickUpRequestComponent (Guid from +0x20, State from +0x40) and esv::pickup::PickUpRequestComponent to the entity at +0. Same member as field_0 of the PickUpRequest in esv.pickup.LegacyPickUpRequestsSingletonComponent.json (first ID argument of LEGACY_RequestPickUp)."
+        },
+        {
+          "name": "TargetInventory",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "game",
+          "evidence": "Second ID argument of LEGACY_RequestPickUp; copied into esv::pickup::PickUpRequestComponent +0. | Name: Copied 1:1 into esv::pickup::PickUpRequestComponent by HandleValidatedPickUpRequests (EoCServer.dll+0xD384C0); that component's members carry the game's own names from savegame model ls::model::game::pickup::*::PickUpRequestComponent (see layouts/alive/esv.pickup.PickUpRequestComponent.json): +8 -> PickUpRequestComponent +0 m_TargetInventory.",
+          "legacy": "field_8"
+        },
+        {
+          "name": "EntityToPickUp",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "game",
+          "evidence": "HandleValidatedPickUpRequests adds esv::pickup::OriginalPickUpTargetComponent (tag) to this entity and reads its ls::TransformComponent; copied into esv::pickup::PickUpRequestComponent +8. | Name: Copied 1:1 into esv::pickup::PickUpRequestComponent by HandleValidatedPickUpRequests (EoCServer.dll+0xD384C0); that component's members carry the game's own names from savegame model ls::model::game::pickup::*::PickUpRequestComponent (see layouts/alive/esv.pickup.PickUpRequestComponent.json): +0x10 -> PickUpRequestComponent +8 m_EntityToPickUp.",
+          "legacy": "Target"
+        },
+        {
+          "name": "AmountToPickUp",
+          "offset": 24,
+          "type": "int32_t",
+          "source": "game",
+          "evidence": "ls::Optional<int> argument of LEGACY_RequestPickUp (value); copied with +0x1C as one qword. | Name: Copied 1:1 into esv::pickup::PickUpRequestComponent by HandleValidatedPickUpRequests (EoCServer.dll+0xD384C0); that component's members carry the game's own names from savegame model ls::model::game::pickup::*::PickUpRequestComponent (see layouts/alive/esv.pickup.PickUpRequestComponent.json): +0x18 -> m_AmountToPickUp.",
+          "legacy": "Amount"
+        },
+        {
+          "name": "AmountToPickUpHasValue",
+          "offset": 28,
+          "type": "bool",
+          "source": "game",
+          "evidence": "ls::Optional<int> presence flag. | Name: Copied 1:1 into esv::pickup::PickUpRequestComponent by HandleValidatedPickUpRequests (EoCServer.dll+0xD384C0); that component's members carry the game's own names from savegame model ls::model::game::pickup::*::PickUpRequestComponent (see layouts/alive/esv.pickup.PickUpRequestComponent.json): m_AmountToPickUpHasValue.",
+          "legacy": "HasAmount"
+        },
+        {
+          "name": "_Pad1D",
+          "offset": 29,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Optional padding."
+        },
+        {
+          "name": "RequestId",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Copied into eoc::pickup::PickUpRequestComponent.field_0 (Guid) by HandleValidatedPickUpRequests; the cancel map at +0x10 of the component lists such Guids."
+        },
+        {
+          "name": "HotbarSlot",
+          "offset": 48,
+          "type": "int16_t",
+          "source": "game",
+          "evidence": "ls::Optional<short> argument (value); copied to esv::pickup::PickUpRequestComponent +0x18. | Name: Copied 1:1 into esv::pickup::PickUpRequestComponent by HandleValidatedPickUpRequests (EoCServer.dll+0xD384C0); that component's members carry the game's own names from savegame model ls::model::game::pickup::*::PickUpRequestComponent (see layouts/alive/esv.pickup.PickUpRequestComponent.json): +0x30 -> m_HotbarSlot.",
+          "legacy": "field_30"
+        },
+        {
+          "name": "HotbarSlotHasValue",
+          "offset": 50,
+          "type": "bool",
+          "source": "game",
+          "evidence": "Optional<short> presence flag. | Name: Copied 1:1 into esv::pickup::PickUpRequestComponent by HandleValidatedPickUpRequests (EoCServer.dll+0xD384C0); that component's members carry the game's own names from savegame model ls::model::game::pickup::*::PickUpRequestComponent (see layouts/alive/esv.pickup.PickUpRequestComponent.json): m_HotbarSlotHasValue.",
+          "legacy": "Has_field_30"
+        },
+        {
+          "name": "_Pad33",
+          "offset": 51,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Optional padding."
+        },
+        {
+          "name": "TargetSlot",
+          "offset": 52,
+          "type": "uint16_t",
+          "source": "game",
+          "evidence": "ls::Optional<unsigned short> argument (value); copied to esv::pickup::PickUpRequestComponent +0x1C. | Name: Copied 1:1 into esv::pickup::PickUpRequestComponent by HandleValidatedPickUpRequests (EoCServer.dll+0xD384C0); that component's members carry the game's own names from savegame model ls::model::game::pickup::*::PickUpRequestComponent (see layouts/alive/esv.pickup.PickUpRequestComponent.json): +0x34 -> m_TargetSlot.",
+          "legacy": "field_34"
+        },
+        {
+          "name": "TargetSlotHasValue",
+          "offset": 54,
+          "type": "bool",
+          "source": "game",
+          "evidence": "Optional<unsigned short> presence flag. | Name: Copied 1:1 into esv::pickup::PickUpRequestComponent by HandleValidatedPickUpRequests (EoCServer.dll+0xD384C0); that component's members carry the game's own names from savegame model ls::model::game::pickup::*::PickUpRequestComponent (see layouts/alive/esv.pickup.PickUpRequestComponent.json): m_TargetSlotHasValue.",
+          "legacy": "Has_field_34"
+        },
+        {
+          "name": "_Pad37",
+          "offset": 55,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Optional padding."
+        },
+        {
+          "name": "MarkAsWares",
+          "offset": 56,
+          "type": "bool",
+          "source": "game",
+          "evidence": "Trailing bool argument of LEGACY_RequestPickUp; copied to esv::pickup::PickUpRequestComponent +0x3C. | Name: Copied 1:1 into esv::pickup::PickUpRequestComponent by HandleValidatedPickUpRequests (EoCServer.dll+0xD384C0); that component's members carry the game's own names from savegame model ls::model::game::pickup::*::PickUpRequestComponent (see layouts/alive/esv.pickup.PickUpRequestComponent.json): +0x38 -> m_MarkAsWares.",
+          "legacy": "field_38"
+        },
+        {
+          "name": "_Pad39",
+          "offset": 57,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Rest of the 0x40-byte esv::pickup::PickUpRequest."
+        },
+        {
+          "name": "State",
+          "offset": 64,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xD33CB0 ProcessLegacyPickupRequests stores the result of GetInitialRequestState (esv::pickup::EPickUpRequestState, 1 byte) here; HandleValidatedPickUpRequests handles the entry as accepted only when it is 0 and copies it to eoc::pickup::PickUpRequestComponent.State."
+        },
+        {
+          "name": "_Pad41",
+          "offset": 65,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x48 stride (written as one qword)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ValidatedPickUpRequestsEntry>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD396E0 ProcessValidatedPickUpRequests passes the component itself as DynamicArray<esv::pickup::ValidatedPickUpRequest> to HandleValidatedPickUpRequests (stride 0x48 = 9 qwords); EoCServer.dll+0xD33CB0 appends to it (assert names ls::IndexedStorage<esv::pickup::ValidatedPickUpRequest>). bg3.exe+0x35B71C0 allocates 0x50 bytes and zeroes them."
+    },
+    {
+      "name": "SpecificCancelRequests",
+      "offset": 16,
+      "type": "HashMap<EntityHandle, Array<Guid>>",
+      "source": "inferred",
+      "evidence": "ProcessValidatedPickUpRequests passes component+0x10 typed HashMap<ls::ID<ecs::EntityHandleTraits>, ls::DynamicArray<ls::Guid>> to HandleSpecificCancelledPickUpRequests; macOS names the matching system map PickUpRequestValidationSystem::FrameData::SpecificCancelRequest. Name derived from that method."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the entity at +8 and of the Optional<short>/Optional<ushort>/bool members of the request (shared with LegacyPickUpRequestsSingletonComponent)."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Members copied 1:1 into esv::pickup::PickUpRequestComponent, which has the game's names from its savegame model."
+}

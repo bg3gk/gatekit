@@ -1,0 +1,25 @@
+{
+  "component": "ls::VisualStreamHintComponent",
+  "ext_name": "VisualStreamHint",
+  "size": 4,
+  "seen": true,
+  "summary": "Radius of the streaming sphere around an entity's transform; the stream loader (ls::StreamSystemLoadHelper::ProcessLoadRequests, query VisualStreamHint + VisualStreamSystemData + Transform) packs (Translate.xyz, Hint) into the Vector4f passed to ls::sse::CalculateLoadPriority, whose 4th input span is asserted as 'R'. Live: 50.0 and 250.0 (client, dialogue / exploration Expl_HAG).",
+  "fields": [
+    {
+      "name": "Radius",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0xA19230 ls::StreamSystemLoadHelper::ProcessLoadRequests reads the 4-byte component (stride 4) into the w lane of a Vector4f whose xyz come from TransformComponent+0x10..0x18 and passes it to ls::sse::CalculateLoadPriority (GameEngine.dll+0xA44A20/0xA44C60, asserts 'Not enough X/Y/Z/R'); macOS ecs::EntityCommandBuffer::AddComponentUnchecked<ls::VisualStreamHintComponent, float&>. Live floats 50.0, 250.0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Exact game name of the member (Radius vs Distance); not replicated in this build (symbols.py replication finds no index)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

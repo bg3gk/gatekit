@@ -1,0 +1,25 @@
+{
+  "component": "ecl::ServerControlledEffectAttachedComponent",
+  "ext_name": "ClientServerControlledEffectAttached",
+  "size": 8,
+  "seen": true,
+  "summary": "Born in dialogues and act1-idle together with ServerControlledEffectReferenceComponent and ls::VisualAttachRequest: a server-controlled effect entity that is attached to another entity. Written by ecl::ServerControlledEffectSystem::Update.",
+  "fields": [
+    {
+      "name": "AttachedTo",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1EA9F90 (called from SCE update bg3.exe+0x1EA88B0) writes null 0xFFC0000000000000. bg3.exe+0x1EA9570 (on forget/destroy) uses this handle as the key of the ReferenceChange map and records the effect entity as removed from that entity's ecl::ServerControlledEffectReferenceComponent. Live: entity handles."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Whether the value is exactly ServerControlledEffectComponent +0x30 (the target) not verified."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

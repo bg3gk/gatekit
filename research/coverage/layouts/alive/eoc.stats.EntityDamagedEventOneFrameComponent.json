@@ -1,0 +1,508 @@
+{
+  "component": "eoc::stats::EntityDamagedEventOneFrameComponent",
+  "ext_name": "StatsEntityDamagedEvent",
+  "size": 488,
+  "seen": true,
+  "structs": [
+    {
+      "name": "EntityDamagedEventDamagePair",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Amount",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Equals SE DamagePair (Base/ExposedTypes.h): int32 Amount."
+        },
+        {
+          "name": "DamageType",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Equals SE DamagePair.DamageType (enum DamageType, uint8_t). SE enum DamageType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Padding to 8."
+        }
+      ]
+    },
+    {
+      "name": "EntityDamagedEventDamageOverride",
+      "size": 12,
+      "fields": [
+        {
+          "name": "DamageType",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Equals SE HitDamageOverride (Hit.h): DamageType (uint8_t). SE enum DamageType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "OriginalValue",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "SE HitDamageOverride.OriginalValue."
+        },
+        {
+          "name": "OverriddenValue",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "SE HitDamageOverride.OverriddenValue."
+        }
+      ]
+    },
+    {
+      "name": "EntityDamagedEventAttackDesc",
+      "size": 32,
+      "fields": [
+        {
+          "name": "TotalDamageDone",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Equals SE AttackDesc (Hit.h). bg3.exe+0x31CD550 copies param_5[0] to component +0x1B8."
+        },
+        {
+          "name": "TotalHealDone",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "SE AttackDesc.TotalHealDone; copied from param_5[1] to +0x1BC."
+        },
+        {
+          "name": "InitialHPPercentage",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE AttackDesc.InitialHPPercentage; byte copy to +0x1C0."
+        },
+        {
+          "name": "field_9",
+          "offset": 9,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "SE AttackDesc.field_9; byte copy to +0x1C1."
+        },
+        {
+          "name": "_PadA",
+          "offset": 10,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "Padding before the array."
+        },
+        {
+          "name": "DamageList",
+          "offset": 16,
+          "type": "Array<EntityDamagedEventDamagePair>",
+          "source": "inferred",
+          "evidence": "SE AttackDesc.DamageList; the Toolkit names its copy constructor eoc::AttackDesc::AttackDesc at component +0x1C8 (pointer, then capacity/size zeroed at +0x1D0/+0x1D4). Live: heap pointer, capacity/size 1-2."
+        }
+      ]
+    },
+    {
+      "name": "EntityDamagedEventHitDesc",
+      "size": 432,
+      "fields": [
+        {
+          "name": "TotalDamageDone",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live 0..500."
+        },
+        {
+          "name": "DeathType",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum stats::DeathType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "DamageType",
+          "offset": 5,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum DamageType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "CauseType",
+          "offset": 6,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum CauseType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "_Pad7",
+          "offset": 7,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "ImpactPosition",
+          "offset": 8,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: world coordinates."
+        },
+        {
+          "name": "ImpactDirection",
+          "offset": 20,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: unit-length floats or FLT_MAX."
+        },
+        {
+          "name": "ImpactForce",
+          "offset": 32,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "ArmorAbsorption",
+          "offset": 36,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "LifeSteal",
+          "offset": 40,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "EffectFlags",
+          "offset": 44,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint32_t bitmask; ThrowDamageEvent (bg3.exe+0x31C3180) ORs 0x400 HitpointsDamaged and 0x10000 KillingBlow into the HitDesc at +0x2C. SE enum DamageFlags (underlying uint32_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "Inflicter",
+          "offset": 48,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "InflicterOwner",
+          "offset": 56,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "Throwing",
+          "offset": 64,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "StoryActionId",
+          "offset": 72,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "HitWith",
+          "offset": 76,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum HitWith (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "AttackRollAbility",
+          "offset": 77,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum AbilityId (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "SaveAbility",
+          "offset": 78,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum AbilityId (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "SpellAttackType",
+          "offset": 79,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum SpellAttackType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "ConditionRolls",
+          "offset": 80,
+          "type": "uint8_t[16]",
+          "source": "inferred",
+          "evidence": "SE HitDesc.ConditionRolls = Array<ConditionRoll> (16 bytes; live: heap pointer + capacity/size 0/1). Kept opaque: ConditionRoll holds std::variant<StatsRoll, StatsExpressionResolved>, not expressible with the allowed primitive types."
+        },
+        {
+          "name": "Damage",
+          "offset": 96,
+          "type": "uint8_t[224]",
+          "source": "inferred",
+          "evidence": "SE HitDesc.Damage = StatsDamage (0xE0 bytes; live: Multiplier/BaseValue/SecondaryValue = 1 at HitDesc +0x130..+0x138 as in SE). Kept opaque: it holds LegacyRefMaps and variant-bearing arrays that need SE types."
+        },
+        {
+          "name": "SpellCastGuid",
+          "offset": 320,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: random 16 bytes or zero."
+        },
+        {
+          "name": "SpellId",
+          "offset": 336,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: FixedString indices or 0xFFFFFFFF."
+        },
+        {
+          "name": "StatusId",
+          "offset": 340,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "StatusEntity",
+          "offset": 344,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: entity-handle shaped or null."
+        },
+        {
+          "name": "SurfaceType",
+          "offset": 352,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum SurfaceType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "SpellSchool",
+          "offset": 353,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum SpellSchoolId (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "HealingTypes",
+          "offset": 354,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live always 1 (SE default 1)."
+        },
+        {
+          "name": "AttackFlags",
+          "offset": 355,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t bitmask. SE enum AttackFlags (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "SpellLevel",
+          "offset": 356,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live 0/4."
+        },
+        {
+          "name": "SpellPowerLevel",
+          "offset": 360,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "TotalHealDone",
+          "offset": 364,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "RedirectedDamage",
+          "offset": 368,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "OriginalDamageValue",
+          "offset": 372,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "FallHeight",
+          "offset": 376,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "FallDamageMultiplier",
+          "offset": 380,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "FallMaxDamage",
+          "offset": 384,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "FallWeight",
+          "offset": 388,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "field_188",
+          "offset": 392,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "_Pad189",
+          "offset": 393,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "OverriddenDamage",
+          "offset": 400,
+          "type": "Array<EntityDamagedEventDamageOverride>",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: always empty."
+        },
+        {
+          "name": "DamageList",
+          "offset": 416,
+          "type": "Array<EntityDamagedEventDamagePair>",
+          "source": "inferred",
+          "evidence": "Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: heap pointer, capacity/size 1-2."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x31CD550 (called only from esv::StatsSystem::ThrowDamageEvent bg3.exe+0x31C3180, which first creates a new event entity) allocates 0x1E8 bytes (ComponentFrameStorageAllocRaw(...,0x1e8,...)) and stores *param_3 = the damaged entity's handle at +0. Live: entity handles."
+    },
+    {
+      "name": "Hit",
+      "offset": 8,
+      "type": "EntityDamagedEventHitDesc",
+      "source": "inferred",
+      "evidence": "eoc::HitDesc::HitDesc(puVar8+1, hit) copy-constructs the HitDesc at +8 (ThrowDamageEvent's param_3). Same members as SE HitDesc (Hit.h), size 0x1B0."
+    },
+    {
+      "name": "Attack",
+      "offset": 440,
+      "type": "EntityDamagedEventAttackDesc",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x31CD550 copies param_5 (int,int,byte,byte, array at +0x10) to +0x1B8..+0x1D7; same members as SE AttackDesc (Hit.h), size 0x20."
+    },
+    {
+      "name": "field_1D8",
+      "offset": 472,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Byte copied from ThrowDamageEvent's 5th argument (bg3.exe+0x31C3180 passes &param_5). Live 0/4/5."
+    },
+    {
+      "name": "field_1D9",
+      "offset": 473,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Byte copied from ThrowDamageEvent's 6th argument. Live always 1."
+    },
+    {
+      "name": "_Pad1DA",
+      "offset": 474,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "Padding (live: junk bytes)."
+    },
+    {
+      "name": "field_1DC",
+      "offset": 476,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "First half of an 8-byte copy of ThrowDamageEvent's local {int value; bool set}: value = HP + (temporary HP - TotalDamageDone), set only when temporary HP does not absorb the hit - looks like std::optional<int32_t> of the health after the hit. Live: small negatives and positives."
+    },
+    {
+      "name": "field_1E0",
+      "offset": 480,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Has-value flag of the optional above (local_54 = 1 when field_1DC is set). Live 0/1."
+    },
+    {
+      "name": "_Pad1E1",
+      "offset": 481,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Padding of the optional (live: junk)."
+    },
+    {
+      "name": "KillingBlow",
+      "offset": 484,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Byte from ThrowDamageEvent's local_158: set to 1 together with DamageFlags::KillingBlow (0x10000) when the health was non-zero and dropped below 1. Live 0/1."
+    },
+    {
+      "name": "_Pad1E5",
+      "offset": 485,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Tail padding to 0x1E8 (live: junk)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "HitDesc.ConditionRolls (+0x50, SE Array<ConditionRoll>) and HitDesc.Damage (+0x60, SE StatsDamage, 224 bytes with LegacyRefMap and std::variant members) stay opaque bytes: they cannot be written with the primitive types of the build. The component is exactly {EntityHandle, SE HitDesc (0x1B0), SE AttackDesc (0x20), byte, byte, Optional<int32>, bool}: it is better declared by hand in Script Extender with its own HitDesc / AttackDesc than generated.",
+    "Meaning of field_1D8 / field_1D9 (two byte arguments of esv::StatsSystem::ThrowDamageEvent) and of the optional int at 0x1DC."
+  ],
+  "minutes": 19,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Replaced the 13 SE enum types with their underlying integer types (DamageType, DeathType, CauseType, HitWith, AbilityId, SpellAttackType, SurfaceType, SpellSchoolId, AttackFlags: uint8_t; DamageFlags: uint32_t) so the file validates; offsets unchanged (component from bg3.exe+0x31CD550, HitDesc/AttackDesc identical to SE Hit.h). Not settled for the build: two opaque blocks hold read data.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: one-frame, not replicated or saved; the HitDesc / AttackDesc members follow SE."
+}

@@ -1,0 +1,38 @@
+{
+  "component": "esv::timeline::FadedInUsersComponent",
+  "ext_name": "ServerTimelineFadedInUsers",
+  "size": 56,
+  "fields": [
+    {
+      "name": "Timeout",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D10600 creates the component (bg3.exe+0x2D12320) next to the deferred ending state and writes 'longest fade duration + 1.0'; bg3.exe+0x2D10A20 subtracts the frame delta (GameTime +8) each frame and, at <= 0, removes the component and emits the fade-in events anyway."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "Users",
+      "offset": 8,
+      "type": "HashSet<UserId>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D10A20 inserts 4-byte user ids (bg3.exe+0xBDCF90 on component + 8) reported as faded in for the fade of that name, and finishes when the key count (+0x34) reaches the user count of the deferred ending state (+0x4C). Constructor zeroes 0x08..0x38 as a set."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are descriptive."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Offsets and widths are from Windows code (bg3.exe+0x2D10600 writes the timeout, bg3.exe+0x2D10A20 inserts 4-byte user ids into the set at +8); 10 live instances show the float timeout (1.0, 7.0) at +0 and an empty set after it.",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

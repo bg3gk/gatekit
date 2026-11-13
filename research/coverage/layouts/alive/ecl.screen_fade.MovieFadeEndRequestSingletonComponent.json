@@ -1,0 +1,28 @@
+{
+  "component": "ecl::screen_fade::MovieFadeEndRequestSingletonComponent",
+  "ext_name": "ClientScreenFadeMovieFadeEndRequestSingleton",
+  "size": 16,
+  "seen": true,
+  "external_types": [
+    "ClearScreenFadeData (BG3Extender/GameDefinitions/Components/Camera.h, 32 bytes: FadeId Guid, FadeSpeed, FadeTime, field_18, field_1C)"
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ClearScreenFadeData>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1915490 (0x10); destructor bg3.exe+0x5946C0 frees one trivial array. Toolkit ecl::screen_fade::MovieSystem::ProcessEndFadeRequests (EoCClient.dll+0x7F20D0) takes the first component of its EntityView (MovieFadeEndRequestSingletonComponent) and clears its array under the assert 'IndexedStorage<eoc::screen_fade::ClearScreenFadeData>'; ScreenFadeSystem::FinalizeComponents reads it const. Live: empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element stride not observed directly; relies on SE's ClearScreenFadeData (32 bytes) being the same eoc::screen_fade::ClearScreenFadeData."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "hold": "uses types of Script Extender's own headers (ClearScreenFadeData (BG3Extender/GameDefinitions/Components/Camera.h, 32 bytes: FadeId Guid, FadeSpeed, FadeTime, field_18, field_1C)): whether they are declared before Coverage.h is included is not checked yet",
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the layout file is not valid yet: 'list' object has no attribute 'items'"
+}

@@ -1,0 +1,224 @@
+{
+  "component": "ecl::thrown::SoundRequestBusComponent",
+  "ext_name": "ClientThrownSoundRequestBus",
+  "size": 80,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ThrownSoundRequestBusCharacterSoundRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::thrown::SoundSystem::ProcessThrownObjectsLanding / ProcessThrowerStart (EoCClient.dll+0xD5CA10 / +0xD5C650) build the request on the stack with the entity handle first and push it with FUN_180d5bb70 (bus+0)."
+        },
+        {
+          "name": "Sound",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "FixedString copied into request+8; ClearRequestBus (EoCClient.dll+0xD5BD30) releases element+8 with stride 0x10."
+        },
+        {
+          "name": "SoundObjectIndex",
+          "offset": 12,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Byte after the FixedString set to 1 or 3 (CONCAT14(3, ...)); ls::ESoundObjectIndex, uint8_t as in SE AllSpark.h."
+        },
+        {
+          "name": "_Pad13",
+          "offset": 13,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Padding to the 16-byte stride."
+        }
+      ]
+    },
+    {
+      "name": "ThrownSoundRequestBusItemSoundRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Pushed with FUN_180d5bc50(bus+0x10, request) in ProcessThrownObjectsLanding/Start; entity handle first."
+        },
+        {
+          "name": "Sound",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "ClearRequestBus releases element+8, stride 0x10 (IndexedStorage<ecl::thrown::ItemSoundRequest>)."
+        },
+        {
+          "name": "field_C",
+          "offset": 12,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "4 bytes copied from an int of the thrown sound data (*piVar16 / *piVar22, which ProcessThrownObjectsStart also compares with 2 - probably the thrown sound object type)."
+        }
+      ]
+    },
+    {
+      "name": "ThrownSoundRequestBusCharacterRTPCRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ProcessThrownObjectsLanding writes element+0 = entity (stride 0x18, IndexedStorage<ecl::thrown::CharacterRTPCRequest>)."
+        },
+        {
+          "name": "RTPC",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "element+8 = FixedString (a global RTPC name)."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "element+0xC = (distance / 30) * 50 + 50."
+        },
+        {
+          "name": "SoundObjectIndex",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "element+0x10 = 3 (ls::ESoundObjectIndex, uint8_t)."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Padding to the 24-byte stride."
+        }
+      ]
+    },
+    {
+      "name": "ThrownSoundRequestBusCharacterSetSwitchRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ProcessThrowerStart builds {entity, FixedString group, FixedString switch, byte} and pushes with FUN_180d5ba80(bus+0x30, ...); stride 0x18 (IndexedStorage<ecl::thrown::CharacterSetSwitchRequest>)."
+        },
+        {
+          "name": "SwitchGroup",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "First FixedString (a global switch group); released by ClearRequestBus at element+8."
+        },
+        {
+          "name": "Switch",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Second FixedString (strItem / strCharacter / strWeapon); released at element+0xC."
+        },
+        {
+          "name": "SoundObjectIndex",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Byte 1 or 2 stored after the two FixedStrings (ls::ESoundObjectIndex, uint8_t)."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Padding to the 24-byte stride."
+        }
+      ]
+    },
+    {
+      "name": "ThrownSoundRequestBusItemSetSwitchRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ProcessThrownObjectsStart (EoCClient.dll+0xD5D070): elem = *(bus+0x40) + i*0x10; elem[0] = entity."
+        },
+        {
+          "name": "SwitchGroup",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "elem+8 = FixedString (global group)."
+        },
+        {
+          "name": "Switch",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "elem+0xC = FixedString (moving / not moving switch value)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "CharacterSoundRequests",
+      "offset": 0,
+      "type": "Array<ThrownSoundRequestBusCharacterSoundRequest>",
+      "source": "inferred",
+      "evidence": "ecl::thrown::SoundSystem::ClearRequestBus (EoCClient.dll+0xD5BD30) clears five arrays in order; the asserts name their element types: ecl::thrown::CharacterSoundRequest (+0, stride 0x10)."
+    },
+    {
+      "name": "ItemSoundRequests",
+      "offset": 16,
+      "type": "Array<ThrownSoundRequestBusItemSoundRequest>",
+      "source": "inferred",
+      "evidence": "ClearRequestBus: ecl::thrown::ItemSoundRequest at +0x10, stride 0x10. Live: one instance had capacity 1 here."
+    },
+    {
+      "name": "CharacterRTPCRequests",
+      "offset": 32,
+      "type": "Array<ThrownSoundRequestBusCharacterRTPCRequest>",
+      "source": "inferred",
+      "evidence": "ClearRequestBus: ecl::thrown::CharacterRTPCRequest at +0x20, stride 0x18."
+    },
+    {
+      "name": "CharacterSetSwitchRequests",
+      "offset": 48,
+      "type": "Array<ThrownSoundRequestBusCharacterSetSwitchRequest>",
+      "source": "inferred",
+      "evidence": "ClearRequestBus: ecl::thrown::CharacterSetSwitchRequest at +0x30, stride 0x18."
+    },
+    {
+      "name": "ItemSetSwitchRequests",
+      "offset": 64,
+      "type": "Array<ThrownSoundRequestBusItemSetSwitchRequest>",
+      "source": "inferred",
+      "evidence": "ClearRequestBus: ecl::thrown::ItemSetSwitchRequest at +0x40, stride 0x10. Live: one instance had capacity 1 here."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "ItemSoundRequest+0xC meaning; member names of the requests are ours (struct names are the game's)."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,316 @@
+{
+  "component": "esv::party_preset::LoadStateComponent",
+  "ext_name": "ServerPartyPresetLoadState",
+  "size": 824,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Per-character state machine of loading a party preset: a step byte advanced by esv::party_preset::System::ProcessDirtyLoadStates (bg3.exe+0x2DBEC00, switch on the byte: 1 = ..., 2 = DebugSetTotalXPRequest, 6 = spells ...) followed by one esv::PartyPresetCharacter (0x330 bytes). Created by bg3.exe+0x2DC18E0 from bg3.exe+0x2DBC980; read by System::TeleportEntity / SystemLoad.",
+  "structs": [
+    {
+      "name": "PartyPresetLoadStateSpellMetaId",
+      "size": 48,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2DBEC00 case 6 compares elements (stride 0x30) by int +0, byte +8, 8-byte +0x10/+0x18/+0x20/+0x28: the shape of Script Extender's SpellMetaId (ExposedTypes.h), which this struct equals."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding as in SpellMetaId"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "byte compared at +8 (SpellSourceType, 1 byte)"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to the Guid"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "compared as two 8-byte words +0x10/+0x18"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "compared as two 8-byte words +0x20/+0x28"
+        }
+      ]
+    },
+    {
+      "name": "PartyPresetLoadStateCharacter",
+      "size": 816,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "Constructor bg3.exe+0x2AE6D40 writes the null handle 0xFFC0000000000000."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t[428]",
+          "source": "unknown",
+          "evidence": "Constructor memsets 0x1C0 bytes at +8 and runs FUN_1422D54B0 on them (an embedded object, not decoded)."
+        },
+        {
+          "name": "field_1B4",
+          "offset": 436,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "Inside the +8 object; read as component+0x1BC by bg3.exe+0x2DBEC00 case 2 as the level whose XP becomes DebugSetTotalXPRequest.TotalXP."
+        },
+        {
+          "name": "field_1B8",
+          "offset": 440,
+          "type": "uint8_t[16]",
+          "source": "unknown",
+          "evidence": "Rest of the +8 object (ends at +0x1C8)."
+        },
+        {
+          "name": "field_1C8",
+          "offset": 456,
+          "type": "uint8_t[224]",
+          "source": "unknown",
+          "evidence": "Constructor: memset 0xE0 then eh_vector_constructor_iterator(+0x1C8, 0x10, 14, FUN_1405917F0, FUN_140591800): 14 objects of 16 bytes with constructor/destructor."
+        },
+        {
+          "name": "field_2A8",
+          "offset": 680,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "Array header (pointer) zeroed by the constructor (+0x2A8 ptr, +0x2B0 capacity, +0x2B4 size); element type not read."
+        },
+        {
+          "name": "field_2B0",
+          "offset": 688,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "capacity of the array at +0x2A8"
+        },
+        {
+          "name": "field_2B4",
+          "offset": 692,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "size of the array at +0x2A8"
+        },
+        {
+          "name": "field_2B8",
+          "offset": 696,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "Array header (pointer), zeroed with +0x2C0 and +0x2C4"
+        },
+        {
+          "name": "field_2C0",
+          "offset": 704,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "capacity of the array at +0x2B8"
+        },
+        {
+          "name": "field_2C4",
+          "offset": 708,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "size of the array at +0x2B8"
+        },
+        {
+          "name": "field_2C8",
+          "offset": 712,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "Array header (pointer), zeroed with +0x2D0 and +0x2D4"
+        },
+        {
+          "name": "field_2D0",
+          "offset": 720,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "capacity of the array at +0x2C8"
+        },
+        {
+          "name": "field_2D4",
+          "offset": 724,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "size of the array at +0x2C8"
+        },
+        {
+          "name": "field_2D8",
+          "offset": 728,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "Array header (pointer), zeroed with +0x2E0 and +0x2E4"
+        },
+        {
+          "name": "field_2E0",
+          "offset": 736,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "capacity of the array at +0x2D8"
+        },
+        {
+          "name": "field_2E4",
+          "offset": 740,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "size of the array at +0x2D8"
+        },
+        {
+          "name": "Spells",
+          "offset": 744,
+          "type": "Array<PartyPresetLoadStateSpellMetaId>",
+          "source": "inferred",
+          "evidence": "Constructor zeroes an Array header here; bg3.exe+0x2DBEC00 case 6 walks component+0x2F0 (= +0x2E8 here) with stride 0x30 and size at component+0x2FC, appending the missing ones (FUN_1407A4DE0) to another array."
+        },
+        {
+          "name": "field_2F8",
+          "offset": 760,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Constructor writes 0 (8-byte store)."
+        },
+        {
+          "name": "field_300",
+          "offset": 768,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Constructor writes 0 (8-byte store)."
+        },
+        {
+          "name": "field_308",
+          "offset": 776,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "Constructor writes 0xFFFFFFFF; bg3.exe+0x2DBC980 reads +0x308 of a preset character record (pointer + 0x61 * 8) and copies it with IncRef into LoadSession.field_80."
+        },
+        {
+          "name": "field_30C",
+          "offset": 780,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "Constructor zeroes it (8-byte store +0x30C); read as component+0x314 by bg3.exe+0x2DBEC00 case 2 as the upper bound of the XP value."
+        },
+        {
+          "name": "field_310",
+          "offset": 784,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "zeroed by the 8-byte store at +0x30C"
+        },
+        {
+          "name": "field_314",
+          "offset": 788,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "zeroed by the 8-byte store at +0x314"
+        },
+        {
+          "name": "field_318",
+          "offset": 792,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "zeroed by the 8-byte store at +0x314"
+        },
+        {
+          "name": "field_31C",
+          "offset": 796,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "Constructor writes 0x3F800000 (1.0f) as the low half of an 8-byte store at +0x31C"
+        },
+        {
+          "name": "field_320",
+          "offset": 800,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "high half of that store, 0"
+        },
+        {
+          "name": "field_324",
+          "offset": 804,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "zeroed by the 8-byte store at +0x324"
+        },
+        {
+          "name": "field_328",
+          "offset": 808,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "zeroed by the 8-byte store at +0x324"
+        },
+        {
+          "name": "field_32C",
+          "offset": 812,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Constructor writes byte 0"
+        },
+        {
+          "name": "_Pad32D",
+          "offset": 813,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "tail padding to 0x330"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Step",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2DC18E0 writes byte 0; bg3.exe+0x2DBEC00 (via getter bg3.exe+0x2DC1BB0) increments it and switches on it (cases 1..7) to run the preset loading steps."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment of the 8-byte-aligned object at +8"
+    },
+    {
+      "name": "Character",
+      "offset": 8,
+      "type": "PartyPresetLoadStateCharacter",
+      "source": "inferred",
+      "evidence": "Creator calls constructor FUN_142AE6D40(comp + 8), which fills 0x330 bytes; bg3.exe+0x2DBC980 destroys an array of the same objects with stride 0x330 through esv::PartyPresetCharacter::~PartyPresetCharacter, so the object is an esv::PartyPresetCharacter. 8 + 0x330 = 0x338 = registry size."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "The 0x1C0-byte object at Character+8 (FUN_1422D54B0) and the 14 16-byte objects at Character+0x1C8 are not decoded.",
+    "Element types of the four arrays at Character+0x2A8..+0x2D8.",
+    "Meaning of the floats/ints at Character+0x30C..+0x32C (a position/rotation? only defaults known).",
+    "The component destructor slot (LAB_1422B6E10) is not a function start in the decomp base and was not read."
+  ],
+  "minutes": 14,
+  "functions_read": 4,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled this pass: the 0x330-byte esv::PartyPresetCharacter keeps a 428-byte and a 224-byte undecoded block and four arrays of unknown element type."
+}

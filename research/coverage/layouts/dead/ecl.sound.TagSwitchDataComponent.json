@@ -1,0 +1,49 @@
+{
+  "component": "ecl::sound::TagSwitchDataComponent",
+  "ext_name": "ClientSoundTagSwitchData",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Per-entity list of sound switches (switch group + value) set because of the entity's tags (eoc::TagComponent) on sound-activated entities that are neither characters nor items (macOS query: TagComponent + SoundActivatedComponent, without Character/Item, writing TagSwitchDataComponent). Element type is the game's ecl::sound::TagSwitchData (macOS DynamicArray<ecl::sound::TagSwitchData>), the same element as in ecl::sound::TagSwitchRequestsSingletonComponent (layout in se-fork\\coverage\\layouts, struct TagSwitchRequestData {FixedString Switch; FixedString Value}). Never seen alive. Registry total 16 (client row).",
+  "structs": [
+    {
+      "name": "TagSwitchDataComponentSwitch",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Switch",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1F2F630 appends an element (stride 8) and stores the FixedString at +0x30 of the tag's sound record (IncRef). Same element (ecl::sound::TagSwitchData) as TagSwitchRequestsSingletonComponent, where +0 is the switch group name."
+        },
+        {
+          "name": "Value",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1F2F630 stores the FixedString at +0x34 of the same record into element+4 (IncRef), then passes both to FUN_141f2fd20 (sets the switch)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Switches",
+      "offset": 0,
+      "type": "Array<TagSwitchDataComponentSwitch>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1F30210 (AllocRaw 0x10) zeroes pointer + capacity + size. Destructor bg3.exe+0x69E8F0 calls bg3.exe+0x5C8AF0(p,0) (shrink: destroys elements with stride 8 via FUN_1405c3690 - two FixedStrings) and frees the buffer. Writer bg3.exe+0x1F2F630 (PointAndClick/tag sound code) grows it (capacity +8, size +0xC) and fills elements of 8 bytes; it removes the component when no switch was added."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names Switch/Value follow the TagSwitchRequestsSingletonComponent layout (inferred there).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

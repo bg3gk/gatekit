@@ -1,0 +1,25 @@
+{
+  "component": "esv::thrown::AttachmentRequestOneFrameComponent",
+  "ext_name": "ServerThrownAttachmentRequest",
+  "size": 8,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Request read by esv::thrown::AttachmentSystem (Toolkit GatherRequests EoCServer.dll+0x3DACC0 / ProcessAttachmentRequests EoCServer.dll+0x3DDB60, whose WorldView lists it as const). Nothing in bg3.exe writes it: the only users are the type registration bg3.exe+0x2EA310 and the generic helpers bg3.exe+0x21DB110 / bg3.exe+0x2E9A120 - the creator must be outside the code base the index sees (Osiris/scripting or an engine helper) or it is unused in this build. Not saved.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Registry size 8. Windows: bg3.exe+0x2E9A120 registers the query (DAT_1463958C4) of esv::thrown::AttachmentSystem with eoc::thrown::AttachComponent and this one-frame component; its gather step bg3.exe+0x2E97160 (lines 281-290) reads an 8-byte value (stride 8) from the query's one-frame column (index field +0x54, the slot one-frame components use) and stores it as the request's entity, as the Toolkit GatherRequests (EoCServer.dll+0x3DACC0) does before ProcessAttachmentRequests copies it into eoc::thrown::AttachComponent+0 (an EntityHandle per its replication serializer). No writer in bg3.exe (filled by Osiris/scripting or unused)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 9,
+  "functions_read": 3,
+  "status": "declared",
+  "second_pass": "The Windows gather step of esv::thrown::AttachmentSystem (bg3.exe+0x2E97160, query registered by bg3.exe+0x2E9A120) reads the 8 bytes of this one-frame component as the entity of an attach request, matching the Toolkit GatherRequests.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

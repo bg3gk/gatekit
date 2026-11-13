@@ -1,0 +1,83 @@
+{
+  "component": "ecl::TimelineFadeView1Component",
+  "ext_name": "ClientTimelineFadeView1",
+  "size": 20,
+  "fields": [
+    {
+      "name": "TargetValue",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F69D0 creates the component with 0.0. bg3.exe+0x18EB8C0 copies the first 8 bytes of the per-entity fade request (16-byte values of a HashMap<EntityHandle, request> in ecl::TimelineFadeRequestsSingletonComponent) here on every request, and copies this value into +0x0C when the request is immediate - so +0 is the value being faded to and +0x0C the value reached so far. Live: 0.0 (faded out)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Default 4.0 in bg3.exe+0x18F69D0; overwritten from the second float of the fade request in bg3.exe+0x18EB8C0. Live: 4.0. Probably the fade speed, but no reader was found."
+    },
+    {
+      "name": "Immediate",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Default 0; copied from byte 8 of the request. When set, bg3.exe+0x18EB8C0 writes TargetValue into CurrentValue at once instead of leaving the fade to run. Live: 1."
+    },
+    {
+      "name": "field_9",
+      "offset": 9,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Default 0 (one 16-bit store with +8); copied from byte 9 of the request. Live: 1."
+    },
+    {
+      "name": "field_A",
+      "offset": 10,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Default 1; copied from byte 10 of the request, which bg3.exe+0x18EB8C0 also forwards (with a 'fully faded out at once' flag) into a second per-entity request map. Live: 0."
+    },
+    {
+      "name": "_PadB",
+      "offset": 11,
+      "type": "uint8_t[1]",
+      "source": "inferred",
+      "evidence": "copied with the request's padding; live 0x33 garbage"
+    },
+    {
+      "name": "CurrentValue",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Default 1.0; set to TargetValue by bg3.exe+0x18EB8C0 when Immediate is set. Live: 0.0."
+    },
+    {
+      "name": "Active",
+      "offset": 16,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Default 1; bg3.exe+0x18EB8C0 sets 1 when a request arrives (0 only when a new component is created by an immediate request on an entity that already had the fade tag), and writes 0 when the entity is in the 'remove fade' list (it then also removes ecl::TimelineFadeActiveView1Component). Live: 1."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding to 20 bytes (alignment 4); live FF FF FF"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names only: field_4 (probably the fade speed), field_9 and field_A are unnamed because the consumer that blends the ecl::*FadeView1Component sources into ls::FadingView1Component (system bg3.exe+0x18DFEC0) was not read.",
+    "Whether the value is an opacity (1 = visible) - consistent with the defaults, not proven."
+  ],
+  "same_as": "ecl::TimelineFadeView0Component - the two creation helpers (bg3.exe+0x18F6530 and bg3.exe+0x18F69D0) are identical apart from the type index (same size 0x14, same default stores), and the two system functions bg3.exe+0x18EB2D0 / bg3.exe+0x18EB8C0 differ only in which request map of the singleton they read (+0x00.. vs +0x40..)",
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Re-read the Windows creator bg3.exe+0x18F69D0: ComponentFrameStorageAllocRaw(0x14), stores 0.0 at +0, 4.0 at +4, a 16-bit 0 at +8, byte 1 at +0x0A, 1.0 at +0x0C and byte 1 at +0x10 - every offset and width is the same as in the confirmed ecl::TimelineFadeView0Component, so the layout is settled from code; only three names stay open.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

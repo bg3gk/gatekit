@@ -1,0 +1,62 @@
+{
+  "component": "ls::GameplayGlobalSoundRequestsSingletonComponent",
+  "ext_name": "GameplayGlobalSoundRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "GameplayGlobalSoundRequest",
+      "size": 12,
+      "fields": [
+        {
+          "name": "Event",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessPostSoundEventRequests (GameEngine.dll+0x89B3A0) passes the element's address as the event name to SoundRoutingSystem::PostSoundEvent."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Passed as PostSoundEvent's 'unsigned int' argument (third parameter after the event)."
+        },
+        {
+          "name": "ObjectType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Compared with 0..3 and mapped to ERoutedSoundEventType 1..4; any other value asserts 'EGlobalSoundObjectType not supported' - an EGlobalSoundObjectType."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "stride 0xC"
+        }
+      ]
+    }
+  ],
+  "summary": "Requests to post global (not entity-bound) sound events; drained each frame by ls::GameplaySoundInterfaceSystem (Toolkit GameEngine.dll).",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<GameplayGlobalSoundRequest>",
+      "source": "inferred",
+      "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessPostSoundEventRequests iterates *(+0) for *(int*)(+0xC) elements of stride 0xC. Assigned to this singleton (not the event bus) because the 0x30-stride bus loop asserts 'More than one gameplay sound request bus exists!' and macOS names GameplaySoundEventRequestBus's element ls::GameplaySoundEventRequest (0x30). Live: capacity 0..1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of field_4 (PostSoundEvent's unsigned int).",
+    "The view getter's component index was not resolved; the attribution rests on the names."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

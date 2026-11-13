@@ -1,0 +1,44 @@
+{
+  "component": "esv::sound::DistantSoundStateProxyComponent",
+  "ext_name": "ServerSoundDistantSoundStateProxy",
+  "size": 24,
+  "fields": [
+    {
+      "name": "Proxy",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2E3DBB0 defaults it to the null handle and then stores its own param_2 = the entity the component is being added to; the only caller bg3.exe+0x2E3C320 passes local_128, a handle it has just created (FUN_14401aff0). So it is the proxy entity's own handle. Probe: 8 distinct consecutive handles 0x39DA..0x39E1 (freshly created entities)."
+    },
+    {
+      "name": "Source",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Defaults to null in bg3.exe+0x2E3DBB0; bg3.exe+0x2E3C320 then does '*(proxy + 8) = *plVar24', where plVar24 walks the entities the system is processing - the real sound entity, whose data (FixedStrings at +0x48/+0x4C/+0x50 and more of a record fetched for it) is copied onto the proxy entity's own sound-state component right after. Probe: live entity handles 0x782..0x2A01."
+    },
+    {
+      "name": "UserID",
+      "offset": 16,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "4 bytes. bg3.exe+0x2E3DBB0 writes 0 and then the global default DAT_14617ceac (a constant used all over the game as the initial value of a 32-bit id); bg3.exe+0x2E3C320 then does '*(uint *)(proxy + 0x10) = *puVar22', where puVar22 walks a per-entity array of uint32 that are also used as hash keys (value % bucketCount) into a map with 0xC-byte values - one proxy is created per (source entity, id). Probe: always 0x00010001 = 65537, which is the user id of the host player in single player; the sibling component is named esv::sound::DistantSoundStateUserMapComponent."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Never written by the creator or by bg3.exe+0x2E3C320; probe shows 4 different garbage values (0x7FF4.., 0xFFFFFFFF). Tail padding to 8-byte alignment."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Field names are mine (no Toolkit accessors). Layout is high confidence; meanings: self handle and source entity are read straight from the code, 'UserID' rests on the live value 65537 plus the UserMap sibling's name - the uint32 array it is copied from was not traced to its component.",
+    "Why the component stores its own entity handle at +0 was not investigated."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

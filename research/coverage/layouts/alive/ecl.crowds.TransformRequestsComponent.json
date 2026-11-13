@@ -1,0 +1,23 @@
+{
+  "component": "ecl::crowds::TransformRequestsComponent",
+  "ext_name": "ClientCrowdsTransformRequests",
+  "size": 64,
+  "seen": true,
+  "reuses": "Transform (SE core type); same element as ecl::dummy::TransformRequestsSingletonComponent (Dummy.h)",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Transform>",
+      "source": "inferred",
+      "evidence": "ecl::crowds::CrowdCharacterSystem::Update (EoCClient.dll+0x68AB70) fetches the singleton typed by the Toolkit as HashMap<ls::ID<ecs::EntityHandleTraits>, ls::Transform>, clears it (buckets memset 0xFF, key count +0x2C) and passes it to ProcessChangeRequests. ecl::transform::GameplayTransformRequestSystem::Update (EoCClient.dll+0x548D10, WorldView includes crowds::TransformRequestsComponent const) copies maps of this shape: keys at +0x20 (stride 8), values at +0x30 stride 0x28 (ls::Transform, emplaced into HashMap<ID, ls::Transform>). macOS default ctor: 64 zero bytes. Live (idle): all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

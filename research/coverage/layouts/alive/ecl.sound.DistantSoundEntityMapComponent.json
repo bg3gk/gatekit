@@ -1,0 +1,23 @@
+{
+  "component": "ecl::sound::DistantSoundEntityMapComponent",
+  "ext_name": "ClientSoundDistantSoundEntityMap",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashMap<Guid, EntityHandle>",
+      "source": "inferred",
+      "evidence": "ecl::sound::DistantSoundSystem::ProcessSoundsActivated / ProcessDistantSoundInfoAdded (EoCClient.dll+0xE81A40 / +0xE7FC20) hash a Guid (ls::Guid::GetHash, bucket count +8) and read an entity handle value which is then checked alive; the Guid is DistantSoundInfo.EntityUUID. Live bucket count 0xD."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "live check 2026-11-12: the raw bytes fit, but entity.<Name> gave nil on a holder captured in the same tick - the declaration (one-frame or not, the storage) needs a look before it ships"
+}

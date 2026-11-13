@@ -1,0 +1,55 @@
+{
+  "component": "ecl::spell_preview::SurfaceTilesComponent",
+  "ext_name": "ClientSpellPreviewSurfaceTiles",
+  "size": 16,
+  "seen": true,
+  "summary": "AI-grid tiles that the previewed spell would cover with a surface. Born live in situation spells-3 (spell casts) together with the other spell_preview components; added by bg3.exe+0x1EEAE10 from the spell preview update bg3.exe+0x1ED9230 (ecl::spell_preview::PreviewSystem); read by ecl::CharacterTask_Spell::GetPreviewTiles.",
+  "structs": [
+    {
+      "name": "SpellPreviewSurfaceTilesTilePos",
+      "size": 8,
+      "fields": [
+        {
+          "name": "X",
+          "offset": 0,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "eoc::AiTilePos (named by the Toolkit return type) has the layout of SE CommonTypes.h AiTilePos: int16 X, int16 Y, int32 SubgridId."
+        },
+        {
+          "name": "Y",
+          "offset": 2,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "as X"
+        },
+        {
+          "name": "SubgridId",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "as X"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Tiles",
+      "offset": 0,
+      "type": "Array<SpellPreviewSurfaceTilesTilePos>",
+      "source": "inferred",
+      "evidence": "EoCClient.dll ecl::CharacterTask_Spell::GetPreviewTiles returns ls::Optional<ls::DynamicArray<eoc::AiTilePos> const&>; the macOS version takes it straight from GetComponent<ecl::spell_preview::SurfaceTilesComponent>, and bg3.exe+0x1FB72C0 returns the component pointer itself (empty when size at +0xC is 0). Creator bg3.exe+0x1EEAE10 allocates 0x10 and zeroes it; destructor bg3.exe+0x686280 frees the buffer at +0. Element = eoc::AiTilePos (8 bytes); declared here as an own struct with the same layout. Live: one empty instance."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Element stride not seen in a loop; taken from the eoc::AiTilePos type (8 bytes in SE)."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

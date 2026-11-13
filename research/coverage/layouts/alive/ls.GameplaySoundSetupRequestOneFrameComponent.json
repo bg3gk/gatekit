@@ -1,0 +1,51 @@
+{
+  "component": "ls::GameplaySoundSetupRequestOneFrameComponent",
+  "ext_name": "GameplaySoundSetupRequestOneFrame",
+  "size": 64,
+  "seen": true,
+  "summary": "One-frame request that sets up an entity's sound component: the sound resources to load and an optional ls::GameplaySoundSetupRequestOneFrameComponent::SoundComponentSetupInfo (name from an assert). Born with dialogues, traders, locks, scenes.",
+  "fields": [
+    {
+      "name": "Sounds",
+      "offset": 0,
+      "type": "HashSet<FixedString>",
+      "source": "inferred",
+      "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessSetupRequests (GameEngine.dll+0x89B840) copies +0..+0x2F (three arrays, 4-byte keys) into GameplayLoadedSoundsComponent::SoundInfo.Sounds (a HashSet<FixedString> per ProcessLoadRequests / LoadSounds). Live: prime bucket counts, 2 keys."
+    },
+    {
+      "name": "Duration",
+      "offset": 48,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Optional<SoundComponentSetupInfo> value, first member: copied to ls::SoundComponent +0x14 (Script Extender name Duration); when the optional is empty SoundComponent+0x14 is set to -1.0. Live 60..200 or -1."
+    },
+    {
+      "name": "Effect",
+      "offset": 52,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Second member of SoundComponentSetupInfo: assigned to ls::SoundComponent +0x18 (SE name Effect)."
+    },
+    {
+      "name": "HasSetupInfo",
+      "offset": 56,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Has-value byte of the Optional ('Trying to access value of ls::Optional<struct ls::GameplaySoundSetupRequestOneFrameComponent::SoundComponentSetupInfo>' assert when 0). Live always 1."
+    },
+    {
+      "name": "_Pad39",
+      "offset": 57,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "Optional tail padding (live 0x39..0x3F garbage)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "37 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

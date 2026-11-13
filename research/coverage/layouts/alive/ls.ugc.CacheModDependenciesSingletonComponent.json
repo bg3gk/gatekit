@@ -1,0 +1,113 @@
+{
+  "component": "ls::ugc::CacheModDependenciesSingletonComponent",
+  "ext_name": "UgcCacheModDependenciesSingleton",
+  "size": 80,
+  "seen": true,
+  "summary": "Client cache of mod.io dependency lists, written by ls::ugc::ModDependencyCachedRequestSystem::Update: HashMap<ls::ugc::ModItemDependenciesInfoID, DynamicArray<net::UGCModDependency>> plus a DynamicArray<ModItemDependenciesInfoID> of pending ids at +0x40 (macOS destructor and Update). The map is written out member by member because its key is a struct (the build forbids own structs as hash keys). Live: idle, all zero.",
+  "structs": [
+    {
+      "name": "UgcCacheModDependenciesId",
+      "size": 16,
+      "fields": [
+        {
+          "name": "ModId",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "ls::ugc::ModItemDependenciesInfoID: Windows bg3.exe+0x3BE4540 compares ids as '(*a == *b) && ((char)a[1] == (char)b[1])' (a qword and the byte at +8) and hashes them as '*id % bucket count'; keys/elements have a 16-byte stride. macOS ModDependencyCachedRequestSystemHelper::RequestItemDependencies(unsigned long long, bool): the 64-bit mod item id."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "The byte compared at +8 (Windows bg3.exe+0x3BE4540): the bool argument of RequestItemDependencies(unsigned long long, bool) on macOS; meaning not established."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to 16 (never compared)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "HashKeys",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Bucket table of the ls::HashMap<ls::ugc::ModItemDependenciesInfoID, ls::ugc::ModItemDependenciesInfoResponse> (macOS ~HashMap of that type); creator bg3.exe+0x3BE5780 zeroes 0x50 bytes; destructor bg3.exe+0x3B79D60 ends with the plain-key HashSet destructor bg3.exe+0x582AD0 on +0. Written member by member because the key is a struct."
+    },
+    {
+      "name": "HashKeysSize",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Bucket count (Windows bg3.exe+0x3BE4540: 'id % (int)map[1]')."
+    },
+    {
+      "name": "_Pad0C",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "NextIds",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "Hash chain array of the ls::HashTable (int32 links)."
+    },
+    {
+      "name": "Keys",
+      "offset": 32,
+      "type": "Array<UgcCacheModDependenciesId>",
+      "source": "inferred",
+      "evidence": "Key array: Windows bg3.exe+0x3BE4540 compares '*(map[4] + idx*0x10)' and the byte at +8 with an id, key count at +0x2C."
+    },
+    {
+      "name": "Values",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Value storage, one ls::ugc::ModItemDependenciesInfoResponse per key, 0x20-byte stride (Windows): destructor helper bg3.exe+0x3B7D760 clears the DynamicArray at value+8 of every value (i < key count +0x2C, stride 0x20) with bg3.exe+0x38BB690; bg3.exe+0x3BE4540 / +0x3BE5100 copy a value as qword +0, DynamicArray +8, byte +0x18. Response layout (Windows): +0 uint64 (not named), +8 DynamicArray<net::UGCModDependency> (0x50-byte elements: uint64 + three 24-byte STDStrings, element destructor bg3.exe+0x38BC7A0; macOS AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>), +0x18 bool, 7 bytes padding. Spelled out as raw parts (a struct key forbids the HashMap form)."
+    },
+    {
+      "name": "ValuesCapacity",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Capacity of the value storage."
+    },
+    {
+      "name": "_Pad3C",
+      "offset": 60,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "RecentIds",
+      "offset": 64,
+      "type": "Array<UgcCacheModDependenciesId>",
+      "source": "inferred",
+      "evidence": "Windows bg3.exe+0x3BE4540: after a response is cached, the id is looked up in the 16-byte-stride array at +0x40 (count +0x4C, compares qword and byte) and moved (bg3.exe+0x3BE5650) or appended (bg3.exe+0x3BE5480); then 'while (count > 15)' the array's entry is popped and removed from the map - an LRU list that caps the cache at 16 entries. Destructor frees it as a plain array (bg3.exe+0x5BD630)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of ModItemDependenciesInfoID +8 (bool) and of the response's +0 qword / +0x18 byte (value struct is spelled as raw parts anyway).",
+    "Which end of RecentIds is the oldest entry."
+  ],
+  "minutes": 12,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Settled on Windows: bg3.exe+0x3BE4540 shows the 16-byte key (qword + byte compared, qword hashed), the 0x20-byte values and the +0x40 LRU array capped at 16; the destructor bg3.exe+0x3B79D60/+0x3B7D760 confirms the value stride. macOS's 16-byte value guess was wrong: the value is a 0x20-byte ModItemDependenciesInfoResponse.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

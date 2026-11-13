@@ -1,0 +1,26 @@
+{
+  "component": "ecl::character_creation::PlayerCameraChangeDelayComponent",
+  "ext_name": "ClientCCPlayerCameraChangeDelay",
+  "size": 2,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Character-creation camera switch postponed for one player: bg3.exe+0x1D12C00 creates it on a new entity with the player id.",
+  "fields": [
+    {
+      "name": "PlayerId",
+      "offset": 0,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D16D40 allocates 2 bytes and writes 0; bg3.exe+0x1D12C00 stores its short parameter (the same value it appends to a short array and uses as a hash key against the player table) as a 2-byte store."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "No reader was read; PlayerId from the writer only."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

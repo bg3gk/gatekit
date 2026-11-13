@@ -1,0 +1,335 @@
+{
+  "component": "ecl::CombatTimelineDataComponent",
+  "ext_name": "ClientCombatTimelineData",
+  "size": 352,
+  "structs": [
+    {
+      "name": "CombatTimelineShotEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t[13]",
+          "source": "unknown",
+          "evidence": "Element of the array at CombatTimelineShot +0x68; bg3.exe+0x1F21DB0 walks it with stride 0x10 and reads only the byte at +0xD."
+        },
+        {
+          "name": "field_D",
+          "offset": 13,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1F21DB0: 'if (entry[0xD] != 0)' starts the timer at component +0x13C from +0x150."
+        },
+        {
+          "name": "_PadE",
+          "offset": 14,
+          "type": "uint8_t[2]",
+          "source": "unknown",
+          "evidence": "rest of the 16-byte stride"
+        }
+      ]
+    },
+    {
+      "name": "CombatTimelineShot",
+      "size": 120,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t[104]",
+          "source": "unknown",
+          "evidence": "Value of the map at component +0x08: stride 0x78 in the map destructor bg3.exe+0x6D0A30; nothing in the first 0x68 bytes has a destructor. Not read member by member."
+        },
+        {
+          "name": "Entries",
+          "offset": 104,
+          "type": "Array<CombatTimelineShotEntry>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x6D0A30 runs the array destructor FUN_1405946c0 on value +0x68; bg3.exe+0x1F21DB0 iterates 'ptr = value[0x68]; end = ptr + (int)value[0x74] * 0x10'."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D78AF0 (add helper): '*comp = entity' after the constructor bg3.exe+0x1C80470 (null handle). Probe: live handle 0xA6 (the next entity after the one in ecl::CombatTimelineCreationComponent)."
+    },
+    {
+      "name": "Shots",
+      "offset": 8,
+      "type": "HashMap<Guid, CombatTimelineShot>",
+      "source": "inferred",
+      "evidence": "Constructor zeroes a 64-byte map at 0x08 (4-byte writes at 0x24 and 0x34 = the two sizes). Destructor bg3.exe+0x6A6420 -> 0x6D0A30(comp + 8): values at +0x30 with stride 0x78, then the key set. bg3.exe+0x1F21DB0 looks a value up with FUN_141d76dd0(comp + 8) using the Guid at 0x48 and passes '(comp + 8, comp + 0x48)' to FUN_141f95c40."
+    },
+    {
+      "name": "CurrentShot",
+      "offset": 72,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1F21DB0: 'if (qword 0x48 == 0 && qword 0x50 == 0)' pick a new one (FUN_141f221e0 / FUN_141f226b0), else use it as the key into Shots; also passed as a Guid to FUN_142009430. Constructor zeroes 16 bytes; no destructor."
+    },
+    {
+      "name": "Actors",
+      "offset": 88,
+      "type": "HashMap<Guid, EntityHandle>",
+      "source": "inferred",
+      "evidence": "Constructor zeroes a map at 0x58 (sizes at 0x74 / 0x84); destructor frees the value array at 0x88 without element destructors and the key set at 0x58. bg3.exe+0x1D56760 (ecl::TimelineSystem): keys = comp[0x78] walked as 16-byte Guids up to count comp[0x84], values = comp[0x88] walked as 8-byte entity handles; for each pair it creates a component on the value entity and stores the key Guid and the timeline Guid in it."
+    },
+    {
+      "name": "field_98",
+      "offset": 152,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Constructor zeroes a 48-byte set at 0x98 (sizes at 0xB4 / 0xC4); destructor calls the set destructor on comp + 0x98. Element type not established - EntityHandle assumed from the neighbours."
+    },
+    {
+      "name": "field_C8",
+      "offset": 200,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Constructor writes the null-handle constant DAT_146174970. Probe: null handle."
+    },
+    {
+      "name": "State",
+      "offset": 208,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Constructor writes 1 (16-bit write of 1 at 0xD0). bg3.exe+0x1F21DB0 (ecl::TimelinePostSystem) switches on it: 4 -> 5, 5 = running (timers), 6 = ...; bg3.exe+0x1D56760 sets 5 when it calls aspk::Timeline::Play. Probe: 1."
+    },
+    {
+      "name": "field_D1",
+      "offset": 209,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Constructor 0. Read by other systems: bg3.exe+0x170ED10 and bg3.exe+0x19DE370 fetch the component (FUN_141f9fbb0) only to test 'comp[0xD1] != 0' (the combat timeline is active/visible)."
+    },
+    {
+      "name": "_PadD2",
+      "offset": 210,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "alignment"
+    },
+    {
+      "name": "field_D8",
+      "offset": 216,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Constructor writes 0xFFC0000000000000. Probe: null handle."
+    },
+    {
+      "name": "field_E0",
+      "offset": 224,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Constructor writes one byte 5. Probe: 5."
+    },
+    {
+      "name": "_PadE1",
+      "offset": 225,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "alignment"
+    },
+    {
+      "name": "field_E8",
+      "offset": 232,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Constructor writes two 8-byte zeros (0xE8, 0xF0); typed as Guid by size and by the Guid neighbours, no reader found. Probe: zero."
+    },
+    {
+      "name": "field_F8",
+      "offset": 248,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Constructor -1; destructor bg3.exe+0x6A6420 DecRefs it; bg3.exe+0x1F221E0 hashes it (FUN_14412e1f0) and compares it with entries of a FixedString table."
+    },
+    {
+      "name": "field_FC",
+      "offset": 252,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Constructor writes 1 (16-bit write of 1 at 0xFC). Probe: 1."
+    },
+    {
+      "name": "field_FD",
+      "offset": 253,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "High byte of the same 16-bit write, 0."
+    },
+    {
+      "name": "_PadFE",
+      "offset": 254,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "alignment"
+    },
+    {
+      "name": "Timeline",
+      "offset": 256,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D56760 compares the two qwords at 0x100/0x108 with the Guid of a timeline request (16-byte compare) to find the component of a timeline. Probe: GUID-like bytes."
+    },
+    {
+      "name": "field_110",
+      "offset": 272,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Constructor writes 0xFFC0000000000000. Probe: live handle 0xA5 = the entity that carries ecl::CombatTimelineCreationComponent in the same probe (the creation request entity)."
+    },
+    {
+      "name": "field_118",
+      "offset": 280,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Constructor writes 0xFFC0000000000000. Probe: null handle."
+    },
+    {
+      "name": "field_120",
+      "offset": 288,
+      "type": "Array<uint64_t>",
+      "source": "inferred",
+      "evidence": "Constructor zeroes 16 bytes (pointer, capacity, size at 0x12C); destructor bg3.exe+0x6A6420 clears it (FUN_1405bd630) and frees the pointer at 0x120. Element type not established (uint64_t is a placeholder)."
+    },
+    {
+      "name": "field_130",
+      "offset": 304,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Constructor 0; bg3.exe+0x1F221E0 sets it to 1 on its success path."
+    },
+    {
+      "name": "field_131",
+      "offset": 305,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Constructor 0 (16-bit write at 0x130)."
+    },
+    {
+      "name": "field_132",
+      "offset": 306,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Constructor 0; bg3.exe+0x1F221E0 sets it to 1 together with field_130."
+    },
+    {
+      "name": "_Pad133",
+      "offset": 307,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "alignment"
+    },
+    {
+      "name": "field_134",
+      "offset": 308,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1F21DB0, state 6: 'x = comp[0x134] - deltaTime' - a countdown timer."
+    },
+    {
+      "name": "ChangeCameraTimer",
+      "offset": 312,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1F21DB0, state 5: decremented by the frame time while > 0; when it reaches 0 a new shot is chosen and it is reset from the float at 0x154."
+    },
+    {
+      "name": "ObstructionTimer",
+      "offset": 316,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1F21DB0, state 5: decremented while > 0; started from the float at 0x150 when a shot entry has its +0xD flag; cleared together with the bool at 0x140."
+    },
+    {
+      "name": "ObstructionTimerActive",
+      "offset": 320,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1F21DB0: set to 1 when ObstructionTimer is started, 0 when it is cleared."
+    },
+    {
+      "name": "field_141",
+      "offset": 321,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1F21DB0, state 6: passed as a flag argument to FUN_14200c180."
+    },
+    {
+      "name": "_Pad142",
+      "offset": 322,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "alignment"
+    },
+    {
+      "name": "HoldTimeAfterEvent",
+      "offset": 324,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Constructor default 1.5. The six floats 0x144..0x15B are the six floats of Script Extender's CombatCameraParams (Timeline.h) copied per timeline; names follow that struct's order for the first three."
+    },
+    {
+      "name": "MaxSequenceTime",
+      "offset": 328,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Constructor default -1.0 (second CombatCameraParams float)."
+    },
+    {
+      "name": "ObstructionCheckRadius",
+      "offset": 332,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Constructor default 0.2 (third CombatCameraParams float)."
+    },
+    {
+      "name": "ObstructionBufferTime",
+      "offset": 336,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Constructor default 0. bg3.exe+0x1F21DB0 uses it as the start value of ObstructionTimer ('if (0 < comp[0x150]) comp[0x13C] = comp[0x150]')."
+    },
+    {
+      "name": "MinChangeCameraTime",
+      "offset": 340,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Constructor default 0.6. bg3.exe+0x1F21DB0 reloads ChangeCameraTimer from it after a camera change."
+    },
+    {
+      "name": "MinAngleDifferenceToChangeCamera",
+      "offset": 344,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Constructor default 0.1745 = 10 degrees in radians; the remaining CombatCameraParams float (MinAngleDegreesDifferenceToChangeCamera)."
+    },
+    {
+      "name": "_Pad15C",
+      "offset": 348,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "tail padding to the 8-byte alignment; probe 0"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "CombatTimelineShot: only its size (0x78) and the array at +0x68 are established; the first 0x68 bytes were not read. Names Shots / CurrentShot / Actors are descriptive.",
+    "Element types of the set at 0x98 and of the array at 0x120 are not established.",
+    "The order of the last three CombatCameraParams floats here (ObstructionBufferTime, MinChangeCameraTime, MinAngle...) follows their use in bg3.exe+0x1F21DB0 and differs from the order Script Extender declares in CombatCameraParams (MinChangeCameraTime, MinAngleDegrees..., ObstructionBufferTime) - one of the two is wrong.",
+    "Roles of the entity handles at 0xC8 / 0xD8 / 0x110 / 0x118 and of field_E0 (5), field_E8, field_F8."
+  ],
+  "minutes": 22,
+  "functions_read": 11,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: client-only, not replicated, not saved, no Toolkit accessors; no field could be named beyond the first pass."
+}

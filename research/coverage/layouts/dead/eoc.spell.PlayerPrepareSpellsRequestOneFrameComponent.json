@@ -1,0 +1,92 @@
+{
+  "component": "eoc::spell::PlayerPrepareSpellsRequestOneFrameComponent",
+  "ext_name": "SpellPlayerPrepareSpellsRequest",
+  "size": 24,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server request to prepare a list of spells for a player character, drained by esv::SpellSystem::ProcessPlayerPrepares (bg3.exe+0x338B770; Toolkit EoCServer.dll), which calls esv::SpellSystem::PlayerPrepareSpell for every element (eoc::spell::MetaId, 0x30 bytes) and, when the flag is set, first gathers and unprepares the character's current prepared spells. Also written by esv::party_preset::System::SystemLoad (macOS lambda $_4). Registered as an ordinary component despite the name. Never seen alive. Registry total 24 (server row).",
+  "structs": [
+    {
+      "name": "PlayerPrepareSpellsRequestMetaId",
+      "size": 48,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Array destructor bg3.exe+0x67D5E0 DecRefs `*(int*)(elem + 0)` with stride 0x30. SE SpellMetaId.OriginatorPrototype (Base\\ExposedTypes.h)."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId _Pad."
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.SourceType (SpellSourceType, 1 byte)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment of the Guid at +0x10."
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.Source."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.ProgressionSource; total 0x30 = the stride used by the destructor and by ProcessPlayerPrepares (`lVar17 += 0x30`)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Spells",
+      "offset": 0,
+      "type": "Array<PlayerPrepareSpellsRequestMetaId>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2DC20C0: AllocRaw(0x18), zeroes +0, +8, +0xC (Array). Storage destructor bg3.exe+0xCAA540 -> FUN_14067D5E0 (stride 0x30, FixedString at +0). Toolkit esv::SpellSystem::ProcessPlayerPrepares: `for (e = *p; e != *p + size(+0xC) * 0x30; e += 0x30) PlayerPrepareSpell(this, entity, e)`; the game copy bg3.exe+0x338B770 lines 656-660 does the same through bg3.exe+0x3380DF0."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator writes `*(byte*)(p + 0x10) = 1` (default true). Toolkit ProcessPlayerPrepares line 194: `if ((char)p[2] != 0)` -> collects the character's current prepares (FUN_1811fc130) and unprepares them before preparing the listed spells - looks like 'replace the prepared set'; name not established."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding to 0x18."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the flag at +0x10 (default 1) is inferred from one branch only.",
+    "Element members +8/+0x10/+0x20 come from SE's SpellMetaId (matching stride and FixedString at +0); the Toolkit signature names the element eoc::spell::MetaId.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

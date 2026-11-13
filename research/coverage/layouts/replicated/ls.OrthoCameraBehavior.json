@@ -1,0 +1,75 @@
+{
+  "component": "ls::OrthoCameraBehavior",
+  "ext_name": "OrthoCameraBehavior",
+  "size": 40,
+  "fields": [
+    {
+      "name": "Size",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Not replicated. Toolkit GameEngine.dll constructor (+0x7D50C0): 0x41A00000 (20.0). ls::CameraSystem::UpdateOrthoCameraBehavior scales it by the zoom input and passes it to CameraComponent::SetOrtho as the half-width (height = size / aspect ratio)."
+    },
+    {
+      "name": "Direction",
+      "offset": 4,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "operator= (+0x264970) copies 8 bytes at +4 and 4 at +0xC; SetOrthoType writes (0,-1,0), (0,0,1)... per type and adds it to the camera position to get the look-at target."
+    },
+    {
+      "name": "MoveXInput",
+      "offset": 16,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "OnInputOrthoCameraBehavior events 0x15/0x16; Update multiplies it by Speed and frame time and moves the camera along X (or Y, depending on Direction)."
+    },
+    {
+      "name": "MoveZInput",
+      "offset": 20,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "OnInput events 0x17/0x18; Update moves along Z (or Y)."
+    },
+    {
+      "name": "ZoomInput",
+      "offset": 24,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "OnInput events 0x1B/0x1C; Update: if non-zero, Size *= ZoomInput * 0.4 + 1.8."
+    },
+    {
+      "name": "field_1C",
+      "offset": 28,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Constructor 0; copied by operator=; not read by the update/input functions opened."
+    },
+    {
+      "name": "Speed",
+      "offset": 32,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Constructor 0x41200000 (10.0); Update multiplies the move inputs by it and by GameTime+8."
+    },
+    {
+      "name": "OrthoType",
+      "offset": 36,
+      "type": "uint32_t",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor ls::OrthoCameraBehavior::GetOrthoType returns enum EOrthoType at +0x24; SetOrthoType stores 0, 1 or 2 (enum not declared in Script Extender; 4 bytes)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Client-only; registry totalSize 40 on the client row only. Offsets/widths from the Toolkit class code and the macOS default constructor (w at +0, zero at +4/+0xC/+0x14/+0x1C, x at +0x20).",
+    "field_1C meaning; OrthoType as an enum (ls::OrthoCameraBehavior::EOrthoType) not declared yet."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

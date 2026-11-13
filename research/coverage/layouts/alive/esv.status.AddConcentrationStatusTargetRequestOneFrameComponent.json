@@ -1,0 +1,119 @@
+{
+  "component": "esv::status::AddConcentrationStatusTargetRequestOneFrameComponent",
+  "ext_name": "ServerStatusAddConcentrationStatusTargetRequest",
+  "size": 96,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "Request to add a status entity as a concentration target, raised by the server status execution code (bg3.exe+0x2C4FE90, weak match esv::status::ExecutionSystem::UpdateStatusStates; Toolkit users esv::status::ExecutionSystem::ProcessRequests / ProcessStatusAddition) for each status-add request whose flag (+0x58 of the 0x60-byte request) asks for it; consumed by the concentration system. Seen.py context: born in 'spells-2' (concentration spells) and charm dialogues.",
+  "structs": [
+    {
+      "name": "AddConcentrationTargetSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Equals SE SpellId (Base/ExposedTypes.h, SpellMetaId + Prototype). Creator default 0xFFFFFFFF."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId _Pad"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SpellSourceType (1-byte enum); creator default 0x17 (Sentinel). Live: 5 / 9."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.Source; live zero"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.ProgressionSource; live zero"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellId.Prototype; creator default 0xFFFFFFFF"
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x2C5B420 defaults to null handle; writer bg3.exe+0x2C4FE90 copies the status-add request's handle at request+0x10. Live: entity handles."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Default null handle; writer stores the entity being processed (lVar26). Live: entity handles, all distinct (likely the new status entity)."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Default null handle; writer copies +0xA8 of the status object for the request. Live: entity handles (same set as field_0)."
+    },
+    {
+      "name": "Spell",
+      "offset": 24,
+      "type": "AddConcentrationTargetSpellId",
+      "source": "inferred",
+      "evidence": "Writer calls eoc::spell::SpellId::operator=(component+0x18, request+0x20). Creator defaults: FixedString -1 at +0x18, byte 0x17 at +0x20, zeros, FixedString -1 at +0x48. Struct equals SE SpellId."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Writer copies 16 bytes from status object +0x140..+0x14F; creator zeroes. Live: random 16-byte values (a Guid, probably the spell-cast source uuid)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Roles of the three entity handles (concentration caster / target / status) not established.",
+    "Identity of the Guid at +0x50."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: one-frame, not saved or replicated."
+}

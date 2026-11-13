@@ -1,0 +1,26 @@
+{
+  "component": "ecl::CombatTimelineDiscardedOneFrameComponent",
+  "ext_name": "ClientCombatTimelineDiscarded",
+  "size": 8,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D73F70: ComponentFrameStorageAllocRaw(storage, 8, ...) then *component = 0xFFC0000000000000 (null EntityHandle). bg3.exe+0x1D6D790 (ecl::TimelineSystem) walks an array of 8-byte elements in its frame data (+0x380, count +0x38C), creates a new event entity for each (FUN_14401AFF0), adds this component and stores the element: '*component = *element'. The macOS index lists ecl::camera::CombatTargetSystem::Update among the readers. Name inferred: the discarded combat timeline's entity."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the handle designates (the discarded combat timeline's entity is assumed); the array at frame data +0x380 was not traced to its writer.",
+    "Never alive in the captures."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "declared",
+  "second_pass": "Settled on Windows: the creator bg3.exe+0x1D73F70 allocates 8 bytes and writes the null EntityHandle, and bg3.exe+0x1D6D790 copies one 8-byte array element into it per new event entity.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

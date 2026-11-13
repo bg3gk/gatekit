@@ -1,0 +1,26 @@
+{
+  "component": "ecl::ping::TargetingSingletonComponent",
+  "ext_name": "ClientPingTargetingSingleton",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "TargetingPlayers",
+      "offset": 0,
+      "type": "HashSet<int16_t>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x18A43C0 allocates 0x30 bytes; destructor is thunk to bg3.exe+0x582AD0 (the generic HashSet destructor). Toolkit ecl::ping::PingSystem::ProcessTargetingRequests (EoCClient.dll+0x695480) reads the singleton's key count at +0x2C and walks its keys at +0x20 with stride 2 (player ids, short), copying them into a system set. macOS: (anonymous)::IsInactiveInSplitscreenFullscreenTurn reads it. Live: empty."
+    }
+  ],
+  "confidence": "high",
+  "second_pass": "Confirmed on Windows: bg3.exe+0x18A2760 (PingSystem targeting step, called from the per-frame update bg3.exe+0x18A23E0) takes the singleton from 0x30-byte storage, copies its keys (+0x20, 2-byte stride, count +0x2C) into a system array and looks short ids up by (longlong)short % bucket count (+8) with 2-byte key compares - a HashSet<int16_t>.",
+  "open_questions": [
+    "Key meaning (players currently in ping-targeting mode) inferred from LEGACY_RequestStartTarget(short const&)/LEGACY_RequestCancelTarget(short const&)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

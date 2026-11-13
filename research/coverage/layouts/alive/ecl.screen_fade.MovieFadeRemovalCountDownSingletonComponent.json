@@ -1,0 +1,23 @@
+{
+  "component": "ecl::screen_fade::MovieFadeRemovalCountDownSingletonComponent",
+  "ext_name": "ClientScreenFadeMovieFadeRemovalCountDownSingleton",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Countdowns",
+      "offset": 0,
+      "type": "HashMap<Guid, float>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x19152D0 (0x40); destructor bg3.exe+0x5C4870 (trivial values + key set). Toolkit ecl::screen_fade::MovieSystem::ProcessCountdownRequest (EoCClient.dll+0x7F1990, MovieFadeRemovalCountDownSingletonComponent&) gets-or-adds by the fade Guid (taken from MovieFadeMovieToGUID or from a FrameData entry +8) and writes 10.0f (0x41200000) to the returned value. Live: empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

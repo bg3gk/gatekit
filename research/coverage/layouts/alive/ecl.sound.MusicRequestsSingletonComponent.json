@@ -1,0 +1,97 @@
+{
+  "component": "ecl::sound::MusicRequestsSingletonComponent",
+  "ext_name": "ClientSoundMusicRequestsSingleton",
+  "size": 24,
+  "seen": true,
+  "structs": [
+    {
+      "name": "MusicRequestsEntry",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Game name of the element: ecl::sound::MusicRequest (macOS DynamicArray<ecl::sound::MusicRequest>; IndexedStorage<ecl::sound::MusicRequest> in PrioritizeMusicRequests, stride 0x30). PrioritizeMusicRequests (EoCClient.dll+0xE05160) builds requests with +0 = 0xFFC0000000000000 (null entity handle) and copies 8 bytes; positioned (3D) requests carry an emitter."
+        },
+        {
+          "name": "Event",
+          "offset": 8,
+          "type": "uint8_t[24]",
+          "source": "inferred",
+          "evidence": "An ls::STDString (24 bytes, = Script Extender STDString): PrioritizeMusicRequests copy-constructs STDString at +8; MusicManager::ProcessMusicEventRequests destroys STDString at element*0x30+8. Declared as bytes because STDString is not in the allowed primitive list."
+        },
+        {
+          "name": "Context",
+          "offset": 32,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "PrioritizeMusicRequests reads +0x20 as the music event context (ecl::sound::EMusicEventContext; HashMap<EMusicEventContext, MusicRequest> exists on macOS): < 5 non-diegetic, 5 diegetic (must be 3D), 6 volume stinger, 7 volume state trigger; default 7."
+        },
+        {
+          "name": "field_24",
+          "offset": 36,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "Default 0xBF800000 (-1.0) in PrioritizeMusicRequests; copied with the request. Meaning unknown (seek / fade time?)."
+        },
+        {
+          "name": "IsStart",
+          "offset": 40,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "PrioritizeMusicRequests asserts \"There should be no ending events for music volume stingers/state triggers\" when byte +0x28 != 1; default 1."
+        },
+        {
+          "name": "Is3D",
+          "offset": 41,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "PrioritizeMusicRequests asserts \"Found 3D sound for non-diegetic music request\" when byte +0x29 != 0 for context < 5, and \"diegetic sound but it isn't 3D\" when != 1 for context 5."
+        },
+        {
+          "name": "Player",
+          "offset": 42,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "PrioritizeMusicRequests uses the short at +0x2A as the key into MusicStateSingletonComponent's per-player hash map (0 replaced by 1). Game type is short."
+        },
+        {
+          "name": "_Pad2C",
+          "offset": 44,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Stride 0x30."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<MusicRequestsEntry>",
+      "source": "inferred",
+      "evidence": "MusicPrioritySystem::PrioritizeMusicRequests gets this singleton (FUN_180e02e00) and copies its Array at +0 (capacity +8, size +0xC, stride 0x30) into a local request list; ecl::MusicManager::ProcessMusicEventRequests (writer per macOS) manipulates elements with stride 0x30. Live: capacity 2-4, size 0."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Not touched by the functions read; macOS default zeroes it (stp xzr, xzr, [x23, #8]). Live: 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_10 (8 bytes) not found in any reader/writer read.",
+    "MusicRequest +0x24 float meaning.",
+    "Event is an ls::STDString (declared as 24 bytes)."
+  ],
+  "minutes": 10,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

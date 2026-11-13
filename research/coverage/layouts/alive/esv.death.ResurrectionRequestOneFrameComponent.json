@@ -1,0 +1,84 @@
+{
+  "component": "esv::death::ResurrectionRequestOneFrameComponent",
+  "ext_name": "ServerDeathResurrectionRequest",
+  "size": 24,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ResurrectionRequestData",
+      "size": 12,
+      "fields": [
+        {
+          "name": "Animation",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Equals Script Extender bg3se::death::ResurrectionData::Animation (Components/Death.h). Default \"resurrect\" (Toolkit ctor EoCServer.dll+0x3B7DF0: FixedString(strresurrect)); DeathSystem::ProcessResurrectionRequests (EoCServer.dll+0xCB0670) keeps the first non-default one; bg3.exe destructor bg3.exe+0x69E920 DecRefs it at component+8."
+        },
+        {
+          "name": "HealthPercentage",
+          "offset": 4,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "SE ResurrectionData::HealthPercentage; default 0.1 (0x3DCCCCCD) in the Toolkit ctor; ProcessResurrectionRequests keeps the larger of two requests. Live 1.0."
+        },
+        {
+          "name": "IsResurrected",
+          "offset": 8,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE ResurrectionData::IsResurrected; ctor writes uint16 1 at component+0x10 (this byte 1); ProcessResurrectionRequests ORs it into the merged entry."
+        },
+        {
+          "name": "Heal",
+          "offset": 9,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE ResurrectionData::Heal; ProcessResurrectionRequests sets component+0x11 = 1 and copies it; ExecuteResurrection (EoCServer.dll+0xCA9FF0) tests entry+9."
+        },
+        {
+          "name": "_Pad10",
+          "offset": 10,
+          "type": "uint8_t[2]",
+          "source": "unknown",
+          "evidence": "Struct padding to 4-byte alignment (12-byte copy in ProcessResurrectionRequests)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Toolkit ctor EoCServer.dll+0x3B7DF0 writes 0xffc0000000000000 (null handle); ProcessResurrectionRequests (EoCServer.dll+0xCB0670) checks IsEntityAlive on it and uses it as the key of the merged request map (the request lives on its own entity, destroyed after processing). Live: entity handles (0x0180000100003D18...). Game name: member 0 (m_Target) of savegame model ls::model::game::death::v0::ResurrectionRequestOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x51236C0): the handle at component +0 is remapped into an ls::model::core::v0::EntityId and becomes model member 0.",
+      "legacy": "Entity"
+    },
+    {
+      "name": "Data",
+      "offset": 8,
+      "type": "ResurrectionRequestData",
+      "source": "game",
+      "evidence": "12 bytes at +8..+0x14 copied as one unit {FixedString, float, byte, byte} into a 0xC-stride map value (EoCServer.dll+0xCB0670) and from there into esv::death::ResurrectedEventOneFrameComponent (SE: bg3se::death::ResurrectionData Resurrect) - same struct as SE ResurrectionData. Game name: member 1 (m_Data) of savegame model ls::model::game::death::v0::ResurrectionRequestOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x51236C0): component +8 (FixedString), +0xC (float), +0x10, +0x11 (bytes) are written into an ls::model::game::death::v0::ResurrectionData that becomes model member 1.",
+      "legacy": "Resurrect"
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "Not initialised by the Toolkit or macOS default ctor (macOS stores end at +0x10) and never read; live shows garbage (20.0f / 0xFFFFFFFF) - alignment padding to 8."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Bytes 0x12..0x17 hold non-zero garbage live; assumed padding."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "Both model members matched (Target +0, Data +8) by the macOS Save; the nested ResurrectionData members were not renamed (their model has no member names in this batch)."
+}

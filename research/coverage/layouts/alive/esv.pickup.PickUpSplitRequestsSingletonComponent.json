@@ -1,0 +1,63 @@
+{
+  "component": "esv::pickup::PickUpSplitRequestsSingletonComponent",
+  "ext_name": "ServerPickupPickUpSplitRequests",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: stack-split requests made by pick-ups (pick up part of a stack), filled by esv::pickup::PickUpSplitRequestSystem and consumed by esv::inventory::StackSystem::ProcessPickUpSplitRequests. Same element as esv::drop::SplitRequestSingletonComponent. Seen.py context: idle level.",
+  "structs": [
+    {
+      "name": "PickUpSplitRequest",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Item",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xF4CD00 StackSystem::ProcessPickUpSplitRequests copies element +0 (qword) to StackSystem::DirectRequest +0 - the stack entity to split. Element is esv::inventory_transfer::SplitRequest (see the alive layout esv.drop.SplitRequestSingletonComponent, which declares the same members). Windows: the per-frame update of esv::pickup::PickUpSplitRequestSystem (bg3.exe+0x35C1530, lines ~236-262) appends 0x20-byte elements to the request array (growth FUN_1406DA440, index*0x20): element+0 = the qword at +8 of the pick-up request (the stack entity)."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "Four dwords at +8..+0x18 copied into DirectRequest +8..+0x18; a ls::Guid in the drop split request analysis (request id). Windows: the per-frame update of esv::pickup::PickUpSplitRequestSystem (bg3.exe+0x35C1530, lines ~236-262) appends 0x20-byte elements to the request array (growth FUN_1406DA440, index*0x20): element+8..+0x17 = 16 bytes taken from a second component of the same entity (two qwords)."
+        },
+        {
+          "name": "Amount",
+          "offset": 24,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Dword at +0x18 copied to DirectRequest +0x18 (the amount to split off). Windows: the per-frame update of esv::pickup::PickUpSplitRequestSystem (bg3.exe+0x35C1530, lines ~236-262) appends 0x20-byte elements to the request array (growth FUN_1406DA440, index*0x20): element+0x18 = the dword at +0x10 of the pick-up request (the requested amount; only when it is smaller than the stack's amount)."
+        },
+        {
+          "name": "_Pad1C",
+          "offset": 28,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x20 stride. Windows: the per-frame update of esv::pickup::PickUpSplitRequestSystem (bg3.exe+0x35C1530, lines ~236-262) appends 0x20-byte elements to the request array (growth FUN_1406DA440, index*0x20): element+0x1C = high half of a stack local that is never assigned: padding."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<PickUpSplitRequest>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xF4CD00 esv::inventory::StackSystem::ProcessPickUpSplitRequests gets the singleton (FUN_180f3a370) and iterates *(ptr) for size *(+0xC) with stride 0x20 (puVar11 += 4 qwords), appending ls::IndexedStorage<esv::inventory::StackSystem::DirectRequest>. Live (idle): all zero. Windows writer bg3.exe+0x35C1530 confirms the 0x20 stride; adder bg3.exe+0x35C2180 zeroes the array."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the 16 bytes at +8 identify (copied from a component with a 0x18-byte stride; a Guid by width)."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "The Windows writer (PickUpSplitRequestSystem per-frame update bg3.exe+0x35C1530) builds each 0x20-byte element as entity +0, 16 bytes +8, amount dword +0x18 and leaves +0x1C unwritten, matching the Toolkit reader; every offset and width is now established on Windows.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

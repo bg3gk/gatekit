@@ -1,0 +1,100 @@
+{
+  "component": "esv::hit::RedirectionTrackingComponent",
+  "ext_name": "ServerHitRedirectionTracking",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Kept by esv::hit::RedirectionSystem (Toolkit users ProcessTrackingRequests, FinalizeTrackingRequests, ProcessEntityDestruction, ProcessExecutionRequests): an Array of 32-byte tracking records per entity, rebuilt by bg3.exe+0x2EE5840 (removes the component when the list is empty, otherwise clears the array and copies the new records). Records hold two entity handles (the second resolved through esv::status::OwnershipComponent when a type byte is 3) and several flag bytes. Never seen alive. Registry total 16 (server row).",
+  "structs": [
+    {
+      "name": "RedirectionTrackingRecord",
+      "size": 32,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2EE5840: local record starts with local_d8 = 0xffc0000000000000 (null handle) at +0. Line 241 stores local_d8 = the entity of the request (local_e8 = *puVar13, line 149)."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "local uStack_d0 (+8): an entity handle, replaced by the owner from esv::status::OwnershipComponent when the source type byte equals 3, then checked alive. Lines 199-214: checked to be a live entity handle (generation compare in the entity table)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2EE5840 lines 231-234: the byte at +4 of the source record is stored here when it is neither 0 nor 0x0E; the record dword +0x10 is packed as CONCAT13(c5, c6, c7, c8), i.e. four separate bytes."
+        },
+        {
+          "name": "field_11",
+          "offset": 17,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2EE5840: zeroed (line 173), set to 1 together with field_10 (line 233) - the has-value flag of field_10."
+        },
+        {
+          "name": "field_12",
+          "offset": 18,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2EE5840 lines 236-239: the byte at +5 of the source record when neither 0 nor 0x0E."
+        },
+        {
+          "name": "field_13",
+          "offset": 19,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2EE5840: zeroed (line 174), set to 1 together with field_12 - the has-value flag of field_12."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2EE5840 line 242: `uStack_c4 = *puVar27` - the first 4 bytes of the source record; stored as the record dword +0x14."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2EE5840 line 207: low byte of the dword +0x18 = byte +6 of the source record, which the same function tests `!= 0` to decide whether the record is kept (line 229)."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Never written: the three upper bytes of the dword +0x18 keep their cleared value (line 176 `& 0xffffff00`) and the dword +0x1C (uStack_bc) is never assigned; record stride 0x20."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Records",
+      "offset": 0,
+      "type": "Array<RedirectionTrackingRecord>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2EE6530 (AllocRaw 0x10) zeroes +0, +8, +0xC (Array pattern); destructor thunk of bg3.exe+0x5946C0 frees the buffer (trivial elements). bg3.exe+0x2EE5840 lines 326-367 set size +0xC to 0, grow with FUN_1406da440 and copy 32-byte records `(size * 0x20 + *array)`."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meanings: two entity handles, two optional bytes (value + has flag, value 0 and 0x0E ignored - possibly an enum where 0x0E is 'none'), a 4-byte value and a bool. No names on the Windows side.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "status": "declared",
+  "second_pass": "Record members settled from the Windows builder bg3.exe+0x2EE5840, which assembles each 32-byte record as eight dwords (two handles, four packed bytes, the source's first dword, one byte) before copying it into the component's array; the upper 7 bytes are never written.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it",
+  "names_pass_2": "No game names: not saved, not replicated; nothing names the record members."
+}

@@ -1,0 +1,117 @@
+{
+  "component": "ecl::timeline::GlobalRunThothComponent",
+  "ext_name": "ClientTimelineGlobalRunThoth",
+  "size": 56,
+  "structs": [
+    {
+      "name": "TimelineThothRunRequest",
+      "size": 568,
+      "fields": [
+        {
+          "name": "Index",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x18A9610 renumbers the pending requests 0..n-1 by writing the loop counter at +0 of every 0x238-byte element; bg3.exe+0x18AC420 copies it into the result record."
+        },
+        {
+          "name": "Type",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x18AC420 uses the byte at +4 as the key of a HashMap<uint8_t, Array<0x68-byte rule>> (hash = value % size, keys compared as bytes)."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t[560]",
+          "source": "unknown",
+          "evidence": "NOT decoded. An object destroyed by bg3.exe+0x18856E0 starts at +8. Known inside it: +0x1E8 and +0x1F8 are two condition/tag blocks passed to a virtual call (slot 2 of the object at system + 0x58) and guarded by bool flags at +0x1F4 and +0x204 (bg3.exe+0x18AB4F0)."
+        }
+      ]
+    },
+    {
+      "name": "TimelineThothRunResult",
+      "size": 24,
+      "fields": [
+        {
+          "name": "RequestIndex",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x18A9610 copies it from +0x18 of the system's 0x20-byte match record, which bg3.exe+0x18AC420 fills with TimelineThothRunRequest::Index."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "Id",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "16 bytes copied from +0 of the match record = the first 16 bytes of the matching 0x68-byte rule (bg3.exe+0x18AC420); bg3.exe+0x18AC5A0 evaluates the rule's condition at +0x14."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TimelineThothRunRequest>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x18AD230 zeroes three arrays; destructor bg3.exe+0x18884B0 destroys elements of +0x00 and +0x10 with bg3.exe+0x1889320. bg3.exe+0x18A9610 (ecl::timeline::ArenaDecisionSystem update; registration bg3.exe+0x7466C0, callback bg3.exe+0x761A70) swaps the system's pending array (system + 0x70, stride 0x238) into +0x00 (bg3.exe+0x18ACBD0) and then walks +0x00 with stride 0x238, size at +0x0C."
+    },
+    {
+      "name": "PreviousRequests",
+      "offset": 16,
+      "type": "Array<TimelineThothRunRequest>",
+      "source": "inferred",
+      "evidence": "Same function: the second bg3.exe+0x18ACBD0 call swaps the array that was in +0x00 into +0x10 through a local; the old +0x10 contents are destroyed with stride 0x238."
+    },
+    {
+      "name": "Results",
+      "offset": 32,
+      "type": "Array<TimelineThothRunResult>",
+      "source": "inferred",
+      "evidence": "Same function: size at +0x2C reset to 0 every frame, then one 0x18-byte element appended (grow helper bg3.exe+0x5C4B00) per match record of the system (system + 0x80, stride 0x20, sorted first)."
+    },
+    {
+      "name": "Seed",
+      "offset": 48,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x18AD230 stores the result of rand() at +0x30 and the same value at +0x34. Probe: 0x2CD6 in both."
+    },
+    {
+      "name": "InitialSeed",
+      "offset": 52,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "See Seed; which of the two advances was not established (both equal in the probe)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "TimelineThothRunRequest is 0x238 bytes and only its first 5 bytes are decoded; field_8 is a placeholder (its bytes ARE read by the game). Expose the array as hidden or decode the element before using it.",
+    "Names Seed / InitialSeed: two copies of one rand() value; their separate roles are unknown.",
+    "What the Guid in the result identifies (the selected rule / combat-camera shot of the cinematic arena) was not established.",
+    "Probe: all three arrays null/empty outside combat."
+  ],
+  "minutes": 14,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

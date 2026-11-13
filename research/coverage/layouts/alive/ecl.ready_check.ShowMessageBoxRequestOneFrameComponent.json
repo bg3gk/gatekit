@@ -1,0 +1,111 @@
+{
+  "component": "ecl::ready_check::ShowMessageBoxRequestOneFrameComponent",
+  "ext_name": "ClientReadyCheckShowMessageBoxRequest",
+  "size": 32,
+  "seen": true,
+  "oneFrame": true,
+  "fields": [
+    {
+      "name": "MessageBoxType",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Filler bg3.exe+0x78C380 copies byte 0 of the request (source stride 0x20). gui::MessageBoxManager::OnShowMessageBoxRequested (macOS) starts with eoc::EMessageBoxType. Creator bg3.exe+0x78D360 zeroes +0 as a dword (covers +0..+3). Live 7."
+    },
+    {
+      "name": "field_1",
+      "offset": 1,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Filler bg3.exe+0x78C380 copies byte 1 of the request separately. Live 0."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "padding before the 4-byte-aligned TranslatedString; neither filler nor reader touches it"
+    },
+    {
+      "name": "TextHandle",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Start of an ls::TranslatedString (16 bytes, 4-byte aligned) at +4: creator bg3.exe+0x78D360 writes FixedString TranslatedStringRepository::s_HandleUnknown here; filler assigns +4..+0x13 with ls::TranslatedString::operator=. Split into its two RuntimeStringHandles only because the build requires 16-byte types at 8-aligned offsets. Live handle 0x22100F62."
+    },
+    {
+      "name": "TextVersion",
+      "offset": 8,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "RuntimeStringHandle.Version of the TranslatedString: creator writes 0 as a 16-bit store at +8. Live 1."
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "padding inside RuntimeStringHandle (FixedString + uint16_t, size 8)"
+    },
+    {
+      "name": "TextArgumentHandle",
+      "offset": 12,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "TranslatedString.ArgumentString.Handle: creator constructs a string handle at +0xC from DAT_1462D4AA8"
+    },
+    {
+      "name": "TextArgumentVersion",
+      "offset": 16,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "TranslatedString.ArgumentString.Version"
+    },
+    {
+      "name": "_Pad12",
+      "offset": 18,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "padding inside RuntimeStringHandle; the TranslatedString ends at +0x14"
+    },
+    {
+      "name": "MessageBoxId",
+      "offset": 20,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "Filler copies a 2-byte value at +0x14; creator zeroes +0x14 as a dword. OnShowMessageBoxRequested takes 'short const&' after the type. Live 1."
+    },
+    {
+      "name": "_Pad16",
+      "offset": 22,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "padding before the FixedString at +0x18"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator writes -1 (one 8-byte store over +0x18/+0x1C); filler assigns it as a FixedString with IncRef/DecRef. Live 0x4E800020."
+    },
+    {
+      "name": "field_1C",
+      "offset": 28,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "As +0x18 (filler bg3.exe+0x78C380 assigns +0x1C separately). Live 0x18601DF1 / 0x334020F1."
+    }
+  ],
+  "summary": "One-frame request of ecl::ready_check::UserSystem to show the ready-check message box (UserSystem::ShowMsgBoxRequest in a HashMap<EntityHandle, ...>); seen with level-swap teleporter / elevator use.",
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of field_1, field_18 and field_1C (OnShowMessageBoxRequested also takes eoc::EMessageBoxLocalId and two FixedStrings - probably these, not proven)",
+    "The TranslatedString at +4 is declared as its four parts; with an alignment rule that allows 4-aligned TranslatedString it should be one 'Text' field of type TranslatedString"
+  ],
+  "second_pass": "Creator bg3.exe+0x78D360 (0x20-byte alloc; dword 0 at +0, s_HandleUnknown at +4, uint16 0 at +8, handle ctor at +0xC, dword 0 at +0x14, qword -1 at +0x18) and filler bg3.exe+0x78C380 (bytes +0/+1, TranslatedString::operator= at +4, uint16 at +0x14, FixedStrings at +0x18/+0x1C) fix every offset and width; the 4-aligned TranslatedString is split into FixedString/uint16 parts to pass the build's 8-alignment rule.",
+  "minutes": 7,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

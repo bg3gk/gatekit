@@ -1,0 +1,70 @@
+{
+  "component": "esv::one_time_reward::RewardListComponent",
+  "ext_name": "ServerOneTimeRewardList",
+  "size": 16,
+  "seen": false,
+  "structs": [
+    {
+      "name": "OneTimeRewardListReward",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Template",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Toolkit FUN_1813ce3c0: inner element FixedString compared with the requested FixedString (`(int)elem == *(int*)param_2`)."
+        },
+        {
+          "name": "Amount",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "FUN_1813ce3c0: `if (elem+4 < amount) { elem+4 = amount; return amount - old; }` - the count already given."
+        }
+      ]
+    },
+    {
+      "name": "OneTimeRewardListRecord",
+      "size": 32,
+      "fields": [
+        {
+          "name": "RecordId",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "FUN_1813ce3c0: new element +0..+0xF = the 16-byte key param_1 (the key of the reward table being given); found with FUN_1813ce1a0 by that key. Element type esv::one_time_reward::RewardsPerRecord (CheckBoundary string)."
+        },
+        {
+          "name": "Rewards",
+          "offset": 16,
+          "type": "Array<OneTimeRewardListReward>",
+          "source": "inferred",
+          "evidence": "New element +0x10/+0x18 zeroed, then FUN_1813cd5c0(elem+0x10, {FixedString, amount}) appends; lookup iterates elem+0x10 with count at elem+0x1C and stride 8."
+        }
+      ]
+    }
+  ],
+  "summary": "Per-chest record of one-time rewards already handed out: created (empty) and updated by esv::one_time_reward::RewardSystem::GiveItems (Toolkit EoCServer.dll+0x13CE600; helper FUN_1813ce3c0), so each reward record's items are given only up to their amount once. A DynamicArray<esv::one_time_reward::RewardsPerRecord> (32-byte elements: a 16-byte record key and a DynamicArray of 8-byte (FixedString, count) entries). Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Records",
+      "offset": 0,
+      "type": "Array<OneTimeRewardListRecord>",
+      "source": "inferred",
+      "evidence": "Toolkit FUN_1813cd1d0 creates it with AllocRaw(0x10) zeroing qword +0, qword +8, dword +0xC (Array shape); FUN_1813ce3c0 treats it as `data = *p`, `size = *(int*)(p+0xC)`, stride 0x20, grows it with FUN_1813cf050."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "All offsets come from the Toolkit build (agrees with registry size 16); no bg3.exe reader was read.",
+    "RecordId being a Guid is inferred from its 16-byte width; member names inferred.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

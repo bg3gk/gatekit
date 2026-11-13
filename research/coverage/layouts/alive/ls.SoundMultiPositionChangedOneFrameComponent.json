@@ -1,0 +1,25 @@
+{
+  "component": "ls::SoundMultiPositionChangedOneFrameComponent",
+  "ext_name": "SoundMultiPositionChanged",
+  "size": 16,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event of ls::SoundTransformSystem (macOS names: ProcessTransformUpdates / ProcessSkeletonSoundObjects ...) carrying the new list of positions of a multi-position sound; same layout as ls::SoundMultiPositionComponent.",
+  "fields": [
+    {
+      "name": "Positions",
+      "offset": 0,
+      "type": "Array<glm::vec3>",
+      "source": "inferred",
+      "evidence": "Toolkit GameEngine.dll+0x68E640 exports ??0SoundMultiPositionChangedOneFrameComponent@ls@@QEAA@AEBV?$Span@VVector3f@@@1@@Z (built from a span of Vector3f) and GameEngine.dll+0x68E620 is the shared copy constructor with SoundMultiPositionComponent (whose ctor takes DynamicArray<Vector3f>). Live: +0 heap pointer, +8/+0xC equal counts 0..0x21 (capacity, size)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Game member name unknown (\"Positions\" is descriptive)."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

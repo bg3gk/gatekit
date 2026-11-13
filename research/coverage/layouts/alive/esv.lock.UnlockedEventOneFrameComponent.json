@@ -1,0 +1,25 @@
+{
+  "component": "esv::lock::UnlockedEventOneFrameComponent",
+  "ext_name": "ServerLockUnlockedEvent",
+  "size": 8,
+  "seen": true,
+  "summary": "Server one-frame event on a lock (door/chest) that was just unlocked. Written by esv::lock::LockSystem::FinalizeLockRequests (macOS index; bg3.exe helper 0x2D45320 called from 0x2D45B50). Seen.py context: locked:<chest/door> situations (unlocking with a key or by script).",
+  "fields": [
+    {
+      "name": "Key",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2D475D0 allocates 8 bytes, default null handle. bg3.exe+0x2D45320 takes a variant (index 0 = FixedString key id, index 1 = EntityHandle); the handle local starts as 0xffc0000000000000 and only for variant 1 is set to the variant's entity (the key item); after a successful unlock it calls 0x2D475D0 on the lock entity and writes that handle. Live (2 instances): one null, one valid handle - matches unlocking by key name vs key item."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Variant index 1 assumed to be the key item; could be the unlocking character."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

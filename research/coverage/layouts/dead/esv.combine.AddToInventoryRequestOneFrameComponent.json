@@ -1,0 +1,41 @@
+{
+  "component": "esv::combine::AddToInventoryRequestOneFrameComponent",
+  "ext_name": "ServerCombineAddToInventoryRequest",
+  "size": 56,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request of item combination (crafting): put the created items into an inventory. Filled in esv::combine::ExecutionSystem::FinalizeComponents (bg3.exe+0x2F28BA0, Toolkit-matched): a set of entity handles plus a bool set to 1 whenever the component is filled. Saved (model game.combine.v0.AddToInventoryRequestOneFrameComponent, 16 bytes = one array; member names not in the macOS symbols - the bool is apparently not saved). Never seen alive. Registry total 56 (server row).",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2F29BA0 (AllocRaw 0x38) zeroes +0..+0x2F in the HashSet pattern; destructor thunk of bg3.exe+0x582AD0 frees the buffers at +0x20, +0x10, +0. FinalizeComponents lines 138-143 insert 8-byte keys with bg3.exe+0x721030 (HashSet<8-byte> insert)."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator writes 0 at +0x30 (byte); FinalizeComponents line 145 `*(undefined1 *)(lVar8 + 0x30) = 1;` after filling the set. Meaning not established."
+    },
+    {
+      "name": "_Pad31",
+      "offset": 49,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 56."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the bool at +0x30 (always set to 1 by FinalizeComponents; maybe 'notify'/'from crafting').",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

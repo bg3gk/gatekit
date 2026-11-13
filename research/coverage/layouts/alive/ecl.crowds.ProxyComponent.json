@@ -1,0 +1,111 @@
+{
+  "component": "ecl::crowds::ProxyComponent",
+  "ext_name": "ClientCrowdsProxy",
+  "size": 40,
+  "seen": true,
+  "summary": "Client proxy of a crowd character (born in TWN Morgue fight and Distillery dialogue steps). Written by ecl::crowds::CrowdCharacterSystem::Update (ProcessAddAndRemoves / ProcessChangeRequests / UpdateProxies).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x1A8BFA0 writes 0x7F7FFFFF (FLT_MAX); live always FLT_MAX."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Creator 0 (upper half of the 8-byte store at +0). Live 0..35.4."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator 0xFFFFFFFF; live -1 or values."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator 0xFFFFFFFF; live always -1."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Creator 0 (8-byte store with +0x14). Live 0..25 (often equal to +0x14 / +4)."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Creator 0. Live 0..25."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Creator 1.0. Live 1.0."
+    },
+    {
+      "name": "field_1C",
+      "offset": 28,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Creator 1.0 (8-byte store 0x3F800000 over +0x1C/+0x20). Live 1.0."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Creator 0. Live 8..15."
+    },
+    {
+      "name": "field_24",
+      "offset": 36,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator 32-bit store 0x101 over +0x24..+0x27: 1. Live 0/1."
+    },
+    {
+      "name": "field_25",
+      "offset": 37,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator 1. Live 1."
+    },
+    {
+      "name": "field_26",
+      "offset": 38,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator 0. Live 0/1."
+    },
+    {
+      "name": "field_27",
+      "offset": 39,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator 0. Live 0/1."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "No field meaning established: CrowdCharacterSystem sub-steps not read (budget).",
+    "+0x24..+0x27 could be one uint32 instead of four bools."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the author's confidence is low: types fit the live data, meanings are not established",
+  "second_pass": "Not reached in this pass (time budget spent on the other 19 components); offsets and widths still rest on the Windows creator bg3.exe+0x1A8BFA0 and live samples, meanings unknown."
+}

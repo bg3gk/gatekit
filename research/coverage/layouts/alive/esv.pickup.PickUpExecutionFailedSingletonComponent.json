@@ -1,0 +1,26 @@
+{
+  "component": "esv::pickup::PickUpExecutionFailedSingletonComponent",
+  "ext_name": "ServerPickupPickUpExecutionFailed",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton of the pick-up pipeline: the items whose pick-up execution failed this frame. Seen.py context: lives in any idle level (created with the world). Read by esv::pickup::PickUpExecutionFinishedSystem (Toolkit names).",
+  "fields": [
+    {
+      "name": "Items",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0xD45FF0 esv::pickup::PickUpExecutionFinishedSystem::ProcessExecutionFailedDenied gets the singleton (FUN_180d44910) and walks *(ptr) for size *(+0xC) with stride 8, copying each qword as an entity key into FrameData+0x40 (FUN_180d45790) and setting its result byte to 0x13 (execution failed). Live (idle): one instance, all zero (empty array)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether the entities are the picked-up items or the pick-up request entities (the key of FrameData+0x40)."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

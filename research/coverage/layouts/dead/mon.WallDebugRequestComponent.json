@@ -1,0 +1,40 @@
+{
+  "component": "mon::WallDebugRequestComponent",
+  "ext_name": "MonWallDebugRequest",
+  "size": 24,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Client-only request of the 'mon' debug monitor (EocServerMonitor) for wall debugging. Registered by bg3.exe+0x11EEE60 (size 0x18, align 0x18 in the packed size word 0x180018, no destructor). The default constructor writes a null EntityHandle first - the usual shape of a request that names the entity it concerns - then zeroes two quadwords. No system of the shipped binaries fills or reads it. Never seen alive.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "default constructor bg3.exe+0x11F0D30 (slot 3 of ops table bg3.exe+0x5567238 registered by bg3.exe+0x11EEE60) stores 0xffc0000000000000 (null EntityHandle) at +0; macOS default constructor stores the same constant at +0."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x11F0D30 stores 0 as a quadword at +8."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x11F0D30 stores 0 as a quadword at +0x10 (macOS: 32-bit zero at +0x10 plus the stp at +8)."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Meaning of +8 and +0x10 (real widths may be smaller); whether +0 is really an entity (only the null default says so). No reader exists in the shipped binaries."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Cannot be settled from code: the second pass found no producer or consumer anywhere - bg3.exe has only the type registration (App::CreateECS -> bg3.exe+0x11EExxx), the static type-name initialiser and the component ops; the macOS build has only ComponentOps/ComponentSignals/destructor instantiations (macos_index.py names '<mon::' lists just the eight mon types) and the Toolkit DLLs mention them only in App::AddGlobalSwitchesToOptionDialog. The shapes from the creator/destructor stand; the members stay unknown."
+}

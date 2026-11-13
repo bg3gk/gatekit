@@ -1,0 +1,55 @@
+{
+  "component": "ecl::sound::FeatSoundRequestBusComponent",
+  "ext_name": "ClientSoundFeatSoundRequestBus",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "FeatSoundSwitchBusRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::character::SoundSystem::ProcessFeatSoundRequests (EoCClient.dll+0xEB5510) and ProcessFlagSoundRequests (EoCClient.dll+0xEB55C0) pass element+0 as the entity to ecl::character::SoundSystem::SetSwitches(EntityHandle const&, FixedString const&, FixedString const&)."
+        },
+        {
+          "name": "SwitchGroup",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Second argument of SetSwitches (element+8)."
+        },
+        {
+          "name": "Switch",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Third argument of SetSwitches (element+0xC)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<FeatSoundSwitchBusRequest>",
+      "source": "inferred",
+      "evidence": "ProcessFeatSoundRequests iterates the component's array (size +0xC) with stride 0x10 calling SetSwitches; written by ecl::feat::SoundSystem::ProcessFeatComponent (macOS)."
+    }
+  ],
+  "confidence": "high",
+  "second_pass": "Confirmed on Windows: the per-frame update of ecl::character::SoundSystem (bg3.exe+0x1D1AE90) walks the singleton of query DAT_146346D7C (registered for FeatSoundRequestBusComponent by bg3.exe+0x1D225E0) with stride 0x10 (size +0xC) and calls bg3.exe+0x1D1C440(system, element+0 as the 8-byte entity, element+8 and element+0xC as FixedStrings).",
+  "open_questions": [
+    "Member names of the request are ours."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "1 of 1 members have their offset from the macOS build alone (0 have no evidence): the two builds lay structures out differently, so the Windows side must confirm them before the layout is declared",
+  "needs_windows": "1 of 1 members have their offset from the macOS build alone (0 have no evidence): the two builds lay structures out differently, so the Windows side must confirm them before the layout is declared"
+}

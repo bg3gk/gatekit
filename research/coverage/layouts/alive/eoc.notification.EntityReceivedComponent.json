@@ -1,0 +1,32 @@
+{
+  "component": "eoc::notification::EntityReceivedComponent",
+  "ext_name": "NotificationEntityReceived",
+  "size": 32,
+  "seen": true,
+  "summary": "Replicated notification that an entity (item) was received; read on the client by gui::registration::VMItemRegistrationSystem::Update (macOS). Born live in shove-throw, item and dialogue situations (items handed over).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Replication serializer bg3.exe+0x9A0240 member 1: 16 bytes from +0 (DAT_14627fef8 base). Live: a different random-looking 16-byte value per instance (the received entity's UUID?)."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Serializer member 2: 16 bytes at +0x10. Live the same value in all 11 instances (the receiving character's UUID?)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which Guid is the item and which the receiver; reader VMItemRegistrationSystem not read."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "54 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

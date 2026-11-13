@@ -1,0 +1,24 @@
+{
+  "component": "eoc::trade::ShownTraderMapMarkerNameComponent",
+  "ext_name": "TradeShownTraderMapMarkerName",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Name",
+      "offset": 0,
+      "type": "TranslatedString",
+      "source": "inferred",
+      "evidence": "Replication serializer (bg3.exe+0x8F28C0 and the dirty-mask slot): one member at DAT_146280588 + base = offset 0, written as a 2-byte version read from +4 followed by ecs::sync::Serialize(FixedString at +0) - the Handle of a TranslatedString; the masked slot calls bg3.exe+0x40162B0 and the reader bg3.exe+0x4016300 on the same address. Size 16 = TranslatedString (Handle {FixedString, uint16 Version} + ArgumentString) as declared by Script Extender. macOS default: stp xzr, xzr through x24 plus a call (bg3.exe-equivalent string init)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Only the Handle part is replicated; the ArgumentString half (+8..+0xF) is inferred from Script Extender's TranslatedString layout and the registry size."
+  ],
+  "seen": false,
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

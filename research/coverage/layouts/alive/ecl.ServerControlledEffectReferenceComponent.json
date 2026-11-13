@@ -1,0 +1,25 @@
+{
+  "component": "ecl::ServerControlledEffectReferenceComponent",
+  "ext_name": "ClientServerControlledEffectReference",
+  "size": 48,
+  "seen": true,
+  "summary": "Put on the entity that server-controlled effects are attached to (born with ServerControlledEffectAttached). Holds the set of effect entities referencing it; ServerControlledEffectSystem removes the component when the set becomes empty.",
+  "fields": [
+    {
+      "name": "Effects",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1EAA800 zeroes a 48-byte hash set. Per-frame update bg3.exe+0x1EA7690 applies ReferenceChange entries (stride 0x60: added set at +0, removed set at +0x30) with FUN_14134cc00 (erase each 8-byte key, hashed by value % buckets) and FUN_14127e900 (insert), then removes the component when the key count at +0x2C is 0. macOS: ls::HashMap<ls::ID<ecs::EntityHandleTraits>, ecl::ServerControlledEffectSystem::ReferenceChange>. Live: buckets 5, one key."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Keys assumed to be the effect entities' handles (8-byte keys, same map as Attached.AttachedTo); not checked against live key values."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

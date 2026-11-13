@@ -1,0 +1,25 @@
+{
+  "component": "ls::ClusterPhysicsVisibilityComponent",
+  "ext_name": "ClusterPhysicsVisibility",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Visibility",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0x148B90 (Toolkit, ls::ClusterPhysicsVisibilitySystem::ProcessVisibility, WorldView<ClusterPositionX/Y/Z, ClusterRadius, ClusterBoundMax, ClusterDistMax, ..., VisualStreamSystemData, ClusterPhysicsVisibilityComponent>) - the physics twin of ClusterVisibilitySystem: one 4-byte value per cluster, computed from the cluster position/radius/bound/dist columns and written per entity. macOS default constructor stores 0 - hint only. Live: floats 0 .. 0x3E8B5CFD (0.27), mostly tiny (0.0001-0.007). Read as const by ls::ClusterPhysicsLoaderSystem (ApplyLoadResultToEntity, ProcessEntitiesToUnload)."
+    }
+  ],
+  "summary": "Client scene streaming: per-cluster physics visibility/priority score; ClusterPhysicsLoaderSystem loads/unloads the cluster's physics content from it. On every cluster entity in idle levels.",
+  "confidence": "medium",
+  "open_questions": [
+    "Exact meaning of the value (projected size / priority) not decoded."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

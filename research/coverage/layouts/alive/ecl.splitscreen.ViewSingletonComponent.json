@@ -1,0 +1,31 @@
+{
+  "component": "ecl::splitscreen::ViewSingletonComponent",
+  "ext_name": "ClientSplitscreenViewSingleton",
+  "size": 2,
+  "seen": true,
+  "fields": [
+    {
+      "name": "View",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "ecl::splitscreen::ViewSystem::Update (EoCClient.dll+0x834200): view = 3 unless AnimationSingleton bit 0x2 is set; then 0 when not force-merged and both players have characters (split), 1 when one is missing, or MergedFocus.FocusPlayer + 1 (1 = player 1 fullscreen, 2 = player 2) when MergedFocus is set. On change: comp[1] = comp[0]; comp[0] = view. Read by 13 systems (macOS: camera::TargetSystem, sound::RoomSystem, crowds::SoundVolumeSystem, ...). Default 0x0101 (macOS mov w0,#0x101; strh), live 01 01."
+    },
+    {
+      "name": "PreviousView",
+      "offset": 1,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Same function copies the old byte 0 into byte 1 before storing the new view. Live 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Exact meaning of view value 3 (animation not running / no viewport); names are ours."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

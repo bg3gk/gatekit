@@ -1,0 +1,86 @@
+{
+  "component": "ecl::CrowdFadeView0Component",
+  "ext_name": "ClientCrowdFadeView0",
+  "size": 20,
+  "seen": true,
+  "reuses": "identical to ecl::CharacterOutOfSightFadeView0Component (layouts/alive, confirmed) and ecl::TimelineFadeView0Component (Coverage.h, sizeof 20) - same fade-view template",
+  "fields": [
+    {
+      "name": "TargetValue",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Same layout as ecl::TimelineFadeView0Component (Coverage.h). Creator bg3.exe+0x18F2DB0 (ComponentFrameStorageAllocRaw size 0x14) writes 0 here - byte-for-byte the same stores as the confirmed CharacterOutOfSightFadeView0 creator bg3.exe+0x18F2470."
+    },
+    {
+      "name": "FadeSpeed",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18DFEC0 (called from bg3.exe+0x18DD6F0, the per-frame update of ecl::FadeResolveSystem; handles every ecl::*FadeView0/1Component through the query bg3.exe+0x6331618): while the view is fading back in (byte +0x10 == 0) it does 'CurrentValue(+0xC) += deltaTime * view[+4]' up to 1.0; while active it does 'CurrentValue -= deltaTime * view[+4]' down to TargetValue(+0). So +4 is a rate per second (default 4.0 = a full fade in 0.25 s). | first pass: bg3.exe+0x18F2DB0 writes 4.0 (0x40800000); live 4.0. Probably fade speed (as in TimelineFadeView0).",
+      "legacy": "field_4"
+    },
+    {
+      "name": "Immediate",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F2DB0 writes 0 (16-bit store with +9); meaning from TimelineFadeView0 (Coverage.h)."
+    },
+    {
+      "name": "ImmediateFadeIn",
+      "offset": 9,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18DFEC0: when the view is not active (+0x10 == 0) and byte +9 is set (or the system's global 'no fading' byte at system+0x18), CurrentValue is set to 1.0 at once instead of rising by FadeSpeed - the fade-in is immediate. Mirror of +8 (Immediate), which does the same for the fade-out (CurrentValue = TargetValue at once). | first pass: bg3.exe+0x18F2DB0 writes 0.",
+      "legacy": "field_9"
+    },
+    {
+      "name": "field_A",
+      "offset": 10,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x18F2DB0 writes 1. | names pass 2: bg3.exe+0x18DFEC0 ANDs this byte into byte +4 of the resolved ls::FadingView0/1Component ('*(out + 4) &= view[0xA]', out starts at {1.0, 1}); the meaning of that output byte (FadingView.field_4) was not established. Default 1."
+    },
+    {
+      "name": "_PadB",
+      "offset": 11,
+      "type": "uint8_t[1]",
+      "source": "unknown",
+      "evidence": "padding before the float at +0xC"
+    },
+    {
+      "name": "CurrentValue",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F2DB0 writes 1.0 (0x3f800000); meaning from TimelineFadeView0."
+    },
+    {
+      "name": "Active",
+      "offset": 16,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F2DB0 writes 1; meaning from TimelineFadeView0."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "tail padding to 0x14"
+    }
+  ],
+  "summary": "Fade view of the Crowd fade channel. 48 live samples (Act 3 crowds): +0 always 0.0, +4 always 4.0, +8..+A 0/0/1 (byte +B padding garbage 6b/6c/b4/b5), +C 0.0 or 1.0, +10 byte 1 (bytes +11..+13 garbage).",
+  "confidence": "high",
+  "open_questions": [
+    "field_4 / field_9 / field_A meaning (same open items as TimelineFadeView0).",
+    "names pass 2: field_A: ANDed into byte +4 of ls::FadingView0/1Component by bg3.exe+0x18DFEC0; naming it needs the meaning of that FadingView byte (readers: ls::OcclusionSystem / ls::SoundOcclusionSystem / ecl::CharacterLightSystem, GameEngine.dll)."
+  ],
+  "minutes": 2,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Fade-view template: FadeSpeed and ImmediateFadeIn from the blend step bg3.exe+0x18DFEC0 of ecl::FadeResolveSystem (rate per second and the 'jump to 1.0' flag of the fade-in); no member names exist for this template (not replicated, not saved, no Toolkit accessors; the request struct is ecl::StartFadeRequest per macOS HashMap<EntityHandle, ecl::StartFadeRequest>). field_A left open."
+}

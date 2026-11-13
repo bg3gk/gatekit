@@ -1,0 +1,23 @@
+{
+  "component": "esv::history::TargetPendingRequestersSingletonComponent",
+  "ext_name": "ServerHistoryTargetPendingRequesters",
+  "size": 64,
+  "seen": true,
+  "summary": "Server singleton of the target-history feature: maps a requesting entity to the target UUID it will get (used by esv::history::GetTargetUUIDForEntity before the entity's own TargetUUIDComponent exists). Alive in idle levels.",
+  "fields": [
+    {
+      "name": "Requesters",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Guid>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x5BDE00 esv::history::GetTargetUUIDForEntity: hashes the EntityHandle (handle % bucket count at +8), finds the index with FUN_18021f230 and reads the value through FUN_18023bfb0(this+0x30, idx), whose assert names ls::IndexedStorage<class ls::Guid> with stride 0x10; the Guid is returned. Live: bucket count 0xC07/0x1807, keys capacity 0x800..0x1000, size 0..0x16."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,26 @@
+{
+  "component": "eoc::thrown::SpellPrepareAnimationRequest",
+  "ext_name": "ThrownSpellPrepareAnimationRequest",
+  "size": 4,
+  "fields": [
+    {
+      "name": "TimeLeft",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Replicated without members: serializer bg3.exe+0x8EF9F0 / bg3.exe+0x8EF980 only writes the entity and the dirty mask, no member. macOS default constructor stores w1 = 0x3F800000 (1.0f) at +0. Toolkit esv::thrown::AttachmentSystem::ProcessAnimationRequestComponents subtracts GameTime+8 (frame delta) from the float at +0 each frame and removes the component once it is <= 0: a countdown in seconds."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name inferred from the countdown behaviour; the member is not replicated (the client only learns that the component exists).",
+    "Registry totalSize 4 (client and server)."
+  ],
+  "seen": false,
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,39 @@
+{
+  "component": "ecl::character::TradingModeSwitchOneFrameComponent",
+  "ext_name": "ClientCharacterTradingModeSwitch",
+  "size": 4,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame notice of a trade-mode switch (born in pickpocket/trader dialogues). ecl::CharacterManager per-frame update bg3.exe+0x1CA5C00 drains its TradingModeChanges HashMap<EntityHandle, TradeModeChangeRequest> into this component.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1CA5C00: `p = FUN_141caf080(...); *(u16*)p = *(u16*)req; *(u8*)(p+2) = *(u8*)(req+2);` with requests of stride 4 (SE TradeModeChangeRequest::field_0). Creator bg3.exe+0x1CAF080 default 1. Live 1."
+    },
+    {
+      "name": "Mode",
+      "offset": 2,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "copied from TradeModeChangeRequest::field_2 (bg3.exe+0x1CA5C00); same values as ecl::character::TradingComponent::Mode (creator default 4). Live 0/3."
+    },
+    {
+      "name": "_Pad3",
+      "offset": 3,
+      "type": "uint8_t[1]",
+      "source": "unknown",
+      "evidence": "padding"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Same unknowns as TradingComponent."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

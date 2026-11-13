@@ -1,0 +1,46 @@
+{
+  "component": "ls::level::CacheLoadComponent",
+  "ext_name": "LevelCacheLoad",
+  "size": 24,
+  "seen": true,
+  "summary": "Client and server, on level instances (up to ~186 holders), created when level instances load (level change, dialogues that load sub-levels, character creation level). Owned by ls::level::CacheLoadSystem (GameEngine.dll: ProcessCacheCreation / ProcessCacheRemoval) and ls::level::LoadCacheUTHelper::LoadCache / UnloadCache(LevelManager const&, FixedString const&, CacheLoadComponent&): holds the loaded level cache (a SavegameVisitor) and the heap LevelCacheDesc it was built from. Not saved.",
+  "fields": [
+    {
+      "name": "LevelName",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "creator bg3.exe+0x3C161F0 (alloc 0x18) sets *(uint32*)+0 = 0xFFFFFFFF (null FixedString) and zeroes +8/+0x10, leaving +4 untouched; macOS default constructor stores w26 at +0. Live values are FixedString-index shaped (0x4A000B0 .. 0x457000A0). Name inferred: UnloadCache takes a level FixedString next to the component"
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "never written by the creator; live garbage (29-43 different values)"
+    },
+    {
+      "name": "Cache",
+      "offset": 8,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0x91C150 LoadCacheUTHelper::LoadCache: *(SavegameVisitor**)(comp+8) = Level::LoadCache(...); UnloadCache GameEngine.dll+0x91C2F0: if (*(comp+8) != 0) Level::UnloadCache(level, *(SavegameVisitor**)(comp+8)); then zeroed. Live always 0"
+    },
+    {
+      "name": "CacheDesc",
+      "offset": 16,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "LoadCache: UniquePtr<LevelCacheDesc> at comp+0x10 = new LevelCacheDesc (0xA0 bytes) and passed to Level::LoadCache; UnloadCache frees it with size 0xA0. Live heap in 3 server samples, else 0"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "the FixedString at +0 is not read in the functions opened; LevelName is a guess from context"
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,73 @@
+{
+  "component": "eoc::analytics::EventRestTypeAndSuppliesChosenComponent",
+  "ext_name": "AnalyticsEventRestTypeAndSuppliesChosen",
+  "size": 64,
+  "fields": [
+    {
+      "name": "TotalSupplies",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "replication writer bg3.exe+0x9E95A0 writes 4 raw bytes at the FieldMeta offset global DAT_14627FC18 (0: the next members are at +4 and +8). Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): copied from the first int of a 4-byte component of the camp chest query (SE eoc::camp::TotalSuppliesComponent.Amount is the only 4-byte camp component of that system's view)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "replication writer bg3.exe+0x9E95A0 writes 4 raw bytes at +4. Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): copied from +4 of an 8-byte component of the same query (two ints; SE eoc::camp::QualityComponent has that shape)."
+    },
+    {
+      "name": "SuppliesUsedValue",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "replication writer bg3.exe+0x9E95A0 writes 4 raw bytes at +8. Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): int sum over the used supply items of count * eoc::camp::SupplyComponent amount (FUN_1809C6890)."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding (the array at +0x10 is 8-aligned)"
+    },
+    {
+      "name": "SuppliesUsedList",
+      "offset": 16,
+      "type": "Array<FixedString>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::DynamicArray<class ls::FixedString,struct ls::TaggedAllocator<int> > eoc::analytics::EventRestTypeAndSuppliesChosenComponent::*,16>; macOS ls::FieldMeta<ls::DynamicArray<ls::FixedString, ls::TaggedAllocator<int> > eoc::analytics::EventRestTypeAndSuppliesChosenComponent::*, &eoc::analytics::EventRestTypeAndSuppliesChosenComponent::m_SuppliesUsedList> Windows side: replication writer bg3.exe+0x9E95A0 calls the Array<FixedString> writer FUN_140A82550 on +0x10. Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0) builds it from the used supply items (template names)."
+    },
+    {
+      "name": "RestType",
+      "offset": 32,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "replication writer bg3.exe+0x9E95A0 writes an STDString (bg3.exe+0x4016480) at +0x20 (24 bytes up to +0x38). Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): STDString = \"FullRest\" when the rest event's first byte is 1, else \"PartialRest\"."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "replication writer bg3.exe+0x9E95A0 writes 1 raw byte at +0x38. Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): copied from byte +0x48 of the rest-type-chosen event element (0x50 bytes)."
+    },
+    {
+      "name": "_Pad39",
+      "offset": 57,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding (component size 0x40)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The names of +4 and +0x38 and the exact sources of +0 / +4 (which camp component) rest on the Toolkit build; the flag's meaning is unknown."
+  ],
+  "minutes": 12,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Offsets and widths settled by the Windows replication writer bg3.exe+0x9E95A0 (three 4-byte values, Array<FixedString> at +0x10, STDString at +0x20, byte at +0x38); the Toolkit ProcessLongRestEvents shows the ints are counts and the string is \"FullRest\"/\"PartialRest\"."
+}

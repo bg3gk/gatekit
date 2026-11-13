@@ -1,0 +1,25 @@
+{
+  "component": "gui::vmcharacter::CharacterModeChangedSingletonComponent",
+  "ext_name": "GuiVMCharacterModeChanged",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Modes",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, uint8_t>",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x4258C0 (Toolkit, gui::vmcharacter::CharacterModeSystem::ProcessModeChanges) walks the VMCharacter collection and calls FUN_180424ff0, whose assert strings name ls::HashMap<ls::ID<ecs::EntityHandleTraits>, enum gui::VMCharacter::ECharacterMode>::EmplaceUniversal and IndexedStorage<gui::VMCharacter::ECharacterMode>; the value store at +0x30 (capacity +0x38) is written one byte per index ('*(char *)(index + *(this+0x30)) = mode'), so the enum is 1 byte. Key = the character entity (VMCharacter member +0xA8, an EntityHandle). Live samples: HashMap shape (bucket count 5 at +8, cap/size pairs at +0x18/+0x28, value capacity at +0x38). Registry size 64 (coverage.json, client)."
+    }
+  ],
+  "summary": "Client UI: per-frame map character entity -> new gui::VMCharacter::ECharacterMode (1-byte enum, no Script Extender binding; exposed as uint8_t), filled by CharacterModeSystem::ProcessModeChanges and emptied by CharacterModeSystem::ClearModeChanges. Singleton from game start (idle, level-change).",
+  "confidence": "high",
+  "open_questions": [
+    "Enum values of gui::VMCharacter::ECharacterMode are not established (Script Extender has no such enum)."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

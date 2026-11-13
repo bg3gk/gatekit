@@ -1,0 +1,68 @@
+{
+  "component": "ecl::mod::ValidationSingletonComponent",
+  "ext_name": "ClientModValidationSingleton",
+  "size": 128,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ModValidationInfo",
+      "size": 8,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "std::optional<bool>",
+          "source": "unknown",
+          "evidence": "UpdateValidationInfo (EoCClient.dll+0xBE0AF0) copies the 2-byte Optional<bool> at source+0 when its has-flag (+1) is set."
+        },
+        {
+          "name": "field_2",
+          "offset": 2,
+          "type": "std::optional<bool>",
+          "source": "unknown",
+          "evidence": "Same, source+2 (flag +3)."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "std::optional<bool>",
+          "source": "unknown",
+          "evidence": "Same, source+4 (flag +5)."
+        },
+        {
+          "name": "field_6",
+          "offset": 6,
+          "type": "std::optional<bool>",
+          "source": "unknown",
+          "evidence": "Same, source+6 (flag +7). Element stride 8 (puVar6 += 4 shorts)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Mods",
+      "offset": 0,
+      "type": "HashMap<Guid, ModValidationInfo>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xBE0AF0 ecl::mod::ValidationSystem::UpdateValidationInfo walks an ls::HashMap<ls::Guid, ecl::mod::ValidationInfo> (keys stride 16, values stride 8) and for each key calls get-or-insert FUN_180BDF170(component, guid), copying each set Optional<bool> into it. macOS names the type ls::HashMap<ls::Guid, ecl::mod::ValidationInfo> (EnsureUniversal at 0x10306339C). Live: bucket array (+0) with 5 buckets, keys (+0x20) and values (+0x30) with capacity 1 / size 1 = one validated mod."
+    },
+    {
+      "name": "PublishedMods",
+      "offset": 64,
+      "type": "HashMap<uint64_t, std::optional<bool>>",
+      "source": "inferred",
+      "evidence": "Same function: for each entry of an ls::HashMap<unsigned __int64, ls::Optional<bool>> it calls get-or-insert FUN_180BDF2F0(component+0x40, key) and stores the 2-byte Optional<bool> (key stride 8, value stride 2). Keys are UGC (published) mod ids. Live: all zero = empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the four Optional<bool> members of ecl::mod::ValidationInfo (read by gui::AvailableModsSystem in NoesisGameUI.dll, not opened).",
+    "Getter FUN_180BDEAD0 used by UpdateValidationInfo was identified as this component by size (two HashMaps = 128) and the live sample, not by a type name in its listing."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

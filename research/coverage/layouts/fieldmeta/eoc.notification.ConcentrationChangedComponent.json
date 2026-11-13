@@ -1,0 +1,52 @@
+{
+  "component": "eoc::notification::ConcentrationChangedComponent",
+  "ext_name": "NotificationConcentrationChanged",
+  "size": 136,
+  "fields": [
+    {
+      "name": "EntityUUID",
+      "offset": 0,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_EntityUUID (ls::Guid), position 1 of 4 in the macOS serializer TypeList; serializer bg3.exe+0x99C290 writes 16 bytes at +0x0 in the same order"
+    },
+    {
+      "name": "OldSpell",
+      "offset": 16,
+      "type": "SpellId",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_OldSpell (eoc::spell::SpellId), position 2 of 4 in the macOS serializer TypeList; serializer bg3.exe+0x99C290 writes a SpellId (bg3.exe+0xB6CCB0 + FixedString +0x40) at +0x10 in the same order"
+    },
+    {
+      "name": "NewSpell",
+      "offset": 72,
+      "type": "SpellId",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_NewSpell (eoc::spell::SpellId), position 3 of 4 in the macOS serializer TypeList; serializer bg3.exe+0x99C290 writes a SpellId at +0x48 in the same order"
+    },
+    {
+      "name": "WasGameplayBroken",
+      "offset": 128,
+      "type": "bool",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_WasGameplayBroken (bool), position 4 of 4 in the macOS serializer TypeList; serializer bg3.exe+0x99C290 writes 1 byte at +0x80 in the same order"
+    },
+    {
+      "name": "_Pad81",
+      "offset": 129,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "external_types": {
+    "SpellId": "Script Extender SpellId (GameDefinitions/Base/ExposedTypes.h), 0x38 bytes: serializer bg3.exe+0xB6CCB0 writes the SpellMetaId part (0x30) and ecs::sync::Serialize(FixedString) writes +0x30 (Prototype)"
+  },
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "12 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

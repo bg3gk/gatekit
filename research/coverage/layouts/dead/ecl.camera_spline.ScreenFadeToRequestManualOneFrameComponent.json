@@ -1,0 +1,72 @@
+{
+  "component": "ecl::camera_spline::ScreenFadeToRequestManualOneFrameComponent",
+  "ext_name": "ClientCameraSplineScreenFadeToRequestManual",
+  "size": 64,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Fade-to requests per player, added by ecl::CameraSplineSystem::ProcessScreenFade while a camera spline plays; drained by ecl::screen_fade::ScreenFadeSystem. Never alive in the captures.",
+  "structs": [
+    {
+      "name": "CameraSplineScreenFadeCreationData",
+      "size": 32,
+      "equals": "Script Extender ScreenFadeCreationData (GameDefinitions/Components/Camera.h); game name eoc::screen_fade::ScreenFadeCreationData",
+      "fields": [
+        {
+          "name": "FadeId",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0xFF2C40 ProcessScreenFade constructs the element (Guid ctor at +0) and copies a freshly generated Guid (ls::Guid::Generate) into bytes 0..0x10; SE name. Windows bg3.exe+0x1C9C6A0 (the game's ecl::CameraSplineSystem::ProcessScreenFade) writes a freshly generated 16-byte id at +0 of the value returned by Windows insert bg3.exe+0x1C9CEB0 (called from bg3.exe+0x1C9C6A0)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "Zeroed by ProcessScreenFade when the value is created (4-byte store at +0x10); SE name. Windows insert bg3.exe+0x1C9CEB0 (called from bg3.exe+0x1C9C6A0) zeroes 4 bytes at +0x10 for a new value."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "Zeroed by ProcessScreenFade (8-byte store at +0x14 covers +0x14/+0x18); SE name. The timeline variant stores a fade time here. Windows insert bg3.exe+0x1C9CEB0 (called from bg3.exe+0x1C9C6A0) zeroes 8 bytes at +0x14 (covers +0x14/+0x18)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "Zeroed by ProcessScreenFade; SE name. Windows insert bg3.exe+0x1C9CEB0 (called from bg3.exe+0x1C9C6A0): see +0x14."
+        },
+        {
+          "name": "field_1C",
+          "offset": 28,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "Zeroed by ProcessScreenFade (4-byte store at +0x1C); SE name. Windows insert bg3.exe+0x1C9CEB0 (called from bg3.exe+0x1C9C6A0) zeroes 4 bytes at +0x1C."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<int16_t, CameraSplineScreenFadeCreationData>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1C9D1E0 allocates 0x40 bytes, zeroes a 64-byte hash map and registers destructor bg3.exe+0x5C4870 (trivial values, then key set; same as ecl::character_creation::ScreenFadeToRequestComponent). EoCClient.dll+0xFF2C40 ProcessScreenFade inserts with a 2-byte key taken from the system's player-id array (stride 2, 'IndexedStorage<short>') and grows the values at +0x30 with stride 0x20 ('IndexedStorage<eoc::screen_fade::ScreenFadeCreationData>'); value count +0x38. Windows: Windows bg3.exe+0x1C9C6A0 (the game's ecl::CameraSplineSystem::ProcessScreenFade) creates the component with bg3.exe+0x1C9D1E0 and inserts with Windows insert bg3.exe+0x1C9CEB0 (called from bg3.exe+0x1C9C6A0), which grows the values at +0x30 with stride 0x20 (alloc count << 5) and returns value +idx*0x20; the key is a 2-byte entry of the system's player-id list (stride 2)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "ScreenFadeCreationData field_10..field_1C meanings (Script Extender has them unnamed too)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "second_pass": "Container and value layout now read in the Windows game (bg3.exe+0x1C9C6A0 and its map insert bg3.exe+0x1C9CEB0: int16 key, 0x20-byte values zeroed as 16 + 4 + 8 + 4 bytes, Guid written at +0); it matches Script Extender's ScreenFadeCreationData.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it",
+  "names_pass_2": "No game names found (CameraSplineScreenFadeCreationData keeps Script Extender's field_XX names)."
+}

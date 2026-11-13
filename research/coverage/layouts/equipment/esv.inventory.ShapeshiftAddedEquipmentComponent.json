@@ -1,0 +1,23 @@
+{
+  "component": "esv::inventory::ShapeshiftAddedEquipmentComponent",
+  "ext_name": "ServerShapeshiftAddedEquipment",
+  "size": 16,
+  "fields": [
+    {
+      "name": "ShapeshiftState",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34F9960 (applies an EquipmentSetRequest) creates the component (storage bg3.exe+0x2701B60, size 0x10, zeroed) on every item it adds when the request's ShapeshiftState Guid (param_6 = request+0x18) is non-zero, and copies those 16 bytes into it. bg3.exe+0x34F7990 (shapeshift equipment history) compares both qwords of the component with an entry of esv::inventory::ShapeshiftEquipmentHistoryComponent.History (Array<Guid>) and removes the component on a match. The savegame loader bg3.exe+0x25C1AC0 copies 16-byte elements of ls::model::game::inventory::v0::ShapeshiftAddedEquipmentComponent into it."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures (needs a shapeshift that adds equipment)."
+  ],
+  "minutes": 5,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

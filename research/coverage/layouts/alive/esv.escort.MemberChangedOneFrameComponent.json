@@ -1,0 +1,31 @@
+{
+  "component": "esv::escort::MemberChangedOneFrameComponent",
+  "ext_name": "ServerEscortMemberChanged",
+  "size": 8,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event on a character whose escort group changed (SCL drider caravan dialogue; born with esv::escort::GroupsSingletonComponent, FollowerComponent, ...). Read by FindNewLeader.",
+  "fields": [
+    {
+      "name": "OldGroup",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "esv::escort::MemberSystem::Update (EoCServer.dll+0xCE6000) adds the component (FUN_180ce4440) when the requested group differs from the current esv::escort::MemberComponent group and assigns +0 = the current group (or the empty FixedString when the character had no MemberComponent). Live 0xFFFFFFFF (no previous group). Game name: member 1 (m_OldGroup) of savegame model ls::model::game::escort::v0::MemberChangedOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x50F0E70): component +0 -> model +0x10 (member 1)."
+    },
+    {
+      "name": "NewGroup",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Same place: +4 = the requested group; a null group removes MemberComponent, otherwise MemberComponent.Group is set to it. Live valid FixedStrings (0x02400230...). Game name: member 0 (m_NewGroup) of savegame model ls::model::game::escort::v0::MemberChangedOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x50F0E70): component +4 -> model +0 (member 0)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "Both model members matched by the macOS Save (saved order New, Old; memory order Old +0, New +4); the earlier inferred names were already the game names."
+}

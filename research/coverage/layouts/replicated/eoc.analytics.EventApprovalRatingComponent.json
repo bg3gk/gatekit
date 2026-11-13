@@ -1,0 +1,68 @@
+{
+  "component": "eoc::analytics::EventApprovalRatingComponent",
+  "ext_name": "AnalyticsEventApprovalRating",
+  "size": 64,
+  "fields": [
+    {
+      "name": "CompanionId",
+      "offset": 0,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "serializer bg3.exe+0x9EC820/0x9EC990 member 1: 16-byte write at +0 (offset from global DAT_14627fbf8 = 0); EoCClient.dll+0xD349B0 (approval_rating recorder, called from EoCClient.dll ecl::GameAnalyticsSystem::ProcessApprovalRatingChanges EoCClient.dll+0xD2C1A0) writes Guid::ToString(+0) under the JSON key \"companion_id\". macOS default ctor: zero."
+    },
+    {
+      "name": "Character",
+      "offset": 16,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "serializer bg3.exe+0x9EC820/0x9EC990 member 2: 16-byte write at +0x10. ProcessApprovalRatingChanges (EoCClient.dll+0xD2C1A0, element stride 0x40) tests Guid::IsValid(+0x10), resolves it to an entity and passes that entity as the character to the recorder (FillGameEventsData)."
+    },
+    {
+      "name": "Amount",
+      "offset": 32,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "serializer bg3.exe+0x9EC820/0x9EC990 member 3: 4 bytes at +0x20; recorder EoCClient.dll+0xD349B0 writes it as integer under \"amount\"."
+    },
+    {
+      "name": "NewValue",
+      "offset": 36,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "serializer bg3.exe+0x9EC820/0x9EC990 member 4: 4 bytes at +0x24; recorder writes it as integer under \"new_value\"."
+    },
+    {
+      "name": "State",
+      "offset": 40,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "serializer bg3.exe+0x9EC820/0x9EC990 member 5: ecs::sync::Serialize(FixedString) at +0x28; recorder FixedString::ToChar(+0x28) under \"state\"; macOS default ctor -1 (null FixedString)."
+    },
+    {
+      "name": "_Pad2C",
+      "offset": 44,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+    },
+    {
+      "name": "ApprovalMoment",
+      "offset": 48,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "serializer bg3.exe+0x9EC820/0x9EC990 member 6: 16 bytes at +0x30; recorder Guid::ToString(+0x30) under \"approval_moment\"; macOS ctor zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Character (+0x10) name is inferred from use (resolved to the character entity), not a game name",
+    "signedness of Amount/NewValue (written through the integer json setter)",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

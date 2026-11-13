@@ -1,0 +1,28 @@
+{
+  "component": "ecl::ping::PlaySingletonComponent",
+  "ext_name": "ClientPingPlaySingleton",
+  "size": 16,
+  "seen": true,
+  "external_types": [
+    "PingRequestData (BG3Extender/GameDefinitions/Components/Data.h, 32 bytes: Source, Target, Position, field_1C)"
+  ],
+  "fields": [
+    {
+      "name": "Pings",
+      "offset": 0,
+      "type": "Array<PingRequestData>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x18A4250 allocates 0x10 bytes and zeroes them; destructor bg3.exe+0x686280 clears and frees one array with trivially destructible elements. Toolkit ecl::ping::PingSystem::ProcessServerPingRequests (EoCClient.dll+0x694810) takes the PlaySingletonComponent from its WorldView (FUN_1806939e0) and appends elements of stride 0x20 under the assert 'IndexedStorage<eoc::PingRequestData>' copied from eoc::notification::PingRequestComponent (entity, target, position, flag byte at +0x1C). Live: empty (0/0)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The singleton was taken by its position in the WorldView (second singleton fetched after GameplayVFX); element order of PingRequestData members follows SE's existing struct, not re-checked byte by byte."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "hold": "uses types of Script Extender's own headers (PingRequestData (BG3Extender/GameDefinitions/Components/Data.h, 32 bytes: Source, Target, Position, field_1C)): whether they are declared before Coverage.h is included is not checked yet",
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the layout file is not valid yet: 'list' object has no attribute 'items'"
+}

@@ -1,0 +1,78 @@
+{
+  "component": "esv::teleport::StateComponent",
+  "ext_name": "ServerTeleportState",
+  "size": 40,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Put by esv::teleport::ExecutionSystem::ProcessRequests (bg3.exe+0x3373FE0) on the helper entity it creates for every valid esv::teleport::RequestParams (0xB0 bytes, queued by LEGACY_DoTeleport, Toolkit EoCServer.dll+0x1150010): copies the request's origin (+0x00) and target (+0x10) - each an entity or a position - and the request's entity at +0x30. Read back in the per-frame update bg3.exe+0x3373660 to fill esv::teleport::FinishedEventOneFrameComponent and to update BoundComponent counters. Born together with KeepAliveComponent and, when the request names a spell cast, SpellComponent. Creator bg3.exe+0x3375220. Not saved.",
+  "structs": [
+    {
+      "name": "TeleportStateLocation",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "std::variant<EntityHandle, glm::vec3>-like: when the byte at +0xC is 0 the first 8 bytes are an entity (bg3.exe+0x3373660 lines 102-111 take them as a handle, else the null handle DAT_145833D48; bg3.exe+0x3373FE0 line 172 passes them to the transform lookup FUN_140E5A590). When the byte is 1, +0x0/+0x4/+0x8 are the x/y/z floats of a position (line 165-167, 208-210)."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "z float of the position alternative (bg3.exe+0x3373FE0 lines 167, 210 compare pfVar11[6] / pfVar11[2]); unused when the alternative is an entity."
+        },
+        {
+          "name": "Index",
+          "offset": 12,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Alternative index: 0 = entity, 1 = position (compared with 0 and 1 in bg3.exe+0x3373FE0 lines 155-211 and bg3.exe+0x3373660 line 102/107). Creator writes +0x1C = 0 for the second location."
+        },
+        {
+          "name": "_Pad13",
+          "offset": 13,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "padding to 16"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Origin",
+      "offset": 0,
+      "type": "TeleportStateLocation",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3373FE0 lines 118-120 copy RequestParams+0x00..0x0F; Toolkit ValidateRequestParams (EoCServer.dll+0x1152AE0) checks RequestParams+0 as 'origin entity'. Creator: +0 = null handle, +8 = 0 (index 0)."
+    },
+    {
+      "name": "Target",
+      "offset": 16,
+      "type": "TeleportStateLocation",
+      "source": "inferred",
+      "evidence": "lines 121-127 copy RequestParams+0x10..0x1F; ValidateRequestParams checks RequestParams+0x10 as 'target entity'. Creator: +0x10 = null handle, +0x18 = 0, +0x1C byte = 0."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "line 128: = RequestParams+0x30 (an entity; creator writes the null handle); bg3.exe+0x3373660 line 111 copies it into FinishedEventOneFrameComponent+0. Meaning not established. Toolkit esv::teleport::ExecutionSystem::ProcessRequests (EoCServer.dll+0x1150840 lines 262-269) copies RequestParams +0..+0x1F and +0x30 into the 40-byte state the same way; RequestParams +0x28 is the spell-cast entity (logged \"attached to SpellCast entity\") and +0x20 a 4-byte value copied into another component of the helper entity (line 289), so +0x30 is a third entity of the request whose role no string names."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Role of the entity at +0x20 (RequestParams+0x30); offset and width are established.",
+    "The location type is a two-alternative variant (entity or position) written as handle + z + index bytes because the build allows no union."
+  ],
+  "minutes": 14,
+  "functions_read": 6,
+  "status": "declared",
+  "second_pass": "Every offset and width was already established from Windows code (ProcessRequests bg3.exe+0x3373FE0, update bg3.exe+0x3373660, creator bg3.exe+0x3375220); the Toolkit ProcessRequests copies the same RequestParams parts in the same places. Only the meaning of the third entity stays open.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

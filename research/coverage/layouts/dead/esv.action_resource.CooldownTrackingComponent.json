@@ -1,0 +1,77 @@
+{
+  "component": "esv::action_resource::CooldownTrackingComponent",
+  "ext_name": "ServerActionResourceCooldownTracking",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server list of action-resource amounts that come back after a cooldown (6 seconds real time, or turn-based ticks in FTB), kept by esv::action_resource::CooldownSystem. LEGACY_RequestTrackCooldown(entity, Guid resource, double amount, int) queues a 32-byte request per entity; StartRequestedCooldowns (bg3.exe+0x32909E0, named) creates the component if needed and appends one 40-byte entry per request with timer 6.0; TickRealtimeCooldowns subtracts the frame time from the timer. Saved as model game.action_resources.v0.CooldownTrackingComponent (16 bytes) with elements game.action_resources.v0.CooldownTrackingData (32 bytes); member names not known. Never seen alive. Registry total 16 (server row).",
+  "structs": [
+    {
+      "name": "CooldownTrackingEntry",
+      "size": 40,
+      "fields": [
+        {
+          "name": "Resource",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "StartRequestedCooldowns copies the request's first 16 bytes; the request is built by Toolkit LEGACY_RequestTrackCooldown (EoCServer.dll+0x1610A90) from its `Guid const &` parameter (the action resource definition)."
+        },
+        {
+          "name": "Amount",
+          "offset": 16,
+          "type": "double",
+          "source": "inferred",
+          "evidence": "LEGACY_RequestTrackCooldown stores its `double` parameter at request +0x10 (`puVar7[2] = param_3`); StartRequestedCooldowns copies request qword +0x10 to entry +0x10."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "LEGACY_RequestTrackCooldown stores its `int` parameter at request +0x18; copied to entry +0x18. macOS Save reads 4 bytes at entry +0x18 (resource level or index; meaning not established)."
+        },
+        {
+          "name": "_Pad1C",
+          "offset": 28,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "request padding copied with the 32-byte block; not saved."
+        },
+        {
+          "name": "TimeLeft",
+          "offset": 32,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "StartRequestedCooldowns writes 0x40c00000 (6.0f) at entry +0x20; Toolkit TickRealtimeCooldowns (EoCServer.dll+0x1611CB0) does `*(float*)(e+0x20) -= *(float*)(gameTime+8)` with stride 0x28."
+        },
+        {
+          "name": "_Pad24",
+          "offset": 36,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to the stride 0x28."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Cooldowns",
+      "offset": 0,
+      "type": "Array<CooldownTrackingEntry>",
+      "source": "inferred",
+      "evidence": "StartRequestedCooldowns (bg3.exe+0x32909E0) allocates the component with AllocRaw 0x10 and zeroes +0/+8/+0xC (Toolkit ctor EoCServer.dll+0x262400 does the same), grows it (FUN_1406de630) and writes element `lVar17 + i*0x28`; destructor bg3.exe+0x686280 frees the buffer at +0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the int at entry +0x18 (4th parameter of LEGACY_RequestTrackCooldown).",
+    "Not seen alive (seen.py has no samples); savegame model member names not available."
+  ],
+  "minutes": 10,
+  "functions_read": 7,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

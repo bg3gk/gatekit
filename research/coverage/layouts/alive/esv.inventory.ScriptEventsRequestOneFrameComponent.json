@@ -1,0 +1,40 @@
+{
+  "component": "esv::inventory::ScriptEventsRequestOneFrameComponent",
+  "ext_name": "ServerInventoryScriptEventsRequest",
+  "size": 16,
+  "seen": true,
+  "summary": "One-frame list of inventory script events, created by esv::inventory::InteractionSystem::CreateScriptEvents (macOS) from its HashMap<EntityHandle, DynamicArray<esv::inventory::ScriptEventData>> and forwarded to scripting by esv::script::GameplayEventSystem::ForwardScriptEvents (macOS; Toolkit signals ls::Signal<void(EntityHandle const&, esv::inventory::ScriptEventData const&)>). Born in the same steps as esv::inventory::StealingDataOneFrameComponent (48 instances each, same situations). The element is esv::inventory::ScriptEventData, whose size was not established -> raw Array parts.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "DynamicArray<esv::inventory::ScriptEventData> data pointer (element type named by macOS templates). Destructor thunk bg3.exe+0x5946C0 = trivial array clear + free, so ScriptEventData is trivially destructible. Live: heap pointer in all 48 samples."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "capacity; live 1..7."
+    },
+    {
+      "name": "field_c",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "size; live 1..7 (equal to capacity)."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "sizeof(esv::inventory::ScriptEventData) and its members (an entity handle followed by event kind / entities, judging from the Toolkit lambda EoCServer.dll+0xEB2890) - then the field becomes Array<ScriptEventData>."
+  ],
+  "minutes": 13,
+  "functions_read": 8,
+  "oneFrame": true,
+  "status": "hypothesis",
+  "status_reason": "the author's confidence is low: types fit the live data, meanings are not established",
+  "second_pass": "Not settled: sizeof(esv::inventory::ScriptEventData) was not found. macOS names the producer esv::inventory::InteractionSystem::CreateScriptEvents (HashMap<EntityHandle, DynamicArray<ScriptEventData>>); the Toolkit export EoCServer.dll+0xFADDF0 exists but its element stride was not isolated, and macOS addresses from macos_index.py did not resolve in decomp.py."
+}

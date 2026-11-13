@@ -1,0 +1,62 @@
+{
+  "component": "ls::constellation::AddInterEntityConnectionsRequestOneFrameComponent",
+  "ext_name": "ConstellationAddInterEntityConnectionsRequest",
+  "size": 16,
+  "seen": true,
+  "summary": "Server one-frame request carrying the inter-entity socket connections of constellations (Anubis/constellation scripting graphs linking sockets of different entities; ConstellationTemplate 'Connections'). Drained by ls::constellation::SetupSystem (macOS system name; game query registered at bg3.exe+0x4C8510 with handler bg3.exe+0x386E040). Seen alive on level change / teleport (level load sets up constellations).",
+  "structs": [
+    {
+      "name": "ConstellationAddInterEntityConnection",
+      "size": 64,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "8 bytes before the first string, not touched by the element destructor. The macOS element (0x30) has only two 0x18-byte strings, so this is either a member the macOS build lacks or the first 8 bytes of a 32-byte Windows string object (stateful allocator) - not established."
+        },
+        {
+          "name": "Output",
+          "offset": 8,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "Element destructor bg3.exe+0x28041F0 frees a long-mode string at +8 (buffer +8, size +0x18, capacity +0x1C, reset to inline capacity 0xF) - the 24-byte ls::STDString shape. Name after eoc::InterEntityConnection (template form; SE PropertyMaps: OutputEntityUUID, OutputSocketExt, InputEntityUUID, InputSocketExt)."
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "8 bytes before the second string (see field_0)."
+        },
+        {
+          "name": "Input",
+          "offset": 40,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "Element destructor frees a string at +0x28 (size +0x38, capacity +0x3C). Name after eoc::InterEntityConnection's input side."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Connections",
+      "offset": 0,
+      "type": "Array<ConstellationAddInterEntityConnection>",
+      "source": "inferred",
+      "evidence": "Game creator bg3.exe+0x2802560 moves an ls::Array (pointer, capacity, size) into the 0x10-byte component; destructor bg3.exe+0x2807100 = FUN_1428015c0(this, 0) + free: element stride 0x40 with destructor bg3.exe+0x28041F0 (two strings). macOS names: ls::DynamicArray<ls::constellation::InterEntityConnection> (0x30 there: libc++ strings are 0x18 bytes and ids 0). Live: heap pointer, capacity 0x80/0x200, size 0x65/0x1B0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "What the 8 bytes before each string are (macOS element has two strings only) - no element samples.",
+    "Member names come from the template form eoc::InterEntityConnection, not from this runtime struct."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

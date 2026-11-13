@@ -1,0 +1,60 @@
+{
+  "component": "esv::sound::PlayServerSoundRequestOneFrameComponent",
+  "ext_name": "ServerSoundPlayServerSoundRequest",
+  "size": 24,
+  "seen": true,
+  "summary": "Put on a request entity by esv::ServerSoundSystem (bg3.exe+0x2D92180 drains the system's queue of ls::Variant<ServerSoundSystem::PlayRequest, PlayHUDRequest>, 0x18-byte elements with the index at +0x10) and consumed by ServerSoundSystem::ProcessServerSoundRequests (EoCServer.dll+0x4CA630), which forwards it to clients (eoc::notification::PlayServerSoundComponent). macOS: ServerSoundSystem::RequestPlaySound(EntityHandle const&, FixedString const&, bool) / RequestPlayHUDSound. Seen.py context: born at the first shove/throw step together with drop/thrown/steering types; very common afterwards (up to 787 holders).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Both writers bg3.exe+0x2D922B0 (PlayRequest) and bg3.exe+0x2D924B0 (PlayHUDRequest) copy the request's EntityHandle (+0) after checking IsEntityAlive. Live: entity handles."
+    },
+    {
+      "name": "Event",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Writers copy the request FixedString at +8 with IncRef; ProcessServerSoundRequests destroys a FixedString at +8. RequestPlaySound(entity, FixedString, bool): the sound event name. Live: FixedString indices."
+    },
+    {
+      "name": "SoundObjectType",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "PlayRequest writer stores the 0..3 result of a virtual call on the system's sound helper (rejects 2 and >=4); PlayHUDRequest writer stores constant 2. Live: 0..2. Enum name not established (an ESoundObjectType-like value, 4 bytes)."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Both writers copy the request byte at +0xC here (the bool of RequestPlaySound / RequestPlayHUDSound). Live: 0/1."
+    },
+    {
+      "name": "field_11",
+      "offset": 17,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "PlayRequest writer copies request byte +0xD (when it is set, object type 1 is rejected); PlayHUDRequest writer stores 1."
+    },
+    {
+      "name": "_Pad12",
+      "offset": 18,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "Never written by the creators; live bytes here are uninitialised garbage."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meanings of the two bytes at +0x10/+0x11 and the enum behind +0xC."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

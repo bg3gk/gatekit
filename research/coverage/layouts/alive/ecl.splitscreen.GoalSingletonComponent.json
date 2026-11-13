@@ -1,0 +1,31 @@
+{
+  "component": "ecl::splitscreen::GoalSingletonComponent",
+  "ext_name": "ClientSplitscreenGoalSingleton",
+  "size": 2,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Merge",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ecl::splitscreen::GoalSystem::Update (EoCClient.dll+0x84FED0) ends with *goal = cVar7; goal[1] = cVar17 (only written when changed). cVar7 becomes 1 (merge the screens) when there are no split reasons (SplitReasonsSingleton+0 == 0), when SplitReasons+2 (merge reasons) != 0, when force-merge focus is set, when a player has no character or is not in the render view, etc. Default 1 (macOS default constructor: mov w17,#1; strh w17,[x23]); live 0x01 in single player. Read back at the start of the same function (if goal[0] != 1 the 0x4 split reason bit is masked)."
+    },
+    {
+      "name": "field_1",
+      "offset": 1,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "GoalSystem::Update writes goal[1] = (split reasons masked to 0x30 only, i.e. only the per-player bits 0x10/0x20 set) && !merge. The meaning of those two reason bits (set by EoCClient.dll+0x83DB60 per player) is not established. Default 0, live 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of byte 1 (a partial/soft split goal?) and the exact names; both are ours."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,42 @@
+{
+  "component": "ecl::crowds::SoundStationComponent",
+  "ext_name": "ClientCrowdsSoundStation",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x1F3C870 writes 0xffc0000000000000 (null handle). Filled by ecl::crowds::SoundStationSystem::FinalizeStations (EoCClient.dll+0xE9B950): *comp = request[+0x20] (an entity of the new-station request). Live: entity handles."
+    },
+    {
+      "name": "StationId",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator writes -1. FinalizeStations writes the 4-byte key of the frame's new-station map (station id). Live 0..0x10.",
+      "legacy": "field_8"
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator writes 0. FinalizeStations copies request +0xC. Live 3..14."
+    }
+  ],
+  "summary": "Crowd sound station entity in Act 3 (CTY/BGO levels, idle). Created by ecl::crowds::SoundStationSystem::FinalizeStations from its per-frame new-station requests.",
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the three members (id and count are guesses).",
+    "names pass 2: field_0 (entity of the new-station request, request +0x20) and field_C (request +0xC) not named."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "StationId: ecl::crowds::SoundStationSystem::FinalizeStations (EoCClient.dll+0xE9B950) writes the key of its new-station map here."
+}

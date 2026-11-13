@@ -1,0 +1,54 @@
+{
+  "component": "esv::thrown::ThrownParametersComponent",
+  "ext_name": "ServerThrownParameters",
+  "size": 16,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Single global component of esv::thrown::ThrowAnimationSystem ('Only one entity with ThrownParametersComponent is allowed'): the compiled conditions of the ItemThrowParams. Created at level load.",
+  "structs": [
+    {
+      "name": "ThrownParametersCondition",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Condition",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "std::pair<ls::ID<ls::thoth::shared::ConditionHandleTraits>, ls::Guid> (IndexedStorage assert in EoCServer.dll+0x3D5B20). ReloadConditions passes the 4-byte value at +0 to the helper's release/compile virtuals."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        },
+        {
+          "name": "ItemThrowParam",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Second member of the pair: copied from the eoc::ItemThrowParam entries (SortedSet<ItemThrowParam>) the system iterates."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Conditions",
+      "offset": 0,
+      "type": "Array<ThrownParametersCondition>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x3D5B20 (ThrowAnimationSystem::ReloadConditions) clears the array (size +0xC) and appends 0x18-byte pairs; creator bg3.exe+0x2AFC480 zeroes it. Live: capacity 8, size 8."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Width of the condition handle (4 bytes read; upper 4 bytes may belong to it)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

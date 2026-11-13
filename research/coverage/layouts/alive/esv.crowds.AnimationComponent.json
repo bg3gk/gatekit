@@ -1,0 +1,39 @@
+{
+  "component": "esv::crowds::AnimationComponent",
+  "ext_name": "ServerCrowdsAnimation",
+  "size": 12,
+  "seen": true,
+  "summary": "Idle-animation timing of an Act 3 crowd character: esv::crowds::AnimationSystem::Update counts a timer up and, when it passes the next-animation time, picks a weighted random animation from the crowd behaviour and plays it. Read by esv::crowds::DetourSystem (spline info). Saved: model game.crowds.v1.AnimationComponent (12 bytes, alignment 4; v0 was 16 bytes).",
+  "fields": [
+    {
+      "name": "NextAnimationTime",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xDADC00 AnimationSystem::Update (stride 0xC): initialised with Random::GenerateRand(min,max) from the behaviour (+0x98/+0x9C); after an animation is chosen set to duration + random interval; the timer at +4 is compared against it; live 4.1..62"
+    },
+    {
+      "name": "Timer",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "AnimationSystem::Update adds ls::time::GetDeltaTimeForEntity to +4 every frame and resets it to 0 when a new animation starts; live 0..29"
+    },
+    {
+      "name": "AnimationEndTime",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "AnimationSystem::Update: set to the chosen animation's duration; when the timer reaches it, it is reset to FLT_MAX (0x7F7FFFFF); live 7.7..10.4 or FLT_MAX"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "exact naming of the three times (the game's model names are not known)"
+  ],
+  "minutes": 6,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,40 @@
+{
+  "component": "esv::trap::ActiveRollRequestOneFrameComponent",
+  "ext_name": "ServerTrapActiveRollRequest",
+  "size": 32,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Request for the active disarm roll, created by bg3.exe+0x2CF62A0 (called from case 4 of the disarming state machine bg3.exe+0x2CF6EF0 with the disarmer, the trap and the object to use) on a new entity; the same function appends a 0x28-byte record {null, trap, disarmer, object, request id} to the trap's roll list. Creator bg3.exe+0x2CF8B90 (AllocRaw 0x20: two null handles, zero Guid DAT_14625AAD0). Unlike esv::lock::ActiveRollRequestOneFrameComponent (a 1-byte tag) this one carries data. Not saved.",
+  "fields": [
+    {
+      "name": "Disarmer",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2CF62A0 line 43: = *param_4, the DisarmingStateComponent owner passed by bg3.exe+0x2CF6EF0 line 388-392."
+    },
+    {
+      "name": "Trap",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "line 44: = *param_3, the EntityRef of DisarmingStateComponent.TrapToDisarm built by FUN_142CF8990 (line 387)."
+    },
+    {
+      "name": "DisarmableId",
+      "offset": 16,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "lines 45-51: 16 bytes from the trap's eoc::DisarmableComponent (+0 Guid; FUN_142CF8A80 returns it, its byte +0x10 is tested first). SE names it DisarmableComponent::field_0 (Data.h)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the Disarmable Guid is (roll / DC id); field names inferred."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

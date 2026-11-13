@@ -1,0 +1,82 @@
+{
+  "component": "eoc::controller::NudgeDataComponent",
+  "ext_name": "ControllerNudgeData",
+  "size": 28,
+  "fields": [
+    {
+      "name": "Direction",
+      "offset": 0,
+      "type": "glm::vec2",
+      "source": "inferred",
+      "evidence": "Windows bg3.exe+0x428F3D0 (per-frame nudge update; component fetched by its getter bg3.exe+0x7070F0) stores the two 4-byte halves of the input direction (FUN_14428EED0 result) at +0/+4; Windows bg3.exe+0x428F5F0 copies these 8 bytes into eoc::controller::NudgeOneFrameComponent, whose SE declaration (Coverage.h) is glm::vec2 Direction (read as floats by ecl::PickingHelper::NudgeSelection). macOS ctor 0."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Windows bg3.exe+0x428F3D0 (per-frame nudge update; component fetched by its getter bg3.exe+0x7070F0): byte flag tested before the direction is updated and cleared when the hold time passes the threshold; Windows bg3.exe+0x428F5F0 creates the NudgeOneFrame only when it is set. macOS ctor stores 1."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding (the next member is a 4-byte float)"
+    },
+    {
+      "name": "ElapsedTime",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Windows bg3.exe+0x428F3D0 (per-frame nudge update; component fetched by its getter bg3.exe+0x7070F0): accumulates the frame time (param_2 +8) and is compared with ls::GlobalSwitches +0xE6C (a hold threshold); reset to 0 when the input drops by < 0.2. | Name: Per-frame nudge update bg3.exe+0x428F3D0 adds the frame time (GameTime +8) to it and compares it with a threshold.",
+      "legacy": "field_C"
+    },
+    {
+      "name": "LastInputMagnitude",
+      "offset": 16,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Windows bg3.exe+0x428F3D0 (per-frame nudge update; component fetched by its getter bg3.exe+0x7070F0): the last input magnitude; compared with the current one (within 0.01) and replaced together with Direction. | Name: Same function: the previous frame's input magnitude, compared with the current one.",
+      "legacy": "field_10"
+    },
+    {
+      "name": "HoldTime",
+      "offset": 20,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Windows bg3.exe+0x428F3D0 (per-frame nudge update; component fetched by its getter bg3.exe+0x7070F0): set to 0 when the threshold is reached, then accumulates the frame time while the input stays below 0.1. | Name: Same function: reset to 0 when the threshold is reached, then accumulates the frame time while the input is held.",
+      "legacy": "field_14"
+    },
+    {
+      "name": "HoldThresholdReached",
+      "offset": 24,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Windows bg3.exe+0x428F3D0 (per-frame nudge update; component fetched by its getter bg3.exe+0x7070F0): byte flag set to 1 when the hold threshold is reached (selects the cooldown branch), cleared when the target is lost. | Name: Same function: set to 1 when the hold threshold is reached.",
+      "legacy": "field_18"
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding (size 0x1C, 4-aligned)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "Names of the two flags and three float timers (no FieldMeta, not saved, not replicated).",
+    "field_8: tested before the direction is updated and cleared; its setter is not read."
+  ],
+  "seen": false,
+  "minutes": 11,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Settled on Windows by the per-frame update bg3.exe+0x428F3D0, which reads and writes every member with its width (vec2 at 0, bytes at 8 and 0x18, floats at 0xC/0x10/0x14), and by bg3.exe+0x428F5F0, which copies the vec2 into NudgeOneFrameComponent when the byte at +8 is set.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it",
+  "names_pass_2": "Named from what the per-frame nudge update bg3.exe+0x428F3D0 does with each member; no game names (not replicated in this build, not saved)."
+}

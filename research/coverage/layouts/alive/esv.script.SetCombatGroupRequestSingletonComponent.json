@@ -1,0 +1,59 @@
+{
+  "component": "esv::script::SetCombatGroupRequestSingletonComponent",
+  "ext_name": "ServerScriptSetCombatGroupRequests",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: Osiris-issued combat group assignments (ls::Variant alternative 2 of esv::script::RequestSystem's requests), each tagged with the request entity. Filled by esv::script::RequestSystem::ProcessEmitRequests; pushed by OsirisGameFunctions::SetCombatGroupAndEnterCombat. Seen.py context: singleton present in the idle level, all zero.",
+  "structs": [
+    {
+      "name": "SetCombatGroupRequestsEntry",
+      "size": 24,
+      "fields": [
+        {
+          "name": "RequestEntity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::script::Requester<T> +0: request entity copied by EoCServer.dll+0x4FA900."
+        },
+        {
+          "name": "Entity",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SetCombatGroupRequest +0: EoCServer.dll+0x12AA0F0 (SetCombatGroupAndEnterCombat) stores its first argument (the entity)."
+        },
+        {
+          "name": "CombatGroup",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SetCombatGroupRequest +8: FixedString created from the string argument and compared with scr::GetCombatGroupID in SetCombatGroupAndEnterCombat."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x18 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<SetCombatGroupRequestsEntry>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x4FA900 case 2: assert ls::IndexedStorage<esv::script::Requester<esv::script::SetCombatGroupRequest>>, stride 0x18 (entity, entity, FixedString copy-constructed at +0x10)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

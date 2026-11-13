@@ -1,0 +1,24 @@
+{
+  "component": "ecl::timeline::ActorParticipationSingletonComponent",
+  "ext_name": "ClientTimelineActorParticipationSingleton",
+  "size": 64,
+  "fields": [
+    {
+      "name": "ActorTimelines",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D3B830 (ecl::timeline::ActorParticipationSystem update; registration bg3.exe+0x732270 lists the component as written, callback bg3.exe+0x75B750). For every entity of a query over a 0x20-byte component it walks an Array of 8-byte entity handles (stride 8) and inserts each handle as key (bg3.exe+0x721030) with the 8-byte handle of the query row's own entity as value (values at +0x30, stride 8, reallocated as count * 8); it then inserts a second key - the entity at +0x88 of the object returned by bg3.exe+0x13FB710 for the actor, when valid (not 0xFFC0000000000000) - with the same value. A second query over a 0xB0-byte component removes keys (swap with last, stride 8). Probe: 92 keys, capacity 128, values capacity 128."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key = actor entity (and its counterpart entity: dummy or original, from +0x88 of the object returned by bg3.exe+0x13FB710), value = the entity whose component listed the actor (taken to be the timeline entity). The two query component types (DAT_14631E8F8 with stride 0x20, DAT_14631E8FC with stride 0xB0) were not resolved to names, so the name ActorTimelines is a reading, not a fact.",
+    "Read by ecl::splitscreen::SplitReasonsSystem (registration bg3.exe+0x727740) - not followed."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

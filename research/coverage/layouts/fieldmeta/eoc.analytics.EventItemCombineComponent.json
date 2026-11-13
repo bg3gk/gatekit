@@ -1,0 +1,73 @@
+{
+  "component": "eoc::analytics::EventItemCombineComponent",
+  "ext_name": "AnalyticsEventItemCombine",
+  "size": 48,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "replication writer bg3.exe+0x9F3CF0 writes it with the entity writer FUN_144017090 at the FieldMeta offset global DAT_14627FB98 (= 0); bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes 0xFFC0000000000000 (null handle) at +0. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: element +0, the entity whose GameObjectTemplate is looked up for +0xC."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "replication writer bg3.exe+0x9F3CF0 serializes a FixedString at +8; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes -1 (null). Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: set from +4 of another component of the element's entity (FUN_180280410, not identified)."
+    },
+    {
+      "name": "TemplateName",
+      "offset": 12,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "replication writer bg3.exe+0x9F3CF0 serializes a FixedString at +0xC; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes -1. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: FixedString::Create of the STDString at GameObjectTemplate+0x28 (template Name) of the element's entity."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "replication writer bg3.exe+0x9F3CF0 serializes a FixedString at +0x10; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes -1. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: copied from the element's FixedString at +0x10."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding: the creator writes nothing at +0x14, the next member is an 8-aligned array"
+    },
+    {
+      "name": "IngredientsNames",
+      "offset": 24,
+      "type": "Array<FixedString>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::DynamicArray<class ls::FixedString,struct ls::TaggedAllocator<int> > eoc::analytics::EventItemCombineComponent::*,24>; macOS ls::FieldMeta<ls::DynamicArray<ls::FixedString, ls::TaggedAllocator<int> > eoc::analytics::EventItemCombineComponent::*, &eoc::analytics::EventItemCombineComponent::m_IngredientsNames> Windows side: replication writer bg3.exe+0x9F3CF0 calls the Array<FixedString> writer FUN_140A82550 on +0x18; the creator zeroes +0x18..+0x27. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: element array at +8 (4-byte FixedString elements)."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "replication writer bg3.exe+0x9F3CF0 writes 1 raw byte at +0x28; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes 0 there. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: copied from the element byte at +0x14."
+    },
+    {
+      "name": "_Pad29",
+      "offset": 41,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding (component size 0x30, 8-aligned)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the entity at +0, the FixedStrings at +8 and +0x10 and the flag at +0x28 (no FieldMeta, no savegame model; the analytics JSON keys were not traced)."
+  ],
+  "minutes": 16,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Every offset and width is settled on Windows by the creator bg3.exe+0x3180CE0 (size 0x30, defaults) and the replication writer bg3.exe+0x9F3CF0 (entity, three FixedStrings, Array<FixedString>, byte); the Toolkit ProcessCombineResults shows where the values come from, naming +0xC as the template name."
+}

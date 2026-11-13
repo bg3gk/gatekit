@@ -1,0 +1,61 @@
+{
+  "component": "esv::status::DifficultyChangeSingletonComponent",
+  "ext_name": "ServerStatusDifficultyChange",
+  "size": 64,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Singleton of esv::status::DifficultySystem (written in UpdateCharacterModifactions, read by recovery::RecoverySystem): per-character difficulty-modifier change requests. Lives from level load.",
+  "structs": [
+    {
+      "name": "DifficultyChangeRequestEntry",
+      "size": 136,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "HashMap<FixedString, HashSet<FixedString>>",
+          "source": "inferred",
+          "evidence": "esv::status::DifficultyChangeRequest (Toolkit name). Its destructor bg3.exe+0x22D84B0 destroys two 0x40-byte maps at +0 and +0x40 with FUN_140a55e70 (HashMap whose 0x30-byte values are HashSets). SendUsersModifactions (EoCServer.dll+0x3455D0) copies +0 and +0x40 with FUN_180341e10 and checks their key counts (+0x2C, +0x6C). Same type as DifficultyModifiersComponent.Modifiers (HashMap<FixedString, HashSet<FixedString>>) - key type assumed from that."
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "HashMap<FixedString, HashSet<FixedString>>",
+          "source": "inferred",
+          "evidence": "Second map, see field_0 (probably old vs new modifiers)."
+        },
+        {
+          "name": "field_80",
+          "offset": 128,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "SendUsersModifactions copies one byte at +0x80."
+        },
+        {
+          "name": "_Pad81",
+          "offset": 129,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, DifficultyChangeRequestEntry>",
+      "source": "inferred",
+      "evidence": "Toolkit DifficultySystem::SendUsersModifactions / ProcessDifficultyChange / UpdateCharacterModifactions take 'HashMap<ID<EntityHandleTraits>, esv::status::DifficultyChangeRequest>'; values stride 0x88. Creator bg3.exe+0x2F34490 zeroes 0x40; destructor FUN_1422d5080 destroys 0x88-byte values. Live: 5 instances with 0x10..0x40 key capacity."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the two maps and of the byte at +0x80 of DifficultyChangeRequest."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

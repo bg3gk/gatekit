@@ -1,0 +1,25 @@
+{
+  "component": "ls::transform::ScrollingObjectSetTranslateRequestsComponent",
+  "ext_name": "ScrollingObjectSetTranslateRequests",
+  "size": 64,
+  "seen": true,
+  "summary": "Singleton of translate requests from scrolling objects, drained by ls::TransformSystem (bg3.exe+0x3AE1240 registers it next to GameplaySetTransformRequests, InventoryMemberSetTransformRequest, InventoryMemberSetTranslateRequest, LevelInstanceMoveSetTransformRequests). Same shape as InventoryMemberSetTranslateRequestComponent (Components.h: HashMap<EntityHandle, glm::vec3> SetTranslate).",
+  "fields": [
+    {
+      "name": "SetTranslate",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, glm::vec3>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3C2A660 allocates 0x40 bytes zeroed, destructor bg3.exe+0x5C4870 frees a trivial value array at +0x30 then the POD HashSet (bg3.exe+0x582AD0). ls::TransformSystem::Update (bg3.exe+0x3C77860) walks two 64-byte request singletons whose keys (+0x20, 8 bytes) become EntityRefs and whose values (+0x30, stride 0xC) are passed as Vector3f to TransformSystem::SetTranslate. Live: 7 buckets, 5 keys of capacity 8."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which of the two vec3 request singletons in TransformSystem::Update is this one (the other is InventoryMemberSetTranslateRequest); value type not separately proven."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

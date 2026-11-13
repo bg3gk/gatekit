@@ -1,0 +1,90 @@
+{
+  "component": "esv::passive::ActiveRollPassivesComponent",
+  "ext_name": "ServerPassiveActiveRollPassives",
+  "size": 24,
+  "seen": true,
+  "summary": "Server component holding passive executions gathered for a roll in progress. Created/fetched by esv::GetActiveRollPassivesComponent (Toolkit EoCServer.dll+0x1133720, returns ActiveRollPassivesComponent*, store stride 0x18) and filled by esv::LEGACY_GatherSpellPassiveRequests (EoCServer.dll+0x11365E0, returns DynamicArray<esv::ExecutePassiveRequest>). Seen.py context: fights and spell casts (attack rolls triggering passives).",
+  "structs": [
+    {
+      "name": "ActiveRollPassivesRequest",
+      "size": 848,
+      "fields": [
+        {
+          "name": "Passive",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Same layout as SE esv::ExecutePassiveRequest (Components/Passives.h): EntityHandle Passive at +0."
+        },
+        {
+          "name": "Context",
+          "offset": 8,
+          "type": "uint8_t[808]",
+          "source": "inferred",
+          "evidence": "Storage of std::variant<AttackTargetContextData, AttackPositionContextData, MoveContextData, SourceContextData, TargetContextData, NearbyAttackedContextData, NearbyAttackingContextData, EquipContextData> (SE ExecutePassiveRequest.Context). The element destructor bg3.exe+0x22E39A0 calls the variant's destructor at element+8 for index values 0..7 (8 alternatives) - storage 0x328 bytes. Kept opaque: those SE stats structs may not be referenced here."
+        },
+        {
+          "name": "ContextIndex",
+          "offset": 816,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x22E39A0 reads the variant index byte at element+8+0x328 = +0x330 and compares it with 0..7."
+        },
+        {
+          "name": "_Pad331",
+          "offset": 817,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Alignment before the Guid."
+        },
+        {
+          "name": "RollGuid",
+          "offset": 824,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE ExecutePassiveRequest.RollGuid follows the variant (+0x338)."
+        },
+        {
+          "name": "field_348",
+          "offset": 840,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE ExecutePassiveRequest's last byte member (named field_338 there); total stride 0x350 matches bg3.exe+0x22E39A0 (lVar4 += 0x350)."
+        },
+        {
+          "name": "_Pad349",
+          "offset": 841,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Tail padding to the 0x350 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x36FB900 (AllocRaw 0x18) writes its second argument here and zeroes the array. Live (41): entity handles, distinct per holder. Probably the roll / roller entity; not established."
+    },
+    {
+      "name": "Requests",
+      "offset": 8,
+      "type": "Array<ActiveRollPassivesRequest>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +8 (pointer), +0x10, +0x14 (capacity, size). The component destructor bg3.exe+0x22B7840 (registered by bg3.exe+0x21FDAA0) frees the array at +8 through bg3.exe+0x22E39A0, which destroys elements of stride 0x350 = SE esv::ExecutePassiveRequest (Passives.h), the element type LEGACY_GatherSpellPassiveRequests returns. Live: heap pointer, capacity 1, size 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the handle at +0.",
+    "The element equals SE esv::ExecutePassiveRequest; its variant is kept as opaque bytes here (the SE stats context structs may not be referenced). Replace with ExecutePassiveRequest when promoting."
+  ],
+  "minutes": 10,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

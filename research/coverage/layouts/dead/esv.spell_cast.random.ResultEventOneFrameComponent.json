@@ -1,0 +1,180 @@
+{
+  "component": "esv::spell_cast::random::ResultEventOneFrameComponent",
+  "ext_name": "ServerSpellCastRandomResultEvent",
+  "size": 104,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Outcome of a random spell cast: created by esv::spell_cast::random::ValidationSystem::ProcessRandomCastRequests (bg3.exe+0x2E928E0) from the last RequestData of RequestComponent. Saved: ls::savegame::Framework::Ops<esv::spell_cast::random::ResultEventOneFrameComponent, esv::spell::Loader> copies it into the model ls::model::game::spell::v1::ResultEventOneFrameComponent (32 bytes), members OutcomeSpellId, RollResult, RandomCastDC, StoryActionID, ActionOriginator.",
+  "structs": [
+    {
+      "name": "SpellCastRandomResultSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Equals Script Extender's SpellId (ExposedTypes.h). Creator bg3.exe+0x2E94210 writes 0xFFFFFFFF at +0."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "creator writes byte 0x17 (SpellSourceType::Sentinel); bg3.exe+0x2E928E0 builds the outcome spell with type 0x15"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "creator zeroes +0x10..+0x20"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "creator zeroes +0x20..+0x30"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "creator writes 0xFFFFFFFF at +0x30; bg3.exe+0x2E928E0 replaces it (DecRef old) with the chosen outcome spell's name"
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "tail padding to 0x38"
+        }
+      ]
+    },
+    {
+      "name": "SpellCastRandomResultActionOriginator",
+      "size": 32,
+      "fields": [
+        {
+          "name": "ActionGuid",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Equals Script Extender's ActionOriginator (ExposedTypes.h). Creator copies the 16-byte global DAT_14625AAD0 (null Guid) to +0x48."
+        },
+        {
+          "name": "PassiveId",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "creator: 8-byte 0xFFFFFFFFFFFFFFFF at +0x58 (PassiveId and StatusId)"
+        },
+        {
+          "name": "StatusId",
+          "offset": 20,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "see PassiveId"
+        },
+        {
+          "name": "InterruptId",
+          "offset": 24,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "creator: 0xFFFFFFFF at +0x60"
+        },
+        {
+          "name": "CanApplyConcentration",
+          "offset": 28,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "creator: byte 1 at +0x64"
+        },
+        {
+          "name": "_Pad1D",
+          "offset": 29,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "OutcomeSpellId",
+      "offset": 0,
+      "type": "SpellCastRandomResultSpellId",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::spell::v1::ResultEventOneFrameComponent, member 1 (symbols.py savemodel). Windows: creator bg3.exe+0x2E94210 initialises a SpellId at +0..+0x38; bg3.exe+0x2E928E0 fills it with FUN_140C607B0(comp, spell) and sets +0x30 to the outcome spell name."
+    },
+    {
+      "name": "RollResult",
+      "offset": 56,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "savegame model member 2. bg3.exe+0x2E928E0: *(int*)(comp + 0x38) = *(int*)(RequestData + 0x78); creator writes 4-byte 0."
+    },
+    {
+      "name": "RandomCastDC",
+      "offset": 60,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "savegame model member 3. bg3.exe+0x2E928E0: *(byte*)(comp + 0x3C) = *(byte*)(RequestData + 0x10); creator writes byte 0."
+    },
+    {
+      "name": "_Pad3D",
+      "offset": 61,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "StoryActionID",
+      "offset": 64,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "savegame model member 4. bg3.exe+0x2E928E0: *(int*)(comp + 0x40) = *(int*)(RequestData + 0x50); creator writes 0xFFFFFFFF."
+    },
+    {
+      "name": "_Pad44",
+      "offset": 68,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding before the 8-aligned Guid"
+    },
+    {
+      "name": "ActionOriginator",
+      "offset": 72,
+      "type": "SpellCastRandomResultActionOriginator",
+      "source": "game",
+      "evidence": "savegame model member 5. bg3.exe+0x2E928E0: FUN_142ADA320(comp + 0x48, RequestData + 0x58); creator initialises +0x48..+0x68 as an ActionOriginator. Ends at 0x68 = registry size."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The 32-byte savegame model is smaller than the component (it stores the SpellId through ls::model::game::spell::v0::SpellId separately); the model Save/Load were not read."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

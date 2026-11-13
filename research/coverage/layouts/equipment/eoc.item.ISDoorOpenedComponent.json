@@ -1,0 +1,45 @@
+{
+  "component": "eoc::item::ISDoorOpenedComponent",
+  "ext_name": "ItemISDoorOpened",
+  "size": 8,
+  "fields": [
+    {
+      "name": "AnimationRequested",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x19235C0 is statement for statement the creator of eoc::item::ISDoorClosedComponent (2-byte zero at +0, 4-byte zero at +4). The Toolkit's ecl::legacy::item::DoorOpenedSystem::ProcessAnimationsRequests reads the same offsets as the DoorClosed version (bytes +0 and +1, float +4, compare with 10.0, byte +1 set to 1): when the byte at +0 is 0, or the door is in the set of eoc::animation::DoorEventCachingSingletonComponent, it stores the word 1 at +0 (this byte 1, next byte 0), zeroes the float and adds eoc::item::ISDoorOpenedAnimationRequestOneFrameComponent."
+    },
+    {
+      "name": "AnimationFinished",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Same function: while this byte is 0 the timer runs; when the timer reaches 10.0 the byte is set to 1 and eoc::item::ISDoorOpenedAnimationFinishedOneFrameComponent is added. Cleared together with the request (word store at +0)."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "alignment padding before the float; never written"
+    },
+    {
+      "name": "AnimationTimer",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Same function: while AnimationRequested is 1 and AnimationFinished is 0 the frame time (GameTime+8) is added every tick; compared with 10.0 (timeout after which the animation counts as finished); zeroed when a new animation is requested."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "No live ISDoorOpened instance was probed; the layout is taken from the identical creator and from the Toolkit's DoorOpenedSystem, whose field accesses are the same as in DoorClosedSystem (confirmed there against live data). The game's own copy of the DoorOpened function was not opened (the DoorClosed one is bg3.exe+0x1921910).",
+    "Whether the two components share one C++ base struct is not visible in the decompilation."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

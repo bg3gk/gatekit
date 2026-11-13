@@ -1,0 +1,61 @@
+{
+  "component": "ecl::sound::UIPanelPostHUDRequestsSingletonComponent",
+  "ext_name": "ClientSoundUIPanelPostHUDRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "UIPanelPostSoundEventRequest",
+      "size": 12,
+      "fields": [
+        {
+          "name": "Event",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Element is ls::PostSoundEventRequest. UIPrioritySystem::SendMuffleEvent (EoCClient.dll+0xD48B20) builds an event name from two global FixedStrings plus the panel name and stores it at +0."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "SendMuffleEvent writes 0 (MixStateSystem::PostMixEvent writes 3 to the same member of ls::PostSoundEventRequest). Possibly SoundEventType - not confirmed."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "SendMuffleEvent writes 2."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Stride 0xC."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<UIPanelPostSoundEventRequest>",
+      "source": "inferred",
+      "evidence": "UIPrioritySystem::SendMuffleEvent(FixedString const&, bool, UIPanelPostHUDRequestsSingletonComponent*) (EoCClient.dll+0xD48B20) appends an ls::PostSoundEventRequest at component+0 (capacity +8, size +0xC, stride 0xC); InterfaceSystem::ProcessPostHUDEventRequests (EoCClient.dll+0xDBE200) forwards the elements."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of PostSoundEventRequest +4 and +8.",
+    "Only empty instances were seen."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

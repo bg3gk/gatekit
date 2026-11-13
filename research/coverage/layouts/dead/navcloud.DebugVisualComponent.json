@@ -1,0 +1,89 @@
+{
+  "component": "navcloud::DebugVisualComponent",
+  "ext_name": "NavcloudDebugVisual",
+  "size": 64,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "NavCloud debug visual (client-only registry row). Registered by bg3.exe+0x65FBB0 (size 0x40) with destructor bg3.exe+0x6C5BF0, which frees two plain Arrays at +0x30 and +0x20 (bg3.exe+0x5946C0); the default constructor bg3.exe+0x6C5C10 zeroes all 64 bytes. No system of bg3.exe, of the Toolkit DLLs or of the macOS build reads or writes it, so the first 32 bytes and the array elements are unknown; arrays are written as their raw members. Never seen alive.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "default constructor bg3.exe+0x6C5C10 (slot 3 of ops table bg3.exe+0x54D9520) stores 0; not touched by the destructor. Could be an entity handle, pointer or two 32-bit values."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "zeroed by bg3.exe+0x6C5C10; not destroyed."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "zeroed by bg3.exe+0x6C5C10; not destroyed."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "zeroed by bg3.exe+0x6C5C10; not destroyed."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "buffer of a plain Array: destructor bg3.exe+0x6C5BF0 calls bg3.exe+0x5946C0(+0x20); element type unknown."
+    },
+    {
+      "name": "field_20_Capacity",
+      "offset": 40,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "capacity of the array at +0x20 (bg3.exe+0x5946C0)."
+    },
+    {
+      "name": "field_20_Size",
+      "offset": 44,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "size of the array at +0x20; constructor stores 0 at +0x2C."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "buffer of a plain Array: destructor bg3.exe+0x6C5BF0 calls bg3.exe+0x5946C0(+0x30); element type unknown."
+    },
+    {
+      "name": "field_30_Capacity",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "capacity of the array at +0x30."
+    },
+    {
+      "name": "field_30_Size",
+      "offset": 60,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "size of the array at +0x30; constructor stores 0 at +0x3C."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Meaning of the first 32 bytes and the element types of both arrays: no producer or consumer exists in the shipped binaries (only the ComponentOps on macOS)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Cannot be settled from code: no reader or writer exists in bg3.exe, the Toolkit DLLs or the macOS build (macOS has only GetComponentDestructor / ComponentOps for it), so the element/key types stay unknown; the raw shape from the creator and destructor stands."
+}

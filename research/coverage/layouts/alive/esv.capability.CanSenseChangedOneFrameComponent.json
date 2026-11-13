@@ -1,0 +1,23 @@
+{
+  "component": "esv::capability::CanSenseChangedOneFrameComponent",
+  "ext_name": "ServerCanSenseChanged",
+  "size": 2,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ChangedFlags",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Server can-sense update bg3.exe+0x3409EE0 (macOS esv::capability::CanSenseSystem::Update) computes the new eoc::CanSenseComponent flags (uint16), and stores old ^ new (or new ^ 0x10 when the CanSense component is created) into this 2-byte component through bg3.exe+0x340AA80 when non-zero - the bits that changed. AwarenessCapabilityFlags is SE's uint16_t bitmask of eoc::CanSenseComponent.Flags (Enumerations/ECS.inl). Live: 0x02..0x24. Declared as uint16_t (the underlying type of SE's AwarenessCapabilityFlags, which generate.py does not size); the adder bg3.exe+0x340AA80 registers frame storage of element size 2 for this one-frame type."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": true,
+  "status": "confirmed",
+  "second_pass": "Width re-checked in the Windows adder bg3.exe+0x340AA80 (2-byte one-frame storage) and the type changed from the SE enum AwarenessCapabilityFlags to its underlying uint16_t so that generate.py accepts the file.",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

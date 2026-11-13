@@ -1,0 +1,159 @@
+{
+  "component": "ecl::TimelineEmotionMaterialComponent",
+  "ext_name": "ClientTimelineEmotionMaterial",
+  "size": 144,
+  "structs": [
+    {
+      "name": "TimelineEmotionMaterialParam",
+      "size": 48,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t[48]",
+          "source": "unknown",
+          "evidence": "ecl::EmotionMaterialParam (macOS name, from ls::HashMap<ls::FixedString, ecl::EmotionMaterialParam> in ecl::TimelineEmotionMaterialComponent::SetParam, bg3_macos_x64+0x3E44CF0): macOS stride 0x30, where SetParam stores the two float arguments at +8/+0xC, the double at +0x10 and parts of MaterialTargetDetails at +0x18/+0x28. The WINDOWS stride is not established (the Windows destructor bg3.exe+0x6D3660 frees the value array without element destructors and gives no stride); opaque block of the macOS size."
+        }
+      ]
+    },
+    {
+      "name": "TimelineEmotionMaterialTarget",
+      "size": 72,
+      "fields": [
+        {
+          "name": "TargetValue",
+          "offset": 0,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2043070: value = (TargetValue - StartValue) * t + StartValue, where t = (now - StartTime) / MaterialTargetDetails::MaterialDuration; also tested != 0 to choose alternative durations/values of RTPC details."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Not touched by the functions read (may be padding)."
+        },
+        {
+          "name": "StartValue",
+          "offset": 8,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2043070, see TargetValue (read as pfVar2[2])."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "alignment of the double"
+        },
+        {
+          "name": "StartTime",
+          "offset": 16,
+          "type": "double",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2043070 subtracts it as a double from the current time (global at bg3.exe+0x63D93E8) before dividing by the duration."
+        },
+        {
+          "name": "TriggeredSoundEvents",
+          "offset": 24,
+          "type": "HashSet<Guid>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2043070: SoundEventDetails::ID (16 bytes, hashed qword0 ^ qword1) is looked up here before a sound event is posted and inserted (bg3.exe+0x5CA360) after; outer destructor bg3.exe+0x6D14C0 frees a hash set at value + 0x18 with value stride 0x48."
+        }
+      ]
+    },
+    {
+      "name": "TimelineEmotionMaterialEntry",
+      "size": 32,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "Array reallocation in bg3.exe+0x6DF1F0 copies 16 bytes at +0. macOS SetParam writes the Guid argument here when it appends an element (stride 0x20)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x6DF1F0 moves it (source set to 0xFFFFFFFF = null FixedString); element destructor bg3.exe+0x709040. macOS SetParam: FixedString taken from MaterialGroupLookup::Get(...) +4."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "Moved the same way as field_10. macOS SetParam: FixedString from the looked-up group record (+0x10 -> +0)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Plain 4-byte copy in bg3.exe+0x6DF1F0 (int or float). macOS SetParam: uint32 from the same record (+8)."
+        },
+        {
+          "name": "field_1C",
+          "offset": 28,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "1-byte copy. macOS SetParam: byte from the same record (+4); compared when searching the array."
+        },
+        {
+          "name": "field_1D",
+          "offset": 29,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "1-byte copy. macOS SetParam: the bool argument; compared when searching the array."
+        },
+        {
+          "name": "_Pad1E",
+          "offset": 30,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "stride 0x20"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Groups",
+      "offset": 0,
+      "type": "HashMap<Guid, HashMap<FixedString, TimelineEmotionMaterialParam>>",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x1C6FD20; destructor bg3.exe+0x6CDBB0 -> bg3.exe+0x6D3660 walks values with stride 0x40 and frees an array at value + 0x30 (each value is itself a 64-byte hash map). Keys are 16 bytes: bg3.exe+0x2042EB0 walks the key array at +0x20 with stride 0x10 and passes each key to the Guid-keyed lookups of ecl::TimelineMaterialComponent (bg3.exe+0x1D746D0) and of ecl::TimelineSystem+0x430 (material groups). The macOS build names the type ls::HashMap<ls::Guid, ls::HashMap<ls::FixedString, ecl::EmotionMaterialParam>> (destructor instantiation bg3_macos_x64 0x100E67DD8; SetParam looks up the Guid, then Ensure<FixedString> on the inner map). Inner value size on Windows not established (see TimelineEmotionMaterialParam)."
+    },
+    {
+      "name": "Targets",
+      "offset": 64,
+      "type": "HashMap<Guid, TimelineEmotionMaterialTarget>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2043070 looks up MaterialTargetDetails::GroupId (element + 8 of MaterialConfiguration::MaterialDetails) in comp + 0x40 and reads values with stride 0x48; destructor bg3.exe+0x6D14C0 confirms the stride."
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "Array<TimelineEmotionMaterialEntry>",
+      "source": "unknown",
+      "evidence": "Destructor bg3.exe+0x6CDBB0 -> bg3.exe+0x6DF1F0: element stride 0x20; cleared by bg3.exe+0x2042EB0 when the emotion track stops. Probably ls::DynamicArray<ecl::TimelineEmotionMaterialComponent::GroupCache> (macOS destructor instantiation next to the component's ops); macOS SetParam appends 0x20-byte elements to the array at +0x80."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Windows stride and members of ecl::EmotionMaterialParam (inner value of Groups): macOS 0x30, Windows not read; declared as an opaque 48-byte block.",
+    "Targets (+0x40): no macOS name found for the 0x48-byte value; its members come from Windows bg3.exe+0x2043070 only (TimelineEmotionMaterialTarget+4 may be padding).",
+    "field_80 elements: member meanings beyond the macOS SetParam sources are open (likely ecl::TimelineEmotionMaterialComponent::GroupCache).",
+    "Seen alive (4 probed instances) only empty; needs a scene with emotional materials (blushing, tears) to check."
+  ],
+  "minutes": 12,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "The macOS SetParam names the first map HashMap<Guid, HashMap<FixedString, ecl::EmotionMaterialParam>> (replacing the placeholder inner type) and shows where the 0x20-byte array elements come from; the component's offsets are Windows (constructor/destructors), but the inner value size of Groups is still macOS-only, so it stays medium."
+}

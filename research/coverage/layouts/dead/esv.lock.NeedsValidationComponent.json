@@ -1,0 +1,55 @@
+{
+  "component": "esv::lock::NeedsValidationComponent",
+  "ext_name": "ServerLockNeedsValidation",
+  "size": 32,
+  "seen": false,
+  "summary": "Server marker of a lock whose data must be validated after loading a save: created only by the savegame loader bg3.exe+0x25AE100 from model ls::model::game::lock::v1::NeedsValidationComponent (40 bytes; macOS builds v1 from ls::model::game::lock::v0::LockComponent), read by esv::lock::LockSystem::FinalizeLockRequests (macOS; Toolkit EoCServer.dll+0x6334B0). Its members mirror eoc::lock::LockComponent (Key, LockDC, LockDifficultyClassID) minus the DC. Never seen alive. Registry total 32 (server row). savefields.py has no member names for this model.",
+  "fields": [
+    {
+      "name": "Key",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Loader bg3.exe+0x25AE100 lines 104-111: creates a FixedString from the model's string (CreateFromString) into local_98[0]; creator bg3.exe+0x26E9E50 (AllocRaw 0x20) moves it to +0 (`*c = *src; *src = 0xffffffff`). Named after eoc::lock::LockComponent.Key_M, from which the model is converted."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Never copied by the creator (it copies dwords 0, 2..5 and byte 6) - padding."
+    },
+    {
+      "name": "LockDifficultyClassID",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Loader copies the model's 16 bytes at element+0x10 (plVar13[0..1]) to local +8..+0x17; creator copies dwords 2..5. Named after eoc::lock::LockComponent.LockDifficultyClassID (Guid at +8 there too)."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Loader: `local_80 = (char)model[+0x20] != 0`; creator copies the byte at +0x18. Meaning not established."
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "Not copied."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Key and LockDifficultyClassID are named by analogy with eoc::lock::LockComponent (the model's v0 source); the bool at +0x18 is unnamed.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,79 @@
+{
+  "component": "ecl::player_management::EventsSingletonComponent",
+  "ext_name": "ClientPlayerManagementEventsSingleton",
+  "size": 48,
+  "seen": true,
+  "structs": [
+    {
+      "name": "PlayerCreatedEvent",
+      "size": 2,
+      "fields": [
+        {
+          "name": "PlayerId",
+          "offset": 0,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0x5504A0 stores the event's short at element*2 under 'IndexedStorage<ls::PlayerCreatedEvent>'."
+        }
+      ]
+    },
+    {
+      "name": "PlayerDestroyingEvent",
+      "size": 2,
+      "fields": [
+        {
+          "name": "PlayerId",
+          "offset": 0,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "Same handler, stride 2, 'IndexedStorage<ls::PlayerDestroyingEvent>'."
+        }
+      ]
+    },
+    {
+      "name": "PlayerDestroyedEvent",
+      "size": 2,
+      "fields": [
+        {
+          "name": "PlayerId",
+          "offset": 0,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "Same handler, stride 2, 'IndexedStorage<ls::PlayerDestroyedEvent>'."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Created",
+      "offset": 0,
+      "type": "Array<PlayerCreatedEvent>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x6C9C70 frees three trivial arrays (+0x20, +0x10, +0). Toolkit ecl::player_management::TrackingSystem::ProcessCreationDestructionEvents (EoCClient.dll+0x551F70) clears +0 (CheckBoundary ls::PlayerCreatedEvent), +0x10 (PlayerDestroyingEvent), +0x20 (PlayerDestroyedEvent) and refills them from the SPSCVariantQueue<PlayerCreatedEvent, PlayerDestroyingEvent, PlayerDestroyedEvent>. Live: one element in +0."
+    },
+    {
+      "name": "Destroying",
+      "offset": 16,
+      "type": "Array<PlayerDestroyingEvent>",
+      "source": "inferred",
+      "evidence": "see Created"
+    },
+    {
+      "name": "Destroyed",
+      "offset": 32,
+      "type": "Array<PlayerDestroyedEvent>",
+      "source": "inferred",
+      "evidence": "see Created"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Event classes assumed to hold only the player id (only a short is copied in)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

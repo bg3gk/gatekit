@@ -1,0 +1,34 @@
+{
+  "component": "esv::background::GoalFailedOneFrameComponent",
+  "ext_name": "ServerBackgroundGoalFailed",
+  "size": 24,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Event of esv::background::GoalSystem: a character failed a background goal (inspiration). esv::StoryCharacterEventManager::OnBackgroundGoalFailed(EntityRef, GoalFailedOneFrameComponent&) (Toolkit EoCServer.dll+0xEF3BA0) turns it into Osiris notification 0x72 with the character (from +0) and the goal Guid (+8, as a string). Registered as a normal component (ComponentTypeIdContext) although named OneFrame; storage set up by bg3.exe+0x2707860 (element size 0x18, no destructor = trivially destructible). Saved: model game.background.v1.GoalFailedOneFrameComponent (24 bytes, alignment 8; v0 was 1 byte) written together with core.v0.EntityId - matches an EntityHandle + Guid. Never seen alive. Registry total 24 (server row).",
+  "fields": [
+    {
+      "name": "Character",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Toolkit OnBackgroundGoalFailed: `FUN_18022a240(world, *param_3, 0)` turns the qword at +0 into the Osiris character parameter (entity -> Guid); the save writes an ls::model::core::v0::EntityId model beside the component."
+    },
+    {
+      "name": "Goal",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Toolkit OnBackgroundGoalFailed: `ls::Guid::ToString((Guid *)(param_3 + 1))` -> Osiris parameter 1 (the background goal's UUID). 8 + 16 = 24 = registry size and saved model v1 size."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Offsets come from the Toolkit build (agreeing with the registry size and the saved model size); the bg3.exe writer was not read.",
+    "Not seen alive (seen.py has no samples); savegame member names not available."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

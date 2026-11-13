@@ -1,0 +1,25 @@
+{
+  "component": "gui::registration::VMPassiveUnregisteredOneFrameComponent",
+  "ext_name": "GuiRegistrationVMPassiveUnregistered",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Object",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x453AD0 (VMPassiveRegistrationSystem::Update): InternalGetPassiveObject -> collection, RemovePassiveObject (lines ~340-347, ~463-470), then a new entity per object gets this component holding the ref-counted pointer (AddRef/Release at lines ~517-520). Value type Noesis::Ptr<gui::VMPassive> (the Data singleton's value type), written as void*. Live: 48 instances, all heap pointers."
+    }
+  ],
+  "summary": "One-frame event on a fresh entity: carries the gui::VMPassive view-model object that was just removed from VMPassiveDataSingletonComponent, so UI code can drop it (seen in fights, deaths, dialogues and spell casts, i.e. whenever passive entities go away).",
+  "confidence": "medium",
+  "open_questions": [
+    "Holds a Noesis::Ptr<gui::VMPassive>; exposed as an opaque pointer."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

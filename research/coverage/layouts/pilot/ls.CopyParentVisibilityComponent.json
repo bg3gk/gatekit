@@ -1,0 +1,22 @@
+{
+  "component": "ls::CopyParentVisibilityComponent",
+  "ext_name": "CopyParentVisibility",
+  "size": 8,
+  "fields": [
+    {
+      "name": "Parent",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20057B0 allocates 8 bytes and stores the 64-bit handle argument at +0; the probe shows a live client entity handle in all 48 instances; query registration at bg3.exe+0x1A53670 pairs it with ls::VisualComponent / DecalComponent / LightComponent / EffectComponent (the things whose visibility is copied). Name follows the component name."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The system body that reads the handle and copies visibility was not opened (only its query registration), so that the handle is the visibility source is inferred from the name."
+  ],
+  "minutes": 4,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

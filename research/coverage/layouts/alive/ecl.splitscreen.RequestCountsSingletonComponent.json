@@ -1,0 +1,38 @@
+{
+  "component": "ecl::splitscreen::RequestCountsSingletonComponent",
+  "ext_name": "ClientSplitscreenRequestCountsSingleton",
+  "size": 12,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ScreenFadeSplitRequests",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "ecl::splitscreen::RequestSystem::Update (EoCClient.dll+0x8441B0): counts[0] += pending LEGACY_ScreenFadeStart/StopSplitRequest delta (system+0x28); assert \"LEGACY_ScreenFadeStopSplitRequest without a LEGACY_ScreenFadeStartSplitRequest call\" when negative; clamped to >= 0. Default 0 (macOS str xzr,[x23]), live 0."
+    },
+    {
+      "name": "UISplitRequests",
+      "offset": 4,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Same function: counts[1] += system+0x24 (UIStart/UIStopSplitRequest), assert \"UIStopSplitRequest without a UIStartSplitRequest call\"; reset to 0 by LEGACY_ResetUI (system+0x2C flag). Live 0."
+    },
+    {
+      "name": "SplineSplitRequests",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Same function: counts[2] += system+0x20 (SplineStart/SplineStopSplitRequest), assert \"SplineStopSplitRequest without a SplineStartSplitRequest call\". Default 0 (macOS str wzr,[x23,#8]), live 0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are ours, built from the RequestSystem method names (Toolkit exports)."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

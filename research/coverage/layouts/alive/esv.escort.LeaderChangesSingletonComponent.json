@@ -1,0 +1,45 @@
+{
+  "component": "esv::escort::LeaderChangesSingletonComponent",
+  "ext_name": "ServerEscortLeaderChanges",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ServerEscortGroupLeaderChange",
+      "size": 16,
+      "fields": [
+        {
+          "name": "OldLeader",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "game",
+          "evidence": "esv::escort::GroupLeaderChange. bg3.exe+0x279A5C0 (gameplay-event forwarder; reads the singleton via storage index DAT_146377ed8) takes the 8-byte handle at value+0 (validity check, converted to a GUID by bg3.exe+0x2798FA0); Toolkit esv::StoryGameEventManager::OnEscortGroupLeaderChanged (EoCServer.dll+0xEDA100) passes value+0 as the first parameter of Osiris event EscortGroupLeaderChanged((GUIDSTRING)_OldLeader, (GUIDSTRING)_NewLeader, (STRING)_Group); the anubis event ls::anubis::game::event::EscortGroupLeaderChanged has Field_OldLeader."
+        },
+        {
+          "name": "NewLeader",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "game",
+          "evidence": "bg3.exe+0x279A5C0 reads value+8 the same way; second parameter _NewLeader of the Osiris event (Toolkit OnEscortGroupLeaderChanged reads param_2+8)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Changes",
+      "offset": 0,
+      "type": "HashMap<FixedString, ServerEscortGroupLeaderChange>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x279A5C0 walks the keys at +0x20 (4-byte FixedStrings, count at +0x2C) in step with the values at +0x30 (16-byte elements), IncRef's the key and forwards (Group, change); Toolkit GameplayEventSystem::ForwardEscortEvents passes them as (FixedString const& group, esv::escort::GroupLeaderChange const&). Key = escort group name (_Group of the Osiris event). Live (seen.py, idle): empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "bg3.exe+0x279A5C0 reads the map exactly as HashMap<FixedString, 16-byte value> with two entity handles per value; member names come from the Osiris event EscortGroupLeaderChanged(_OldLeader, _NewLeader, _Group) via the Toolkit's OnEscortGroupLeaderChanged.",
+  "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

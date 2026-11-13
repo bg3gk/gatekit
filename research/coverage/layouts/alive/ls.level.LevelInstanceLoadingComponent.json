@@ -1,0 +1,82 @@
+{
+  "component": "ls::level::LevelInstanceLoadingComponent",
+  "ext_name": "LevelInstanceLoading",
+  "size": 56,
+  "seen": true,
+  "summary": "Client and server, on level instances (up to ~185 holders) while/after they load; created by ls::level::LevelInstanceLoadSystem (GameEngine.dll: StartLoadingLevelData, InstantiateLevel, FinishLoading, ProcessLoadCompletion), read by eoc::PlatformSystem and esv::RootLevelSystem (macOS). Holds the level-data load job and a QueryPerformanceCounter timestamp of the load start (with a 1000 = milliseconds divisor). Not saved.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "creator bg3.exe+0x3C1E9A0 (alloc 0x38) writes *(uint32*)+0 = 0; live always 0"
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "not written by the creator; live garbage"
+    },
+    {
+      "name": "LoadJob",
+      "offset": 8,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0x93AFF0 StartLoadingLevelData: LevelData::Load(levelData, templateDescs, comp+8) fills a ref-counted pointer at comp+8 (object 0x58 bytes, refcount at +0x50, released when the load fails). Creator zeroes it; live always 0 (load finished)"
+    },
+    {
+      "name": "StartTime",
+      "offset": 16,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "creator bg3.exe+0x3C1E9A0: QueryPerformanceCounter((LARGE_INTEGER*)(comp+0x10)). Live: 48 distinct counter values"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "creator writes 0; live always 0 (probably the stop/elapsed counter of the same timer)"
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "creator writes byte +0x20 = 0; live byte 0 always 00"
+    },
+    {
+      "name": "_Pad21",
+      "offset": 33,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "padding; live garbage"
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "creator writes 0; live always 0"
+    },
+    {
+      "name": "TimeUnitDivisor",
+      "offset": 48,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "creator writes *(uint64*)+0x30 = 1000; live always 0x3E8. Looks like a millisecond timer (QPC start at +0x10, divisor 1000)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "+0x10..+0x38 is probably one timer struct of the engine (start counter, accumulated value, running flag, ?, unit 1000); members +0x18/+0x20/+0x28 not established",
+    "meaning of the uint32 at +0"
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

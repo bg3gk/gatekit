@@ -1,0 +1,56 @@
+{
+  "component": "ecl::inventory::ShowInventoryRequestsSingletonComponent",
+  "ext_name": "ClientInventoryShowInventoryRequestsSingleton",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ShowInventoryRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "PlayerId",
+          "offset": 0,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0x808600 copies the first uint16 of a user record whose second uint16 is compared with net::GetLocalPeerID(); default 0. Container exploration code keys players by such shorts."
+        },
+        {
+          "name": "_Pad2",
+          "offset": 2,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "Inventory",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0x808600: result of eoc::inventory::GetInventory for the looted entity; default 0xFFC0000000000000 (null handle)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, ShowInventoryRequest>",
+      "source": "inferred",
+      "evidence": "Game element name ecl::inventory::ShowInventoryRequestsSingletonComponent::Request (IndexedStorage string, mem::s_TagHashTable, stride 0x10) in EoCClient.dll+0x808600, called from ecl::LootValidationSystem::Update (EoCClient.dll+0x808D10) which builds a local map and moves it into the singleton (EoCClient.dll+0x808230: four arrays, values at +0x30). Key = entity of the looting view (param_2[7]). Live: all zero."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key is most likely the entity being looted (container/corpse); not proven",
+    "PlayerId may be the low half of a UserId rather than a player id",
+    "Windows side: only the 64-byte HashMap shape is confirmed (creator bg3.exe+0x19BD830 zeroes buckets/next/keys/values, destructor FUN_1405c4870 for plain keys and values); the 16-byte value stride and the members of the value rest on the Toolkit (EoCClient.dll+0x808600) - the bg3.exe twin of LootValidationSystem was not found by matches."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Not settled further: on Windows only the HashMap shell (creator bg3.exe+0x19BD830, destructor FUN_1405c4870) was confirmed; the value struct still rests on the Toolkit, so it stays medium."
+}

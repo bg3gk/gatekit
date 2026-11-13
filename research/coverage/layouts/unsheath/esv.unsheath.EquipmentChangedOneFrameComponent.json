@@ -1,0 +1,28 @@
+{
+  "component": "esv::unsheath::EquipmentChangedOneFrameComponent",
+  "ext_name": "ServerUnsheathEquipmentChanged",
+  "size": 16,
+  "oneFrame": true,
+  "fields": [
+    {
+      "name": "OldMainHandWeapon",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x32F4070 (size 16, both null handles). bg3.exe+0x32F1AD0 creates it when the newly resolved weapon pair differs from eoc::unsheath::StateComponent+0x0/+0x8 and copies StateComponent+0x0 (MainHandWeapon, value before the update) here; the new pair is then written to StateComponent. Capture: null handle (was sheathed)."
+    },
+    {
+      "name": "OldOffHandWeapon",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Same place: copy of StateComponent+0x8 (OffHandWeapon) before the update. Capture: null handle."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

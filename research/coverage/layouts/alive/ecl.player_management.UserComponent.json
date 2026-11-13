@@ -1,0 +1,24 @@
+{
+  "component": "ecl::player_management::UserComponent",
+  "ext_name": "ClientPlayerManagementUser",
+  "size": 2,
+  "seen": true,
+  "fields": [
+    {
+      "name": "PlayerId",
+      "offset": 0,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x797440 allocates 2 bytes, stores 0, no destructor. Toolkit ecl::player_management::GetUserEntityByPlayerId(WorldView<UserComponent const>&, short) (EoCClient.dll+0x549F70) finds the user entity whose component matches the short player id; macOS readers gui::GetPlayerHandle, CheckMultiplayerUser. Live: 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The comparison inside GetUserEntityByPlayerId was not read to the end; a short player id is the only thing that fits 2 bytes and the function signature."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

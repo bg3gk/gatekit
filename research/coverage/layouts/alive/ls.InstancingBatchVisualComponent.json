@@ -1,0 +1,40 @@
+{
+  "component": "ls::InstancingBatchVisualComponent",
+  "ext_name": "InstancingBatchVisual",
+  "size": 32,
+  "seen": true,
+  "summary": "Visual data of an instancing batch, created by bg3.exe+0x3B03DF0 (size 0x20, all zero, destructor bg3.exe+0x686280) from a queued 0x30-byte record in bg3.exe+0x3AFCC10.",
+  "fields": [
+    {
+      "name": "Renderables",
+      "offset": 0,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "Array of ls::RenderableObject pointers. Windows bg3.exe+0x3AFCC10 (= Toolkit ls::InstancingSystem::CreateInstancingBatchVisuals, GameEngine.dll+0x972330) moves the 0x30-byte VisualCreateResult's array (record +0x20) here (bg3.exe+0x591830) and then walks it with an 8-byte stride, attaching each object to the scene (writes the scene at object+0x38); when the batch is discarded the same array's elements are destroyed as objects. Toolkit UnloadInstancingBatchVisuals (GameEngine.dll+0x9790B0) calls RenderableObject::DetachFromScene / ~RenderableObject (0x110-byte objects) on each element. Destructor bg3.exe+0x686280 only frees the buffer (non-owning at that point)."
+    },
+    {
+      "name": "VertexBuffer1",
+      "offset": 16,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "rf::VertexBuffer pointer: bg3.exe+0x3AFCC10 copies VisualCreateResult+0x10 here; when discarded the record's +0x10 goes to bg3.exe+0x408EBB0 (= rf::DataLoader::RemoveVertexBuffer in the Toolkit). Toolkit UnloadInstancingBatchVisuals removes the vertex buffer at +0x10 and clears it. Live: heap pointers."
+    },
+    {
+      "name": "VertexBuffer2",
+      "offset": 24,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Second rf::VertexBuffer pointer: copied from VisualCreateResult+0x18 by bg3.exe+0x3AFCC10, removed with bg3.exe+0x408EBB0 (RemoveVertexBuffer) when discarded; Toolkit unload removes +0x18. Live: 0 (absent in the sampled batches)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which of the two vertex buffers is which (instance data vs. a second stream) - names are descriptive."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled from the Windows creator bg3.exe+0x3AFCC10 (array of 8-byte RenderableObject pointers walked with stride 8, two vertex-buffer pointers at +0x10/+0x18 released with RemoveVertexBuffer) and the named Toolkit CreateInstancingBatchVisuals / UnloadInstancingBatchVisuals.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

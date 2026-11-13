@@ -1,0 +1,163 @@
+{
+  "component": "esv::GameStateLoadSessionComponent",
+  "ext_name": "ServerGameStateLoadSession",
+  "size": 176,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server game-state component that drives loading a session (new game or savegame) through esv::SessionLoadSystem::Update (game bg3.exe+0x2B1D4B0, Toolkit EoCServer.dll+0xC49A20): starts with an eoc::LoadSessionDesc (load target description: ids, module Guids, ruleset modifiers), then the savegame visitor, a string and the step counter of the load state machine (0..8: StartLoadSession, SetupLoadGame, LoadGlobalsPart1/2/3, LoadStory, finish). Read as a condition by many server systems (photo mode, drop-in, icons, rulesets, dialog privacy). Never seen alive. Registry total 176 (server row); the Toolkit build has 0xA0 (its LoadSessionDesc is 0x10 shorter).",
+  "structs": [
+    {
+      "name": "GameStateLoadSessionModifierValue",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Value",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Toolkit eoc::LoadSessionDesc::Visit visits +0x20 as HashMap<ls::Guid, ls::Variant<eoc::ruleset::NoneValue,int,float,ls::FixedString,bool>>; this Variant is 8 bytes with the value at +0 and the alternative index at +4 (Toolkit EoCShared.dll+0x18EAA0, same Variant)."
+        },
+        {
+          "name": "Type",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant alternative index: 0 none, 1 int, 2 float, 3 FixedString, 4 bool."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding to 8."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Desc constructor bg3.exe+0xF19960 (called by creator bg3.exe+0x300C460): `p[0] = 0`. Toolkit eoc::LoadSessionDesc move ctor (EoCShared.dll+0x121F640) copies 4 bytes at +0; Visit sends it first as uint."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xF19960: `p[1] = 0xFFFFFFFF`; desc destructor bg3.exe+0x5F1BB0 DecRefs +4. Toolkit: FixedString at +4, visited."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xF19960 stores an IncRef'ed default FixedString (DAT_14617662c); destructor DecRefs +8. Toolkit Visit sends it with VisitGUID (a Guid kept as FixedString)."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "alignment of the Array at +0x10; not written by the constructor."
+    },
+    {
+      "name": "Guids",
+      "offset": 16,
+      "type": "Array<Guid>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0xF19960 zeroes +0x10/+0x18; destructor frees +0x10 (FUN_1405BD630, trivial elements). Toolkit Visit: size at +0x1C, elements `+0x10` with stride 0x10 visited as Guid (module/target Guids)."
+    },
+    {
+      "name": "RulesetModifiers",
+      "offset": 32,
+      "type": "HashMap<Guid, GameStateLoadSessionModifierValue>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0xF19960 builds +0x20 with FUN_140F19B50; destructor bg3.exe+0x5F1BB0 frees +0x50 and the hash parts from +0x20 (64 bytes up to +0x60). Toolkit Visit: `ruleset::Visit((HashMap<Guid, Variant<NoneValue,int,float,FixedString,bool>>*)(this + 0x20))`."
+    },
+    {
+      "name": "field_60",
+      "offset": 96,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xF19960: IncRef'ed default FixedString at +0x60; destructor DecRefs +0x60. Toolkit: FixedString at +0x60 visited with VisitGUID."
+    },
+    {
+      "name": "_Pad64",
+      "offset": 100,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "alignment; not written by the constructor."
+    },
+    {
+      "name": "field_68",
+      "offset": 104,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xF19960 zeroes the qword at +0x68; trivially destroyed. Not in the Toolkit's (older) LoadSessionDesc."
+    },
+    {
+      "name": "field_70",
+      "offset": 112,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xF19960 zeroes +0x70; trivially destroyed."
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xF19960 zeroes +0x78; trivially destroyed."
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Creator zeroes +0x80. Update bg3.exe+0x2B1D4B0 line 474: `*(uint32*)(*(p + 0x80) + 0xA0) = 1` in the final step - a pointer to some load object."
+    },
+    {
+      "name": "SavegameVisitor",
+      "offset": 136,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x88. esv::SessionLoadSystem::SetupLoadGame (bg3.exe+0x2B1DEA0) stores `*(p + 0x88) = FUN_142A3B030(savegameManager, 0)`; the update passes it as `SavegameVisitor*` to LoadGlobalsPart1/2 (bg3.exe+0x2B1E3F0) and frees it in step 8 (`FUN_141113310(*(p+0x88), 1); *(p+0x88) = 0`). Toolkit: the same visitor at +0x70."
+    },
+    {
+      "name": "field_90",
+      "offset": 144,
+      "type": "STDString",
+      "source": "unknown",
+      "evidence": "Creator constructs an STDString at +0x90 from a global empty string; component destructor bg3.exe+0x22CDCB0 frees it when capacity (+0xA4) > 15 and resets size +0xA0 / capacity 0xF."
+    },
+    {
+      "name": "State",
+      "offset": 168,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator writes 0 at +0xA8. Update bg3.exe+0x2B1D4B0: `switch(*(uint32*)(p + 0xA8))` with cases 0..8 and writes 1, 2, 4, 5, 6, 7, 8 as the load proceeds; Toolkit the same at +0x98."
+    },
+    {
+      "name": "_PadAC",
+      "offset": 172,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding to 0xB0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the desc members at +0, +4, +8, +0x60 are unknown (eoc::LoadSessionDesc has no member names in the Toolkit); +8 and +0x60 hold Guids as FixedStrings.",
+    "+0x68..+0x7F (three zeroed qwords, part of the game's longer LoadSessionDesc) and +0x80 are not explained.",
+    "The HashMap value stride (8) comes from the Toolkit's Variant, not from game code read here.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 16,
+  "functions_read": 9,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled: same eoc::LoadSessionDesc as ecl::GameStateLoadSessionComponent; the Windows constructor bg3.exe+0xF19960 only zeroes +0x68..+0x80 as qwords and no Windows Visit of the desc was found (net message bg3.exe+0x11B0D70 / vtable bg3.exe+0x555DF58 has no serializer slot)."
+}

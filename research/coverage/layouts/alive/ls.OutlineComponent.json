@@ -1,0 +1,68 @@
+{
+  "component": "ls::OutlineComponent",
+  "ext_name": "Outline",
+  "size": 24,
+  "seen": true,
+  "summary": "Highlight outline of a character/item (hover, selection, targeting), one entry per player: ecl::OutlineSystem (EoCClient.dll, unnamed functions near +0x6D7070) processes requests HashMap<EntityHandle, DynamicArray<pair<OutlineComponent::PlayerData, OutlineSystem::OutlineRequestType>>> (macOS names) and adds/updates this component.",
+  "structs": [
+    {
+      "name": "OutlinePlayerData",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Color",
+          "offset": 0,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Exported ctor ??0OutlineComponent@ls@@QEAA@VVector3f@@F@Z (GameEngine.dll+0x61B9B0) takes (Vector3f, short) and pushes one ls::OutlineComponent::PlayerData (IndexedStorage<PlayerData>, element 0x10, align 4); the add EoCClient.dll+0x6D3A70 copies 12 bytes of the request's PlayerData into the Vector3f. Name inferred (outline colour per player; EoCClient.dll+0x6D8750 handles colour-blind modes)."
+        },
+        {
+          "name": "PlayerId",
+          "offset": 12,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "Same ctor: the short argument; EoCClient.dll+0x6D7070 finds an existing entry by comparing *(short*)(element+0xC) with the request's player id."
+        },
+        {
+          "name": "_PadE",
+          "offset": 14,
+          "type": "uint8_t[2]",
+          "source": "unknown",
+          "evidence": "element padding."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "Array<OutlinePlayerData>",
+      "source": "inferred",
+      "evidence": "Ctor GameEngine.dll+0x61B9B0: *(this+8) = 6 (capacity), AllocateInternal(6, 0x10, 4), size +0xC. Live: heap pointer, capacity always 6, size 1."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Ctor clears byte +0x10; move ctor (GameEngine.dll+0x2F7BD0) copies it; EoCClient.dll+0x6D7070 sets it to 1 right after adding the component when ecl::Character::IsFlag(6) (or the item equivalent) is true. Live: low byte 0/1."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "tail padding (live bytes vary)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the bool at +0x10 (character flag 6)."
+  ],
+  "minutes": 8,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

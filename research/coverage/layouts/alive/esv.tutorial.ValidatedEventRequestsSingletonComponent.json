@@ -1,0 +1,45 @@
+{
+  "component": "esv::tutorial::ValidatedEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialValidatedEventRequestsSingleton",
+  "size": 16,
+  "structs": [
+    {
+      "name": "ValidatedEventRequestsEntry",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3427CE0 stores the variant's entity at +0"
+        },
+        {
+          "name": "Event",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3427CE0 stores the 16-byte tutorial event id at +8"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "Array<ValidatedEventRequestsEntry>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3427CE0 (ValidateSystem update, part 2) clears it and appends 24-byte {entity, Guid}: entity = +0 of the variant entry, Guid found via the tutorial event lookup; macOS esv::StoryGameEventManager::OnTutorialEvent(esv::tutorial::ValidatedEventData const&) consumes them"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done).",
+  "seen": true,
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

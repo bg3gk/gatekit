@@ -1,0 +1,90 @@
+{
+  "component": "ls::PhysicsModificationOneFrameComponent",
+  "ext_name": "PhysicsModification",
+  "size": 56,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Physics change request of ls::PhysicsRequestSystem, applied by ls::PhysicsLoaderSystem and phx::PhysXDisableSimulationSystem: the system drains its queue of Variant<Unload, ReloadResourceID, ReloadPath, ChangeGroupMaskAndFlags> (macOS ls::MPMCQueueBounded<...>) into a HashMap<EntityHandle, PhysicsModificationOneFrameComponent> (macOS name) and adds one component per entity. The registry does not flag it one-frame. Never seen alive.",
+  "fields": [
+    {
+      "name": "Resource",
+      "offset": 0,
+      "type": "uint8_t[24]",
+      "source": "inferred",
+      "evidence": "Variant storage selected by ResourceType: 0 = FixedString (resource id, 4 bytes at +0), 1 = ls string of 24 bytes (path: 16-byte inline buffer or heap pointer, size u32 at +0x10, capacity u32 at +0x14, empty = capacity 0xF). bg3.exe+0x3C38400 (move) and bg3.exe+0x3A70580 (destructor, jumped to from bg3.exe+0x3A70420 registered by creator bg3.exe+0x3C38210) switch on the byte at +0x18; bg3.exe+0x3C37570 (per-frame update of ls::PhysicsRequestSystem) writes the FixedString for ReloadResourceID requests (Toolkit ls::PhysicsRequestSystem::RequestReloadPhysics(entity, FixedString const&, bool)) and the string for ReloadPath requests."
+    },
+    {
+      "name": "ResourceType",
+      "offset": 24,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Variant index byte at +0x18 (0 FixedString, 1 string), see Resource; new map entries (bg3.exe+0x3C38050) start with 0 and a null FixedString."
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding: never copied by the move bg3.exe+0x3C38400"
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x3C37570: ChangeGroupMaskAndFlags request writes the first of its three uint parameters here (Toolkit ls::PhysicsRequestSystem::RequestChangeGroupMaskAndFlags(entity, uint, uint, uint)); default 0."
+    },
+    {
+      "name": "field_24",
+      "offset": 36,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "second uint parameter of ChangeGroupMaskAndFlags; default 0."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "third uint parameter of ChangeGroupMaskAndFlags; default 0."
+    },
+    {
+      "name": "field_2c",
+      "offset": 44,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "byte copied by the move and the map growth (bg3.exe+0x3C38050), default 0; no request writes it in bg3.exe+0x3C37570."
+    },
+    {
+      "name": "_Pad2D",
+      "offset": 45,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "Flags",
+      "offset": 48,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3C37570: Unload sets (Flags & ~3) | 0x40; ReloadResourceID / ReloadPath set bit 0 and bit 1 = the request's bool; ChangeGroupMaskAndFlags ORs 0x1C. Default 0."
+    },
+    {
+      "name": "_Pad34",
+      "offset": 52,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding up to the registry size 0x38"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the three ChangeGroupMaskAndFlags values (+0x20/+0x24/+0x28) and meaning of the byte +0x2C.",
+    "Toolkit GameEngine.dll lays the same struct out 8 bytes larger (its string is 32 bytes); offsets above are bg3.exe's."
+  ],
+  "minutes": 14,
+  "functions_read": 7,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

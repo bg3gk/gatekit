@@ -1,0 +1,78 @@
+{
+  "component": "ecl::character_creation::RandomCharactersComponent",
+  "ext_name": "ClientCCRandomCharacters",
+  "size": 24,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Pool of randomised character definitions for the 'random character' button of character creation (gui::DCCharacterCreation RandomCharacterIndex/Count). Created by bg3.exe+0x2027B00 with 16 slots.",
+  "structs": [
+    {
+      "name": "RandomCharactersCharacterDefinition",
+      "size": 648,
+      "equals": "Script Extender character_creation::CharacterDefinition (Components/CharacterCreation.h, 0x288 bytes: int field_0, STDString Name, BaseCharacterDefinition, Appearance, abilities, LevelUpData) - game type eoc::character_creation::BaseDefinition",
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "first 4 bytes, moved as a uint32 by the element move in bg3.exe+0x6DA880; SE field_0"
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Name",
+          "offset": 8,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x6DA880 moves a 24-byte string at +8 (resets the source to the empty SSO state: size 0, capacity 0xF); SE Name"
+        },
+        {
+          "name": "Rest",
+          "offset": 32,
+          "type": "uint8_t[616]",
+          "source": "inferred",
+          "evidence": "rest of SE CharacterDefinition (BaseCharacterDefinition at +0x20, Appearance at +0xC8 moved by eoc::character_creation::Appearance::Appearance, abilities, LevelUpData) - kept as bytes here"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x201D030 and the initialiser bg3.exe+0x2027B00 write -1 to the whole 8 bytes +0..+8 (macOS InitializeRandomCharactersComponent the same). Probably the current random index (GUI exposes RandomCharacterIndex); width not established - may be one 64-bit value."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "second half of the 8-byte -1 store; see field_0."
+    },
+    {
+      "name": "Definitions",
+      "offset": 8,
+      "type": "Array<RandomCharactersCharacterDefinition>",
+      "source": "inferred",
+      "evidence": "Creator zeroes the array at +8; destructor bg3.exe+0x6ACB30 resizes it to 0 with bg3.exe+0x6DA880 (element stride 0x288, element dtor FUN_1406CF3C0) and frees it; bg3.exe+0x2027B00 resizes it to 16. macOS: ls::DynamicArray<eoc::character_creation::BaseDefinition>::Resize(.., 0x10)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning and width of the 8 bytes at +0 (always -1 when written).",
+    "Element kept as bytes after Name (SE CharacterDefinition)."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled: as for RandomAppearances - the Windows users only build views (bg3.exe+0x208DA70 / 0x208E300 / 0x1F8A050), and the command processor that reads the 8 bytes at +0 has no matched Windows function; the element remains SE CharacterDefinition kept mostly as bytes."
+}

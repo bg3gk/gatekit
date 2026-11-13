@@ -1,0 +1,25 @@
+{
+  "component": "ls::LightProbeHierarchySingletonComponent",
+  "ext_name": "LightProbeHierarchySingleton",
+  "size": 64,
+  "seen": true,
+  "summary": "Client singleton of ls::LightProbeHierarchySystem (HandleAdds): the light probes of the level by entity.",
+  "fields": [
+    {
+      "name": "Probes",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, void*>",
+      "source": "inferred",
+      "evidence": "Live: prime bucket count at +8 (0x61..0xC07), keys array at +0x20 (8-byte heap entries), values array at +0x30 whose capacity equals the keys' (0x40..0x800) - the HashMap shape. macOS has exactly one matching template, ls::HashMap<ls::ID<ecs::EntityHandleTraits>, ls::LightProbeComponent*>, so values are pointers to ls::LightProbeComponent."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Not confirmed on the Windows side (ls::LightProbeHierarchySystem::HandleAdds not read)."
+  ],
+  "minutes": 3,
+  "functions_read": 0,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

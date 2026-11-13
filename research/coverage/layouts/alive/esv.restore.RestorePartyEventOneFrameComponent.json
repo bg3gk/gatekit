@@ -1,0 +1,32 @@
+{
+  "component": "esv::restore::RestorePartyEventOneFrameComponent",
+  "ext_name": "ServerRestorePartyEvent",
+  "size": 16,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event raised for Osi.RestoreParty (seen.py context: every 'spells-1' step that ran Osi.RestoreParty(host) before casting). Read by esv::SpellCooldownSystem (ProcessStartCooldownRequests) and esv::summon::DespawnSystem (macOS names). macOS: EntityCommandBuffer::AddComponentUnchecked<RestorePartyEventOneFrameComponent, EntityHandle const&, EntityHandle const&> - two entity handles.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2D54A60 allocates 0x10 and stores *param_3 at +0; caller bg3.exe+0x2D54620 passes the entity of each 16-byte request (request.flag at +8 == 1) of the restore request list. Live: valid entity handles."
+    },
+    {
+      "name": "Party",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Caller bg3.exe+0x2D54620 passes either a constant null handle (DAT_1457c3a78) or the value at +0x18 of a component fetched by FUN_140afe060 - eoc::party::MemberComponent.Party sits at +0x18 in SE (UserId, Uuid, Party); the caller also deduplicates by this handle. Live: a handle or 0xFFC0000000000000 (null)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "FUN_140afe060 assumed to fetch eoc::party::MemberComponent (offset +0x18 match only)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

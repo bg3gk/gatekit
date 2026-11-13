@@ -1,0 +1,39 @@
+{
+  "component": "esv::relation::BaseFactionChangedEventOneFrameComponent",
+  "ext_name": "ServerRelationBaseFactionChangedEvent",
+  "size": 40,
+  "seen": true,
+  "summary": "Server one-frame event of esv::relation::RelationSystem (ProcessSetBaseFactionRequests / UpdateCurrentFaction): an entity's base faction changed from one faction Guid to another. Read by esv::status::RequestSystem::GatherBaseFactionChangedRequests and the Anubis/Osiris event bridge (ls::anubis::game::event::BaseFactionChanged); also saved (ls::model game::relation v0/v1). Seen.py context: appears in fights, spells, shove/throw, deaths, dialogues and on level load; up to 12 holders at once.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x8938C0 constructor BaseFactionChangedEventOneFrameComponent(ID<EntityHandleTraits> const&, Guid const&, Guid const&) stores the ID at +0; default constructor EoCServer.dll+0x50B420 sets 0xffc0000000000000. Live: entity-handle-shaped values."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "First Guid argument of the constructor (probably the old or the new faction). Live: 9 distinct Guid-like values."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Second Guid argument of the constructor. Live: 8 distinct Guid-like values."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which of the two faction Guids is the old one and which the new one."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,96 @@
+{
+  "component": "eoc::analytics::EventFTBStartedComponent",
+  "ext_name": "AnalyticsEventFTBStarted",
+  "size": 40,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Character",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "write-all serializer slot 2 (bg3.exe+0x9E6430 area) writes an entity (bg3.exe+0x4017090) at +0, then a string (bg3.exe+0x4016480) at +8, 4 bytes at +0x20, 1 byte at +0x24, 1 byte at +0x25. Live: client 0x01400001000001FE, server 0x01800001000007C3/0x...29E8 (entity handles of the two worlds), same head as the other analytics events (EventItemUse, EventCombatTurn m_CharacterHandle)."
+    },
+    {
+      "name": "FtbId",
+      "offset": 8,
+      "type": "EventFTBStartedString",
+      "source": "game",
+      "evidence": "EoCClient.dll+0xD38790 ecl::GameAnalyticsSystem::RecordFtbStart: ls::STDString::ToChar(+8) -> \"ftb_id\". Live: heap pointer, size 0x24 (36), capacity 0x2F."
+    },
+    {
+      "name": "FtbTurn",
+      "offset": 32,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "RecordFtbStart: int at +0x20 -> \"ftb_turn\". Live 0."
+    },
+    {
+      "name": "FtbInitiator",
+      "offset": 36,
+      "type": "bool",
+      "source": "game",
+      "evidence": "RecordFtbStart: byte at +0x24 -> \"ftb_initiator\" (bool writer). Live 1 on client, 0/1 on server."
+    },
+    {
+      "name": "field_25",
+      "offset": 37,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "RecordFtbStart records \"is_story_triggered\" = (byte +0x25 == 0), so this flag is the inverse of story-triggered (player-triggered?). Live 0."
+    },
+    {
+      "name": "_Pad26",
+      "offset": 38,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "tail padding (live 0xFFFF, stale)"
+    }
+  ],
+  "structs": [
+    {
+      "name": "EventFTBStartedString",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Ptr",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "heap pointer when Capacity > 15, else inline buffer bytes 0..15. Equals the 24-byte game string used as STDString in se-fork\\coverage\\layouts\\fieldmeta\\eoc.analytics.EventCombatTurnComponent.json"
+        },
+        {
+          "name": "InlineTail",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bytes 8..15 of the inline buffer; live 0"
+        },
+        {
+          "name": "Size",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "live 0x24"
+        },
+        {
+          "name": "Capacity",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "live 0x2F"
+        }
+      ]
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the +0x25 flag beyond 'not story triggered'.",
+    "Character offset 0 by analogy with the other analytics events (RecordFtbStart does not print it)."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "67 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

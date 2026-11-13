@@ -1,0 +1,199 @@
+{
+  "component": "esv::item::DestroyRequestComponent",
+  "ext_name": "ServerItemDestroyRequest",
+  "size": 128,
+  "seen": true,
+  "summary": "Server request to destroy an item: the target item plus the death data of the destruction (savegame: Ops<esv::item::DestroyRequestComponent, esv::death::Loader>, model ls::model::game::death::v4::DestroyItemRequestComponent {Target, DeathData}). Created on its own request entity by bg3.exe+0x302D200 and by the save loader bg3.exe+0x25EB1A0. The embedded DeathData (0x78 bytes at +8) is SE's bg3se::death::DeathData, but three of SE's names disagree with the game's savegame model (see evidence).",
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Windows save loader bg3.exe+0x25EB1A0 (model ls::model::game::death::v4::DestroyItemRequestComponent {Target, DeathData}) stores Target at +0 and the 0x78-byte runtime DeathData made by bg3.exe+0x2775340 at +8; member 0 of the model (Target), resolved from its EntityId."
+    },
+    {
+      "name": "Cause",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 0; converter bg3.exe+0x2775340 writes DeathData+0 (default null handle). SE DeathData.Cause."
+    },
+    {
+      "name": "CauseOwnerObject",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 1; DeathData+8 (default null). SE DeathData.CauseOwner."
+    },
+    {
+      "name": "CauseUUID",
+      "offset": 24,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 2; DeathData+0x10 (16 bytes, default null Guid DAT_14625AAD0). SE CauseUuid."
+    },
+    {
+      "name": "DeathType",
+      "offset": 40,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 3; DeathData+0x20 (byte). Enum stats::DeathType (uint8) - SE DeathData.DeathType."
+    },
+    {
+      "name": "DamageType",
+      "offset": 41,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 4; DeathData+0x21 (byte). Enum DamageType (uint8) - SE MainDamageType."
+    },
+    {
+      "name": "IsDamageCritical",
+      "offset": 42,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 5; DeathData+0x22 = model+0x29 != 0. SE IsCritical."
+    },
+    {
+      "name": "AllowDownedOnDeath",
+      "offset": 43,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 17 (model +0x7B) -> DeathData+0x23 (default 1 from the dword 0x01000000 at +0x20). SE names this byte InstantKill - the game's model says AllowDownedOnDeath."
+    },
+    {
+      "name": "CauseType",
+      "offset": 44,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 6; DeathData+0x24 (byte). Enum CauseType (uint8) - SE CauseType."
+    },
+    {
+      "name": "_Pad2D",
+      "offset": 45,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Alignment of the int32 at +0x30; never written."
+    },
+    {
+      "name": "StoryActionId",
+      "offset": 48,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 7; DeathData+0x28 (int32, default 0)."
+    },
+    {
+      "name": "InstantDeath",
+      "offset": 52,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 8 (model +0x3C) -> DeathData+0x2C (default 0). SE names this byte Chasm - the game's model says InstantDeath."
+    },
+    {
+      "name": "_Pad35",
+      "offset": 53,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Alignment; never written (live: leftovers)."
+    },
+    {
+      "name": "ImpactPosition",
+      "offset": 56,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 9; DeathData+0x30 (default FLT_MAX x3; converted from the model's position when non-zero)."
+    },
+    {
+      "name": "ImpactDirection",
+      "offset": 68,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 10; DeathData+0x3C (default FLT_MAX x3). The model stores a quaternion; the converter turns it into a direction vector (rotated axis)."
+    },
+    {
+      "name": "ImpactIsOnWeapon",
+      "offset": 80,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 11 (model +0x5C) -> DeathData+0x48. SE field_48."
+    },
+    {
+      "name": "_Pad51",
+      "offset": 81,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Alignment; never written."
+    },
+    {
+      "name": "ImpactForce",
+      "offset": 84,
+      "type": "float",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 12; DeathData+0x4C (default 0)."
+    },
+    {
+      "name": "DeathCombat",
+      "offset": 88,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 13; DeathData+0x50 (16 bytes, default null Guid). SE Combat."
+    },
+    {
+      "name": "GenerateTreasure",
+      "offset": 104,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 14 (model +0x78) -> DeathData+0x60 (default 1, low byte of 0x01000001). SE field_60."
+    },
+    {
+      "name": "WasRequest",
+      "offset": 105,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 15 (model +0x79) -> DeathData+0x61. SE field_61."
+    },
+    {
+      "name": "WasForced",
+      "offset": 106,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 16 (model +0x7A) -> DeathData+0x62. SE field_62."
+    },
+    {
+      "name": "LeavesTrace",
+      "offset": 107,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 20 (model +0x8C) -> DeathData+0x63 (default 1). SE LeaveTrace."
+    },
+    {
+      "name": "SourcePos",
+      "offset": 108,
+      "type": "std::array<float, 3>",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 19; DeathData+0x64..+0x6F: storage of an optional position (SE std::optional<glm::vec3> ChasmPosition). Written only when SourcePosPresent is set; the converter and the creator leave it uninitialised otherwise (live raw check saw non-floats there), so it is declared as plain floats in an array."
+    },
+    {
+      "name": "SourcePosPresent",
+      "offset": 120,
+      "type": "bool",
+      "source": "game",
+      "evidence": "savegame model ls::model::game::death::v4::DeathData, member 18 (model +0x7C) -> DeathData+0x70: the optional's engaged flag (default 0)."
+    },
+    {
+      "name": "_Pad79",
+      "offset": 121,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "Tail padding of the 8-aligned DeathData (0x78) / component (0x80)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 10,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "The Windows save loader bg3.exe+0x25EB1A0 shows the component is {Target, DeathData} (the first version mistook Target for Cause); the DeathData converter bg3.exe+0x2775340 maps each of the 21 named members of model death::v4::DeathData to its runtime offset. SE's DeathData names InstantKill (+0x23), Chasm (+0x2C) and ChasmPosition (+0x64) are the game's AllowDownedOnDeath, InstantDeath and SourcePos.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

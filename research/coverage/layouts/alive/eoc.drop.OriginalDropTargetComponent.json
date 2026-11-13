@@ -1,0 +1,25 @@
+{
+  "component": "eoc::drop::OriginalDropTargetComponent",
+  "ext_name": "DropOriginalDropTarget",
+  "size": 8,
+  "seen": true,
+  "summary": "Replicated: the entity an item was originally dropped/thrown onto. Written by esv::drop::DropEntityRequestSystem (AddDropEntityComponent, EntityValidator; macOS). Born live in shove-throw and a Servant of the Raven dialogue together with drop::AnimationComponent, DropEntityStateComponent, thrown::IsThrownComponent and the esv::drop components.",
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Replication serializer bg3.exe+0x9D89C0 writes one EntityHandle (FUN_144017090, the handle writer) from +0 (global offset DAT_14627fc98 = 0). macOS default constructor str x1,[x23] (8 bytes). Live entity handles on both sides."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether the target is the drop destination container/character or the original thrower not checked."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

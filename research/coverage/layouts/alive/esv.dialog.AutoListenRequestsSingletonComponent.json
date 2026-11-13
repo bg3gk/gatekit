@@ -1,0 +1,47 @@
+{
+  "component": "esv::dialog::AutoListenRequestsSingletonComponent",
+  "ext_name": "ServerDialogAutoListenRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AutoListenRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Listener",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "AutoListenSystem::DispatchAutolistenRequests (EoCServer.dll+0xC7FE40) appends esv::dialog::ListenRequest (name from its IndexedStorage assert): +0 = the queried character entity that passed IAutoListenSystemListenChecker (default null handle 0xffc0000000000000)."
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "+8 = the other entity passed to the listen checker (CanEntityListenToEntity); both are handed to IListeningManagerInterface vtable+8 by ListenRequestSystem::DispatchAutolistenRequests (EoCServer.dll+0xC784D0)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<AutoListenRequest>",
+      "source": "inferred",
+      "evidence": "Element type named by the game: ls::IndexedStorage<struct esv::dialog::ListenRequest> (EoCServer.dll+0xC7FE40); stride 0x10 in ListenRequestSystem::DispatchAutolistenRequests (EoCServer.dll+0xC784D0), which clears it afterwards. bg3.exe destructor bg3.exe+0x686280 frees the buffer only (POD). Live (seen.py, idle): one instance, all bytes zero (empty container)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which of the two handles is the speaker and which the listener is inferred from the call order."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

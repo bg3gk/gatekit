@@ -1,0 +1,26 @@
+{
+  "component": "ecl::character_creation::ClearScreenFadeRequestComponent",
+  "ext_name": "ClientCharacterCreationClearScreenFadeRequest",
+  "size": 16,
+  "seen": true,
+  "reuses": "ClearScreenFadeData (GameDefinitions/Components/Camera.h); same layout as ecl::camera::ClearScreenFadeRequestManualOneFrameComponent",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ClearScreenFadeData>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D16050 allocates 16 bytes and registers the generic array destructor thunk bg3.exe+0x5946C0 (the same one SE's notes give for ecl::timeline::RenderFrameVisibilityRequestsComponent). ecl::screen_fade::ScreenFadeSystem::ProcessClearScreenFadeRequests (EoCClient.dll+0x7E9D50), whose WorldView lists this component, iterates each clear-request component as a DynamicArray of 0x20-byte elements copying a Guid (+0), 8 bytes (+0x10, two floats) and one byte (+0x18) - the layout of SE's ClearScreenFadeData (Guid FadeId, float FadeSpeed, float FadeTime, uint8 field_18). macOS default ctor: 16 zero bytes. Live (idle): all zero."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The four clear-request loops in ProcessClearScreenFadeRequests were not individually matched to type indices; all have the same 0x20 element shape."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "hold": "uses types declared elsewhere (ClearScreenFadeData): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

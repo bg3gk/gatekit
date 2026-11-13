@@ -1,0 +1,274 @@
+{
+  "component": "ls::anubis::savegame::ReloadingComponent",
+  "ext_name": "AnubisSavegameReloading",
+  "size": 224,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Server: state of ls::anubis::System while it reloads Anubis behaviour trees (ls::anubis::System::ProcessReloadRequests, bg3.exe+0x382C4B0): an ls::anubis::savegame::Reader over the state saved before the reload, a map of entities to reinstate and a step byte. Never seen alive.",
+  "structs": [
+    {
+      "name": "AnubisSavegameReloadingRawArray",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Buf",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "pointer of an ls::Array whose elements are freed without a destructor (element size not established)"
+        },
+        {
+          "name": "Capacity",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Array layout ptr/capacity/size"
+        },
+        {
+          "name": "Size",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Array layout ptr/capacity/size"
+        }
+      ]
+    },
+    {
+      "name": "AnubisSavegameReloadingNamedValue",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "element resize bg3.exe+0x3839060 (stride 0x20) frees the buffer when the capacity at +0x14 exceeds 0xF, resets size +0x10 / capacity +0x14 and the first byte: a 24-byte ls::STDString. Name inferred."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "moved as one qword by bg3.exe+0x3839060; not destroyed."
+        }
+      ],
+      "equals": "same as struct AnubisSavegameStateNamedValue of layouts/alive/ls.anubis.savegame.StateComponent.json (redeclared under this component's name)"
+    },
+    {
+      "name": "AnubisSavegameReloadingTypeArray",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "element destructor bg3.exe+0x383D230 (stride 0x20, resize bg3.exe+0x3839730): STDString at +0 (capacity +0x14 > 0xF frees). Name inferred."
+        },
+        {
+          "name": "Data",
+          "offset": 24,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x383D230 deletes the object at +0x18 through its virtual destructor (slot 0, argument 1); the resize moves and nulls it: an owned polymorphic pointer."
+        }
+      ],
+      "equals": "same as struct AnubisSavegameStateTypeArray of layouts/alive/ls.anubis.savegame.StateComponent.json (redeclared under this component's name)"
+    },
+    {
+      "name": "AnubisSavegameReloadingComponentEntry",
+      "size": 64,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "element destructor bg3.exe+0x383CEC0 (stride 0x40, resize bg3.exe+0x3839460) does not touch +0..+0x10."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "not touched by the element destructor."
+        },
+        {
+          "name": "Name",
+          "offset": 16,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x383CEC0 frees +0x10 when the capacity at +0x24 exceeds 0xF and resets size +0x20 / capacity +0x24: STDString. Name inferred."
+        },
+        {
+          "name": "Values",
+          "offset": 40,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x383CEC0 resizes the array at +0x28 to 0 with bg3.exe+0xF4CEC0 (0x40-byte elements holding a STDString and a nested structure at +0x18) and frees it; element layout not established, so raw parts."
+        },
+        {
+          "name": "ValuesCapacity",
+          "offset": 48,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "capacity of the same array."
+        },
+        {
+          "name": "ValuesSize",
+          "offset": 52,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "size of the same array."
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "not touched by the element destructor."
+        }
+      ],
+      "equals": "same as struct AnubisSavegameStateComponentEntry of layouts/alive/ls.anubis.savegame.StateComponent.json (redeclared under this component's name)"
+    },
+    {
+      "name": "AnubisSavegameReloadingReader",
+      "size": 152,
+      "equals": "ls::anubis::savegame::Reader (macOS name): the Writer of ls::anubis::savegame::StateComponent (0x88 bytes) plus a plain array at +0x78; the TypeArrays move to +0x88",
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x3828430 (Reader move) copies it first as one qword; same as Writer +0."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "AnubisSavegameReloadingRawArray",
+          "source": "unknown",
+          "evidence": "Reader +8 = ls::anubis::savegame::model::Header (macOS Reader::~Reader calls model::Header::~Header(this+8); Windows Reader destructor bg3.exe+0x3828600 ends with the Header destructor bg3.exe+0x3828670 on +8, the same one ls::anubis::savegame::StateComponent's Writer uses); Header +0: plain array (Header destructor frees it with bg3.exe+0x5946C0, no element destructor)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "AnubisSavegameReloadingRawArray",
+          "source": "unknown",
+          "evidence": "Header +0x10: plain array (bg3.exe+0x3828670 frees it with bg3.exe+0x5946C0)."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "AnubisSavegameReloadingRawArray",
+          "source": "unknown",
+          "evidence": "Header +0x20: plain array (bg3.exe+0x3828670 frees it with bg3.exe+0x5946C0)."
+        },
+        {
+          "name": "Variables",
+          "offset": 56,
+          "type": "Array<AnubisSavegameReloadingNamedValue>",
+          "source": "inferred",
+          "evidence": "Header +0x30 = DynamicArray<ls::anubis::savegame::model::Variable> (macOS ~Header); Windows Header destructor bg3.exe+0x3828670 resizes it to 0 with bg3.exe+0x3839060 (0x20-byte elements: STDString + qword)."
+        },
+        {
+          "name": "TreesPages",
+          "offset": 72,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Header +0x40 = PagedArray<ls::anubis::savegame::model::Tree> (macOS ~Header); Windows bg3.exe+0x3828670 destroys it with bg3.exe+0x3839240; moved as pointer, u16, u16, u32 by bg3.exe+0x38284F0."
+        },
+        {
+          "name": "TreesPageShift",
+          "offset": 80,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "page-size shift of the paged array (move helper bg3.exe+0x38284F0; live 9 in StateComponent)."
+        },
+        {
+          "name": "TreesPageCount",
+          "offset": 82,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "page count of the paged array (zeroed by the move)."
+        },
+        {
+          "name": "TreesCount",
+          "offset": 84,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "element count of the paged array (zeroed by the move)."
+        },
+        {
+          "name": "Operations",
+          "offset": 88,
+          "type": "Array<AnubisSavegameReloadingNamedValue>",
+          "source": "inferred",
+          "evidence": "Header +0x50 = DynamicArray<ls::anubis::savegame::model::Operation> (macOS ~Header); Windows bg3.exe+0x3828670 resizes it with the same 0x20-byte element function bg3.exe+0x3839060."
+        },
+        {
+          "name": "Components",
+          "offset": 104,
+          "type": "Array<AnubisSavegameReloadingComponentEntry>",
+          "source": "inferred",
+          "evidence": "Header +0x60 = DynamicArray<ls::anubis::savegame::model::Component> (macOS ~Header); Windows bg3.exe+0x3828670 resizes it with bg3.exe+0x3839460 (0x40-byte elements, destructor bg3.exe+0x383CEC0)."
+        },
+        {
+          "name": "field_78",
+          "offset": 120,
+          "type": "AnubisSavegameReloadingRawArray",
+          "source": "unknown",
+          "evidence": "Reader-only plain array: Windows Reader destructor bg3.exe+0x3828600 clears it with bg3.exe+0x5BD630 and frees it; macOS ~Reader frees +0x78 without element destructor."
+        },
+        {
+          "name": "TypeArrays",
+          "offset": 136,
+          "type": "Array<AnubisSavegameReloadingTypeArray>",
+          "source": "inferred",
+          "evidence": "macOS ls::anubis::savegame::Reader::~Reader reallocates DynamicArray<ls::anubis::savegame::model::TypeArray> at this+0x88 to 0; Windows bg3.exe+0x3828600 resizes +0x88 to 0 with bg3.exe+0x3839730 (0x20-byte elements: STDString + owned polymorphic pointer, as in StateComponent) and frees it."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Reader",
+      "offset": 0,
+      "type": "AnubisSavegameReloadingReader",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x383A020 (AllocRaw 0xE0) moves its argument into +0..+0x98 with bg3.exe+0x3828430, the move of ls::anubis::savegame::Reader also used by ls::anubis::savegame::LoadingComponent (+8) and RestoringStateComponent; ProcessReloadRequests builds that argument with bg3.exe+0x38819A0 from the Writer bg3.exe+0x3882700 produced. Destructor bg3.exe+0x38501F0 ends with bg3.exe+0x3828600 (the Reader destructor) on +0."
+    },
+    {
+      "name": "field_98",
+      "offset": 152,
+      "type": "HashMap<EntityHandle, uint32_t>",
+      "source": "unknown",
+      "evidence": "Creator zeroes +0x98..+0xD8 in the HashSet + values pattern (buckets ptr/size +0x98, NextIds +0xA8/+0xB0/+0xB4, Keys +0xB8/+0xC0/+0xC4, values +0xC8/+0xD0); destructor frees the values buffer +0xC8 and destroys the key set with bg3.exe+0x582AD0 (plain keys). ProcessReloadRequests (state 1) walks keys +0xB8 (count +0xC4), checks each as a live entity (bg3.exe+0x5DFB40) and passes the 4-byte value at the same index of +0xC8 with it to bg3.exe+0x38369C0."
+    },
+    {
+      "name": "State",
+      "offset": 216,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "ProcessReloadRequests switches on the byte at +0xD8: 1 = dispatch the map entries and set 2; 2 = remove ReloadingComponent; creator writes 0."
+    },
+    {
+      "name": "_PadD9",
+      "offset": 217,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding up to 0xE0"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Element types of the three plain arrays of the Header (+8, +0x18, +0x28) and of the Reader's own plain array (+0x78), and the values of a component entry, are written as raw parts (pointer, capacity, size).",
+    "Meaning of the uint32 per entity in field_98."
+  ],
+  "minutes": 14,
+  "functions_read": 6,
+  "status": "declared",
+  "second_pass": "The Windows Reader destructor bg3.exe+0x3828600 shows the Reader is the StateComponent's Writer layout (Header at +8, destroyed by bg3.exe+0x3828670) plus a plain array at +0x78 and the TypeArrays at +0x88; the Header containers now carry their types and element structs (taken from the StateComponent layout), and the map/state byte after the Reader were already established.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,76 @@
+{
+  "component": "ecl::sound::DistantSoundPostEventRequestSingletonComponent",
+  "ext_name": "ClientSoundDistantSoundPostEventRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "DistantSoundPostEventRequestData",
+      "size": 32,
+      "fields": [
+        {
+          "name": "SubjectValue",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "ls::Variant<EntityHandle, SoundObjectHandle(uint64)> storage: ecl::sound::DistantSoundSystem::ProcessSoundsActivated (EoCClient.dll+0xE81A40) stores the entity handle here; DispatcherSystem::Update (EoCClient.dll+0xDCA820) stores a sound object handle."
+        },
+        {
+          "name": "SubjectType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index: 0 = EntityHandle (DistantSoundSystem writes 0), 1 = sound object handle (DispatcherSystem writes 1)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Variant is 16 bytes; FixedString follows at +0x10."
+        },
+        {
+          "name": "Event",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "DispatcherSystem::Update destroys a FixedString at element+0x10 (stride 0x20, IndexedStorage<ecl::sound::PostEventRequest>) and fills it with FixedString::Create of the event name; DistantSoundSystem copies DistantSoundInfo.InitSound into it."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "DispatcherSystem writes 3, DistantSoundSystem writes 0 (an event type or flags)."
+        },
+        {
+          "name": "Callback",
+          "offset": 24,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "DispatcherSystem stores a pooled ls::SoundCallback object (vtable PTR_FUN_181580ff0) here; DistantSoundSystem stores 0."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<DistantSoundPostEventRequestData>",
+      "source": "inferred",
+      "evidence": "ecl::sound::DistantSoundSystem::ProcessSoundsActivated (EoCClient.dll+0xE81A40, parameter typed DistantSoundPostEventRequestSingletonComponent&) appends elements of stride 0x20: {entity handle, 0, init sound FixedString at +0x10, 0 at +0x14, 0 at +0x18} - the same layout as ecl::sound::PostEventRequest of the dispatcher."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of field_14 (0 here, 3 from the dispatcher and the photo-mode writer); the element is ecl::sound::PostEventRequest, the same layout as Coverage.h ClientSoundPostEventRequest (renamed here because struct names must be unique to the component)."
+  ],
+  "second_pass": "Confirmed on Windows: bg3.exe+0x1DD5360 (DistantSoundSystem, per-frame update bg3.exe+0x1DD30B0) appends 0x20-byte elements {qword entity +0, qword 0 at +8 (variant index), FixedString +0x10, dword 0 at +0x14, qword 0 at +0x18}, growing the array with FUN_1406DC490 - the same grow function the photo-mode writer bg3.exe+0x1E6D710 uses for its PostEventRequest array.",
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

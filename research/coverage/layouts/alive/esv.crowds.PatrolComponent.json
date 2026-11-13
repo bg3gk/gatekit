@@ -1,0 +1,99 @@
+{
+  "component": "esv::crowds::PatrolComponent",
+  "ext_name": "ServerCrowdsPatrol",
+  "size": 48,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Crowd character walking a patrol spline (Moonrise bazaar / Baldur's Gate crowds in dialogue steps; born alone). Created and updated by esv::crowds::PatrolSystem::Update, read by Detour/Behaviour systems.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Windows save loader bg3.exe+0x25FAB30 (model ls::model::game::crowds::v1::PatrolComponent, 64 bytes) builds the component with bg3.exe+0x2774600, which transforms the model's vec3 at +0 by the level transform (bg3.exe+0x2772030: rotate, scale, translate) and stores 12 bytes at +0; the loader copies 8+4 bytes to +0/+8. PatrolSystem update bg3.exe+0x3560EA0 writes three floats here. A world position (live 0: not moving yet)."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x2774600 copies model +0xC (4 bytes) to +0xC; PatrolSystem update bg3.exe+0x3560EA0 stores x*x of a float here (a squared distance/radius). Live 0."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x2774600 transforms the model's second vec3 (+0x10) by the level transform and stores it at +0x10 (12 bytes); PatrolSystem update writes a computed point at +0x10/+0x18 and reads +0x10..+0x18 back. Live 0."
+    },
+    {
+      "name": "field_1C",
+      "offset": 28,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x2774600 copies model +0x1C to +0x1C; PatrolSystem update stores a float here and reads it as float (fVar40 = *(float*)(+0x1c)). Live 0."
+    },
+    {
+      "name": "Speed",
+      "offset": 32,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2774600 copies model +0x20 (4 bytes) to +0x20; default 0. Live 0.8, 1.0, 2.0 (a speed or wait factor). PatrolSystem update bg3.exe+0x3560EA0 sets it from the patrol request's speed byte (+6): one of the template floats at +0x590/+0x598/+0x5A0/+0x5A8, or 0."
+    },
+    {
+      "name": "Spline",
+      "offset": 36,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2774600: the model holds a string (pointer +0x28, length +0x30); the loader creates a FixedString from it (GlobalStringTable CreateFromString) and stores it at +0x24, DecRef of the old value; default -1. PatrolSystem looks splines up by it. Live: valid FixedStrings."
+    },
+    {
+      "name": "NodeIndex",
+      "offset": 40,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2774600 copies model +0x38 (2 bytes) to +0x28; default 0xFFFF; PatrolSystem update compares it with -1, passes it to the spline node stepper bg3.exe+0x2F5BD40 and indexes 0x58-byte spline nodes with it. Live -1."
+    },
+    {
+      "name": "ReversePatrolDirection",
+      "offset": 42,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2774600 stores (model +0x3A != 0) at +0x2A; default 0; PatrolSystem update sets it to !direction when the stepper wraps and +0x2B is set (a reverse-direction flag?). Live 0/1. Set from patrol request byte +4. | Name: PatrolSystem update bg3.exe+0x3560EA0 flips it when the spline stepper wraps (with +0x2B set) and passes it as the stepping direction; the crowd spawn model ls::model::game::crowds::v1::SpawnComponent names the same setting ReversePatrolDirection (savefields.py) - a name of a sibling model, so inferred.",
+      "legacy": "field_2A"
+    },
+    {
+      "name": "field_2B",
+      "offset": 43,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x2774600 stores (model +0x3B != 0) at +0x2B; default 1 (the 0x0100FFFF store at +0x28). Tested before flipping +0x2A (ping-pong/loop flag?). Live 1. Set from patrol request byte +5."
+    },
+    {
+      "name": "MovementSpeed",
+      "offset": 44,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2774600 copies model +0x3C (1 byte) to +0x2C; default 2; PatrolSystem update sets it from byte +6 of a patrol request (the request's speed byte, cf. DetourPatrolRequest). Live 1 or 2. It is the request's MovementSpeed byte (request +6; esv::crowds::DetourPatrolRequest / PatrolRequests values, merged by bg3.exe+0x3563590), the same byte that selects the float at +0x20."
+    },
+    {
+      "name": "_Pad2D",
+      "offset": 45,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "padding to 0x30 (never written; live garbage)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meanings of the two position/float pairs at +0 and +0x10 and of the bools at +0x2A/+0x2B; the savegame model has no member names.",
+    "field_2B (ping-pong vs loop?) and the two vec3/float pairs need the crowd spawn code that creates the patrol."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "status": "confirmed",
+  "second_pass": "Every offset and width read from the Windows save loader bg3.exe+0x25FAB30 and its model-to-component converter bg3.exe+0x2774600 (vec3+float, vec3+float, float, FixedString from a string, int16, bool, bool, byte), confirmed by the PatrolSystem update bg3.exe+0x3560EA0; the first 32 bytes are two positions with floats, not zero padding.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "The patrol model ls::model::game::crowds::v1::PatrolComponent has no named visitor; one flag named from the update and the crowd SpawnComponent model's ReversePatrolDirection."
+}

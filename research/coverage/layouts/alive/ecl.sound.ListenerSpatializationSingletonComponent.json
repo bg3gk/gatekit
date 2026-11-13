@@ -1,0 +1,96 @@
+{
+  "component": "ecl::sound::ListenerSpatializationSingletonComponent",
+  "ext_name": "ClientSoundListenerSpatializationSingleton",
+  "size": 232,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ListenerSpatializationSpeakerAttenuation",
+      "size": 8,
+      "fields": [
+        {
+          "name": "From",
+          "offset": 0,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Game name: ecl::sound::SpeakerAttenuation (ConstructSpeakerAttenuationArray builds StaticArray<SpeakerAttenuation*, 8>). ListenerSpatializationSystem::ProcessSplitScreenViewChanges (EoCClient.dll+0xDAE6E0) computes (p[1] - p[0]) * t + p[0]: value at t = 0. Live: -3, 0 or -18."
+        },
+        {
+          "name": "To",
+          "offset": 4,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Value at t = 1 of the same interpolation. Live: 0 or -18."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "VMT",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Live: a module address (0x7FF7E2B27A40, same in all 3 samples). ProcessSplitScreenViewChanges calls ls::FileFormatIO::Load(singleton, singleton+0x88): the singleton is a FileFormatIO-derived config object."
+    },
+    {
+      "name": "Player1Attenuation",
+      "offset": 8,
+      "type": "std::array<ListenerSpatializationSpeakerAttenuation, 8>",
+      "source": "inferred",
+      "evidence": "ConstructSpeakerAttenuationArray((PlayerSpeakerAttenuation*)(singleton+8), ...) - game type ecl::sound::PlayerSpeakerAttenuation, 8 speakers x 8 bytes. Live: (-3,0) (-3,0) (0,0) (0,0) (0,0) (-18,-18) x3."
+    },
+    {
+      "name": "Player2Attenuation",
+      "offset": 72,
+      "type": "std::array<ListenerSpatializationSpeakerAttenuation, 8>",
+      "source": "inferred",
+      "evidence": "ConstructSpeakerAttenuationArray((PlayerSpeakerAttenuation*)(singleton+0x48), ...); same live values as the first player."
+    },
+    {
+      "name": "ConfigPath",
+      "offset": 136,
+      "type": "uint8_t[24]",
+      "source": "inferred",
+      "evidence": "ls::Path passed to FileFormatIO::Load (singleton+0x88). Live: heap pointer at +0x88, 0 at +0x90, size 0x90 and capacity 0x9F at +0x98/+0x9C = an ls::STDString (Script Extender STDString, 24 bytes) holding a 144-character file path. Declared as bytes (STDString not an allowed primitive)."
+    },
+    {
+      "name": "ListenerCount",
+      "offset": 160,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "ProcessSplitScreenViewChanges compares the stored count with SoundManager+0x40C (number of sound listeners, asserted <= 2) and stores it. In the Toolkit build it sits at +0xA8 (its ls::Path is 8 bytes larger); in the game build the live value 1 at +0xA0 and the 0xE8 size put it here."
+    },
+    {
+      "name": "Player1Volumes",
+      "offset": 164,
+      "type": "std::array<float, 8>",
+      "source": "inferred",
+      "evidence": "Toolkit +0xAC: 8 interpolated speaker values for player 1, zeroed when fewer than 2 listeners, passed to SoundManager vfunc +0x130. Shifted by -8 like ListenerCount. Live: zeros."
+    },
+    {
+      "name": "Player2Volumes",
+      "offset": 196,
+      "type": "std::array<float, 8>",
+      "source": "inferred",
+      "evidence": "Toolkit +0xCC: 8 interpolated speaker values for player 2. Shifted by -8. Live: zeros."
+    },
+    {
+      "name": "_PadE4",
+      "offset": 228,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Alignment to 8 (size 0xE8)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The 8-byte shift between the Toolkit build (count at +0xA8, floats to +0xEC which would exceed the 0xE8 registry size) and the game build is an inference from live data (+0xA0 = 1); confirm with the game's ProcessSplitScreenViewChanges (bg3.exe, not matched).",
+    "ConfigPath is an ls::Path/STDString declared as bytes."
+  ],
+  "minutes": 10,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

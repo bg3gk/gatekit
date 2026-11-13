@@ -1,0 +1,92 @@
+{
+  "component": "ls::animation::StoredPoseComponent",
+  "ext_name": "AnimationStoredPose",
+  "size": 144,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Client dummies (scene/photo-mode copies of characters): the pose stored by ecl::dummy::AnimationStorePoseSystem::StoreDummyPoses - per skeleton either local bone transforms or plain transforms, plus the skeletons of attachments; applied by ecl::VisualSystem. Never seen alive.",
+  "structs": [
+    {
+      "name": "StoredPoseLocalBoneTransformData",
+      "size": 44,
+      "fields": [
+        {
+          "name": "Transform",
+          "offset": 0,
+          "type": "Transform",
+          "source": "inferred",
+          "evidence": "Windows StoreDummyPoses bg3.exe+0x19F0AD0 (per-frame update of ecl::dummy::AnimationStorePoseSystem) fills each element (stride 0x2C) of the value array of the map at +0 through the skeleton's virtual +0x40 (40 bytes, the bone's local transform); the Toolkit version (EoCClient.dll+0xB3A890) initialises new elements to 0,0,0,1.0 / 0,0,0 / 1.0,1.0,1.0 - the identity ls::Transform (quaternion x,y,z,w, translate, scale; Script Extender Transform, 40 bytes)."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x19F0AD0 lines 136-139 / 200-204: = the skeleton's virtual +0xA8 for the bone index (4 bytes)."
+        }
+      ],
+      "equals": "macOS type name ls::animation::StoredPoseComponent::LocalBoneTransformData; layout from bg3.exe"
+    },
+    {
+      "name": "StoredPoseAttachmentSkeletonData",
+      "size": 24,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Windows bg3.exe+0x19F0920 (called by StoreDummyPoses with component+0x80; element stride 0x18) copies the dword at +0xC of the visual's attachment record here."
+        },
+        {
+          "name": "Skeleton",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x19F0920: FixedString (IncRef) of the attachment visual's base skeleton (+0x10 of its skeleton resource), skipped when null or empty."
+        },
+        {
+          "name": "BoneTransforms",
+          "offset": 8,
+          "type": "Array<Transform>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x19F0920 resizes the Array at element+8 to the skeleton's bone count (FUN_1419F0FA0) and fills it per bone with the skeleton's virtual +0x58 (stride 0x28 = ls::Transform)."
+        }
+      ],
+      "equals": "macOS type name ls::animation::StoredPoseComponent::AttachmentSkeletonData; layout from bg3.exe"
+    }
+  ],
+  "fields": [
+    {
+      "name": "LocalBoneTransforms",
+      "offset": 0,
+      "type": "HashMap<FixedString, Array<StoredPoseLocalBoneTransformData>>",
+      "source": "inferred",
+      "evidence": "macOS ls::HashMap<ls::FixedString, ls::DynamicArray<ls::animation::StoredPoseComponent::LocalBoneTransformData>>::DestroyValues; Toolkit EoCClient.dll+0xB394D0 (assert names that map) is used on the component base. bg3.exe creator bg3.exe+0x19F13B0 (AllocRaw 0x90) zeroes 0..0x40 as HashSet + values; destructor bg3.exe+0x19F1830 destroys +0 with bg3.exe+0x19F1770 (values stride 0x10 at +0x30, count = key count at +0x2C)."
+    },
+    {
+      "name": "BoneTransforms",
+      "offset": 64,
+      "type": "HashMap<FixedString, Array<Transform>>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xB39670 (assert: ls::HashMap<FixedString, DynamicArray<ls::Transform>>::EmplaceUniversal) is called on component+0x40; bg3.exe destructor destroys +0x40 with bg3.exe+0x19F17D0 (values stride 0x10, element arrays freed by the plain-array destructor bg3.exe+0x5946C0). StoreDummyPoses fills this map instead of the first one when a flag of the visual (+0x708 of its resource) is set. Windows StoreDummyPoses bg3.exe+0x19F0AD0 fills the values (+0x70, stride 0x10 = Array<Transform>) per bone with the skeleton's virtual +0x58 (stride 0x28) when the visual flag (+0x698 of its resource) is set."
+    },
+    {
+      "name": "AttachmentSkeletons",
+      "offset": 128,
+      "type": "Array<StoredPoseAttachmentSkeletonData>",
+      "source": "inferred",
+      "evidence": "bg3.exe destructor resizes +0x80 to 0 with bg3.exe+0x19F11E0 and frees it; Toolkit StoreDummyPoses calls EoCClient.dll+0xB39FF0 on component+0x80 (DynamicArray<StoredPoseComponent::AttachmentSkeletonData>, macOS GetAttachmentSkeletonData / CopyAttachmentsStoredPose). Windows StoreDummyPoses passes component+0x80 to bg3.exe+0x19F0920, which appends 0x18-byte elements."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of LocalBoneTransformData +0x28 (skeleton virtual +0xA8 per bone) and AttachmentSkeletonData +0 (attachment record +0xC)."
+  ],
+  "minutes": 16,
+  "functions_read": 7,
+  "status": "declared",
+  "second_pass": "The Windows StoreDummyPoses (bg3.exe+0x19F0AD0) and its attachment helper bg3.exe+0x19F0920 confirm both element layouts: a 0x2C-byte bone element = ls::Transform + a 4-byte value, and a 0x18-byte attachment element = dword, skeleton FixedString, Array<Transform>.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

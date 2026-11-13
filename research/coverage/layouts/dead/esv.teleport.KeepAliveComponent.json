@@ -1,0 +1,24 @@
+{
+  "component": "esv::teleport::KeepAliveComponent",
+  "ext_name": "ServerTeleportKeepAlive",
+  "size": 4,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Timer of the teleport helper entity created by esv::teleport::ExecutionSystem::ProcessRequests (bg3.exe+0x3373FE0 line 130-131: = RequestParams+0x20). Counted down by ProcessKeepAliveTimers (game bg3.exe+0x3374B30, Toolkit EoCServer.dll+0x1150390); at <= 0 the entity is collected for clean-up. Creator bg3.exe+0x3374E70 (AllocRaw 4, zero). Not saved.",
+  "fields": [
+    {
+      "name": "Timer",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3374B30 lines 142-146: value -= *(float*)(GameTime+8); if <= 0.0 the entity is queued (Toolkit ExecutionSystem::ProcessKeepAliveTimers the same). Written from RequestParams+0x20 in bg3.exe+0x3373FE0 line 131."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,34 @@
+{
+  "component": "ls::LightFlickerComponent",
+  "ext_name": "LightFlicker",
+  "size": 12,
+  "fields": [
+    {
+      "name": "Speed",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20051E0 (applies a LightDesc to a light entity) copies LightDesc+0x5C (SE: LightDesc::Speed) here, and adds/removes the component according to LightDesc+0x6D (IsFlickering); bg3.exe+0x3D3B370 uses it as the frequency: sinf(Speed*Time + seed) and sinf(Speed*1.1*Time)."
+    },
+    {
+      "name": "Amount",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20051E0 (applies a LightDesc to a light entity) copies LightDesc+0x60 (SE: LightDesc::Amount) here; bg3.exe+0x3D3B370 multiplies both sines by it and writes the sum to the light object at +0xC0."
+    },
+    {
+      "name": "Time",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Set to 0 on creation (bg3.exe+0x20066E0); bg3.exe+0x3D3B370 adds the frame delta (param_3+8) to it every update and uses it as the sine argument. Probe: 0 or about 218 s."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 5,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

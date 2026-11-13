@@ -1,0 +1,61 @@
+{
+  "component": "esv::tutorial::NotificationRequestsOneFrameComponent",
+  "ext_name": "ServerTutorialNotificationRequests",
+  "size": 32,
+  "structs": [
+    {
+      "name": "NotificationRequestsEntry",
+      "size": 24,
+      "fields": [
+        {
+          "name": "User",
+          "offset": 0,
+          "type": "UserId",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x342A610 (EntrySystem) stores esv::Character+0x188 (user id, compared with the invalid-user constant) at +0"
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "alignment padding"
+        },
+        {
+          "name": "Entry",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x342A610 copies the 16-byte entry id that is looked up in the tutorial entry managers (hash (lo^hi) % buckets)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Array<NotificationRequestsEntry>",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x342A610 builds it from system+0x38 requests (entry found in either manager at system+0x18 or +0x20), stride 0x18, then moves it into the one-frame component created by bg3.exe+0x342B060 (destructor FUN_1406a2280: 2 POD arrays)"
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Array<NotificationRequestsEntry>",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x342A610 builds it from system+0x48 requests (manager +0x18 entries go through a virtual lookup), stride 0x18"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "what distinguishes the two arrays (the two entry managers at system+0x18 / +0x20: eoc::tutorial::EntriesManager / ModalEntriesManager / UnifiedEntriesManager?)"
+  ],
+  "summary": "One-frame server component born in many situations (dialogue, spells, fights, death...); written by esv::tutorial::EntrySystem (bg3.exe+0x342A610) for tutorial entries to show to a user.",
+  "seen": true,
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

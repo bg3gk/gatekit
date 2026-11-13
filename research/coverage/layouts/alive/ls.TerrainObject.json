@@ -1,0 +1,177 @@
+{
+  "component": "ls::TerrainObject",
+  "ext_name": "TerrainObject",
+  "size": 8,
+  "class_size": 160,
+  "base": "ls::StandardGameObject (ITextKeyEventHandler + ILoggableObject vtables, EntityRef at +0x10, Template at +0x20, CurrentLevel at +0x28); no Script Extender base struct exists for it",
+  "seen": true,
+  "summary": "Terrain level object stored behind a pointer (registry inline 8, total 168 = 160-byte object + 8). Written by ls::TerrainVisualLoaderSystem, read by camera collision helpers, fade triggers and ls::OcclusionSystem. Layout from the Toolkit constructor (GameEngine.dll+0xBEEB0) corrected against live samples: the Windows game build has a 24-byte Path, so every member after +0x48 sits 8 bytes lower than in the Toolkit.",
+  "fields": [
+    {
+      "name": "VMT",
+      "offset": 0,
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "TerrainObject ctor sets ITextKeyEventHandler vftable at +0; live: one module address for all 48 instances. Windows game constructor (inlined in bg3.exe+0x3B6EE20, allocates 0xA0 bytes): *obj = &ls::TerrainObject::vftable."
+    },
+    {
+      "name": "VMT2",
+      "offset": 8,
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "ILoggableObject vftable at +8 (ctor); live: one module address. Windows game constructor (inlined in bg3.exe+0x3B6EE20, allocates 0xA0 bytes): obj[1] = second vftable (bg3.exe+0x560EBB0)."
+    },
+    {
+      "name": "Entity",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "toolkit",
+      "evidence": "StandardGameObject ctor: EntityRef at +0x10 ('+0x10 EntityRef [accessor, game offset]'); live: entity handles. Windows game constructor (inlined in bg3.exe+0x3B6EE20, allocates 0xA0 bytes): obj[2] = 0xFFC0000000000000."
+    },
+    {
+      "name": "World",
+      "offset": 24,
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "second half of the EntityRef (world pointer); bg3.exe+0x3D16100 TerrainObject::GetVisual passes *(this+0x18), *(this+0x10). Live: 3 heap values. Windows game constructor (inlined in bg3.exe+0x3B6EE20, allocates 0xA0 bytes): obj[3] = 0."
+    },
+    {
+      "name": "Template",
+      "offset": 32,
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "StandardGameObject ctor '+0x20 Template [accessor, game offset]'; live heap pointer. Windows game constructor (inlined in bg3.exe+0x3B6EE20, allocates 0xA0 bytes): obj[4] = 0."
+    },
+    {
+      "name": "CurrentLevel",
+      "offset": 40,
+      "type": "FixedString",
+      "source": "toolkit",
+      "evidence": "StandardGameObject ctor '+0x28 CurrentLevel [accessor, game offset]'; live constant 0x2F9000A0. Windows game constructor (inlined in bg3.exe+0x3B6EE20, allocates 0xA0 bytes): 4-byte 0xFFFFFFFF at +0x28 (null FixedString)."
+    },
+    {
+      "name": "field_2C",
+      "offset": 44,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "StandardGameObject ctor zeroes 2 bytes at +0x2C; live 0. Windows game constructor (inlined in bg3.exe+0x3B6EE20, allocates 0xA0 bytes): 4-byte 0 at +0x2C (covers this and the padding); the Toolkit StandardGameObject writes 2 bytes."
+    },
+    {
+      "name": "_Pad2E",
+      "offset": 46,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "padding"
+    },
+    {
+      "name": "EntityObjectHandle",
+      "offset": 48,
+      "type": "EntityHandle",
+      "source": "toolkit",
+      "evidence": "TerrainObject::GetEntityObjectHandle returns *(this+0x30); ctor sets 0xFFC0000000000000; live equals the handle at +0x10. Windows game constructor (inlined in bg3.exe+0x3B6EE20, allocates 0xA0 bytes): obj[6] = 0xFFC0000000000000."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "ctor zeroes 8 bytes at +0x38; live 0xC..0x91. Windows init helper bg3.exe+0x1853ED0 (called on obj+0x38) writes 8 zero bytes at +0x38; live shows two independent 4-byte values."
+    },
+    {
+      "name": "field_3C",
+      "offset": 60,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "live 5..0x9B."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "ctor writes 0x3E4CCCCD (0.2f); live 0.2, 1.0, 2.0. Windows helper bg3.exe+0x1853ED0: 0x3E4CCCCD (0.2f) at +0x40."
+    },
+    {
+      "name": "field_44",
+      "offset": 68,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "ctor writes 0x100 as 4 bytes at +0x44; live byte 0. Windows helper bg3.exe+0x1853ED0: 4-byte 0x100 at +0x44."
+    },
+    {
+      "name": "field_45",
+      "offset": 69,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "live byte 1 (from the 0x100 default)."
+    },
+    {
+      "name": "_Pad46",
+      "offset": 70,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "padding"
+    },
+    {
+      "name": "Path",
+      "offset": 72,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Toolkit ctor constructs ls::Path at +0x48; live +0x48 heap pointer, +0x50 0, +0x58 size 0x7E..0x87 / capacity 0x8F = a 24-byte STDString (path of the terrain file). Windows helper bg3.exe+0x1853ED0 constructs an ls::STDString at +0x48 from a global string view (DAT_1462d4948) - 24 bytes (+0x48..+0x5F)."
+    },
+    {
+      "name": "field_60",
+      "offset": 96,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Toolkit ctor constructs an STDString after the Path (+0x68 in Toolkit); live +0x60 heap pointer, +0x70 size 0x29 / capacity 0x2F. Windows helper bg3.exe+0x1853ED0 zeroes +0x60/+0x68, writes size 0 at +0x70 and capacity 0xF at +0x74 and the first char 0: the game's 24-byte STDString (+0x60..+0x77)."
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Toolkit ctor zeroes +0x80 (= game +0x78); live heap pointers. Windows helper bg3.exe+0x1853ED0 zeroes +0x78."
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Toolkit ctor zeroes +0x88 (= game +0x80); live heap pointers. Windows helper bg3.exe+0x1853ED0 zeroes +0x80."
+    },
+    {
+      "name": "field_88",
+      "offset": 136,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "Toolkit ctor zeroes 2 bytes at its +0x90; live 0. Windows helper bg3.exe+0x1853ED0 writes 2 zero bytes at +0x88."
+    },
+    {
+      "name": "_Pad8A",
+      "offset": 138,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "padding"
+    },
+    {
+      "name": "Uuid",
+      "offset": 144,
+      "type": "Guid",
+      "source": "toolkit",
+      "evidence": "Toolkit ctor copies s_Empty Guid to its +0x98; decomp annotation names UUID at game offset +0x90; live: 12 distinct 16-byte values at +0x90..+0x9F for 48 instances. Windows game constructor (inlined in bg3.exe+0x3B6EE20, allocates 0xA0 bytes): obj[0x12], obj[0x13] = the empty Guid (DAT_14625aad0); ends at 0xA0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of +0x38..+0x47 and of the pointers at +0x78/+0x80 (zeroed by the constructor; Visual / occluder objects?).",
+    "Names of the two STDString members (terrain file path and a second string).",
+    "Whether +0x38 is two uint32 or one uint64 and +0x44 two bytes or a wider value rests on the live data (the constructor stores 8 and 4 bytes)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the layout file is not valid yet: ls::TerrainObject: fields end at 160 (struct size 160), expected 8",
+  "second_pass": "Every offset confirmed on Windows by the game's constructor (inlined in bg3.exe+0x3B6EE20) and its member-init helper bg3.exe+0x1853ED0, including the 24-byte strings at +0x48 and +0x60. The component slot is an 8-byte POINTER to this 0xA0-byte object (the creator stores the object pointer into the 8-byte slot): the generator must declare the component as a pointer to the class, not inline - that is why the validator saw 160 against 8."
+}

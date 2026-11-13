@@ -1,0 +1,26 @@
+{
+  "component": "ecl::lariannet::TrackingJoinedLobbiesSingletonComponent",
+  "ext_name": "ClientLariannetTrackingJoinedLobbiesSingleton",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "LobbyIds",
+      "offset": 0,
+      "type": "Array<STDString>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1B7E0 (~ProcessLobbiesEvents, called from the TrackingSystem per-frame update bg3.exe+0x767AA0): clears the view's component at +0x50 with FUN_140E907E0 when its size (+0xC) is non-zero, then for each lobby-joined event appends the event's STDString with FUN_140E90A70 (stride 0x18, STDString copy). Toolkit: LobbyJoinedEvent from OnLobbyJoined(Result<LobbyJoinInfo>). Live: all zero (empty array)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The string is presumably the joined lobby's id; content not observed"
+  ],
+  "second_pass": "Array<STDString> confirmed on Windows: bg3.exe+0x1B1B7E0 clears and appends to it through FUN_140E90A70, whose element stride is 0x18 with a STDString copy.",
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

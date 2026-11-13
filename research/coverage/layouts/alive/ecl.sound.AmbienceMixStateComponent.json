@@ -1,0 +1,102 @@
+{
+  "component": "ecl::sound::AmbienceMixStateComponent",
+  "ext_name": "ClientSoundAmbienceMixState",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AmbienceMixOptionalFloat",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Value",
+          "offset": 0,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "ls::Optional<float> (Toolkit type name in ecl::sound::AmbienceMixSystem::ProcessCurrentVolumes, EoCClient.dll+0xDDB160: values of stride 8 passed as Optional<float>*); MSVC layout value first."
+        },
+        {
+          "name": "HasValue",
+          "offset": 4,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Second member of ls::Optional<float> (same layout as SE std::optional<float>)."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Stride 8."
+        }
+      ]
+    },
+    {
+      "name": "AmbienceMixStateData",
+      "size": 160,
+      "fields": [
+        {
+          "name": "PointSounds",
+          "offset": 0,
+          "type": "HashMap<EntityHandle, AmbienceMixOptionalFloat>",
+          "source": "inferred",
+          "evidence": "AmbienceMixSystem::ProcessCurrentVolumes (EoCClient.dll+0xDDB160): keys at +0x20 (8-byte entity handles, count +0x2C), values Optional<float> at +0x30, each passed to ProcessSoundTrigger(..., false) (the non-volume, point sound path). Move helper FUN_180dd99f0 moves it as a 64-byte hash map."
+        },
+        {
+          "name": "SoundVolumes",
+          "offset": 64,
+          "type": "HashMap<EntityHandle, AmbienceMixOptionalFloat>",
+          "source": "inferred",
+          "evidence": "Same function: keys at +0x60 (count +0x6C), values at +0x70, passed to ProcessSoundTrigger(..., true) (sound volume triggers)."
+        },
+        {
+          "name": "CurrentPointSoundValue",
+          "offset": 128,
+          "type": "AmbienceMixOptionalFloat",
+          "source": "inferred",
+          "evidence": "+0x80 passed as Optional<float>* with the handle at +0x90 to ProcessSoundTrigger(..., false); copied from another player's data that shares the same +0x90 handle."
+        },
+        {
+          "name": "CurrentSoundVolumeValue",
+          "offset": 136,
+          "type": "AmbienceMixOptionalFloat",
+          "source": "inferred",
+          "evidence": "+0x88 passed with the handle at +0x98 to ProcessSoundTrigger(..., true)."
+        },
+        {
+          "name": "CurrentPointSound",
+          "offset": 144,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "+0x90 passed as ID<EntityHandleTraits>* to ProcessSoundTrigger(..., false) and compared between players."
+        },
+        {
+          "name": "CurrentSoundVolume",
+          "offset": 152,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "+0x98 passed as ID<EntityHandleTraits>* to ProcessSoundTrigger(..., true)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "HashMap<int16_t, AmbienceMixStateData>",
+      "source": "inferred",
+      "evidence": "macOS names ls::HashMap<short, ecl::sound::AmbienceMixStateData> (DestroyValues near the component's ops). AmbienceMixSystem::Update (EoCClient.dll+0xDDD4D0) erases short keys (+0x20, count +0x2C) with values at +0x30 of stride 0xA0; FinalizeMixState (EoCClient.dll+0xDDA6D0) copies PlayerFrameData (two 64-byte maps + four qwords at +0x80..+0x98) into it. Live: bucket count 5."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Member names of AmbienceMixStateData are ours; which of the two maps is point sounds vs. volumes is inferred from the bool passed to ProcessSoundTrigger.",
+    "Optional<float> declared as a struct (value + bool); SE could use std::optional<float> (8 bytes) instead."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

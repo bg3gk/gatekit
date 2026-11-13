@@ -1,0 +1,201 @@
+{
+  "component": "esv::platform::DestructionComponent",
+  "ext_name": "ServerPlatformDestruction",
+  "size": 128,
+  "seen": true,
+  "summary": "State of a platform being destroyed (collapsing floors/bridges): one saved 8-byte member and the death data of the destruction. Read by esv::platform::MovementSystem (ProcessDestroyedPlatforms) and esv::PlatformSystem::HandleDestroyingRepresentatives; registered with size 0x80 by bg3.exe+0x26FE4F0 (no destructor). Seen.py context: S_PLA_Tavern_StartCollapse event (born with ls::level::LevelInstanceUnloadingComponent), cage doors, chests.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "The only saved member: model ls::model::game::platform::v0::DestructionComponent is 8 bytes (alignment 8) and the Windows loader bg3.exe+0x2583E00 copies those 8 bytes into +0 (local_d8 = *(u64*)model; puVar7[0] = local_d8). Meaning not established. Live always 0."
+    },
+    {
+      "name": "Cause",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 0; converter bg3.exe+0x2775340 writes DeathData+0 (default null handle). SE DeathData.Cause."
+    },
+    {
+      "name": "CauseOwnerObject",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 1; DeathData+8 (default null). SE DeathData.CauseOwner."
+    },
+    {
+      "name": "CauseUUID",
+      "offset": 24,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 2; DeathData+0x10 (16 bytes, default null Guid DAT_14625AAD0). SE CauseUuid."
+    },
+    {
+      "name": "DeathType",
+      "offset": 40,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 3; DeathData+0x20 (byte). Enum stats::DeathType (uint8) - SE DeathData.DeathType."
+    },
+    {
+      "name": "DamageType",
+      "offset": 41,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 4; DeathData+0x21 (byte). Enum DamageType (uint8) - SE MainDamageType."
+    },
+    {
+      "name": "IsDamageCritical",
+      "offset": 42,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 5; DeathData+0x22 = model+0x29 != 0. SE IsCritical."
+    },
+    {
+      "name": "AllowDownedOnDeath",
+      "offset": 43,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 17 (model +0x7B) -> DeathData+0x23 (default 1 from the dword 0x01000000 at +0x20). SE names this byte InstantKill - the game's model says AllowDownedOnDeath."
+    },
+    {
+      "name": "CauseType",
+      "offset": 44,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 6; DeathData+0x24 (byte). Enum CauseType (uint8) - SE CauseType."
+    },
+    {
+      "name": "_Pad2D",
+      "offset": 45,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Alignment of the int32 at +0x30; never written."
+    },
+    {
+      "name": "StoryActionId",
+      "offset": 48,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 7; DeathData+0x28 (int32, default 0)."
+    },
+    {
+      "name": "InstantDeath",
+      "offset": 52,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 8 (model +0x3C) -> DeathData+0x2C (default 0). SE names this byte Chasm - the game's model says InstantDeath."
+    },
+    {
+      "name": "_Pad35",
+      "offset": 53,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Alignment; never written (live: leftovers)."
+    },
+    {
+      "name": "ImpactPosition",
+      "offset": 56,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 9; DeathData+0x30 (default FLT_MAX x3; converted from the model's position when non-zero)."
+    },
+    {
+      "name": "ImpactDirection",
+      "offset": 68,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 10; DeathData+0x3C (default FLT_MAX x3). The model stores a quaternion; the converter turns it into a direction vector (rotated axis)."
+    },
+    {
+      "name": "ImpactIsOnWeapon",
+      "offset": 80,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 11 (model +0x5C) -> DeathData+0x48. SE field_48."
+    },
+    {
+      "name": "_Pad51",
+      "offset": 81,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Alignment; never written."
+    },
+    {
+      "name": "ImpactForce",
+      "offset": 84,
+      "type": "float",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 12; DeathData+0x4C (default 0)."
+    },
+    {
+      "name": "DeathCombat",
+      "offset": 88,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 13; DeathData+0x50 (16 bytes, default null Guid). SE Combat."
+    },
+    {
+      "name": "GenerateTreasure",
+      "offset": 104,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 14 (model +0x78) -> DeathData+0x60 (default 1, low byte of 0x01000001). SE field_60."
+    },
+    {
+      "name": "WasRequest",
+      "offset": 105,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 15 (model +0x79) -> DeathData+0x61. SE field_61."
+    },
+    {
+      "name": "WasForced",
+      "offset": 106,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 16 (model +0x7A) -> DeathData+0x62. SE field_62."
+    },
+    {
+      "name": "LeavesTrace",
+      "offset": 107,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 20 (model +0x8C) -> DeathData+0x63 (default 1). SE LeaveTrace."
+    },
+    {
+      "name": "SourcePos",
+      "offset": 108,
+      "type": "std::array<float, 3>",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 19; DeathData+0x64..+0x6F: storage of an optional position (SE std::optional<glm::vec3> ChasmPosition). Written only when SourcePosPresent is set; the converter and the creator leave it uninitialised otherwise (live raw check saw non-floats there), so it is declared as plain floats in an array. Live: a heap-like value in 2 of 5 instances - stale bytes of the unset optional."
+    },
+    {
+      "name": "SourcePosPresent",
+      "offset": 120,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Embedded death data (runtime DeathData, 0x78 bytes at +8): the Windows save loader bg3.exe+0x2583E00 builds +8..+0x7F with exactly the DeathData default constructor (two null handles, null Guid DAT_14625AAD0, dword 0x01000000 at D+0x20, FLT_MAX x6 at D+0x30, null Guid at D+0x50, dword 0x01000001 at D+0x60, optional flag D+0x70 = 0), the same defaults as the converter bg3.exe+0x2775340 used for esv::item::DestroyRequestComponent, whose member offsets come from model ls::model::game::death::v4::DeathData. Member: savegame model ls::model::game::death::v4::DeathData, member 18 (model +0x7C) -> DeathData+0x70: the optional's engaged flag (default 0)."
+    },
+    {
+      "name": "_Pad79",
+      "offset": 121,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "Tail padding of the 8-aligned DeathData (0x78) / component (0x80)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the saved 8-byte member at +0 (model platform::v0 has no member names); that +8 is a DeathData rests on identical default construction, not on a named accessor."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "The Windows save loader bg3.exe+0x2583E00 shows the component is the 8-byte saved member at +0 followed by a default-constructed runtime DeathData (0x78 bytes) at +8, whose member offsets are those established for esv::item::DestroyRequestComponent from the death::v4::DeathData converter; the first version's macOS-based guesses are replaced.",
+  "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

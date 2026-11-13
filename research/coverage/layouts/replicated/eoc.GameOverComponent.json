@@ -1,0 +1,55 @@
+{
+  "component": "eoc::GameOverComponent",
+  "ext_name": "GameOver",
+  "size": 8,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "deserializer helper bg3.exe+0xA734F0 reads 1 byte at +0 (global offset DAT_14627fb88 = 0); EoCClient ecl::profile::ManagementSystem::ProcessGameOverEvents handles the event only when it is 0. macOS ctor 0."
+    },
+    {
+      "name": "field_1",
+      "offset": 1,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xA734F0 reads 1 byte at +1; ProcessGameOverEvents: when non-zero (and the profile's single-save session is not yet disabled) calls net::PlayerProfile::DisableSingleSaveSession (honour mode)."
+    },
+    {
+      "name": "field_2",
+      "offset": 2,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xA734F0 reads 1 byte at +2."
+    },
+    {
+      "name": "_Pad3",
+      "offset": 3,
+      "type": "uint8_t[1]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xA734F0 reads a FixedString (bg3.exe+0x4016110) into +4; serializer bg3.exe+0x9F6A10 and the macOS ctor initialise it from a static FixedString (DAT_1461aabd0, IncRef)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "meaning of the three bytes and of the FixedString (field_1 looks like 'disable honour-mode single save')",
+    "Not seen alive (seen.py has no samples).",
+    "Toolkit esv::GameOverSystem::Update (EoCServer.dll+0x2A4580) writes it; reading it fully (and the Osiris call ShowGameOverMenu(_Reason)) would name the bytes and the FixedString (+4 is probably the reason)."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Replicated without macOS FieldMeta names; field_1 drives DisableSingleSaveSession (honour mode) but a name was not settled."
+}

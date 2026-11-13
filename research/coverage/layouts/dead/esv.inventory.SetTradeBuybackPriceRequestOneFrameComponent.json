@@ -1,0 +1,27 @@
+{
+  "component": "esv::inventory::SetTradeBuybackPriceRequestOneFrameComponent",
+  "ext_name": "ServerInventorySetTradeBuybackPriceRequest",
+  "size": 2,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request of esv::inventory::TradeBuybackSystem: set the buyback price of an item sold to a trader. TradeBuybackSystem::CreateSetBuybackPriceRequests (Toolkit EoCServer.dll+0xF20A60) walks its queue of SetBuybackPriceRequest (16 bytes: entity at +0, price at +8) and, for every member of the item's stack, adds this component with the request's 2-byte price; ProcessTradeActions consumes it next to eoc::inventory::TradeBuybackDataComponent (whose Amount is also uint16). Never seen alive. Registry total 2 (server row).",
+  "fields": [
+    {
+      "name": "Price",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3504530 (AllocRaw 2) zeroes the uint16 at +0; game lambda bg3.exe+0x35049E0 writes `*puVar1 = *(undefined2 *)(*(longlong *)(param_1 + 0x28) + 8)` = the uint16 at +8 of the system's SetBuybackPriceRequest element (stride 0x10, Toolkit CreateSetBuybackPriceRequests and its lambda EoCServer.dll+0xF208D0 do the same). The name follows the request type esv::inventory::TradeBuybackSystem::SetBuybackPriceRequest."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Field name inferred from the request/system names; the game's own member name is not known.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

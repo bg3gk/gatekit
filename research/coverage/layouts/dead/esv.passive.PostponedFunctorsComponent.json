@@ -1,0 +1,55 @@
+{
+  "component": "esv::passive::PostponedFunctorsComponent",
+  "ext_name": "ServerPassivePostponedFunctors",
+  "size": 64,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Functors of passives whose execution was postponed, keyed by a Guid. Created and drained by esv::PassiveSystem (per-frame update bg3.exe+0x32B7C70; ProcessPostponedFunctors bg3.exe+0x32AF640); removed when its map becomes empty. macOS names the map ls::HashMap<ls::Guid, esv::passive::PostponedFunctors>.",
+  "structs": [
+    {
+      "name": "PassivePostponedFunctorsEntry",
+      "size": 912,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t[896]",
+          "source": "unknown",
+          "evidence": "esv::passive::PostponedFunctors (macOS name); element stride 0x390 in the destructor bg3.exe+0x22D66E0 (element destructor FUN_142327D50) and in bg3.exe+0x32AF640 (iVar4 * 0x390); contents not decoded."
+        },
+        {
+          "name": "field_380",
+          "offset": 896,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x32AF640 reads *(entry + 0x380) as an 8-byte value after FUN_1432BED70 finds the entry."
+        },
+        {
+          "name": "field_388",
+          "offset": 904,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "rest of the 0x390-byte element, not read"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Functors",
+      "offset": 0,
+      "type": "HashMap<Guid, PassivePostponedFunctorsEntry>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x32C0530 allocates 0x40 and zeroes a HashSet (+0..+0x30) and an Array at +0x30. Destructor bg3.exe+0x22B8200 -> bg3.exe+0x22D66E0: destroys (count at +0x2C = key count) elements of stride 0x390 at +0x30, frees them, then FUN_140582AD0 (POD HashSet). bg3.exe+0x32AF640 hashes the key as (k[0] ^ k[1]) % buckets: a 16-byte key = Guid, as in the macOS instantiation ls::HashMap<ls::Guid, esv::passive::PostponedFunctors>. The per-frame update removes the component when +0x2C (key count) is 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Contents of the 0x390-byte esv::passive::PostponedFunctors value (element destructor FUN_142327D50 not read)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled this pass: the HashMap<Guid, 0x390-byte value> shape is Windows (creator bg3.exe+0x32C0530, destructor bg3.exe+0x22D66E0), but the esv::passive::PostponedFunctors value (element destructor FUN_142327D50) was not decoded and stays a byte block."
+}

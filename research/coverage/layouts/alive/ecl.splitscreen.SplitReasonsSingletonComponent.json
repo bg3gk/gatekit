@@ -1,0 +1,33 @@
+{
+  "component": "ecl::splitscreen::SplitReasonsSingletonComponent",
+  "ext_name": "ClientSplitscreenSplitReasonsSingleton",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "SplitReasons",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "ecl::splitscreen::SplitReasonsSystem::Update (EoCClient.dll+0x83E0C0) builds a bit mask and stores *(ushort*)comp = mask when changed: 0x2 distance > 15 m, 0x4 distance > 7.5 m, 0x8 one player has no character, 0x10/0x20 per-player test (EoCClient.dll+0x83DB60), 0x40 camera angle > s_SplitAngleDeg, 0x80, 0x100 only one of the two characters in combat, 0x200, 0x400. GoalSystem::Update reads it (0 -> merge). Default 0, live 0. Windows: SplitReasonsSystem update bg3.exe+0x192A770 compares *(ushort*)p and p[1] with the new values and, when either changed, stores *(ushort*)p = mask, ((ushort*)p)[1] = merge reasons; GoalSystem update bg3.exe+0x192E320 reads *(ushort*)p (masking 0x4 / testing 0x30)."
+    },
+    {
+      "name": "MergeReasons",
+      "offset": 2,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Same function: comp[1] (ushort) = 2 when both players control the same character, else 0. GoalSystem::Update: if (*(ushort*)(reasons+2) != 0) merge = 1. Live 0. Windows: bg3.exe+0x192A770 stores it as the second ushort; bg3.exe+0x192E320 tests ((ushort*)p)[1] != 0 to force a merge."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meanings of the individual bits beyond those listed; names are ours."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Both 16-bit members confirmed on Windows: written together by the SplitReasonsSystem update bg3.exe+0x192A770 and read as two ushorts by the GoalSystem update bg3.exe+0x192E320 (4-byte singleton, stride 4).",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

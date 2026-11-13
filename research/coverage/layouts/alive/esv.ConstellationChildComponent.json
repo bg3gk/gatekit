@@ -1,0 +1,25 @@
+{
+  "component": "esv::ConstellationChildComponent",
+  "ext_name": "ServerConstellationChild",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Registry size 8 (server). Live (48 instances): low dword an index 0x1C7..0x2626E, high dword 0x2000001..0x200000C - the shape of an EntityHandle (salt + type bits). Readers named on macOS: esv::ConstellationSystem::ProcessActivations/Update, ::ResolveChildHandle, ::ExtractConstellation (Toolkit EoCServer.dll esv::ConstellationSystem::Process* take it in their WorldView). Which entity it names (the parent constellation or the resolved child) was not read."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which entity the handle names (parent constellation vs resolved child)."
+  ],
+  "summary": "Lives in idle levels (WLD_Main_A, SCL_Main_A; up to 195 holders); maintained by esv::ConstellationSystem.",
+  "minutes": 4,
+  "functions_read": 0,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

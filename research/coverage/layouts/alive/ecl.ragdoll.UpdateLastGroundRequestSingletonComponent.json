@@ -1,0 +1,24 @@
+{
+  "component": "ecl::ragdoll::UpdateLastGroundRequestSingletonComponent",
+  "ext_name": "ClientRagdollUpdateLastGroundRequestSingleton",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1E5EE10 (0x10); destructor bg3.exe+0x686280 frees one trivial array. Toolkit ragdoll sound helper EoCClient.dll+0xDF3D20 grows the array passed as param_5 and stores the ragdoll character's 8-byte handle (generic EntityHandle setter FUN_1801c88b0), next to the ragdoll SoundRequestBus pushes; ecl::GroundMaterialSystem::Update (EoCClient.dll+0x9A8F70) reads it const. Live: empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "param_5 identified as this singleton by the joint query (SoundRequestBus + UpdateLastGroundRequest, bg3.exe+0x1E5F6D0), not by a typed parameter."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

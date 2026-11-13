@@ -1,0 +1,68 @@
+{
+  "component": "esv::drop::DropEntityTargetComponent",
+  "ext_name": "ServerDropEntityTarget",
+  "size": 48,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Put on every dropped/thrown entity once the dropper's action resources were spent (born in 'shove-throw'). Written by esv::drop::DropEntityExecuteSystem::ProcessWaitingForActionResourceSpending from the dropper's esv::drop::DropEntityStateComponent.",
+  "fields": [
+    {
+      "name": "Dropper",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "ProcessWaitingForActionResourceSpending (EoCServer.dll+0x9B4590): for each alive entity of the dropper's DropEntitiesListComponent adds this component (FUN_1809b22a0) and sets +0 to the query entity (the one holding DropEntityStateComponent). Live: entity handles 0x00800011_000007C3 / 0x01800001_00018D04. Windows save loader bg3.exe+0x25E2F90 stores the EntityHandle converted from the saved EntityId (bg3.exe+0x4018730) at +0."
+    },
+    {
+      "name": "Position",
+      "offset": 8,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Same function: +8 = state+0x10 (8 bytes), +0x10 = state+0x18. Live floats identical to DropEntityStateComponent.Position. Loader bg3.exe+0x25E2F90 stores the level-transformed vec3 (bg3.exe+0x2772030) at +8 (8 bytes) and +0x10 (4)."
+    },
+    {
+      "name": "Rotation",
+      "offset": 20,
+      "type": "std::array<float, 4>",
+      "source": "inferred",
+      "evidence": "Value storage of an ls::Optional<Quaternionf>: Windows save loader bg3.exe+0x25E2F90 (model ls::model::game::drop::v1::DropEntityTargetComponent, 48 bytes) stores the level-rotated quaternion (bg3.exe+0x27744C0) at +0x14..+0x23 only when the model's flag is set, otherwise the bytes stay uninitialised (raw check: 'not an ordinary float'); hence std::array<float, 4>, not glm::quat. ProcessWaitingForActionResourceSpending copies state+0x1C..+0x2B here."
+    },
+    {
+      "name": "HasRotation",
+      "offset": 36,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "+0x24 = state+0x2C (4-byte copy; first byte is the Optional flag). Live 0. Loader bg3.exe+0x25E2F90: 4-byte store at +0x24 whose low byte is 1 only when the rotation was loaded."
+    },
+    {
+      "name": "_Pad25",
+      "offset": 37,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding (copied together with the flag)"
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Byte +0x28 = a local flag that is 0 for the first alive entity of the list and 1 for every following one (local_2e8). Live 0 (one entity per throw); bytes +0x29.. are 0xFF garbage. Loader bg3.exe+0x25E2F90: 4-byte store at +0x28 whose low byte is (model byte +0x14 != 0) - a saved bool."
+    },
+    {
+      "name": "_Pad29",
+      "offset": 41,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding (live 0xFF bytes, never written)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the bool at +0x28 (0 for the first alive entity of the dropper's list, 1 for the rest); the savegame model has no member names."
+  ],
+  "minutes": 10,
+  "functions_read": 3,
+  "status": "confirmed",
+  "second_pass": "All offsets and widths confirmed by the Windows save loader bg3.exe+0x25E2F90 (EntityHandle +0, vec3 +8, optional quaternion +0x14 with flag +0x24, saved bool +0x28). Rotation is now std::array<float, 4> because the optional's storage is left uninitialised when unset, which made the raw check fail on glm::quat.",
+  "raw_check": "14 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

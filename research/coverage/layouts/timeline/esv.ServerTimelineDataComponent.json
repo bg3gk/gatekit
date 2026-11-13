@@ -1,0 +1,38 @@
+{
+  "component": "esv::ServerTimelineDataComponent",
+  "ext_name": "ServerTimelineData",
+  "size": 24,
+  "fields": [
+    {
+      "name": "SceneTrigger",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x330C7C0 fills it right after creation (bg3.exe+0x3314E70) with the 16 bytes at +0xE8 of the timeline creation request - the same bytes it stores into eoc::SyncedTimelineControlComponent+0x38 (SceneTrigger in Timeline.h). bg3.exe+0x330A1E0 passes a pointer to it to esv::TimelineSystem::GetSceneTrigger(Guid*) (named function) next to the new SceneTrigger of the synced control, i.e. it keeps the scene trigger the timeline was created with. Live: a valid v4 GUID (7f7e953c-fa7d-4e98-...)."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x330C7C0 writes one byte 0 here after creation; live 0. No reader found."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding (alignment 8); live 0"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the flag at +0x10.",
+    "The creation helper zeroes only the first 8 bytes, so the Guid type rests on the 16-byte copy and on the GetSceneTrigger call."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

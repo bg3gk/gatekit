@@ -1,0 +1,54 @@
+{
+  "component": "ls::SoundCameraVolumeChangedEventOneFrameComponent",
+  "ext_name": "SoundCameraVolumeChangedEvent",
+  "size": 24,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event added to a sound camera by ecl::sound::CameraSystem::CheckSoundTriggersToUpdateSoundVolumes when the camera enters another sound volume trigger; read by ecl::crowds::SoundVolumeSystem and ecl::sound::AmbienceMixSystem.",
+  "fields": [
+    {
+      "name": "OldSoundVolume",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0xDCC2F0 (event add, ComponentFrameStorageAllocRaw 0x18) writes *param_3 at +0; the caller CheckSoundTriggersToUpdateSoundVolumes (EoCClient.dll+0xDD0760) passes local_200 = SoundCameraComponent.SoundVolume read before it is overwritten. Live: entity handles / null."
+    },
+    {
+      "name": "NewSoundVolume",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Same add: +8 = *param_4 = the SoundCameraComponent after its +0 was set to the new trigger's entity."
+    },
+    {
+      "name": "PlayerId",
+      "offset": 16,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "Same add: *(short*)(+0x10) = *param_5, the short player id the check runs for (stored also in SoundCameraComponent +0x34). Live: 1."
+    },
+    {
+      "name": "field_12",
+      "offset": 18,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Same add: byte +0x12 = *param_6 (a bool argument of the check, probably the 'notify/force' flag). Live: 0."
+    },
+    {
+      "name": "_Pad13",
+      "offset": 19,
+      "type": "uint8_t[5]",
+      "source": "unknown",
+      "evidence": "not written by the add; live bytes vary (uninitialised)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the byte at +0x12; the event add's two extra stack arguments were not traced to their source.",
+    "Read from the Toolkit build (EoCClient.dll), not from bg3.exe."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

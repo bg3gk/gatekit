@@ -1,0 +1,32 @@
+{
+  "component": "esv::relation::TemporaryHostileRelationRemovedEventOneFrameComponent",
+  "ext_name": "ServerRelationTemporaryHostileRelationRemovedEvent",
+  "size": 32,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event of esv::relation::RelationSystem (per-frame update bg3.exe+0x2C1D0F0 = Toolkit RelationSystem::Update -> ProcessTemporaryRelations / AddRemovedTempRelations). The system collects a HashMap<EntityHandle, std::tuple<Guid, DynamicArray<Guid>>> (Toolkit template text) and creates one event per key. Seen.py context: born during dialogues/scenes that end in fights (DEN_AttackOnDen, GOB raider scenes) together with TemporaryHostileRelationCreatedEventOneFrameComponent, combat::MergeComponent, CombatSwitchedComponent.",
+  "fields": [
+    {
+      "name": "Uuid",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2C27170 allocates 0x20 and copies 16 bytes from param_3 (the tuple's Guid, value+0x10 in the caller bg3.exe+0x2C1D0F0) to +0. Toolkit EoCServer.dll+0x88B5B0 ProcessTemporaryRelations passes HashMap<ID<EntityHandleTraits>, std::tuple<ls::Guid, ls::DynamicArray<ls::Guid>>>. Live: 17 distinct 16-byte random values. Meaning (UUID of the holder or of the other party) not established; name is a guess."
+    },
+    {
+      "name": "OtherUuids",
+      "offset": 16,
+      "type": "Array<Guid>",
+      "source": "inferred",
+      "evidence": "Creator copy-constructs +0x10 from param_4 with FUN_1405cb760 (array copy, element 0x10, plain 16-byte copy); destructor FUN_1406a2d80 frees +0x10. AddRemovedTempRelations (EoCServer.dll) pushes Guids into it (assert ls::IndexedStorage<class ls::Guid>). Live: heap pointer, capacity 1..4, size 1..3."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which side the leading Guid identifies (holder's own uuid vs. the faction/character the relation was with); field names are guesses."
+  ],
+  "minutes": 8,
+  "functions_read": 6,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

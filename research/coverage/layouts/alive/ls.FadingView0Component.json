@@ -1,0 +1,40 @@
+{
+  "component": "ls::FadingView0Component",
+  "ext_name": "FadingView0",
+  "size": 8,
+  "seen": true,
+  "summary": "Resolved fade of an entity for render view 0, written by ecl::FadeResolveSystem from all ecl::*FadeView0Component sources; the entity is also put into ls::FadingEntitiesForRenderingSingletonComponent.",
+  "fields": [
+    {
+      "name": "Opacity",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18EBEB0 creates ls::FadingView0Component (8 bytes) with 1.0; bg3.exe+0x18E2A20 then sets it to 0.0 when the request's first flag is set. Live: 0, 0.5, 0.7965, 1 - a 0..1 visibility value."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Default 1 in bg3.exe+0x18EBEB0 (View0); bg3.exe+0x18E2A20 copies the second byte of a 2-byte per-entity request into it. Live: 0 or 1, followed by garbage bytes."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "live garbage (not written by the creator)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Name and meaning of field_4.",
+    "Opacity is a name inferred from the 0..1 range and default 1.0; no renderer reader was read."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

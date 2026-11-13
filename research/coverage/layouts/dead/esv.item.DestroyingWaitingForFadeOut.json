@@ -1,0 +1,55 @@
+{
+  "component": "esv::item::DestroyingWaitingForFadeOut",
+  "ext_name": "ServerItemDestroyingWaitingForFadeOut",
+  "size": 16,
+  "seen": false,
+  "summary": "State of an item being destroyed that waits for its fade-out effect: added by bg3.exe+0x33CD8D0 (esv::item::DestructionSystem) with the effect name and a delay; handled by the Toolkit's `anonymous-namespace'::HandleWaitingForFadeOut (EoCServer.dll+0x141CB30, called from esv::item::DestructionSystem::Update), which counts the delay down, plays the effect with esv::EffectManager::PlayAndForgetEffect (\"Can't play fade-out effect (%s) on item destruction: %s\"), then counts the effect's duration down. Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Effect",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x33D03A0 (AllocRaw 0x10, destructor FUN_140698fe0) stores the global FixedString DAT_1461aabd0 with IncRef; writer bg3.exe+0x33CD8D0 assigns the FixedString at (resource + 0x48) of a resource looked up with type 7 (FUN_14412e090). Toolkit: passed as the effect name to esv::EffectManager::PlayAndForgetEffect and printed in the fade-out error."
+    },
+    {
+      "name": "Delay",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator zeroes dword +4; writer copies the 4-byte value at param_3+0x40. Toolkit HandleWaitingForFadeOut: `*(float*)(c+4) -= GameTime.DeltaTime` while > 0; the effect is played when it reaches 0."
+    },
+    {
+      "name": "Duration",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator zeroes dword +8. Toolkit: set to *(float*)(effect + 0x20) after the effect is played, then decremented by the delta time; destruction proceeds when <= 0."
+    },
+    {
+      "name": "EffectStarted",
+      "offset": 12,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creator zeroes dword +0xC then byte +0xC. Toolkit: tested `c[0xC] == 0` and set to 1 once the fade-out effect has been played."
+    },
+    {
+      "name": "_PadD",
+      "offset": 13,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "Zeroed by the creator's dword store, never used."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names are inferred from the Toolkit handler's logic (no game names).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

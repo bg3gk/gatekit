@@ -1,0 +1,110 @@
+{
+  "component": "ecl::TimelineCameraShotComponent",
+  "ext_name": "ClientTimelineCameraShot",
+  "size": 104,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x1D78680 writes a 16-bit 0 at +0. bg3.exe+0x1D64DF0 tests it: the camera is (re)applied when field_0 == 0 or NeedsUpdate != 0; when field_0 and field_1 are both set it only ORs 4 into flags at +0xB0 of the camera object. Probe: 0 in both instances."
+    },
+    {
+      "name": "field_1",
+      "offset": 1,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Second byte of the same 16-bit 0; passed as a flag to bg3.exe+0x200C180 together with field_30/field_40. Probe: 0 and 1."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "Probe: ff bytes in the live instance (uninitialised)."
+    },
+    {
+      "name": "CameraActor",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D64DF0 and bg3.exe+0x1F21DB0 resolve comp+8 to an entity through bg3.exe+0x3CBB2F0 (timeline actor guid -> entity); bg3.exe+0x204F010 compares it with a camera actor guid; bg3.exe+0x1D65220 fills it from the Guid values of a HashMap<Guid, Guid> at ecl::Timeline+0x3F8 looked up by field_20. Probe: a GUID-looking value in one instance, zero in the other."
+    },
+    {
+      "name": "HasCameraActor",
+      "offset": 24,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creator writes one byte 0 at +0x18; bg3.exe+0x1D64DF0 requires it to be set before using CameraActor and clears it together with the 16 bytes at +8 (std::optional<Guid> pattern)."
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "Probe: ff bytes."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "16 bytes: bg3.exe+0x1D65220 hashes them (qword0 ^ qword1) as the key into the HashMap<Guid, Guid> at ecl::Timeline+0x3F8 and into a HashMap<Guid, T*> at +0x48 of the object at TimelineContent+0x250; cleared by bg3.exe+0x1D64DF0. Probably a scene/shot id (the two maps of ecl::Timeline in that area are QuestionHoldCameraActorIdToSceneId and CompanionCameraSceneIdToActorId) - not established which."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1D65220 resets it to the null Guid constant (bg3.exe+0x625AAD0) and fills it through bg3.exe+0x1D653E0 with the Guid of the timeline actor whose slot index equals the int at +0x2C of the object found by field_20."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Same as field_30 for the int at +0x30 of that object (-2 = copy field_30); bg3.exe+0x1D65220 returns false when it stays null."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator writes a 16-bit 0 at +0x50; bg3.exe+0x1D64DF0 sets this byte to 1 when the lookup of field_20 fails and the component is reset."
+    },
+    {
+      "name": "NeedsUpdate",
+      "offset": 81,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D64DF0: when set, the camera actor is re-resolved (bg3.exe+0x1D65220) and the byte is cleared afterwards."
+    },
+    {
+      "name": "_Pad52",
+      "offset": 82,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "Probe: ff bytes."
+    },
+    {
+      "name": "field_58",
+      "offset": 88,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Creator zeroes two qwords; bg3.exe+0x1D653E0 compares an actor Guid with comp+0x58/+0x60 and returns at once on a match (a preferred actor); zeroed on reset by bg3.exe+0x1D64DF0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of field_0/field_1/field_50 and of the Guids at +0x20/+0x30/+0x40/+0x58 (sizes and types are established, names are not).",
+    "Who sets field_20 and field_58 (the track component code calling bg3.exe+0x1D79CA0 from bg3.exe+0x20483E0 was not followed).",
+    "CameraActor + HasCameraActor is most likely std::optional<Guid>; declared as two fields because the brief's type list has no optional."
+  ],
+  "minutes": 15,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found."
+}

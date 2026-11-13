@@ -1,0 +1,25 @@
+{
+  "component": "esv::item::animation::StateChangedEventOneFrameComponent",
+  "ext_name": "ServerItemAnimationStateChangedEvent",
+  "size": 2,
+  "seen": true,
+  "summary": "Server one-frame event: an item's animation state changed (door/chest opened, closed ...). Added by Toolkit EoCServer.dll+0x13B03A0 esv::item::animation::StateTransitionSystem::FinalizeState after 'transitioning to (%s)'; read by esv::invisibility::ChangesSystem::ProcessItemAnimationStateChanges (macOS index).",
+  "fields": [
+    {
+      "name": "PreviousState",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x35A3260 allocates 2 bytes, default 4. In FinalizeState the added component (FUN_1813acd60) gets StateComponent +2 (CurrentState) before the transition; then StateComponent +4 = old +2 and +2 = the new state. So it carries the state left (eoc::item::animation::EAnimationState, 16-bit). Live (3): 4, 6, 7."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "FUN_1813acd60 assumed to be the add of this component (the only one-frame type of the WorldView written there)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

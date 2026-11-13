@@ -1,0 +1,24 @@
+{
+  "component": "esv::crowds::AnimationPauseRequestsSingletonComponent",
+  "ext_name": "ServerCrowdsAnimationPauseRequests",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "esv::crowds::PlayPauseAnimationSystem::Update (Toolkit EoCServer.dll+0xD7ED50, WorldView<AnimationPauseRequestsSingletonComponent, AnimationPlayRequestsSingletonComponent, ...>) gets both singletons, clears them (FUN_180226330), then for crowd entities from its queries inserts the 8-byte entity handle into the set: bucket count at +8, hash = handle % count, keys appended at +0x20 (capacity +0x28, size +0x2C) with assert text ls::IndexedStorage<struct ls::ID<struct ecs::EntityHandleTraits>, mem::s_TagHashTable>, next-ids at +0x10. Adder bg3.exe+0x356B4D0 / bg3.exe+0x356B680 (called once from bg3.exe+0x356B140, each on a new entity) zeroes 0x30 bytes in HashSet shape. Live: one instance, empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which of the two singletons is filled by which query was matched by WorldView order only (Pause first, Play second); both have the same type."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

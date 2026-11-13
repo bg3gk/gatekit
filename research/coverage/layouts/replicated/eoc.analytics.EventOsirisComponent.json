@@ -1,0 +1,39 @@
+{
+  "component": "eoc::analytics::EventOsirisComponent",
+  "ext_name": "AnalyticsEventOsiris",
+  "size": 56,
+  "fields": [
+    {
+      "name": "CharacterHandle",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "serializer bg3.exe+0x9E84B0/0x9E8680 member 1: entity writer bg3.exe+0x4017090 at +0 (global offset DAT_14627fc10 = 0); macOS ctor null handle. Name by analogy with AnalyticsEventCombatTurn.CharacterHandle."
+    },
+    {
+      "name": "EventName",
+      "offset": 8,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "serializer member 2: string writer bg3.exe+0x4016480 (size at +0x10, SSO capacity at +0x14) at +8; EoCClient.dll ecl::GameAnalyticsSystem ProcessOsirisEvents EoCClient.dll+0xD30CB0 (stride 0x38) -> EoCClient.dll+0xD3AF40 compares +8 with \"long_rest\". macOS ctor zero."
+    },
+    {
+      "name": "Parameters",
+      "offset": 32,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "serializer member 3: string at +0x20; EoCClient.dll+0xD3AF40 splits it and looks for \"X\", \"Y\", \"Z\" (LongRestEventCoordinates)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "EventName/Parameters are inferred names",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "seen": false,
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "12 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

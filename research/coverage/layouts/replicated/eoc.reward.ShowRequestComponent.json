@@ -1,0 +1,71 @@
+{
+  "component": "eoc::reward::ShowRequestComponent",
+  "ext_name": "RewardShowRequest",
+  "size": 48,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x92BB80: member 1, ecs::sync::Serialize(FixedString) on +0; macOS default str d0 [x23] (both FixedStrings, presumably null)"
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x92BB80: member 2, ecs::sync::Serialize(FixedString) on +4"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x92BB80: member 3, raw 16-byte write at +8; macOS default stp xzr,xzr [x23,#8]"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x92BB80: member 4, bg3.exe+0x4017090 (EntityHandle writer) on +0x18; macOS default stur q1 (null handles)"
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x92BB80: member 5, bg3.exe+0x4017090 on +0x20"
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x92BB80: member 6, raw 1-byte write at +0x28; macOS default str xzr [x23,#0x28]"
+    },
+    {
+      "name": "_Pad29",
+      "offset": 41,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment padding; nothing serialized or initialised here"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Guid guessed from width. Writers are named on macOS (esv::RewardManager::CreatePendingReward, ::GetGoldReward, ...) but not read; member meanings unknown.",
+    "The client reward UI (gui reward VM) that reads it would show which FixedString is the treasure table / reward and which entity is the receiver."
+  ],
+  "seen": false,
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Replicated, but the macOS build has no FieldMeta names for it and no Osiris parameter maps to it."
+}

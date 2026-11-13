@@ -1,0 +1,94 @@
+{
+  "component": "esv::combine::ResultOneFrameComponent",
+  "ext_name": "ServerCombineResult",
+  "size": 48,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame result of item combination (crafting), filled in esv::combine::ExecutionSystem::FinalizeComponents (bg3.exe+0x2F28BA0, Toolkit-matched) from the system's per-entity sets of 24-byte result records. On Windows the component is a hash set of 24-byte records (16 bytes hashed as lo ^ hi like a Guid, plus two bytes compared). Written out because a struct may not be a HashSet key in this format: the HashSet's three parts are declared explicitly (same memory as SE HashSet<T>: StaticArray<int32> HashKeys, Array<int32> NextIds, Array<T> Keys). Saved: model game.combine.v0.ResultOneFrameComponent (48 bytes) with the game's member names m_ResultEntities, m_BaseNotFounds, m_IngredientNotFounds - these do NOT map one-to-one onto the Windows component (which is one set), so they are not used as field names. Never seen alive. Registry total 48 (server row).",
+  "structs": [
+    {
+      "name": "CombineResultRecord",
+      "size": 24,
+      "fields": [
+        {
+          "name": "ResultEntity",
+          "offset": 0,
+          "type": "Guid",
+          "source": "game",
+          "evidence": "Hash insert bg3.exe+0xBDD320 hashes `(param_3[1] ^ *param_3) % buckets` (the LS Guid hash) and the find bg3.exe+0xC662A0 compares qwords +0 and +8 - a 16-byte value, Guid by its hash; meaning not established. Name: savegame model game.combine.v0.ResultOneFrameComponent, member 0 (m_ResultEntities, an array of 16-byte values): the Windows save writer bg3.exe+0x2606770 walks the component's records at +0x20 (count +0x2C, stride 0x18 = `puVar21 + 6` dwords) and copies the first 16 bytes of each into that array."
+        },
+        {
+          "name": "BaseNotFound",
+          "offset": 16,
+          "type": "bool",
+          "source": "game",
+          "evidence": "find bg3.exe+0xC662A0 compares `(char)` at +0x10. Name and type: bg3.exe+0x2606770 stores `*(char*)(record + 0x10) != 0` as a bool into the second model array - savegame model member 1 (m_BaseNotFounds)."
+        },
+        {
+          "name": "IngredientNotFound",
+          "offset": 17,
+          "type": "bool",
+          "source": "game",
+          "evidence": "find bg3.exe+0xC662A0 compares the byte at +0x11. Name and type: bg3.exe+0x2606770 stores `*(char*)(record + 0x11) != 0` as a bool into the third model array - savegame model member 2 (m_IngredientNotFounds)."
+        },
+        {
+          "name": "_Pad12",
+          "offset": 18,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "padding to the stride 0x18 (insert writes `iVar9 * 0x18`, copies 16 bytes + one qword at +0x10)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "HashKeys",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "HashSet bucket table (int32 per bucket): insert bg3.exe+0xBDD320 / find bg3.exe+0xC662A0 read `*param_1 + bucket * 4`."
+    },
+    {
+      "name": "HashKeysSize",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count `(int)param_1[1]` used as the modulus in bg3.exe+0xBDD320."
+    },
+    {
+      "name": "_Pad0C",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding (StaticArray has no capacity)."
+    },
+    {
+      "name": "NextIds",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "`param_1[2] + idx * 4` chain links in the find; capacity param_1[3], size +0x1C grown in the insert."
+    },
+    {
+      "name": "ResultEntities",
+      "offset": 32,
+      "type": "Array<CombineResultRecord>",
+      "source": "game",
+      "evidence": "keys at param_1[4] with stride 0x18, capacity param_1[5], size +0x2C (insert bg3.exe+0xBDD320). Creator bg3.exe+0x2F29900 (AllocRaw 0x30) zeroes +0..+0x2F; destructor thunk of bg3.exe+0x582AD0 frees +0x20, +0x10, +0 (trivially destructible records). FinalizeComponents lines 45-62 insert every 0x18-byte element of the system's sets. Game name: member 0 (m_ResultEntities) of savegame model ls::model::game::combine::v0::ResultOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x517E8C0): it walks the array at component +0x20 (count +0x2C, stride 0x18) and copies the first 16 bytes of each element into model member 0; the model is flatter than the component (a span instead of this hash table). Windows save writer bg3.exe+0x2606770 confirms the same walk (+0x20, count +0x2C, stride 0x18)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The 16-byte ResultEntity is hashed like a Guid (lo ^ hi); whether it is a Guid or an entity's UUID is not distinguishable from the code (16 bytes either way).",
+    "The hash table is written as its four parts because a struct may not be a HashSet key in this format (same memory as HashSet<CombineResultRecord>).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 12,
+  "functions_read": 6,
+  "status": "declared",
+  "names_pass": "Matched 1 of 3: ResultEntities = the keys array at +0x20 (the whole 48-byte hash structure is that member; only its key array row was renamed). Not matched: m_BaseNotFounds and m_IngredientNotFounds - the macOS Save writes them as empty spans, nothing of the component goes there; the two bytes +0x10/+0x11 of each record are not saved. HashKeys/HashKeysSize/NextIds are hash-table internals, not model members.",
+  "second_pass": "Record members named and typed from the Windows save writer bg3.exe+0x2606770, which flattens each 24-byte record into the three arrays of savegame model game.combine.v0.ResultOneFrameComponent (16-byte ResultEntities, bool BaseNotFounds from +0x10, bool IngredientNotFounds from +0x11); the hash-table offsets were already Windows.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

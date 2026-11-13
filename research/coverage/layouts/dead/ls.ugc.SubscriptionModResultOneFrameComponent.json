@@ -1,0 +1,40 @@
+{
+  "component": "ls::ugc::SubscriptionModResultOneFrameComponent",
+  "ext_name": "UgcSubscriptionModResult",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame result of (un)subscribing to a mod on mod.io (client only, registry total 16). ls::PublishingSystem (per-frame update bg3.exe+0x3BDE2A0; Toolkit GameEngine.dll ls::PublishingSystem::Process*Requests) creates it on a new entity from a request queued by the matching HandleUGC... callback of the mod.io back-end; the same frame also gets a UGCRequestResultOneFrameComponent with the net::UGCResult and request Guid. Request queue filled by HandleUGCItemSubscribed / HandleUGCItemUnsubscribed(unsigned __int64, net::UGCResult); drained by bg3.exe+0x3BDF080.",
+  "fields": [
+    {
+      "name": "ModId",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BE15A0 (AllocRaw 0x10) zeroes +0; bg3.exe+0x3BDF080 stores the request's qword +0 (mod id; request stride 0x48)."
+    },
+    {
+      "name": "Subscribed",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creator zeroes byte +8; bg3.exe+0x3BDF080 copies request byte +0x30, which HandleUGCItemSubscribed (bg3.exe+0x3BE0840) sets to 1 and HandleUGCItemUnsubscribed (bg3.exe+0x3BE0920) to 0."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to 16"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive."
+  ],
+  "minutes": 5,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

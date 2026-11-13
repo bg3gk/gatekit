@@ -1,0 +1,26 @@
+{
+  "component": "esv::passive::BoostsUpdatedEventOneFrameComponent",
+  "ext_name": "ServerPassiveBoostsUpdatedEvent",
+  "size": 4,
+  "seen": true,
+  "summary": "Server event component added when a passive's boosts were (re)applied. Seen.py context: born in equipment changes, shove/throw, spells, death, dialogues - anything that re-evaluates passives (up to 10 holders at once). Only bg3.exe touches it (no Toolkit reference).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x32BCAA0 (add helper, called from bg3.exe+0x32B3C00) allocates the 4-byte component and stores 1 as a dword; the caller later stores dword 0 into it on one branch (when the boost list it built is non-empty). macOS default constructor: a single 32-bit store. Live: 2 instances, values 0 and 1. Probably a bool kept in 4 bytes. Second pass: the writer is part of esv::PassiveSystem (bg3.exe+0x32B3C00, called from its per-frame update bg3.exe+0x32B7C70): it builds the passive's boost list (16-byte entries), adds the event with the helper (value 1) and, on the branch where local_518 != 0 and the list is non-empty, overwrites the dword with 0 (line ~651). The whole 4 bytes are one dword store in both places, so the width is established; the meaning of 0 vs 1 is not."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the value (1 = default from the adder, 0 on one branch of the PassiveSystem writer); bg3.exe+0x32B3C00 has no Toolkit match."
+  ],
+  "minutes": 4,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Windows adder bg3.exe+0x32BCAA0 (4 bytes, dword 1) and writer bg3.exe+0x32B3C00 in esv::PassiveSystem (dword 0) establish one 32-bit member; its meaning stays unknown, so the name stays field_0.",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

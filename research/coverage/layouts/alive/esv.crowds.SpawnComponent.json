@@ -1,0 +1,90 @@
+{
+  "component": "esv::crowds::SpawnComponent",
+  "ext_name": "ServerCrowdsSpawn",
+  "size": 48,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Spawn data of a crowd proxy (Baldur's Gate lower-city crowds; born in dialogue steps together with eoc::crowds::AppearanceComponent, BehaviourComponent, DeadReckoningComponent...). Written by esv::crowds::SpawnSystem::CreateCrowdProxy from a SpawnSystem::SpawnRequest.",
+  "fields": [
+    {
+      "name": "PatrolSplineID",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "CreateCrowdProxy (EoCServer.dll+0xD711C0) assigns request+0x1C to +0 when that FixedString is not null (it also selects a spawn mode 0/2 from it). Default -1 (Windows adder FUN_180d65170 / macOS str w26). Live always null. Game name: member 0 (m_PatrolSplineID) of savegame model ls::model::game::crowds::v1::SpawnComponent; matched by the Windows loader bg3.exe+0x25FA150 -> bg3.exe+0x2774910 (model to component): the model string at +0 is turned into a FixedString and stored at component +0.",
+      "legacy": "field_0"
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding (live garbage)"
+    },
+    {
+      "name": "CrowdCharacterTrigger",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Default 0xFFC0000000000000 (adder FUN_180d65170); CreateCrowdProxy stores the request handle at +0x28 here after validating it (an entity with a component whose ushort +0x7C is compared). Live valid handles. Game name: member 1 (m_CrowdCharacterTrigger) of savegame model ls::model::game::crowds::v1::SpawnComponent; matched by the Windows loader bg3.exe+0x25FA150 -> bg3.exe+0x2774910 (model to component): the model EntityId at +0x10 is remapped and stored at component +8.",
+      "legacy": "field_8"
+    },
+    {
+      "name": "SpawnPosition",
+      "offset": 16,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "CreateCrowdProxy: +0x10 = request+4 (8 bytes), +0x18 = request+0xC; request+4 is also passed as the spawn position to the proxy creation. Live world coordinates (-309.9, 7.3, 8.2 ...). Game name: member 2 (m_SpawnPosition) of savegame model ls::model::game::crowds::v1::SpawnComponent; matched by the Windows loader bg3.exe+0x25FA150 -> bg3.exe+0x2774910 (model to component): the vec3 at model +0x18 is transformed and stored at component +0x10..+0x1B.",
+      "legacy": "Position"
+    },
+    {
+      "name": "SpawnYaw",
+      "offset": 28,
+      "type": "float",
+      "source": "game",
+      "evidence": "= request+0x10. Live small floats (0.06..0.21, some negative). Game name: member 3 (m_SpawnYaw) of savegame model ls::model::game::crowds::v1::SpawnComponent; matched by the Windows loader bg3.exe+0x25FA150 -> bg3.exe+0x2774910 (model to component): the rotation at model +0x24 is converted (bg3.exe+0x1A877A0) into the float at component +0x1C.",
+      "legacy": "field_1C"
+    },
+    {
+      "name": "GroupOffsetXZ",
+      "offset": 32,
+      "type": "glm::vec2",
+      "source": "game",
+      "evidence": "savegame model member m_GroupOffsetXZ; the Windows loader bg3.exe+0x2774910 stores X at +0x20 and Z at +0x24, both relative to SpawnPosition"
+    },
+    {
+      "name": "ReversePatrolDirection",
+      "offset": 40,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "= request byte +0x20 when field_0 is set; default 0. Game name: member 5 (m_ReversePatrolDirection) of savegame model ls::model::game::crowds::v1::SpawnComponent; matched by the Windows loader bg3.exe+0x25FA150 -> bg3.exe+0x2774910 (model to component): bool(model byte +0x40) stored at component +0x28.",
+      "legacy": "field_28"
+    },
+    {
+      "name": "PathMovementSpeed",
+      "offset": 41,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "= request byte +0x21; default 2 (adder writes uint16 0x0200 at +0x28). Live 1 or 2. Game name: member 6 (m_PathMovementSpeed, added in v1) of savegame model ls::model::game::crowds::v1::SpawnComponent; matched by the Windows loader bg3.exe+0x25FA150 -> bg3.exe+0x2774910 (model to component): model byte +0x41 copied to component +0x29 (default 2).",
+      "legacy": "field_29"
+    },
+    {
+      "name": "_Pad2A",
+      "offset": 42,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "padding (live garbage)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the three floats at +0x1C..+0x28 (rotation/velocity?)",
+    "what entity +8 is (spawning trigger assumed)",
+    "meaning of the two bytes"
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "Matched 6 of 7 model members by the Windows loader bg3.exe+0x2774910. Not renamed: field_20 and field_24 - together they are the model member 4 m_GroupOffsetXZ (X at +0x20, Z at +0x24, both stored relative to SpawnPosition by the loader), one game name for two float rows; a glm::vec2 GroupOffsetXZ row would fit (not changed here: types are out of scope of this pass)."
+}

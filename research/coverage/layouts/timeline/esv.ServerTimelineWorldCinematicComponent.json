@@ -1,0 +1,24 @@
+{
+  "component": "esv::ServerTimelineWorldCinematicComponent",
+  "ext_name": "ServerTimelineWorldCinematic",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Peers",
+      "offset": 0,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3307970 (~esv::TimelineSystem::ConfirmPeerCreation) fetches the component of the timeline entity (bg3.exe+0x3314320) and, for a confirmed create handshake, appends the handshake's peer id as a 4-byte element (grow bg3.exe+0x5C3D00, 'data[size++] = peer'). bg3.exe+0x330C7C0 adds the empty component (bg3.exe+0x3315180) only for timeline types 7 and 9 ('(type - 7) & 0xFD == 0')."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The array's name is descriptive (peers that confirmed the creation of the world cinematic)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Offsets and element width are from Windows code (bg3.exe+0x3307970 appends a 4-byte peer id); live instances show a heap pointer with capacity/size 0..1 at +8/+0xC, as an Array<int32_t> should.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

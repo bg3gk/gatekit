@@ -1,0 +1,37 @@
+{
+  "component": "esv::party::EntityChangedPartyEventOneFrameComponent",
+  "ext_name": "ServerPartyEntityChangedPartyEvent",
+  "size": 24,
+  "seen": true,
+  "summary": "Server event (registry does not mark it one-frame) of esv::party::DataSystem: an entity moved from one party to another. Created on a fresh event entity by bg3.exe+0x2BC1DA0, which also creates/updates eoc::party::MemberComponent (its Party handle at +0x18 is the new party); read by esv::StoryCharacterEventManager::Init. Seen.py context: party changes (recruit / dismiss / summon).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2BC47C0 (AllocRaw 0x18) sets all three handles to null. bg3.exe+0x2BC1DA0 line ~228 writes param_5, the entity whose MemberComponent is checked. Live (11): entity handles."
+    },
+    {
+      "name": "OldParty",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2BC1DA0 line ~229 writes lVar19 = the Party handle (+0x18) of the entity's existing eoc::party::MemberComponent (null when it had none). Live: one valid handle, others null."
+    },
+    {
+      "name": "NewParty",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2BC1DA0 line ~230 writes *param_3, the party handle it stores into MemberComponent +0x18; the event is only raised when it differs from OldParty. Live: valid handles or null."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "13 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

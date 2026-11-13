@@ -1,0 +1,139 @@
+{
+  "component": "ecl::timeline::GlobalThothComponent",
+  "ext_name": "ClientTimelineGlobalThoth",
+  "size": 128,
+  "structs": [
+    {
+      "name": "TimelineThothCondition",
+      "size": 104,
+      "fields": [
+        {
+          "name": "Id",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1BC2C70 (loader, only user of 'ls.thoth.client.condition') fills +0x00..0x10 with two results of the random generator FUN_144130d80 - a freshly generated Guid; this Guid is the key of CompiledConditions (bg3.exe+0x1A5AE70 passes the record pointer as key to FUN_140ef16d0)."
+        },
+        {
+          "name": "Type",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1BC2C70: default 5, then set to the value 0..5 mapped from the source record's type field; the same byte is used as the key of the Conditions map (FUN_141bc3850(map, &type))."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "alignment before the FixedString at 0x14"
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default -1, then CreateFromString from a std::string of the source record (source +0x30); destructor bg3.exe+0x18898A0 DecRefs it. Which name it is (event / condition name) not established."
+        },
+        {
+          "name": "Condition",
+          "offset": 24,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "24-byte small-string (buffer 0x18, size 0x28, capacity 0x2C, default capacity 15; freed when capacity > 15 in bg3.exe+0x18898A0). bg3.exe+0x1A5AE70 / 0x1A5B010 copy it, append a 4-char suffix and hand it to FUN_141a5b220 (only user of the string 'conditions') and then to the Thoth compiler FUN_140effd00 - the condition source text."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default -1, copied from the source record (source +0x48)."
+        },
+        {
+          "name": "field_34",
+          "offset": 52,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default 0, set to 1 together with field_30 - looks like the 'has value' byte of std::optional<int32_t> {field_30, field_34}."
+        },
+        {
+          "name": "_Pad35",
+          "offset": 53,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "alignment"
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: 16 bytes copied from the source record (source +0x18..0x28), default 0."
+        },
+        {
+          "name": "field_48",
+          "offset": 72,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default 0, 4 bytes copied from source +0x28."
+        },
+        {
+          "name": "_Pad4C",
+          "offset": 76,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "alignment"
+        },
+        {
+          "name": "field_50",
+          "offset": 80,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: 16 bytes copied from the first 16 bytes of the source record (its own id), default 0."
+        },
+        {
+          "name": "field_60",
+          "offset": 96,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default -1, CreateFromString from the last std::string of the source record; DecRef in destructor bg3.exe+0x18898A0."
+        },
+        {
+          "name": "_Pad64",
+          "offset": 100,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "tail padding; element stride 0x68 in bg3.exe+0x1889570 (array grow) and in the loops of bg3.exe+0x1A5AE70"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Conditions",
+      "offset": 0,
+      "type": "HashMap<uint8_t, Array<TimelineThothCondition>>",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x1A5BE90 zeroes a 64-byte hash map at 0. Destructor bg3.exe+0x1888950 -> 0x1885760 -> 0x18857D0 walks the values (pointer at +0x30, count at +0x2C) with stride 0x10 and calls the array-clear bg3.exe+0x1889570 on each (element stride 0x68). bg3.exe+0x1A5B010 walks keys from +0x20 with a byte stride and values with stride 16; the loader bg3.exe+0x1BC2C70 looks the array up by the one-byte type (FUN_141bc3850). Probe: 2 keys, values count 2."
+    },
+    {
+      "name": "CompiledConditions",
+      "offset": 64,
+      "type": "HashMap<Guid, uint32_t>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A5AE70 / 0x1A5B010: 'p = FUN_140ef16d0(comp+0x40, record); *p = handle' - insert keyed by the record's Guid; FUN_140ef16d0 grows the value array with 4-byte elements and defaults a new one to 0xFFFFFFFF. bg3.exe+0x1A59F30 and 0x1A5A100 look up with hash (lo ^ hi) % buckets, keys stride 0x10 (+0x60), values stride 4 (+0x70); the value is passed to the Thoth machine (FUN_140f00660 / FUN_140f01150) as a compiled-condition handle. Destructor frees +0x70 without element destructors. Probe: 0x13 keys of capacity 0x20."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the record members other than Id / Type / Condition are not established (the source records come from a registry query in bg3.exe+0x1BC2C70 whose row layout was not traced to names).",
+    "Whether {field_30, field_34} is std::optional<int32_t> and whether {field_38, field_48} is one 20-byte structure.",
+    "The exact value type of CompiledConditions (a 32-bit Thoth handle with a 16-bit index in the low word, see bg3.exe+0x1A59F30) is written as uint32_t."
+  ],
+  "minutes": 22,
+  "functions_read": 12,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found for TimelineThothCondition."
+}

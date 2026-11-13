@@ -1,0 +1,192 @@
+{
+  "component": "ecl::projectile::SpellComponent",
+  "ext_name": "ClientProjectileSpell",
+  "size": 192,
+  "seen": true,
+  "summary": "Client twin of esv::projectile::SpellComponent (SE ServerProjectileSpell: Spell, Target, Index), but the cast is named by a Guid instead of an entity. Added in bg3.exe+0x1BB0B40 (~ ecl::EntityConversionHelpers::CreateProjectile) when the projectile's creation data has a non-null Guid. Born live casting projectile spells (Eldritch Blast, Scorching Ray) with ecl::Projectile, ImpactEvent and AttachmentComponent.",
+  "structs": [
+    {
+      "name": "ProjectileSpellBaseTarget",
+      "size": 48,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Creator bg3.exe+0x1BB1F20 stores PTR_FUN_1454db0b8 (outer target) / PTR_FUN_1454db080 (initial target) here: a class with a virtual table, the Script Extender spell_cast::BaseTarget (SpellCastShared.h): VMT, EntityHandle Target, optional<EntityHandle> TargetProxy, optional<vec3> Position."
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Creator bg3.exe+0x1BB1F20 sets 0xffc0000000000000 (null EntityHandle); live values are entity handles. SE BaseTarget::Target."
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Value of optional<EntityHandle> (SE BaseTarget::TargetProxy); live garbage while the has-value byte is 0."
+        },
+        {
+          "name": "HasTargetProxy",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Creator bg3.exe+0x1BB1F20 zeroes this byte (optional has-value); live low byte always 0."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "optional tail padding (live garbage)"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Value of optional<vec3> (SE BaseTarget::Position); live world coordinates (51.4, 5.9, 208.8 ...)."
+        },
+        {
+          "name": "HasPosition",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Creator bg3.exe+0x1BB1F20 zeroes this byte; live 0/1."
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "optional tail padding"
+        }
+      ]
+    },
+    {
+      "name": "ProjectileSpellInitialTarget",
+      "size": 112,
+      "fields": [
+        {
+          "name": "Base",
+          "offset": 0,
+          "type": "ProjectileSpellBaseTarget",
+          "source": "inferred",
+          "evidence": "SE spell_cast::InitialTarget derives from BaseTarget; second vtable PTR_FUN_1454db080 at the start of this part in the constructor."
+        },
+        {
+          "name": "TargetingType",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE InitialTarget::TargetingType (SpellType, 1-byte enum); constructor zeroes byte 0x70; live 0/3/0xB."
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment of the optional<BaseTarget>"
+        },
+        {
+          "name": "Target2",
+          "offset": 56,
+          "type": "ProjectileSpellBaseTarget",
+          "source": "inferred",
+          "evidence": "Value of SE InitialTarget::Target2 (optional<BaseTarget>); mostly zero live."
+        },
+        {
+          "name": "HasTarget2",
+          "offset": 104,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "constructor zeroes byte 0xa8; live 0/1."
+        },
+        {
+          "name": "_Pad69",
+          "offset": 105,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "optional tail padding"
+        }
+      ]
+    },
+    {
+      "name": "ProjectileSpellIntermediateTarget",
+      "size": 168,
+      "fields": [
+        {
+          "name": "Base",
+          "offset": 0,
+          "type": "ProjectileSpellBaseTarget",
+          "source": "inferred",
+          "evidence": "SE spell_cast::IntermediateTarget : BaseTarget (vtable PTR_FUN_1454db0b8)."
+        },
+        {
+          "name": "InitialTarget",
+          "offset": 48,
+          "type": "ProjectileSpellInitialTarget",
+          "source": "inferred",
+          "evidence": "SE IntermediateTarget::InitialTarget."
+        },
+        {
+          "name": "field_A0",
+          "offset": 160,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE IntermediateTarget::field_A0; constructor zeroes byte 0xb0; live 0."
+        },
+        {
+          "name": "_PadA1",
+          "offset": 161,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "tail padding to 0xA8"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "SpellCastUuid",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1BB0B40 adds the component only if the 16 bytes at creation data +0x120/+0x128 are not both zero and copies them to +0/+8; the creator initialises them from a global (null Guid). Live: 48 random-looking 16-byte values. Name inferred (the server twin stores the spell-cast entity here)."
+    },
+    {
+      "name": "Target",
+      "offset": 16,
+      "type": "ProjectileSpellIntermediateTarget",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1BB1F20 (0xC0) builds the same target object as ImpactEventOneFrameComponent at +0x10 (vtables PTR_FUN_1454db0b8 at +0x10 and PTR_FUN_1454db080 at +0x40, null handles at +0x18/+0x48); bg3.exe+0x1BB0B40 fills it with FUN_1418960c0 from a converted net target. SE esv::projectile::SpellComponent::Target is spell_cast::IntermediateTarget."
+    },
+    {
+      "name": "Index",
+      "offset": 184,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1BB0B40 copies a 4-byte value from creation data +0x1C0 to +0xB8; creator zeroes it; live 0. SE esv::projectile::SpellComponent::Index."
+    },
+    {
+      "name": "_PadBC",
+      "offset": 188,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding (live garbage)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether the Guid is the spell cast's uuid (most likely) or another id was not traced to its source."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

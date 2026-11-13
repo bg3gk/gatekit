@@ -1,0 +1,34 @@
+{
+  "component": "ecl::ObstructionFadeRequestsSingletonComponent",
+  "ext_name": "ClientObstructionFadeRequestsSingleton",
+  "size": 224,
+  "seen": true,
+  "reuses": "TimelineFadeRequest (GameDefinitions/Components/Coverage.h); whole layout identical to ecl::TimelineFadeRequestsSingletonComponent",
+  "fields": [
+    {
+      "name": "FadeRequests",
+      "offset": 0,
+      "type": "std::array<HashMap<EntityHandle, TimelineFadeRequest>, 2>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x18D8A00 (rx3 user of the type index) calls FUN_1418c2f60 - the shared constructor of the two 0x40-byte maps that also builds ecl::TimelineFadeRequestsSingletonComponent (bg3.exe+0x1D77460), RoomTriggerFade (bg3.exe+0x18C21A0), RoomTriggerCharacterFade (bg3.exe+0x18C2360) and CharacterOutOfSight (bg3.exe+0x1CB0DE0). The macOS build reads ObstructionFadeRequestsSingletonComponent in the same template ecl::FadeResolveSystem::ProcessFadeRequests as the other fade singletons; value type there is ecl::StartFadeRequest (16 bytes, SE TimelineFadeRequest). One map per render view (View0/View1). Live: all 224 bytes zero (maps not allocated yet)."
+    },
+    {
+      "name": "RemoveFadeRequests",
+      "offset": 128,
+      "type": "std::array<HashSet<EntityHandle>, 2>",
+      "source": "inferred",
+      "evidence": "Same template as the Timeline singleton (name taken from there, not confirmed for this producer). Live: zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Game name of the value struct is ecl::StartFadeRequest; SE calls it TimelineFadeRequest.",
+    "RemoveFadeRequests name inherited from the Timeline layout."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "uses types declared elsewhere (TimelineFadeRequest): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

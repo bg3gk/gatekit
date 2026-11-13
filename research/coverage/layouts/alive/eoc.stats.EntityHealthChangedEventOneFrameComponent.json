@@ -1,0 +1,22 @@
+{
+  "component": "eoc::stats::EntityHealthChangedEventOneFrameComponent",
+  "ext_name": "StatsEntityHealthChangedEvent",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x31C2AA0 (called from the heal writer bg3.exe+0x31C27A0 and from the damage path under esv::functor::StatsFunctorDealDamage::Execute) allocates 8 bytes of EntityHealthChangedEventOneFrameComponent storage (ComponentFrameStorageAllocRaw(...,8,...)) on a new event entity and stores *param_3 - the handle of the entity whose HP changed. Read by esv::splatter::StateSystem::Update and eoc::StatsSystem::ProcessTemporaryComponents (macOS). Live: 41 instances, all entity-handle shaped."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

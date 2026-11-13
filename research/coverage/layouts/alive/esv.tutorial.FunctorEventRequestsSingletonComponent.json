@@ -1,0 +1,54 @@
+{
+  "component": "esv::tutorial::FunctorEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialFunctorEventRequestsSingleton",
+  "size": 16,
+  "structs": [
+    {
+      "name": "FunctorEventRequestsEntry",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ValidateSystem bg3.exe+0x3427CE0 reads +0 of every variant member as the entity to resolve the user"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "copied as a whole by bg3.exe+0x3428910"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "copied as a whole by bg3.exe+0x3428910"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Functors",
+      "offset": 0,
+      "type": "Array<FunctorEventRequestsEntry>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x341CC40 (FunctorSystem update) moves the system's DynamicArray<esv::tutorial::Functor> (system+0x10, macOS operator=) into the component; ValidateSystem maps it to variant index 9 Functor (bg3.exe+0x3428910 copies 3 qwords, stride 0x18)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "the producer of esv::tutorial::Functor entries was not found; only +0 is known to be the entity (ValidateSystem reads +0 of every variant as the entity)"
+  ],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Filled by esv::tutorial::FunctorSystem from its own queue.",
+  "seen": true,
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

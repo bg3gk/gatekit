@@ -1,0 +1,75 @@
+{
+  "component": "ecl::CinematicArenaTrigger",
+  "ext_name": "ClientCinematicArenaTrigger",
+  "size": 184,
+  "fields": [
+    {
+      "name": "_Base",
+      "offset": 0,
+      "type": "Trigger",
+      "source": "inferred",
+      "evidence": "ecl::CinematicArenaTrigger::CinematicArenaTrigger bg3.exe+0x1BB8D20 (Toolkit match) calls base ctor bg3.exe+0x3C11A30; base = bg3se::Trigger (Trigger.h, 0x70 bytes: VMT, LoggableObjectVMT, Template, Flags, SyncFlags, TriggerType, TriggerEntity, Level, PreviousLevel, Protocol, HasCustomPoint, IsGlobal, CustomPointTransform). Base ctor bg3.exe+0x3C11A30 initialises up to +0x6C, like every SE trigger."
+    },
+    {
+      "name": "Entity",
+      "offset": 112,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "ctor stores 0xFFC0000000000000 at +0x70 (as SE ecl::*Trigger Entity)."
+    },
+    {
+      "name": "Timeline",
+      "offset": 120,
+      "type": "HashSet<Guid>",
+      "source": "inferred",
+      "evidence": "ctor zeroes +0x78..+0xA8 in the HashSet pattern; LoadStaticData bg3.exe+0x1BB8E00 copies template data +8 into it - SE CinematicArenaTriggerData has HashSet<Guid> Timeline at +8."
+    },
+    {
+      "name": "MainMenuStartEventType",
+      "offset": 168,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "LoadStaticData copies template data +0x38 (SE CinematicArenaTriggerData.MainMenuStartEventType) to +0xA8; ctor 0."
+    },
+    {
+      "name": "MainMenuResetEventType",
+      "offset": 169,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "LoadStaticData copies template data +0x39 to +0xA9."
+    },
+    {
+      "name": "MainMenuActivateCameraEventType",
+      "offset": 170,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "LoadStaticData copies template data +0x3A to +0xAA."
+    },
+    {
+      "name": "_PadAB",
+      "offset": 171,
+      "type": "uint8_t[5]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+    },
+    {
+      "name": "field_B0",
+      "offset": 176,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "registry size 184 leaves 8 bytes after +0xB0; not touched by the ctor or LoadStaticData."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_B0 unknown; NO REPLICATED serializer exists (ser.py) and the macOS default ctor is a stub",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

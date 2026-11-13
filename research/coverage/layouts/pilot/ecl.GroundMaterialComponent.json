@@ -1,0 +1,30 @@
+{
+  "component": "ecl::GroundMaterialComponent",
+  "ext_name": "ClientGroundMaterial",
+  "size": 2,
+  "fields": [
+    {
+      "name": "PreviousMaterial",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B09510 creates the component with 0 here; bg3.exe+0x1B08570 on update does [+0] = [+1] before storing the new value in +1, and marks the component modified. Probe: always 0."
+    },
+    {
+      "name": "Material",
+      "offset": 1,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B09510 stores the creator's argument here; in bg3.exe+0x1B08570 that argument is an optional<uint8> returned by a virtual call (object at system+0x10, slot 1) fed with the entity's transform / level row data, 0 when empty; the update path stores a new result here. Queries pair the component with ecl::sound::CharacterSwitchDataComponent / ItemSwitchDataComponent (sound switches). Probe: 8 different values, 0x00..0x31."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which enum the byte is (terrain / physics material id used for footstep sound switches). Not matched to an existing Script Extender enum; the virtual call that produces it was not followed.",
+    "The sound-side readers (bg3.exe+0x1E55F90 and neighbours) were not read; they would show whether +0 is only used to detect a change."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

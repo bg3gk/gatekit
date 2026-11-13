@@ -1,0 +1,40 @@
+{
+  "component": "eoc::analytics::EventDisturbanceResolvedComponent",
+  "ext_name": "AnalyticsEventDisturbanceResolved",
+  "size": 24,
+  "fields": [
+    {
+      "name": "CharacterId",
+      "offset": 0,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "serializer bg3.exe+0x9F0090/0x9F0280 member 1: 16-byte write at +0 (global offset = 0); EoCClient.dll ecl::GameAnalyticsSystem recorder EoCClient.dll+0xD37FF0 (\"disturbance_closed\") writes Guid::ToString(+0) under \"character_id\". macOS ctor zero."
+    },
+    {
+      "name": "DisturbanceId",
+      "offset": 16,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "serializer bg3.exe+0x9F0090/0x9F0280 member 2: 4 bytes at +0x10; recorder writes it as integer under \"disturbance_id\"."
+    },
+    {
+      "name": "Reason",
+      "offset": 20,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "serializer bg3.exe+0x9F0090/0x9F0280 member 3: ecs::sync::Serialize(FixedString) at +0x14; recorder FixedString::ToChar(+0x14) under \"reason\"."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "macOS default ctor stores 0 (not -1) at +0x14 although the serializer and the recorder treat it as FixedString",
+    "size 24 from the macOS ctor (stores up to +0x18) and the serializer; todo.py dead --prefix has no row for this type, registry size not checked",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "seen": false,
+  "minutes": 4,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

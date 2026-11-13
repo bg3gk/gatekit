@@ -1,0 +1,47 @@
+{
+  "component": "ecl::container::ClosedExplorationSingletonComponent",
+  "ext_name": "ClientContainerClosedExploration",
+  "size": 64,
+  "seen": true,
+  "reuses": "ContainerExplorationEntry declared in ecl.container.OngoingExplorationComponent.json",
+  "structs": [
+    {
+      "name": "ContainerExplorationEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Container",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "See ecl.container.OngoingExplorationComponent.json (ecl::container::ExplorationEntry)."
+        },
+        {
+          "name": "Character",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "See ecl.container.OngoingExplorationComponent.json."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "ClosedEntries",
+      "offset": 0,
+      "type": "HashMap<int16_t, Array<ContainerExplorationEntry>>",
+      "source": "inferred",
+      "evidence": "Toolkit: ~ClosedExplorationSingletonComponent (EoCClient.dll+0x29C150) destroys the values at +0x30 (IndexedStorage<DynamicArray<ecl::container::ExplorationEntry>>), keys +0x20, next ids +0x10, buckets +0; operator= (EoCClient.dll+0x2AAE00) copies values with stride 0x10 (DynamicArray). macOS names the map ls::HashMap<short, ls::DynamicArray<ecl::container::ExplorationEntry>> (DestroyValues at macOS 0x100E02BA0). LEGACY_ContainerExplorationSystem::CloseContainer(Ongoing*, ClosedSingleton*, short const& playerId, ExplorationEntry const&) (EoCClient.dll+0x8C8D60) looks the player id up (EoCClient.dll+0x8C5E50) and appends the entry. Key = player id (short, Script Extender's int16 PlayerId). macOS default ctor: 64 zero bytes. Live (idle): empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member name is ours; the game only names the type."
+  ],
+  "minutes": 4,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

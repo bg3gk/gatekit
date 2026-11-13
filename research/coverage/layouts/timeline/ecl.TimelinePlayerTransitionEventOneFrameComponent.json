@@ -1,0 +1,68 @@
+{
+  "component": "ecl::TimelinePlayerTransitionEventOneFrameComponent",
+  "ext_name": "ClientTimelinePlayerTransitionEvent",
+  "size": 64,
+  "structs": [
+    {
+      "name": "TimelinePlayerTransition",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Type",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D63BF0 writes it as a 4-byte value through the pointer returned by the insert helper bg3.exe+0x1D732D0: 0 when only the new timeline (second argument) exists (writes ToTimeline), 1 when only the old one (first argument) exists (writes FromTimeline), 2 when both exist (writes all three) - join / leave / switch."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "alignment / tail padding"
+        },
+        {
+          "name": "ToTimeline",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Branches 0 and 2 copy the 16-byte Guid of the second timeline argument here."
+        },
+        {
+          "name": "ToTimelineData",
+          "offset": 24,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Default: null-handle constant DAT_146174970. Branch 2 stores the result of ecl::TimelineSystem::LEGACY_GetTimelineData (an entity handle) for the second timeline."
+        },
+        {
+          "name": "FromTimeline",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Branches 1 and 2 copy the 16-byte Guid of the first timeline argument here."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Transitions",
+      "offset": 0,
+      "type": "HashMap<PlayerId, TimelinePlayerTransition>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D79AE0 zeroes a 64-byte hash map. bg3.exe+0x1D63BF0 (ecl::TimelineSystem; arguments: timeline Guid, other timeline Guid, PlayerId*) adds the component to the timeline-data entity and calls bg3.exe+0x1D732D0(comp, &playerId): insert keyed by the int16 player id, value 'values(+0x30) + index * 0x30', new values initialised {0, zero Guid, null handle, zero Guid}."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are descriptive (Type, From/To); no game name was found for the transition record."
+  ],
+  "minutes": 13,
+  "functions_read": 4,
+  "oneFrame": true,
+  "status": "declared",
+  "second_pass": "Re-read bg3.exe+0x1D63BF0: the three branches store a dword at +0, the 16-byte Guid of the second timeline at +8, the LEGACY_GetTimelineData handle at +0x18 and the first timeline's Guid at +0x20 of a 0x30-byte value keyed by the PlayerId argument - every offset and width is from Windows code.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

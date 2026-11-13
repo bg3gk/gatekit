@@ -1,0 +1,52 @@
+{
+  "component": "ls::GameplaySoundRTPCRequestBusComponent",
+  "ext_name": "GameplaySoundRTPCRequestBus",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "GameplaySoundRTPCBusRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessSoundRTPCRequests (GameEngine.dll+0x89BED0) passes element+0 as SoundRoutingSystem::SetSoundRTPCValue(ID<EntityHandleTraits> const&, FixedString const&, float)."
+        },
+        {
+          "name": "RTPC",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "element+8, the FixedString argument."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "element+0xC, the float argument."
+        }
+      ]
+    }
+  ],
+  "summary": "Requests to set an RTPC on an entity's sound object (macOS element ls::GameplaySoundRTPCRequest).",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<GameplaySoundRTPCBusRequest>",
+      "source": "inferred",
+      "evidence": "ProcessSoundRTPCRequests: stride 0x10, count at +0xC. Live capacity 0..8."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

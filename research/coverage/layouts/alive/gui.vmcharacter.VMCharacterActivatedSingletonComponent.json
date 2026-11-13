@@ -1,0 +1,23 @@
+{
+  "component": "gui::vmcharacter::VMCharacterActivatedSingletonComponent",
+  "ext_name": "GuiVMCharacterActivated",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x2D7100 (Toolkit, gui::ViewModelProvider::ProcessActivations) takes this singleton (WorldView with VMCharacterActivatedSingletonComponent const), walks the key array at +0x20 with count at +0x2C, stride 8, and passes each key as ls::ID<ecs::EntityHandleTraits>* to OnCharacterActivated. ActivateVMCharacterSystem::ProcessCharacterActivation (NoesisGameUI.dll+0x420580) clears it (+0x20/+0x10 resets when +0x2C != 0). Registry size 48 = HashSet (buckets +0, NextIds +0x10, Keys +0x20); live samples match (bucket count 5..0xD at +8, cap/size pairs)."
+    }
+  ],
+  "summary": "Client UI: the character entities whose gui::VMCharacter was activated this frame (ActivateVMCharacterSystem fills it, ViewModelProvider::ProcessActivations consumes it). Singleton from game start.",
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

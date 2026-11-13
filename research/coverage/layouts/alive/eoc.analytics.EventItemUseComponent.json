@@ -1,0 +1,52 @@
+{
+  "component": "eoc::analytics::EventItemUseComponent",
+  "ext_name": "AnalyticsEventItemUse",
+  "size": 24,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Character",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "serializer bg3.exe+0x9F3310 reads an entity (bg3.exe+0x4017180) into +0 first, default 0xFFC0000000000000 (null handle); EoCClient.dll ecl::GameAnalyticsSystem::ProcessItemUseEvents (EoCClient.dll+0xD30490) checks it is alive and resolves it to the ecl::Character passed to RecordItemUse. Live: client 0x01400001000001FE, server 0x01800001000007C3 (different worlds = entity handles)."
+    },
+    {
+      "name": "ItemName",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "EoCClient.dll+0xD39F80 ecl::GameAnalyticsSystem::RecordItemUse writes FixedString::ToChar(+8) as analytics key \"item_name\"; serializer reads a FixedString (bg3.exe+0x4016110) here, default -1."
+    },
+    {
+      "name": "StatsName",
+      "offset": 12,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "RecordItemUse writes FixedString +0xC as \"stats_name\"; serializer FixedString, default -1."
+    },
+    {
+      "name": "Category",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "RecordItemUse writes FixedString +0x10 as \"category\"; serializer FixedString, default -1."
+    },
+    {
+      "name": "Amount",
+      "offset": 20,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "RecordItemUse writes the int at +0x14 as \"amount\"; serializer reads 4 raw bytes last. Live: 1 (one potion)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are taken from the analytics JSON keys (snake_case to PascalCase), not from FieldMeta."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

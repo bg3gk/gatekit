@@ -1,0 +1,81 @@
+{
+  "component": "esv::spell::SpellPreparedEventOneFrameComponent",
+  "ext_name": "ServerSpellSpellPreparedEvent",
+  "size": 24,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Event of prepared spells (read by esv::spell::ModificationApplySystem); seen during spell casts, fights, dialogues.",
+  "structs": [
+    {
+      "name": "SpellPreparedSpellMetaId",
+      "size": 48,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "eoc::spell::MetaId (Toolkit constructor signature); same layout as SE SpellMetaId (Base\\ExposedTypes.h), redeclared."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "enum SpellSourceType (SE Enumerations/Stats.inl: BEGIN_ENUM(SpellSourceType, uint8_t), 1 byte) written as its integer; SE SpellMetaId.SourceType. Windows element copy bg3.exe+0x7A4DE0 (stride 0x30) copies the FixedString at +0 with IncRef and the qwords +8..+0x30 whole."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId.Source."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId.ProgressionSource."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x3E8EE0 SpellPreparedEventOneFrameComponent(ID<EntityHandleTraits>, DynamicArray<eoc::spell::MetaId> const&) stores the handle at +0; bg3.exe+0x3392E30 likewise (*puVar6 = *param_3)."
+    },
+    {
+      "name": "Spells",
+      "offset": 8,
+      "type": "Array<SpellPreparedSpellMetaId>",
+      "source": "inferred",
+      "evidence": "Same constructor copies the DynamicArray<eoc::spell::MetaId> to +8; bg3.exe+0x3392E30 allocates count*0x30. Live: pointer + capacity/size 1..7."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 2,
+  "status": "confirmed",
+  "second_pass": "SourceType is now written as uint8_t (enum SpellSourceType, uint8_t in SE) so generate.py can size it; Windows creator bg3.exe+0x3392E30 (AllocRaw 0x18, entity +0, array +8, count*0x30) and element copy bg3.exe+0x7A4DE0 re-checked.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

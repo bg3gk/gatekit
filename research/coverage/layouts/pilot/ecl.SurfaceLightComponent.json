@@ -1,0 +1,68 @@
+{
+  "component": "ecl::SurfaceLightComponent",
+  "ext_name": "ClientSurfaceLight",
+  "size": 64,
+  "fields": [
+    {
+      "name": "SurfaceTemplate",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1BA1DB0 creates it as 0xFFFFFFFF (empty FixedString); bg3.exe+0x1B9D270 assigns it with the FixedString assignment routine bg3.exe+0x412E090 from [caller object+0x70]+0x10. The object at +0x70 has three arrays of 0x30-byte elements at +0x150/+0x160/+0x170, like SurfaceTemplate InstanceVisual/IntroFX/FX, and +0x10 of a GameObjectTemplate is its Id. Probe: the same value 0x3C200551 in all 15 instances."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Alignment of the Array pointer at +8; the creator does not write it. Probe: always 0."
+    },
+    {
+      "name": "Positions",
+      "offset": 8,
+      "type": "Array<glm::vec3>",
+      "source": "inferred",
+      "evidence": "Creator zeroes pointer, capacity (+0x10) and size (+0x14). bg3.exe+0x1B9D270 reserves and appends 12-byte elements built from floats 3, 7 and 11 of 0x30-byte source records; bg3.exe+0x1B9D9D0 walks it with stride 0xC comparing x/y/z with a box around a point and swap-removes the hits, and removes the component when nothing is left. Probe: heap pointer, capacity == size, 1..7."
+    },
+    {
+      "name": "BoundMin",
+      "offset": 24,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B9D270 and bg3.exe+0x1B9D9D0 store here the first 12 of the 24 bytes returned by bg3.exe+0x415C3B0(points, stride 0xC, count) after every change of Positions - a bounding box of the points. Probe: e.g. (52.78, 2.31, -367.1), consistent with a minimum against +0x24."
+    },
+    {
+      "name": "BoundMax",
+      "offset": 36,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Second 12 bytes of the same 24-byte result (see BoundMin). Probe: e.g. (63.91, 2.49, -351.7)."
+    },
+    {
+      "name": "SubgridPosition",
+      "offset": 48,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B9D270 copies 12 bytes from +8 of the record found by bg3.exe+0x70FB60 in the container at [caller+0x58] by the surface cell's region id; that record's +0x18 is used as the row width when turning cell (x, y) into an index, so it describes a grid / sub-grid and +8 is its world position. bg3.exe+0x1B9C300 passes the same record+8 on (bg3.exe+0x1BA0340) for entities that have the component. Probe: 5 distinct values such as (24, 0.76, -381), (-26.5, 15, -438.5)."
+    },
+    {
+      "name": "_Pad3C",
+      "offset": 60,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Tail padding to 8-byte alignment; never written. Probe: always 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "BoundMin/BoundMax are most likely one Script Extender AABound (two glm::vec3) - written as two fields because the brief's type list has no AABound.",
+    "SubgridPosition: the record type behind bg3.exe+0x70FB60 was not identified by name (AiGrid sub-grid / surface region); the name is a reading of how it is used.",
+    "SurfaceTemplate assumes the object at +0x70 of the caller is the SurfaceTemplate; resolving the probed FixedString 0x3C200551 in the live game would confirm it (should be a surface template id).",
+    "What the Positions are for: presumably points of spawned surface lights (SurfaceTemplate has EnableLightSpawning / SpawnLightTemplateID); the consumer was not read.",
+    "Creator defaults for the box read as min (1,0,0), max (0,0,0) from a small unrolled loop in the pseudo-code - may be misread, irrelevant for live instances."
+  ],
+  "minutes": 17,
+  "functions_read": 6,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

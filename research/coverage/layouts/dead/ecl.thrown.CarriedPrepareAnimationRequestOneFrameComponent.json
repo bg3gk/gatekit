@@ -1,0 +1,35 @@
+{
+  "component": "ecl::thrown::CarriedPrepareAnimationRequestOneFrameComponent",
+  "ext_name": "ClientThrownCarriedPrepareAnimationRequest",
+  "size": 2,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request to play the 'carried' prepare animation of a character that is being picked up to be thrown (attached to the thrower's hand). Written by bg3.exe+0x1A2BB60 (attaches the carried entity to the thrower's visual, creates ecl::thrown::DummyAttachmentComponent) only when the carried entity is a character; read by ecl::animation::GameplaySystem (macOS query). Never seen alive. Registry total 2 (client row).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x1A2C4D0 (AllocRaw 2) stores uint16 0. bg3.exe+0x1A2BB60: if FUN_140ac6070(entity) (tests eoc::character::CharacterComponent) then `p = create(local_d8); p[0] = 1;` - always 1 when written (a 'requested'/'is character' flag)."
+    },
+    {
+      "name": "IsDead",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Same function: `p[1] = FUN_140785360(world, entity)`; FUN_140785360 tests the presence of eoc::death::DeathComponent - the carried character is dead (carrying a corpse plays another animation)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of byte +0 (always 1 when created by bg3.exe+0x1A2BB60).",
+    "Note: the component is created on local_d8 (an entity handle in the caller), probably the carried character; not verified.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

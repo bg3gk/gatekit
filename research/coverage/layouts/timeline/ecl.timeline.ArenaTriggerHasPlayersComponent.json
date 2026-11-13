@@ -1,0 +1,23 @@
+{
+  "component": "ecl::timeline::ArenaTriggerHasPlayersComponent",
+  "ext_name": "ClientTimelineArenaTriggerHasPlayers",
+  "size": 4,
+  "fields": [
+    {
+      "name": "Timeout",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1A56220 writes 0x40A00000 (5.0). bg3.exe+0x1A55D00 (ecl::timeline::ArenaTriggerSystem): while players are inside it is reset to 5.0; otherwise 'value -= GameTime.DeltaTime (+8)' and the component is removed (bg3.exe+0x40103B0 with this type index) once it is <= 0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

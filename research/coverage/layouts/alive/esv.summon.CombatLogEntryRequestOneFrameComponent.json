@@ -1,0 +1,32 @@
+{
+  "component": "esv::summon::CombatLogEntryRequestOneFrameComponent",
+  "ext_name": "ServerSummonCombatLogEntryRequest",
+  "size": 16,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Request for a 'summoned' combat-log entry, raised by esv::summon::SpawnSystem::ProcessCombatLogRequests (game bg3.exe+0x2DCED30, from a list of 16-byte entity pairs in the system's frame data) and consumed by esv::combat_log::CombatLogSystem::ProcessSummonSpawnRequests (EoCServer.dll+0x46F580), which builds an eoc::CombatLog::SummonedEntry with two CombatLog::NetEntity values from +0 and +8. Seen.py context: born in 'spells-5' (summoning spells) and in fights with summoning enemies (S_HAG_WoodWoad, mud mephits, cloaker).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x2DCFBC0 defaults to the null handle; bg3.exe+0x2DCED30 writes the second handle of the frame-data pair here; ProcessSummonSpawnRequests turns it into the entry's first NetEntity. Live: entity handles. Summon vs. summoner not established."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Default null handle; bg3.exe+0x2DCED30 writes the first handle of the pair (the one checked by FUN_14302d780 / FUN_140f345b0 before logging); becomes the entry's second NetEntity. Live: entity handles."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which handle is the summon and which the summoner (eoc::CombatLog::SummonedEntry member names not found)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "14 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

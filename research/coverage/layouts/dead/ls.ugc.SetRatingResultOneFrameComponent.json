@@ -1,0 +1,41 @@
+{
+  "component": "ls::ugc::SetRatingResultOneFrameComponent",
+  "ext_name": "UgcSetRatingResult",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame result of rating a mod on mod.io (client only, registry total 16). ls::PublishingSystem (per-frame update bg3.exe+0x3BDE2A0; Toolkit GameEngine.dll ls::PublishingSystem::Process*Requests) creates it on a new entity from a request queued by the matching HandleUGC... callback of the mod.io back-end; the same frame also gets a UGCRequestResultOneFrameComponent with the net::UGCResult and request Guid. Request queue filled by HandleUGCRatingSet(unsigned __int64, net::EUGCRatingOptions, net::UGCResult); drained by bg3.exe+0x3BDF220.",
+  "fields": [
+    {
+      "name": "ModId",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BE1700 (AllocRaw 0x10) zeroes the qword at +0; bg3.exe+0x3BDF220 stores the request's qword +0 (mod id) here (request stride 0x48)."
+    },
+    {
+      "name": "Rating",
+      "offset": 8,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes the byte at +8; bg3.exe+0x3BDF220 copies request byte +8 (the net::EUGCRatingOptions argument of HandleUGCRatingSet; enum written as its 1-byte integer)."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to 16"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Values of net::EUGCRatingOptions not listed.",
+    "Not seen alive."
+  ],
+  "minutes": 4,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

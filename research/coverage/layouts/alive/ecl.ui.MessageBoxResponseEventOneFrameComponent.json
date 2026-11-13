@@ -1,0 +1,47 @@
+{
+  "component": "ecl::ui::MessageBoxResponseEventOneFrameComponent",
+  "ext_name": "ClientUIMessageBoxResponseEvent",
+  "size": 8,
+  "seen": true,
+  "summary": "Client one-frame event carrying the player's answer to a game message box (seen when the ready check of the level swap teleporter was answered; born together with ecl::ready_check::Show/HideMessageBoxRequestOneFrameComponent and eoc::ready_check::*). Created by the per-frame update of ecl::UIManagerProxySystem from its queue of 8-byte responses; read by ecl::multiplayer::DropInApprovalSystem::Update (and the ready check client system).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1ADD640 (add helper, size 8) zeroes the u32 at +0; bg3.exe+0x1ADD3A0 (~ per-frame update of ecl::UIManagerProxySystem, step 5/5) copies byte 0 of the queued response; live 1 (probably the answer/button)"
+    },
+    {
+      "name": "field_1",
+      "offset": 1,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1ADD3A0 copies byte 1; live 0"
+    },
+    {
+      "name": "field_2",
+      "offset": 2,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1ADD3A0 copies a u16 at +2; live 1"
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1ADD640 initialises +4 to 0xFFFFFFFF; bg3.exe+0x1ADD3A0 assigns it with ls::FixedString::IncRef / GlobalStringTable DecRef (a FixedString, probably the message box id/context); live 0x4E800020"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "meanings of the three small members and of the FixedString (box id vs. context); not read from the reader side"
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found."
+}

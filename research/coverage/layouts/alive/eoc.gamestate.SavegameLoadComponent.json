@@ -1,0 +1,77 @@
+{
+  "component": "eoc::gamestate::SavegameLoadComponent",
+  "ext_name": "GamestateSavegameLoad",
+  "size": 32,
+  "seen": true,
+  "summary": "Marker entity created by the server when a savegame is loaded (esv::SessionLoadSystem::Update creates a new entity and adds this component); about 25 server systems (Chasm, Icon, camp chest, crowds, item use, jump ...) read it to skip one-time logic after a load. Born live in situation level-change. Holds an optional copy of the savegame's module (mod) list: ls::Optional<LEGACY_Set<ls::ModuleShortDesc>>.",
+  "structs": [
+    {
+      "name": "SavegameLoadModuleSet",
+      "size": 24,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "macOS esv::SessionLoadSystem::Update stores &PTR_Visit_1094cbd50 (vtable of ls::LEGACY_Set<ls::ModuleShortDesc>) at +0 before cloning the set. Windows: the session-load code bg3.exe+0x2B1D4B0 stores the vtable bg3.exe+0x54C2BB0 at +0 when it fills the optional (and the clone bg3.exe+0x3BC5DD0 does the same)."
+        },
+        {
+          "name": "Modules",
+          "offset": 8,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "new[]-allocated array of ls::ModuleShortDesc (count stored at ptr-8): Windows destructor bg3.exe+0xDBD970 runs _eh_vector_destructor_iterator_ with element size 0x78 over it (macOS 0x60) and frees ptr-8. Not an Array<> (no capacity/size pair before it). Windows: bg3.exe+0x2B1D4B0 moves the clone's buffer pointer into +8."
+        },
+        {
+          "name": "Capacity",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Windows: the copy bg3.exe+0x2FA2CF0 (called by the clone bg3.exe+0x3BC5DD0 on the set +8) treats set+0x10 as the capacity (grows when size == capacity, doubling) and bg3.exe+0x2B1D4B0 copies it to +0x10."
+        },
+        {
+          "name": "Size",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Windows: bg3.exe+0x2FA2CF0 zeroes set+0x14, loops the source's +0x14 times appending 0x78-byte ModuleShortDesc elements and increments +0x14 - the element count; bg3.exe+0x2B1D4B0 copies it to +0x14."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Modules",
+      "offset": 0,
+      "type": "SavegameLoadModuleSet",
+      "source": "inferred",
+      "evidence": "Value part of an ls::Optional: creator bg3.exe+0x2B20670 (size 0x20) zeroes +0..+0x18; destructor bg3.exe+0xD7A800 destroys it only when the byte at +0x18 is set. macOS SessionLoadSystem::Update fills it from LEGACY_Set<ls::ModuleShortDesc>::Clone of the save's module list."
+    },
+    {
+      "name": "HasModules",
+      "offset": 24,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Optional's engaged flag: destructor bg3.exe+0xD7A800 tests +0x18 and clears it; macOS writer sets it to 1 after filling. Live 0 (empty optional)."
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding to 32"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The module elements (ls::ModuleShortDesc, 0x78 bytes) are behind a raw void* (new[] buffer with the count at ptr-8), not an Array<>; Lua sees only Capacity and Size."
+  ],
+  "minutes": 16,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Confirmed on Windows in the session-load code bg3.exe+0x2B1D4B0 (creates the component with bg3.exe+0x2B20670, fills vtable +0, buffer +8, two uint32 +0x10/+0x14, flag +0x18) and the set copy bg3.exe+0x2FA2CF0, which settles +0x10 = capacity and +0x14 = size.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

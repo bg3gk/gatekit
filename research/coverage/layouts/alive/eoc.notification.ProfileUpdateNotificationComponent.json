@@ -1,0 +1,46 @@
+{
+  "component": "eoc::notification::ProfileUpdateNotificationComponent",
+  "ext_name": "NotificationProfileUpdate",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "serializers bg3.exe+0x99EEB0 / 0x99F010 / 0x99EC60 / 0x99EE10: member 1 is passed to ecs::sync::Serialize(FixedString*) at +0 (DAT_14627fee8). Live always 0x07D00021 (one string). Not used by ecl::profile::ManagementSystem::ProcessUpdateRequests (EoCClient.dll+0x5C9D70)."
+    },
+    {
+      "name": "TutorialCompleted",
+      "offset": 4,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "member 2 at +4 is an optional<bool> (bg3.exe+0xA96120 writes has-value byte +5, then the value byte +4). ProcessUpdateRequests: if byte +5 != 0 then net::PlayerProfile::SetTutorialCompleted(profile, byte +4). Live 1."
+    },
+    {
+      "name": "TutorialCompletedHasValue",
+      "offset": 5,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "engaged flag of the optional<bool> at +4 (see above). Live 1."
+    },
+    {
+      "name": "_Pad6",
+      "offset": 6,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "tail padding (live stale bytes)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "What the FixedString at +0 names (profile/user id?).",
+    "+4/+5 are std::optional<bool> in the game; declared as two bools because optional is not in the type list."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

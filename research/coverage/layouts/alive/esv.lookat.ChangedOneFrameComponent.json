@@ -1,0 +1,46 @@
+{
+  "component": "esv::lookat::ChangedOneFrameComponent",
+  "ext_name": "ServerLookAtChanged",
+  "size": 32,
+  "seen": true,
+  "summary": "Server one-frame event: an entity got a new look-at target. Written by bg3.exe+0x2B41AB0 (called from the per-frame update of esv::lookat::StateSystem, bg3.exe+0x238BFF0) from the last element (stride 0x28) of a per-entity request list; the same id and time travel into esv::lookat::LifetimeComponent. Shape mirrors eoc::lookat::TargetComponent (EntityHandle Target + FixedString). Seen.py context: dialogues and fights (characters turning to look at each other).",
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2B431B0 (AllocRaw 0x20) default null handle; 0x2B41AB0 checks the request's handle is alive, then writes it here. Same first member as eoc::lookat::TargetComponent.Target. Live: entity handles."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator default 0xFFFFFFFF; 0x2B41AB0 copies request +8 with FixedString IncRef/DecRef. Like eoc::lookat::TargetComponent field_8 (bone/attachment name?). Live: always empty (0xFFFFFFFF)."
+    },
+    {
+      "name": "Duration",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator default 0x7f7fffff (FLT_MAX); 0x2B41AB0 copies request +0x20. Live: 2.3..2.5 s or 9999999 (endless); LifetimeComponent's float holds the same values counting down."
+    },
+    {
+      "name": "Id",
+      "offset": 16,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x10/+0x18; 0x2B41AB0 copies 16 bytes from request +0x10, the value 0x2B419C0 compares. Live: random 16-byte values, the same set as esv::lookat::LifetimeComponent +0 (request id)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Name of the FixedString at +8 (always empty in samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

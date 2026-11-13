@@ -1,0 +1,68 @@
+{
+  "component": "esv::crowds::PatrolRequestsSingletonComponent",
+  "ext_name": "ServerCrowdsPatrolRequests",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CrowdsPatrolRequest",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Spline",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x6D36E0 (values destructor) DecRefs a FixedString at every value+0 (stride 8). esv::crowds::PatrolSystem::Update (EoCServer.dll+0xD86770) copies it to esv::crowds::PatrolComponent+0x24; when it is empty (-1) the system picks the closest spline of the level (esv::patrol::SplinesComponent map) via ls::SplineTemplate::GetClosestLocationInDirection = spline id."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Copied to PatrolComponent+0x2A (EoCServer.dll+0xD86770, copy helper EoCServer.dll+0xD855F0), which is passed as the bool argument of ls::SplineTemplate::GetClosestLocationInDirection (direction flag)."
+        },
+        {
+          "name": "field_5",
+          "offset": 5,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Copied to PatrolComponent+0x2B (EoCServer.dll+0xD86770); not otherwise read there."
+        },
+        {
+          "name": "MovementSpeed",
+          "offset": 6,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied to PatrolComponent+0x2C and switched on 1..4 to pick a template speed (template +0x608/+0x610/+0x618/+0x620); otherwise asserts \"Invalid m_PathMovementSpeed enum %d\" in `anonymous-namespace'::GetCharacterMovementSpeed (CrowdCharacterPatrolSystem.cpp)."
+        },
+        {
+          "name": "_Pad7",
+          "offset": 7,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Never copied (copy helper EoCServer.dll+0xD855F0 copies FixedString + bytes 4,5,6); value stride 8."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, CrowdsPatrolRequest>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x6C33B0: destroys the values at +0x30 (bg3.exe+0x6D36E0: FixedString DecRef at value+0, stride 8, count +0x2C), frees them, then frees the key hash set = HashMap<?, 8-byte value>. esv::crowds::PatrolSystem::Update (EoCServer.dll+0xD86770) iterates keys at +0x20 (stride 8, hashed as uint64, then used as entity handles: AddComponent of esv::crowds::PatrolComponent on them, \"Request to patrol is not a Proxy\") and values at +0x30 with the same index. Writer: esv::crowds::BehaviourSystem::Update (macOS index). Same destructor bg3.exe+0x6C33B0 as the detour map. Live (seen.py, idle): one instance, all bytes zero (empty container)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of bytes 4 and 5 of the request (PatrolComponent+0x2A/+0x2B).",
+    "Member names are ours (MovementSpeed from the assert text m_PathMovementSpeed)."
+  ],
+  "minutes": 8,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

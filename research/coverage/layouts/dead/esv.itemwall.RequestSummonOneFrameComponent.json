@@ -1,0 +1,188 @@
+{
+  "component": "esv::itemwall::RequestSummonOneFrameComponent",
+  "ext_name": "ServerItemwallRequestSummon",
+  "size": 136,
+  "oneFrame": false,
+  "seen": false,
+  "structs": [
+    {
+      "name": "ItemwallRequestSummonSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as Script Extender's SpellId (Base/ExposedTypes.h). Load bg3.exe+0x25B3480 moves a FixedString to component +0x30."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "As SE SpellMetaId::_Pad."
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellSourceType (1 byte)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Alignment."
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId::Source."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId::ProgressionSource."
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellId::Prototype; load moves a FixedString to component +0x60."
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "Tail padding."
+        }
+      ]
+    },
+    {
+      "name": "ItemwallRequestSummonLifetime",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Value",
+          "offset": 0,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same shape as eoc::summon::LifetimeComponent's std::variant<uint8_t, float> (Components/Data.h). WallSystem bg3.exe+0x3379B60 lines 556-562: `t = vtbl+0x20(...); v = t > 0 ? CONCAT44(1, t) : 0`; stored as one qword at +0x78."
+        },
+        {
+          "name": "Index",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index: 1 (float lifetime) when the time is positive, else 0 (the uint8_t alternative, value 0)."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "Upper bytes of the dword written with 1."
+        }
+      ]
+    }
+  ],
+  "summary": "Request of esv::itemwall::WallSystem (bg3.exe+0x3379B60) to summon one item of a wall: one per eoc::itemwall::ItemSpawn of the wall's CreateComponent when its animation slot comes up; consumed by esv::summon::SpawnSystem (Toolkit ProcessCreateSummon). Saved: model game.itemwall.v0.RequestSummonOneFrameComponent (120 bytes) with members m_Owner, m_Template, m_Position, m_Rotation, m_Level, m_SpellUsed, m_SpellCastUuid, m_Lifetime, m_Status (same order in the component). Never seen alive. Registry total 136 (server row; not flagged one-frame).",
+  "fields": [
+    {
+      "name": "Owner",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Savegame model member 0 (m_Owner). Load bg3.exe+0x25B3480 line 197: qword +0 = resolved entity. WallSystem line 598: req[0] = CreateComponent.Owner."
+    },
+    {
+      "name": "Template",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Model member 1 (m_Template). Load: FixedString at +8. WallSystem lines 635-646: +8 = ItemSpawn+0 (FixedString)."
+    },
+    {
+      "name": "Position",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "Model member 2 (m_Position). Load: qword +0xC, dword +0x14. WallSystem: +0xC (8 bytes) and +0x14 = ItemSpawn+4..+0xF."
+    },
+    {
+      "name": "Rotation",
+      "offset": 24,
+      "type": "glm::quat",
+      "source": "game",
+      "evidence": "Model member 3 (m_Rotation). Load: qwords +0x18/+0x20. WallSystem: dwords +0x18..+0x24 = ItemSpawn+0x10..+0x1F."
+    },
+    {
+      "name": "Level",
+      "offset": 40,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Model member 4 (m_Level). Load: FixedString at +0x28. WallSystem lines 622-633: +0x28 = CreateComponent+0x2C (Level)."
+    },
+    {
+      "name": "_Pad2C",
+      "offset": 44,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Not written."
+    },
+    {
+      "name": "SpellUsed",
+      "offset": 48,
+      "type": "ItemwallRequestSummonSpellId",
+      "source": "game",
+      "evidence": "Model member 5 (m_SpellUsed). Load: FixedString +0x30, qwords +0x38..+0x58, FixedString +0x60. WallSystem line 601: FUN_1407a2480(req+0x30, CreateComponent+0x30) (SpellId copy), Prototype +0x60 = CreateComponent+0x60."
+    },
+    {
+      "name": "SpellCastUuid",
+      "offset": 104,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "Model member 6 (m_SpellCastUuid). Load: qwords +0x68/+0x70. WallSystem lines 615-621: dwords +0x68..+0x74 = CreateComponent+0x68..+0x77."
+    },
+    {
+      "name": "Lifetime",
+      "offset": 120,
+      "type": "ItemwallRequestSummonLifetime",
+      "source": "game",
+      "evidence": "Model member 7 (m_Lifetime, ls::model::game::summons::v1::Lifetime). Load: qword +0x78. WallSystem line 599: req[0xF] = the (float, index) qword."
+    },
+    {
+      "name": "Status",
+      "offset": 128,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Model member 8 (m_Status). Load: FixedString at +0x80. WallSystem: +0x80 = FixedString returned by vtable+0x38 of the item-wall data interface."
+    },
+    {
+      "name": "_Pad84",
+      "offset": 132,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Tail padding to 136."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Lifetime: the uint8_t alternative's meaning (index 0) is not established; Script Extender's eoc::summon::LifetimeComponent uses the same variant.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,285 @@
+{
+  "component": "ecl::character_creation::TargetVisualComponent",
+  "ext_name": "ClientCharacterCreationTargetVisual",
+  "size": 240,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CCTargetVisualMaterialSetting",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Material",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "same layout as Script Extender's AppearanceMaterialSetting (GameDefinitions/CharacterCreation.h)"
+        },
+        {
+          "name": "Color",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "as SE AppearanceMaterialSetting"
+        },
+        {
+          "name": "ColorIntensity",
+          "offset": 32,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "as SE AppearanceMaterialSetting"
+        },
+        {
+          "name": "MetallicTint",
+          "offset": 36,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "as SE AppearanceMaterialSetting"
+        },
+        {
+          "name": "GlossyTint",
+          "offset": 40,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "as SE AppearanceMaterialSetting"
+        },
+        {
+          "name": "_Pad2C",
+          "offset": 44,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "padding to 8-byte alignment (Guid)"
+        }
+      ]
+    },
+    {
+      "name": "CCTargetVisualStringEntry",
+      "size": 32,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x6DAE40 moves +0x10 as an 8-byte size/capacity pair and resets the source to 0 / 0xF: the 24-byte small-string shape"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "rest of the 0x20 stride"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x201BE90 writes 0xFFFFFFFF; destructor DecRefs it. FillTargetVisualComponent sets it from a FixedString of the character template (template +0x4B8 on macOS). Live: 0x0EF00E61 in TargetVisual (also IconDefinition +8), null in CurrentVisual."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "FillTargetVisualComponent increments it when field_0 is set (a change counter). Creator zeroes +4..+0xB. Live 1 (Target), 0 (Current)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "FillTargetVisualComponentColorsAndMaterials increments it (change counter of colors/materials). Live 1 (Target), 0 (Current)."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "never written by the creator (live 0 in Target, 0xFFFFFFFF garbage in Current)"
+    },
+    {
+      "name": "Visuals",
+      "offset": 16,
+      "type": "Array<Guid>",
+      "source": "inferred",
+      "evidence": "macOS SubsystemHelper::FillTargetVisualComponentColorsAndMaterials copies eoc::character_creation::Appearance +0xA8 (SE: Visuals); Windows creator zeroes ptr/cap/size here"
+    },
+    {
+      "name": "Elements",
+      "offset": 32,
+      "type": "Array<CCTargetVisualMaterialSetting>",
+      "source": "inferred",
+      "evidence": "macOS SubsystemHelper::FillTargetVisualComponentColorsAndMaterials copies Appearance +0xB8 (SE: Elements). Live (TargetVisual): 9 entries"
+    },
+    {
+      "name": "AdditionalChoices",
+      "offset": 48,
+      "type": "Array<float>",
+      "source": "inferred",
+      "evidence": "macOS SubsystemHelper::FillTargetVisualComponentColorsAndMaterials copies Appearance +0xC8 (SE: AdditionalChoices)"
+    },
+    {
+      "name": "HairColor",
+      "offset": 64,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "macOS SubsystemHelper::FillTargetVisualComponentColorsAndMaterials copies Appearance +0x58; creator writes Guid::Empty"
+    },
+    {
+      "name": "SkinColor",
+      "offset": 80,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "copies Appearance +0x68"
+    },
+    {
+      "name": "EyeColor",
+      "offset": 96,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "copies Appearance +0x78"
+    },
+    {
+      "name": "SecondEyeColor",
+      "offset": 112,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "copies Appearance +0x88"
+    },
+    {
+      "name": "Race",
+      "offset": 128,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "macOS FillTargetVisualComponent writes its Guid parameter 7 here; live (TargetVisual +0x80) = Elf race 6c038dcb-... (Races.lsx), same value as LoadedRaceVisualChangedComponent"
+    },
+    {
+      "name": "field_90",
+      "offset": 144,
+      "type": "Array<Guid>",
+      "source": "inferred",
+      "evidence": "FillTargetVisualComponent fills it from Span<Guid> parameter 5 (DynamicArray<ls::Guid>, stride 0x10). Live 1 entry"
+    },
+    {
+      "name": "field_A0",
+      "offset": 160,
+      "type": "Array<Guid>",
+      "source": "inferred",
+      "evidence": "FillTargetVisualComponent fills it from Span<Guid> parameter 6. Live 1 entry"
+    },
+    {
+      "name": "Origin",
+      "offset": 176,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "FillTargetVisualComponent writes its Guid parameter 4 here; live (TargetVisual +0xB0) = Astarion origin 3780c689-... (Origins.lsx), same as LoadedOriginVisualChangedComponent"
+    },
+    {
+      "name": "BodyType",
+      "offset": 192,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "FillTargetVisualComponent: param_1[0xc0] = *EBodyType (ls::EBodyType, 1 byte); creator 16-bit zero store with the next byte"
+    },
+    {
+      "name": "BodyShape",
+      "offset": 193,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "param_1[0xc1] = *EBodyShape (ls::EBodyShape, 1 byte)"
+    },
+    {
+      "name": "field_C2",
+      "offset": 194,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "creator writes byte 0"
+    },
+    {
+      "name": "field_C3",
+      "offset": 195,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "padding byte before +0xC4 (not written)"
+    },
+    {
+      "name": "TemplateFlags",
+      "offset": 196,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "FillTargetVisualComponent: (template byte +0x84)<<5 | (template byte +0x7C)<<2 | template byte +0x82 - bits taken from the character template. Creator 16-bit zero. Live 4."
+    },
+    {
+      "name": "_PadC6",
+      "offset": 198,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "padding"
+    },
+    {
+      "name": "field_C8",
+      "offset": 200,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator writes DAT_146174978 with IncRef; destructor DecRefs +0xC8. FillTargetVisualComponent copies a FixedString of an object found through parameter 5 (object +0xD4). Live 0x27F000C1."
+    },
+    {
+      "name": "field_CC",
+      "offset": 204,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator writes 0; FillTargetVisualComponent copies template byte +0x526. Live 5."
+    },
+    {
+      "name": "_PadCD",
+      "offset": 205,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "padding"
+    },
+    {
+      "name": "field_D0",
+      "offset": 208,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "buffer of an array of trivially destructible elements (destructor bg3.exe+0x6CF0D0 frees it via FUN_1405bd630); element type unknown. Live empty."
+    },
+    {
+      "name": "field_D8",
+      "offset": 216,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "capacity of that array"
+    },
+    {
+      "name": "field_DC",
+      "offset": 220,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "size of that array"
+    },
+    {
+      "name": "field_E0",
+      "offset": 224,
+      "type": "Array<CCTargetVisualStringEntry>",
+      "source": "inferred",
+      "evidence": "destructor resizes it with bg3.exe+0x6DAE40: stride 0x20, each element starts with a game string (reset to size 0 / capacity 0xF). Live empty."
+    }
+  ],
+  "summary": "Visual the character-editor dummy should get (filled by SubsystemHelper::FillTargetVisualComponent / ...ColorsAndMaterials from the template, race, origin, body type/shape and eoc::character_creation::Appearance). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "confidence": "medium",
+  "open_questions": [
+    "field_0 / field_C8 / field_CC meaning; element types of the arrays at +0x90/+0xA0 parameters and +0xD0.",
+    "Offsets confirmed by the Windows creator's store shape and live values (Race +0x80, Origin +0xB0, Elements size 9 at +0x20); member meaning from macOS FillTargetVisualComponent."
+  ],
+  "minutes": 14,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,28 @@
+{
+  "component": "ecl::character_creation::ChangesPreviewComponent",
+  "ext_name": "ClientCharacterCreationChangesPreview",
+  "size": 8,
+  "class_size": 1040,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Changes",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Registry inline size 8, total 1048 = 8 + 1040: the component is one pointer to a 1040-byte heap object. Destructor bg3.exe+0x6ABE20 takes *comp, destroys the object (FUN_1406cf520) and frees it. macOS SubsystemHelper::InitializeChangesPreviewComponent(ID, eoc::character_creation::CurrentChanges&&, ...) moves an eoc::character_creation::CurrentChanges in, so the object is that type."
+    }
+  ],
+  "summary": "Preview of the pending changes of a respec / level-up session (eoc::character_creation::CurrentChanges behind a pointer). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "confidence": "medium",
+  "open_questions": [
+    "Not settled: under the convention used for other objects behind a pointer (registry size = object + 8), the layout should describe the 1040-byte eoc::character_creation::CurrentChanges object (size 1048), not the 8-byte pointer; the file keeps size 8 because this pass may not change sizes - the owner of the build must decide which form the build wants.",
+    "Shape of CurrentChanges from its Windows destructor FUN_1406cf520 (called by the component destructor bg3.exe+0x6ABE20): +0x00..+0x6F seven 16-byte Arrays (vector destructor x7, element destructor FUN_140591800); +0x70..+0xFF plain data; +0x100, +0x140, +0x188, +0x1C8, +0x208, +0x248 HashMap-like containers (value Array at +0x30 of each, then the key HashSet); +0x288 HashMap with non-trivial values (FUN_1406d33c0); +0x2C8, +0x2F8, +0x328, +0x358, +0x388 48-byte HashSets; +0x3C8 Array; +0x3D8 HashSet. Key and value types of the maps are not established (macOS Apply*/FillCurrentChanges functions name the members: added spells, passives, boosts, ability bonuses, skill expertise, equipment...)."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the raw check failed: client: registered size 1048, layout says 8",
+  "second_pass": "Not settled. Confirmed on Windows that the component is one pointer to a heap object freed by bg3.exe+0x6ABE20 and destroyed by FUN_1406cf520 (container map listed in open_questions); declaring the 1040-byte object needs the key/value types of about ten hash maps, beyond this pass."
+}

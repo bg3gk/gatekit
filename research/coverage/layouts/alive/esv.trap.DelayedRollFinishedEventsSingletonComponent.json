@@ -1,0 +1,77 @@
+{
+  "component": "esv::trap::DelayedRollFinishedEventsSingletonComponent",
+  "ext_name": "ServerTrapDelayedRollFinishedEventsSingleton",
+  "size": 64,
+  "structs": [
+    {
+      "name": "DelayedRollFinishedEventsDisarmRollResult",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Roll",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Windows append bg3.exe+0x2CF8D10 (stride 0x20) stores *param_2 = the esv::roll::FinishedEvent's Roll entity (event +0x20; caller bg3.exe+0x2CF66B0 passes pcVar34-8 with pcVar34 = event+0x28; SE Roll.h FinishedEvent.Roll). Toolkit EoCServer.dll+0x61BC80 is the same."
+        },
+        {
+          "name": "Subject",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2CF8D10 stores *param_3 = event +0x08 (pcVar34-0x20), SE FinishedEvent.Subject."
+        },
+        {
+          "name": "Entity",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2CF8D10 stores the entity of the current query row (*(view+0x40))[view+0x50] - the same entity that keys the map (get-or-add bg3.exe+0x2CF88B0 in the caller)."
+        },
+        {
+          "name": "SpellCheck",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2CF8D10 stores the byte *param_5 = event +0x28 (SE FinishedEvent.SpellCheck, uint8_t)."
+        },
+        {
+          "name": "Canceled",
+          "offset": 25,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2CF8D10 stores the byte *param_6 = event +0x29 (SE FinishedEvent.Canceled, bool)."
+        },
+        {
+          "name": "_Pad1A",
+          "offset": 26,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "alignment padding (not written)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Results",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Array<DelayedRollFinishedEventsDisarmRollResult>>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2CF94D0 allocates 0x40 and zeroes a HashSet (+0..+0x30) plus the value array (+0x30..+0x40). Windows esv::trap::DisarmSystem code bg3.exe+0x2CF66B0 (reaches the singleton through its storage index DAT_14638c02c) walks esv::roll::FinishedEvent arrays (stride 0x58, RollContext byte == 5), inserts the query entity as an 8-byte key (bg3.exe+0x721030), grows the value storage with 16-byte Array values (ptr, capacity, size moved per element) and appends a 0x20-byte DisarmRollResult with bg3.exe+0x2CF8D10. macOS: ls::HashMap<ID<EntityHandleTraits>, DynamicArray<esv::trap::DisarmRollResult>>::DestroyValues among the component's ops."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names of esv::trap::DisarmRollResult are taken from the esv::roll::FinishedEvent members they are copied from (SE Roll.h), not from the game."
+  ],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Belongs to esv::trap::DisarmSystem (trap disarm rolls whose result is delayed). Live: zero (never used in samples).",
+  "seen": true,
+  "minutes": 9,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Windows DisarmSystem code bg3.exe+0x2CF66B0 and its append bg3.exe+0x2CF8D10 confirm the map shape and every element member (entity +0, +8, +0x10, bytes +0x18/+0x19), copied from esv::roll::FinishedEvent members Roll, Subject, SpellCheck, Canceled; found via the storage-index global DAT_14638c02c.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

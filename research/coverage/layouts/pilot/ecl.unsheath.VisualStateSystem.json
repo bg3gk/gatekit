@@ -1,0 +1,70 @@
+{
+  "kind": "system",
+  "component": "ecl::unsheath::VisualStateSystem",
+  "ext_name": "ClientUnsheathVisualState",
+  "size": 312,
+  "fields": [
+    {
+      "name": "VMT",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Factory bg3.exe+0x75FB80 stores &PTR_FUN_14563a1f8 (vtable at bg3.exe+0x563A1F8; 7 slots read from the exe file: destructor 0x76C910, Initialize 0x5D7820, SystemLoad 0x1A1C130, SystemUnload 0x1A1C3A0, three shared empty slots 0x57AA50). Covered by Script Extender's BaseSystem."
+    },
+    {
+      "name": "EntityWorld",
+      "offset": 8,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "BaseSystem::EntityWorld in Script Extender (EntitySystem.h); zeroed by the factory, set by the registration function bg3.exe+0x7419B0 ('local_138[1] = param_1')."
+    },
+    {
+      "name": "EocClient",
+      "offset": 16,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Factory bg3.exe+0x75FB80 stores its argument here; the Toolkit constructor signature is VisualStateSystem(class ecl::EocClient const &). SystemLoad bg3.exe+0x1A1C130 uses it as '*(*(this+0x10) + 0x98) + 0x528' to reach a per-type table indexed by TypeIndex<eoc::unsheath::StateComponent>_ReplicatedTypeContext. Should be [[bg3::hidden]]."
+    },
+    {
+      "name": "StateSignalConnection0",
+      "offset": 24,
+      "type": "uint8_t[80]",
+      "source": "inferred",
+      "evidence": "0x50-byte signal subscription object: +0x00 pointer (0 at construction), +0x08 = 0xFFFFFFFFFFFFFFFF at construction, +0x10 pointer to the manager of a type-erased callable, +0x18.. its inline storage. SystemLoad bg3.exe+0x1A1C130 builds the callable {FUN_141a1e320, this} into this+0x28/this+0x30 and passes the block (this+0x18) to FUN_141a1dc80, which connects it to signal slot 0 of the replication record of eoc::unsheath::StateComponent; SystemUnload bg3.exe+0x1A1C3A0 disconnects it (FUN_140770660). Which event each of the three signals stands for (created / changed / destroyed, or three replicated fields) was not established. Must be [[bg3::hidden]]."
+    },
+    {
+      "name": "StateSignalConnection1",
+      "offset": 104,
+      "type": "uint8_t[80]",
+      "source": "inferred",
+      "evidence": "Same object as at +0x18; connected by FUN_141a1ddc0 to a second signal of the eoc::unsheath::StateComponent replication record with the same callback (bg3.exe+0x1A1C130), disconnected in bg3.exe+0x1A1C3A0. Hidden."
+    },
+    {
+      "name": "StateSignalConnection2",
+      "offset": 184,
+      "type": "uint8_t[80]",
+      "source": "inferred",
+      "evidence": "Same object as at +0x18; connected by FUN_141a1df00 to a third signal of the same record, same callback, disconnected in bg3.exe+0x1A1C3A0. Hidden."
+    },
+    {
+      "name": "StateChanged",
+      "offset": 264,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "0x30 bytes laid out as Script Extender's HashSet (HashKeys pointer +0x108 / size +0x110, NextIds pointer +0x118 / capacity +0x120 / size +0x124, Keys pointer +0x128 / capacity +0x130 / size +0x134): the update wrapper bg3.exe+0x75FCE0 clears it exactly that way after each update (memset of HashKeys to 0xFF, NextIds.size = 0, Keys.size = 0) and the destructor bg3.exe+0x76C910 frees it. Keys are 8-byte entity handles: the signal callback bg3.exe+0x1A1E320 does 'insert(this + 0x108, event + 8)' (FUN_140721030), and ProcessVisualRequests bg3.exe+0x1A1CF80 iterates Keys (this+0x128, count this+0x134), looks each entity up with FUN_140afa490(world, key) (a record whose +0x14 int is compared with 3 and whose +0x18 is a bool - presumably eoc::unsheath::StateComponent, not verified) and fills per-entity visual-state requests from it. The name comes from the Toolkit method UNITTEST_StateChanged(EntityHandle const&), which by its signature feeds the same set (that method was not located in the game)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Why this system: ecl::EquipmentVisualsSystem is already mapped (Visual.h:973, DEFINE_SYSTEM(ClientEquipmentVisuals, ...), listed in ExposedSystemTypes.inl), and so is ecl::equipment::VisualsVisibilityStateSystem (Visual.h:1207). I took the unmapped system of the same feature - weapon sheathing visuals; it is the writer of ecl::unsheath::VisualStateComponent and ecl::unsheath::RefreshWeaponVisualsRequestOneFrameComponent. Also unmapped nearby: ecl::equipment::EquipmentVisualsStateSystem, ecl::dummy::UnsheathSystem, ecl::unsheath::AnimationSystem, ecl::unsheath::AnimationSubSetSystem.",
+    "How much the decompilation could name: the size (0x138, from the allocation in the factory bg3.exe+0x75FB80) and the structural role of every byte are established. Semantically only ONE member is real state: StateChanged. The other 0xF0 bytes are three engine signal connections of which I know only 'pointer, a qword of -1, type-erased callable'; their internal type was not named and they should be hidden padding. The decompilation gave no member names at all - all names here come from Toolkit method signatures or are descriptive.",
+    "What it takes to expose usefully: declare 'struct VisualStateSystem : public BaseSystem' in namespace ecl::unsheath with DEFINE_SYSTEM(ClientUnsheathVisualState, \"ecl::unsheath::VisualStateSystem\"), add T(ecl::unsheath::VisualStateSystem) to ExposedSystemTypes.inl, expose StateChanged and hide the rest. Inserting an entity into StateChanged before the system's Update should make ProcessVisualRequests re-evaluate that character's weapon visual state (what UNITTEST_StateChanged does) - the same usage pattern as ClientVisualsVisibilityState.SetVisualState, no method call needed. Reading it is of little use: it is cleared at the end of every Update. ProcessAddRemoveVisual (bg3.exe+0x1A1C3D0) does not touch the system object (only the world view), so there is nothing else to expose; calling the private Process* methods would need a WorldView argument and is not worth it.",
+    "ext_name 'ClientUnsheathVisualState' is the same string the brief's example uses for the COMPONENT ecl::unsheath::VisualStateComponent. Neither exists in Script Extender today; check whether system and component names share a registry before generating, and rename the system (e.g. ClientUnsheathVisualStateSystem) if they do.",
+    "Needs a live check: the set is empty at rest; a sheath/unsheath puts the character's handle in for one frame; inserting a handle by hand triggers a refresh.",
+    "Tool gap: `symbols.py system` / `symbols.py vtable` report the vtable as 'in the game: not recognised', so SystemLoad/SystemUnload/destructor had to be found by reading the vtable bytes from the exe (address taken from the factory)."
+  ],
+  "minutes": 14,
+  "functions_read": 11,
+  "status": "hypothesis",
+  "raw_check": "2026-11-12, Ext.Debug.GetSystemAddress + ReadMemory on the client: 0x138 bytes read; virtual table at +0, heap pointers at +8 and +0x10, three identical 0x50-byte blocks at +0x18/+0x68/+0xB8 (the same three code pointers in each), a hash set at +0x108 (7 buckets, arrays of capacity 4). Matches the hypothesis; not yet declared in Script Extender (a system also needs its ExtSystemType entry and a decision what to expose)."
+}

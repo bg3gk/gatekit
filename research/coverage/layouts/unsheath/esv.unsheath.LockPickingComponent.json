@@ -1,0 +1,24 @@
+{
+  "component": "esv::unsheath::LockPickingComponent",
+  "ext_name": "ServerUnsheathLockPicking",
+  "size": 4,
+  "fields": [
+    {
+      "name": "Timer",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x32EA1A0 (size 4, default 0). bg3.exe+0x32E9BD0 (esv::unsheath::LockPickingSystem) writes 0x3FC00000 (1.5 s) right after creating/refreshing it, then every tick subtracts the frame time (GameTime+8, scaled by an optional per-entity time factor; 0 while paused) and removes the component when the value is <= 0. The resolver bg3.exe+0x32F1AD0 tests presence only and adds reason 0x10 with Sheathed."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the capture; layout from code only."
+  ],
+  "minutes": 2,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,32 @@
+{
+  "component": "esv::placement::PlacementResultEventOneFrameComponent",
+  "ext_name": "ServerPlacementPlacementResultEvent",
+  "size": 2,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame result of a placement, written by esv::placement::ExecutionSystem::ProcessResults from its frame data map (entity -> 2-byte result) filled in ProcessPlacementRequests / ProcessPlacements. Seen.py context: dialogues with several NPCs (CAMP_GoblinHuntCelebration, DEN) and scripted events.",
+  "fields": [
+    {
+      "name": "Failure",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Enum esv::placement::EFailureType (1 byte; macOS names HashMap<EntityHandle, EFailureType>, assert ls::IndexedStorage<enum esv::placement::EFailureType> in ValidationSystem). Toolkit ExecutionSystem::ProcessPlacementRequests (EoCServer.dll+0x2FD330) stores the ushort 0x104/0x102 (low byte 4 = invalid entity, 2 = dead entity, also 3, 5, 0xC) into the frame-data value; ProcessPlacements writes *value = 2 or 3. Creator bg3.exe+0x2F078A0 allocates 2 bytes. Live 0 and 2."
+    },
+    {
+      "name": "Failed",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "High byte of that ushort: set to 1 whenever a failure code is stored (if (value[1] == 0) value[1] = 1). Live 0 (with Failure 0) and 1 (with Failure 2)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Copy from the frame-data map into the component was not read (ProcessResults); names of the EFailureType values."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,24 @@
+{
+  "component": "esv::party_preset::DebugSetTotalXPRequestOneFrameComponent",
+  "ext_name": "ServerPartyPresetDebugSetTotalXPRequest",
+  "size": 4,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Created in step 2 of esv::party_preset::System::ProcessDirtyLoadStates (bg3.exe+0x2DBEC00) while a party preset is loaded onto a character: holds the total experience the character must get for the preset's level.",
+  "fields": [
+    {
+      "name": "TotalXP",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2DC0F10 allocates 4 bytes and writes 0. bg3.exe+0x2DBEC00 (case 2) stores into it an int computed from the preset level (LoadState+0x1BC) through FUN_141029290(level+1, ...) (XP-for-level lookup) and capped by LoadState+0x314; 0 when there is no level data."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

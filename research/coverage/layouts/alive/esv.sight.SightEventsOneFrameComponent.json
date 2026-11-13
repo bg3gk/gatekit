@@ -1,0 +1,75 @@
+{
+  "component": "esv::sight::SightEventsOneFrameComponent",
+  "ext_name": "ServerSightEvents",
+  "size": 64,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Per-character sight events consumed by esv::StoryCharacterEventManager::OnSightEvents (Osiris notifications 0x1d/0x1e). Appears whenever characters see each other: spawned scenes, dialogues, fights, containers.",
+  "structs": [
+    {
+      "name": "SightEventsSightEvent",
+      "size": 32,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "OnSightEvents (EoCServer.dll+0xEF7030) passes +0 to ls::Guid::IsValid and to OsirisNotification::SetParamGuidValue for events of type 2."
+        },
+        {
+          "name": "Entity",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "OnSightEvents resolves +0x10 with FUN_18025b5c0 (entity lookup) for every event - the other character of the event."
+        },
+        {
+          "name": "Type",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "OnSightEvents asserts 'A sight event should always have a valid type' when +0x18 is 0, branches on 1 and 2."
+        },
+        {
+          "name": "field_19",
+          "offset": 25,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "For type 1 OnSightEvents logs +0x19 as true/false and passes (value == 1) to Osiris notification 0x1d."
+        },
+        {
+          "name": "field_1A",
+          "offset": 26,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "For type 2 OnSightEvents skips the event when +0x1A is 0."
+        },
+        {
+          "name": "_Pad1B",
+          "offset": 27,
+          "type": "uint8_t[5]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Array<SightEventsSightEvent>>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2E8A4B0 (0x40 bytes, HashMap zeroing) registers FUN_140591cf0, which destroys 0x10-byte values each holding an array (FUN_1405bd8a0) then the key set. macOS: ls::HashMap<ls::ID<EntityHandleTraits>, ls::DynamicArray<esv::sight::SightEvent>>::DestroyValues. OnSightEvents walks keys (+0x20, count +0x2C, stride 8, EntityIsAlive) and values (+0x30), elements stride 0x20. Live: 48 instances with key/value counts 1..0x1E."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of SightEvent members (Guid at +0, the two bools)."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

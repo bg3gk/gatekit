@@ -1,0 +1,47 @@
+{
+  "component": "ls::photo_mode::ColorGradingComponent",
+  "ext_name": "PhotoModeColorGrading",
+  "size": 16,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Client photo mode: the colour grading chosen in the photo-mode UI (gui::DCPhotoMode::OnColorGradingChanged), applied by ecl::photo_mode::ColorGradingSystem while photo mode is active. Never seen alive.",
+  "fields": [
+    {
+      "name": "Id",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1AF5D10 (AllocRaw 0x10) writes 0xFFFFFFFF and registers the FixedString destructor bg3.exe+0x698FE0. Toolkit EoCClient.dll+0x593DC0 (ColorGradingSystem::UpdateColorGrading) compares +0 as an int and assigns it with ls::FixedString::operator=; macOS DCPhotoMode::OnColorGradingChanged takes it from the selected UI entry (+0x60 of the object at DCPhotoMode+0x988)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "UpdateColorGrading compares and copies +4 as a float; DCPhotoMode::OnColorGradingChanged fills it from a DCPhotoMode property (+0xB10 on macOS); creator writes 0."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "same, from DCPhotoMode +0xB28 (macOS); creator writes 0."
+    },
+    {
+      "name": "field_c",
+      "offset": 12,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "same, from DCPhotoMode +0xB40 (macOS); creator writes 0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the three floats (Noesis properties of DCPhotoMode not resolved)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

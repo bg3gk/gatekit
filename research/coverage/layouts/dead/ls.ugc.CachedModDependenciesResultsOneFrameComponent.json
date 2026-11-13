@@ -1,0 +1,141 @@
+{
+  "component": "ls::ugc::CachedModDependenciesResultsOneFrameComponent",
+  "ext_name": "UgcCachedModDependenciesResults",
+  "size": 112,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame batch of answers delivered by ls::ugc::ModDependencyCachedRequestSystem (macOS Update writes it) to the GUI (registry total 112, client only): a HashMap<ModItemDependenciesInfoId, response> at +0 and a HashSet at +0x40.",
+  "structs": [
+    {
+      "name": "UgcCachedModDependenciesResultsModItemDependenciesInfoId",
+      "size": 16,
+      "fields": [
+        {
+          "name": "ModId",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "ls::ugc::ModItemDependenciesInfoID, 16 bytes (Windows key stride 0x10 in bg3.exe+0x3BE3780 / bg3.exe+0x3BE4ED0); macOS HashTable<ModItemDependenciesInfoID>::Ensure (bg3_macos_x64+0x2B60DB0) hashes the qword at +0 and compares it first; RequestItemDependencies(unsigned long long, bool) names it as the mod id."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "macOS Ensure compares one byte at +8 (the bool argument of RequestItemDependencies). Windows bg3.exe+0x3BE4ED0 hashes and compares the key with the generic 16-byte ops (k[0] ^ k[1], FUN_1405CA2A0), which reads +8 as a whole qword: the byte width rests on macOS."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding (compared as part of a qword by the Windows 16-byte key ops)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "HashKeys",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BE5B80 (AllocRaw 0x70) zeroes a HashMap (+0..+0x3F) and a HashSet (+0x40..+0x6F); destructor bg3.exe+0x3B79D10 destroys the map at +0 - bucket array of ls::HashSet"
+    },
+    {
+      "name": "HashKeysSize",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count"
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "NextIds",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "hash chains of ls::HashSet"
+    },
+    {
+      "name": "Keys",
+      "offset": 32,
+      "type": "Array<UgcCachedModDependenciesResultsModItemDependenciesInfoId>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BE5B80 (AllocRaw 0x70) zeroes a HashMap (+0..+0x3F) and a HashSet (+0x40..+0x6F); destructor bg3.exe+0x3B79D10 destroys the map at +0 - keys (written out member by member because the key is a struct)"
+    },
+    {
+      "name": "Values",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Value storage at +0x30 (values: ls::ugc::ModItemDependenciesInfoResponse, stride 0x20 - FUN_143b7d760 frees an array (element 0x50, net::UGCModDependency) at value+8 for each key)."
+    },
+    {
+      "name": "ValuesCapacity",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "size of the value storage (ls::HashMap values are an uninitialised static array: pointer + count)"
+    },
+    {
+      "name": "_Pad3C",
+      "offset": 60,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "SetHashKeys",
+      "offset": 64,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x3B79D10 runs the plain-key HashSet destructor bg3.exe+0x582AD0 on +0x40; macOS component destructor calls HashTable<ls::ugc::ModItemDependenciesInfoID>::~HashTable(this+0x40) - bucket array of ls::HashSet"
+    },
+    {
+      "name": "SetHashKeysSize",
+      "offset": 72,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count"
+    },
+    {
+      "name": "_Pad4C",
+      "offset": 76,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "SetNextIds",
+      "offset": 80,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "hash chains of ls::HashSet"
+    },
+    {
+      "name": "SetKeys",
+      "offset": 96,
+      "type": "Array<UgcCachedModDependenciesResultsModItemDependenciesInfoId>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x3B79D10 runs the plain-key HashSet destructor bg3.exe+0x582AD0 on +0x40; key type assumed equal to the map's key (not checked) - keys (written out member by member because the key is a struct)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Width of ModItemDependenciesInfoID +8: a byte on macOS, compared as part of a qword by the Windows 16-byte key ops.",
+    "The map's value storage is written as raw parts (pointer + count); value strides are known from the Windows destructors (see the Values row), the value structs are not declared. (ls::ugc::ModItemDependenciesInfoResponse, 0x20 bytes, with an Array of 0x50-byte net::UGCModDependency at +8)",
+    "Role of the HashSet at +0x40."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "macOS component destructor confirms both containers are keyed by ModItemDependenciesInfoID; the key is 16 bytes on Windows, but the width of its second member is known from macOS only."
+}

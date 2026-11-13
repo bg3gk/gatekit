@@ -1,0 +1,26 @@
+{
+  "component": "esv::character::ReevaluatePartyRequestOneFrameComponent",
+  "ext_name": "ServerCharacterReevaluatePartyRequest",
+  "size": 8,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Request from esv::CharacterManager to esv::party::PartySystem (ProcessReevaluatePartyRequests) to re-evaluate the party of a character. Registered as a normal component although named OneFrame. Created on a new entity by bg3.exe+0x3334820 (AllocRaw 8) from bg3.exe+0x3323880, which stores a character handle from a list. Never seen alive. Registry total 8 (server row).",
+  "fields": [
+    {
+      "name": "Character",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3334820 writes 0xffc0000000000000 (null EntityHandle); writer bg3.exe+0x3323880 lines 477-485 create an entity (FUN_14401aff0), add the component and `*plVar14 = *plVar25` (an element of a list of 8-byte entity handles). macOS: esv::party::PartySystem::ProcessReevaluatePartyRequests reads it."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

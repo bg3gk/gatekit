@@ -1,0 +1,32 @@
+{
+  "component": "esv::history::TargetContainerSingletonComponent",
+  "ext_name": "ServerHistoryTargetContainer",
+  "size": 128,
+  "seen": true,
+  "summary": "Server singleton of the target-history feature (esv::history::TargetSystem, EoCServer TargetHistorySystem.cpp): for every tracked target UUID the set of entities that were targeted and the entity that started the tracking. Alive in every idle level (context: nothing done), so the context did not narrow it down; the Toolkit's named TargetSystem::ProcessStartRequests did.",
+  "fields": [
+    {
+      "name": "Targets",
+      "offset": 0,
+      "type": "HashMap<Guid, HashSet<EntityHandle>>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x5B7220 esv::history::TargetSystem::ProcessStartRequests (param_3 = this component): key = the request's Guid (Guid::GetHash, FUN_180227750 lookup at +0, bucket count at +8), value written into values array at +0x30 with stride 0x30 by copying the request's HashSet<EntityHandle> (FUN_18028ad60(values + idx*0x30, request+0x18)). bg3.exe destructor FUN_1422d3f60 destroys +0 with FUN_1405e19c0 (non-trivial values). Live: bucket counts 0xC07 / 0x3001 (primes), keys capacity 0x800..0x2000, size 0x689..0x1783."
+    },
+    {
+      "name": "Requesters",
+      "offset": 64,
+      "type": "HashMap<Guid, EntityHandle>",
+      "source": "inferred",
+      "evidence": "Same function: FUN_1803819d0(this+0x40, Guid) inserts the Guid key, FUN_180257a10(this+0x70, idx, request) stores the request's first qword (its EntityHandle, checked with the entity-handle validity test) as value. bg3.exe destructor frees +0x70 raw (trivial values) and the key set at +0x40 with FUN_140582ad0. Live sizes mirror the first map."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names Targets/Requesters are descriptive, not the game's."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "31 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,24 @@
+{
+  "component": "ecl::activation::CulledComponent",
+  "ext_name": "ClientActivationCulled",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "CulledAtFrame",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x18B3070 (4-byte frame storage) writes 0; its only caller bg3.exe+0x18B2B00 (system update with signature (system, world, GameTime const&), called from bg3.exe+0x7564C0) stores *(int*)(GameTime + 0x10) for every entity it culls. GameTime+0x10 is a 32-bit counter (SE calls it 'double Unknown'); live 0x305B / 0x306F (12379 / 12399) fit a frame/tick count, so the component records when the entity was culled."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "What GameTime+0x10 counts exactly (SE ExposedTypes.h names it 'Unknown' and types it double; the game reads 4 bytes as int)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "24 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

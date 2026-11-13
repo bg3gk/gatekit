@@ -1,0 +1,23 @@
+{
+  "component": "esv::sound::DistantSoundStateUserMapComponent",
+  "ext_name": "ServerSoundDistantSoundStateUserMap",
+  "size": 64,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Singleton-like component of esv::sound::DistantSoundSystem (GetUserMapComponent creates it on its own entity): which users hear each distant sound. Lives from level load.",
+  "fields": [
+    {
+      "name": "Users",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, HashSet<UserId>>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x4D7490 (DistantSoundSystem::GetUserMapComponent, typed parameter HashMap<ID<EntityHandleTraits>, HashSet<net::UserID>>) walks the component's keys (+0x20, stride 8) and values (+0x30, stride 0x30 = HashSet) and inserts net::UserID values ('IndexedStorage<net::UserID>'). Creator bg3.exe+0x2E3D830 zeroes 0x40; destructor FUN_1405e19c0 destroys 0x30-byte HashSet values. Live: 3..8 keys."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

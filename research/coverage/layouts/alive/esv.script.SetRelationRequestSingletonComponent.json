@@ -1,0 +1,82 @@
+{
+  "component": "esv::script::SetRelationRequestSingletonComponent",
+  "ext_name": "ServerScriptSetRelationRequests",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: Osiris-issued faction relation changes (ls::Variant alternative 1 of esv::script::RequestSystem's requests), each tagged with the request entity. Filled by esv::script::RequestSystem::ProcessEmitRequests; pushed e.g. by OsirisGameFunctions::SetHostileAndEnterCombat. Seen.py context: singleton present in the idle level (one sample held an allocated, empty array).",
+  "structs": [
+    {
+      "name": "SetRelationRequestsEntry",
+      "size": 48,
+      "fields": [
+        {
+          "name": "RequestEntity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::script::Requester<T> +0: request entity copied by EoCServer.dll+0x4FA900."
+        },
+        {
+          "name": "SourceFaction",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SetRelationRequest +0: EoCServer.dll+0x12ACE20 (SetHostileAndEnterCombat) stores the first faction Guid argument here."
+        },
+        {
+          "name": "TargetFaction",
+          "offset": 24,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SetRelationRequest +0x10: the second faction Guid argument of SetHostileAndEnterCombat."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "SetRelationRequest +0x20: SetHostileAndEnterCombat writes 0 (probably the relation value: hostile)."
+        },
+        {
+          "name": "field_29",
+          "offset": 41,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "SetRelationRequest +0x21: SetHostileAndEnterCombat writes 1."
+        },
+        {
+          "name": "field_2A",
+          "offset": 42,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "SetRelationRequest +0x22: SetHostileAndEnterCombat writes 1."
+        },
+        {
+          "name": "_Pad2B",
+          "offset": 43,
+          "type": "uint8_t[5]",
+          "source": "inferred",
+          "evidence": "Rest of the 40-byte request (copied as one qword with the bytes above)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<SetRelationRequestsEntry>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x4FA900 case 1: assert ls::IndexedStorage<esv::script::Requester<esv::script::SetRelationRequest>>, stride 0x30 (entity + qword, qword, 4 dwords, qword)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the three bytes at +0x28..+0x2A (relation value and flags such as permanent/mutual)."
+  ],
+  "minutes": 5,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,102 @@
+{
+  "component": "ecl::TimelineFadeRequestsSingletonComponent",
+  "ext_name": "ClientTimelineFadeRequestsSingleton",
+  "size": 224,
+  "structs": [
+    {
+      "name": "TimelineFadeRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "TargetValue",
+          "offset": 0,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Copied 1:1 into the fade view: Toolkit ecl::FadeResolveSystem::ProcessFadeRequests (EoCClient.dll+0x891A00) does 'view[0..7] = request[0..7]; view[8..0xB] = request[8..0xB]' for each map value, so the request's +0 is the view's TargetValue. Game struct name ecl::StartFadeRequest (macOS HashMap<EntityHandle, ecl::StartFadeRequest>). | first pass: bg3.exe+0x1D6BA20 writes 0 when it inserts / overwrites the map value (value stride 0x10: 'values + index * 0x10').",
+          "legacy": "field_0"
+        },
+        {
+          "name": "FadeSpeed",
+          "offset": 4,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Copied into view +4 (EoCClient.dll+0x891A00); the blend step bg3.exe+0x18DFEC0 uses view +4 as the fade rate per second. | first pass: bg3.exe+0x1D6BA20 writes 0x40800000 = 4.0 (same pair '0, 4.0' that starts ecl::TimelineFadeView0Component in the probe) - probably the fade speed/duration.",
+          "legacy": "field_4"
+        },
+        {
+          "name": "FadeIn",
+          "offset": 8,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D6BA20: set to '(systemValue == 0)' where systemValue is the bool of ecl::TimelineSystem::FadeRequests[view] (HashMap<EntityHandle, bool> at system +0xA40, Script Extender name) for the same entity."
+        },
+        {
+          "name": "ImmediateFadeIn",
+          "offset": 9,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Copied into view +9 (EoCClient.dll+0x891A00); bg3.exe+0x18DFEC0 then sets the current value to 1.0 at once when the view fades back in. | first pass: bg3.exe+0x1D6BA20 writes the same '(systemValue == 0)' value.",
+          "legacy": "field_9"
+        },
+        {
+          "name": "field_A",
+          "offset": 10,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1D6BA20 writes 0. | names pass 2: bg3.exe+0x18DFEC0 ANDs this byte (copied to view +0xA) into byte +4 of the resolved ls::FadingView0/1Component ('*(out + 4) &= view[0xA]', out starts at {1.0, 1}); the meaning of that output byte (FadingView.field_4) was not established. Default 1."
+        },
+        {
+          "name": "_PadB",
+          "offset": 11,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "not written (keeps the stack byte) - padding"
+        },
+        {
+          "name": "field_C",
+          "offset": 12,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1D6BA20 writes 1 (low byte of the last dword; the other three bytes keep stack garbage). | names pass 2: Toolkit EoCClient.dll+0x891A00: 'if (request[8] && request.TargetValue == 0 && request[0xC])' it records {1, request[0xA]} in the system map at +0x180 (the 'fully faded out at once' case); not copied into the view."
+        },
+        {
+          "name": "_PadD",
+          "offset": 13,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "tail padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "FadeRequests",
+      "offset": 0,
+      "type": "std::array<HashMap<EntityHandle, TimelineFadeRequest>, 2>",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x1D77460 zeroes 0..0x80 and runs FUN_1418c2f60 (loop of 2 over 0x40-byte maps); destructor bg3.exe+0x697CD0 = vector destructor (count 2, size 0x40, map destructor FUN_1405c4870 that frees +0x30 and the key set). bg3.exe+0x1D6BA20 (ecl::TimelineSystem, component fetched by FUN_141d43000 whose query is Spec<TimelineFadeRequestsSingletonComponent>) indexes 'view * 0x40 + comp' for view 0..1, inserts with the 8-byte entity key from the system's FadeRequests[view] and writes a 16-byte value. The index is the render view (the fade components come in View0 / View1 pairs). Name taken from the Script Extender member ecl::TimelineSystem::FadeRequests that feeds it."
+    },
+    {
+      "name": "RemoveFadeRequests",
+      "offset": 128,
+      "type": "std::array<HashSet<EntityHandle>, 2>",
+      "source": "inferred",
+      "evidence": "Constructor zeroes 0x80..0xE0; destructor runs the vector destructor (count 2, size 0x30, set destructor) on +0x80. bg3.exe+0x1D6BA20 inserts 8-byte entity handles taken from two queries into +0x80 (first query) and +0xB0 (second query) when the entity is not in the system's FadeRequests map (FUN_140721030(comp + 0x80 / 0xB0, .., &entity)). The system registration lists ecl::timeline::RemoveFadeRequestEntityOneFrameComponent, hence the name (not confirmed). bg3.exe+0x18C2070 clears all four containers each frame."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names inside TimelineFadeRequest: only the meaning of the bool at +8 is derived; +0/+4 look like the first two floats of ecl::TimelineFadeView0Component (0 and 4.0).",
+    "RemoveFadeRequests is a guessed name; what the two source queries (DAT_146347d3c / DAT_146347d40) select was not read.",
+    "Probe: first map allocated but empty (capacity 2, size 0), everything else zero.",
+    "names pass 2: TimelineFadeRequest.field_A / field_C: see evidence (FadingView byte and the 'faded out at once' map at FadeResolveSystem+0x180).",
+    "names pass 2: Contradiction with the existing name 'FadeIn' at +8: the blend step bg3.exe+0x18DFEC0 uses view byte +8 (copied from this +8) only while fading OUT, to jump CurrentValue to TargetValue at once (the view layouts call it 'Immediate'). Names only - offsets and types are fine."
+  ],
+  "minutes": 16,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Request = game struct ecl::StartFadeRequest; TargetValue / FadeSpeed / ImmediateFadeIn follow the 1:1 copy into the fade view (EoCClient.dll+0x891A00) and the blend step bg3.exe+0x18DFEC0."
+}

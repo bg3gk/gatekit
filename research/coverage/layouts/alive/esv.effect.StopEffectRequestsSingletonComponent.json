@@ -1,0 +1,25 @@
+{
+  "component": "esv::effect::StopEffectRequestsSingletonComponent",
+  "ext_name": "ServerEffectStopEffectRequests",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Effects",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "esv::EffectManager::ProcessStopEffectRequests (EoCServer.dll+0xCFA7D0) walks keys at +0x20 (stride 8, count +0x2C) and either ForgetEffect(entity) or DestroyEntity(entity); StopEffectRequestSystem::ForwardStopEffectRequests (EoCServer.dll+0xCF1F50) asserts on ls::IndexedStorage<struct ls::ID<struct ecs::EntityHandleTraits>,...s_TagHashTable>. Live (seen.py, idle): one instance, all bytes zero (empty container)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member name is ours."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

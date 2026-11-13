@@ -1,0 +1,30 @@
+{
+  "component": "ecl::timeline::TimelineStartedFadingOneFrameComponent",
+  "ext_name": "ClientTimelineStartedFading",
+  "size": 32,
+  "fields": [
+    {
+      "name": "Timeline",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D7A590 zeroes it; ecl::TimelineSystem update bg3.exe+0x1D41270 (end of the update) creates the component on each entity of a local list and copies 16 bytes of the matching 0x20-byte record. ecl::TimelineFadeTransitionSystem (bg3.exe+0x1D93BE0) uses it as the key of TimelineFadeTransitionSingletonComponent::Transitions."
+    },
+    {
+      "name": "Players",
+      "offset": 16,
+      "type": "Array<PlayerId>",
+      "source": "inferred",
+      "evidence": "Creator zeroes a 16-byte array at +0x10 (4-byte size at +0x1C); the writer copies it with the array copy bg3.exe+0xE77600, which allocates 'capacity * 2' bytes (2-byte elements). bg3.exe+0x1D93BE0 inserts these shorts into TimelineFadeTransition::Players (HashSet<PlayerId>)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

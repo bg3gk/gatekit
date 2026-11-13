@@ -1,0 +1,42 @@
+{
+  "component": "eoc::notification::ResetTutorialsMessageRequestNotificationComponent",
+  "ext_name": "NotificationResetTutorialsMessageRequestNotification",
+  "size": 8,
+  "fields": [
+    {
+      "name": "UserId",
+      "offset": 0,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x9A2510: member 1 is bg3.exe+0x4016D50 (UserId writer, 4 bytes) on +0; macOS default str x0 [x23] (whole 8 bytes)"
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9A2510: member 2, raw 1-byte write at +4"
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "alignment padding; nothing serialized or initialised here"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Meaning of the byte at +4 unknown (probably a bool); default value of x0 not resolved."
+  ],
+  "seen": false,
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

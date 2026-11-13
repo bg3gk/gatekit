@@ -1,0 +1,47 @@
+{
+  "component": "ecl::invisibility::VisibilitySetupRequestsComponent",
+  "ext_name": "ClientInvisibilityVisibilitySetupRequests",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "InvisibilityVisibilityInfo",
+      "size": 2,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "EoCClient.dll ecl::invisibility::EffectSystem::CreateSetupRequestsForNextFrame: new entries default 0x100 (byte0=0), then byte0 copied from the per-entity request data"
+        },
+        {
+          "name": "field_1",
+          "offset": 1,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "same function: default 1, then copied from the per-entity request data"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, HashMap<int16_t, InvisibilityVisibilityInfo>>",
+      "source": "inferred",
+      "evidence": "EoCClient.dll ecl::invisibility::EffectSystem::CreateSetupRequestsForNextFrame takes the singleton (FUN_180aecb40) and for each entity gets/creates a value through EoCClient.dll+0xAEA4E0, whose IndexedStorage string is HashMap<short, ecl::invisibility::VisibilityInfo> with value stride 0x40; inner values are 2 bytes (stride 2). The short key is a render view / player view index (EffectSystemHelper::GetRenderView(PlayerManager, short)). Live: bucket array of 53, capacity 64, 0 entries."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the two VisibilityInfo bytes (probably visible / needs-update flags)",
+    "Game struct name is ecl::invisibility::VisibilityInfo; renamed with a prefix to avoid a clash"
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

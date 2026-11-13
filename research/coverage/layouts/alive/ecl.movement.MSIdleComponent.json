@@ -1,0 +1,39 @@
+{
+  "component": "ecl::movement::MSIdleComponent",
+  "ext_name": "ClientMovementMSIdle",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Position",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "MSIdleSystem per-frame update bg3.exe+0x1936BB0: for an entity whose template is found it calls FUN_1411966F0(grid, ..., &translate, template+0x5C0) with the entity's Transform translate (view storage stride 0x28, +0x10 qword and +0x18 dword); on success it copies that translate into the component: qword at +0 and dword at +8 (12 bytes = one vec3). Add-helper bg3.exe+0x19375A0 zeroes +0 (qword) and +8 (dword). Live: 0 in all 48 instances."
+    },
+    {
+      "name": "HasPosition",
+      "offset": 12,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1936BB0 clears byte +0xC (component stride 0x10) of every instance whose byte is set, and sets it to 1 together with the vec3 copy above; add-helper zeroes it. Live: byte +0xC always 0."
+    },
+    {
+      "name": "_PadD",
+      "offset": 13,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Never written by the add-helper or the system (only 13 bytes written); live bytes +0xD..+0xF vary = uninitialised padding."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are inferred: the stored position is the translate that passed FUN_1411966F0 (probably a walkable/AI-grid check with a template radius at template+0x5C0); why it is stored is not established"
+  ],
+  "second_pass": "The per-frame update of ecl::movement::MSIdleSystem (bg3.exe+0x1936BB0) writes the component: a 12-byte vec3 copied from Transform.Translate at +0 and a set/cleared flag byte at +0xC, matching the add-helper's 8+4+1 zero stores.",
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

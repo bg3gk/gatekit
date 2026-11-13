@@ -1,0 +1,26 @@
+{
+  "component": "ecl::timeline::ActivateEventCameraRequestComponent",
+  "ext_name": "ClientTimelineActivateEventCameraRequest",
+  "size": 4,
+  "fields": [
+    {
+      "name": "Tick",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1F01980 writes 0. bg3.exe+0x1F007A0 (ecl::timeline::MainMenuTimelineSystem, called from bg3.exe+0x761BB0 with the ls::GameTime as third argument) overwrites it, for every event entity of a played main-menu trigger, with '*(uint32 *)(GameTime + 0x10)' (fetch helper bg3.exe+0x1F023D0); the macOS MainMenuTimelineSystem::Update does the same store. ls::GameTime +0x10 is the unsigned frame counter: Toolkit CoreLib ls::GameTime::GameTime(double, float, unsigned int) stores the uint there and GetEstimatedPreviousTime writes it minus 1. So the request carries the tick it was raised on; consumer is a 'modified' query in bg3.exe+0x1D90140."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The consumer in ecl::TimelineSystem (query with MainMenuActiveEventComponent, bg3.exe+0x1D90140) was not read; the name Tick is inferred from the value's source.",
+    "Never alive in the captures (main menu only)."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Settled: the only write (bg3.exe+0x1F007A0) copies the 4-byte uint at GameTime +0x10, which the Toolkit's ls::GameTime constructor shows to be the unsigned tick counter. Note: Script Extender's GameTime (Base/ExposedTypes.h) puts Ticks at +0xC and a double at +0x10, which disagrees with the Toolkit constructor (+0xC = 0, uint ticks at +0x10).",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

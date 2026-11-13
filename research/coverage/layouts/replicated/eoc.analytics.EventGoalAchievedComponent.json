@@ -1,0 +1,46 @@
+{
+  "component": "eoc::analytics::EventGoalAchievedComponent",
+  "ext_name": "AnalyticsEventGoalAchieved",
+  "size": 32,
+  "fields": [
+    {
+      "name": "CharacterHandle",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "serializer bg3.exe+0x9E6EB0/0x9E70D0 member 1: entity writer bg3.exe+0x4017090 at +0 (global offset DAT_14627fc30 = 0); macOS ctor null handle (x0 = 0xFFC0000000000000). Name by analogy with AnalyticsEventCombatTurn.CharacterHandle."
+    },
+    {
+      "name": "Id",
+      "offset": 8,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "serializer member 2: 16 bytes at +8; background_goal recorder EoCClient.dll+0xD38AA0 looks +8 up in a resource manager (goal resource with translated name/description) and writes Guid::ToString(+8) under the key \"id\"."
+    },
+    {
+      "name": "InspirationPointsBefore",
+      "offset": 24,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "serializer member 3: 4 bytes at +0x18; recorder writes it under \"inspiration_points_before\"."
+    },
+    {
+      "name": "CharacterLevel",
+      "offset": 28,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "serializer member 4: 4 bytes at +0x1C; recorder writes it under \"character_level\"."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "CharacterHandle name inferred; Id is the background goal resource guid",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "seen": false,
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

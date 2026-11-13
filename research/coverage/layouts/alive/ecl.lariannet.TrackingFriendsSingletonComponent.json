@@ -1,0 +1,318 @@
+{
+  "component": "ecl::lariannet::TrackingFriendsSingletonComponent",
+  "ext_name": "ClientLariannetTrackingFriendsSingleton",
+  "size": 264,
+  "seen": true,
+  "structs": [
+    {
+      "name": "LarianNetFriendUpdate",
+      "size": 88,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "not read in the functions seen"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "not read in the functions seen"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "ProcessFriendsEvents destroys a STDString at +0x10 of each element"
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "STDString destroyed at +0x28"
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "std::array<uint64_t, 3>",
+          "source": "unknown",
+          "evidence": "rest of the 0x58 stride, trivially destroyed"
+        }
+      ]
+    },
+    {
+      "name": "LarianNetUserInfo",
+      "size": 80,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "copied verbatim"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "copied verbatim"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "EoCClient.dll+0x419A90 (IndexedStorage<lsnet::UserInfo>, stride 0x50) copy-constructs a STDString at +0x10"
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "STDString at +0x28"
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "std::array<uint64_t, 2>",
+          "source": "unknown",
+          "evidence": "rest of the 0x50 stride"
+        }
+      ]
+    },
+    {
+      "name": "LarianNetLobbyInvite",
+      "size": 104,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "lsnet::LobbyInviteSentInfo (stride 0x68): STDStrings destroyed at +0, +0x28, +0x40"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "std::array<uint64_t, 2>",
+          "source": "unknown",
+          "evidence": "trivially destroyed"
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "STDString"
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "STDString"
+        },
+        {
+          "name": "field_58",
+          "offset": 88,
+          "type": "std::array<uint64_t, 2>",
+          "source": "unknown",
+          "evidence": "rest of the stride"
+        }
+      ]
+    },
+    {
+      "name": "LarianNetLobbyInvitation",
+      "size": 136,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "lsnet::LobbyInviteInfo (EoCClient.dll+0x34DD40, stride 0x88): STDStrings destroyed at +0, +0x28, +0x40"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "std::array<uint64_t, 2>",
+          "source": "unknown",
+          "evidence": "trivially destroyed"
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "STDString"
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "STDString"
+        },
+        {
+          "name": "field_58",
+          "offset": 88,
+          "type": "std::array<uint64_t, 6>",
+          "source": "unknown",
+          "evidence": "rest of the stride"
+        }
+      ]
+    },
+    {
+      "name": "LarianNetUserJoinedData",
+      "size": 32,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "std::array<uint64_t, 4>",
+          "source": "unknown",
+          "evidence": "ecl::lariannet::UserJoinedData, stride 0x20 (EoCClient.dll+0x9B1DE0 case 8 walks +0xB0 with *0x20), trivially destructible"
+        }
+      ]
+    },
+    {
+      "name": "LarianNetPlatformFriendsLookup",
+      "size": 88,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "not destroyed by EoCClient.dll+0x4D0CA0"
+        },
+        {
+          "name": "Users",
+          "offset": 8,
+          "type": "Array<LarianNetUserInfo>",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0x4D0CA0 destroys +8 with the UserInfo array routine (+0x352B10 -> +0x3A77B0)"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "std::array<uint64_t, 8>",
+          "source": "unknown",
+          "evidence": "a 64-byte hash map (buckets +0x18, next +0x28, keys +0x38, values +0x48 freed by EoCClient.dll+0x4D0CA0); key/value types not established"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "FriendListUpdates",
+      "offset": 0,
+      "type": "Array<LarianNetFriendUpdate>",
+      "source": "inferred",
+      "evidence": "IndexedStorage<lsnet::FriendListUpdated> (stride 0x58) in ecl::lariannet::TrackingSystem::ProcessFriendsEvents; filled by FriendListUpdateEvent (visitor EoCClient.dll+0x9B1DE0 case 0)"
+    },
+    {
+      "name": "FriendStateChanges",
+      "offset": 16,
+      "type": "Array<LarianNetFriendUpdate>",
+      "source": "inferred",
+      "evidence": "IndexedStorage<lsnet::UserStateChange> (stride 0x58, same destroyed members); FriendStateChangeEvent (case 2)"
+    },
+    {
+      "name": "FriendCrossplayStateChanges",
+      "offset": 32,
+      "type": "Array<LarianNetUserInfo>",
+      "source": "inferred",
+      "evidence": "case 3 (FriendCrossplayStateChangeEvent) pushes lsnet::UserInfo (0x50) with EoCClient.dll+0x419A90"
+    },
+    {
+      "name": "PlatformFriendsLookup",
+      "offset": 48,
+      "type": "LarianNetPlatformFriendsLookup",
+      "source": "inferred",
+      "evidence": "case 4 (PlatformFriendsLookupEvent) constructs it at +0x30 and sets +0x88"
+    },
+    {
+      "name": "HasPlatformFriendsLookup",
+      "offset": 136,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "has-value flag, cleared with destruction of +0x30 in ProcessFriendsEvents"
+    },
+    {
+      "name": "_Pad89",
+      "offset": 137,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment"
+    },
+    {
+      "name": "LobbyInvitesSent",
+      "offset": 144,
+      "type": "Array<LarianNetLobbyInvite>",
+      "source": "inferred",
+      "evidence": "IndexedStorage<lsnet::LobbyInviteSentInfo> (stride 0x68) cleared in ProcessFriendsEvents"
+    },
+    {
+      "name": "LobbyInvitationsReceived",
+      "offset": 160,
+      "type": "Array<LarianNetLobbyInvitation>",
+      "source": "inferred",
+      "evidence": "elements destroyed by EoCClient.dll+0x34DD40 = IndexedStorage<lsnet::LobbyInviteInfo> (stride 0x88)"
+    },
+    {
+      "name": "UsersJoined",
+      "offset": 176,
+      "type": "Array<LarianNetUserJoinedData>",
+      "source": "inferred",
+      "evidence": "IndexedStorage<ecl::lariannet::UserJoinedData> cleared in ProcessFriendsEvents (size at +0xBC)"
+    },
+    {
+      "name": "UsersLeft",
+      "offset": 192,
+      "type": "Array<UserId>",
+      "source": "inferred",
+      "evidence": "IndexedStorage<net::UserID>, 4-byte elements (EoCClient.dll+0x9AE6F0); case 8 pushes one and then searches UsersJoined - presumably remote player disconnect"
+    },
+    {
+      "name": "FriendList",
+      "offset": 208,
+      "type": "std::array<Array<LarianNetUserInfo>, 3>",
+      "source": "inferred",
+      "evidence": "case 1 (FriendsListRefreshEvent) stores three arrays at +0xD0/+0xE0/+0xF0 and sets +0x100; they are destroyed with the UserInfo array routine"
+    },
+    {
+      "name": "HasFriendList",
+      "offset": 256,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "has-value flag of the three arrays"
+    },
+    {
+      "name": "_Pad101",
+      "offset": 257,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "size 0x108 (macOS default ctor zeroes up to +0x108)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element members are mostly raw blocks: inside LarianNetUserInfo only the two STDStrings at +0x10/+0x28 are confirmed on Windows (FUN_1407091e0); LarianNetLobbyInvitation +0x58..+0x87 holds, on Windows, the UserInfo tail, a byte flag at +0x68, a u32 at +0x6C and a heap pointer at +0x70 freed when the flag is 1 (FUN_140709300) - kept as std::array<uint64_t, 6>.",
+    "Key/value types of the 64-byte hash map inside PlatformFriendsLookup (+0x18 of the struct).",
+    "UsersJoined (stride 0x20) and UsersLeft (4-byte UserId) strides come from the Toolkit only.",
+    "Which visitor case fills LobbyInvitationsReceived and UsersJoined is inferred from the event order in the SPSCVariantQueue type list."
+  ],
+  "minutes": 14,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Checked on Windows: the creator bg3.exe+0x1B1E200 (AllocRaw 0x108) zeroes arrays at +0/+0x10/+0x20/+0x90/+0xA0/+0xB0/+0xC0, the flag +0x88 and +0xD0..+0x100 with the flag +0x100; ProcessFriendsEvents bg3.exe+0x1B1AB90 clears +0/+0x10 with stride 0x58, +0x20 with stride 0x50 (bg3.exe+0x1B1C680), +0x90 with stride 0x68 (string +0, UserInfo +0x18) and +0xA0 with stride 0x88 (FUN_140709300), and the two optionals by their flags. Element internals beyond the strings remain raw, so not high."
+}

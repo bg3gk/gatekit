@@ -1,0 +1,135 @@
+{
+  "component": "ecl::GameStateLoadSessionComponent",
+  "ext_name": "ClientGameStateLoadSession",
+  "size": 136,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Created on a fresh entity by ecl::GameStateLoadSession::Enter (bg3.exe+0x1BBDF50): a copy of the eoc::LoadSessionDesc of the load (+0x00..+0x80) and a pointer back to the game state (+0x80). Exists only while a session is loading.",
+  "structs": [
+    {
+      "name": "GameStateLoadSessionRulesetValue",
+      "size": 8,
+      "equals": "ls::Variant<eoc::ruleset::NoneValue,int,float,FixedString,bool> (SE: std::variant<uint8_t,int32_t,float,FixedString,bool> in RulesetModifiersComponent)",
+      "fields": [
+        {
+          "name": "Value",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0xF19B50 copies 4 bytes from the source variant: int (tag 1), float (2), FixedString with IncRef (3), one byte (4, bool); the value destructor bg3.exe+0x5EE7E0 releases a FixedString at +0 when the tag is 3."
+        },
+        {
+          "name": "Type",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant tag at +4 (bg3.exe+0x5EE7E0 / 0xF19B50: 0 none, 1 int, 2 float, 3 FixedString, 4 bool); values stride 8 (FUN_1405ee7e0 loop step 8)."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding to 8"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0xF19960 (LoadSessionDesc ctor) writes 0; copied by bg3.exe+0x1BBE010; EoCShared.dll eoc::LoadSessionDesc::Visit sends it as a uint32 first."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "ctor writes 0xFFFFFFFF; released by the component destructor bg3.exe+0x5F1BB0 (+4); Visit sends a FixedString."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "ctor stores the global FixedString DAT_14617662c (IncRef); released by the destructor; Visit sends it with VisitGUID (a GUID-string FixedString)."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "not written by the ctor F19960 nor copied by bg3.exe+0x1BBE010 / the Toolkit move ctor: padding before the array at +0x10"
+    },
+    {
+      "name": "Rulesets",
+      "offset": 16,
+      "type": "Array<Guid>",
+      "source": "inferred",
+      "evidence": "ctor zeroes 16 bytes; destructor clears and frees an array at +0x10 (FUN_1405bd630 + Free); Toolkit Visit walks it with stride 0x10 visiting Guids. Name from Script Extender's eoc::ruleset::RulesetComponent, which pairs Array<Guid> Rulesets with the same modifier map."
+    },
+    {
+      "name": "RulesetModifiers",
+      "offset": 32,
+      "type": "HashMap<Guid, GameStateLoadSessionRulesetValue>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0xF19B50 builds a hash map at +0x20 from 0x18-byte (Guid + variant) source records: 16-byte keys, 8-byte values at +0x50 (alloc count*8); destructor: value dtor bg3.exe+0x5EE7E0 + Free(+0x50) + key-set dtor FUN_140582AD0(+0x20). Toolkit Visit names the type HashMap<ls::Guid, ls::Variant<eoc::ruleset::NoneValue,int,float,FixedString,bool>> (ruleset::Visit)."
+    },
+    {
+      "name": "field_60",
+      "offset": 96,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "ctor stores DAT_14617662c; destructor releases +0x60; Visit sends it with VisitGUID."
+    },
+    {
+      "name": "_Pad64",
+      "offset": 100,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding before the 8-byte values at +0x68"
+    },
+    {
+      "name": "field_68",
+      "offset": 104,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "ctor zeroes; bg3.exe+0x1BBE010 copies 8 bytes; no destructor. Not in the Toolkit's 0x68-byte LoadSessionDesc (build difference)."
+    },
+    {
+      "name": "field_70",
+      "offset": 112,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "as field_68"
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "as field_68"
+    },
+    {
+      "name": "GameState",
+      "offset": 128,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1BBE1E0 zeroes +0x80; bg3.exe+0x1BBDF50 (GameStateLoadSession enter) stores its own this pointer here after copying the desc from this+0x28."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of field_0 / field_4 / field_8 / field_60 (the desc has no named accessors).",
+    "+0x68..+0x80: three 8-byte values copied as such; type unknown (could be a Guid + 8 bytes).",
+    "Array element type Guid comes from the Toolkit Visit (stride 0x10); the game destructor shows only a trivially destructible array."
+  ],
+  "minutes": 12,
+  "functions_read": 8,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled: re-read the Windows LoadSessionDesc constructor bg3.exe+0xF19960 (zeroes +0x68/+0x70/+0x78 as three qwords) and looked for a Windows Visit of the desc (message vtable bg3.exe+0x555DF58, constructor bg3.exe+0x11B0D70) without finding one that names or splits +0x68..+0x80."
+}

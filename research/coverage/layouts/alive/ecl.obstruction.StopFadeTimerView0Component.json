@@ -1,0 +1,22 @@
+{
+  "component": "ecl::obstruction::StopFadeTimerView0Component",
+  "ext_name": "ClientObstructionStopFadeTimerView0",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "TimeLeft",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Game add-helper bg3.exe+0x18D86C0 (called from the obstruction FadeSystem update bg3.exe+0x18D7670) creates the 4-byte component with 0.5 (0x3F000000). bg3.exe+0x18D7670 (lines ~239-249) each frame does value = max(value - GameTime.DeltaTime(+8), 0) and removes the component when it reaches 0 - a countdown before the obstruction fade of view 0 stops (View1 has the same code with StopFadeTimerView1Component). Live: 0.0043..0.5 in 6 samples (dialogue, fight, helm)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

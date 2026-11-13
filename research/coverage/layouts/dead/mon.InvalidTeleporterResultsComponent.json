@@ -1,0 +1,49 @@
+{
+  "component": "mon::InvalidTeleporterResultsComponent",
+  "ext_name": "MonInvalidTeleporterResults",
+  "size": 16,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Server-only results of the 'mon' (EocServerMonitor, a debug monitor) request mon::InvalidTeleporterRequestComponent. Registered in App::InitServer (bg3.exe+0x11F0480, size 0x10, align 0x10) with the SAME destructor as mon::InvalidInteractableResultsComponent (bg3.exe+0x11F15C0 -> 0x11F15D0), so the two share one layout: an Array of 48-byte elements starting with a string. No system of bg3.exe or of the Toolkit DLLs reads or writes it (the monitor implementation is not shipped). Never seen alive.",
+  "structs": [
+    {
+      "name": "MonInvalidTeleporterResult",
+      "size": 48,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "destructor bg3.exe+0x11F15D0 (jumped to from bg3.exe+0x11F15C0, registered by bg3.exe+0x11F0480) walks the elements with stride 0x30 and frees a 24-byte game string at +0 of each (capacity u32 at +0x14 > 0xF -> free; resets size +0x10 = 0, capacity = 0xF)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint8_t[24]",
+          "source": "unknown",
+          "evidence": "trivially destructible remainder of the 0x30-byte element; nothing in bg3.exe writes or reads it. macOS destructor (bg3_macos_x64+0x25DAB90) uses stride 0x28 (string + 16 bytes): the Windows tail is 8 bytes longer - unknown content."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Results",
+      "offset": 0,
+      "type": "Array<MonInvalidTeleporterResult>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x11F15D0: Array{ptr +0, capacity u32 +8, size u32 +0xC}; element stride 0x30 and its string member from the destructor loop; registry size 16 (server row)."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "The 24 bytes after the string in each element (no producer exists in bg3.exe or the Toolkit DLLs).",
+    "Whether the macOS stride 0x28 vs Windows 0x30 hides a 16-aligned member in the tail."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Cannot be settled from code: the second pass found no producer or consumer anywhere - bg3.exe has only the type registration (App::CreateECS -> bg3.exe+0x11EExxx), the static type-name initialiser and the component ops; the macOS build has only ComponentOps/ComponentSignals/destructor instantiations (macos_index.py names '<mon::' lists just the eight mon types) and the Toolkit DLLs mention them only in App::AddGlobalSwitchesToOptionDialog. The shapes from the creator/destructor stand; the members stay unknown."
+}

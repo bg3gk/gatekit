@@ -1,0 +1,46 @@
+{
+  "component": "esv::roll::DeathSavingThrowFinishedEventOneFrameComponent",
+  "ext_name": "ServerRollDeathSavingThrowFinishedEvent",
+  "size": 16,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Event of esv::RollSystem (per-frame update bg3.exe+0x32933F0) when a death saving throw finished; esv::StatusDowned::Enter/Resume (bg3.exe+0x371D180 / 0x371D520) subscribe to its creation.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x329C1F0 writes the null handle 0xFFC0000000000000; bg3.exe+0x32933F0 copies 8 bytes from a 16-byte local record."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator writes the 2-byte value 2 at +8 (byte +8 = 2, byte +9 = 0); bg3.exe+0x32933F0 copies byte +8 of the record separately (an enum or result code; default 2)."
+    },
+    {
+      "name": "field_9",
+      "offset": 9,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x32933F0 copies byte +9 of the record separately; default 0."
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "tail padding to 16"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the two bytes (outcome of the death saving throw?) and of the handle; the StatusDowned handler was not read."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,131 @@
+{
+  "component": "ecl::TimelineMaterialComponent",
+  "ext_name": "ClientTimelineMaterial",
+  "size": 128,
+  "structs": [
+    {
+      "name": "TimelineMaterialRenderableEntry",
+      "size": 8,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "Windows value destructor bg3.exe+0x6D36E0 walks the values with stride 8 and DecRefs the FixedString at +0 of each (macOS DestroyValues of HashMap<Guid, ecl::TimelineMaterialInfo> does the same with gst::Map::Release at value index * 8)."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Second half of the 8-byte value; not released by the destructor, no writer read. Width assumed from the stride."
+        }
+      ]
+    },
+    {
+      "name": "TimelineMaterialPacket",
+      "size": 72,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t[64]",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2050C00 and bg3.exe+0x2050E90 assign the first 0x40 bytes through bg3.exe+0x3D89FB0 from an object returned by virtual slot 4 (+0x20) of an aspk::TLMaterialComponent::Parameter (a 64-byte callable/value holder; not decoded). macOS names the element type ecl::MaterialPacket (~ecl::TimelineMaterialInfo destroys a DynamicArray<ecl::MaterialPacket> at +8); its first 64 bytes stay an opaque block."
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2050C00 writes here the OR of (key count != 0) over the parameter's key components; bg3.exe+0x2050E90 clears it."
+        },
+        {
+          "name": "_Pad41",
+          "offset": 65,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Array stride is 0x48 in both functions."
+        }
+      ]
+    },
+    {
+      "name": "TimelineMaterialInfo",
+      "size": 88,
+      "fields": [
+        {
+          "name": "Active",
+          "offset": 0,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Insert helper bg3.exe+0x1D746D0 creates the entry with a 16-bit 1 at +0 (Active = 1, field_1 = 0); bg3.exe+0x2050C00 stores the 'visible' argument here, bg3.exe+0x2050E90 and bg3.exe+0x2042EB0 clear it."
+        },
+        {
+          "name": "field_1",
+          "offset": 1,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2050C00 copies TLMaterialComponent+0x129; bg3.exe+0x20439B0 ORs in 1 when the material overlay type of the group is 3 (or 1 with a timeline flag at +0x488)."
+        },
+        {
+          "name": "_Pad2",
+          "offset": 2,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Created as 0; bg3.exe+0x2050C00 copies 4 bytes from TLMaterialComponent+0x12C."
+        },
+        {
+          "name": "Parameters",
+          "offset": 8,
+          "type": "Array<TimelineMaterialPacket>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2050C00 resizes it (bg3.exe+0x70EBE0) to the number of MaterialParameters of the TLMaterialComponent (+0x74) and walks it with stride 0x48; size read at +0x14. macOS: ls::DynamicArray<ecl::MaterialPacket> at +8 of ecl::TimelineMaterialInfo."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "HashMap<uint64_t, TimelineMaterialRenderableEntry>",
+          "source": "unknown",
+          "evidence": "Windows destructor bg3.exe+0x708D30: values destroyed by bg3.exe+0x6D36E0 (stride 8, FixedString DecRef at +0), value array at +0x48 freed, key set at +0x18 freed with the plain-key HashSet destructor bg3.exe+0x582AD0. macOS ~ecl::TimelineMaterialInfo names the key set HashTable<ls::RenderableObject*> - the key is a pointer to a renderable object, declared as uint64_t (8 bytes; the key width is from macOS only)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Groups",
+      "offset": 0,
+      "type": "HashMap<Guid, TimelineMaterialInfo>",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x1C707E0 zeroes two 64-byte hash maps; destructor bg3.exe+0x6CDC20 -> bg3.exe+0x6D1590 destroys values with stride 0x58. Key = 16-byte Guid hashed as qword0 ^ qword1: bg3.exe+0x2050E90 looks up TLMaterialComponent+0x118 (the track's material group id), bg3.exe+0x20439B0 looks up MaterialTargetDetails::GroupId. Probe: all zero in 21 instances (no material track was playing). macOS names the map ls::HashMap<ls::Guid, ecl::TimelineMaterialInfo> (~TimelineMaterialComponent, DestroyValues, IndexedStorage<ecl::TimelineMaterialInfo>)."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "HashMap<uint64_t, FixedString>",
+      "source": "unknown",
+      "evidence": "Windows destructor bg3.exe+0x6D15F0: 4-byte values released with the FixedString DecRef, then the plain key set freed. macOS ~ecl::TimelineMaterialComponent destroys it as HashTable<ls::RenderableObject*> at +0x40 with FixedString values at +0x70 (count +0x6C): the key is a renderable object pointer, declared as uint64_t (key width from macOS only)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The first 64 bytes of each ecl::MaterialPacket (assigned by bg3.exe+0x3D89FB0 from virtual slot 4 of an aspk::TLMaterialComponent::Parameter) are not decoded - kept as uint8_t[64].",
+    "Key width of the two RenderableObject* maps (component +0x40 and TimelineMaterialInfo +0x18) comes from the macOS names only; the 4 bytes after the FixedString in TimelineMaterialRenderableEntry are unread.",
+    "What the FixedStrings are (material resource ids most likely) and the meaning of TimelineMaterialInfo field_1 / field_4."
+  ],
+  "minutes": 27,
+  "functions_read": 17,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "macOS destructors name the containers: Groups is HashMap<Guid, ecl::TimelineMaterialInfo>, the element array is DynamicArray<ecl::MaterialPacket>, and both other maps are keyed by ls::RenderableObject* with FixedString(-led 8-byte) values - matching the Windows destructors bg3.exe+0x6D15F0 / 0x708D30 / 0x6D36E0 (strides 4 and 8). The placeholder key/value types were replaced; the 64-byte packet head stays opaque.",
+  "raw_check": "18 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found."
+}

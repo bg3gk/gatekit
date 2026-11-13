@@ -1,0 +1,23 @@
+{
+  "component": "ecl::TimelineShapeShiftComponent",
+  "ext_name": "ClientTimelineShapeShift",
+  "size": 4,
+  "fields": [
+    {
+      "name": "Template",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x6D4DF0 creates it as a copy of the empty FixedString constant (with IncRef). The update bg3.exe+0x1D4EB00 (query {eoc::TimelineActorDataComponent, this, ecl::TLPreviewDummy}, stride 4) compares it with TLPreviewDummy+0x7C (ShapeShiftSourceTemplateOverride in Timeline.h); when different it resolves it as a template id through the level / global template manager (bg3.exe+0x1B4EF50), falls back to TLPreviewDummy+0x80 (OriginalCharacterTemplate) when it is invalid, re-applies the dummy component layout (bg3.exe+0x426A420), sets the dummy visual resource, stores the template id into TLPreviewDummy+0x7C and calls ecl::TLPreviewDummy::ReloadVisual. Live: 0xFFFFFFFF (invalid = not shape-shifted) on all 21 instances."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The writer of a real value (the timeline shape-shift track) was not located; a live instance during a shape-shift key would read as a template GUID string."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

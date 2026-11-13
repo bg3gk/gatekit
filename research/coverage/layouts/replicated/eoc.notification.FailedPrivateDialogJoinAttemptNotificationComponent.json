@@ -1,0 +1,62 @@
+{
+  "component": "eoc::notification::FailedPrivateDialogJoinAttemptNotificationComponent",
+  "ext_name": "NotificationFailedPrivateDialogJoinAttempt",
+  "size": 72,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x9A3090: 4 raw bytes at the FieldMeta offset global DAT_14627FED0 (0: the next member is at +8); Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) writes 0 (not the UserId 'unassigned' default)."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding (the Guid at +8 is 8-aligned in the game's layout; nothing written)"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x9A3090: 16 raw bytes at +8; Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) zeroes +8..+0x17."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "TranslatedString",
+      "source": "inferred",
+      "evidence": "Windows replication writer bg3.exe+0x9A3090: 2-byte Version at +0x1C, then the FixedString Handle at +0x18; Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) stores ls::TranslatedStringRepository::s_HandleUnknown at +0x18, 0 at +0x1C and constructs the ArgumentString at +0x20; Windows destructor bg3.exe+0xA53660 calls TranslatedString::~TranslatedString on +0x38 and +0x18. SE TranslatedString (16 bytes, 4-aligned)."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x9A3090: 16 raw bytes at +0x28; Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) zeroes +0x28..+0x37."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "TranslatedString",
+      "source": "inferred",
+      "evidence": "Windows replication writer bg3.exe+0x9A3090: 2-byte Version at +0x3C, FixedString Handle at +0x38; Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) stores s_HandleUnknown at +0x38, 0 at +0x3C and constructs the ArgumentString at +0x40; Windows destructor bg3.exe+0xA53660 calls TranslatedString::~TranslatedString on +0x38 and +0x18."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names: probably two {Guid, TranslatedString} groups (dialog and speaker?) after a 4-byte value - not established; no FieldMeta names."
+  ],
+  "seen": false,
+  "minutes": 10,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Settled on Windows: the replication writer bg3.exe+0x9A3090 gives every replicated member, the creator bg3.exe+0xFC0E40 (size 0x48) and the destructor bg3.exe+0xA53660 show the two whole TranslatedStrings at +0x18 and +0x38.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it",
+  "names_pass_2": "Replicated without macOS FieldMeta names; the Guid + TranslatedString pairs look like two characters with their display names, not settled."
+}

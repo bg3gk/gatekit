@@ -1,0 +1,134 @@
+{
+  "component": "ecl::sound::PointAndClickSoundRequestComponent",
+  "ext_name": "ClientSoundPointAndClickSoundRequest",
+  "size": 72,
+  "seen": true,
+  "summary": "Per-character request of ecl::sound::PointAndClickSoundSystem: UpdateSoundRequestComponents (Toolkit EoCClient.dll, stride 0x48) copies the system's ls::Optional<PointAndClickSoundSystem::ReactionToPlay> into it, or resets it. Born live when the host started sneaking (with SoundFinishedPlayingEvent, IsSneaking).",
+  "structs": [
+    {
+      "name": "PointAndClickSoundSwitchUpdate",
+      "size": 8,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "Element of DynamicArray<ecl::sound::SoundSwitchUpdate> (macOS name); FUN_180dfc0a0 (Toolkit) copies elements of 8 bytes (allocation (n, 8, 4)) through FixedString ops."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "Second 4-byte half of SoundSwitchUpdate; assumed FixedString (switch group / state pair) - not verified."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "UpdateSoundRequestComponents copies ReactionToPlay byte +9 here; reset to 0. Live 0/1."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment (live garbage)"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "STDString",
+      "source": "unknown",
+      "evidence": "ls::STDString::operator= from ReactionToPlay +0x10; reset to \"\". Live: heap pointer, size 0x1D/0x26, capacity 0x1F/0x2F (an event/sound name)."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Copied from ReactionToPlay +0x28; reset 0. Live 0."
+    },
+    {
+      "name": "_Pad21",
+      "offset": 33,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "field_24",
+      "offset": 36,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Copied from ReactionToPlay +0x2C; reset to the global 'Unassigned' value. Live 0x1 / 0xFFFF0000."
+    },
+    {
+      "name": "HasSwitchUpdates",
+      "offset": 40,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Has-value byte of the optional at +0x30 (cleared before destroying it, copied from ReactionToPlay +0x30). Live 0/1."
+    },
+    {
+      "name": "_Pad29",
+      "offset": 41,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "SwitchUpdates",
+      "offset": 48,
+      "type": "Array<PointAndClickSoundSwitchUpdate>",
+      "source": "inferred",
+      "evidence": "Optional value: DynamicArray<ecl::sound::SoundSwitchUpdate> copied by FUN_180dfc0a0 and destroyed by FUN_180dfee40. Live: heap pointer, capacity 1, size 0/1."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Reset to 0x14 (2-byte store 0x0014 at +0x40) or set by FUN_180dfcc50 from the reaction type; probably an EPointAndClickActionType/ReactionType enum. Live 6/0xA/0x14."
+    },
+    {
+      "name": "field_41",
+      "offset": 65,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Zeroed with +0x40; live 0/2."
+    },
+    {
+      "name": "field_42",
+      "offset": 66,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Reset to 0. Live 0."
+    },
+    {
+      "name": "_Pad43",
+      "offset": 67,
+      "type": "uint8_t[5]",
+      "source": "inferred",
+      "evidence": "tail padding (live garbage)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the scalar members (ReactionToPlay members are unnamed).",
+    "SoundSwitchUpdate second half type.",
+    "Offsets come from the Toolkit (EoCClient.dll) code; the game copy was not read, live data agrees."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: members of PointAndClickSoundSystem::ReactionToPlay have no names in any build."
+}

@@ -1,0 +1,46 @@
+{
+  "component": "esv::crowds::SpawnEventsSingletonComponent",
+  "ext_name": "ServerCrowdsSpawnEvents",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CrowdsSpawnEvent",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Position",
+          "offset": 0,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "esv::crowds::SpawnSystem::ProcessSpawnRequests (EoCServer.dll+0xD72F60) fills the event with SpawnRequest+4..+0x14; esv::crowds::SpawnSystem::CreateCrowdProxy (EoCServer.dll+0xD711C0) passes SpawnRequest+4 as the transform position of the new proxy and copies +4/+0xC into esv::crowds::SpawnComponent+0x10..+0x1C."
+        },
+        {
+          "name": "field_c",
+          "offset": 12,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "SpawnRequest+0x10, copied to SpawnComponent+0x1C (EoCServer.dll+0xD711C0); probably a rotation/yaw, not established."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, CrowdsSpawnEvent>",
+      "source": "inferred",
+      "evidence": "Value type named by the game: assert string ls::IndexedStorage<struct esv::crowds::SpawnEvent,...mem::s_TagHashTable> in the clear helper EoCServer.dll+0xD72520 (bounds over count +0x2C vs capacity +0x38) and in ProcessSpawnRequests (EoCServer.dll+0xD72F60), which inserts the new proxy entity (CreateCrowdProxy result) as key (FUN_18021e210) and grows the values at +0x30 with element size 0x10, align 4 (FUN_180d70ed0(n, 0x10, 4)). bg3.exe destructor bg3.exe+0x5C4870: values freed without element destructors. Reader: esv::crowds::BehaviourSystem::Update (macOS index). Live (seen.py, idle): one instance, all bytes zero (empty container)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of SpawnEvent+0xC."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

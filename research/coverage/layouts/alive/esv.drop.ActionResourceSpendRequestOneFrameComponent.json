@@ -1,0 +1,23 @@
+{
+  "component": "esv::drop::ActionResourceSpendRequestOneFrameComponent",
+  "ext_name": "ServerDropActionResourceSpendRequest",
+  "size": 16,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame request on the dropping character to spend action resources for a drop/throw ('shove-throw' step); its Guid is the drop request's Guid that DropEntityExecuteSystem later finds in eoc::ActionResourceSpendEventOneFrameComponent.",
+  "fields": [
+    {
+      "name": "RequestGuid",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe creator FUN_142e31180 allocates 0x10 bytes, no destructor, and initialises them from a 16-byte global (null Guid). Live values equal DropEntityStateComponent+0x30 and DropEntityExecutionComponent+0 of the same character; ProcessWaitingForActionResourceSpending (EoCServer.dll+0x9B4590) matches that Guid against ActionResourceSpendEvent elements (stride 0x18, Guid at +0)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

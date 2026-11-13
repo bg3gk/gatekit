@@ -1,0 +1,79 @@
+{
+  "component": "eoc::ready_check::UserComponent",
+  "ext_name": "ReadyCheckUser",
+  "size": 56,
+  "fields": [
+    {
+      "name": "UserId",
+      "offset": 0,
+      "type": "UserId",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_UserId (net::UserID), position 1 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes a UserID (bg3.exe+0x4016D50); macOS default 0xFFFF0000 at +0x0 in the same order"
+    },
+    {
+      "name": "Context",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_Context (ls::FixedString), position 2 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes a FixedString at +0x4 in the same order"
+    },
+    {
+      "name": "TranslatedString",
+      "offset": 8,
+      "type": "TranslatedString",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_TranslatedString (ls::TranslatedString), position 3 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes the handle version (u16 +0xC) and handle FixedString (+8) of a 16-byte TranslatedString at +0x8 in the same order"
+    },
+    {
+      "name": "MessageType",
+      "offset": 24,
+      "type": "uint32_t",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_MessageType (eoc::ready_check::EMessageType (no SE enum)), position 4 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes 4 bytes at +0x18 in the same order"
+    },
+    {
+      "name": "ResponseType",
+      "offset": 28,
+      "type": "uint32_t",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_ResponseType (eoc::ready_check::EResponseType (no SE enum)), position 5 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes 4 bytes at +0x1C in the same order"
+    },
+    {
+      "name": "TransactionId",
+      "offset": 32,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_TransactionId (ls::Guid), position 6 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes 16 bytes at +0x20 in the same order"
+    },
+    {
+      "name": "Result",
+      "offset": 48,
+      "type": "std::optional<bool>",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_Result (ls::Optional<bool>), position 7 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes an optional bool (bg3.exe+0xA96120); macOS default strh 0 at +0x30 at +0x30 in the same order"
+    },
+    {
+      "name": "_Pad32",
+      "offset": 50,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment)"
+    },
+    {
+      "name": "Timer",
+      "offset": 52,
+      "type": "float",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_Timer (float), position 8 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes 4 bytes at +0x34 in the same order"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Enum values of EMessageType/EResponseType."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

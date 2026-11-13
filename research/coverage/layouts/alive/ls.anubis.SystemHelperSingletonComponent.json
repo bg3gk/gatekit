@@ -1,0 +1,27 @@
+{
+  "component": "ls::anubis::SystemHelperSingletonComponent",
+  "ext_name": "AnubisSystemHelperSingleton",
+  "size": 48,
+  "seen": true,
+  "summary": "Server singleton of ls::anubis::System (in the WorldView of System::Update/RunPending/InstantiateTrees): a hash set. Live: one idle instance, all zero.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x3838160 allocates 0x30 bytes zeroed; destructor thunk -> bg3.exe+0x582AD0 (POD HashSet). Windows ls::anubis::System::Update bg3.exe+0x3829400 builds its FrameData (bg3.exe+0x3828CC0) from the view bg3.exe+0x3829E60 (storage index DAT_1463be1c4, singleton stride 0x30), FrameData+0x10 = this component. The step bg3.exe+0x38301E0 inserts the entity of every row of a query into it (bg3.exe+0x1136A10), then for the rows of a second pass finds each entity in it (keys compared as 8-byte values at Keys + i*8), processes it and removes it (bg3.exe+0x783130). Member name unknown."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Game member name and exact role of the entity set (queued entities of ls::anubis::System)."
+  ],
+  "minutes": 10,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Windows System::Update step bg3.exe+0x38301E0 inserts and removes query-row entity handles in this set (8-byte keys), found through the FrameData built from the singleton's view (storage index DAT_1463be1c4); the key type is now established.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

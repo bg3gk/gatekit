@@ -1,0 +1,52 @@
+{
+  "component": "esv::screen_fade::ClearScreenFadeFinishedOneFrameComponent",
+  "ext_name": "ServerClearScreenFadeFinished",
+  "size": 64,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame singleton event of esv::screen_fade::ScreenFadeSystem::FinalizeComponents: per screen-fade id, the clear-fade requests that finished this frame (name + user). Same shape as ScreenFadeToFinishedOneFrameComponent. Seen.py context: exploration (Expl_UND_ZhentElelvator), scenes and dialogues that fade the screen.",
+  "structs": [
+    {
+      "name": "ClearScreenFadeFinishedNameData",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "STDString",
+          "source": "game",
+          "evidence": "esv::screen_fade::ScreenFadeNameData; log 'FinalizeComponents::m_ClearFadeFinishedData: Guid[%s], Name[%s], User[%d]' (EoCServer.dll+0x399FD0) prints the STDString copied to element+0."
+        },
+        {
+          "name": "User",
+          "offset": 24,
+          "type": "int32_t",
+          "source": "game",
+          "evidence": "Same log 'User[%d]'; 4 bytes at element+0x18; net::UserID."
+        },
+        {
+          "name": "_Pad1C",
+          "offset": 28,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Element stride 0x20 (index*0x20, IndexedStorage<ScreenFadeNameData>)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Finished",
+      "offset": 0,
+      "type": "HashMap<Guid, Array<ClearScreenFadeFinishedNameData>>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2EEF5E0 allocates 0x40 zeroed, HashMap shape. macOS template ls::HashMap<ls::Guid, ls::DynamicArray<esv::screen_fade::ScreenFadeNameData>>. EoCServer.dll+0x399FD0 adds it, gets/inserts the array for a Guid (FUN_1803931f0) and pushes a 0x20 ScreenFadeNameData, then logs m_ClearFadeFinishedData. Live: buckets 5, 1 key, value array present."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "26 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

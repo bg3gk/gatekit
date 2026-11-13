@@ -1,0 +1,228 @@
+{
+  "component": "esv::spell_cast::random::RequestComponent",
+  "ext_name": "ServerSpellCastRandomRequest",
+  "size": 24,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Pending random spell casts (wild magic style) of an entity, with a countdown. Drained by esv::spell_cast::random::ValidationSystem::ProcessRandomCastRequests (bg3.exe+0x2E928E0): when the timer runs out the last RequestData is turned into a ResultEventOneFrameComponent and popped; the component is removed when empty. macOS names the element esv::spell_cast::random::RequestData (system map ls::HashMap<EntityHandle, DynamicArray<RequestData>>).",
+  "structs": [
+    {
+      "name": "SpellCastRandomRequestSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Equals Script Extender's SpellId (ExposedTypes.h): destroyed with eoc::spell::SpellId::~SpellId at RequestData+0x18; its Prototype at +0x30 (RequestData+0x48) is DecRef'd as a FixedString."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding as in SpellId"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "byte compared with 0x15 at RequestData+0x20 in bg3.exe+0x2E91760 (SpellSourceType, 1 byte; default 0x17 = Sentinel in the ResultEvent creator)"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "as in SpellId"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "as in SpellId"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "RequestData+0x48 moved with DecRef/0xFFFFFFFF in bg3.exe+0x2E928E0"
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "tail padding to 0x38"
+        }
+      ]
+    },
+    {
+      "name": "SpellCastRandomRequestActionOriginator",
+      "size": 32,
+      "fields": [
+        {
+          "name": "ActionGuid",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Equals Script Extender's ActionOriginator (ExposedTypes.h); RequestData+0x58 is copied into ResultEvent+0x48 by FUN_142ADA320 and destroyed by FUN_140A54E60; the ResultEvent creator initialises it with the null Guid, three 0xFFFFFFFF FixedStrings and byte 1."
+        },
+        {
+          "name": "PassiveId",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "default 0xFFFFFFFF"
+        },
+        {
+          "name": "StatusId",
+          "offset": 20,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "default 0xFFFFFFFF"
+        },
+        {
+          "name": "InterruptId",
+          "offset": 24,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "default 0xFFFFFFFF"
+        },
+        {
+          "name": "CanApplyConcentration",
+          "offset": 28,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "default 1"
+        },
+        {
+          "name": "_Pad1D",
+          "offset": 29,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    },
+    {
+      "name": "SpellCastRandomRequestData",
+      "size": 128,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Array<FixedString>",
+          "source": "unknown",
+          "evidence": "Element destructor bg3.exe+0x22E4040 calls FUN_1405C4050(elem, 0) = Array<FixedString> resize (DecRef every 4-byte element) and frees +0; moved with FUN_140591A20 in bg3.exe+0x2E928E0."
+        },
+        {
+          "name": "RandomCastDC",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2E928E0: if byte(+0x10) <= int(+0x78) ...; copied into ResultEvent+0x3C (RandomCastDC of the savegame model)."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "4-byte value moved separately in bg3.exe+0x2E928E0"
+        },
+        {
+          "name": "Spell",
+          "offset": 24,
+          "type": "SpellCastRandomRequestSpellId",
+          "source": "inferred",
+          "evidence": "eoc::spell::SpellId::~SpellId at +0x18; FUN_140C607B0(dst + 0x18, src + 0x18) copies it; passed to FUN_142E931A0 as the spell to cast."
+        },
+        {
+          "name": "StoryActionID",
+          "offset": 80,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "copied into ResultEvent+0x40 (StoryActionID of the savegame model)"
+        },
+        {
+          "name": "_Pad54",
+          "offset": 84,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Originator",
+          "offset": 88,
+          "type": "SpellCastRandomRequestActionOriginator",
+          "source": "inferred",
+          "evidence": "destroyed by FUN_140A54E60(+0x58) in bg3.exe+0x22E4040; copied into ResultEvent+0x48 (ActionOriginator)"
+        },
+        {
+          "name": "RollResult",
+          "offset": 120,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "compared with RandomCastDC and copied into ResultEvent+0x38 (RollResult of the savegame model)"
+        },
+        {
+          "name": "_Pad7C",
+          "offset": 124,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "tail padding to 0x80 (element stride 0x80 in bg3.exe+0x22E4040 and bg3.exe+0x2E91760)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<SpellCastRandomRequestData>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2E94A00 zeroes +0 (ptr), +8 (capacity), +0xC (size); destructor bg3.exe+0x22BCC40 calls FUN_1422E4040(+0, 0) (destroys elements of stride 0x80) and frees +0. bg3.exe+0x2E928E0 indexes the component storage with stride 0x18 and pops the last element (size at +0xC)."
+    },
+    {
+      "name": "Timer",
+      "offset": 16,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2E928E0: float at +0x10 set to 2.0 (0x40000000) or 0, and decreased by the frame delta (*(float*)(param_3 + 8)) while > 0; the request fires when it is <= 0."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "creator zeroes +0x10..+0x18 with one 8-byte store; nothing reads +0x14"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of RequestData.field_0 (Array<FixedString>) and field_14."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

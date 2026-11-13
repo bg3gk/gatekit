@@ -1,0 +1,39 @@
+{
+  "component": "ecl::SoundAttachmentComponent",
+  "ext_name": "ClientSoundAttachment",
+  "size": 16,
+  "seen": true,
+  "summary": "Sound attached to an entity (born in act1-idle and dialogue steps). Added by bg3.exe+0x204BB20 / +0x204BCD0 (sound attachment helpers called from bg3.exe+0x204A0C0 / +0x2048FB0).",
+  "fields": [
+    {
+      "name": "SoundObjectId",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Adders bg3.exe+0x204BB20 and +0x204BCD0 store *param_4 (8 bytes) here; the caller bg3.exe+0x204A0C0 gets it from FUN_143cbb2f0 on the client sound manager. Live 0 or values shaped like handles (0x01C0000D_00022B6C)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Adders store *param_5 after FixedString IncRef; the component destructor bg3.exe+0x69E920 DecRefs the FixedString at +8. Caller passes a FixedString read from +0x28 of an object (sound event or bone name)."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "never written (live garbage)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Type of +0 (sound object id vs. EntityHandle) and meaning of the FixedString."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

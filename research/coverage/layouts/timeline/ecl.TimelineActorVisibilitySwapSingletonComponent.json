@@ -1,0 +1,32 @@
+{
+  "component": "ecl::TimelineActorVisibilitySwapSingletonComponent",
+  "ext_name": "ClientTimelineActorVisibilitySwapSingleton",
+  "size": 224,
+  "fields": [
+    {
+      "name": "Swaps",
+      "offset": 0,
+      "type": "std::array<HashMap<EntityHandle, EntityHandle>, 2>",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x1D74E30 zeroes 0..0x80 and runs FUN_1418c2f60 (2 maps of 0x40 bytes); destructor bg3.exe+0x697CD0 (shared with ecl::TimelineFadeRequestsSingletonComponent) = vector destructors: 2 x 0x40 maps at 0 (values freed without element destructors), 2 x 0x30 sets at +0x80. bg3.exe+0x1D6BA20 (ecl::TimelineSystem; component fetched through the query DAT_146347c5c = Spec<TimelineActorVisibilitySwapSingletonComponent>, stride 0xE0): for view 0..1 it walks ecl::TimelineSystem::ChangeVisibilityRequests[view] (HashSet<EntityHandle> at system +0xAE0), looks the 8-byte entity up in 'view * 0x40 + comp' (hash = handle % buckets, keys stride 8) and, when absent, inserts it (FUN_14135d7a0) and writes an 8-byte value: '*(values + index * 8) = *(TLPreviewDummy + 0x88)' where the dummy is fetched from the key entity (FUN_1413fb710). The value is an EntityHandle: the Toolkit accessor of ecl::TLPreviewDummy names +0x88 'SourceObject' (ls::ID<ecs::EntityHandleTraits> const &), the character the dummy stands for (Script Extender hides it as void* field_88)."
+    },
+    {
+      "name": "SwappedEntities",
+      "offset": 128,
+      "type": "std::array<HashSet<EntityHandle>, 2>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D6BA20 inserts the same 8-byte value (TLPreviewDummy +0x88) into 'view * 0x30 + 0x80 + comp' right after writing the map value (FUN_140721030). Destructor: vector destructor count 2, size 0x30 at +0x80. The value is an EntityHandle: the Toolkit accessor of ecl::TLPreviewDummy names +0x88 'SourceObject' (ls::ID<ecs::EntityHandleTraits> const &), the character the dummy stands for (Script Extender hides it as void* field_88)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names Swaps / SwappedEntities are descriptive; the array index is the render view (0/1), as for the fade requests. Keys are the dummy entities of ecl::TimelineSystem::ChangeVisibilityRequests, values their SourceObject.",
+    "Live (9 client instances, idle): view 0 holds allocated maps and sets with up to 2 entries, view 1 is empty; the entries sit behind pointers and were not read."
+  ],
+  "minutes": 6,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled: Windows constructor/destructor (bg3.exe+0x1D74E30 / bg3.exe+0x697CD0) fix two 64-byte maps and two 48-byte sets, bg3.exe+0x1D6BA20 inserts 8-byte keys and 8-byte values, and the Toolkit accessor TLPreviewDummy::SourceObject (+0x88) shows the value is an EntityHandle; live instances show the container shapes (bucket pointers, sizes) in view 0.",
+  "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

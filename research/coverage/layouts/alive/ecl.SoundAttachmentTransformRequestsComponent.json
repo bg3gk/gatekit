@@ -1,0 +1,54 @@
+{
+  "component": "ecl::SoundAttachmentTransformRequestsComponent",
+  "ext_name": "ClientSoundAttachmentTransformRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "SoundAttachmentTransformRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::SoundAttachmentSystem::Update (Toolkit EoCClient.dll+0xCFEC80) pushes elements of stride 0x18 into the component's array (game name of the element: ecl::SoundAttachmentTransformRequestsComponent::Request, from the CheckBoundary assert string and the macOS ls::DynamicArray<...::Request>::Reallocate). +0 = the entity handle taken from the query's entity list (local_2b0 = entities[index])."
+        },
+        {
+          "name": "Position",
+          "offset": 8,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Same push: +8 (8 bytes) and +0x10 (4 bytes) receive either the 12 bytes at +0x10..+0x1B of the attached-to entity's transform (the translation of ls::Transform) or, without a target, ls::SoundManager::GetListenerPosition."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "element tail padding (only the low dword of the third qword is filled)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<SoundAttachmentTransformRequest>",
+      "source": "inferred",
+      "evidence": "Only use is the Array in ecl::SoundAttachmentSystem::Update (WorldView<SoundAttachmentComponent, SoundAttachmentTransformRequestsComponent, TransformComponent const>): grow check of capacity (+8) vs size (+0xC), element stride 0x18. Live: all zero (empty array)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element read from the Toolkit build (EoCClient.dll); the game copy (bg3.exe+0x1CC3510 / +0x791B20 area) was not opened.",
+    "Exact game member names of Request unknown; Position name inferred from the transform/listener source."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

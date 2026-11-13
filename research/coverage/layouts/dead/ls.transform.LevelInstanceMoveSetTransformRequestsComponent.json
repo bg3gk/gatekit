@@ -1,0 +1,27 @@
+{
+  "component": "ls::transform::LevelInstanceMoveSetTransformRequestsComponent",
+  "ext_name": "LevelInstanceMoveSetTransformRequests",
+  "size": 64,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Singleton of set-transform requests posted by ls::LevelInstanceMoveSystem (moving a level instance moves its entities) and drained by ls::TransformSystem::Update (bg3.exe+0x3C77860), whose WorldView names it together with GameplaySetTransformRequests, InventoryMemberSetTransformRequest, InventoryMemberSetTranslateRequest and ScrollingObjectSetTranslateRequests. Same shape as InventoryMemberSetTransformRequestComponent (SE Components.h: HashMap<EntityHandle, Transform> SetTransform). Registry total 64 on both client and server rows. Never seen alive.",
+  "fields": [
+    {
+      "name": "SetTransform",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Transform>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3C77860, block selected by the global TypeIndex<Spec<LevelInstanceMoveSetTransformRequestsComponent>> (DAT_1463cb444): component stride 0x40 (`base + idx*0x40`); walks the key array at +0x20 (8-byte keys, count at +0x2C), skips keys whose entity is not alive (FUN_140f1d5b0), turns each key into an EntityRef (FUN_1419cc970) and passes the value at +0x30 (stride 0x28 = ls::Transform, 40 bytes) to FUN_143c78850 (the same set-transform call used for GameplaySetTransformRequests and InventoryMemberSetTransformRequest). Name after the sibling InventoryMemberSetTransformRequestComponent.SetTransform."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Writer (ls::LevelInstanceMoveSystem's transform-event lambdas) not read; the name SetTransform is by analogy.",
+    "Not seen alive."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,26 @@
+{
+  "component": "ls::ClusterPhysicsRegisterySingletonComponent",
+  "ext_name": "ClusterPhysicsRegistery",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ClusterOfContent",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3E81900 allocates 0x40 bytes and zeroes the HashMap members; destructor bg3.exe+0x5C4870 frees the value buffer at +0x30 without element destructor and the key part (bg3.exe+0x582AD0). macOS component destructor: frees +0x30, then ls::HashTable<ls::ID<EntityHandleTraits>, ls::ClusterHashTableOps>::~HashTable(this) - entity-handle keys. Windows ClusterLoadHelper<ClusterPhysicsLoaderSystem::LoadOps> code bg3.exe+0x3E7BA90 gets the singleton through bg3.exe+0x3E7DCA0 (storage index DAT_1463d4084), inserts the 8-byte entity handles of each cluster's content key array (stride 8) with bg3.exe+0x1D3C100 / bg3.exe+0x135D7A0 and stores an 8-byte value per key ('*(undefined8 *)(*(map + 0x30) + idx * 8) = *cluster'): content entity -> owning cluster entity. Same shape as ls::ClusterVisibilityRegisterySingletonComponent (layouts\\alive). Note: the game hashes keys with ClusterHashTableOps (key % bucket count). Live: up to 0xD653 keys."
+    }
+  ],
+  "summary": "Client streaming singleton: a large hash map (tens of thousands of entries) used by the cluster physics loader (ls::ClusterPhysicsLoaderSystem); lives from game start.",
+  "confidence": "high",
+  "open_questions": [
+    "The name follows the visual twin's layout (ClusterOfContent), not a game member name."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Windows ClusterLoadHelper<ClusterPhysicsLoaderSystem::LoadOps> bg3.exe+0x3E7BA90 (found through the storage index DAT_1463d4084) inserts 8-byte content-entity keys and writes 8-byte cluster-entity values, and the macOS destructor names the key type: HashMap<EntityHandle, EntityHandle>, like its visibility twin.",
+  "raw_check": "24 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

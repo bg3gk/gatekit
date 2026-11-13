@@ -1,0 +1,27 @@
+{
+  "component": "esv::exp::IncreaseExperienceRequestOneFrameComponent",
+  "ext_name": "ServerExpIncreaseExperienceRequest",
+  "size": 4,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request of esv::exp::ExperienceSystem to grant experience to a character; consumed by ExperienceSystem::HandleXPIncreases (Toolkit EoCServer.dll+0x6FEAD0, its WorldView names the component). Written by bg3.exe+0x2DBE950 for party characters whose experience is below a target value: the amount added is the target minus the current value. Never seen alive. Registry total 4 (server row).",
+  "fields": [
+    {
+      "name": "Amount",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2DC0DB0 (AllocRaw 4) zeroes the dword at +0; writer bg3.exe+0x2DBE950 line 107-108: `piVar7 = FUN_142dc0db0(...); *piVar7 = iVar5 - iVar4;` (target XP minus the int at +4 of the character's experience component) - a signed amount of experience to add."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Field name inferred; the game's own member name is not known.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

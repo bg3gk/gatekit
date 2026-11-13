@@ -1,0 +1,25 @@
+{
+  "component": "ls::ClusterPhysicsLoadingComponent",
+  "ext_name": "ClusterPhysicsLoading",
+  "size": 8,
+  "seen": true,
+  "summary": "Client physics streaming: present on a cluster while its physics content is being loaded; holds the loading job (physics twin of ls::ClusterVisualLoadingComponent). Written by ls::ClusterLoadHelper<ls::ClusterPhysicsLoaderSystem::LoadOps> (SetupLoadJob / ProcessClusterLoadResult) and ClusterPhysicsLoaderSystem::Update (Toolkit GameEngine.dll+0x128710). Seen alive on clusters near scenes.",
+  "fields": [
+    {
+      "name": "Job",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Game creator bg3.exe+0x3E817A0 allocates 8 bytes, zeroes them and registers destructor bg3.exe+0x3B71F00, which takes the pointer, nulls it and atomically decrements a reference count at +0x100 of the pointee, destroying/freeing it at zero: an intrusive ls::SharedPtr. macOS names: ls::ClusterLoadHelper<ClusterPhysicsLoaderSystem::LoadOps>::SetupLoadJob(ls::SharedPtr<ls::ClusterPhysicsLoadingJob>&, ...) - so SharedPtr<ls::ClusterPhysicsLoadingJob> (opaque). Live: 48 heap pointers."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Pointee type (ClusterPhysicsLoadingJob) inferred from macOS names; not bound."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

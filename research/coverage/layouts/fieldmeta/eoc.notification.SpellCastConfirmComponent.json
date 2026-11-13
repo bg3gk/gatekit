@@ -1,0 +1,143 @@
+{
+  "component": "eoc::notification::SpellCastConfirmComponent",
+  "ext_name": "NotificationSpellCastConfirm",
+  "size": 48,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x999480 (slot 2 of bg3.exe+0x551A700) writes 16 raw bytes at the FieldMeta offset global DAT_14627FF50 (0: the next member is at +0x10). No FieldMeta name."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x999480 (slot 2 of bg3.exe+0x551A700) writes 12 raw bytes at +0x10."
+    },
+    {
+      "name": "_Pad1C",
+      "offset": 28,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding: nothing is written at +0x1C, the array at +0x20 is 8-aligned"
+    },
+    {
+      "name": "Targets",
+      "offset": 32,
+      "type": "Array<SpellCastConfirmInitialTarget>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::DynamicArray<struct eoc::spell_cast::InitialTarget,struct ls::TaggedAllocator<int> > eoc::notification::SpellCastConfirmComponent::*,32>; macOS ls::FieldMeta<ls::DynamicArray<eoc::spell_cast::InitialTarget, ls::TaggedAllocator<int> > eoc::notification::SpellCastConfirmComponent::*, &eoc::notification::SpellCastConfirmComponent::m_Targets>. Element stride 0x70 (bg3.exe+0xA9E800) = SE InitialTarget size. Windows replication writer bg3.exe+0x999480 (slot 2 of bg3.exe+0x551A700) passes +0x20 to the array writer bg3.exe+0xA9E800 (count at +0xC, stride 0x70). The element is redeclared here from the Windows element writer (layout = SE InitialTarget)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the Guid at +0 and the vec3 at +0x10 (no FieldMeta names)."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "structs": [
+    {
+      "name": "SpellCastConfirmBaseTarget",
+      "size": 48,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "SE eoc::spell_cast::BaseTarget (Components/SpellCastShared.h) has virtual methods; the element writer skips +0"
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0xB68C40 (the element writer called by the array writer bg3.exe+0xA9E800, stride 0x70) writes an entity (FUN_144017090) from +8; SE BaseTarget.Target"
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0xB68C40 (the element writer called by the array writer bg3.exe+0xA9E800, stride 0x70) writes the entity at +0x10 only when the byte at +0x18 is set: std::optional<EntityHandle> value; SE BaseTarget.TargetProxy"
+        },
+        {
+          "name": "TargetProxyHasValue",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3.exe+0xB68C40 (the element writer called by the array writer bg3.exe+0xA9E800, stride 0x70): the has-value byte of the optional at +0x10"
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding of std::optional<EntityHandle>"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "std::optional<glm::vec3>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0xB68C40 (the element writer called by the array writer bg3.exe+0xA9E800, stride 0x70) passes +0x20 to FUN_140A9E880 (optional vec3 writer); SE BaseTarget.Position (16 bytes)"
+        }
+      ]
+    },
+    {
+      "name": "SpellCastConfirmInitialTarget",
+      "size": 112,
+      "fields": [
+        {
+          "name": "Base",
+          "offset": 0,
+          "type": "SpellCastConfirmBaseTarget",
+          "source": "inferred",
+          "evidence": "SE eoc::spell_cast::InitialTarget derives from BaseTarget (0x30 bytes); bg3.exe+0xB68C40 (the element writer called by the array writer bg3.exe+0xA9E800, stride 0x70) writes the base members first"
+        },
+        {
+          "name": "TargetingType",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "game",
+          "evidence": "bg3.exe+0xB68C40 (the element writer called by the array writer bg3.exe+0xA9E800, stride 0x70) writes 1 byte at +0x30. macOS FieldMeta m_TargetingType of eoc::spell_cast::InitialTarget; enum SpellType (1 byte) in SE"
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment of the optional at +0x38"
+        },
+        {
+          "name": "SecondaryTarget",
+          "offset": 56,
+          "type": "SpellCastConfirmBaseTarget",
+          "source": "game",
+          "evidence": "bg3.exe+0xB68C40 (the element writer called by the array writer bg3.exe+0xA9E800, stride 0x70) writes the BaseTarget at +0x38 (FUN_140AA01C0) only when the byte at +0x68 is set: std::optional<BaseTarget>. macOS FieldMeta m_SecondaryTarget; SE InitialTarget.Target2"
+        },
+        {
+          "name": "SecondaryTargetHasValue",
+          "offset": 104,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3.exe+0xB68C40 (the element writer called by the array writer bg3.exe+0xA9E800, stride 0x70): the has-value byte at +0x68"
+        },
+        {
+          "name": "_Pad69",
+          "offset": 105,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding of std::optional<BaseTarget> (element size 0x70)"
+        }
+      ]
+    }
+  ],
+  "second_pass": "Offsets and widths settled by the Windows replication writer bg3.exe+0x999480 (16 bytes at 0, 12 at 0x10, array at 0x20) and the element writer bg3.exe+0xB68C40, which matches Script Extender's InitialTarget member for member; the element is now declared in the file instead of as an external type."
+}

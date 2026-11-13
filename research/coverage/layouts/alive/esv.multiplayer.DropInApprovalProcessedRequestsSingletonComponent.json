@@ -1,0 +1,27 @@
+{
+  "component": "esv::multiplayer::DropInApprovalProcessedRequestsSingletonComponent",
+  "ext_name": "ServerMultiplayerDropInApprovalProcessedRequests",
+  "size": 48,
+  "seen": true,
+  "summary": "Server singleton of the drop-in approval flow: the users whose join request was answered (approved) this frame. Cleared and refilled by esv::multiplayer::DropInApprovalSystem::ProcessApprovalAnswers. Seen.py context: idle level, never non-empty.",
+  "fields": [
+    {
+      "name": "Users",
+      "offset": 0,
+      "type": "HashSet<UserId>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x2D8290 DropInApprovalSystem::ProcessApprovalAnswers: the 48-byte singleton of type index DAT_1821F72D4 (getter FUN_1802D6200) is cleared when non-empty (FUN_18027BF40), and at the end, for each answer of the system (this+0x40, stride 0x68) whose flag byte (this+0x50 array) is set, the 4-byte user id at +0x3C is inserted (FUN_180274920). Live (idle): all zero. Windows: ProcessApprovalAnswers bg3.exe+0x2F390C0 (for each answer whose flag byte is set) clears the set through getter bg3.exe+0x2F3B120 of this type when its size +0x2C != 0 and inserts the dword +0x3C (UserId) of each 0x68-byte PlayerConnectInfo with FUN_140BDCF90; the creator registers 0x30 bytes with destructor thunk_FUN_140582AD0 (HashSet with plain keys)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether denied answers are also recorded (only answers with the flag set are inserted)."
+  ],
+  "minutes": 3,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Confirmed on Windows: ProcessApprovalAnswers bg3.exe+0x2F390C0 (for each answer whose flag byte is set) fills it with 4-byte UserIds (PlayerConnectInfo+0x3C), and the creator's destructor is the plain-key HashSet one, so HashSet<UserId> is established.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

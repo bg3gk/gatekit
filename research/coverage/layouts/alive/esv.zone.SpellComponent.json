@@ -1,0 +1,207 @@
+{
+  "component": "esv::zone::SpellComponent",
+  "ext_name": "ServerZoneSpell",
+  "size": 128,
+  "seen": true,
+  "summary": "Spell data of a server zone entity (spell cone/line area; seen alive when a Mud Mephit cast a spell). Added by esv::zone::CreationSystem::ProcessCreateRequests (EoCServer.dll+0x114C5E0) from esv::zone::CreationParams (= esv::zone::CreateRequestOneFrameComponent): +0 = params +8 (only when that handle is valid), +8 = InitialTarget::operator=(params +0x80), +0x78 = FixedString params +0x180, +0x7C = int params +0xF0. Read by esv::zone::DestructionSystem and the surface manager.",
+  "structs": [
+    {
+      "name": "ZoneSpellBaseTarget",
+      "size": 48,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "SE eoc::spell_cast::BaseTarget has virtual methods"
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.Target"
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.TargetProxy (std::optional<EntityHandle> value)"
+        },
+        {
+          "name": "HasTargetProxy",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "std::optional engaged flag"
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.Position (std::optional<glm::vec3> value)"
+        },
+        {
+          "name": "HasPosition",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "std::optional engaged flag"
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    },
+    {
+      "name": "ZoneSpellInitialTarget",
+      "size": 112,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "equals SE eoc::spell_cast::InitialTarget (0x70 bytes); live: one static address of the executable (virtual table)"
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.Target; live entity handles"
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.TargetProxy value (live garbage while not engaged)"
+        },
+        {
+          "name": "HasTargetProxy",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "live 0"
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.Position value (live: leftover ASCII bytes while not engaged)"
+        },
+        {
+          "name": "HasPosition",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "live 0"
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "TargetingType",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE InitialTarget.TargetingType (SpellType, 1 byte); live 1"
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Target2",
+          "offset": 56,
+          "type": "ZoneSpellBaseTarget",
+          "source": "inferred",
+          "evidence": "SE InitialTarget.Target2 (std::optional<BaseTarget> value)"
+        },
+        {
+          "name": "HasTarget2",
+          "offset": 104,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "live 0"
+        },
+        {
+          "name": "_Pad69",
+          "offset": 105,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "EoCServer.dll+0x114C5E0: *SpellComponent = CreationParams +8 (written only when valid; the caster/source). Live entity handles equal to FinishedEvent +8. macOS default writes the null handle at +0 (hint)."
+    },
+    {
+      "name": "Target",
+      "offset": 8,
+      "type": "ZoneSpellInitialTarget",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x114C5E0: eoc::spell_cast::InitialTarget::operator=(SpellComponent+8, CreationParams+0x80). Live layout matches (vtable, target handle, TargetingType 1 at +0x38)."
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "FixedString::operator=(SpellComponent+0x78, CreationParams+0x180). Live 0."
+    },
+    {
+      "name": "field_7C",
+      "offset": 124,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "SpellComponent+0x7C = (int)CreationParams+0xF0. Live 0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of field_0 (caster?), field_78 and field_7C."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

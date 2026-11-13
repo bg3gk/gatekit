@@ -1,0 +1,63 @@
+{
+  "component": "esv::script::ResetTutorialsMessageRequestSingletonComponent",
+  "ext_name": "ServerScriptResetTutorialsMessageRequests",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: Osiris requests to reset tutorial messages (ls::Variant alternative 7 of esv::script::RequestSystem's requests). Pushed by the Osiris call at EoCServer.dll+0x12A86B0 (two integer arguments); filled by esv::script::RequestSystem::ProcessEmitRequests. Seen.py context: singleton present in the idle level, all zero.",
+  "structs": [
+    {
+      "name": "ResetTutorialsMessageRequestsEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "RequestEntity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Windows esv::script::RequestSystem variant visitor bg3.exe+0x2EA3260, case 7 (ResetTutorialsMessageRequest): appends to the singleton's array (third storage of bg3.exe+0x2EA0D50 = adder bg3.exe+0x2EA2E10) a 16-byte element whose +0 is the requester entity *param_2[1]."
+        },
+        {
+          "name": "UserId",
+          "offset": 8,
+          "type": "UserId",
+          "source": "inferred",
+          "evidence": "Same Windows case 7 copies the 8-byte esv::script::ResetTutorialsMessageRequest as one qword to +8. Its split comes from the Toolkit Osiris call EoCServer.dll+0x12A86B0: first integer argument -> request +0 (4 bytes). The notification made from it, eoc::notification::ResetTutorialsMessageRequestNotificationComponent, carries a UserId at +0 (SE Coverage.h; Windows notification builder bg3.exe+0x2DF53B0 case 0x22 copies int +0 and byte +4 of its payload) - hence the name."
+        },
+        {
+          "name": "field_C",
+          "offset": 12,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Toolkit EoCServer.dll+0x12A86B0: second integer argument != 0 -> request +4 (1 byte); the notification copies one byte at +4."
+        },
+        {
+          "name": "_PadD",
+          "offset": 13,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "rest of the 8-byte request (copied as one qword on Windows)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ResetTutorialsMessageRequestsEntry>",
+      "source": "inferred",
+      "evidence": "Windows adder bg3.exe+0x2EA2E10 allocates 0x10 bytes, zeroes ptr and size, destructor thunk_FUN_1405946c0 (plain array free: trivial elements); RequestSystem visitor bg3.exe+0x2EA3260 case 7 appends elements of stride 0x10. Read by esv::notification::System (registration bg3.exe+0x236B740 lists it)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The 8-byte request at element +8 is copied as one qword on Windows; its split (int32 at +8, byte at +0xC) rests on the Toolkit Osiris call and on the notification component's shape - the Windows Osiris call was not found by name (no match for EoCServer.dll+0x12A86B0).",
+    "Meaning of the flag at +0xC; Osiris function name."
+  ],
+  "minutes": 10,
+  "functions_read": 10,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Windows code now confirms the singleton is a plain Array with 16-byte trivial elements, the requester entity at +0 and the 8-byte request at +8 (RequestSystem visitor bg3.exe+0x2EA3260 case 7, adder bg3.exe+0x2EA2E10); the int was renamed UserId after the notification it becomes. The split inside the 8-byte request is still Toolkit-only."
+}

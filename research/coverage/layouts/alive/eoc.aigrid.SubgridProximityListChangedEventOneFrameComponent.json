@@ -1,0 +1,31 @@
+{
+  "component": "eoc::aigrid::SubgridProximityListChangedEventOneFrameComponent",
+  "ext_name": "AigridSubgridProximityListChangedEvent",
+  "size": 96,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Added",
+      "offset": 0,
+      "type": "HashSet<uint32_t>",
+      "source": "inferred",
+      "evidence": "eoc::aigrid::SubgridProximitySystem<ecl::ShroudManager>::CommitFrameData (bg3.exe+0x771F30): per changed subgrid id (uint32, compared as *(uint*)) a reference count is updated; when a new id enters, FUN_140779830(event, ..., &id) inserts into the set at event+0, and the full-refresh path inserts every listed id into event+0 as well. Live: bucket pointer, bucket count 5..0x61 at +8, NextIds and Keys arrays at +0x10/+0x20 with equal size."
+    },
+    {
+      "name": "Removed",
+      "offset": 48,
+      "type": "HashSet<uint32_t>",
+      "source": "inferred",
+      "evidence": "Same function: when an id's count drops to 0 it is removed from the list and FUN_140779830(event + 0x30, ..., &id) inserts it here; the refresh path inserts the old list into event+0x30. Live: empty in 5 of 11 samples."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Added/Removed could be swapped if the first branch is the decrement one; the key is a 4-byte subgrid id."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "19 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

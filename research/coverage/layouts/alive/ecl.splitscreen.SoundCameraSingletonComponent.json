@@ -1,0 +1,32 @@
+{
+  "component": "ecl::splitscreen::SoundCameraSingletonComponent",
+  "ext_name": "ClientSplitscreenSoundCameraSingleton",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Windows bg3.exe+0x1E05380 (sound listener update; query DAT_14634cce0 = this singleton alone, registered by bg3.exe+0x1E063A0) reads *(float*)(singleton+0) as a blend factor when two or more split views exist: listener parameters = (b - a) * f + a for every pair of its stored parameter sets; with fewer than two views it zeroes them instead. Created as 8 zero bytes by bg3.exe+0x1E94F40 (frame storage element size 8, '*puVar8 = 0'). Live 0."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Second half of the 8-byte zero default (bg3.exe+0x1E94F40); no Windows read or write located. Live 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The writer of the singleton was not found on Windows (macOS names ecl::sound::CameraSystem::CheckSoundTriggersToUpdateSoundVolumes / UpdateSoundForCameras; the Windows match bg3.exe+0x1E95720 does not touch it directly); +4 is unread in the code seen - it may be a second float."
+  ],
+  "minutes": 17,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Windows bg3.exe+0x1E05380 reads +0 as a float blend factor between two sets of sound-listener parameters (split screen), and the creator bg3.exe+0x1E94F40 zeroes 8 bytes; +0 is therefore a float, not part of a 64-bit value. The upper 4 bytes stay unknown."
+}

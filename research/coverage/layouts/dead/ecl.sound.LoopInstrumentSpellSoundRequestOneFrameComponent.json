@@ -1,0 +1,142 @@
+{
+  "component": "ecl::sound::LoopInstrumentSpellSoundRequestOneFrameComponent",
+  "ext_name": "ClientSoundLoopInstrumentSpellSoundRequest",
+  "size": 80,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request to play the looping instrument sound of a bard-instrument spell (sibling of ecl::sound::StartInstrumentSpellSoundRequestOneFrameComponent). Built by ecl::sound::SpellInstrumentSoundSystem::ProcessSpellRequest (Toolkit EoCClient.dll+0x7F9580) into ComponentsToCreate (element stride 0x48) and copied into the component by bg3.exe+0x1A84C00. Never seen alive. Registry total 80 (client row).",
+  "structs": [
+    {
+      "name": "LoopInstrumentSpellSoundSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as Script Extender's eoc::spell::SpellId (Base/ExposedTypes.h: SpellMetaId + Prototype, 0x38 bytes); the game calls eoc::spell::SpellId::SpellId/~SpellId on +0x10 of the component."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId _Pad"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId SourceType (enum SpellSourceType, 1 byte)"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding before Guid"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId Source"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId ProgressionSource"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellId Prototype; Toolkit ProcessSpellRequest reads the spell prototype name at SpellId+0x30"
+        },
+        {
+          "name": "_Pad52",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to 0x38 (SpellId array stride 0x38 in ProcessSpellRequest)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "InstrumentType",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1A85260 (AllocRaw 0x50) writes byte 0. bg3.exe+0x1A84C00 copies element[0] (1 byte). Toolkit ProcessSpellRequest fills element[0] (local_e8) with the byte of a component read (FUN_1807f58d0) from the entity returned by eoc::equipment::GetEquipmentEntityInSlot - the equipped instrument; most likely eoc::stats::MusicalInstrumentComponent's 1-byte instrument type (EMusicalInstrumentType, uint8)."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding before the FixedString"
+    },
+    {
+      "name": "Sound",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator writes 0xFFFFFFFF at +4; destructor bg3.exe+0x6C2A60 DecRefs +4 in the global string table; bg3.exe+0x1A84C00 assigns element[4] with IncRef/DecRef. Toolkit: element[4] = eoc::SpellPrototype::GetFixedStringValue(prototype, <global field name>) or a default FixedString when empty - the sound event/name of the spell."
+    },
+    {
+      "name": "HasSpell",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creator writes byte 0 at +8. bg3.exe+0x1A84C00: `comp[8] = elem[0x40]; if (elem[0x40]) { construct SpellId at comp+0x10 from elem+8; comp[0x48] = 1; }`. Toolkit sets elem[0x40] (local_a8) from the bool parameter param_8 of ProcessSpellRequest."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding before the 8-aligned SpellId"
+    },
+    {
+      "name": "Spell",
+      "offset": 16,
+      "type": "LoopInstrumentSpellSoundSpellId",
+      "source": "inferred",
+      "evidence": "Optional eoc::spell::SpellId storage: creator zeroes 0x10..0x47; destructor bg3.exe+0x6C2A60 runs eoc::spell::SpellId::~SpellId(p+0x10) when byte +0x48 is set; bg3.exe+0x1A84C00 copy-constructs it. Equals Script Extender's SpellId (0x38 bytes)."
+    },
+    {
+      "name": "SpellHasValue",
+      "offset": 72,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Optional flag: creator writes 0, destructor tests and clears +0x48, writer sets it to 1 after constructing the SpellId."
+    },
+    {
+      "name": "_Pad73",
+      "offset": 73,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 80"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which component's byte is InstrumentType (the Toolkit getter FUN_1807f58d0 uses an unresolved type-index global); MusicalInstrumentComponent is the likely one.",
+    "The exact name of the spell prototype field giving Sound.",
+    "Spell + SpellHasValue is a std::optional<SpellId>; written here as struct + flag.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

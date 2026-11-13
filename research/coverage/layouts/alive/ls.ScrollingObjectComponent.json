@@ -1,0 +1,68 @@
+{
+  "component": "ls::ScrollingObjectComponent",
+  "ext_name": "ScrollingObject",
+  "size": 48,
+  "seen": true,
+  "summary": "Scenery object that scrolls back and forth along a line (e.g. moving clouds/water/background props), driven by ls::ScrollingObjectsSystem (Toolkit GameEngine.dll): offset = Start + Direction * Length * frac((Speed * Time + Phase) / Length); the system also culls by a sphere of the object's bound radius against camera frustums.",
+  "fields": [
+    {
+      "name": "Start",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "ls::ScrollingObjectsSystem::CalculateOffset (GameEngine.dll+0x6342D0) returns [0..2] + Direction*Length*frac; the system's creation path (Update, GameEngine.dll+0x6349A0) copies it from the template data +0x130/+0x138. Live: world coordinates (-380/-660/-7000, 25/26/-580, -100/-559/-585)."
+    },
+    {
+      "name": "Direction",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "CalculateOffset multiplies [3],[4],[5] by Length*frac. Live: (1 or -1, 0, 0) - a unit vector. operator= (GameEngine.dll+0x6323E0) copies +0xC as 8 bytes + +0x14 as 4."
+    },
+    {
+      "name": "Radius",
+      "offset": 24,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Update: (*(float*)(c+0x18) + camera radius)^2 compared with ls::distanceFromLineSq of the scroll segment - the object's bound radius (set right after ls::Bound::GetRadius in the creation path). Live: always 0."
+    },
+    {
+      "name": "Length",
+      "offset": 28,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "CalculateOffset: divisor of (Speed*Time+Phase) and factor of Direction; skipped when |Length| < 1e-7. Live: 250, 12000."
+    },
+    {
+      "name": "Speed",
+      "offset": 32,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "CalculateOffset: [8] multiplies the double time at +0x28. Live: 5, 400."
+    },
+    {
+      "name": "Phase",
+      "offset": 36,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "CalculateOffset: [9] added to Speed*Time before the division by Length (a starting distance). Live: 0, 25, 75, 2400."
+    },
+    {
+      "name": "Time",
+      "offset": 40,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Update (GameEngine.dll+0x6349A0, lines ~548): *(double*)(c+0x28) += time::GetDeltaTimeForEntity(...); then used in the offset formula. Live: doubles around 2.5..3.9 (high dword 0x401E..0x407F)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Game member names unknown (no replication field metadata in bg3.exe, no macOS field names); names are descriptive.",
+    "Time is a C++ double (8-byte floating point) declared as uint64_t because double is not in the allowed primitive list; reinterpret the bits."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

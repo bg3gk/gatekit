@@ -1,0 +1,54 @@
+{
+  "component": "ecl::item::animation::RequestSingletonComponent",
+  "ext_name": "ClientItemAnimationRequestSingleton",
+  "size": 112,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ItemAnimationInitialStateInfo",
+      "size": 4,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "EoCClient.dll RequestsSystem::ProcessAddedItems: new entries default 0x00040004, then both uint16 copied from eoc::item::animation::RequestComponent (+0 is the StateToString value). SE's ecl::item::animation::StateComponent comment: bg3.exe+0x191E800 copies this first uint16 into StateComponent.field_0"
+        },
+        {
+          "name": "field_2",
+          "offset": 2,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "second uint16, copied into StateComponent.State by bg3.exe+0x191E800 (SE comment)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "InitialStates",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, ItemAnimationInitialStateInfo>",
+      "source": "inferred",
+      "evidence": "Game element name ecl::item::animation::InitialStateInfo (IndexedStorage string, stride 4) in EoCClient.dll ecl::item::animation::RequestsSystem::ProcessAddedItems, keyed by the item entity. Live: buckets 11, capacity 8."
+    },
+    {
+      "name": "ReplicatedAgain",
+      "offset": 64,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCClient.dll RequestsSystem::ProcessRequests logs 'Entity being replicated again: item (%s)' and inserts the entity into the set at singleton+0x40 (keys at +0x60, size at +0x6C). ProcessRequestSingleton clears both containers when +0x2C or +0x6C is non-zero. Live: empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the two uint16 of InitialStateInfo",
+    "Game struct name is InitialStateInfo; prefixed to avoid clashes"
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,38 @@
+{
+  "component": "esv::camera::ArrivedPlayersComponent",
+  "ext_name": "ServerCameraArrivedPlayers",
+  "size": 24,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "esv::camera::AllArrivedSystem::Update (Toolkit EoCServer.dll+0xA29E20): for every 4-byte id in the system's list of players that reported arrival (this+0x10, count this+0x1C) it searches the component's int array (pointer +0, size +0xC) and appends missing ids (FUN_180279600). The entity is destroyed when the array's size equals the expected player count. Ids are 4-byte player/peer ids (exact kind not established). Live: always empty."
+    },
+    {
+      "name": "Timeout",
+      "offset": 16,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Same function sets *(float*)(component+0x10) = s_ArriveTimeout when the component is created (FUN_180a29210 get-or-add) and subtracts the frame time each update; at <= 0 the entity is destroyed. Live 1.93-2.0."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Padding to 24 (live: junk bytes)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether the ids are UserId or net PeerId values."
+  ],
+  "minutes": 6,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

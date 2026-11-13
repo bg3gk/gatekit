@@ -1,0 +1,203 @@
+{
+  "component": "esv::patrol::CaretComponent",
+  "ext_name": "ServerPatrolCaret",
+  "size": 84,
+  "seen": true,
+  "summary": "Patrol 'caret' of a character walking a spline (patrolling guards, wandering NPCs): which spline, the current control point, positions and state. Run by esv::patrol::CaretSystem (Toolkit names: Activate, Enable, Disable, TryPlace, UpdateInactive, ProcessClearRequests, ClearBSPatrolState) and read by esv::ActivationManager. macOS has a method on the component itself, esv::patrol::CaretComponent::GotoNextSplinePoint(ls::SplineTemplate const&). The struct is 4-byte aligned (size 0x54), so it holds no pointers. Seen.py context: helm/idle levels and many dialogues (CAMP_GoblinHuntCelebration, DEN refugees) - NPCs with patrol splines.",
+  "fields": [
+    {
+      "name": "SplineId",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Registration bg3.exe+0x26FF170 sets destructor bg3.exe+0x698FE0 = FixedString release at +0; macOS default ctor writes -1 (null) in the low dword of +0. Live: 46 distinct FixedString indices. Probably the spline (template) id; the name is a guess. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) fills it with a FixedString created from the model's leading Guid (formatted %08x-%04hx-...): the spline's id. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "macOS default 0; GotoNextSplinePoint (macOS bg3_macos_x64+0x56C4680) reads byte +4 to choose the direction of travel (hint). Live 0. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x10); default 0. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_5",
+      "offset": 5,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "macOS default 2. Live 1..3. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) copies byte model+0x12; default 2 (half-word 0x200 at +4). The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_6",
+      "offset": 6,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "macOS default 1. Live 0/1. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x11); default 1. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_7",
+      "offset": 7,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x19); default 0. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "SplinePointIndex",
+      "offset": 8,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "macOS GotoNextSplinePoint increments/decrements the short at +8 and wraps it at the control-point count; macOS ctor strh wzr at +8. Live 0..3. Offset confirmed only on macOS plus the live value range. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) copies the 16-bit model+0x14; default 0. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Neither the converter nor the save loader writes +0xA (alignment of the vec3 at +0xC); live values are leftovers."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Live world coordinates (e.g. 180.5, 0.003, 18.8); identical to +0x18 in every sample. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) converts the model position at +0x28 with FUN_142772030 (the position conversion also used for DeathData.ImpactPosition); default FLT_MAX x3. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Live: same vec3 as +0xC (current and target point?). Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) converts the model position at +0x34 the same way; default FLT_MAX x3. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "State",
+      "offset": 36,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Toolkit CaretSystem::Activate (EoCServer.dll+0xA43F90) tests *(char*)(caret+0x24) == 3 (with +0x27). Live 2/3. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) copies byte model+0x13; default 0 (dword 0x01010000 at +0x24). The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_25",
+      "offset": 37,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x18); default 0. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_26",
+      "offset": 38,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) does not load it from the model; default 1 (dword 0x01010000 at +0x24). Copied by the loader as a byte."
+    },
+    {
+      "name": "field_27",
+      "offset": 39,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Activate tests it together with State == 3. macOS default 1; live 1. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x1A); default 1. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x1B); default 0 (dword 0xFFFF0000 at +0x28). The first version declared +0x28 as int16: it is two separate bytes. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_29",
+      "offset": 41,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x1D); default 0. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_2A",
+      "offset": 42,
+      "type": "int16_t",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) copies the 16-bit model+0x16; default -1 (0xFFFF). The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_2C",
+      "offset": 44,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x1C) (macOS GotoNextSplinePoint writes a 'reversed' result here - hint); default 0. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_2D",
+      "offset": 45,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) default 0 (half-word at +0x2C), not loaded from the model; copied by the loader as a byte."
+    },
+    {
+      "name": "_Pad2E",
+      "offset": 46,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Neither the converter nor the loader writes +0x2E..+0x2F; live values (0..8, 0x19..0x24) are leftovers."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "std::array<int32_t, 4>",
+      "source": "unknown",
+      "evidence": "macOS stores a 16-byte constant at +0x30; live four times 0xFFFFFAC7 (-1337), a sentinel. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) sets four dwords to -1337 (0xFFFFFAC7), a sentinel, not loaded from the model; the loader copies the four dwords."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) copies dword model+0x20; default 0. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_44",
+      "offset": 68,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) copies dword model+0x24; default 0. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+    },
+    {
+      "name": "field_48",
+      "offset": 72,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) default 0, not loaded from the model; the loader copies the dword."
+    },
+    {
+      "name": "field_4C",
+      "offset": 76,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x40); default 0. The loader copies one byte."
+    },
+    {
+      "name": "_Pad4D",
+      "offset": 77,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Not written by converter or loader; live bytes are leftovers."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) default 0, not loaded from the model; the loader copies the dword. Live 0..0x5FF."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names: the savegame model has no named visitor, so only SplineId, SplinePointIndex and State carry inferred names; meanings of the flags, the -1337 block and the trailing dwords.",
+    "Reading the Toolkit esv::patrol::CaretSystem methods (CreatePath, SetBSPatrolState, RotateToFaceTarget, LegacyRequestClearPatrol) against the converter offsets would name the flags."
+  ],
+  "minutes": 9,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "The Windows save loader bg3.exe+0x2591640 and the model converter bg3.exe+0x277FF60 give every member's offset, width and default (and show +0xA, +0x2E and +0x4D are padding, +0x28 two bytes, not an int16); the two vec3 go through the game's position conversion.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found: the savegame model ls::model::game::patrol::v1::CaretComponent has no named visitor in the macOS symbols (savefields.py), the component is not replicated and no Osiris parameter maps to it."
+}

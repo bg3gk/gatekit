@@ -1,0 +1,158 @@
+{
+  "component": "esv::light::UpdateDarknessRequestsComponent",
+  "ext_name": "ServerLightUpdateDarknessRequests",
+  "size": 64,
+  "seen": true,
+  "summary": "Server singleton: per gameplay light, the AI-grid tiles whose darkness must be recomputed after the light was added, moved or removed, plus the light's old position/radius/offset. Written by esv::sight::AiGridViewshedSystem (CollectLightChanges, SavePositionsThatCausedUpdates ...), consumed by esv::DarknessSystem::ProcessAiGridViewshedChangeEvents. Seen.py context: idle levels (29 instances seen).",
+  "structs": [
+    {
+      "name": "DarknessUpdateTilePos",
+      "size": 8,
+      "fields": [
+        {
+          "name": "X",
+          "offset": 0,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "eoc::AiTilePos - same members as Script Extender's AiTilePos (CommonTypes.h: int16 X, int16 Y, int32 SubgridId); passed to eoc::AiGrid::TryGetAiGridTile."
+        },
+        {
+          "name": "Y",
+          "offset": 2,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "As SE AiTilePos."
+        },
+        {
+          "name": "SubgridId",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "As SE AiTilePos."
+        }
+      ]
+    },
+    {
+      "name": "DarknessUpdateRequest",
+      "size": 88,
+      "fields": [
+        {
+          "name": "TilesHashKeys",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "ls::HashSet<eoc::AiTilePos> (macOS HashTable<eoc::AiTilePos>::Purge next to DarknessSystem) written out by hand: bucket array."
+        },
+        {
+          "name": "TilesHashKeysSize",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Bucket count."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "TilesNextIds",
+          "offset": 16,
+          "type": "Array<int32_t>",
+          "source": "inferred",
+          "evidence": "Collision chain array."
+        },
+        {
+          "name": "Tiles",
+          "offset": 32,
+          "type": "Array<DarknessUpdateTilePos>",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x5FFA60 iterates value +0x20 for count value +0x2C with stride 8 (AiTilePos) and calls eoc::AiGrid::TryGetAiGridTile on each."
+        },
+        {
+          "name": "OldPosition",
+          "offset": 48,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "ls::Optional<Vector3f> at +0x30 read with FUN_1803DD020 and passed to eoc::light::GetTileAndAlignedPosition."
+        },
+        {
+          "name": "HasOldPosition",
+          "offset": 60,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Optional flag at +0x3C; when set, the light is removed from its old tiles."
+        },
+        {
+          "name": "_Pad3D",
+          "offset": 61,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "OldRadius",
+          "offset": 64,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "ls::Optional<float> at +0x40: radius used when the light component is gone (else the assert 'no gameplay light radius found. Defaulting to 7.5m')."
+        },
+        {
+          "name": "HasOldRadius",
+          "offset": 68,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Optional flag at +0x44."
+        },
+        {
+          "name": "_Pad45",
+          "offset": 69,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "OldOffset",
+          "offset": 72,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "ls::Optional<Vector3f> at +0x48 added to the position; used instead of eoc::GameplayLightComponent +0x20 when present."
+        },
+        {
+          "name": "HasOldOffset",
+          "offset": 84,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Optional flag at +0x54."
+        },
+        {
+          "name": "_Pad55",
+          "offset": 85,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x58 stride (loop advances value pointer by 0x58)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, DarknessUpdateRequest>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x5FFA60 esv::DarknessSystem::ProcessAiGridViewshedChangeEvents gets the singleton ('No singleton found for component esv::light::UpdateDarknessRequestsComponent'), walks keys at +0x20 (EntityHandle, IsEntityAlive, count +0x2C) and values at +0x30 in step (key += 8, value += 0x58). Live: bucket count 5..0x1D at +8, keys cap/size at +0x28/+0x2C (up to 0x10), value count at +0x38 equal to the key capacity - the 64-byte HashMap shape."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key entity is the gameplay light (or its owner); the 'Old' naming of the optionals is inferred from their use when removing a moved/removed light."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

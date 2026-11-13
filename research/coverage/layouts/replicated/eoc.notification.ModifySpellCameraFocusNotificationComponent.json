@@ -1,0 +1,50 @@
+{
+  "component": "eoc::notification::ModifySpellCameraFocusNotificationComponent",
+  "ext_name": "NotificationModifySpellCameraFocusNotification",
+  "size": 40,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9041B0: member 1, raw 16-byte scratch write at +0 (dirty bit 0; same in the dirty writer bg3.exe+0x903FB0 and reader bg3.exe+0x9043D0); macOS default stp q0,q0 [x23] = 0"
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9041B0: member 2, raw 16-byte write at +0x10 (dirty bit 1); default 0"
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9041B0: member 3, raw 4-byte write at +0x20 (dirty bit 2); macOS default str xzr [x23,#0x20]"
+    },
+    {
+      "name": "_Pad24",
+      "offset": 36,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "alignment padding; nothing serialized or initialised here"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "The two 16-byte members are typed Guid from width only (could be glm::vec4/quat); the 4-byte member may be a float or an enum.",
+    "Client readers (bg3.exe+0x7406C0, Toolkit ecl::camera::CombatTargetSystem) not read."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

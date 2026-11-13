@@ -1,0 +1,76 @@
+{
+  "component": "ecl::mod::PendingReportsSingletonComponent",
+  "ext_name": "ClientModPendingReportsSingleton",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "PendingModReportInfo",
+      "size": 40,
+      "fields": [
+        {
+          "name": "Reason",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "game",
+          "evidence": "Passed as the 2nd argument of the helper slot 8 call in ProcessPendingSends (EoCClient.dll+0xBDA440); macOS names that slot ecl::mod::PendingModReportsSystemHelper::SendReport(unsigned long long, net::EUGReportReason, ls::STDString const&) - a net::EUGReportReason (1 byte here; enum not declared in SE)."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "alignment before the STDString."
+        },
+        {
+          "name": "Message",
+          "offset": 8,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "3rd argument of SendReport (ls::STDString const&); copied with STDString::operator= in ProcessPendingAdditions (EoCClient.dll+0xBD9900)."
+        },
+        {
+          "name": "Sent",
+          "offset": 32,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "ProcessPendingSends sends only elements with byte +0x20 == 0 and then sets it to 1."
+        },
+        {
+          "name": "field_21",
+          "offset": 33,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Copied together with +0x20 in ProcessPendingAdditions; not read in the functions opened."
+        },
+        {
+          "name": "_Pad22",
+          "offset": 34,
+          "type": "uint8_t[6]",
+          "source": "unknown",
+          "evidence": "padding to the 0x28 value stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Reports",
+      "offset": 0,
+      "type": "HashMap<uint64_t, PendingModReportInfo>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xBD9900 ecl::mod::PendingModReportsSystem::ProcessPendingAdditions(PendingReportsSingletonComponent*) looks uint64 mod ids up in the component (bucket count +8) and get-or-inserts FUN_180BD89A0(component, &id), copying a 0x28-byte record; ProcessPendingSends walks keys (+0x20, stride 8) and values (+0x30, stride 0x28). Value struct name ecl::mod::PendingModReportInfo is the game's (macOS SaveReportToDisk(ecl::mod::PendingModReportInfo&, ...)), its 0x28 size and layout match. macOS default: zeroed 64 bytes; live: empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of byte +0x21 of PendingModReportInfo (written by the additions step, not read by the sender); net::EUGReportReason values."
+  ],
+  "second_pass": "Confirmed on Windows: the per-frame update bg3.exe+0x1B22200 walks keys at +0x20 (stride 8) and values at +0x30 (stride 0x28), sends value byte +0 and STDString +8 through the helper and sets byte +0x20; bg3.exe+0x1B22A40 hashes uint64 keys (key % buckets, qword compare) and writes value bytes +0, +0x20, +0x21 and the STDString at +8.",
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

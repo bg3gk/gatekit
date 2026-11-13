@@ -1,0 +1,46 @@
+{
+  "component": "ls::WorldMapCameraBehavior",
+  "ext_name": "WorldMapCameraBehavior",
+  "size": 32,
+  "fields": [
+    {
+      "name": "Position",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Not replicated. Toolkit ls::CameraSystem::SetWorldMapProperties(view, Vector3f const& pos, Vector3f const& target, float, float) (GameEngine.dll+0x6305D0) writes its first vector to +0..+0xB and passes &+0 as the eye position to the camera look-at virtual. Constructor (+0x7D5260): (128, 256, 128)."
+    },
+    {
+      "name": "Target",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "SetWorldMapProperties writes its second vector to +0xC..+0x17 and passes &+0xC as the look-at target; the distance between the two sets the far plane. Constructor: (128, 0, 128)."
+    },
+    {
+      "name": "Width",
+      "offset": 24,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "SetWorldMapProperties' first float; CameraComponent::SetOrtho(-w/2, w/2, ...). Constructor 256."
+    },
+    {
+      "name": "Height",
+      "offset": 28,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "SetWorldMapProperties' second float; SetOrtho(..., h/2, -h/2). Constructor 256."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Client-only; registry totalSize 32 on the client row only. Widths from operator= (+0x264B30: 8,4,8,4,4,4) and the macOS default (stp q0, q1 at +0)."
+  ],
+  "seen": false,
+  "minutes": 4,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

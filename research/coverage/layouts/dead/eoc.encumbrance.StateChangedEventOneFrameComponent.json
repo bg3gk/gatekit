@@ -1,0 +1,34 @@
+{
+  "component": "eoc::encumbrance::StateChangedEventOneFrameComponent",
+  "ext_name": "EncumbranceStateChangedEvent",
+  "size": 8,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame event of esv::encumbrance::StateSystem (per-frame update bg3.exe+0x31D8430): put on a character whose encumbrance state changed, holding the old and the new state (0..3, compared against eoc::encumbrance::StatsComponent's three weight thresholds). Never seen alive. Registry total 8 on both rows. The savemodel tool matched an unrelated model (game.camp.v0.SuppliesSelectionStateChangedEventOneFrameComponent) by substring: this one is not saved.",
+  "fields": [
+    {
+      "name": "OldState",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x31D9B10: AllocRaw(8), `*(uint64*)p = 0`. Update bg3.exe+0x31D8430 lines 530-574: `uVar3 = *local_6b8` (the current state, the same 4 bytes the code then overwrites with the new state: `*local_6b8 = uVar11` - eoc::encumbrance::StateComponent.State, uint32 in SE Stats.h); when it differs from the new state, `p = create(entity); p[0] = uVar3; p[1] = uVar11` (uint* writes)."
+    },
+    {
+      "name": "NewState",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Same function: new state = 0..3 from `weight > Stats[0] / [1] / [2]` (eoc::encumbrance::StatsComponent UnencumberedWeight, EncumberedWeight, HeavilyEncumberedWeight; stride 0xC) and 0 when a flag is off; written as `p[1] = uVar11`."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "That local_6b8 points into eoc::encumbrance::StateComponent is inferred from the write-back (FUN_1431d9fd0 not read).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

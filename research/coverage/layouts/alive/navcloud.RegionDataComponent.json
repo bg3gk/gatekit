@@ -1,0 +1,104 @@
+{
+  "component": "navcloud::RegionDataComponent",
+  "ext_name": "NavcloudRegionData",
+  "size": 64,
+  "seen": true,
+  "summary": "Singleton (client and server, one holder each, present from level load in TUT_Avernus_C, WLD_Main_A, SCL_Main_A) holding the loaded navcloud regions: ls::HashMap<Vector3i<int>, navcloud::Region, navcloud::HashTableOps> (macOS signatures of navcloud::TryGetTileInfo / ToTilePos / GetNeighbors take exactly this map as the component). Written by navcloud::RegionSystem (ProcessMemoryData, ProcessObstacles, ProcessAgents, MetaDataRemoval), read by navcloud::PathfindingSystem. The map is written out member by member because its key is a struct (own structs may not be hash keys). Region (0x58 bytes, Windows dtor stride): +0 int32 tile resolution kind (0 -> 2, 1 -> 6 tiles per axis in TryGetTileInfo), +0x08 a 64-byte HashMap whose values are 48-byte HashSets, +0x48 Array<uint8_t> of per-tile data (index = (z*n + y)*n + x, bounded by the array size at +0x54).",
+  "structs": [
+    {
+      "name": "NavcloudRegionDataKey",
+      "size": 12,
+      "fields": [
+        {
+          "name": "X",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Vector3i<int> key: macOS TryGetTileInfo compares *(int*)(keys + i*0xC + 0/4/8) with the tile position's region coordinates"
+        },
+        {
+          "name": "Y",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "second int of Vector3i<int>"
+        },
+        {
+          "name": "Z",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "third int of Vector3i<int>"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "HashKeys",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "bucket array (int32 per bucket) of the HashMap; creator bg3.exe+0x392A420 allocates 0x40 and zeroes it with the HashMap pattern (sizes at +0x1C/+0x2C); destructor thunk bg3.exe+0x6C8250 -> bg3.exe+0x6CFFB0 ends with the HashSet destructor bg3.exe+0x582AD0 on +0. Live: heap pointer."
+    },
+    {
+      "name": "HashKeysSize",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count; macOS TryGetTileInfo takes hash % *(int*)(map+8). Live server: 0x607 (1543 buckets)"
+    },
+    {
+      "name": "_Pad0C",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "padding; live always 0"
+    },
+    {
+      "name": "NextIds",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "hash chain: TryGetTileInfo follows *(int*)(*(map+0x10) + i*4). Live: capacity 0x400, size 0"
+    },
+    {
+      "name": "Keys",
+      "offset": 32,
+      "type": "Array<NavcloudRegionDataKey>",
+      "source": "inferred",
+      "evidence": "Vector3i<int> keys at *(map+0x20) stride 0xC, count *(int*)(map+0x2C) (macOS TryGetTileInfo; Windows dtor bg3.exe+0x6CFFB0 loops to *(int*)(this+0x2C)). Live: capacity 0x400, size 0"
+    },
+    {
+      "name": "Values",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "navcloud::Region per key, stride 0x58: Windows dtor bg3.exe+0x6CFFB0 destroys *(this+0x30)+i*0x58 (Array at +0x48 freed, map at +0x08 destroyed by bg3.exe+0x5E19C0 whose values are 0x30-byte HashSets); macOS GetComponentDestructor<RegionDataComponent> calls navcloud::Region::~Region with the same stride"
+    },
+    {
+      "name": "ValuesCapacity",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "size of the uninitialised value storage; live 0x400"
+    },
+    {
+      "name": "_Pad3C",
+      "offset": 60,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "padding; live always 0"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Live instances held an empty map (sizes 0, capacity 0x400): element boundaries of Region are untested live.",
+    "Key and value types of Region's inner map at +0x08 (values are 48-byte HashSets) and the 8 bytes at Region+0x00 beyond the int32 kind."
+  ],
+  "minutes": 12,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

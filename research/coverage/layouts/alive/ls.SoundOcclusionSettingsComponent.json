@@ -1,0 +1,236 @@
+{
+  "component": "ls::SoundOcclusionSettingsComponent",
+  "ext_name": "SoundOcclusionSettings",
+  "size": 608,
+  "seen": true,
+  "summary": "Client settings singleton of ls::SoundOcclusionSystem: two config files loaded by ls::SoundOcclusionHelper::LoadSettingsConfig (Sound/SoundOcclusionSchedulerConfig.lsf and Sound/SoundOcclusionMaterialConfig.lsf, both ls::FileFormatIO objects with a virtual table and a Path), then entity lists/sets used by the occlusion scheduler. Toolkit (GameEngine.dll) names the parts; the Toolkit build is 16 bytes larger (each config there has an extra dword after its Path), the live layout below follows the samples.",
+  "structs": [
+    {
+      "name": "SoundOcclusionSettingsRaycast",
+      "size": 32,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "ls::SoundOcclusionRaycast::Visit (GameEngine.dll+0x8B6460) visits +0 and +8 through visitor slot 0x150 (names in FixedString globals not resolved)."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Visit: second slot-0x150 member at +8."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Visit: slot 0x178 member at +0x10."
+        },
+        {
+          "name": "Priority",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Visit: +0x14 converted to/from FixedString via ls::Function<FixedString const&(ls::ESoundOcclusionPriority)> - an ESoundOcclusionPriority enum (4 bytes)."
+        },
+        {
+          "name": "Quality",
+          "offset": 24,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Visit: +0x18 converted via ls::Function<FixedString const&(ls::ESoundOcclusionQuality)> - an ESoundOcclusionQuality enum (4 bytes)."
+        },
+        {
+          "name": "field_1C",
+          "offset": 28,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Visit: slot 0x1A8 member at +0x1C."
+        }
+      ]
+    },
+    {
+      "name": "SoundOcclusionSettingsSchedulerConfig",
+      "size": 240,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "ls::SoundOcclusionSchedulerConfig::SoundOcclusionSchedulerConfig (GameEngine.dll+0x8B5D20): FileFormatIO base, *this = vftable. Live: module pointer."
+        },
+        {
+          "name": "Raycasts",
+          "offset": 8,
+          "type": "Array<SoundOcclusionSettingsRaycast>",
+          "source": "inferred",
+          "evidence": "SchedulerConfig::operator= (GameEngine.dll+0x695250): IndexedStorage<ls::SoundOcclusionRaycast> at +8, allocated with element size 0x20. Live: capacity 6, size 6."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "std::array<uint32_t, 3>",
+          "source": "unknown",
+          "evidence": "operator= copies +0x18 (8) and +0x20 (4). Live: 30, 60, 90 (integers)."
+        },
+        {
+          "name": "field_24",
+          "offset": 36,
+          "type": "std::array<float, 3>",
+          "source": "unknown",
+          "evidence": "operator= copies +0x24 (8) and +0x2C (4). Live: 75.0, 30.0, 17.5."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "std::array<Array<int32_t>, 9>",
+          "source": "inferred",
+          "evidence": "Ctor: _eh_vector_constructor_iterator_(this+0x30, 0x30, 3, ...) whose element constructs 3 arrays of 0x10 - a 3x3 table of arrays; FUN_180693FB0 copies them as IndexedStorage<int> (element size 4). Live: nine (pointer, capacity, size) triples with sizes 2..6. Probably indexed by ESoundOcclusionPriority x ESoundOcclusionQuality (not verified)."
+        },
+        {
+          "name": "field_C0",
+          "offset": 192,
+          "type": "std::array<float, 5>",
+          "source": "unknown",
+          "evidence": "Ctor defaults 0.25, 0.25, 1.0, 2.5, 0.6; operator= copies each dword. Live: 0.6, 0.6, 1.0, 5.0, 0.25 (from the .lsf file)."
+        },
+        {
+          "name": "field_D4",
+          "offset": 212,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Ctor sets byte +0xD4 = 1; operator= copies one byte. Live: 1."
+        },
+        {
+          "name": "_PadD5",
+          "offset": 213,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "padding before the Path."
+        },
+        {
+          "name": "Path",
+          "offset": 216,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "Ctor builds an ls::STDString at +0xD8 = <root>/Sound/SoundOcclusionSchedulerConfig.lsf (ls::Path); LoadSettingsConfig calls FileFormatIO::Load(this, this+0xD8). Live: heap pointer, 0, length 0x8C..0x8E, capacity 0x8F."
+        }
+      ]
+    },
+    {
+      "name": "SoundOcclusionSettingsMaterialConfig",
+      "size": 240,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "ls::SoundOcclusionMaterialConfig::SoundOcclusionMaterialConfig (GameEngine.dll+0x8B5C00): FileFormatIO base with its own vftable. Live: module pointer (8 below the scheduler's)."
+        },
+        {
+          "name": "Values",
+          "offset": 8,
+          "type": "std::array<float, 52>",
+          "source": "inferred",
+          "evidence": "Ctor: memset(this+8, 0, 0xD0). Live: 52 floats 0..0.95 (per-material occlusion values loaded from SoundOcclusionMaterialConfig.lsf); member names unknown."
+        },
+        {
+          "name": "Path",
+          "offset": 216,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "Ctor builds <root>/Sound/SoundOcclusionMaterialConfig.lsf at +0xD8; LoadSettingsConfig loads (this+0xF8) from (this+0x1D0 in the Toolkit layout). Live: heap pointer, 0, length 0x8B..0x8D, capacity 0x8F."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Scheduler",
+      "offset": 0,
+      "type": "SoundOcclusionSettingsSchedulerConfig",
+      "source": "inferred",
+      "evidence": "SoundOcclusionSettingsComponent::operator= (GameEngine.dll+0x695540) starts with SoundOcclusionSchedulerConfig::operator=(this). Live: VMT at +0, Path at +0xD8..+0xEF."
+    },
+    {
+      "name": "Material",
+      "offset": 240,
+      "type": "SoundOcclusionSettingsMaterialConfig",
+      "source": "inferred",
+      "evidence": "operator= then SoundOcclusionMaterialConfig::operator=(this+0xF8) in the Toolkit build; live the second virtual table is at +0xF0 and its Path at +0x1C8 (the live configs are 0xF0 bytes each, Toolkit 0xF8)."
+    },
+    {
+      "name": "field_1E0",
+      "offset": 480,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "operator= copies Toolkit +0x1F0 with FUN_1801347A0 = IndexedStorage<ls::ID<EntityHandleTraits>> (element 8). Live +0x1E0: pointer/zero, capacity 0..0x20, size 0."
+    },
+    {
+      "name": "field_1F0",
+      "offset": 496,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "operator= copies Toolkit +0x200 with FUN_1800BF710 (hash table of ls::ID<EntityHandleTraits> + int buckets/next). Live +0x1F0: bucket counts 7..0x61 (primes), then two arrays with capacities 8..0x40."
+    },
+    {
+      "name": "field_220",
+      "offset": 544,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Same copy for Toolkit +0x230. Live +0x220: bucket counts 0x1D..0x61 (primes), arrays of capacity 0x20..0x40."
+    },
+    {
+      "name": "field_250",
+      "offset": 592,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "operator= copies dword (Toolkit +0x260). Live: always 2."
+    },
+    {
+      "name": "field_254",
+      "offset": 596,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "dword (Toolkit +0x264). Live: always 0x01004C70."
+    },
+    {
+      "name": "field_258",
+      "offset": 600,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "dword (Toolkit +0x268). Live: always 0xA849038F (a hash or random seed?)."
+    },
+    {
+      "name": "field_25C",
+      "offset": 604,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "byte (Toolkit +0x26C). Live: 0/1."
+    },
+    {
+      "name": "_Pad25D",
+      "offset": 605,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "tail padding."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the entity array and the two entity sets (occlusion scheduling queues?) and of the four tail values.",
+    "SoundOcclusionRaycast member names: the FixedString names visited in Raycast::Visit live in GameEngine.dll globals that the fixedstrings tool did not resolve; no bg3.exe twin was found.",
+    "Toolkit vs live: the 8 extra bytes per config in the Toolkit build were placed after each Path; the live samples confirm VMTs at +0/+0xF0 and Paths at +0xD8/+0x1C8."
+  ],
+  "minutes": 14,
+  "functions_read": 9,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

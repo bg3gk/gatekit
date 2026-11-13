@@ -1,0 +1,27 @@
+{
+  "component": "eoc::platform::RepresentativeComponent",
+  "ext_name": "PlatformRepresentative",
+  "size": 8,
+  "fields": [
+    {
+      "name": "Platform",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x919C30: single member, bg3.exe+0x4017090 (EntityHandle writer) on +0; macOS default str x1 [x23] (null handle). Name inferred from macOS esv::ActivationManager::IsMovingPlatform(WorldView<eoc::platform::MovementComponent const>, EntityView<RepresentativeComponent const>): the handle leads to the entity whose platform movement is checked."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Name from a function signature only; IsMovingPlatform body not read."
+  ],
+  "seen": false,
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "32 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

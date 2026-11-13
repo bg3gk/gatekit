@@ -1,0 +1,32 @@
+{
+  "component": "eoc::RagdollSoundComponent",
+  "ext_name": "RagdollSound",
+  "size": 8,
+  "seen": true,
+  "summary": "Client state for ragdoll impact sounds of a character (registered on both sides, written by the client ecl::ragdoll::SoundSystem, per-frame update bg3.exe+0x1E5D2B0). Born live in idle / spells-1 / a Baldur's Gate dialogue (ragdolls of dying characters). Impact handlers bg3.exe+0x1E5E090 and bg3.exe+0x1E5E230 play Movement_Ragdoll_Impact / Gameplay_Character_RagdollImpactForce.",
+  "fields": [
+    {
+      "name": "TimeSinceImpact",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1E5E840 writes 99.0f; bg3.exe+0x1E5E090 adds a time step to it on every contact event; bg3.exe+0x1E5E230 requires it > 0.25 before playing the impact sound and resets it to 0. Live 1.16 .. 99."
+    },
+    {
+      "name": "Speed",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1E5E090 stores the length of the contact velocity vector here; bg3.exe+0x1E5E230 requires it > 0.5. Live 0 .. 0.0147."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The value added to TimeSinceImpact is +0x1C of the contact event (assumed a time step)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,61 @@
+{
+  "component": "esv::tutorial::HotbarEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialHotbarEventRequestsSingleton",
+  "size": 32,
+  "structs": [
+    {
+      "name": "HotbarEventRequestsSlot",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCServer.dll esv::tutorial::HotbarSystem::Update stores the owner entity of the hotbar slot change at +0"
+        },
+        {
+          "name": "Flags",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "HotbarSystem::Update builds bit flags from the slot (1 = slot+0x50 byte, 2 = valid handle, 4 = slot index != -1, 8 = spell prototype found, 0x10 = spell flag 0x40000000000, 0x20 = slot+0x51 byte)"
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "alignment padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Added",
+      "offset": 0,
+      "type": "Array<HotbarEventRequestsSlot>",
+      "source": "inferred",
+      "evidence": "ValidateSystem::Update helper bg3.exe+0x3426F70 (macOS esv::tutorial::ValidateSystem::Update) copies every request array into ls::Variant<ActionResource_Depleted, ActionResource_Gained, ActiveRoll_Advantage, ActiveRoll_Disadvantage, ActiveRoll_Dialog, AttackHit_Immunity, AttackHit_Resistance, AttackHit_Vulnerable, DualWielding_Enabled, Functor, HotbarSlot_Added, HotbarSlot_Removed, MagicPockets, MetaMagic_Gained, Save_Quicksave, UIEvent, UserAction_Activated> (full name from the macOS symbol of DynamicArray<Variant<...>>); variant index written at +0x18 of each 32-byte entry; +0 -> index 10 HotbarSlot_Added (bg3.exe+0x34289F0, 16-byte element); EoCServer.dll esv::tutorial::HotbarSystem::Update appends {entity, flags} for esv::hotbar::SlotsAddedOneFrameComponent"
+    },
+    {
+      "name": "Removed",
+      "offset": 16,
+      "type": "Array<HotbarEventRequestsSlot>",
+      "source": "inferred",
+      "evidence": "index 11 HotbarSlot_Removed (bg3.exe+0x3428AD0); Toolkit assert IndexedStorage<esv::tutorial::HotbarSlot_Removed> on the +0x10 array, filled when a delayed remove expires"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "meaning of the individual Flags bits"
+  ],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Filled by esv::tutorial::HotbarSystem (Toolkit EoCServer.dll+0xE2B4D0 named, paired with bg3.exe+0x341D7A0).",
+  "seen": true,
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

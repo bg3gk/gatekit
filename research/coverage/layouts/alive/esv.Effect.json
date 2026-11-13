@@ -1,0 +1,155 @@
+{
+  "component": "esv::Effect",
+  "ext_name": "ServerEffect",
+  "size": 120,
+  "seen": true,
+  "class_size": 112,
+  "base": "No virtual table (live +0 is an entity handle); plain C++ object stored behind the component pointer.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "The effect's own entity: game bg3.exe+0x2D665F0 passes *param_2 as the entity to CreateEffect (bg3.exe+0x2D66670 ~ esv::EffectManager::CreateEffect), which creates one when it is null. Live: entity handles."
+    },
+    {
+      "name": "Peers",
+      "offset": 8,
+      "type": "Array<int32_t>",
+      "source": "toolkit",
+      "evidence": "esv::Effect::AddPeer / HasPeer / RemovePeer (EoCServer.dll+0x51AF50, +0x51CC10) push and search ls::TypeWrap<int, net::PeerIDClassname> values in the array at this+8 (capacity +0x10, size +0x14). Live: heap pointer, size 0/1."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Set to 1 together with +0x1B by the play-and-forget wrappers (game bg3.exe+0x2D664E0, bg3.exe+0x2D66550; Toolkit esv::EffectManager::PlayAndForgetEffect). Live 0/1."
+    },
+    {
+      "name": "field_19",
+      "offset": 25,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Live 0/1; no writer read."
+    },
+    {
+      "name": "Looping",
+      "offset": 26,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "CreateEffect copies a byte of the EffectResource (+0xA0 in the game, +0xF0 Toolkit) here; Toolkit PlayEffect warns 'Trying to play a looping effect ... not a looping one' when it is 0."
+    },
+    {
+      "name": "Forget",
+      "offset": 27,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "CreateEffect sets it to !Looping; PlayAndForgetEffect sets it to 1 - the effect is released by the manager when finished (name inferred)."
+    },
+    {
+      "name": "field_1C",
+      "offset": 28,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Live: varying bytes, never written in the functions read (maybe padding)."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "CreateEffect copies a 4-byte value of the EffectResource (+0x9C game, +0xEC Toolkit). Live floats 1.0-6.0 (duration?)."
+    },
+    {
+      "name": "Scale",
+      "offset": 36,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Float argument of PlayEffect(name, Vector3f, Quaternionf, float) stored here (Toolkit EoCServer.dll+0xCF9930, game bg3.exe+0x2D66330). Live always 1.0."
+    },
+    {
+      "name": "EffectName",
+      "offset": 40,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "CreateEffect assigns its FixedString name argument to +0x28 (game and Toolkit)."
+    },
+    {
+      "name": "Bone",
+      "offset": 44,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "PlayEffect(name, EntityHandle target, FixedString) stores the third argument here (game bg3.exe+0x2D663A0 / 0x2D66550 / 0x2D665F0). Live FixedString indices or 0xFFFFFFFF."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Live: FixedString-like values or 0xFFFFFFFF; macOS default constructor stores a 4-byte constant."
+    },
+    {
+      "name": "field_34",
+      "offset": 52,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Live 0..0x80000000."
+    },
+    {
+      "name": "Target",
+      "offset": 56,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "PlayEffect on an entity stores the target handle here (game bg3.exe+0x2D663A0, 0x2D66550, 0x2D665F0; Toolkit PlayEffectOnEntity). Live: entity handles."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Live: entity handles or null."
+    },
+    {
+      "name": "Position",
+      "offset": 72,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "PlayEffect(name, Vector3f, Quaternionf, float) copies the position here (game bg3.exe+0x2D66330 / 0x2D664E0). Live zero for the entity-attached effects sampled."
+    },
+    {
+      "name": "field_54",
+      "offset": 84,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Live: world-coordinate-like floats in 4 of 48 samples (43.4, 17.0, -420.8), else zero."
+    },
+    {
+      "name": "Rotation",
+      "offset": 96,
+      "type": "glm::quat",
+      "source": "inferred",
+      "evidence": "PlayEffect copies the Quaternionf argument (16 bytes) here. Live (0,0,0,1)."
+    },
+    {
+      "name": "_Pad70",
+      "offset": 112,
+      "type": "uint8_t[8]",
+      "source": "inferred",
+      "evidence": "Registry size 120 is 8 more than the object (0x70; the last stores of the macOS default constructor end at +0x70). Live +0x70 belongs to the next element."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_18/field_19/field_1C/field_20/field_30/field_34/field_40/field_54 meanings.",
+    "Whether the component's own storage is the object (size 120) or a pointer to it: the registry says inline 8, total 120 - handled like ecl::Item.",
+    "field_20 (float copied from the EffectResource) and field_40 (a second entity) - the Toolkit esv::Effect methods (Update / Stop) would tell."
+  ],
+  "minutes": 12,
+  "functions_read": 9,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: esv::Effect is neither saved nor replicated; the Osiris PlayEffect(_Object, _FxName, _Bone, _Scale) parameters only confirm the members already named."
+}

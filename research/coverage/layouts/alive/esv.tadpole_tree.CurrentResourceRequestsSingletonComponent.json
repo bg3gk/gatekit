@@ -1,0 +1,68 @@
+{
+  "component": "esv::tadpole_tree::CurrentResourceRequestsSingletonComponent",
+  "ext_name": "ServerTadpoleTreeCurrentResourceRequests",
+  "size": 16,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Singleton of tadpole-power point requests: read by esv::ActionResourceSystem::ProcessTadpoleTreePowersRequests and TadpoleTreeExecutorSystem::Update. Lives from level load; empty in the sample.",
+  "structs": [
+    {
+      "name": "TadpoleTreeResourceRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "RequestId",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "esv::tadpole_tree::ResourceRequest (Toolkit IndexedStorage assert). ProcessTadpoleTreePowersRequests (EoCServer.dll+0x1608CB0) copies +0 into the ResourceRequestResult it emits."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Not read in the functions examined."
+        },
+        {
+          "name": "Amount",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Compared with 0 / negative in ProcessTadpoleTreePowersRequests; FUN_1815fcf60 passes it as the amount of TadpolePowerPointResourceId to add/spend."
+        },
+        {
+          "name": "field_C",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Not read; may be padding."
+        },
+        {
+          "name": "Entity",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "FUN_1815fcf60 checks +0x10 for a valid live entity and fetches its action resources."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TadpoleTreeResourceRequest>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2F03D30 zeroes pointer/capacity/size; macOS ls::DynamicArray<esv::tadpole_tree::ResourceRequest>; ProcessTadpoleTreePowersRequests walks elements of stride 0x18 (6 dwords). Live: empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Members +4 and +0xC."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

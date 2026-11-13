@@ -1,0 +1,40 @@
+{
+  "component": "esv::ExplorationAwardStateComponent",
+  "ext_name": "ServerExplorationAwardState",
+  "size": 16,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Not replicated. Toolkit esv::exp::ExperienceSystem::HandleExplorationTriggerEvents (EoCServer.dll+0x6FD230) iterates this component (stride 0x10) together with esv::ExplorationTrigger: if +0 equals 0xFFC0000000000000 (null EntityHandle) it computes an entity with EoCServer.dll+0x6FB8B0 (from the trigger and its current level) and stores it here."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Same function processes the trigger only while the byte at +8 is 0 and sets it to 1 at the end of processing - an 'already handled/awarded' flag."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "padding to 16"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Server-only; registry totalSize 16 on the server row only.",
+    "macOS default constructor stores 16 bytes from q0 at +0 (likely null handle + 0) - consistent but not decoded.",
+    "Meaning of the entity at +0."
+  ],
+  "seen": false,
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "14 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

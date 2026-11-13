@@ -1,0 +1,25 @@
+{
+  "component": "ls::SoundMultiPositionComponent",
+  "ext_name": "SoundMultiPosition",
+  "size": 16,
+  "seen": true,
+  "summary": "Sound emitter with several positions (Wwise multi-position sound): a list of world positions. Written by ls::SoundTransformSystem (macOS names), read by ecl::SoundSystem, ecl::sound::AmbienceMixSystem and ls::SoundOcclusionSystem. Same layout as ls::SoundMultiPositionChangedOneFrameComponent and ls::SoundMultiPositionSetupRequestOneFrameComponent (they share one exported copy constructor).",
+  "fields": [
+    {
+      "name": "Positions",
+      "offset": 0,
+      "type": "Array<glm::vec3>",
+      "source": "inferred",
+      "evidence": "Toolkit GameEngine.dll+0x68E620 exports ??0SoundMultiPositionComponent@ls@@QEAA@AEBV?$DynamicArray@VVector3f@@...@Z - the component is built from an ls::DynamicArray<Vector3f> (16 bytes: pointer, capacity, size). Live: +0 heap pointer, +8 and +0xC equal small counts 0..0x11 (capacity, size). Member name not given by the game."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Game member name unknown (\"Positions\" is descriptive)."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

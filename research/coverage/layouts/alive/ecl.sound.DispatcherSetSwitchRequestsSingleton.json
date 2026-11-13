@@ -1,0 +1,26 @@
+{
+  "component": "ecl::sound::DispatcherSetSwitchRequestsSingleton",
+  "ext_name": "ClientSoundDispatcherSetSwitchRequests",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<SoundSetSwitchRequest>",
+      "source": "inferred",
+      "evidence": "ecl::sound::DispatcherSystem::Update (EoCClient.dll+0xDCA820) destroys ls::GameplaySoundSwitchRequest elements of stride 0x18 in this singleton and appends new ones with the GameplaySoundSwitchRequest copy constructor. Reuses SoundSetSwitchRequest from GameDefinitions/Components/Sound.h (variant<EntityHandle,uint64_t> Subject, FixedString Switch, FixedString Value = 24 bytes) - same layout as ls::GameplaySoundSwitchRequest: its copy constructor GameEngine.dll+0x1C4400 copies 16 bytes then FixedStrings at +0x10 and +0x14."
+    }
+  ],
+  "external_types": [
+    "SoundSetSwitchRequest (GameDefinitions/Components/Sound.h)"
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the layout file is not valid yet: 'list' object has no attribute 'items'",
+  "hold": "uses types of Script Extender's own headers (SoundSetSwitchRequest (GameDefinitions/Components/Sound.h)): whether they are declared before Coverage.h is included is not checked yet"
+}

@@ -1,0 +1,154 @@
+{
+  "component": "ecl::timeline::TimelineLoadedComponent",
+  "ext_name": "ClientTimelineLoaded",
+  "size": 88,
+  "structs": [
+    {
+      "name": "TimelineThothCondition",
+      "size": 104,
+      "fields": [
+        {
+          "name": "Id",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1BC2C70 (loader, only user of 'ls.thoth.client.condition') fills +0x00..0x10 with two results of the random generator FUN_144130d80 - a freshly generated Guid; this Guid is the key of CompiledConditions (bg3.exe+0x1A5AE70 passes the record pointer as key to FUN_140ef16d0)."
+        },
+        {
+          "name": "Type",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1BC2C70: default 5, then set to the value 0..5 mapped from the source record's type field; the same byte is used as the key of the Conditions map (FUN_141bc3850(map, &type))."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "alignment before the FixedString at 0x14"
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default -1, then CreateFromString from a std::string of the source record (source +0x30); destructor bg3.exe+0x18898A0 DecRefs it. Which name it is (event / condition name) not established."
+        },
+        {
+          "name": "Condition",
+          "offset": 24,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "24-byte small-string (buffer 0x18, size 0x28, capacity 0x2C, default capacity 15; freed when capacity > 15 in bg3.exe+0x18898A0). bg3.exe+0x1A5AE70 / 0x1A5B010 copy it, append a 4-char suffix and hand it to FUN_141a5b220 (only user of the string 'conditions') and then to the Thoth compiler FUN_140effd00 - the condition source text."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default -1, copied from the source record (source +0x48)."
+        },
+        {
+          "name": "field_34",
+          "offset": 52,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default 0, set to 1 together with field_30 - looks like the 'has value' byte of std::optional<int32_t> {field_30, field_34}."
+        },
+        {
+          "name": "_Pad35",
+          "offset": 53,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "alignment"
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: 16 bytes copied from the source record (source +0x18..0x28), default 0."
+        },
+        {
+          "name": "field_48",
+          "offset": 72,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default 0, 4 bytes copied from source +0x28."
+        },
+        {
+          "name": "_Pad4C",
+          "offset": 76,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "alignment"
+        },
+        {
+          "name": "field_50",
+          "offset": 80,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: 16 bytes copied from the first 16 bytes of the source record (its own id), default 0."
+        },
+        {
+          "name": "field_60",
+          "offset": 96,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1BC2C70: default -1, CreateFromString from the last std::string of the source record; DecRef in destructor bg3.exe+0x18898A0."
+        },
+        {
+          "name": "_Pad64",
+          "offset": 100,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "tail padding; element stride 0x68 in bg3.exe+0x1889570 (array grow) and in the loops of bg3.exe+0x1A5AE70"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Timeline",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1D78C60: ComponentFrameStorageAllocRaw(storage, 0x58, ...), copies the four dwords of the Guid argument into +0..+0xF, zeroes +0x10..+0x4F (the map) and writes a zero byte at +0x50. caller bg3.exe+0x1D59100 (ecl::TimelineSystem, combat/arena timeline finished loading) passes the timeline Guid it also stores at +0x100 of ecl::CombatTimelineDataComponent. bg3.exe+0x1A56E10 passes these 16 bytes as the Guid looked up in the arena triggers' HashSet<Guid>."
+    },
+    {
+      "name": "Events",
+      "offset": 16,
+      "type": "HashMap<uint8_t, Array<TimelineThothCondition>>",
+      "source": "inferred",
+      "evidence": "Creator zeroes a 64-byte hash map at +0x10. bg3.exe+0x1D59100 walks the timeline's 0x20-byte records (+0x350, count +0x35C of the timeline content): lookup/insert by the record's type byte (+0x10; 1-byte key compare, bg3.exe+0x1BC3850 - the same helper as GlobalThothComponent::Conditions), then appends a 0x68-byte element (grow helper bg3.exe+0x1889570, the one used for TimelineThothCondition): fresh random Guid, type byte, FixedString +0x14, STDString built from the record's FixedString +0x1C, int32 +0x30 from record +0x18, bool +0x34 = 0, Guid +0x38 = the timeline Guid, int32 +0x48 = record index, Guid +0x50 = 0, FixedString +0x60 = -1. bg3.exe+0x1A5FE20 (ecl::timeline::ActiveEventSystem) iterates the values with stride 0x10 and the arrays with stride 0x68."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator writes 0; bg3.exe+0x1D59100 copies byte +0xFD of ecl::CombatTimelineDataComponent (itself copied from byte 9 of the creation request)."
+    },
+    {
+      "name": "_Pad51",
+      "offset": 81,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "alignment / tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "TimelineThothCondition is declared identically (same members, offsets, types) in the confirmed layout ecl.timeline.GlobalThothComponent.json; its unnamed members must stay named the same in both files. Learned here: field_14 = event name (key of GlobalEventFrequencyComponent::Cooldowns), field_38 = Guid of the owning timeline, field_48 = index of the record in the timeline.",
+    "field_50: a flag of the combat-timeline creation request; meaning not established.",
+    "Never alive in the captures."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled on Windows: the creator bg3.exe+0x1D78C60 allocates 0x58 bytes (Guid at +0, 64-byte map at +0x10, byte at +0x50) and bg3.exe+0x1D59100 fills the map with a 1-byte key and 0x68-stride arrays; the element struct is the same shape as in the live-confirmed GlobalThothComponent layout.",
+  "raw_check": "23 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found for TimelineThothCondition."
+}

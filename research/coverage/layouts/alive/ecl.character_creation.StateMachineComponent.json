@@ -1,0 +1,27 @@
+{
+  "component": "ecl::character_creation::StateMachineComponent",
+  "ext_name": "ClientCharacterCreationStateMachine",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "The only member: Windows creator bg3.exe+0x201A830 allocates 4 bytes (ComponentFrameStorageAllocRaw(storage, 4)) and stores a 32-bit 0; macOS default ctor str wzr. Used by ecl::character_creation::_private::UpdateStateMachine (macOS names) - most likely the state of the session state machine (an enum, values not read). Live 0."
+    }
+  ],
+  "summary": "State of the character-creation session state machine. situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "confidence": "high",
+  "open_questions": [
+    "Values of the state (meaning only; the 4-byte width is established)."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Width settled by the Windows creator bg3.exe+0x201A830: a 4-byte component written with one 32-bit store; the enum of states was not established.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

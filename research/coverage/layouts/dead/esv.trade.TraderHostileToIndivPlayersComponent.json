@@ -1,0 +1,25 @@
+{
+  "component": "esv::trade::TraderHostileToIndivPlayersComponent",
+  "ext_name": "ServerTraderHostileToIndivPlayers",
+  "size": 48,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "The players a trader is hostile to individually (its sibling esv::trade::TraderHostileToAllPlayersComponent is a tag). Kept by esv::trade::TraderMapMarkerRelationSystem::ApplyIndividualHostilityChanges (Toolkit EoCServer.dll+0xD1A500; game helpers bg3.exe+0x351AE00 / bg3.exe+0x351B240) and read by esv::trade::TraderMapMarkerIndividualHostilitySystem (bg3.exe+0x3528E60, getter bg3.exe+0x26DB980). Saved: model ls::model::game::trade::v0::TraderHostileToIndivPlayersComponent (16 bytes - an array in the save), written together with ls::model::core::v0::EntityId (Save bg3_macos_x64+0x4E8BFC0); no member names in the macOS symbols.",
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Type registration bg3.exe+0x26FB4D0: element size 0x30, destructor thunk_FUN_140582AD0 (destroys a HashSet with plain keys). Windows save function bg3.exe+0x2545170 (slot 2 of the save ops table bg3.exe+0x5719388 registered by bg3.exe+0x251AAE0 for model ls::model::game::trade::v0::TraderHostileToIndivPlayersComponent, 16 bytes = a list) gets the component with bg3.exe+0x26DB980, walks its keys at +0x20 (count +0x2C, stride 8) and turns each into an ls::model::core::v0::EntityId (FUN_144018820): HashSet<EntityHandle>. Name inferred from the component name (individual players)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 7,
+  "functions_read": 4,
+  "status": "declared",
+  "second_pass": "The Windows save function bg3.exe+0x2545170 walks the HashSet keys at +0x20 with stride 8 and saves each as an EntityId: the 48 bytes are one HashSet<EntityHandle>.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

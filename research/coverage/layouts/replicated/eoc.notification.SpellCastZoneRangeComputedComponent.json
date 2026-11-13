@@ -1,0 +1,33 @@
+{
+  "component": "eoc::notification::SpellCastZoneRangeComputedComponent",
+  "ext_name": "NotificationSpellCastZoneRangeComputed",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Range",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x9973A0: member 1, raw 4-byte write at +0; live sample (seen.py, spells-1, client and server) 4.929 as float; macOS default 0. Named after the component (zone range computed)."
+    },
+    {
+      "name": "Position",
+      "offset": 4,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x9973A0: member 2, raw 12-byte write at +4; live sample (53.25, 17.22, -417.8) = a world position"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Names inferred from one live sample and the component name."
+  ],
+  "seen": true,
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

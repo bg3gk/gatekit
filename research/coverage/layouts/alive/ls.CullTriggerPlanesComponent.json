@@ -1,0 +1,39 @@
+{
+  "component": "ls::CullTriggerPlanesComponent",
+  "ext_name": "CullTriggerPlanes",
+  "size": 112,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Planes",
+      "offset": 0,
+      "type": "std::array<glm::vec4, 6>",
+      "source": "inferred",
+      "evidence": "Toolkit GameEngine.dll+0x1335A0 (ls::CullTriggerPlanesComponent::CullTriggerPlanesComponent) zeroes 12 qwords +0..+0x58; operator= (GameEngine.dll+0x1350D0) copies them. GameEngine.dll+0x8FA7A0 (called from ls::trigger::CullingPlanesUpdateSystem::ProcessUpdates) runs ls::trigger::CalculateCullingPlanes(AreaPhysics, Transform) and copies 24 floats into +0..+0x5C: six planes (normal xyz + distance). Live: normals are unit axis vectors (0, +-1, tiny 3.6e-7) and the 4th float of each 16 bytes is a large signed distance (80.99, 326.5, ...)."
+    },
+    {
+      "name": "IsValid",
+      "offset": 96,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Constructor sets byte +0x60 to 0; GameEngine.dll+0x8FA7A0 sets it to 1 only when CalculateCullingPlanes succeeded (otherwise it logs 'CullTrigger `%s` physics should always be BOX, otherwise the culling won't work.'). Live: byte 0x60 always 1."
+    },
+    {
+      "name": "_Pad61",
+      "offset": 97,
+      "type": "uint8_t[15]",
+      "source": "inferred",
+      "evidence": "Tail padding: the Toolkit object ends at 0x61 but is 16-byte aligned (vec4 SIMD planes), so the registry size is 0x70 (bg3.exe+0x6E99E0 sets the storage size 0x70). The constructor never writes these bytes; live samples show garbage there (random values, even heap-looking ones)."
+    }
+  ],
+  "summary": "Client culling: the six world-space planes of a cull trigger's box (ls::trigger::CullingPlanesUpdateSystem recomputes them when the trigger moves/rotates/scales); read by ls::ClusterSystem (SetupNewCullTriggerCluster) and ls::ClusterVisibilitySystem to cull clusters. Present on the cull-trigger entities of idle levels.",
+  "confidence": "high",
+  "open_questions": [
+    "'IsValid' is an inferred name for the 'planes computed' flag."
+  ],
+  "minutes": 8,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,92 @@
+{
+  "component": "ls::ugc::PendingModInfoRequestSingletonComponent",
+  "ext_name": "UgcPendingModInfoRequest",
+  "size": 128,
+  "seen": true,
+  "summary": "Client singleton of mod.io mod-info requests in flight, used by ls::ugc::ModInfoCachedRequestSystem (macOS GatherRequests / SendRequests(HashSet<ModItemInfoID> const&, HashMap<ls::Guid, ModItemInfoID>&); Windows per-frame update bg3.exe+0x3BE8230): request Guid -> ls::ugc::ModItemInfoID. Two maps of the same shape (same Windows destructor as PendingModDependencyRequestSingleton). Live: idle, all zero.",
+  "structs": [
+    {
+      "name": "UgcPendingModInfoRequestId",
+      "size": 32,
+      "fields": [
+        {
+          "name": "ModId",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "ls::ugc::ModItemInfoID +0: macOS HashTable<ModItemInfoID>::Ensure (bg3_macos_x64+0x260BA40) hashes and compares this qword first; Windows default (bg3.exe+0x3BE8230) 0. Named by analogy with ModItemDependenciesInfoID's 64-bit item id."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Value of an optional 64-bit member: Ensure compares it (and mixes it into the hash) only when the flag at +0x10 is set on both sides; Windows default 0 (8-byte store)."
+        },
+        {
+          "name": "field_8HasValue",
+          "offset": 16,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "The flag of the optional at +8 (Ensure: 'if flag == 0, value hashed as 0'; compared as bool); Windows default 0 (8-byte zero store at +0x10)."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Compared as one byte by Ensure; Windows default byte 0 at +0x18."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "field_1C",
+          "offset": 28,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "Compared and hashed as a 4-byte int by Ensure; Windows default 0xFFFFFFFF (-1) at +0x1C."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<Guid, UgcPendingModInfoRequestId>",
+      "source": "inferred",
+      "evidence": "ls::HashMap<ls::Guid, ls::ugc::ModItemInfoID> (macOS SendRequests). Windows bg3.exe+0x3BE9CF0 (singleton through bg3.exe+0x3BE9010) removes answered request Guids from both maps, then inserts every new request (Guid hash '(lo ^ hi) % buckets', 32-byte value copied as four qwords through bg3.exe+0x3BEA130). Creator bg3.exe+0x3BEA800 zeroes two map patterns; destructor bg3.exe+0x682800 frees trivial values and the plain-key set."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "HashMap<Guid, UgcPendingModInfoRequestId>",
+      "source": "unknown",
+      "evidence": "Same map type at +0x40: bg3.exe+0x3BE9CF0 inserts only the requests of its second input list into it (and into +0x00 too). Role of that list not established."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of ModItemInfoID's optional qword at +8, the byte at +0x18 and the int at +0x1C (default -1).",
+    "What distinguishes the requests that also go into the +0x40 map."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Both maps settled on Windows from bg3.exe+0x3BE9CF0: Guid keys (Guid hash) and 32-byte ModItemInfoID values, the second map a subset of the first; the id's members come from the macOS hash/compare and the Windows defaults.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

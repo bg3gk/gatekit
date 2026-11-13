@@ -1,0 +1,54 @@
+{
+  "component": "esv::script::EnterCombatRequestSingletonComponent",
+  "ext_name": "ServerScriptEnterCombatRequests",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: Osiris-issued 'enter combat' requests (ls::Variant alternative 0 of esv::script::RequestSystem's requests), each tagged with the request entity. Filled once per frame by esv::script::RequestSystem::ProcessEmitRequests; pushed by Osiris calls such as SetHostileAndEnterCombat / SetCombatGroupAndEnterCombat through RequestSystem::LEGACY_AddRequestChain. Seen.py context: singleton present in the idle level (one sample held an allocated, empty array).",
+  "structs": [
+    {
+      "name": "EnterCombatRequestsEntry",
+      "size": 24,
+      "fields": [
+        {
+          "name": "RequestEntity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::script::Requester<T> +0: EoCServer.dll+0x4FA900 (variant visitor of ProcessEmitRequests) stores the first qword of the RequestToExecute (the request entity that RequestSystem::ProcessUpdateRequests creates per queued request)."
+        },
+        {
+          "name": "Source",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EnterCombatRequest +0. EoCServer.dll+0x12ACE20 (OsirisGameFunctions::SetHostileAndEnterCombat) fills it with its third argument (entity); EoCServer.dll+0x12AA0F0 (SetCombatGroupAndEnterCombat) with the entity whose combat group is set."
+        },
+        {
+          "name": "Target",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EnterCombatRequest +8: fourth argument of SetHostileAndEnterCombat / third (target) argument of SetCombatGroupAndEnterCombat."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<EnterCombatRequestsEntry>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x4FA900 case 0: appends to the singleton's DynamicArray, assert ls::IndexedStorage<esv::script::Requester<esv::script::EnterCombatRequest>>, stride 0x18 (entity + 16 bytes copied). macOS names ls::DynamicArray<esv::script::Requester<...>>."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Source/Target names are inferred from the Osiris callers, not from game names."
+  ],
+  "minutes": 4,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,117 @@
+{
+  "component": "eoc::analytics::EventCombatStartedComponent",
+  "ext_name": "AnalyticsEventCombatStarted",
+  "size": 112,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Character",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Same head as the confirmed eoc::analytics::EventCombatTurnComponent (m_CharacterHandle at +0). Live: client 0x01400001000001FE-like, server 0x01800001000007C3-like values (entity handles of the two worlds). RecordCombatStart (EoCClient.dll+0xD36CA0) gets the resolved character as a separate argument."
+    },
+    {
+      "name": "Faction",
+      "offset": 8,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "EoCClient.dll+0xD36CA0 ecl::GameAnalyticsSystem::RecordCombatStart: ls::Guid::ToString(+8) -> \"faction_id\", FactionContainer lookup of +8 -> \"faction_name\". Live: 5 distinct 16-byte values, identical on client and server."
+    },
+    {
+      "name": "CombatId",
+      "offset": 24,
+      "type": "EventCombatStartedString",
+      "source": "game",
+      "evidence": "RecordCombatStart: ls::STDString::ToChar(+0x18) -> \"combat_id\". Live: heap pointer, size 0x24 (36, a guid string), capacity 0x2F."
+    },
+    {
+      "name": "CombatGroupId",
+      "offset": 48,
+      "type": "EventCombatStartedString",
+      "source": "game",
+      "evidence": "RecordCombatStart: STDString +0x30 -> \"combat_group_id\". Live: mostly empty (size 0, capacity 15) or 36 chars."
+    },
+    {
+      "name": "CombatTurn",
+      "offset": 72,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "RecordCombatStart: int at +0x48 -> \"combat_turn\". Live 0/1."
+    },
+    {
+      "name": "_Pad4C",
+      "offset": 76,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "alignment padding before the next string; live holds stale bytes"
+    },
+    {
+      "name": "CombatTeam",
+      "offset": 80,
+      "type": "EventCombatStartedString",
+      "source": "game",
+      "evidence": "RecordCombatStart: STDString +0x50 -> \"combat_team\". Live: heap pointer, size 36, capacity 47."
+    },
+    {
+      "name": "Initiative",
+      "offset": 104,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "RecordCombatStart: int at +0x68 -> \"initiative\". Live small values and 0xFFFFFFEF.. (negative allowed)."
+    },
+    {
+      "name": "_Pad6C",
+      "offset": 108,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding to 8-byte alignment (112); live holds stale bytes"
+    }
+  ],
+  "structs": [
+    {
+      "name": "EventCombatStartedString",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Ptr",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "heap pointer to the characters when Capacity > 15, else bytes 0..15 are the inline buffer. Equals the 24-byte game string used as STDString in the confirmed layout se-fork\\coverage\\layouts\\fieldmeta\\eoc.analytics.EventCombatTurnComponent.json"
+        },
+        {
+          "name": "InlineTail",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bytes 8..15 of the inline buffer; live 0 for heap strings"
+        },
+        {
+          "name": "Size",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "live 0x24 (36-character guid strings) or 0"
+        },
+        {
+          "name": "Capacity",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "live 0x2F (heap) or 0xF (inline)"
+        }
+      ]
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Character name taken by analogy with EventCombatTurnComponent (m_CharacterHandle); RecordCombatStart itself does not print it.",
+    "The equipment ids (helmet_id ...) of the event come from the character, not from this component."
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

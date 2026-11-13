@@ -1,0 +1,48 @@
+{
+  "component": "esv::camp::ReadyCheckRequestOneFrameComponent",
+  "ext_name": "ServerCampReadyCheckRequest",
+  "size": 96,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request to start a ready check (vote), raised by esv::camp::EndTheDaySystem (end the day / long rest) and consumed by esv::ready_check::OverseerSystem::GatherRequest, which passes its members straight to OverseerSystem::RequestBegin(string id, TranslatedString, new Guid, EntityHandle*, HashSet<EntityHandle>*, false); the resulting eoc::ready_check::StateComponent keeps the id as EventId and the text as TranslatedString. Never seen alive. Registry total 96 (server row).",
+  "fields": [
+    {
+      "name": "EventId",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2BF79F0 (AllocRaw 0x60) initialises an LS STDString at +0 (16-byte inline buffer zeroed, size +0x10 = 0, capacity +0x14 = 0xF). Toolkit esv::ready_check::OverseerSystem::GatherRequest (EoCServer.dll+0x2E11E0) converts `(STDString*)component` to a string_view and passes it as the first RequestBegin argument; ProcessRequests copies the request string into StateComponent.EventId (game name m_EventId of the state's savegame model)."
+    },
+    {
+      "name": "TranslatedString",
+      "offset": 24,
+      "type": "TranslatedString",
+      "source": "inferred",
+      "evidence": "Creator writes the FixedString 'ls::TranslatedStringRepository::s_HandleUnknown' (IncRef) at +0x18, version uint16 0 at +0x1C and constructs the argument handle at +0x20 (ls::TranslatedString::TranslatedString(+0x20, DAT_1462d4aa8)). GatherRequest passes `(TranslatedString *)(component + 0x18)` to RequestBegin; StateComponent.TranslatedString (m_TranslatedString) receives it."
+    },
+    {
+      "name": "Initiator",
+      "offset": 40,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator writes 0xffc0000000000000 (null EntityHandle) at +0x28; GatherRequest passes `(ID<ecs::EntityHandleTraits> *)(component + 0x28)` to RequestBegin. Name from esv::camp::EndTheDaySystem::FinalizeInitiator (the system that raises the request), not proven."
+    },
+    {
+      "name": "Entities",
+      "offset": 48,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x30..+0x5F in the HashSet pattern (buckets +0x30, next ids +0x40 with count +0x4C, keys +0x50 with count +0x5C). GatherRequest passes `(HashSet<ls::ID<ecs::EntityHandleTraits>,ls::HashTableOpsDefault> *)(component + 0x30)` to RequestBegin (Toolkit-typed)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of +0x28 and +0x30 are not the game's (RequestBegin's parameter names are not exported); +0x30 is probably the set of participants asked to vote.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

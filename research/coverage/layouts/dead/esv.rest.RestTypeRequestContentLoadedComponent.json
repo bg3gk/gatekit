@@ -1,0 +1,26 @@
+{
+  "component": "esv::rest::RestTypeRequestContentLoadedComponent",
+  "ext_name": "ServerRestTypeRequestContentLoaded",
+  "size": 48,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Set of 4-byte ids whose long-rest timeline content has been loaded: filled by esv::TimelineSystem::ProcessLongRestTimelines (bg3.exe+0x330EF40), queried by esv::rest::LongRestSystem (bg3.exe+0x2BDBC50, state 2 -> 3 when the id is present).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "HashSet<uint32_t>",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x3315620 allocates 0x30 and zeroes three array headers (HashSet); destructor thunk -> FUN_140582AD0 frees +0x20, +0x10, +0 with no key destructor (so not FixedString keys). bg3.exe+0x330EF40 inserts 4-byte values with FUN_1405E1A30 (keys compared as uint at keys[+0x20] stride 4); bg3.exe+0x2BDBC50 looks a uint32 up in it."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the 4-byte ids are (copied from per-entity uint32 arrays in ProcessLongRestTimelines)."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

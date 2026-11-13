@@ -1,0 +1,26 @@
+{
+  "component": "esv::tadpole_tree::RemovedPowerOneFrameComponent",
+  "ext_name": "ServerTadpoleTreeRemovedPower",
+  "size": 16,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Event of the server tadpole-tree power system: the powers removed from an entity this frame. Created in bg3.exe+0x2F04C10 (AllocRaw 0x10, zeroed, then filled by appending FixedStrings with FUN_140E87130); in the same function eoc::tadpole_tree::PowerContainerComponent (SE: Array<FixedString> Powers) is created the same way. Saved: model ls::model::game::tadpole_tree::v0::RemovedPowerOneFrameComponent, 16 bytes, no member names; Save/Load bg3_macos_x64+0x4EBA140 / +0x4EB9A10.",
+  "fields": [
+    {
+      "name": "Powers",
+      "offset": 0,
+      "type": "Array<FixedString>",
+      "source": "inferred",
+      "evidence": "Destructor FUN_1406CC770 (frame storage of type registration bg3.exe+0x26FBE70, element size 0x10) resizes an Array<FixedString> to 0 (FUN_1405C4050) and frees +0; creator bg3.exe+0x2F04C10 zeroes 16 bytes and appends 4-byte FixedStrings (FUN_140E87130 -> FUN_14078C8A0); same shape and filling as eoc::tadpole_tree::PowerContainerComponent::Powers next to it. Name taken from that SE sibling."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member name of the savegame model is not in the macOS symbols (no _Field_m_ entry)."
+  ],
+  "minutes": 6,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

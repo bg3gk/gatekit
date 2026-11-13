@@ -1,0 +1,102 @@
+{
+  "component": "eoc::screen_fade::ScreenFadeFromServerComponent",
+  "ext_name": "ScreenFadeFromServer",
+  "size": 64,
+  "fields": [
+    {
+      "name": "ScreenFades",
+      "offset": 0,
+      "type": "HashMap<UserId, Array<ScreenFadeData>>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::HashMap<class net::UserID,class ls::DynamicArray<struct eoc::screen_fade::ScreenFadeData,struct ls::TaggedAllocator<int> >,struct ls::HashTableOpsDefault> eoc::screen_fade::ScreenFadeFromServerComponent::*,0>; macOS m_ScreenFades. Serializer bg3.exe+0x9316F0 -> bg3.exe+0xA9A1B0 (UserID keys, 16-byte array values) -> bg3.exe+0xB635A0 (element stride 0x28)."
+    }
+  ],
+  "structs": [
+    {
+      "name": "ScreenFadeData",
+      "size": 40,
+      "fields": [
+        {
+          "name": "ScreenFadeId",
+          "offset": 0,
+          "type": "Guid",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_ScreenFadeId (ls::Guid) of eoc::screen_fade::ScreenFadeData; element serializer bg3.exe+0xB635A0 writes 16 bytes at +0x0 in TypeList order"
+        },
+        {
+          "name": "State",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_State (eoc::screen_fade::EScreenFadeState (no SE enum)) of eoc::screen_fade::ScreenFadeData; element serializer bg3.exe+0xB635A0 writes 1 byte at +0x10 in TypeList order"
+        },
+        {
+          "name": "FadeStyle",
+          "offset": 17,
+          "type": "uint8_t",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_FadeStyle (eoc::screen_fade::EScreenFadeStyle) of eoc::screen_fade::ScreenFadeData; element serializer bg3.exe+0xB635A0 writes 1 byte at +0x11 in TypeList order"
+        },
+        {
+          "name": "IntensityLevel",
+          "offset": 18,
+          "type": "uint8_t",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_IntensityLevel (eoc::screen_fade::EScreenFadeIntensityLevel) of eoc::screen_fade::ScreenFadeData; element serializer bg3.exe+0xB635A0 writes 1 byte at +0x12 in TypeList order"
+        },
+        {
+          "name": "IsTransparent",
+          "offset": 19,
+          "type": "bool",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_IsTransparent (bool) of eoc::screen_fade::ScreenFadeData; element serializer bg3.exe+0xB635A0 writes 1 byte at +0x13 in TypeList order"
+        },
+        {
+          "name": "HasSpin",
+          "offset": 20,
+          "type": "bool",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_HasSpin (bool) of eoc::screen_fade::ScreenFadeData; element serializer bg3.exe+0xB635A0 writes 1 byte at +0x14 in TypeList order"
+        },
+        {
+          "name": "_Pad15",
+          "offset": 21,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "compiler padding (alignment)"
+        },
+        {
+          "name": "Duration",
+          "offset": 24,
+          "type": "float",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_Duration (float) of eoc::screen_fade::ScreenFadeData; element serializer bg3.exe+0xB635A0 writes 4 bytes at +0x18 in TypeList order"
+        },
+        {
+          "name": "WaitTime",
+          "offset": 28,
+          "type": "float",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_WaitTime (float) of eoc::screen_fade::ScreenFadeData; element serializer bg3.exe+0xB635A0 writes 4 bytes at +0x1C in TypeList order"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not serialized; the 0x28 stride leaves 8 bytes after WaitTime"
+        }
+      ]
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the 8 non-replicated bytes at +0x20 of ScreenFadeData hold."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

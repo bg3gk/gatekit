@@ -1,0 +1,23 @@
+{
+  "component": "eoc::quest::ModifiedJournalEntrySingletonComponent",
+  "ext_name": "QuestModifiedJournalEntry",
+  "size": 64,
+  "fields": [
+    {
+      "name": "CollapsedJournalEntries",
+      "offset": 0,
+      "type": "HashMap<FixedString, HashSet<FixedString>>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::HashMap<class ls::FixedString,class ls::HashSet<class ls::FixedString,struct ls::HashTableOpsDefault>,struct ls::HashTableOpsDefault> eoc::quest::ModifiedJournalEntrySingletonComponent::*,0>; macOS ls::FieldMeta<ls::HashMap<ls::FixedString,ls::HashSet<ls::FixedString,ls::HashTableOpsDefault>,ls::HashTableOpsDefault> eoc::quest::ModifiedJournalEntrySingletonComponent::*, &eoc::quest::ModifiedJournalEntrySingletonComponent::m_CollapsedJournalEntries>. Registered size 64 = one HashMap. Windows side: replication reader bg3.exe+0x925E80 (slot 1 of the handler table bg3.exe+0x551D2D8) builds a fresh component as a 64-byte zeroed local and deserializes the member into it at the FieldMeta offset global DAT_146280358; the hash map's values are walked with stride 0x30 (= HashSet<FixedString>). A 64-byte member in a 64-byte component can only sit at +0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "1 of 1 members have their offset from the macOS build alone (0 have no evidence): the two builds lay structures out differently, so the Windows side must confirm them before the layout is declared",
+  "needs_windows": "1 of 1 members have their offset from the macOS build alone (0 have no evidence): the two builds lay structures out differently, so the Windows side must confirm them before the layout is declared",
+  "second_pass": "Confirmed on Windows: the replication reader bg3.exe+0x925E80 builds the component as a 64-byte local holding only this HashMap (value stride 0x30 = HashSet), and the Windows FieldMeta type name gives offset 0."
+}

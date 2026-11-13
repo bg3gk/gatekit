@@ -1,0 +1,174 @@
+{
+  "component": "esv::projectile::ImpactInterruptEventOneFrameComponent",
+  "ext_name": "ServerProjectileImpactInterruptEvent",
+  "size": 96,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event raised when a projectile impact can be interrupted (reactions such as Shield / Deflect Missiles): the hits it would deal, the spell, an entity and the impact position. Read by esv::interrupt::EventSystem::ProcessInterruptionEvents (Toolkit EoCServer.dll+0x10E0910; its WorldView lists this component). Seen.py context: fights with ranged enemies (gnoll rangers, minotaur bait), traps on locked chests/doors.",
+  "structs": [
+    {
+      "name": "ImpactInterruptHit",
+      "size": 488,
+      "fields": [
+        {
+          "name": "Hit",
+          "offset": 0,
+          "type": "uint8_t[448]",
+          "source": "inferred",
+          "evidence": "Element destructor in bg3.exe+0x22E3E00 (stride 0x1E8) calls FUN_1405f19c0 (~ eoc::HitDesc::~HitDesc, pseudo-code match) on element+0: an eoc::HitDesc copy (Script Extender type, not redeclared here)."
+        },
+        {
+          "name": "field_1C0",
+          "offset": 448,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "Element destructor clears (FUN_1405bd630) and frees the buffer at +0x1C0: a container (pointer, then capacity/size)."
+        },
+        {
+          "name": "field_1C8",
+          "offset": 456,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Container capacity (assumed)."
+        },
+        {
+          "name": "field_1CC",
+          "offset": 460,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Container size (assumed)."
+        },
+        {
+          "name": "field_1D0",
+          "offset": 464,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not read."
+        },
+        {
+          "name": "field_1D8",
+          "offset": 472,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not read."
+        },
+        {
+          "name": "field_1E0",
+          "offset": 480,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not read."
+        }
+      ]
+    },
+    {
+      "name": "ImpactInterruptSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as Script Extender's SpellId (Base/ExposedTypes.h, 0x38 bytes). Creator default -1."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "SpellId padding."
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SpellSourceType (1 byte); creator default 0x17 = Sentinel."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "SpellId padding."
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellId.Source; creator zero."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellId.ProgressionSource; creator zero."
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SpellId.Prototype; creator default -1."
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "SpellId padding."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Hits",
+      "offset": 0,
+      "type": "Array<ImpactInterruptHit>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2AE5990 zeroes +0 and the dwords +8/+0xC; destructor bg3.exe+0x22B8270 calls FUN_1422e3e00(this, 0) (resize to 0: element stride 0x1E8, each holding a HitDesc) and frees *(this+0). Live: heap pointer, capacity 1..0x10, size 1..0xE."
+    },
+    {
+      "name": "Spell",
+      "offset": 16,
+      "type": "ImpactInterruptSpellId",
+      "source": "inferred",
+      "evidence": "Destructor calls eoc::spell::SpellId::~SpellId(this+0x10); creator writes -1 at +0x10 and +0x40 (the two FixedStrings), 0x17 at +0x18 (SourceType Sentinel) and zeroes +0x20..+0x3F. Equals Script Extender's SpellId (0x38 bytes). Live: +0x10 and +0x40 hold the same FixedString index (OriginatorPrototype == Prototype)."
+    },
+    {
+      "name": "field_48",
+      "offset": 72,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator default 0xFFC0000000000000 (null entity). Live entity handles (e.g. 0x1819C / 0x0200000A) or null. Probably the projectile or its caster; not established."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Creator zeroes qword +0x50 and dword +0x58. Live world coordinates (146.8, 29.2, 10.26), probably the impact position."
+    },
+    {
+      "name": "_Pad5C",
+      "offset": 92,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Not written by the creator; live garbage."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Members of the 0x1E8 hit element beyond the HitDesc at +0 (container at +0x1C0, tail); role of the entity at +0x48.",
+    "field_48 / field_50: the system that drains it (projectile impact interrupt) would show whether they are the projectile or caster and the impact position."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found (one-frame, not saved, not replicated, no Osiris event reads it)."
+}

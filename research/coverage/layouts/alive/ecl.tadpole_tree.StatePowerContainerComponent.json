@@ -1,0 +1,60 @@
+{
+  "component": "ecl::tadpole_tree::StatePowerContainerComponent",
+  "ext_name": "ClientTadpoleTreeStatePowerContainer",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "TadpoleTreeStatePowerContainerPower",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Power",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1A91DE0 pushes one element per entry of a static list (0x30-byte records, FixedString at record+0x28): *(int*)elem = FixedString (IncRef)."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "elem[4] = byte at record+0x2C of the same static record. Meaning not established."
+        },
+        {
+          "name": "State",
+          "offset": 5,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "elem[5] = 2 on creation (initial state of the power), then the component is handed to bg3.exe+0x1A93010."
+        },
+        {
+          "name": "_Pad6",
+          "offset": 6,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "Padding to the 8-byte stride (elements at *arr + i*8)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Powers",
+      "offset": 0,
+      "type": "Array<TadpoleTreeStatePowerContainerPower>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A91DE0 creates the component (bg3.exe+0x1A935A0) for new entities and grows/pushes with size at +0xC, capacity at +8, stride 8. Live: heap pointer, capacity 32, size 26 (the tadpole powers)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of element byte 4 and the State values; the element names are ours."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "20 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,154 @@
+{
+  "component": "eoc::portrait_painting::DataComponent",
+  "ext_name": "PortraitPaintingData",
+  "size": 88,
+  "fields": [
+    {
+      "name": "Data",
+      "offset": 0,
+      "type": "PortraitPaintingScratchBuffer",
+      "source": "inferred",
+      "evidence": "Storage set-up bg3.exe+0x26FE370: size 0x58, destructor thunk_FUN_1405F1670 - the ls::ScratchBuffer destructor (frees owned buffers flagged at +0 and +0x18), the same set-up as esv::ShapeshiftCustomIconComponent. Write-all serializer bg3.exe+0x91F4C0 has one member, bg3.exe+0x4015ED0 on +0: Size (+0x50, 4 bytes written), then the bytes at *(+0x38) + *(+0x48). SE's ls::ScratchBuffer (CoreLib/Base/BaseString.h), redeclared flat under a name unique to the component; 'Data' inferred (the painted portrait image)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Members of the ScratchBuffer between +0x10 and +0x30 are placed by SE's struct (size 0x58 matches), not by code read here; +0, +4, +8, +0x18, +0x1C (destructor) and +0x38, +0x48, +0x50 (serializer) are Windows-read.",
+    "Not seen alive (seen.py has no samples); no macOS FieldMeta names and no saved model."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "structs": [
+    {
+      "name": "PortraitPaintingScratchBuffer",
+      "size": 88,
+      "fields": [
+        {
+          "name": "BufferOrigin",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Destructor bg3.exe+0x5F1670: `if (*p == 1) free(*(p + 8)); *p = 0` - MemBuffer.Meta.Origin (1 = owned). SE ScratchBuffer.Buffer.Meta.Origin."
+        },
+        {
+          "name": "BufferFlags",
+          "offset": 1,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE MemBufferMeta.Flags."
+        },
+        {
+          "name": "BufferAllocatorTag",
+          "offset": 2,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "SE MemBufferMeta.AllocatorTag."
+        },
+        {
+          "name": "BufferAlignment",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Destructor zeroes `*(uint32*)(p + 4)`. SE MemBufferMeta.Alignment."
+        },
+        {
+          "name": "BufferData",
+          "offset": 8,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Destructor frees `*(p + 8)` when owned. SE MemBuffer.Buffer."
+        },
+        {
+          "name": "BufferSize",
+          "offset": 16,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE MemBuffer.Size."
+        },
+        {
+          "name": "WriteOrigin",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Destructor: `if (p[0x18] == 1) free(...); p[0x18] = 0` - the write stream's MemBufferMeta.Origin. SE ScratchBuffer.Write (MemWriteStream : MemBuffer)."
+        },
+        {
+          "name": "WriteFlags",
+          "offset": 25,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE MemBufferMeta.Flags of Write."
+        },
+        {
+          "name": "WriteAllocatorTag",
+          "offset": 26,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "SE MemBufferMeta.AllocatorTag of Write."
+        },
+        {
+          "name": "WriteAlignment",
+          "offset": 28,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Destructor zeroes `*(uint32*)(p + 0x1C)`."
+        },
+        {
+          "name": "WriteData",
+          "offset": 32,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "SE MemWriteStream.Buffer; freed by the destructor when owned."
+        },
+        {
+          "name": "WriteSize",
+          "offset": 40,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE MemWriteStream.Size."
+        },
+        {
+          "name": "WriteOffset",
+          "offset": 48,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE MemWriteStream.Offset."
+        },
+        {
+          "name": "ReadData",
+          "offset": 56,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "SE MemReadStream.Buffer. Write-all serializer bg3.exe+0x4015ED0 reads *(qword *)(+0x38) as the data pointer."
+        },
+        {
+          "name": "ReadSize",
+          "offset": 64,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE MemReadStream.Size."
+        },
+        {
+          "name": "ReadOffset",
+          "offset": 72,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE MemReadStream.Offset. bg3.exe+0x4015ED0 adds *(qword *)(+0x48) to the pointer at +0x38."
+        },
+        {
+          "name": "Size",
+          "offset": 80,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE ScratchBuffer.Size; bg3.exe+0x4015ED0 writes the low 4 bytes of +0x50 as the byte count, then that many bytes. 0x58 total = registry size."
+        }
+      ]
+    }
+  ],
+  "second_pass": "Replaced the unknown type ScratchBuffer by a flat redeclaration of SE's ls::ScratchBuffer (as in esv.ShapeshiftCustomIconComponent): the storage set-up bg3.exe+0x26FE370 registers 0x58 bytes with the ScratchBuffer destructor bg3.exe+0x5F1670, and the serializer bg3.exe+0x4015ED0 reads +0x38/+0x48/+0x50.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

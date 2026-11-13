@@ -1,0 +1,33 @@
+{
+  "component": "esv::status::DispelDestroyOneFrameComponent",
+  "ext_name": "ServerStatusDispelDestroy",
+  "size": 16,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "One-frame order of esv::status::DispelSystem (per-frame update bg3.exe+0x2C89970) to destroy a status that a dispel roll beat; sibling of esv::status::DispelRollCheckOneFrameComponent (Status.h: two bytes + two EntityHandles at +8/+0x10).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x2C89D90 writes 0xFFC0000000000000; bg3.exe+0x2C89970 copies puVar18[0] (8 bytes) of a dispel record when the record's byte at +0x10 is not below the rolled value."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator writes 0xFFC0000000000000; bg3.exe+0x2C89970 copies puVar18[1]."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which handle is the status and which the target/source (field_8/field_10 of DispelRollCheck are also unnamed)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

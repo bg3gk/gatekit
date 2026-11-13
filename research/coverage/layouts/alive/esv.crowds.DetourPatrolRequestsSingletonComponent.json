@@ -1,0 +1,69 @@
+{
+  "component": "esv::crowds::DetourPatrolRequestsSingletonComponent",
+  "ext_name": "ServerCrowdsDetourPatrolRequests",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CrowdsDetourPatrolRequest",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Spline",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x6D36E0 (values destructor) DecRefs a FixedString at every value+0 (stride 8). esv::crowds::PatrolSystem::Update (EoCServer.dll+0xD86770) copies it to esv::crowds::PatrolComponent+0x24; when it is empty (-1) the system picks the closest spline of the level (esv::patrol::SplinesComponent map) via ls::SplineTemplate::GetClosestLocationInDirection = spline id. Windows: PatrolSystem update bg3.exe+0x3560EA0 gets this singleton through bg3.exe+0x3563400 (query DAT_1463B7690, registered by bg3.exe+0x3559540 with DetourPatrolRequestsSingletonComponent), walks keys +0x20 (stride 8, count +0x2C) and values +0x30 (stride 8) and merges each value with bg3.exe+0x3563590: FixedString at +0 (IncRef/DecRef), bytes +4, +5, +6 copied one by one."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Copied to PatrolComponent+0x2A (EoCServer.dll+0xD86770, copy helper EoCServer.dll+0xD855F0), which is passed as the bool argument of ls::SplineTemplate::GetClosestLocationInDirection (direction flag). Windows: copied by bg3.exe+0x3563590; the merged request byte +4 becomes PatrolComponent +0x2A and is passed to the spline node search bg3.exe+0x3C91470."
+        },
+        {
+          "name": "field_5",
+          "offset": 5,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Copied to PatrolComponent+0x2B (EoCServer.dll+0xD86770); not otherwise read there. Windows: copied by bg3.exe+0x3563590; becomes PatrolComponent +0x2B."
+        },
+        {
+          "name": "MovementSpeed",
+          "offset": 6,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied to PatrolComponent+0x2C and switched on 1..4 to pick a template speed (template +0x608/+0x610/+0x618/+0x620); otherwise asserts \"Invalid m_PathMovementSpeed enum %d\" in `anonymous-namespace'::GetCharacterMovementSpeed (CrowdCharacterPatrolSystem.cpp). Windows: copied by bg3.exe+0x3563590; PatrolSystem update switches on it to pick one of four speeds of the character's template (+0x590/+0x598/+0x5A0/+0x5A8, else 0) for PatrolComponent +0x20 and stores it in PatrolComponent +0x2C."
+        },
+        {
+          "name": "_Pad7",
+          "offset": 7,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "padding (never copied by bg3.exe+0x3563590)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, CrowdsDetourPatrolRequest>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x6C33B0: destroys the values at +0x30 (bg3.exe+0x6D36E0: FixedString DecRef at value+0, stride 8, count +0x2C), frees them, then frees the key hash set = HashMap<?, 8-byte value>. esv::crowds::PatrolSystem::Update (EoCServer.dll+0xD86770) iterates keys at +0x20 (stride 8, hashed as uint64, then used as entity handles: AddComponent of esv::crowds::PatrolComponent on them, \"Request to patrol is not a Proxy\") and values at +0x30 with the same index. Writer: esv::crowds::DetourSystem::Update (macOS index); creator bg3.exe+0x3558B40 sets destructor bg3.exe+0x6C33B0. Live (seen.py, idle): one instance, all bytes zero (empty container). Windows: keys read with stride 8 and values with stride 8 by the PatrolSystem update bg3.exe+0x3560EA0 (see the struct)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of bytes 4 and 5 of the request (they become PatrolComponent +0x2A/+0x2B); names are ours apart from MovementSpeed (assert text m_PathMovementSpeed)."
+  ],
+  "minutes": 16,
+  "functions_read": 12,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Value layout confirmed on Windows: the PatrolSystem update bg3.exe+0x3560EA0 reads this singleton (query registered by bg3.exe+0x3559540) with 8-byte keys and 8-byte values and copies FixedString +0 and bytes +4/+5/+6 with bg3.exe+0x3563590; byte +6 selects the movement speed.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

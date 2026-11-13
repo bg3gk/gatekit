@@ -1,0 +1,46 @@
+{
+  "component": "esv::item::EntityMovingFinishedEventOneFrameComponent",
+  "ext_name": "ServerItemEntityMovingFinishedEvent",
+  "size": 16,
+  "seen": true,
+  "summary": "Server one-frame event on an item whose inventory move finished. Added by the per-frame update of esv::ItemManager (bg3.exe+0x33A3990) for every entry of a local list (entity key + 16-byte value); read by esv::pickup::PickUpExecutionFinishedSystem::Update (macOS index). A character twin esv::character::EntityMovingFinishedEventOneFrameComponent exists. Seen.py context: item moves (pick-up / ToInventory).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x33B4820 (AllocRaw 0x10) default 0xffc0000000000000; ItemManager update bg3.exe+0x33A3990 line ~163 copies a 64-bit handle from the list value +0. Live (3): entity handles. Probably the target inventory / mover; not established."
+    },
+    {
+      "name": "Amount",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator default 1; bg3.exe+0x33A3990 line ~166-167 writes esv::Item::GetAmount(item) here. Live: always 1."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator default 2; bg3.exe+0x33A3990 line ~164 copies a byte from the list value +8 (an enum: result / move kind?). Live: 0."
+    },
+    {
+      "name": "_PadD",
+      "offset": 13,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Never written by the creator; live bytes are leftovers (00/b5/ff)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the handle at +0 and the enum byte at +0xC (read in PickUpExecutionFinishedSystem::ProcessSuccessfullyFinishedMoves, not traced)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

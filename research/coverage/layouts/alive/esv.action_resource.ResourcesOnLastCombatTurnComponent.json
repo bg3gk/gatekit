@@ -1,0 +1,102 @@
+{
+  "component": "esv::action_resource::ResourcesOnLastCombatTurnComponent",
+  "ext_name": "ServerActionResourcesOnLastCombatTurn",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ResourcesOnLastCombatTurnConsumed",
+      "size": 32,
+      "fields": [
+        {
+          "name": "ResourceUUID",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "esv::action_resource::ConsumedResourcesData (macOS name). The savegame converter EoC.dll+0xA83900 builds it from the model record (stride 0x20): 16 bytes from model +0 through ls::Guid (ls::Guid::Guid(&local) then a 4x4-byte copy) - the action resource definition UUID."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "8-byte copy from model +0x10 (local_68). Probably the consumed amount as a double (action resource amounts are doubles); kept as raw 8 bytes because double is not in the allowed type list."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "4-byte copy from model +0x18 (local_60); maybe the resource level."
+        },
+        {
+          "name": "_Pad1C",
+          "offset": 28,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding to 0x20."
+        }
+      ]
+    },
+    {
+      "name": "ResourcesOnLastCombatTurnConsumedSet",
+      "size": 48,
+      "fields": [
+        {
+          "name": "HashKeys",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "ls::HashSet<esv::action_resource::ConsumedResourcesData> written out (SE HashSet layout): bucket array pointer. Declared by hand because a struct of this file may not be a HashSet key."
+        },
+        {
+          "name": "HashKeysSize",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Bucket count (live in other sets: 5)."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "NextIds",
+          "offset": 16,
+          "type": "Array<int32_t>",
+          "source": "inferred",
+          "evidence": "Collision chain array of the hash set."
+        },
+        {
+          "name": "Keys",
+          "offset": 32,
+          "type": "Array<ResourcesOnLastCombatTurnConsumed>",
+          "source": "inferred",
+          "evidence": "The set's elements (stride 0x20)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "ConsumedResources",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, ResourcesOnLastCombatTurnConsumedSet>",
+      "source": "inferred",
+      "evidence": "Savegame loader EoC.dll+0x906E20 (ls::savegame::Framework::Ops<ResourcesOnLastCombatTurnComponent, esv::action_resources::Loader>::Load) builds a 64-byte HashMap via EoC.dll+0xA83900, which zeroes the HashMap shape, maps each model record's entity through ecs::EntityRemapper::Map and inserts it as key (FUN_180a82da0), with values of 0x30 bytes = ls::HashSet<esv::action_resource::ConsumedResourcesData> (assert text 'IndexedStorage<class ls::HashSet<struct esv::action_resource::ConsumedResourcesData>>'). macOS also shows ls::HashMap<EntityHandle, ls::HashMap<EntityHandle, ls::HashSet<ConsumedResourcesData>>> in the system. Used by esv::ActionResourceSystem (ExecuteSpendActionResourceRequest, GatherCombatStateChanges, GatherFTBStateChanges, GatherLongRest). Live: one instance, all zero (empty map)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the map key entity (remapped entity from the save).",
+    "field_10 is probably a double amount; field_18 maybe a level."
+  ],
+  "minutes": 10,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

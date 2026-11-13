@@ -1,0 +1,102 @@
+{
+  "component": "ecl::sound::FootstepMixStateComponent",
+  "ext_name": "ClientSoundFootstepMixState",
+  "size": 80,
+  "seen": true,
+  "structs": [
+    {
+      "name": "FootstepPlayerMixData",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Member",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::sound::FootstepMixSystem::FinalizeFootstepMixState (EoCClient.dll+0xDC4820) creates values with a null handle at +0 and passes it to eoc::party::GetCharactersFromMember."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Copied from the frame data (+8); default 0."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Copied from frame data +0x10 and used as the RTPC value of every FootstepMixRequest."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Copied from frame data +0xC; default 0 (probably a timer)."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Stride 0x18."
+        }
+      ]
+    },
+    {
+      "name": "FootstepMixRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "FinalizeFootstepMixState appends {character handle, FixedString, value} at stride 0x10 (IndexedStorage<ecl::sound::FootstepMixRequest>)."
+        },
+        {
+          "name": "RTPC",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "A global FixedString (DAT_181a37fb0) written at +8; ecl::character::SoundSystem::ProcessFootstepSoundRequests (EoCClient.dll+0xEB5670) forwards it as an RTPC request."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "PlayerMixData.Value copied at +0xC."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "HashMap<int16_t, FootstepPlayerMixData>",
+      "source": "inferred",
+      "evidence": "Game value name ecl::sound::FootstepMixStateComponent::PlayerMixData (IndexedStorage string, EoCClient.dll+0x29BB80). FinalizeFootstepMixState hashes short player ids, values at +0x30 with stride 0x18. Live bucket count 5."
+    },
+    {
+      "name": "Requests",
+      "offset": 64,
+      "type": "Array<FootstepMixRequest>",
+      "source": "inferred",
+      "evidence": "Game name ecl::sound::FootstepMixRequest; appended at +0x40 (capacity +0x48, size +0x4C) by FinalizeFootstepMixState; read at +0x40/+0x4C by ProcessFootstepSoundRequests."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_8 / field_10 of PlayerMixData (timer target and timer, by FootstepMixSystem::UpdateTimers?).",
+    "Names are ours except the two game struct names."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

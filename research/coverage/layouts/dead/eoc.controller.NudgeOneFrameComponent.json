@@ -1,0 +1,28 @@
+{
+  "component": "eoc::controller::NudgeOneFrameComponent",
+  "ext_name": "ControllerNudge",
+  "size": 8,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "Client one-frame event of the controller (gamepad) picking: a 2D nudge direction for the selection, copied from the first 8 bytes of eoc::controller::NudgeDataComponent when that component's flag at +8 is set. Created by bg3.exe+0x428F5F0 (slot 27 of the table bg3.exe+0x5B9A668); read by bg3.exe+0x1C4D080 for ecl::PickingHelper::Update (bg3.exe+0x1C44B80, Toolkit EoCClient.dll+0xF5F570), which copies it to PickingHelper +0x1C4/+0x1C8 and raises the flag +0x1CC; ecl::PickingHelper::NudgeSelection (EoCClient.dll+0xF5ABA0) reads those as floats. Never seen alive. Registry total 8 (client row; no server size). No savegame model, not replicated.",
+  "fields": [
+    {
+      "name": "Direction",
+      "offset": 0,
+      "type": "glm::vec2",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x428F5F0: AllocRaw(8), `*p = 0`, then `*p = *nudgeData` (8 bytes from eoc::controller::NudgeDataComponent +0, fetched by its getter bg3.exe+0x7070F0) only when `*(char*)(nudgeData + 8) != 0`. Reader bg3.exe+0x1C4D080 returns the component pointer; bg3.exe+0x1C44B80 copies `p[0]`, `p[1]` (two 4-byte values) to PickingHelper +0x1C4/+0x1C8. Toolkit ecl::PickingHelper::NudgeSelection (EoCClient.dll+0xF5ABA0) reads +0x1C4 as float and flips the sign bit of +0x1C8 (`uVar1 ^ 0x80000000`) - two floats, a 2D direction. The name is inferred from that use."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Exact meaning of the two floats (stick direction in screen space or world XZ) is not established; the name Direction is inferred.",
+    "eoc::controller::NudgeDataComponent (layouts\\replicated) has +0/+4 as uint32 unknowns: this reading suggests they are the same two floats.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,88 @@
+{
+  "component": "ecl::sound::HoverMixStateComponent",
+  "ext_name": "ClientSoundHoverMixState",
+  "size": 144,
+  "seen": true,
+  "structs": [
+    {
+      "name": "HoverMixStateTimerData",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Delay",
+          "offset": 0,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Game name of the struct: ecl::sound::HoverMixStateComponent::HoverTimerData (macOS HashMap<EntityHandle, HoverTimerData> instantiation). EoCClient.dll+0xDA9B10 (called from HoverMixStateSystem::UpdateTargets) subtracts the frame delta from +0 every frame and, when it reaches <= 0, emits a HoverRTPCRequest and removes the entry (FixedStrings HoverStateMixEnterDelayTime / HoverStateMixLeaveDelayTime exist for the start values)."
+        },
+        {
+          "name": "Value",
+          "offset": 4,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "UpdateTargets (EoCClient.dll+0xDAB790) stores 1.0 (entity still hovered/targeted, ref count > 0) or 0.0 at +4 and compares it before re-arming; EoCClient.dll+0xDA9B10 copies +4 into the RTPC request's value."
+        }
+      ]
+    },
+    {
+      "name": "HoverMixStateRTPCRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Game name: ecl::sound::HoverMixStateComponent::HoverRTPCRequest. EoCClient.dll+0xDA9B10 writes the HashMap key (an entity handle) at +0 of each element (stride 0x10). Same shape as ls::GameplaySoundRTPCRequest (GameEngine.dll+0x1C42A0: handle, FixedString, float)."
+        },
+        {
+          "name": "RTPC",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0xDA9B10 copies a global FixedString (probably \"Mix_IsHovered\", registered next to the hover delay names) into +8; HoverMixStateSystem::Update (EoCClient.dll+0xDAB6A0) destroys element+8 when clearing the array."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0xDA9B10 writes HoverTimerData.Value (+4) to +0xC."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "PlayerTargets",
+      "offset": 0,
+      "type": "HashMap<uint16_t, EntityHandle>",
+      "source": "inferred",
+      "evidence": "HoverMixStateSystem::UpdateTargets (EoCClient.dll+0xDAB790) walks keys at +0x20 with stride 2 (a signed short player id taken from PlayerTargetEntityChangedOneFrameComponent+8, hashed as short) and values at +0x30 with stride 8 (entity handles from the same one-frame component); inserts with FUN_18054ed60. The game key type is short (int16), declared here as uint16_t. Live: bucket count 5, one entry."
+    },
+    {
+      "name": "HoverTimers",
+      "offset": 64,
+      "type": "HashMap<EntityHandle, HoverMixStateTimerData>",
+      "source": "inferred",
+      "evidence": "macOS: ls::HashMap<ls::ID<EntityHandleTraits>, ecl::sound::HoverMixStateComponent::HoverTimerData>::RemoveNode. UpdateTargets uses +0x40 as a hash map with 8-byte keys at +0x60 and 8-byte values at +0x70; EoCClient.dll+0xDA9B10 counts down the timers."
+    },
+    {
+      "name": "RTPCRequests",
+      "offset": 128,
+      "type": "Array<HoverMixStateRTPCRequest>",
+      "source": "inferred",
+      "evidence": "HoverMixStateSystem::Update (EoCClient.dll+0xDAB6A0) clears IndexedStorage<HoverMixStateComponent::HoverRTPCRequest> at +0x80 (size +0x8C, capacity +0x88, stride 0x10) every frame; EoCClient.dll+0xDA9B10 appends to it. macOS default constructor zeroes 0x00-0x8F."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Exact FixedString in RTPCRequests.RTPC (global EoCClient.dll+0x1A36AB8, not resolved by fixedstrings; likely Mix_IsHovered).",
+    "PlayerTargets key is a signed short in the game (declared uint16_t here)."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

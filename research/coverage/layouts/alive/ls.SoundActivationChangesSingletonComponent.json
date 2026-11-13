@@ -1,0 +1,33 @@
+{
+  "component": "ls::SoundActivationChangesSingletonComponent",
+  "ext_name": "SoundActivationChangesSingleton",
+  "size": 96,
+  "seen": true,
+  "summary": "Client singleton collecting which sound entities were activated and deactivated this frame (Wwise sound object registered/unregistered), filled by ecl::SoundSystem (ActivateSound / DeactivateSound / FlushActiveChanges) and consumed by ls::SoundTransformSystem, ls::GameplaySoundInterfaceSystem and ecl::sound::PerformanceSystem.",
+  "fields": [
+    {
+      "name": "Activated",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Live: +0 heap / +8 bucket count 0x35..(53, a prime) / +0x10 heap / +0x18 capacity / +0x20 heap / +0x28 capacity - the 3x16-byte shape of ls::HashSet (buckets, next ids, keys); sizes always 0 at sampling (flushed each frame). The name is by symmetry with Deactivated: the add site of this set was not located (ActivateSound EoCClient.dll+0xD7B830 pushes to SoundSystem+0x18, not here)."
+    },
+    {
+      "name": "Deactivated",
+      "offset": 48,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "ecl::SoundSystem::DeactivateSound (EoCClient.dll+0xD7CA30): after SoundManager::UnregisterSoundObject it calls FUN_1801cf310(*(singleton) + 0x30, &entity) - a HashSet insert returning bool (FUN_1801c9210). Live: same HashSet shape as +0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which set is which is established only for +0x30 (deactivated); +0 is assumed to be the activated set.",
+    "Read from the Toolkit build (EoCClient.dll)."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,41 @@
+{
+  "component": "ecl::character_creation::CustomIconStateExComponent",
+  "ext_name": "ClientCCCustomIconStateEx",
+  "size": 8,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Custom-icon state of a character-creation session; written by DefinitionCommandProcessor::ProcessCommands (macOS), reset to 0/0 by bg3.exe+0x201FC80 when a definition is (re)initialised.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x201A420 writes 0 (4-byte store); bg3.exe+0x201FC80 writes 0 (4 bytes). Same shape as IconVersion (uint32) + HasIcon (uint8) of eoc::character_creation::CompanionDefinitionComponent (SE CharacterCreation.h) - a guess only. Second pass: bg3.exe+0x201FC80 lines 179-181 fetch the component through the creator bg3.exe+0x201A420 and store `*(undefined4*)p = 0` and `*(undefined1*)(p+4) = 0` - one 4-byte and one 1-byte member, nothing else written."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator and bg3.exe+0x201FC80 write 0 as a single byte at +4."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding to 8"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning and names of both members (no reader that uses the values was found on Windows: bg3.exe+0x2020010 removes the component, bg3.exe+0x2076EA0 / 0x208E300 only build views)."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "status": "declared",
+  "second_pass": "Widths and offsets confirmed on Windows: the creator bg3.exe+0x201A420 and the definition reset bg3.exe+0x201FC80 write exactly a uint32 at +0 and a byte at +4; registry size 8. Names remain unknown.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

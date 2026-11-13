@@ -1,0 +1,61 @@
+{
+  "component": "esv::crowds::PatrolMoveToRequestsSingletonComponent",
+  "ext_name": "ServerCrowdsPatrolMoveToRequests",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CrowdsPatrolMoveToRequest",
+      "size": 20,
+      "fields": [
+        {
+          "name": "Target",
+          "offset": 0,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "esv::crowds::CharacterMovementSystem::Update (EoCServer.dll+0xD8C530) copies value+0 (8 bytes) and value+8 (4 bytes) into esv::crowds::MoveToComponent+0 / +8 (a position; the component then gets the proxy transform)."
+        },
+        {
+          "name": "field_c",
+          "offset": 12,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "Copied as a 4-byte value to esv::crowds::MoveToComponent+0x18 (EoCServer.dll+0xD8C530); meaning not established (speed-like)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Copied as one byte to esv::crowds::MoveToComponent+0x21 (EoCServer.dll+0xD8C530); the merge loop copies the whole dword, so bytes 0x11..0x13 are treated as padding."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "Padding to the 4-byte alignment of the 20-byte element (allocator call FUN_180d8be90(n, 0x14, 4))."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, CrowdsPatrolMoveToRequest>",
+      "source": "inferred",
+      "evidence": "Container: bg3.exe creator (AddSingleton) allocates 0x40 bytes and zeroes them; its destructor bg3.exe+0x5C4870 frees the values array at +0x30 without per-element destructors (plain data) and then the key hash set (bg3.exe+0x582AD0) = HashMap with POD values. esv::crowds::CharacterMovementSystem::Update (EoCServer.dll+0xD8C530, WorldView names DetourMoveTo/MoveTo/PatrolMoveTo RequestsSingleton const) iterates keys at +0x20 (count +0x2C, stride 8, hashed as uint64 and looked up as the entity whose MoveToComponent is created/updated) and values at +0x30 with stride 0x14 (scratch allocation FUN_180d8be90(n, 0x14, 4)). Key = crowd character entity. Writer: esv::crowds::PatrolSystem::Update (EoCServer.dll+0xD86770; macOS index: writes PatrolMoveToRequestsSingletonComponent). Live (seen.py, idle): one instance, all bytes zero (empty container)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of value+0xC (float) and +0x10 (byte); names of the members are ours.",
+    "The three MoveTo maps were matched to the three 0x14-stride loops by type only (all three share the value type)."
+  ],
+  "minutes": 6,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,23 @@
+{
+  "component": "esv::summon::AnimationRequestComponent",
+  "ext_name": "ServerSummonAnimationRequest",
+  "size": 4,
+  "seen": true,
+  "summary": "Countdown put on a new summon while its summoning animation plays; esv::summon::AnimationSystem (per-frame update bg3.exe+0x2DC9410; Toolkit WorldView<summon::AnimationRequestComponent, eoc::animation::GameplayEventsOneFrameComponent const, eoc::summon::AnimationComponent const>) decrements it and removes the component when it reaches 0. Seen.py context: born in 'spells-5' (summoning spells) and fights with summoning enemies.",
+  "fields": [
+    {
+      "name": "Timer",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2DC9B10 writes 0x40C00000 (6.0); Toolkit esv::summon::AnimationSystem::Update also writes 0x40C00000, then does value -= frame delta (GameTime +8) and calls RemoveComponentUnchecked when value <= 0. Live: 6.0 and 1.739."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

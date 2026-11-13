@@ -1,0 +1,41 @@
+{
+  "component": "ecl::ftb::BlockedFTBToggleRequestOneFrameComponent",
+  "ext_name": "ClientFTBBlockedToggleRequest",
+  "size": 4,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame notice that a player's request to toggle free turn-based (FTB) mode was refused on the client, with the reason. Never seen alive. Same shape as its sibling ecl::ftb::BlockedFTBRequestOneFrameComponent (alive layout: int16 PlayerId, uint8 Reason). Registry total 4 (client row).",
+  "fields": [
+    {
+      "name": "PlayerId",
+      "offset": 0,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1956DB0 (AllocRaw 4, `*(undefined4*)p = 0`). Its only caller chain bg3.exe+0x1956B30 <- bg3.exe+0x1956820 writes `*(short*)p = sVar7` where sVar7 is the low 16 bits of the uint at +0x12C of the character (0 or values >= 0x10000 skipped) - the same player id the sibling BlockedFTBRequestOneFrameComponent stores at +0."
+    },
+    {
+      "name": "Reason",
+      "offset": 2,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1956820 writes `*(char*)(p+2)` = 0 when FUN_140785360(entity) is true (it tests eoc::death::DeathComponent: the character is dead), 1 when the component read by FUN_140af5820 has flag bits set (byte +0x48 and flags & ~4, or flag 0x10), 2 when FUN_140ab2040(entity) is true; otherwise no component is made and net message 0xE9 is sent to the server instead (the toggle goes through)."
+    },
+    {
+      "name": "_Pad3",
+      "offset": 3,
+      "type": "uint8_t[1]",
+      "source": "inferred",
+      "evidence": "padding; registry size 4; zeroed by the creator's 4-byte store."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What exactly reasons 0/1/2 mean (the checks FUN_140785360, FUN_140af5820 flags, FUN_140ab2040 are not named); no reader found besides the generic one-frame clean-up bg3.exe+0x762CA0.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

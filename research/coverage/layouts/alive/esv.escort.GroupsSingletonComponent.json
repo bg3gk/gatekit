@@ -1,0 +1,40 @@
+{
+  "component": "esv::escort::GroupsSingletonComponent",
+  "ext_name": "ServerEscortGroups",
+  "size": 64,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Server singleton of escort groups: group name -> members. Came to life in the SCL drider-caravan dialogue (escort/follow setup) together with esv::escort::FollowerComponent, MemberChangedOneFrameComponent, HasStragglersComponent and others.",
+  "structs": [
+    {
+      "name": "EscortGroupsGroup",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Members",
+          "offset": 0,
+          "type": "HashSet<EntityHandle>",
+          "source": "inferred",
+          "evidence": "esv::escort::Group (name from macOS ls::HashMap<ls::FixedString, esv::escort::Group> in FindNewLeader / RemoveMember(HashMap<FixedString, Group>&, EntityHandle, FixedString const&)). macOS ~GroupsSingletonComponent destroys each value with HashTable<ls::ID<EntityHandleTraits>>::~HashTable at stride 0x30; Windows destructor bg3.exe+0x6D11C0 (registered by bg3.exe+0x27038E0) walks values at +0x30 with stride 0x30 calling the same hash-set destructor FUN_140582ad0."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Groups",
+      "offset": 0,
+      "type": "HashMap<FixedString, EscortGroupsGroup>",
+      "source": "inferred",
+      "evidence": "64 bytes: keys = FixedString (macOS HashMap<ls::FixedString, esv::escort::Group>; destructor ends with HashTable<FixedString>::~HashTable on +0), values array at +0x30 with size at +0x2C and stride 0x30 (bg3.exe+0x6D11C0). Live (1 instance): all zero - empty map at sample time."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "esv::escort::Group might hold more than the member set if Windows lays it out differently - stride 0x30 equals a bare HashSet, so nothing else fits."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "21 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

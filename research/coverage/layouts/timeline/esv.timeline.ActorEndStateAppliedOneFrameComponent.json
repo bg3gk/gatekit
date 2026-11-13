@@ -1,0 +1,54 @@
+{
+  "component": "esv::timeline::ActorEndStateAppliedOneFrameComponent",
+  "ext_name": "ServerTimelineActorEndStateApplied",
+  "size": 12,
+  "fields": [
+    {
+      "name": "Template",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x330AE50 (esv::TimelineSystem, applies the end state of an actor; Toolkit ApplyActorEndState) creates the component on the actor (bg3.exe+0x3312E50), formats the Guid of the end state record as text, resolves it with ls::GlobalTemplateManager::GetTemplateRaw and stores the FixedString at +0x10 of the template (its id) through the optional-assign helper bg3.exe+0xAF2EF0 (which DecRefs the old value)."
+    },
+    {
+      "name": "TemplateType",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x330AE50 passes 'template(+0x1C) >> 29' (the top 3 bits of the template handle = its type) as the second member; bg3.exe+0xAF2EF0 stores that byte at +4."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "alignment of the pair to 4"
+    },
+    {
+      "name": "HasTemplate",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0xAF2EF0 sets the byte at +8 to 1 on first assignment and tests it before releasing the old FixedString: the engaged flag of an optional<{FixedString, uint8}>. Created 0 (bg3.exe+0x3312E50)."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The first 12 bytes are one optional<{FixedString, uint8}> (engaged flag at +8), flattened here.",
+    "The creation helper writes 0, not the FixedString null value, into +0: the value is meaningful only when HasTemplate is set."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": true,
+  "status": "declared",
+  "second_pass": "Re-read the optional-assign helper bg3.exe+0xAF2EF0: FixedString at +0 (DecRef of the old one), byte at +4, engaged flag at +8 set on first assignment - all members settled on Windows; one live instance was all zero (not engaged).",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

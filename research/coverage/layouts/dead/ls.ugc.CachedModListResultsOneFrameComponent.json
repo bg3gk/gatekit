@@ -1,0 +1,183 @@
+{
+  "component": "ls::ugc::CachedModListResultsOneFrameComponent",
+  "ext_name": "UgcCachedModListResults",
+  "size": 112,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame batch of answers delivered by ls::ugc::ModListCachedRequestSystem (macOS Update writes it) to the GUI (registry total 112, client only): a HashMap<ModItemListInfoId, response> at +0 and a HashSet at +0x40.",
+  "structs": [
+    {
+      "name": "UgcCachedModListResultsModItemListInfoId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Array<STDString>",
+          "source": "unknown",
+          "evidence": "ls::ugc::ModItemListInfoID (0x38 bytes, built from net::UGCQueryOptions): Windows copy bg3.exe+0x127F540 copies +0 with the Array<STDString> copier FUN_141220F40; the equality bg3.exe+0x15F83E0 compares the counts (+0xC) and then the 24-byte STDStrings of both arrays."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x127F540 copies 4 bytes; bg3.exe+0x15F83E0 compares them first; the HashSet insert bg3.exe+0x127EB60 uses this value as the hash (bucket = +0x10 % bucket count)."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "byte copied by bg3.exe+0x127F540 and compared by bg3.exe+0x15F83E0."
+        },
+        {
+          "name": "field_15",
+          "offset": 21,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "byte copied by bg3.exe+0x127F540 and compared by bg3.exe+0x15F83E0."
+        },
+        {
+          "name": "_Pad16",
+          "offset": 22,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x127F540 copy-constructs an ls::STDString at +0x18; bg3.exe+0x15F83E0 compares it (capacity word +0x2C > 0xF selects the heap buffer)."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "byte copied by bg3.exe+0x127F540 and compared by bg3.exe+0x15F83E0."
+        },
+        {
+          "name": "field_31",
+          "offset": 49,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "byte copied by bg3.exe+0x127F540 and compared by bg3.exe+0x15F83E0."
+        },
+        {
+          "name": "_Pad32",
+          "offset": 50,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "padding to 0x38"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "HashKeys",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BEFFA0 (AllocRaw 0x70) zeroes a HashMap (+0..+0x3F) and a HashSet (+0x40..+0x6F); destructor bg3.exe+0x3B7A6E0 destroys the map at +0 - bucket array of ls::HashSet"
+    },
+    {
+      "name": "HashKeysSize",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count"
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "NextIds",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "hash chains of ls::HashSet"
+    },
+    {
+      "name": "Keys",
+      "offset": 32,
+      "type": "Array<UgcCachedModListResultsModItemListInfoId>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BEFFA0 (AllocRaw 0x70) zeroes a HashMap (+0..+0x3F) and a HashSet (+0x40..+0x6F); destructor bg3.exe+0x3B7A6E0 destroys the map at +0 - keys (written out member by member because the key is a struct)"
+    },
+    {
+      "name": "Values",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Value storage at +0x30 (values: ls::ugc::ModItemListInfoResponse, stride 0x18 - FUN_143b7d7d0 frees an array of net::PublishModInfo (FUN_1438bb8a0, element 0x140) at value+0 for each key; same shape as QueryModListResultOneFrameComponent (array + u32))."
+    },
+    {
+      "name": "ValuesCapacity",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "size of the value storage (ls::HashMap values are an uninitialised static array: pointer + count)"
+    },
+    {
+      "name": "_Pad3C",
+      "offset": 60,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "SetHashKeys",
+      "offset": 64,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x3B7A6E0 runs the ModItemListInfoID HashSet destructor bg3.exe+0x11FC4C0 on +0x40; key type assumed equal to the map's key (not checked) - bucket array of ls::HashSet"
+    },
+    {
+      "name": "SetHashKeysSize",
+      "offset": 72,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count"
+    },
+    {
+      "name": "_Pad4C",
+      "offset": 76,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "SetNextIds",
+      "offset": 80,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "hash chains of ls::HashSet"
+    },
+    {
+      "name": "SetKeys",
+      "offset": 96,
+      "type": "Array<UgcCachedModListResultsModItemListInfoId>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x3B7A6E0 runs the ModItemListInfoID HashSet destructor bg3.exe+0x11FC4C0 on +0x40; key type assumed equal to the map's key (not checked) - keys (written out member by member because the key is a struct)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The map's value storage is written as raw parts (pointer + count); value strides are known from the Windows destructors (see the Values row), the value structs are not declared. (ls::ugc::ModItemListInfoResponse, 0x18 bytes, with an Array of 0x140-byte net::PublishModInfo at +0)",
+    "Role of the HashSet at +0x40; names of the ModItemListInfoID members."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "status": "declared",
+  "second_pass": "The 56-byte ModItemListInfoID key is established member by member from its Windows copy bg3.exe+0x127F540, equality bg3.exe+0x15F83E0 and hash bg3.exe+0x127EB60 (an Array<STDString>, a 4-byte hash value, bytes, an STDString, bytes); the set at +0x40 uses the ModItemListInfoID set destructor bg3.exe+0x11FC4C0. The map's values stay raw parts.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

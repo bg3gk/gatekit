@@ -1,0 +1,26 @@
+{
+  "component": "gui::registration::VMRemotePlayerUnregisteredOneFrameComponent",
+  "ext_name": "GuiRegistrationVMRemotePlayerUnregistered",
+  "size": 8,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Client UI (Noesis) one-frame event: for every remote-player view-model object removed from the VMRemotePlayerDataSingletonComponent collection, the registration system creates a fresh entity carrying this component with the object pointer, so UI code can drop it; gui::vmplayer::VMPlayerUnregisteredCleanupSystem reads it. Same pattern as Script Extender's VMInventoryUnregisteredOneFrameComponent / VMCombatUnregisteredOneFrameComponent. Never seen alive (no seen.py samples).",
+  "fields": [
+    {
+      "name": "Object",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x12A9BD0 (AllocRaw 8) writes 0 and registers destructor bg3.exe+0x1207D80, which calls the Release slot (+0x20 of the virtual table at +0x10 of the pointee) on *this: an intrusive Noesis::Ptr. bg3.exe+0x12A8B60 (per-frame update of gui::registration::VMPlayerRegistrationSystem, step 2/2, lines ~406-440) takes each object out of a Noesis::BaseCollection, creates an entity, adds this component and stores the pointer (AddRef slot +0x18 / Release slot +0x20). Value type presumably Noesis::Ptr<gui::VMRemotePlayer> (the Data singleton's value type), written as void* like SE's VMInventoryUnregisteredOneFrameComponent::Object."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Pointee class (gui::VMRemotePlayer) taken from the Data singleton by analogy, not read from this component's own code."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

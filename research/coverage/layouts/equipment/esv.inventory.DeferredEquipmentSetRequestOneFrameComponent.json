@@ -1,0 +1,44 @@
+{
+  "component": "esv::inventory::DeferredEquipmentSetRequestOneFrameComponent",
+  "ext_name": "ServerInventoryDeferredEquipmentSetRequest",
+  "size": 40,
+  "oneFrame": true,
+  "fields": [
+    {
+      "name": "Equipment",
+      "offset": 0,
+      "type": "Array<FixedString>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x34FF220 (size 0x28) copies the first member with bg3.exe+0x5ED3F0: an array of 4-byte elements with FixedString IncRef on each. The source is a 0x28-byte value of the map EquipmentSystem.EquipmentSet (HashMap<EntityHandle, EquipmentSetRequest>, loop at the end of bg3.exe+0x34F8730, stride 0x28): the component is a copy of Script Extender's esv::inventory::EquipmentSetRequest (Components/Inventory.h), created when bg3.exe+0x34F9960 could not apply the request this frame. Capture: heap pointer, capacity 1, size 1 on all 3 instances."
+    },
+    {
+      "name": "RemoveOldEquipmentSets",
+      "offset": 16,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FF220 copies one byte from +0x10 of the EquipmentSetRequest (Script Extender names it RemoveOldEquipmentSets); bg3.exe+0x34F8730 passes it as the 5th argument of bg3.exe+0x34F9960. Capture: always 0."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "padding before the 8-aligned Guid; the creator does not write it, capture shows garbage (34 80 01 / ff ff ff)"
+    },
+    {
+      "name": "ShapeshiftState",
+      "offset": 24,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FF220 copies 16 bytes +0x18..+0x28 as four dwords; bg3.exe+0x34F9960 receives the pointer to it (param_6), tests it for non-zero and copies it into esv::inventory::ShapeshiftAddedEquipmentComponent of every item it equips. Script Extender: EquipmentSetRequest.ShapeshiftState. Capture: all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The component could be declared as a single member of type esv::inventory::EquipmentSetRequest (same 40 bytes); the flat form is given so that the generator needs no external type."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,54 @@
+{
+  "component": "esv::tadpole_tree::AddedPowerOneFrameComponent",
+  "ext_name": "ServerTadpoleTreeAddedPower",
+  "size": 16,
+  "seen": true,
+  "summary": "One-frame list of tadpole powers just added to a character (seen once in the 'tadpole' scenario, born with eoc::tadpole_tree::PowerContainerComponent). The element type is esv::tadpole_tree::AddedPowerOneFrameComponent::AddedPower (named in macOS template instantiations). Saved: model game.tadpole_tree.v1.AddedPowerOneFrameComponent (16 bytes) with element model game.tadpole_tree.v1.AddedPower.",
+  "structs": [
+    {
+      "name": "TadpoleTreeAddedPower",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Power",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2F04C10 appends elements with stride 8: +0 = the power's FixedString (IncRef'd) taken from the request list"
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x2F04C10 stores (0 < resource->+0x24) for the power looked up through a virtual call on the power manager"
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "never written"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Powers",
+      "offset": 0,
+      "type": "Array<TadpoleTreeAddedPower>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2F04C10 allocates the 16-byte one-frame component, zeroes it and grows/pushes into the array (size +0xC, capacity +8, stride 8); macOS ls::DynamicArray<esv::tadpole_tree::AddedPowerOneFrameComponent::AddedPower>; live heap pointer, capacity 1, size 1"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "meaning of the bool in AddedPower (resource count at +0x24 > 0)"
+  ],
+  "minutes": 6,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

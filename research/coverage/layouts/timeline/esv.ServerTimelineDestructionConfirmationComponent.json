@@ -1,0 +1,39 @@
+{
+  "component": "esv::ServerTimelineDestructionConfirmationComponent",
+  "ext_name": "ServerTimelineDestructionConfirmation",
+  "size": 40,
+  "fields": [
+    {
+      "name": "StopPeers",
+      "offset": 0,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll esv::TimelineSystem::ConfirmPeerStop fetches the 0x28-byte component (EoCServer.dll+0xE66400) of the timeline entity and removes the handshake's peer id (StopHandshake+0x10) from the array at +0 with EoCServer.dll+0x519290 (linear search over 4-byte elements, the assert names ls::SpanIterator<TypeWrap<int, net::PeerIDClassname>>). Windows: the component destructor bg3.exe+0x6A2280 (registered with the storage in bg3.exe+0x21C8C50, size 0x28) clears and frees plain Arrays at +0 and +0x10 and nothing else."
+    },
+    {
+      "name": "DestructionPeers",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "Toolkit esv::TimelineSystem::ConfirmPeerDestruction removes the peer id of the DestroyHandshake from the array at +0x10 of the same component with the same function. Windows destructor bg3.exe+0x6A2280 frees the array at +0x10."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Plain data: the Windows destructor bg3.exe+0x6A2280 does not touch +0x20. By analogy with esv::ServerTimelineCreationConfirmationComponent (Timeout float + flags after its containers) probably a timeout and flags; no writer found."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element width (4-byte net::PeerID) and the member roles come from the Toolkit (esv::TimelineSystem::ConfirmPeerStop / ConfirmPeerDestruction); bg3.exe has no counterpart of those functions (decomp.py matches --all finds none).",
+    "Content of the last 8 bytes."
+  ],
+  "minutes": 14,
+  "functions_read": 9,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Found the Windows component destructor bg3.exe+0x6A2280 through the storage registration bg3.exe+0x21C8C50: two plain Arrays at +0 and +0x10, plain data after - confirming the Toolkit offsets; element width and +0x20 stay Toolkit/unknown."
+}

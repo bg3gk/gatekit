@@ -1,0 +1,103 @@
+{
+  "component": "ecl::platform::SoundPlayRequestBusComponent",
+  "ext_name": "ClientPlatformSoundPlayRequestBus",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "GameplaySoundEventRequest",
+      "size": 48,
+      "fields": [
+        {
+          "name": "SubjectValue",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "ls::GameplaySoundEventRequest constructor (GameEngine.dll+0x1C4250) copies a ls::Variant<EntityHandle, SoundObjectHandle(uint64)> (16 bytes) to +0; PlaySound passes the platform entity handle."
+        },
+        {
+          "name": "SubjectType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index (second qword of the variant), same pattern as ecl.sound.DistantSoundPostEventRequestSingletonComponent.json."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Variant is 16 bytes."
+        },
+        {
+          "name": "Event",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Constructor copies its FixedString argument (the sound event) to +0x10."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Not set by the constructor; copy constructor copies the qword at +0x14."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Constructor sets 0."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment of +0x20"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Constructor sets 0 (possibly a callback pointer, as in other sound requests)."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Constructor stores its bool argument; platform PlaySound passes true."
+        },
+        {
+          "name": "_Pad29",
+          "offset": 41,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "stride 0x30"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<GameplaySoundEventRequest>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x196B770 (0x10 bytes); destructor bg3.exe+0x6B8B70 destroys elements (bg3.exe+0x6DBE70) then frees. Toolkit ecl::platform::SoundSystem::PlaySound (EoCClient.dll+0xB408B0, parameter SoundPlayRequestBusComponent&) appends with stride 0x30 under 'IndexedStorage<ls::GameplaySoundEventRequest>'; ProcessPlaySounds destroys them each frame. Live: empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of GameplaySoundEventRequest +0x14, +0x18, +0x20, +0x28."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found."
+}

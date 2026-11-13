@@ -1,0 +1,24 @@
+{
+  "component": "esv::BaseStatsReloadedOneFrameComponent",
+  "ext_name": "ServerBaseStatsReloaded",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Flags",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x34144B0 allocates 8 bytes, writes 0 and returns the pointer; its only caller bg3.exe+0x3411500 (server stats reload of a character from its stats entry: resistances via eoc::ResistanceDataToEnum, a 7-element loop, ...) collects a 64-bit mask in a local (0x408 after resistances, |0x1000, |2 after the 7-element loop, |0x4000000) and stores it with *component = mask when non-zero. Read by the server StatsSystem (bg3.exe+0x31D6FB0, macOS esv::StatsSystem::Calculate*). Live: 0x1408 and 0x4001408, high dword 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the individual bits (which parts of the base stats were reloaded); no SE enum found."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

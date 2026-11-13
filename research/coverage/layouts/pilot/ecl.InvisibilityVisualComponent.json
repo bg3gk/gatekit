@@ -1,0 +1,53 @@
+{
+  "component": "ecl::InvisibilityVisualComponent",
+  "ext_name": "ClientInvisibilityVisual",
+  "size": 12,
+  "fields": [
+    {
+      "name": "Flags",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A4CF70 creates it as 0. bg3.exe+0x1A48C50 applies every 0x14-byte request to it as a bit mask: [+0] &= ~req.u16[+0xC]; [+0] |= req.u16[+0xE]; later tested against 0 together with the per-slot mask to decide whether anything still keeps the entity invisible. Probe: 1 or 4 (single bits)."
+    },
+    {
+      "name": "State",
+      "offset": 2,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Slot 0 of a two-element byte array indexed by (req.u16[+0x10] > 1). bg3.exe+0x1A48C50 stores the request's state byte here (values 0, 1, 2 are distinguished), resets it to 0 when the matching request count is 0, and removes the component when both +2 and +3 are 0. Probe: always 1."
+    },
+    {
+      "name": "State2",
+      "offset": 3,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Slot 1 of the same array (requests whose type at +0x10 is 2 or more); same code in bg3.exe+0x1A48C50; 'state != 2' zeroes the second float of a companion component. Probe: always 1."
+    },
+    {
+      "name": "SlotFlags",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Slot 0 of a two-element uint32 array with the same index as the states: [+4+4*i] &= ~req.u32[+4]; |= req.u32[+8] in bg3.exe+0x1A48C50; state 1 with this mask == 0 leads to the call bg3.exe+0x1A43470. The add path zeroes it. Probe: always 0."
+    },
+    {
+      "name": "SlotFlags2",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Slot 1 of the same uint32 array (see SlotFlags). Probe: always 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Natural C++ form is { uint16_t Flags; std::array<uint8_t,2> State; std::array<uint32_t,2> SlotFlags; } - written as separate fields because of the brief's type list.",
+    "Meaning of the two slots (request type 0/1 versus 2 and up) is not established.",
+    "Meaning of state values 0/1/2 and of the individual bits in Flags and SlotFlags (reasons for invisibility) - no enum found; the request producers (bg3.exe+0x1A4FF60 and neighbours, eoc::InvisibilityComponent queries) were not read.",
+    "bg3.exe+0x1A4D0E0 / bg3.exe+0x1A4CA80 return a companion component holding two floats (one per slot); its type was not identified."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

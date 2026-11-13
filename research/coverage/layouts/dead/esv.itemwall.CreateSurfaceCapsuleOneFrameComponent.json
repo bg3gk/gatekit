@@ -1,0 +1,176 @@
+{
+  "component": "esv::itemwall::CreateSurfaceCapsuleOneFrameComponent",
+  "ext_name": "ServerItemwallCreateSurfaceCapsule",
+  "size": 128,
+  "oneFrame": false,
+  "seen": false,
+  "structs": [
+    {
+      "name": "ItemwallCreateSurfaceCapsuleSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as Script Extender's SpellId (Base/ExposedTypes.h). Load bg3.exe+0x25B4A60 moves a FixedString to component +0x28."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "As SE SpellMetaId::_Pad."
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellSourceType (1 byte)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Alignment."
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId::Source."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId::ProgressionSource."
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellId::Prototype; load moves a FixedString to component +0x58."
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "Tail padding."
+        }
+      ]
+    }
+  ],
+  "summary": "Request of the item-wall feature to create the capsule-shaped surface along a wall (esv::itemwall::WallSystem creates it with bg3.exe+0x337AEB0 from the CreateComponent: Owner, Start, End, Level, spell); consumed by esv::SurfaceManager::ProcessItemWallRequests (Toolkit EoCServer.dll+0x6D3350, game ~bg3.exe+0x2CD20F0). Saved: model game.itemwall.v3.CreateSurfaceCapsuleOneFrameComponent; v0..v2 list 11 members m_Owner, m_Surface, m_Start, m_End, m_Level, m_SpellUsed, m_SpellCastUuid, m_Radius, m_Lifetime, m_AnimationDuration, m_IsControlledByConcentration, matched here by order and width. Never seen alive. Registry total 128 (server row; not flagged one-frame).",
+  "fields": [
+    {
+      "name": "Owner",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Savegame model member 0 (m_Owner). Load bg3.exe+0x25B4A60: qword +0 = resolved entity; WallSystem bg3.exe+0x3379B60 line 383: +0 = CreateComponent.Owner."
+    },
+    {
+      "name": "Surface",
+      "offset": 8,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "Model member 1 (m_Surface). Load: byte at +8 (`*(undefined1*)(c+8) = local_234`); WallSystem line 388: byte +8 = value from the item-wall data (vtable+0x28). A surface type enum (1 byte here)."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "Not written."
+    },
+    {
+      "name": "Start",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "Model member 2 (m_Start). Load: qword +0xC, dword +0x14; WallSystem lines 384-385: = CreateComponent+0x14..+0x1F (Start)."
+    },
+    {
+      "name": "End",
+      "offset": 24,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "Model member 3 (m_End). Load: qword +0x18, dword +0x20; WallSystem lines 386-387: = CreateComponent+0x20..+0x2B (End)."
+    },
+    {
+      "name": "Level",
+      "offset": 36,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Model member 4 (m_Level). Load: FixedString moved to +0x24."
+    },
+    {
+      "name": "SpellUsed",
+      "offset": 40,
+      "type": "ItemwallCreateSurfaceCapsuleSpellId",
+      "source": "game",
+      "evidence": "Model member 5 (m_SpellUsed). Load: FixedString +0x28, qwords +0x30..+0x50, FixedString +0x58."
+    },
+    {
+      "name": "SpellCastUuid",
+      "offset": 96,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "Model member 6 (m_SpellCastUuid). Load: qwords +0x60/+0x68."
+    },
+    {
+      "name": "Radius",
+      "offset": 112,
+      "type": "float",
+      "source": "game",
+      "evidence": "Model member 7 (m_Radius). Load: dword +0x70; WallSystem line 391: +0x70 = float from item-wall data vtable+0x18."
+    },
+    {
+      "name": "Lifetime",
+      "offset": 116,
+      "type": "float",
+      "source": "game",
+      "evidence": "Model member 8 (m_Lifetime). Load: dword +0x74."
+    },
+    {
+      "name": "AnimationDuration",
+      "offset": 120,
+      "type": "float",
+      "source": "game",
+      "evidence": "Model member 9 (m_AnimationDuration). Load: dword +0x78."
+    },
+    {
+      "name": "IsControlledByConcentration",
+      "offset": 124,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Model member 10 (m_IsControlledByConcentration). Load: byte +0x7C."
+    },
+    {
+      "name": "_Pad7D",
+      "offset": 125,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "Tail padding to 128."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The v3 model's member list was printed truncated by savefields.py (first 4 shown); v0..v2 have the 11 members used here and the Windows load matches 11 members.",
+    "Surface is a 1-byte enum; Script Extender's surface type enum was not referenced (rule).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

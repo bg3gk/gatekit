@@ -1,0 +1,26 @@
+{
+  "component": "ecl::lariannet::TrackingUnblockedUsersSingletonComponent",
+  "ext_name": "ClientLariannetTrackingUnblockedUsersSingleton",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Users",
+      "offset": 0,
+      "type": "HashMap<Guid, STDString>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1BF00 (~ProcessBlockEvents): clears the view's component at +0x20 when its key count (+0x2C) is non-zero (FUN_1405DA5B0), then for an unblock event calls FUN_1405DA760 (get-or-insert) and assigns the event's STDString (BlockedUser +0x10) to the returned value. FUN_1405DA760 -> FUN_1405CA360: key hash = qword0 ^ qword1 (16-byte key, Guid hash); values array at +0x30 with stride 0x18, new value initialised as an empty STDString. Same function handles TrackingBlockedUsers (view +0x70) identically. Game default constructor bg3.exe+0x1B1EBA0 zeroes 64 bytes. Live: all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The value string's meaning (user name / platform id) is not read anywhere seen"
+  ],
+  "second_pass": "HashMap<Guid, STDString> confirmed on Windows: bg3.exe+0x1B1BF00 inserts through FUN_1405DA760/FUN_1405CA360 (16-byte key hashed as two qwords, 0x18-byte STDString values at +0x30).",
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

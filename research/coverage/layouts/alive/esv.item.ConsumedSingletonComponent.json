@@ -1,0 +1,47 @@
+{
+  "component": "esv::item::ConsumedSingletonComponent",
+  "ext_name": "ServerItemConsumed",
+  "size": 16,
+  "seen": true,
+  "summary": "Singleton of esv::item::ConsumedSystem: the list of items consumed this frame (the game's element type is esv::item::ConsumedItem, 16 bytes - Toolkit LEGACY_ConsumeRequest(ConsumedItem const&)). esv::ActionHelpers::ExecuteAction, action 7 (Consume; game bg3.exe+0x41F3460) appends {consumer, item} to the system's own array at system+0x10; the per-frame update bg3.exe+0x33CC860 (Toolkit ConsumedSystem::Update) moves that array into the singleton. Alive everywhere (idle), seen empty.",
+  "fields": [
+    {
+      "name": "Items",
+      "offset": 0,
+      "type": "Array<ConsumedSingletonConsumedItem>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x33CCA80 zeroes ptr/capacity/size; destructor bg3.exe+0x686280 = trivial array clear + free. Per-frame update bg3.exe+0x33CC860 moves the system's array (system+0x10: ptr, +0x18 capacity, +0x1C size) into the component (ptr +0, capacity +8, size +0xC). Elements are 16 bytes: bg3.exe+0x41F3460 writes them at index * 0x10 (Toolkit: ls::IndexedStorage<esv::item::ConsumedItem>)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "declared",
+  "structs": [
+    {
+      "name": "ConsumedSingletonConsumedItem",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Character",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x41F3460, case 7 (Consume): element[0] = the consuming character's entity (param_5[2]), or the null handle DAT_146174970 when there is no character; Toolkit ExecuteAction does the same with Character::GetEntityObjectHandle."
+        },
+        {
+          "name": "Item",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x41F3460, case 7: element[1] = the consumed item's entity (virtual +0x50 of the item object, its entity handle getter); the Toolkit asserts 'target must be an item for action Consume'."
+        }
+      ]
+    }
+  ],
+  "second_pass": "The element type is esv::item::ConsumedItem (Toolkit LEGACY_ConsumeRequest); the game's ExecuteAction (bg3.exe+0x41F3460, case 7) writes {consumer character, item} at a 16-byte stride and ConsumedSystem's update bg3.exe+0x33CC860 moves the array into the singleton.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

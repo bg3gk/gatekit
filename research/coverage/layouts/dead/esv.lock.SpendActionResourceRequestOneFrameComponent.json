@@ -1,0 +1,27 @@
+{
+  "component": "esv::lock::SpendActionResourceRequestOneFrameComponent",
+  "ext_name": "ServerLockSpendActionResourceRequest",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request of the lockpicking system to spend an action resource for a lockpicking attempt: created by esv::lock::LockpickingSystem::ProcessStateWaitingForScriptPermission (bg3.exe+0x2E2B180) with a freshly generated Guid, which is also kept in the lockpicking state to match the later eoc::ActionResourceSpendEventOneFrameComponent. Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "RequestId",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2E2C4B0 (AllocRaw 0x10) copies 16 bytes from DAT_14625aad0 (a zero Guid). bg3.exe+0x2E2B180 lines 48-60: `req = create(); g = FUN_144130aa0(tmp) /* Guid generation */; req[0] = g[0]; req[1] = g[1];` then the same 16 bytes are stored into the returned lockpicking state at +0x10. Name inferred."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name inferred (a request id Guid); the consumer of the request was not read.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

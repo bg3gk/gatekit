@@ -1,0 +1,55 @@
+{
+  "component": "esv::inventory::EntityMergeEventOneFrameComponent",
+  "ext_name": "ServerInventoryEntityMergeEvent",
+  "size": 16,
+  "seen": true,
+  "summary": "Server one-frame event on a stack entity: the entities that were merged into it. Born with AddTreasureRequest/GeneratedAsTreasure during treasure generation (stackable items merge). Toolkit esv::StoryItemEventManager::OnStackedWith(EntityHandle, DynamicArray<esv::inventory::StackMergedEntityData>) throws the Osiris StackedWith event per element.",
+  "structs": [
+    {
+      "name": "InvEntityMergeEventEntry",
+      "size": 48,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "First qword of esv::inventory::StackMergedEntityData; not passed to ThrowStackedWith and trivially destructible. Probably the merged (destroyed) entity; not confirmed."
+        },
+        {
+          "name": "TemplateName",
+          "offset": 8,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "OnStackedWith (EoCServer.dll+0xEBF200) passes element+8 as the ls::STDString const& argument of ThrowStackedWith(STDString const&, Guid const&, EntityHandle); bg3.exe element destructor FUN_1422e2e70 frees the string buffer at +8 when the capacity at +0x1C > 15. The name is a guess at what the string holds."
+        },
+        {
+          "name": "Uuid",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "OnStackedWith passes element+0x20 as the Guid argument of ThrowStackedWith."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "MergedEntities",
+      "offset": 0,
+      "type": "Array<InvEntityMergeEventEntry>",
+      "source": "inferred",
+      "evidence": "bg3.exe creator 0x34B35E0 zeroes a 16-byte Array; destructor FUN_1422cf840 -> FUN_1422e2e70 with element stride 0x30 and an STDString at +8. Toolkit OnStackedWith iterates DynamicArray<StackMergedEntityData> with stride 0x30. Live (48 instances): capacity 1..0x40, size 1..0x2D."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "That this component's array is exactly the DynamicArray<StackMergedEntityData> passed to OnStackedWith (stride and STDString position match).",
+    "Meaning of the first qword and of the string."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

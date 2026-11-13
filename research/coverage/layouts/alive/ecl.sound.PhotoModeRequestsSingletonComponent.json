@@ -1,0 +1,76 @@
+{
+  "component": "ecl::sound::PhotoModeRequestsSingletonComponent",
+  "ext_name": "ClientSoundPhotoModeRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "PhotoModeSoundPostEventRequest",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Subject",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "InterfaceSystem::ProcessPhotoModePostEventRequests (EoCClient.dll+0xDBD6B0) passes element+0 as ls::Variant<ls::ID<EntityHandleTraits>, ls::TypeWrap<uint64, SoundObjectHandleClassname>> to the ls::GameplaySoundEventRequest constructor (GameEngine export). The variant's 8-byte payload: an entity handle or a sound object id (same idea as SE SoundPostEventRequest.Subject)."
+        },
+        {
+          "name": "SubjectType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant alternative index: the writer bg3.exe+0x1E6D710 stores qword 1 at +8 (alternative 1 = sound object handle, the photo-mode sound object at +0); the consumer bg3.exe+0x1F0E360 copies +0..+0xF as one 16-byte variant."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Variant padding to 16 bytes."
+        },
+        {
+          "name": "Event",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "ProcessPhotoModePostEventRequests passes element+0x10 as the FixedString event of the GameplaySoundEventRequest."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Writer bg3.exe+0x1E6D710 stores 3 (dword); consumer bg3.exe+0x1F0E360 copies it into GameplaySoundEventRequest+0x14 and sets its optional flag at +0x18."
+        },
+        {
+          "name": "Callback",
+          "offset": 24,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Writer bg3.exe+0x1E6D710 stores qword 0; the same element type (ecl::sound::PostEventRequest, grown by the same FUN_1406DC490 as the distant-sound requests) holds a pooled ls::SoundCallback pointer here in the dispatcher (Toolkit DispatcherSystem::Update). Not read by the photo-mode consumer."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "PostEventRequests",
+      "offset": 0,
+      "type": "Array<PhotoModeSoundPostEventRequest>",
+      "source": "inferred",
+      "evidence": "ProcessPhotoModePostEventRequests walks singleton+0 (size +0xC) with stride 0x20 and turns each element into an ls::GameplaySoundEventRequest (stride 0x30) on GameplaySoundEventRequestBusComponent. Writer: ecl::GameplaySoundSystem::Update (macOS name; not found by name in the Toolkit). macOS default zeroes 16 bytes."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of field_14 (always 3 from this writer)."
+  ],
+  "second_pass": "Confirmed on Windows: the writer bg3.exe+0x1E6D710 (GameplaySoundSystem, query DAT_1463510EC registered for this singleton by bg3.exe+0x1E6F9A0) appends 0x20-byte elements {qword sound object +0, qword 1 at +8, FixedString +0x10 (e.g. PhotoMode_Exit), dword 3 at +0x14, qword 0 at +0x18}; the consumer bg3.exe+0x1F0E360 walks them with stride 0x20.",
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

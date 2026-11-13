@@ -1,0 +1,578 @@
+{
+  "component": "ecl::timeline::GlobalThothResultComponent",
+  "ext_name": "ClientTimelineGlobalThothResult",
+  "size": 592,
+  "structs": [
+    {
+      "name": "GlobalThothResultDamagePair",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Amount",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Equals SE DamagePair (Base/ExposedTypes.h): int32 Amount."
+        },
+        {
+          "name": "DamageType",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Equals SE DamagePair.DamageType (enum DamageType, uint8_t). SE enum DamageType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Padding to 8."
+        }
+      ]
+    },
+    {
+      "name": "GlobalThothResultDamageOverride",
+      "size": 12,
+      "fields": [
+        {
+          "name": "DamageType",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Equals SE HitDamageOverride (Hit.h): DamageType (uint8_t). SE enum DamageType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Padding."
+        },
+        {
+          "name": "OriginalValue",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE HitDamageOverride.OriginalValue."
+        },
+        {
+          "name": "OverriddenValue",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE HitDamageOverride.OverriddenValue."
+        }
+      ]
+    },
+    {
+      "name": "GlobalThothResultAttackDesc",
+      "size": 32,
+      "fields": [
+        {
+          "name": "TotalDamageDone",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Equals SE AttackDesc (Hit.h). bg3.exe+0x31CD550 copies param_5[0] to component +0x1B8."
+        },
+        {
+          "name": "TotalHealDone",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE AttackDesc.TotalHealDone; copied from param_5[1] to +0x1BC."
+        },
+        {
+          "name": "InitialHPPercentage",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE AttackDesc.InitialHPPercentage; byte copy to +0x1C0."
+        },
+        {
+          "name": "field_9",
+          "offset": 9,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE AttackDesc.field_9; byte copy to +0x1C1."
+        },
+        {
+          "name": "_PadA",
+          "offset": 10,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Padding before the array."
+        },
+        {
+          "name": "DamageList",
+          "offset": 16,
+          "type": "Array<GlobalThothResultDamagePair>",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE AttackDesc.DamageList; the Toolkit names its copy constructor eoc::AttackDesc::AttackDesc at component +0x1C8 (pointer, then capacity/size zeroed at +0x1D0/+0x1D4). Live: heap pointer, capacity/size 1-2."
+        }
+      ]
+    },
+    {
+      "name": "GlobalThothResultHitDesc",
+      "size": 432,
+      "fields": [
+        {
+          "name": "TotalDamageDone",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live 0..500."
+        },
+        {
+          "name": "DeathType",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum stats::DeathType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "DamageType",
+          "offset": 5,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum DamageType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "CauseType",
+          "offset": 6,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum CauseType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "_Pad7",
+          "offset": 7,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Padding."
+        },
+        {
+          "name": "ImpactPosition",
+          "offset": 8,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: world coordinates."
+        },
+        {
+          "name": "ImpactDirection",
+          "offset": 20,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: unit-length floats or FLT_MAX."
+        },
+        {
+          "name": "ImpactForce",
+          "offset": 32,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "ArmorAbsorption",
+          "offset": 36,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "LifeSteal",
+          "offset": 40,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "EffectFlags",
+          "offset": 44,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint32_t bitmask; ThrowDamageEvent (bg3.exe+0x31C3180) ORs 0x400 HitpointsDamaged and 0x10000 KillingBlow into the HitDesc at +0x2C. SE enum DamageFlags (underlying uint32_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "Inflicter",
+          "offset": 48,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "InflicterOwner",
+          "offset": 56,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "Throwing",
+          "offset": 64,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "StoryActionId",
+          "offset": 72,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "HitWith",
+          "offset": 76,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum HitWith (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "AttackRollAbility",
+          "offset": 77,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum AbilityId (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "SaveAbility",
+          "offset": 78,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum AbilityId (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "SpellAttackType",
+          "offset": 79,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum SpellAttackType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "ConditionRolls",
+          "offset": 80,
+          "type": "uint8_t[16]",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE HitDesc.ConditionRolls = Array<ConditionRoll> (16 bytes; live: heap pointer + capacity/size 0/1). Kept opaque: ConditionRoll holds std::variant<StatsRoll, StatsExpressionResolved>, not expressible with the allowed primitive types."
+        },
+        {
+          "name": "Damage",
+          "offset": 96,
+          "type": "uint8_t[224]",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE HitDesc.Damage = StatsDamage (0xE0 bytes; live: Multiplier/BaseValue/SecondaryValue = 1 at HitDesc +0x130..+0x138 as in SE). Kept opaque: it holds LegacyRefMaps and variant-bearing arrays that need SE types."
+        },
+        {
+          "name": "SpellCastGuid",
+          "offset": 320,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: random 16 bytes or zero."
+        },
+        {
+          "name": "SpellId",
+          "offset": 336,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: FixedString indices or 0xFFFFFFFF."
+        },
+        {
+          "name": "StatusId",
+          "offset": 340,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "StatusEntity",
+          "offset": 344,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: entity-handle shaped or null."
+        },
+        {
+          "name": "SurfaceType",
+          "offset": 352,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum SurfaceType (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "SpellSchool",
+          "offset": 353,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t enum. SE enum SpellSchoolId (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "HealingTypes",
+          "offset": 354,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live always 1 (SE default 1)."
+        },
+        {
+          "name": "AttackFlags",
+          "offset": 355,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). uint8_t bitmask. SE enum AttackFlags (underlying uint8_t), declared by its underlying type because generate.py does not size SE enums."
+        },
+        {
+          "name": "SpellLevel",
+          "offset": 356,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live 0/4."
+        },
+        {
+          "name": "SpellPowerLevel",
+          "offset": 360,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "TotalHealDone",
+          "offset": 364,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "RedirectedDamage",
+          "offset": 368,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "OriginalDamageValue",
+          "offset": 372,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "FallHeight",
+          "offset": 376,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "FallDamageMultiplier",
+          "offset": 380,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "FallMaxDamage",
+          "offset": 384,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "FallWeight",
+          "offset": 388,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "field_188",
+          "offset": 392,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8)."
+        },
+        {
+          "name": "_Pad189",
+          "offset": 393,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Padding."
+        },
+        {
+          "name": "OverriddenDamage",
+          "offset": 400,
+          "type": "Array<GlobalThothResultDamageOverride>",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: always empty."
+        },
+        {
+          "name": "DamageList",
+          "offset": 416,
+          "type": "Array<GlobalThothResultDamagePair>",
+          "source": "inferred",
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Same member as SE eoc HitDesc (GameDefinitions/Hit.h) at this offset; offsets checked against live samples (component offset = HitDesc offset + 8). Live: heap pointer, capacity/size 1-2."
+        }
+      ]
+    },
+    {
+      "name": "GlobalThothResultRequest",
+      "size": 568,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1A5A100 copies it as 4 bytes from the request element (stride 0x238 in ecl::timeline::GlobalRunThothComponent's array, 'index * 0x238 + array') into component +0x10."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1A5A100 copies one byte at +4 right after field_0."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "alignment before the HitDesc"
+        },
+        {
+          "name": "Hit",
+          "offset": 8,
+          "type": "GlobalThothResultHitDesc",
+          "source": "inferred",
+          "evidence": "Existing Script Extender struct (GameDefinitions/Hit.h, 0x1B0 bytes). Copied by bg3.exe+0xF11E30 and destroyed by bg3.exe+0x5F19C0, whose member offsets are HitDesc's: arrays at +0x1A0 (DamageList) and +0x190 (OverriddenDamage), FixedStrings at +0x150/+0x154, StatsDamage at +0x60, ConditionRolls array (elements 0x138) at +0x50; the default-constructed local in bg3.exe+0x1A5A100 has the three null entity handles at +0x30/+0x38/+0x40. Declared as a redeclaration of SE's HitDesc (struct GlobalThothResultHitDesc, copied from the confirmed eoc.stats.EntityDamagedEventOneFrameComponent layout) so the file needs no foreign type."
+        },
+        {
+          "name": "Attack",
+          "offset": 440,
+          "type": "GlobalThothResultAttackDesc",
+          "source": "inferred",
+          "evidence": "Existing Script Extender struct (Hit.h, 0x20 bytes: two ints, two bytes, Array at +0x10). bg3.exe+0x1A5A100 reads 8 bytes at +0x1B8 and a 16-bit value at +0x1C0, copies the array at +0x1C8 with FUN_140f11b90 (whole struct copy FUN_141058830); destructor bg3.exe+0x18856E0 frees the array at +0x1C0 relative to the HitDesc. HitDesc followed by AttackDesc is the same pair as in Script Extender's HitResult / SpellFunctorResult. Redeclared as GlobalThothResultAttackDesc (copied from the same confirmed layout)."
+        },
+        {
+          "name": "field_1D8",
+          "offset": 472,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1A5A100 copies the 8 bytes into the first slot of the Thoth evaluation context it builds (the neighbouring slots default to 0xFFC0000000000000) - an entity handle; which role (source/target) not established."
+        },
+        {
+          "name": "field_1E0",
+          "offset": 480,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1A5A100 copies it into the third 8-byte slot of the same context (slots between default to the null handle)."
+        },
+        {
+          "name": "field_1E8",
+          "offset": 488,
+          "type": "std::optional<glm::vec3>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1A5A100: 'if (byte at +0x1F4) use the 12 bytes at +0x1E8 else {FLT_MAX, FLT_MAX, FLT_MAX}' - three floats with a has-value byte after them (16 bytes)."
+        },
+        {
+          "name": "field_1F8",
+          "offset": 504,
+          "type": "std::optional<glm::vec3>",
+          "source": "inferred",
+          "evidence": "Same pattern in bg3.exe+0x1A5A100: has-value byte at +0x204, 12 bytes at +0x1F8, FLT_MAX fallback."
+        },
+        {
+          "name": "field_208",
+          "offset": 520,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Copied as 8 bytes in the assignment path of bg3.exe+0x1A5A100 (piVar20[0x82]); meaning not established."
+        },
+        {
+          "name": "field_210",
+          "offset": 528,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Copied as 8 bytes in the same assignment (piVar20[0x84]); meaning not established."
+        },
+        {
+          "name": "field_218",
+          "offset": 536,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1A5A100 IncRefs it and stores it into a FixedString slot of the context; assigned with the FixedString assignment FUN_14412e0f0; destructor bg3.exe+0x18856E0 DecRefs +0x210 relative to the HitDesc."
+        },
+        {
+          "name": "_Pad21C",
+          "offset": 540,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "alignment"
+        },
+        {
+          "name": "field_220",
+          "offset": 544,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1A5A100 copies it over a context slot whose default is the null entity handle."
+        },
+        {
+          "name": "field_228",
+          "offset": 552,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1A5A100 copies one byte into two byte slots of the context."
+        },
+        {
+          "name": "field_229",
+          "offset": 553,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Copied as a separate byte in the assignment path of bg3.exe+0x1A5A100."
+        },
+        {
+          "name": "_Pad22A",
+          "offset": 554,
+          "type": "uint8_t[6]",
+          "source": "unknown",
+          "evidence": "alignment"
+        },
+        {
+          "name": "field_230",
+          "offset": 560,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Copied as 8 bytes in the assignment path of bg3.exe+0x1A5A100 (piVar20[0x8C])."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Condition",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A5A100 first resets it to the null Guid constant (DAT_14625aad0) and, when the Thoth evaluation FUN_140f01150 returns true, copies the Guid of the evaluated entry (entry = {int32 request index, Guid}, stride 0x18; the same Guid is the key looked up in GlobalThothComponent +0x40)."
+    },
+    {
+      "name": "Request",
+      "offset": 16,
+      "type": "std::optional<GlobalThothResultRequest>",
+      "source": "inferred",
+      "evidence": "Engaged byte at +0x248: constructor bg3.exe+0x1A5C0B0 zeroes the block and writes 0 to +0x248; destructor bg3.exe+0x1888E40 destroys the payload (FUN_1418856e0 on +0x18) and clears +0x248; bg3.exe+0x1A5A100 does 'if (byte +0x248) {destroy; clear}' on reset and 'if (!byte +0x248) copy-construct (FUN_141889760) and set it, else assign member by member' on a match. Payload 0x238 bytes = stride of the request array."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the request members after Attack (two entity handles, two optional positions, two qwords, a FixedString, another entity handle, two flags, a qword) - they feed the Thoth evaluation context but the roles were not traced.",
+    "The request struct is the element of ecl::timeline::GlobalRunThothComponent's array (stride 0x238), declared there with an opaque tail (TimelineThothRunRequest); here it is spelled out under the name GlobalThothResultRequest.",
+    "HitDesc / AttackDesc internals are copied from the confirmed EntityDamagedEvent layout (ConditionRolls and Damage kept as opaque bytes there).",
+    "Probe instance was all zero (no result at probe time)."
+  ],
+  "minutes": 8,
+  "functions_read": 0,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Unblocked: the foreign types HitDesc / AttackDesc are replaced by redeclarations copied from the live-confirmed layout eoc.stats.EntityDamagedEventOneFrameComponent, and the request struct renamed to be unique to the component; all other offsets were already read from the Windows copy/destroy functions bg3.exe+0x1A5A100, +0x1A5C0B0, +0x1888E40, +0x18856E0.",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found (client-only Thoth evaluation request; no accessors, no FieldMeta)."
+}

@@ -1,0 +1,47 @@
+{
+  "component": "eoc::story::TimerComponent",
+  "ext_name": "StoryTimer",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Name",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Replication serializer bg3.exe+0x8E10A0 / bg3.exe+0x8E0FB0: dirty bit 1 -> ecs::sync::Serialize(writer, (FixedString *)(DAT_1462805f8 + base)) = offset 0. Toolkit esv::GameTimerSystem::ProcessCreateRequests (EoCServer.dll+0x4197D0) copies the timer request's FixedString name here (the one logged as \"Timer: %s\" / \"Creating timer (%s, %s)\") and marks dirty bit 0. Live: an FS index (0x0DD001F0)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Serializer: dirty bit 2 -> Serialize((FixedString *)(base + 4)). ProcessCreateRequests copies the request's second FixedString (request +0x1C, passed after name, entity, time and flags) here. Live: an FS index (0x25C000A1). Meaning not established (event / owner name?)."
+    },
+    {
+      "name": "Elapsed",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Serializer: dirty bit 4 -> ScratchBuffer::Write(base + 8, 4 bytes). Toolkit esv::GameTimerSystem::ProcessTimerUpdates copies esv::GameTimerComponent +0x10 here (dirty index 2); that GameTimer field accumulates frame time and is compared with the duration (+0x14). Live: 0."
+    },
+    {
+      "name": "Duration",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Serializer: dirty bit 8 -> ScratchBuffer::Write(base + 0xC, 4 bytes). ProcessCreateRequests copies the request's +0x10 here (dirty index 3); the same value goes to esv::GameTimerComponent +0x14, the limit the elapsed time is compared with in ProcessTimerUpdates. Live: 90.0 (float)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Offsets/widths are from the replication serializer (high); names are inferred from the Toolkit's esv::GameTimerSystem (offsets there come from the Toolkit build).",
+    "Meaning of the FixedString at +4.",
+    "Only the subset of timers with flag 0x20 in the request mirror into this component (ProcessCreateRequests checks request byte +0x18 & 0x20)."
+  ],
+  "seen": true,
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

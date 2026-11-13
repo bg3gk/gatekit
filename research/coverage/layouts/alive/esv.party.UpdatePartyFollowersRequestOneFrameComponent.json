@@ -1,0 +1,25 @@
+{
+  "component": "esv::party::UpdatePartyFollowersRequestOneFrameComponent",
+  "ext_name": "ServerPartyUpdatePartyFollowersRequest",
+  "size": 8,
+  "seen": true,
+  "summary": "Server request (registry does not mark it one-frame) to recompute party followers. Created on a fresh request entity by bg3.exe+0x2BC1120 (~ esv::party::PartySystem::ProcessUpdatePartyViews, per-frame update of esv::party::PartySystem); macOS names PartySystem::ProcessPartyFollowers as the consumer (HashMap template over the same WorldView). Seen.py context: party changes.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x2BC4220 allocates 8 bytes, default null handle; bg3.exe+0x2BC1120 line ~582 writes the handle at the start of the 64-byte record it iterates (pIVar21, stride 8 handles). Live (5): entity handles. Probably the party (view) entity whose followers must be updated; not established."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which entity the handle names (party, party view or member)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

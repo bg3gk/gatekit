@@ -1,0 +1,78 @@
+{
+  "component": "ecl::camera_spline::ClearScreenFadeRequestManualOneFrameComponent",
+  "ext_name": "ClientCameraSplineClearScreenFadeRequestManual",
+  "size": 16,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Clear-screen-fade requests that ecl::CameraSplineSystem::ProcessScreenFade adds to its fade entity while a camera spline plays; drained by ecl::screen_fade::ScreenFadeSystem. Never alive in the captures.",
+  "structs": [
+    {
+      "name": "CameraSplineClearScreenFadeData",
+      "size": 32,
+      "equals": "Script Extender ClearScreenFadeData (GameDefinitions/Components/Camera.h); game name eoc::screen_fade::ClearScreenFadeData",
+      "fields": [
+        {
+          "name": "FadeId",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0xFF2C40 ecl::CameraSplineSystem::ProcessScreenFade copies a Guid into bytes 0..0x10 of each 0x20-byte element (the fade id of the request); SE name. Windows bg3.exe+0x1C9C6A0 (the game's ecl::CameraSplineSystem::ProcessScreenFade) stores a freshly generated 16-byte id (two FUN_144130d80 random qwords) at +0 of each 0x20-byte element appended to the array (count +0xC, grow bg3.exe+0x6DA440)."
+        },
+        {
+          "name": "FadeSpeed",
+          "offset": 16,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same function stores a 4-byte value read from the spline request (+8 of the 0xC-byte request record) at +0x10; SE name. Windows bg3.exe+0x1C9C6A0 (the game's ecl::CameraSplineSystem::ProcessScreenFade): 4 bytes from the spline request (+8 of its 0xC-byte record) at +0x10."
+        },
+        {
+          "name": "FadeTime",
+          "offset": 20,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Written 0 (upper half of the zero-extended 8-byte store at +0x10) in ProcessScreenFade; SE name. Windows bg3.exe+0x1C9C6A0 (the game's ecl::CameraSplineSystem::ProcessScreenFade): 0 (high half of the 8-byte store at +0x10)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Written 1 as the low byte of the 8-byte store at +0x18; SE name field_18. Windows bg3.exe+0x1C9C6A0 (the game's ecl::CameraSplineSystem::ProcessScreenFade): byte 1 at +0x18 (low byte of the 8-byte store; the other 7 bytes are stack garbage)."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding (garbage from the stack copy)"
+        },
+        {
+          "name": "field_1C",
+          "offset": 28,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "not set by ProcessScreenFade (stack garbage copied); SE name field_1C. Windows bg3.exe+0x1C9C6A0 (the game's ecl::CameraSplineSystem::ProcessScreenFade): never set (stack garbage)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<CameraSplineClearScreenFadeData>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1C9D3A0 allocates 0x10 bytes, zeroes pointer/capacity/size and registers the generic array destructor thunk bg3.exe+0x5946C0 (same as ecl::character_creation::ClearScreenFadeRequestComponent). EoCClient.dll+0xFF2C40 ecl::CameraSplineSystem::ProcessScreenFade (WorldView names this component) appends to it as ls::DynamicArray (grow helper, count at +0xC, capacity +8) with 0x20-byte elements, assert text names IndexedStorage<eoc::screen_fade::ClearScreenFadeData>."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meanings of field_18 / field_1C (Script Extender has them unnamed too); FadeSpeed/FadeTime are Script Extender's names."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "second_pass": "Element layout now read in the Windows game itself (bg3.exe+0x1C9C6A0, which creates the component with bg3.exe+0x1C9D3A0 and appends 0x20-byte elements: Guid, float, 0, byte 1); it matches Script Extender's ClearScreenFadeData.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

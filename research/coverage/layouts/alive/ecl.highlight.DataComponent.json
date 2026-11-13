@@ -1,0 +1,37 @@
+{
+  "component": "ecl::highlight::DataComponent",
+  "ext_name": "ClientHighlightData",
+  "size": 16,
+  "seen": true,
+  "summary": "Highlighted entity per player (born in spells-3 and fight steps with PlayerTargetEntityChanged). Maintained by ecl::highlight::UpdateSystem (per-frame update bg3.exe+0x1A3C910).",
+  "fields": [
+    {
+      "name": "PlayerId",
+      "offset": 0,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A3CEB0 copies a 16-byte request {short, ?, EntityHandle at +8} into the component and calls HighlightManager slots with (*(short*)c, c+8); macOS ecl::highlight::UpdateSystemHelper::SetHighlight/ClearHighlight(short, ls::ID<EntityHandleTraits> const&, HighlightManager&). Creator bg3.exe+0x1A3D2F0 writes 0. Live 1."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "padding (live garbage 0xFF)"
+    },
+    {
+      "name": "Entity",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Second argument of SetHighlight/ClearHighlight (bg3.exe+0x1A3CEB0); creator writes null 0xFFC0000000000000. Live entity handles."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

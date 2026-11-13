@@ -1,0 +1,76 @@
+{
+  "component": "ls::SeeThroughStateComponent",
+  "ext_name": "SeeThroughState",
+  "size": 64,
+  "seen": true,
+  "summary": "See-through (camera occluder fading) state per player, written by ecl::SeeThroughSystem::UpdateSeeThrough (macOS name; also writes ls::IsSeeThroughComponent, reads game/scene cameras, TLPreviewDummy, transforms, visuals). A hash map from the player id to ls::SeeThroughStateData (game name of the value, from the IndexedStorage assert strings).",
+  "structs": [
+    {
+      "name": "SeeThroughStateDataEntry",
+      "size": 88,
+      "fields": [
+        {
+          "name": "Entities",
+          "offset": 0,
+          "type": "HashSet<EntityHandle>",
+          "source": "inferred",
+          "evidence": "Element destructor loop EoCClient.dll+0x86A1B0 / GameEngine.dll+0x68FCD0 (stride 0x58) frees +0 (buckets), +0x10 (int next ids) and +0x20 (keys of ls::ID<EntityHandleTraits>, per EoCClient.dll+0x86AE90 assert string) - a hash set of entities (the occluders made see-through, name inferred)."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "New-element init in EoCClient.dll+0x868500 zeroes +0x30."
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "zeroed by the same init."
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "zeroed by the same init."
+        },
+        {
+          "name": "Entity",
+          "offset": 72,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Same init: puVar3[9] = 0xFFC0000000000000 (null entity handle) at +0x48. Meaning (camera/target entity) not established."
+        },
+        {
+          "name": "field_50",
+          "offset": 80,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "zeroed by the same init (puVar3[10])."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "PlayerStates",
+      "offset": 0,
+      "type": "HashMap<int16_t, SeeThroughStateDataEntry>",
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x868500 (get-or-add): FUN_18054ED60 inserts the key into a hash set of IndexedStorage<short> keys (hash = key % bucket count at +8), then grows/indexes the value storage at +0x30 with stride 0x58 = IndexedStorage<ls::SeeThroughStateData>. Key = short player id. Live: +8 buckets 5, keys size 1, value storage capacity 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Members of SeeThroughStateData after the entity set (+0x30..+0x57) are unknown (only the zero/null initialisation was read).",
+    "Read from the Toolkit build (EoCClient.dll / GameEngine.dll)."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

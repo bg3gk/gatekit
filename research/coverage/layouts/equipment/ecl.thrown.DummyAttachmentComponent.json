@@ -1,0 +1,63 @@
+{
+  "component": "ecl::thrown::DummyAttachmentComponent",
+  "ext_name": "ClientThrownDummyAttachment",
+  "size": 336,
+  "fields": [
+    {
+      "name": "Dummy",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "The component is stored behind a pointer (8 bytes inline): creator bg3.exe+0x1A2C8C0 allocates 0x148 bytes and writes the null handle constant DAT_146174970 at +0. bg3.exe+0x1A2BB60 (attaches a thrown object to the thrower's visual) writes local_d8 here - the entity resolved by bg3.exe+0x1A29580 for the thrown object, whose ls::Visual is attached with ls::Visual::AddAttachment to the visual of the component's owner (the thrower)."
+    },
+    {
+      "name": "Effect",
+      "offset": 8,
+      "type": "uint64_t[38]",
+      "source": "inferred",
+      "evidence": "Opaque 304 bytes (0x130) holding an ecl::EffectHandler: Script Extender's own ecl::EffectHandler (GameDefinitions/Effect.h) is 304 bytes too, but a foreign SE type cannot be used in the generated header, so the member is opaque here. Creator calls bg3.exe+0x1C73C90 on +0x8: it installs the virtual table bg3.exe+0x566C6C8, which ecl::EffectHandler::~EffectHandler (bg3.exe+0x1C73D50) also installs - the constructor of ecl::EffectHandler. Its body matches Script Extender's ecl::EffectHandler (GameDefinitions/Effect.h) member by member: VMT, three pointers, EffectHandlerInitInfo at +0x20 (bg3.exe+0x1B6E840: two null handles, two {handle, vec3, Array, flags} groups, Array, string with capacity 0xF, FixedString -1, float 1.0), Scene pointer at +0xC8, null handle at +0xD0, a nested object with its own virtual table bg3.exe+0x5529DB0 at +0xD8 (MultiEffectInfo), byte at +0x118, Array at +0x120. The constructor writes up to +0x130, so the member occupies component +0x8..+0x138. bg3.exe+0x1A2BB60 passes {Dummy, pointer to this member, a FixedString} to bg3.exe+0x1A2C2A0 when an effect is requested."
+    },
+    {
+      "name": "ThrownEntity",
+      "offset": 312,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator: null handle constant at +0x138. bg3.exe+0x1A2BB60 writes param_5 here - the thrown item or character (the function reads its ecl::Item / ecl::Character template bounds to centre the attachment). bg3.exe+0x1A2A790 checks this handle with IsEntityAlive for every component."
+    },
+    {
+      "name": "field_140",
+      "offset": 320,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator: 0. bg3.exe+0x1A2BB60 copies the byte at +8 of the owner's eoc::thrown::AttachComponent (bg3.exe+0xAF8730) when it has one; that component is not declared in Script Extender, the meaning of the byte is unknown."
+    },
+    {
+      "name": "_Pad141",
+      "offset": 321,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "padding to the end of the 0x148-byte allocation"
+    },
+    {
+      "name": "field_148",
+      "offset": 328,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Not part of the object: the component slot holds a pointer (creator bg3.exe+0x1A2C8C0: ComponentFrameStorageAllocRaw(storage, 8) stores the pointer returned by a 0x148-byte allocation), so the registry size 336 is the object size 0x148 + 8."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures (needs a throw of a held object).",
+    "Meaning of the byte at +0x140 (copied from eoc::thrown::AttachComponent +8, a type Script Extender does not declare).",
+    "Dummy: whether the entity is a separate visual dummy of the thrown object or the object itself depends on bg3.exe+0x1A29580 (not opened); the offset and width are settled."
+  ],
+  "minutes": 20,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "declared",
+  "class_size": 328,
+  "second_pass": "Re-read the creator bg3.exe+0x1A2C8C0: the slot is a pointer to a 0x148-byte heap object (AllocRaw 8), so class_size is 328 and the registry's 336 = object + 8; the ecl::EffectHandler member (304 bytes, the same size as Script Extender's) is now an opaque uint64_t[38] instead of an external type.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

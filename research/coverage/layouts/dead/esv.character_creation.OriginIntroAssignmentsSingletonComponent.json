@@ -1,0 +1,34 @@
+{
+  "component": "esv::character_creation::OriginIntroAssignmentsSingletonComponent",
+  "ext_name": "ServerCCOriginIntroAssignments",
+  "size": 128,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Singleton of esv::character_creation::PlayTimelineSystem (character creation origin intro timelines): which user each origin character is assigned to, and which speaker entity belongs to each running intro dialog. Toolkit users: PlayTimelineSystem::GetIntroAssignments (creates the singleton entity and fills the first map from origin UUIDs, values = the 'Unassigned' UserID), ClearIntroAssignments, ProcessTimelineEnding ('Removing association between DialogInstanceId (%d) and associated speaker (%s)'), ProcessPlayRequests, PlayTimelineSystemUnitTestHelper::StartDialog. Never seen alive. Registry total 128 (server row).",
+  "fields": [
+    {
+      "name": "Assignments",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, UserId>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3173610 (AllocRaw 0x80) zeroes +0..+0x3F in the HashMap pattern (counts +0x1C, +0x2C); destructor bg3.exe+0x682800 frees the values at +0x30 then the key set at +0 (bg3.exe+0x582AD0, trivial keys). Toolkit GetIntroAssignments: for each origin UUID resolved to an entity, FUN_180cb47d0(component, &entity) inserts the entity key (EntityHandle set insert FUN_18021e210 at +0, values Array at +0x30 with 4-byte elements) and stores the 'Unassigned' UserID global."
+    },
+    {
+      "name": "DialogSpeakers",
+      "offset": 64,
+      "type": "HashMap<uint32_t, EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x40..+0x7F in the same HashMap pattern (counts +0x5C, +0x6C); destructor frees +0x70 then the key set at +0x40. Toolkit ProcessTimelineEnding: lookup `FUN_18021ef10(param_2 + 0x40, *(uint *)key % *(int *)(param_2 + 0x48), key)` (4-byte DialogInstanceId keys), value from FUN_181574590 is an ls::ID<ecs::EntityHandleTraits> (IndexedStorage of 8-byte entity handles at +0x70) - the 'associated speaker'."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Value widths of the two maps come from the Toolkit (agreeing with the bg3.exe creator/destructor and the registry size 128); member names are inferred from the system's log texts.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 6,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

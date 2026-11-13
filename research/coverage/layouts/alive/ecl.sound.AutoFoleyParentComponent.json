@@ -1,0 +1,66 @@
+{
+  "component": "ecl::sound::AutoFoleyParentComponent",
+  "ext_name": "ClientSoundAutoFoleyParent",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Toolkit constructor ecl::sound::AutoFoleyParentComponent::AutoFoleyParentComponent (EoCClient.dll+0x2927F0) sets +0 to the null handle 0xFFC0000000000000; live values are entity handles."
+    },
+    {
+      "name": "Flags",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "toolkit",
+      "evidence": "Toolkit accessors: bit0 IsPlayingVelocity, bit1 IsPlayingRotation, bit2 IsCurrentlyCulled, bit3 HasVelocitySpikeDetected, bit4 HasRotationSpikeDetected (EoCClient.dll+0xEC5850..0xEC5890)."
+    },
+    {
+      "name": "FoleySet",
+      "offset": 12,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Constructor builds a FixedString at +0xC; FUN_180ec0510 (AutoFoleySystem update) uses it as the foley name, falling back to a default when empty."
+    },
+    {
+      "name": "TimelineActor",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Constructor null handle at +0x10; FUN_180ec0510 checks it alive before looking up the timeline."
+    },
+    {
+      "name": "TimelineId",
+      "offset": 24,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Constructor ls::Guid at +0x18; FUN_180ec0510 passes it to ecl::TimelineSystem::GetTimeline."
+    },
+    {
+      "name": "Fade",
+      "offset": 40,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Constructor 0 at +0x28; FUN_180ec0510 clamps +0x28 to 0..1 while adding a per-frame step (live 0 or 1.0)."
+    },
+    {
+      "name": "_Pad2C",
+      "offset": 44,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Size 0x30; copy constructor (EoCClient.dll+0x2927A0) copies only up to +0x2C (live bytes are garbage)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names Entity/FoleySet/TimelineActor/TimelineId/Fade are ours."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

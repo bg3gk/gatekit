@@ -1,0 +1,54 @@
+{
+  "component": "ls::InstancingFolderLoaderComponent",
+  "ext_name": "InstancingFolderLoader",
+  "size": 56,
+  "seen": true,
+  "summary": "Client loader state of an instancing folder (the folder of '*group_*.lsf' instanced-scenery files of a level). ls::InstancingSystem::StartNewFolderLoads (Toolkit GameEngine.dll+0x977BB0) starts an asynchronous folder read with the path held at +0 (AsyncFileReadManager::AsyncLoadFolder(request, component, \"*group_*.lsf\")), keeps the read requests and allocates 0x100-byte ls::InstancingBatchLoader objects; FinishFolderLoad/ProcessBatchModifications use them. Seen alive after level changes and recruit/dialog trees in new areas.",
+  "fields": [
+    {
+      "name": "Path",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Game creator bg3.exe+0x1851ED0 (size 0x38) constructs an ls::STDString at +0 from an empty global and zeroes +0x18..+0x37. Toolkit passes the component itself as the folder path to AsyncLoadFolder. Live: heap buffer at +0, size 0x7C..0x95 at +0x10, capacity 0x7F/0x8F/0x9F at +0x14 (long path strings)."
+    },
+    {
+      "name": "FolderRequest",
+      "offset": 24,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Toolkit +0x20 (game +0x18; the Toolkit STDString is 8 bytes larger): ls::SharedPtr<ls::AsyncReadRequest> assigned from AsyncFileReadManager::CreateAsyncRequest and passed to AsyncLoadFolder. Live 0 (finished)."
+    },
+    {
+      "name": "FileRequest",
+      "offset": 32,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Toolkit +0x28: a second ls::SharedPtr<ls::AsyncReadRequest> created for the batch loader (CreateAsyncRequest with the object at +0x38). Live 0."
+    },
+    {
+      "name": "Loader",
+      "offset": 40,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Toolkit +0x30: replaced by a new object; the old one is torn down (FUN_1806f6c60(old+0x80)) and freed with size 0x100 align 0x40; also used as the request's category argument. Live 0."
+    },
+    {
+      "name": "BatchLoader",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Toolkit +0x38: an ls::InstancingBatchLoader allocated with FUN_180a49a20(0x100, 0x40) (local typed InstancingBatchLoader*). Live 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Offsets of the four pointers are shifted from the Toolkit build by the STDString size difference (Toolkit 32, game 24) - consistent with the game's 0x38 size and zeroing, not checked in game code.",
+    "Exact pointee types of +0x28/+0x30."
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

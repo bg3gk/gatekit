@@ -1,0 +1,151 @@
+{
+  "component": "ecl::sound::SpellImpactRequestBusComponent",
+  "ext_name": "ClientSoundSpellImpactRequestBus",
+  "size": 72,
+  "seen": true,
+  "structs": [
+    {
+      "name": "SpellImpactBusSoundRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Game name: SpellImpactRequestBusComponent::SpellImpactSoundRequest (stride 0x10). ImpactSoundSystem::FinalizeState (EoCClient.dll+0xD67B00) writes an 8-byte entity handle from FrameData lists to +0."
+        },
+        {
+          "name": "Event",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "FinalizeState copy-constructs a FixedString (sound event, e.g. global EoCClient.dll+0x1A34140) at +8; FUN_180d6a270 destroys element+8 when clearing."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Stride 0x10; nothing else written."
+        }
+      ]
+    },
+    {
+      "name": "SpellImpactBusSwitchRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Game name: SpellImpactRequestBusComponent::SpellImpactSoundSwitchRequest (stride 0x10); ImpactSoundHelper::SetupSpellSwitches(..., EntityHandle, EntityHandle, SpellId, DynamicArray<SpellImpactSoundSwitchRequest>&) fills it; +0 assumed to be the sound entity (8 bytes, not FixedString)."
+        },
+        {
+          "name": "Switch",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "FinalizeState destroys FixedStrings at element+8 and +0xC when clearing the array at +0x10."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Second FixedString destroyed at element+0xC (switch state)."
+        }
+      ]
+    },
+    {
+      "name": "SpellImpactBusTransformRequest",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Windows-only name SpellImpactRequestBusComponent::TransformRequest (stride 0x30). FinalizeState writes a FrameData key (entity handle) at +0; ecl::transform::GameplayTransformRequestSystem::Update (EoCClient.dll+0x548D10) looks the entity up by element+0."
+        },
+        {
+          "name": "Rotation",
+          "offset": 8,
+          "type": "glm::quat",
+          "source": "inferred",
+          "evidence": "GameplayTransformRequestSystem::Update copies the 0x28 bytes at +8 as one transform into GameplaySetTransformRequestsComponent; assumed to equal Script Extender Transform (RotationQuat, Translate, Scale)."
+        },
+        {
+          "name": "Translate",
+          "offset": 24,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Part of the 0x28-byte transform (SE Transform.Translate at +0x10 of Transform)."
+        },
+        {
+          "name": "Scale",
+          "offset": 36,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Part of the 0x28-byte transform (SE Transform.Scale at +0x1C of Transform)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "SoundRequests",
+      "offset": 0,
+      "type": "Array<SpellImpactBusSoundRequest>",
+      "source": "inferred",
+      "evidence": "FinalizeState clears +0 with FUN_180d6a270 (IndexedStorage<SpellImpactSoundRequest>) and appends requests (capacity +8, size +0xC, stride 0x10). Consumed by InterfaceSystem (component is in its WorldView). Live: empty."
+    },
+    {
+      "name": "SwitchRequests",
+      "offset": 16,
+      "type": "Array<SpellImpactBusSwitchRequest>",
+      "source": "inferred",
+      "evidence": "FinalizeState clears the IndexedStorage<SpellImpactSoundSwitchRequest> at +0x10 (capacity +0x18, size +0x1C) and passes plVar15+2 (= +0x10) to IImpactSoundHelper to fill."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "Array<SpellImpactBusSoundRequest>",
+      "source": "inferred",
+      "evidence": "FinalizeState clears +0x20 with the same FUN_180d6a270 (asserts IndexedStorage<SpellImpactSoundRequest>), so same element type; which requests go here was not established."
+    },
+    {
+      "name": "TransformRequests",
+      "offset": 48,
+      "type": "Array<SpellImpactBusTransformRequest>",
+      "source": "inferred",
+      "evidence": "FinalizeState clears and appends IndexedStorage<TransformRequest> at +0x30 (capacity +0x38, size +0x3C, stride 0x30); GameplayTransformRequestSystem::Update reads +0x30/+0x3C."
+    },
+    {
+      "name": "Timer",
+      "offset": 64,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "FinalizeState adds FrameData+0x40 (frame delta) to the float at +0x40 and only processes new impacts when it exceeds 0.3 (throttle). Live: 22.5-41.9 (seconds since the last processed impact)."
+    },
+    {
+      "name": "_Pad44",
+      "offset": 68,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Alignment to 8 (size 0x48); macOS default: str xzr, [x23, #0x40]. Live: 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Purpose of the second SpellImpactSoundRequest array at +0x20.",
+    "TransformRequest transform member order assumed from SE Transform.",
+    "Element +0 of the switch request is assumed to be an entity handle."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "26 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,55 @@
+{
+  "component": "ecl::PlayDeathExplodeEffectRequestOneFrameComponent",
+  "ext_name": "ClientPlayDeathExplodeEffectRequest",
+  "size": 40,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "One-frame request to play a character's death 'explode' effect, created by the client death system (bg3.exe+0x1959370, macOS ecl::death::CharacterSystem::Update) from the character template's death-effect entry of type 5; consumed by ecl::EffectManagerProxySystem.",
+  "fields": [
+    {
+      "name": "Effect",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x195D130 writes 0xFFFFFFFF (with +4, one 8-byte -1 store); destructor bg3.exe+0x67FC50 releases FixedStrings at +0 and +4. bg3.exe+0x1959370 sets it from +0x34 of the template's death-effect entry whose type byte (+0x28) is 5."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Released by the destructor; bg3.exe+0x1959370 sets it from a FixedString held by the system object (this+0x20) - probably a bone or attachment name."
+    },
+    {
+      "name": "Position",
+      "offset": 8,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Creator zeroes; bg3.exe+0x1959370 copies 8 + 4 bytes from +0x10 of the character's transform (translation)."
+    },
+    {
+      "name": "Rotation",
+      "offset": 20,
+      "type": "glm::quat",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x14..+0x20 and writes 1.0 at +0x20 (identity w); bg3.exe+0x1959370 copies four floats from +0 of the transform (rotation)."
+    },
+    {
+      "name": "Scale",
+      "offset": 36,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator writes 1.0; bg3.exe+0x1959370 writes the largest of the three scale components of the transform (+0x1C..+0x28)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of field_4 (a FixedString owned by the system).",
+    "Quaternion component order follows the transform copy (x, y, z, w with w at +0x20)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,34 @@
+{
+  "component": "esv::inventory::LootableReactionQueueSingletonComponent",
+  "ext_name": "ServerInventoryLootableReactionQueue",
+  "size": 96,
+  "seen": true,
+  "summary": "Server singleton backed by a savegame model (ls::model::game::inventory::v0::LootableReactionQueueSingletonComponent): two hash sets. Seen once in an idle level, empty.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "unknown",
+      "evidence": "Windows save loader bg3.exe+0x25C2290 (model game.inventory.v0.LootableReactionQueueSingletonComponent, 32 bytes = two arrays; the only other model saved with it is ls::model::core::v0::EntityId) converts the model with bg3.exe+0x2779F90 into two 48-byte hash sets and moves the first into component +0..+0x30. bg3.exe+0x2779F90 builds the set from 8-byte elements (count = byte size >> 3, bucket = key % bucket count on the full 8 bytes, keys stored at +0x20) - entity handles. Destructor FUN_1406c6a10 frees both with the HashSet destructor FUN_140582AD0. Live: empty."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "HashSet<EntityHandle>",
+      "source": "unknown",
+      "evidence": "Second set, built by bg3.exe+0x2779F90 from the second model array (same 8-byte EntityId elements) and moved to +0x30 by the loader bg3.exe+0x25C2290."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Roles of the two sets: no system reads or writes the component on macOS or in bg3.exe outside the creator, the destructor and the save loader/saver (it may be dead data kept for old saves)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "The Windows save loader bg3.exe+0x25C2290 and its converter bg3.exe+0x2779F90 settle both members as HashSet<EntityHandle> at +0 and +0x30 (model of two EntityId arrays); the names stay unknown because no system uses the component.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

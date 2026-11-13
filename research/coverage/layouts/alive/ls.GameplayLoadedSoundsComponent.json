@@ -1,0 +1,52 @@
+{
+  "component": "ls::GameplayLoadedSoundsComponent",
+  "ext_name": "GameplayLoadedSounds",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "GameplayLoadedSoundsSoundInfo",
+      "size": 56,
+      "fields": [
+        {
+          "name": "Loaded",
+          "offset": 0,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessLoadRequests (GameEngine.dll+0x89AD20) loads the sounds only when this byte is 0 and then sets it to 1; ProcessSetupRequests unloads only when it is 1."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment of the HashSet"
+        },
+        {
+          "name": "Sounds",
+          "offset": 8,
+          "type": "HashSet<FixedString>",
+          "source": "inferred",
+          "evidence": "ProcessLoadRequests walks the keys array at value+0x28 (= +8 +0x20) with size at +0x34 and calls ResourceManager::LoadSound on each FixedString; ProcessSetupRequests copies the setup request's HashSet<FixedString> here."
+        }
+      ]
+    }
+  ],
+  "summary": "Per-level map of the sound resources loaded for each entity with a sound component (macOS: HashMap<EntityHandle, ls::GameplayLoadedSoundsComponent::SoundInfo>).",
+  "fields": [
+    {
+      "name": "Sounds",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, GameplayLoadedSoundsSoundInfo>",
+      "source": "inferred",
+      "evidence": "macOS template ls::HashMap<ls::ID<ecs::EntityHandleTraits>, ls::GameplayLoadedSoundsComponent::SoundInfo>; GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessLoadRequests / ProcessTransferRequests hash the entity handle with the bucket count at +8, keys at +0x20 (8 bytes), values at +0x30 with stride 0x38. Live: prime bucket counts 7 / 0xB, 4..5 keys."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

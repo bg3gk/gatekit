@@ -1,0 +1,255 @@
+{
+  "component": "esv::interrupt::RequestSingletonComponent",
+  "ext_name": "ServerInterruptRequest",
+  "size": 48,
+  "seen": true,
+  "summary": "Server singleton of the interrupt feature: three request queues (macOS query pairs it with esv::interrupt::DataSingletonComponent). Seen once in an idle level, empty. Partial layout: the three arrays and their element sizes are established from the bg3.exe destructor, element members are not.",
+  "structs": [
+    {
+      "name": "ServerInterruptRequestEvent",
+      "size": 264,
+      "fields": [
+        {
+          "name": "Event",
+          "offset": 0,
+          "type": "uint8_t[168]",
+          "source": "inferred",
+          "evidence": "Storage of the event variant (SpellCastEvent, CastHitEvent, SpellRollEvent, ConditionalRollEvent, EnterAttackRangeEvent, LeaveAttackRangeEvent, SpellPreDamageEvent, PlaceholderSpellRollEvent, ConditionResultEvent, StatusAppliedEvent, DeathEvent, DebugEvent - SE Interrupt.h). bg3.exe+0x7A4FD0 (the event destructor) destroys SpellIds / FixedStrings inside it depending on the index byte at +0xA8."
+        },
+        {
+          "name": "EventType",
+          "offset": 168,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index: bg3.exe+0x7A4FD0 switches on the byte at +0xA8 (0..9 seen in the switch)."
+        },
+        {
+          "name": "_PadA9",
+          "offset": 169,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "Source",
+          "offset": 176,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Matches Script Extender's bg3se::interrupt::InterruptEvent (GameDefinitions/Interrupt.h), field for field (Source at +0xB0)."
+        },
+        {
+          "name": "SourceProxy",
+          "offset": 184,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Matches Script Extender's bg3se::interrupt::InterruptEvent (GameDefinitions/Interrupt.h), field for field."
+        },
+        {
+          "name": "Target",
+          "offset": 192,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Matches Script Extender's bg3se::interrupt::InterruptEvent (GameDefinitions/Interrupt.h), field for field."
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 200,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Matches Script Extender's bg3se::interrupt::InterruptEvent (GameDefinitions/Interrupt.h), field for field."
+        },
+        {
+          "name": "Targets",
+          "offset": 208,
+          "type": "Array<Guid>",
+          "source": "inferred",
+          "evidence": "Matches Script Extender's bg3se::interrupt::InterruptEvent (GameDefinitions/Interrupt.h), field for field; the element destructor bg3.exe+0x23260F0 clears and frees an Array at element+0xE0 = event+0xD0."
+        },
+        {
+          "name": "SourcePos",
+          "offset": 224,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "std::optional<glm::vec3> SourcePos of SE's InterruptEvent: value."
+        },
+        {
+          "name": "SourcePosHasValue",
+          "offset": 236,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Flag of the optional SourcePos."
+        },
+        {
+          "name": "_PadED",
+          "offset": 237,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "TargetPos",
+          "offset": 240,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "std::optional<glm::vec3> TargetPos: value."
+        },
+        {
+          "name": "TargetPosHasValue",
+          "offset": 252,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Flag of the optional TargetPos."
+        },
+        {
+          "name": "_PadFD",
+          "offset": 253,
+          "type": "uint8_t[3]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "SwapSourceTarget",
+          "offset": 256,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Matches Script Extender's bg3se::interrupt::InterruptEvent (GameDefinitions/Interrupt.h), field for field (SwapSourceTarget at +0x100)."
+        },
+        {
+          "name": "_Pad101",
+          "offset": 257,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Padding to 0x108."
+        }
+      ]
+    },
+    {
+      "name": "ServerInterruptStartRequest",
+      "size": 352,
+      "fields": [
+        {
+          "name": "SpellCastGuid",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Same element as SE's esv::interrupt::StartRequestData (Interrupt.h, used by esv::spell_cast::InterruptRequestsComponent.StartRequests): Guid at +0. bg3.exe destructor of the element (bg3.exe+0x23260F0) leaves +0..+0x10 alone (trivial)."
+        },
+        {
+          "name": "Event",
+          "offset": 16,
+          "type": "ServerInterruptRequestEvent",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x23260F0 destroys the event (bg3.exe+0x7A4FD0 on +0x10, Array at +0xE0)."
+        },
+        {
+          "name": "Interruptors",
+          "offset": 280,
+          "type": "HashMap<EntityHandle, HashSet<EntityHandle>>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x23260F0 destroys +0x118 with bg3.exe+0x5E19C0, the destructor bg3.exe uses for a HashMap<.., HashSet<EntityHandle>>; SE StartRequestData.Interruptors is HashMap<EntityHandle, HashSet<EntityHandle>> at +0x118."
+        },
+        {
+          "name": "field_158",
+          "offset": 344,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "SE StartRequestData.field_158; trivial (not destroyed)."
+        },
+        {
+          "name": "_Pad159",
+          "offset": 345,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Padding to the stride 0x160."
+        }
+      ]
+    },
+    {
+      "name": "ServerInterruptStopRequest",
+      "size": 288,
+      "fields": [
+        {
+          "name": "SpellCastGuid",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Same element as SE's esv::interrupt::StopRequestData (Interrupt.h): Guid at +0; not destroyed by bg3.exe+0x22E2360."
+        },
+        {
+          "name": "Event",
+          "offset": 16,
+          "type": "ServerInterruptRequestEvent",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x22E2360 destroys element+0x10 with bg3.exe+0x7A4FD0 (event variant) and the Array at element+0xE0."
+        },
+        {
+          "name": "field_118",
+          "offset": 280,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "SE StopRequestData.field_118; trivial."
+        },
+        {
+          "name": "_Pad119",
+          "offset": 281,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Padding to the stride 0x120."
+        }
+      ]
+    },
+    {
+      "name": "ServerInterruptUpdateInterruptorsRequest",
+      "size": 80,
+      "fields": [
+        {
+          "name": "SpellCastGuid",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Same element as SE's esv::interrupt::UpdateInterruptorsRequestData (Interrupt.h): Guid at +0, trivial in bg3.exe+0x22E2530."
+        },
+        {
+          "name": "Interruptors",
+          "offset": 16,
+          "type": "HashMap<EntityHandle, HashSet<EntityHandle>>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x22E2530 destroys element+0x10 with bg3.exe+0x5E19C0 (HashMap with HashSet<EntityHandle> values); SE: HashMap<EntityHandle, HashSet<EntityHandle>>."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "StartRequests",
+      "offset": 0,
+      "type": "Array<ServerInterruptStartRequest>",
+      "source": "inferred",
+      "evidence": "bg3.exe creator bg3.exe+0x357D730 zeroes three Arrays; destructor bg3.exe+0x22C4770 destroys +0 with bg3.exe+0x22E2280 (stride 0x160, element destructor bg3.exe+0x23260F0). Name after the matching array of esv::spell_cast::InterruptRequestsComponent (SE Interrupt.h)."
+    },
+    {
+      "name": "StopRequests",
+      "offset": 16,
+      "type": "Array<ServerInterruptStopRequest>",
+      "source": "inferred",
+      "evidence": "Destructor: bg3.exe+0x22E2360 on +0x10, stride 0x120."
+    },
+    {
+      "name": "UpdateInterruptorsRequests",
+      "offset": 32,
+      "type": "Array<ServerInterruptUpdateInterruptorsRequest>",
+      "source": "inferred",
+      "evidence": "Destructor: bg3.exe+0x22E2530 on +0x20, stride 0x50."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "No game system reads or fills the three arrays in bg3.exe (only the creator, the destructor and a shutdown query bg3.exe+0x35797E0 that removes the entity; the macOS index lists no writer either): the element types are identified by their sizes and destroyed members, which match SE's StartRequestData / StopRequestData / UpdateInterruptorsRequestData exactly; the variant storage of the event is kept raw."
+  ],
+  "minutes": 10,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "The three element strides (0x160/0x120/0x50) and every destroyed member (event variant at +0x10 with its index byte at event+0xA8, Array at +0xE0, HashMaps at +0x118 and +0x10) were read in bg3.exe destructors; they match Script Extender's esv::interrupt::StartRequestData, StopRequestData and UpdateInterruptorsRequestData (Interrupt.h) member for member, whose remaining offsets were taken from there."
+}

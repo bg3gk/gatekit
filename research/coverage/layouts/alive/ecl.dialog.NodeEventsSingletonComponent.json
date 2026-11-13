@@ -1,0 +1,76 @@
+{
+  "component": "ecl::dialog::NodeEventsSingletonComponent",
+  "ext_name": "ClientDialogNodeEventsSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "DialogNodeEvent",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Type",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "EoCClient.dll ecl::dialog::EventsSystem: OnDialogNodeStarted stores 1, OnDialogNodeWaitingForInput 2, OnSelectableNodesPresented 3"
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "DialogInstanceId",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "all three handlers store *(int*)DialogInstance"
+        },
+        {
+          "name": "NodeUuid",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "copied from DialogNode+8 (DialogNode::UUID in SE Dialog.h); empty FixedString for type 3"
+        },
+        {
+          "name": "_Pad12",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "alignment of the array"
+        },
+        {
+          "name": "SelectableNodes",
+          "offset": 16,
+          "type": "Array<NodeSelectionInfo>",
+          "source": "inferred",
+          "evidence": "OnSelectableNodesPresented copies the 16-byte LSDialogs::NodeSelectionInfo elements into it (SE already declares NodeSelectionInfo in GameDefinitions/Dialog.h, 16 bytes); push function EoCClient.dll+0xF014D0 moves pointer/capacity/size at +0x10/+0x18/+0x1C"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "Array<DialogNodeEvent>",
+      "source": "inferred",
+      "evidence": "Game element type ecl::dialog::NodeEvent (Toolkit EoCClient.dll+0xF014D0: IndexedStorage<ecl::dialog::NodeEvent>, stride 0x20; macOS ls::DynamicArray<ecl::dialog::NodeEvent>). Live: pointer, capacity 1, size 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element layout from the Toolkit build; not cross-checked in bg3.exe",
+    "Game name of the element is ecl::dialog::NodeEvent; renamed DialogNodeEvent to stay unambiguous"
+  ],
+  "minutes": 5,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "15 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "uses types declared elsewhere (NodeSelectionInfo): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

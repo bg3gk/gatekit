@@ -1,0 +1,53 @@
+{
+  "component": "ecl::crowds::SoundClusterRequestsComponent",
+  "ext_name": "ClientCrowdsSoundClusterRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CrowdSoundSetRTPCRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "FinalizeCrowdState 'Send RTPC requests' step (EoCClient.dll+0xEA60C0) stores the group member's entity handle (*plVar30, a key of the group map) at +0."
+        },
+        {
+          "name": "RTPC",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Constructed from three global FixedStrings (DAT_181a3faa0/aa8/ab0, the RTPC names) at +8; destroyed per element on clear."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Stored at +0xC: the group's member counts (count - moved, moved, total). Written as an integer, not a float."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<CrowdSoundSetRTPCRequest>",
+      "source": "inferred",
+      "evidence": "Singleton; element named ecl::crowds::SoundClusterRequestsComponent::SetRTPCRequest (Toolkit IndexedStorage CheckBoundary string, macOS DynamicArray<...::SetRTPCRequest>); growth by FUN_1803A5DE0, stride 0x10, size at +0xC; cleared at the start of FinalizeCrowdState (FUN_18034DFF0 per element, size=0). macOS default ctor: 16 zero bytes. Live (idle): empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which RTPC each of the three FixedStrings names (needs the string values of the three globals)."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

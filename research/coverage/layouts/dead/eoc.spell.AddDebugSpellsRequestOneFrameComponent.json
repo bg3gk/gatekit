@@ -1,0 +1,155 @@
+{
+  "component": "eoc::spell::AddDebugSpellsRequestOneFrameComponent",
+  "ext_name": "SpellAddDebugSpellsRequest",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server request (registered as an ordinary component in ComponentTypeIdContext, removed by the drain) to add a list of spells to a character for debugging, written by esv::party_preset::System::SystemLoad (bg3.exe+0x2DBB770, macOS lambda $_3) and drained by bg3.exe+0x3383590 (part of esv::SpellSystem, which calls bg3.exe+0x3380C60 per spell and then removes the component). The element is eoc::spell::SpellMeta (0x60 bytes), the same struct as SE's SpellMeta in Components\\Spell.h. Never seen alive. Registry total 16 (server row).",
+  "structs": [
+    {
+      "name": "AddDebugSpellsRequestSpellMeta",
+      "size": 96,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Element destructor bg3.exe+0xC64530 DecRefs `param_1[0]` (+0) and `param_1[0x15]` (+0x54). SE SpellMetaId.OriginatorPrototype."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId _Pad."
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.SourceType (enum SpellSourceType, 1 byte); not read in the drain - from the SE struct only."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment of the Guid at +0x10."
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.Source; inside the 0x30 SpellMetaId passed by pointer to bg3.exe+0x3380C60."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Drain bg3.exe+0x3383590 copies 16 bytes from element +0x20 (`puVar10 = elem + 0x20; local_1e8.. = puVar10[0..3]`). SE SpellMetaId.ProgressionSource."
+        },
+        {
+          "name": "BoostHandle",
+          "offset": 48,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE SpellMeta.BoostHandle; not read by the drain."
+        },
+        {
+          "name": "LearningStrategy",
+          "offset": 56,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Drain reads one byte at element +0x38 (`*(byte*)(puVar10 + 6)`). SE SpellMeta.LearningStrategy (SpellLearningStrategy, 1 byte)."
+        },
+        {
+          "name": "PrepareType",
+          "offset": 57,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellMeta.PrepareType (SpellPrepareType, 1 byte)."
+        },
+        {
+          "name": "_Pad3A",
+          "offset": 58,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "alignment of the Guid at +0x40."
+        },
+        {
+          "name": "PreferredCastingResource",
+          "offset": 64,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Drain copies 16 bytes from element +0x40 (`puVar10[8..0xb]`). SE SpellMeta.PreferredCastingResource."
+        },
+        {
+          "name": "SpellCastingAbility",
+          "offset": 80,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Drain reads a byte at +0x50 (`puVar10 + 0xc`). SE SpellMeta.SpellCastingAbility (AbilityId, 1 byte)."
+        },
+        {
+          "name": "CooldownType",
+          "offset": 81,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Drain reads a byte at +0x51 (`puVar10 + 0x31`). SE SpellMeta.CooldownType (SpellCooldownType, 1 byte)."
+        },
+        {
+          "name": "_Pad52",
+          "offset": 82,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "alignment of the FixedString at +0x54."
+        },
+        {
+          "name": "ContainerSpell",
+          "offset": 84,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Element destructor DecRefs +0x54. SE SpellMeta.ContainerSpell."
+        },
+        {
+          "name": "LinkedSpellContainer",
+          "offset": 88,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE SpellMeta.LinkedSpellContainer; not read by the drain."
+        },
+        {
+          "name": "_Pad59",
+          "offset": 89,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "tail padding to the 0x60 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Spells",
+      "offset": 0,
+      "type": "Array<AddDebugSpellsRequestSpellMeta>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2DC1F50: AllocRaw(0x10), zeroes +0, +8, +0xC (Array). Storage destructor bg3.exe+0xCAA440 -> FUN_140AF12C0 destroys elements with stride 0x60 (element dtor bg3.exe+0xC64530). Drain bg3.exe+0x3383590 walks `*p` to `*p + size(+0xC) * 0x60` and passes each element to bg3.exe+0x3380C60."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Members at +8, +0x10, +0x30, +0x39 and +0x58 of the element come from SE's SpellMeta (which matches the 0x60 stride and every offset the drain reads), not from code read here.",
+    "Registry flags it as an ordinary component (not one-frame) despite the name.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

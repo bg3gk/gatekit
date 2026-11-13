@@ -1,0 +1,68 @@
+{
+  "component": "ecl::timeline::TimelineFadeTransitionSingletonComponent",
+  "ext_name": "ClientTimelineFadeTransitionSingleton",
+  "size": 64,
+  "structs": [
+    {
+      "name": "TimelineFadeTransition",
+      "size": 56,
+      "fields": [
+        {
+          "name": "Players",
+          "offset": 0,
+          "type": "HashSet<PlayerId>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D93BE0 inserts 2-byte ids (bg3.exe+0x796C40, the int16 set insert also used for player sets in bg3.exe+0x1D34EC0) taken from an Array of shorts at +0x10/+0x1C of a 0x20-byte event component; the later loops look up a player index (0..3) as a short in this set."
+        },
+        {
+          "name": "Timeout",
+          "offset": 48,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Entry constructor bg3.exe+0x1D94D70 (stride 0x38) zeroes +0..+0x2F, writes 0x41700000 (15.0) at +0x30 and a 16-bit 0 at +0x34; bg3.exe+0x1D93BE0 subtracts the frame delta every frame (clamped at 0) unless Paused is set."
+        },
+        {
+          "name": "field_34",
+          "offset": 52,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Constructor writes a 16-bit 0 at +0x34; bg3.exe+0x1D93BE0 sets this byte to 1 for entries whose Players contain the player matched to a Guid of a one-frame event (Guid compared with a 4-entry table at bg3.exe+0x6251EB0)."
+        },
+        {
+          "name": "Paused",
+          "offset": 53,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D93BE0 sets +0x35 of every entry to 1 when any element of a system-wide list has a non-zero counter; the Timeout countdown is skipped while it is set."
+        },
+        {
+          "name": "_Pad36",
+          "offset": 54,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "stride 0x38"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Transitions",
+      "offset": 0,
+      "type": "HashMap<Guid, TimelineFadeTransition>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D93BE0 (ecl::TimelineFadeTransitionSystem update; registration bg3.exe+0x732C50 lists the component as written, callback bg3.exe+0x75BED0) fetches the singleton with stride 0x40, looks up 16-byte keys hashed as qword0 ^ qword1 (bg3.exe+0x5CA2A0), inserts through bg3.exe+0x1D94BF0 and addresses values as +0x30 + index * 0x38; removal through bg3.exe+0x1D949B0. Keys come from the first 16 bytes of 0x20- and 0x10-byte timeline event components (a timeline Guid). Probe: empty. The macOS build names the container ls::HashMap<ls::Guid, ecl::timeline::TimelineFadeTransition> (RemoveNode instantiation) and its value storage ls::IndexedStorage<ecl::timeline::TimelineFadeTransition>; the struct keeps that game name."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "field_34: set when a per-player event arrives for a player of the transition - likely 'fade finished/acknowledged'; not named. Names Players/Timeout/Paused inferred.",
+    "Paused: the condition that sets it (a list at world storage DAT_146348E50, elements 0x40 bytes) was not resolved to a component name."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled: Windows bg3.exe+0x1D93BE0 (lookup/insert/remove with 16-byte keys, values at +0x30 stride 0x38) and the entry constructor bg3.exe+0x1D94D70 (48-byte set, float 15.0 at +0x30, two bytes at +0x34) fix every offset; macOS names the map HashMap<Guid, ecl::timeline::TimelineFadeTransition>.",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

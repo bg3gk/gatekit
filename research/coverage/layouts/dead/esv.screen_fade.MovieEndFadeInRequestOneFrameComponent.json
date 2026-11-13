@@ -1,0 +1,26 @@
+{
+  "component": "esv::screen_fade::MovieEndFadeInRequestOneFrameComponent",
+  "ext_name": "ServerScreenFadeMovieEndFadeInRequest",
+  "size": 48,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Server request to fade in at the end of movies; same shape as eoc::notification::MovieEndFadeInRequestNotificationComponent (HashSet<FixedString> m_MovieNames, Coverage.h), which esv::notification::System sends (a MovieEndFadeIn notification request appears in its request variant on macOS).",
+  "fields": [
+    {
+      "name": "MovieNames",
+      "offset": 0,
+      "type": "HashSet<FixedString>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2EEA4F0 allocates 0x30 and zeroes the three HashSet arrays (+0, +0x10 with size at +0x1C, +0x20 with size at +0x2C). Destructor slot bg3.exe+0x581860 (shared code, mislabelled ls::AnimationBlueprintResource::CreateInstanceNoEvents) calls FUN_1405C4050(+0x20, 0) - Array<FixedString> resize that DecRefs every 4-byte key - then frees +0x20, +0x10, +0. Name taken from the eoc::notification namesake member m_MovieNames (same 48-byte HashSet<FixedString>)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "No reader found in bg3.exe besides generic helpers; the name is borrowed from the eoc notification namesake."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

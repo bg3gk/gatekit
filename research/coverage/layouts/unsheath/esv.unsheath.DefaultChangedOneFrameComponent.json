@@ -1,0 +1,23 @@
+{
+  "component": "esv::unsheath::DefaultChangedOneFrameComponent",
+  "ext_name": "ServerUnsheathDefaultChanged",
+  "size": 4,
+  "oneFrame": true,
+  "fields": [
+    {
+      "name": "Value",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x32E9260 (size 4, default 0). Its only caller bg3.exe+0x32E8810 (esv::unsheath::DefaultSystem update) applies a pending 8-byte record {int, bool} to esv::unsheath::DefaultComponent (+0 int field_0, +4 bool field_4) and writes the same int here: the new DefaultComponent.field_0. Reader bg3.exe+0x32E2DE0 (CombatSystem, via getter bg3.exe+0x32E44C0) treats values 2 and 3 as a trigger (value-2 < 2). Capture: 2."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the int is the meaning of esv::unsheath::DefaultComponent.field_0, which Script Extender leaves unnamed. Live value 2 while the character went Sheathed->Melee suggests it is not a plain stats::UnsheathState (or that 2 means something else there); who fills the pending records of DefaultSystem was not traced."
+  ],
+  "minutes": 5,
+  "functions_read": 4,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

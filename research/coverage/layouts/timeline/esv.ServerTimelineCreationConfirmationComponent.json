@@ -1,0 +1,90 @@
+{
+  "component": "esv::ServerTimelineCreationConfirmationComponent",
+  "ext_name": "ServerTimelineCreationConfirmation",
+  "size": 88,
+  "structs": [
+    {
+      "name": "TimelineCreationActor",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3312010: checked with ecs::EntityWorld::IsEntityAlive, looked up for an existing actor control and written to esv::timeline::BackgroundActorRequestOneFrameComponent+0 / used as the entity that receives esv::ServerTimelineActorDataComponent."
+        },
+        {
+          "name": "Type",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x3312010 compares the byte with 0x20: such an actor only gets a esv::timeline::BackgroundActorRequestOneFrameComponent, any other goes through actor registration (bg3.exe+0x330CEC0)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "value stride 0x10"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Peers",
+      "offset": 0,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x330C7C0 (~esv::TimelineSystem::CreateTimeline) fills it right after creation (bg3.exe+0x3314CA0) with the 4-byte array copy bg3.exe+0x2FBE710 (memmove count*4) from esv::EoCServer(+0xA8)+0x6F8; bg3.exe+0x3312010 copies it into esv::ServerTimelineActorDataComponent+0x10 of every actor; bg3.exe+0x33026C0 (~ConfirmTimelineCreation) empties it (size = 0) when the timeout runs out. The Toolkit signatures around it use net::PeerID (TypeWrap<int>), hence int32. Live: 1 element, capacity 1 (single player)."
+    },
+    {
+      "name": "Actors",
+      "offset": 16,
+      "type": "HashMap<Guid, TimelineCreationActor>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x330C7C0 copies the key set with bg3.exe+0xEB6890 from the creation parameters (+0x88) and allocates count*16 bytes for the values, copied 16 bytes each. bg3.exe+0x3308CB0 walks keys (+0x30, stride 0x10) and values (+0x40, stride 0x10) in parallel, hands each pair to bg3.exe+0x3312010 and erases the handled ones; bg3.exe+0x3308E10 finishes the creation when the key count (+0x3C) is 0. The key is the actor Guid stored into esv::ServerTimelineActorDataComponent.Actor. Live: 5 buckets, 2 keys, 2 values."
+    },
+    {
+      "name": "Timeout",
+      "offset": 80,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x330C7C0 writes 0x41200000 (10.0); bg3.exe+0x33026C0 tests it against 0 and on expiry clears Peers and Actors and resets the flag at +0x55. Live: 10.0."
+    },
+    {
+      "name": "ActorsHandled",
+      "offset": 84,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x33026C0 sets it to 1 when bg3.exe+0x3308CB0 (per-actor handling, ~HandleTimelineCreationActors) returns true and skips that call while it is set. Created 0; live 0."
+    },
+    {
+      "name": "PeerConfirmed",
+      "offset": 85,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3307970 (~esv::TimelineSystem::ConfirmPeerCreation) ORs the bool at +0x14 of the create handshake into it (the bool of ProcessProtocolCreateHandshake(PeerID, Guid, bool)); bg3.exe+0x33026C0 handles the actors only when it is set and clears it on timeout; bg3.exe+0x3308E10 takes the failure path (bg3.exe+0x33090C0) when it is 0 at the end. Created 0; live 0."
+    },
+    {
+      "name": "_Pad56",
+      "offset": 86,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "tail padding; live 0"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Field names are descriptive, none comes from the Toolkit.",
+    "Whether Peers holds the peers still to confirm or all involved peers (it is only copied and cleared in the code read).",
+    "TimelineCreationActor.Type: only the value 0x20 was seen in code (background actor); it is probably the actor type enum of eoc::timeline::Actor.",
+    "The values part of the map is pointer + 32-bit count without capacity (live: 2 at +0x48, 0 at +0x4C), as in Script Extender's HashMap."
+  ],
+  "minutes": 14,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

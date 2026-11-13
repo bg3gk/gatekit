@@ -1,0 +1,410 @@
+{
+  "component": "esv::ai::swarm::TurnActionsComponent",
+  "ext_name": "ServerAiSwarmTurnActions",
+  "size": 400,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AiSwarmTurnActionsSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as Script Extender SpellId (Base/ExposedTypes.h: SpellMetaId + Prototype), size 0x38. "
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SpellSourceType (1 byte); macOS default ctor stores the Sentinel byte at +8; live value 0x17 when empty"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId::Source"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId::ProgressionSource"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SpellId::Prototype"
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        }
+      ]
+    },
+    {
+      "name": "AiSwarmTurnActionsMoveSpell",
+      "size": 80,
+      "fields": [
+        {
+          "name": "Spell",
+          "offset": 0,
+          "type": "AiSwarmTurnActionsSpellId",
+          "source": "inferred",
+          "evidence": "SpellId of the move spell (debug code copies it to DebugTurnActions MoveSpell)."
+        },
+        {
+          "name": "Start",
+          "offset": 56,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "vec3 after the SpellId (same struct as TurnActionsCalculation +0x58)."
+        },
+        {
+          "name": "End",
+          "offset": 68,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "second vec3; DebugSystem::FindEntitiesInfo copies value+0x44 into an optional vec3 of DebugTurnActionsComponent."
+        }
+      ]
+    },
+    {
+      "name": "AiSwarmTurnActionsBaseTarget",
+      "size": 48,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "spell_cast::BaseTarget has a virtual table (SE SpellCastShared.h); live +0xD0 is a pointer into the executable."
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "BaseTarget::Target; ExecuteActions debug code calls BaseTarget::GetInteractionTarget on it."
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "BaseTarget::TargetProxy value (std::optional<EntityHandle>)."
+        },
+        {
+          "name": "HasTargetProxy",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag"
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "BaseTarget::Position value (std::optional<glm::vec3>)."
+        },
+        {
+          "name": "HasPosition",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag (live 1)"
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        }
+      ]
+    },
+    {
+      "name": "AiSwarmTurnActionsInitialTarget",
+      "size": 112,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "spell_cast::BaseTarget has a virtual table (SE SpellCastShared.h); live +0xD0 is a pointer into the executable."
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "BaseTarget::Target; ExecuteActions debug code calls BaseTarget::GetInteractionTarget on it."
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "BaseTarget::TargetProxy value (std::optional<EntityHandle>)."
+        },
+        {
+          "name": "HasTargetProxy",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag"
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "BaseTarget::Position value (std::optional<glm::vec3>)."
+        },
+        {
+          "name": "HasPosition",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag (live 1)"
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "TargetingType",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "InitialTarget::TargetingType (SE SpellType). Live 3..8 at component +0x100."
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "Target2",
+          "offset": 56,
+          "type": "AiSwarmTurnActionsBaseTarget",
+          "source": "inferred",
+          "evidence": "InitialTarget::Target2 value (std::optional<BaseTarget>); macOS ~TurnActionsComponent calls its virtual destructor at component +0x108 when the flag at +0x138 is set."
+        },
+        {
+          "name": "HasTarget2",
+          "offset": 104,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag"
+        },
+        {
+          "name": "_Pad69",
+          "offset": 105,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "ActionState",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "eoc::ai::swarm::EActionState; EoCServer.dll esv::ai::swarm::DebugSystem::FindEntitiesInfo copies byte +0 to DebugTurnActionsComponent.ActionState (+0xC8). Live 4."
+    },
+    {
+      "name": "Action",
+      "offset": 1,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "eoc::ai::swarm::EActionType; same function copies byte +1 to DebugTurnActionsComponent.Action (+0xC9). Live 1."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "DashSpell",
+      "offset": 8,
+      "type": "AiSwarmTurnActionsSpellId",
+      "source": "inferred",
+      "evidence": "FindEntitiesInfo: SpellId +8 -> DebugTurnActionsComponent.DashSpell (+0x58, dirty bit 5)."
+    },
+    {
+      "name": "AttackSpell",
+      "offset": 64,
+      "type": "AiSwarmTurnActionsSpellId",
+      "source": "inferred",
+      "evidence": "FindEntitiesInfo: SpellId +0x40 -> DebugTurnActionsComponent.AttackSpell (+0x20, dirty bit 4)."
+    },
+    {
+      "name": "MoveSpell",
+      "offset": 120,
+      "type": "AiSwarmTurnActionsMoveSpell",
+      "source": "inferred",
+      "evidence": "Optional value at +0x78 read through FUN_1816bb870 when byte +0xC8 is set; feeds DebugTurnActions MoveSpell. macOS dtor releases FixedStrings at +0x78/+0xA8 under flag +0xC8."
+    },
+    {
+      "name": "HasMoveSpell",
+      "offset": 200,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "optional flag"
+    },
+    {
+      "name": "_PadC9",
+      "offset": 201,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "Target",
+      "offset": 208,
+      "type": "AiSwarmTurnActionsInitialTarget",
+      "source": "inferred",
+      "evidence": "FindEntitiesInfo calls eoc::spell_cast::BaseTarget::GetInteractionTarget(+0xD0); the Guid of that entity -> DebugTurnActions.Target. Same members as SE spell_cast::InitialTarget (0x70). Live: VMT, entity, position+flag, TargetingType 3..8."
+    },
+    {
+      "name": "field_140",
+      "offset": 320,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Live varying values."
+    },
+    {
+      "name": "field_148",
+      "offset": 328,
+      "type": "double",
+      "source": "unknown",
+      "evidence": "Live 18.0 / -1.0 (like MovementPoints)."
+    },
+    {
+      "name": "CastPosition",
+      "offset": 336,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "FindEntitiesInfo: optional vec3 at +0x150 -> DebugTurnActions.CastPosition (+0xCC, dirty bit 10)."
+    },
+    {
+      "name": "HasCastPosition",
+      "offset": 348,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "optional flag"
+    },
+    {
+      "name": "_Pad15D",
+      "offset": 349,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "ReachablePosition",
+      "offset": 352,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "FindEntitiesInfo: optional vec3 at +0x160 -> DebugTurnActions.ReachablePosition (+0xDC, dirty bit 11)."
+    },
+    {
+      "name": "HasReachablePosition",
+      "offset": 364,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "optional flag"
+    },
+    {
+      "name": "_Pad16D",
+      "offset": 365,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "Path",
+      "offset": 368,
+      "type": "Array<glm::vec3>",
+      "source": "inferred",
+      "evidence": "FindEntitiesInfo compares +0x170 (stride 0xC) with DebugTurnActions.Path and copies it; macOS dtor frees +0x170. Live capacity 2..0x40."
+    },
+    {
+      "name": "field_180",
+      "offset": 384,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Live 0."
+    },
+    {
+      "name": "field_188",
+      "offset": 392,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Live 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "+0x140, +0x148, +0x180..+0x18F",
+    "offsets from the Toolkit debug copy; live sample agrees at every checked point"
+  ],
+  "summary": "AI swarm turn actions per member (idle levels). Read by CalculateMoveGroups/Deactivation/Debug systems.",
+  "minutes": 12,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Re-checked against eoc::ai::swarm::DebugTurnActionsComponent (macOS FieldMeta names): field_140/148/180/188 are not copied there."
+}

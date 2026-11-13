@@ -1,0 +1,95 @@
+{
+  "component": "ecl::sound::ItemActivationRequestsComponent",
+  "ext_name": "ClientSoundItemActivationRequests",
+  "size": 48,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ItemActivationSwitchRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Game name of the element: ItemActivationRequestsComponent::ItemSwitchRequest (EoCClient.dll+0x3A2CB0 resize, AllocateInternal(n, 0x10, 8)). +0 is 8 bytes that are not destroyed (likely an entity handle or sound object id) - not decoded."
+        },
+        {
+          "name": "Switch",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0x3A2CB0 destroys FixedStrings at element+8 and +0xC; macOS GameplayActivationLegacyHelper::RefreshItemUnderlyingGroundMaterial(EntityHandle, EMaterialType, ItemSwitchDataComponent&, ItemActivationRequestsComponent&) creates them (ground-material switch)."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Second FixedString destroyed at element+0xC (switch state)."
+        }
+      ]
+    },
+    {
+      "name": "ItemActivationPlayRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "8 bytes not destroyed by the resize helpers (EoCClient.dll+0x3A2650 ItemPlayRequest, +0x3A27D0 ItemPlayResourceRequest); not decoded."
+        },
+        {
+          "name": "Event",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Both ItemPlayRequest and ItemPlayResourceRequest resize helpers destroy a FixedString at element*0x10+8 (stride 0x10)."
+        },
+        {
+          "name": "field_c",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Not destroyed; not decoded."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "SwitchRequests",
+      "offset": 0,
+      "type": "Array<ItemActivationSwitchRequest>",
+      "source": "inferred",
+      "evidence": "The component's destructor bg3.exe+0x69C980 (registered in bg3.exe+0x1E4E0F0, which allocates 0x30 bytes and zeroes three arrays) frees +0x20, +0x10, +0 with three resize helpers; the one for +0 (bg3.exe+0x6DCB60) moves two FixedStrings per 0x10 element (+8, +0xC) = ItemSwitchRequest. Live: capacity 0x80-0x100, size 0."
+    },
+    {
+      "name": "PlayRequests1",
+      "offset": 16,
+      "type": "Array<ItemActivationPlayRequest>",
+      "source": "inferred",
+      "evidence": "Resize helper bg3.exe+0x6DB850 handles one FixedString at element+8, stride 0x10: ItemPlayRequest or ItemPlayResourceRequest (not separated). Live: capacity 1, size 0."
+    },
+    {
+      "name": "PlayRequests2",
+      "offset": 32,
+      "type": "Array<ItemActivationPlayRequest>",
+      "source": "inferred",
+      "evidence": "Resize helper bg3.exe+0x6DB6C0, same element shape as +0x10: the other of ItemPlayRequest / ItemPlayResourceRequest. Live: capacity 0-2, size 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which of +0x10 / +0x20 is ItemPlayRequest and which ItemPlayResourceRequest (macOS names both; offsets not tied).",
+    "Element +0 (8 bytes) and play-request +0xC not decoded; the writer is ecl::sound::GameplayActivationSystem (bg3.exe+0x1E42170, unnamed in the Toolkit)."
+  ],
+  "minutes": 10,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

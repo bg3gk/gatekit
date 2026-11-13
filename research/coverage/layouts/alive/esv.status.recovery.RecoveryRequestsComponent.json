@@ -1,0 +1,54 @@
+{
+  "component": "esv::status::recovery::RecoveryRequestsComponent",
+  "ext_name": "ServerStatusRecoveryRequests",
+  "size": 16,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Recovery requests of esv::status::recovery::RecoverySystem (written in CheckStatusRequests, CheckSourceChange, ProcessStatusChanges, Update). Lives from level load.",
+  "structs": [
+    {
+      "name": "RecoveryRequestsRecoveryRequest",
+      "size": 12,
+      "fields": [
+        {
+          "name": "StatusId",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "RecoverySystem::CheckStatusRequests (EoCServer.dll+0x94BF00) builds requests from the status ID of the status request (+8 of the request), compares *element with it when searching (stride 0xC)."
+        },
+        {
+          "name": "StackId",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same function stores the prototype's StackId (GetFixedStringValue(strStackId))."
+        },
+        {
+          "name": "StackPriority",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Same function stores GetMappedValue(strStackPriority)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<RecoveryRequestsRecoveryRequest>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2C848C0 zeroes pointer/capacity/size. macOS has ls::DynamicArray<esv::status::recovery::RecoveryRequest>::Reallocate; the Toolkit's RecoveryRequest is 12 bytes (stride 0xC in CheckStatusRequests). Live: 3 allocated arrays, capacity up to 4, size 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element type taken from the RecoverySystem's own request list; not proven that the component array uses exactly this struct."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

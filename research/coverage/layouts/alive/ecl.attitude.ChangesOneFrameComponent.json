@@ -1,0 +1,25 @@
+{
+  "component": "ecl::attitude::ChangesOneFrameComponent",
+  "ext_name": "ClientAttitudeChanges",
+  "size": 64,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame list of attitude changes towards players (born in the CAMP_GoblinHuntCelebration dialogues and helm steps). Created by the per-frame update of ecl::attitude::UINotificationSystem from its AttitudeChangesNotificationRequest list; each entry is reported via OnAttitudeChanged(view, entity, EntityHandle, int).",
+  "fields": [
+    {
+      "name": "Changes",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, int32_t>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1A73350 zeroes a 64-byte hash map. UINotificationSystem update bg3.exe+0x1A73030 fills it and walks keys at +0x20 (stride 8) with values at +0x30 (stride 4), calling a listener slot with (key*, *(int*)value); macOS ecl::attitude::UIAttitudeHelper::OnAttitudeChanged(WorldView&, EntityHandle const&, EntityHandle const&, int). Live: 1 entry."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Whether the key is the player character or the attitude owner, and whether the value is the delta or the new attitude."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

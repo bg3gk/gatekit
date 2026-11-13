@@ -1,0 +1,183 @@
+[
+ {
+  "label": "respec",
+  "server": "local H = Osi.GetHostCharacter() Osi.StartRespec(H) return true",
+  "wait": 6,
+  "fixed": true,
+  "keep": true,
+  "then": [
+   {
+    "ui": "return { pcall(GK.Command, \"UseRecommendedAbilities\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"ResetAbilities\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"UseRecommendedAbilities\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"PlayVoice\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"SelectNextAbilityBonus\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"RotateDummy\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"ExitCharacterRespec\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 4,
+    "fixed": true
+   }
+  ]
+ },
+ {
+  "label": "change-appearance",
+  "server": "local H = Osi.GetHostCharacter() Osi.StartChangeAppearance(H) return true",
+  "wait": 6,
+  "fixed": true,
+  "keep": true,
+  "then": [
+   {
+    "ui": "return { pcall(GK.Command, \"RandomAppearance\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"SelectNextBodyType\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"SelectNextIdentity\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"RandomAppearance\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"DisableHeterochromia\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"PlayVoice\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"PlayDummyVFX\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"GameInputRotateLeftCommand\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"ExitCharacterCreation\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 4,
+    "fixed": true
+   }
+  ]
+ },
+ {
+  "label": "full-creation",
+  "server": "Osi.StartCharacterCreation() return true",
+  "wait": 6,
+  "fixed": true,
+  "keep": true,
+  "then": [
+   {
+    "ui": "return { pcall(GK.Command, \"RandomCharacter\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 3,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"RandomAppearance\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"RandomCharacter\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 3,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"SelectNextBodyType\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"UseRecommendedAbilities\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"PlayVoice\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"PlayOriginTimeline\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 4,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"ResetCharacter\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 3,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"RandomCharacter\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 3,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"ExitCharacterCreation\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 4,
+    "fixed": true
+   }
+  ]
+ },
+ {
+  "label": "respec-oathbreaker",
+  "server": "local H = Osi.GetHostCharacter() pcall(Osi.StartRespecToOathbreaker, H) return true",
+  "wait": 6,
+  "fixed": true,
+  "keep": true,
+  "then": [
+   {
+    "ui": "return { pcall(GK.Command, \"UseRecommendedAbilities\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"PlayVoice\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 2.0,
+    "fixed": true
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"ExitCharacterRespec\", nil, \"gui::DCCharacterCreation\") }",
+    "wait": 4,
+    "fixed": true
+   }
+  ]
+ }
+]

@@ -1,0 +1,25 @@
+{
+  "component": "ls::PhysicsSkinnedConnectedToComponent",
+  "ext_name": "PhysicsSkinnedConnectedTo",
+  "size": 48,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Not replicated. Toolkit GameEngine.dll: the move constructor (+0x158CE0) is shared (same code) with ls::PhysicsSkinnedConnectionComponent (whose FieldMeta gives one HashSet at offset 0, layouts/fieldmeta) and moves three buffers: +0 (pointer, u32), +0x10 and +0x20 (pointer, capacity, size) - the 48-byte HashSet. The destructor (+0x60AA10) clears +0x20 with GameEngine.dll+0x614FF0, which asserts as ls::IndexedStorage<ls::ID<ecs::EntityHandleTraits>, mem::s_TagHashTable> - keys are EntityHandles. Name inferred from the class name (the skinned-physics entities this one is connected to)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Server-only; registry totalSize 48 on the server row only.",
+    "Layout (HashSet<EntityHandle>) is established; the member name is not (no FieldMeta for this class)."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

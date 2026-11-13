@@ -1,0 +1,25 @@
+{
+  "component": "esv::camp::TriggerComponent",
+  "ext_name": "ServerCampTrigger",
+  "size": 8,
+  "fields": [
+    {
+      "name": "Trigger",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Not replicated. macOS default constructor stores x1 = 0xFFC0000000000000 (the null EntityHandle constant, mov x1 #-0x40000000000000) at +0 - the whole component. Written by esv::camp::InteractionSystem (ProcessCampTriggerEvents / ProcessCharacterInTriggerUpdates, which track characters entering/leaving esv::CampRegionTrigger areas) and read by esv::camp::ChestSystem::Update (macOS index). Name inferred: the camp region trigger the entity is in."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Server-only; registry totalSize 8 on the server row only.",
+    "That the handle is the CampRegionTrigger entity is inferred from the system, not from a traced store."
+  ],
+  "seen": false,
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

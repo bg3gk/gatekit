@@ -1,0 +1,125 @@
+{
+  "component": "esv::ai::swarm::SpellsComponent",
+  "ext_name": "ServerAiSwarmSpells",
+  "size": 240,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AiSwarmSpellsSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as Script Extender SpellId (Base/ExposedTypes.h: SpellMetaId + Prototype), size 0x38. "
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SpellSourceType (1 byte); macOS default ctor stores the Sentinel byte at +8; live value 0x17 when empty"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId::Source"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId::ProgressionSource"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SpellId::Prototype"
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "AttackSpell",
+      "offset": 0,
+      "type": "AiSwarmSpellsSpellId",
+      "source": "inferred",
+      "evidence": "EoCServer.dll esv::ai::swarm::FindSpellsSystem::Update: eoc::spell::GetAttackSpell result is assigned to +0 (also overridden by a spell with prototype flag bit 50). Live FixedStrings at +0/+0x30."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "AiSwarmSpellsSpellId",
+      "source": "unknown",
+      "evidence": "FindSpellsSystem::Update assigns a spell found in a FixedString-keyed map of the entity (values of 0x68 bytes, chosen when value+8 == 0) to +0x38."
+    },
+    {
+      "name": "DashSpell",
+      "offset": 112,
+      "type": "AiSwarmSpellsSpellId",
+      "source": "inferred",
+      "evidence": "FindSpellsSystem::Update: SpellId::operator=(+0x70) next to ls::Optional<esv::ai::swarm::DashSpell>::Get (spells of type 6 with an AI flag)."
+    },
+    {
+      "name": "field_a8",
+      "offset": 168,
+      "type": "double",
+      "source": "unknown",
+      "evidence": "Same branch stores the DashSpell value (8 bytes from the helper) at +0xA8. Live doubles (e.g. 16.8, -1.0)."
+    },
+    {
+      "name": "MoveSpell",
+      "offset": 176,
+      "type": "AiSwarmSpellsSpellId",
+      "source": "inferred",
+      "evidence": "FindSpellsSystem::Update: eoc::spell::IsMovementSpell -> SpellId::operator=(+0xB0)."
+    },
+    {
+      "name": "field_e8",
+      "offset": 232,
+      "type": "double",
+      "source": "unknown",
+      "evidence": "Same branch: *(+0xE8) = helper vtable slot 1 result for the move spell (a distance?). Live 0 / 3.0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "meaning of +0x38, +0xA8, +0xE8",
+    "offsets taken from the Toolkit; the live sample agrees (FixedStrings at 0/0x30/0x38/0x68/0x70/0xA0/0xB0/0xE0, doubles at 0xA8/0xE8)"
+  ],
+  "summary": "AI swarm spell choice per member (idle levels).",
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,102 @@
+{
+  "component": "eoc::sneak::RollsContainerComponent",
+  "ext_name": "SneakRollsContainer",
+  "size": 24,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Not replicated. Windows creator bg3.exe+0x2E85270 (ComponentFrameStorageAllocRaw 0x18, the only caller is bg3.exe+0x2E84740) stores its entity argument - the same value it uses as the key of the storage's entity map - at +0 and zeroes the array at +8: the handle of the entity that owns the component. macOS default ctor: null handle."
+    },
+    {
+      "name": "Rolls",
+      "offset": 8,
+      "type": "Array<SneakRollInfo>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::DynamicArray<struct eoc::sneak::RollInfo,struct ls::TaggedAllocator<int> > eoc::sneak::RollsContainerComponent::*,8>; macOS m_Rolls. Serializer bg3.exe+0x93AD50 -> bg3.exe+0xA9DCD0 (stride 0x30) -> bg3.exe+0xB67F70. Windows: the replication writer bg3.exe+0x93AD50 passes +8 to the array writer bg3.exe+0xA9DCD0 (stride 0x30, element writer bg3.exe+0xB67F70)."
+    }
+  ],
+  "structs": [
+    {
+      "name": "SneakRollInfo",
+      "size": 48,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "Windows element writer bg3.exe+0xB67F70 writes an entity (FUN_144017090) at the FieldMeta offset global DAT_146279FC0 (never assigned, so 0)"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "Windows element writer bg3.exe+0xB67F70 writes 16 bytes at +8"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Windows element writer bg3.exe+0xB67F70 writes 1 byte at +0x18"
+        },
+        {
+          "name": "field_19",
+          "offset": 25,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Windows element writer bg3.exe+0xB67F70 writes 1 byte at +0x19"
+        },
+        {
+          "name": "_Pad1A",
+          "offset": 26,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "compiler padding (alignment)"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "Windows element writer bg3.exe+0xB67F70 writes an entity at +0x20"
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "Windows element writer bg3.exe+0xB67F70 writes 4 bytes at +0x28"
+        },
+        {
+          "name": "field_2C",
+          "offset": 44,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Windows element writer bg3.exe+0xB67F70 writes 1 byte at +0x2C"
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the eoc::sneak::RollInfo members (no FieldMeta names, no savegame model); whether the 4-byte value at +0x28 is an int or a float."
+  ],
+  "minutes": 10,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Settled on Windows: the creator bg3.exe+0x2E85270 writes the owner entity at +0 and an empty array at +8; the element writer bg3.exe+0xB67F70 gives every RollInfo member's offset and width (stride 0x30)."
+}

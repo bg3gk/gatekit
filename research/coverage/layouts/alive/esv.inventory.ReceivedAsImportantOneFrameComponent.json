@@ -1,0 +1,25 @@
+{
+  "component": "esv::inventory::ReceivedAsImportantOneFrameComponent",
+  "ext_name": "ServerInventoryReceivedAsImportant",
+  "size": 8,
+  "seen": true,
+  "summary": "Server one-frame marker put on an entity that reached an inventory through Osiris ToInventory with the notification flag (the 'important item received' popup). esv::inventory::EntityReceivalNotificationSystem (SE: ServerInventoryReceivalNotification, HashMap<EntityHandle, EntityHandle> Notify) collects pairs in LEGACY_NotifyFromOsiris(item, receiver) and its per-frame update bg3.exe+0x350B600 adds this component and writes the paired handle. Seen.py context: shove-throw (Osi.ToInventory(dagger, host, 1, 1, 0)), dialogues that hand out items, crime-theft.",
+  "fields": [
+    {
+      "name": "Receiver",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x350BC80 allocates 8 bytes, default 0xffc0000000000000 (null handle). bg3.exe+0x350B600 (per-frame update of EntityReceivalNotificationSystem): for each alive key handle of its list it calls 0x350BC80 and stores the paired value. Toolkit EoCServer.dll+0x14C4220 scr::ToInventory calls LEGACY_NotifyFromOsiris(item handle, target character handle), so the map is item -> receiver and the stored value is the receiving character. Live (9 instances): valid entity handles."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Direction (component on the item holding the receiver, or the other way round) rests on the Toolkit LEGACY_NotifyFromOsiris argument order and the key/value walk of 0x350B600; not checked against a live pair."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "16 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

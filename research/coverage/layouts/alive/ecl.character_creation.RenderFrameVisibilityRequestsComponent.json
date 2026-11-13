@@ -1,0 +1,27 @@
+{
+  "component": "ecl::character_creation::RenderFrameVisibilityRequestsComponent",
+  "ext_name": "ClientCharacterCreationRenderFrameVisibilityRequests",
+  "size": 16,
+  "seen": true,
+  "reuses": "TimelineRenderFrameVisibilityRequest (GameDefinitions/Components/Coverage.h) - game name ecl::RenderFrameVisibilityRequest",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TimelineRenderFrameVisibilityRequest>",
+      "source": "inferred",
+      "evidence": "Drained together with the other four RenderFrameVisibilityRequests singletons in ecl::invisibility::EffectSystem::Update (EoCClient.dll+0xAFFB40) by the shared clear helper EoCClient.dll+0xAFDDE0 (ls::IndexedStorage<ecl::RenderFrameVisibilityRequest>, size at +0xC). Same element as SE's ecl::timeline::RenderFrameVisibilityRequestsComponent. macOS default ctor: 16 zero bytes. Live (idle): all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Producer inside character creation not read (only the consumer)."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "hold": "uses types declared elsewhere (TimelineRenderFrameVisibilityRequest): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

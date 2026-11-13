@@ -1,0 +1,39 @@
+{
+  "component": "eoc::analytics::EventGoldChangedComponent",
+  "ext_name": "AnalyticsEventGoldChanged",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Amount",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "serializer bg3.exe+0x9F0CB0/0x9F0E70 member 1: 4 bytes at +0 (global offset DAT_14627fbb0 = 0). EoCClient.dll ecl::GameAnalyticsSystem::ProcessGoldChanges EoCClient.dll+0xD2EC30 skips 0, sums it per entity and records gold_gain (\"amount\") or, when negative, gold_spent with -value. macOS ctor 0."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+    },
+    {
+      "name": "CharacterHandle",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "serializer member 2: entity writer bg3.exe+0x4017090 at +8; ProcessGoldChanges checks it is a valid handle and uses it as the per-entity key; macOS ctor q0 constant has 0xFFC0000000000000 (null handle) at +8."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "both names inferred (no field-name strings for this component)",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "seen": false,
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,45 @@
+{
+  "component": "ecl::CombatTimelineCreationComponent",
+  "ext_name": "ClientCombatTimelineCreation",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D78060(storage, entity) creates the component on that entity and stores the same handle here; bg3.exe+0x1D59100 later copies it to ecl::CombatTimelineDataComponent+0x110. bg3.exe+0x1D55010 passes the freshly created timeline entity. Live: a live entity handle."
+    },
+    {
+      "name": "IsSystemic",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Created as 0 (16-bit store at +8), then set by bg3.exe+0x1D55010 from the combat timeline creation request (byte 8 of its 16-byte tail). In the same function a non-zero value sets Timeline+0x48A (IsSystemicCombatTimeline by Timeline.h field order) and timeline type 2; zero selects the authored (+0x48B, type 3) or the +0x48C (type 10) variant. bg3.exe+0x1D59100 copies it to CombatTimelineDataComponent+0xFC and builds the systemic camera data only when it is 0. Live: 1."
+    },
+    {
+      "name": "field_9",
+      "offset": 9,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Byte 9 of the same request; when IsSystemic is 0 it chooses between Timeline+0x48B (0, type 3) and Timeline+0x48C (non-zero, type 10 - IsMainMenuTimeline by Timeline.h order, which looks wrong for a combat timeline, hence no name). Copied to CombatTimelineDataComponent+0xFD. Live: 0."
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "tail padding (alignment 8); live 0"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Whether Entity is always the component's own entity (it is in the only creation site) or can point at another timeline entity.",
+    "Name of the flag at +9 (timeline type 10)."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

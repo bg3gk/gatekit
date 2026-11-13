@@ -1,0 +1,24 @@
+{
+  "component": "esv::dialog::DialogStartedEventsSingletonComponent",
+  "ext_name": "ServerDialogDialogStartedEvents",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "DialogInstanceIds",
+      "offset": 0,
+      "type": "HashSet<uint32_t>",
+      "source": "inferred",
+      "evidence": "esv::dialog::EventsSystem::DispatchDialogEvents (EoCServer.dll+0xC7D290) inserts uint32 dialog instance ids from the system's started list (keys storage ls::IndexedStorage<unsigned int,...s_TagHashTable>, 4-byte stride at +0x20, count +0x2C, next ids +0x10, buckets +0). Live (16 instances): bucket count up to 5, capacity 1, size 0 - an empty HashSet layout."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member name is ours."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

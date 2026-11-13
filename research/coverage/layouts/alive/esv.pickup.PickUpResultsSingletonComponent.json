@@ -1,0 +1,68 @@
+{
+  "component": "esv::pickup::PickUpResultsSingletonComponent",
+  "ext_name": "ServerPickupPickUpResults",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: the results of finished pick-up requests of this frame (one per request: the user it was reserved for, the request Guid and the result state). Rebuilt by esv::pickup::PickUpRequestSystem::ProcessResults. Seen.py context: idle level.",
+  "structs": [
+    {
+      "name": "PickUpResultEntry",
+      "size": 32,
+      "fields": [
+        {
+          "name": "UserID",
+          "offset": 0,
+          "type": "UserId",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xD390A0 ProcessResults: element +0 = a 4-byte component of the request entity (stride 4, default Unassigned_exref = an unassigned UserID; the query names eoc::user::ReservedForComponent)."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "RequestId",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "16 bytes from +0 of the request's 0x18-byte component (eoc::pickup::PickUpRequestComponent: Guid field_0, uint8 State in SE Data.h)."
+        },
+        {
+          "name": "State",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Byte +0x10 of the same eoc::pickup::PickUpRequestComponent (State); for requests whose entity died the system writes 0x16."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x20 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Results",
+      "offset": 0,
+      "type": "Array<PickUpResultEntry>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD390A0 esv::pickup::PickUpRequestSystem::ProcessResults clears the singleton's array (size +0xC := 0) and appends one ls::IndexedStorage<esv::pickup::PickUpResult> element (stride 0x20) per finished or dead request. Live (idle): all zero."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Values of State (eoc::pickup request states)."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

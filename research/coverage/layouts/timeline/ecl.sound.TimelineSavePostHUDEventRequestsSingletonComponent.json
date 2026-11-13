@@ -1,0 +1,59 @@
+{
+  "component": "ecl::sound::TimelineSavePostHUDEventRequestsSingletonComponent",
+  "ext_name": "ClientSoundTimelineSavePostHUDEventRequestsSingleton",
+  "size": 16,
+  "structs": [
+    {
+      "name": "TimelineSavePostHUDEventRequest",
+      "size": 12,
+      "fields": [
+        {
+          "name": "Event",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Append helper bg3.exe+0x1D36FE0 copies 4 bytes with ls::FixedString::IncRef (skipped for 0xFFFFFFFF); bg3.exe+0x1D36B10 builds the requests from FixedString constants."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1D36B10 always writes 3 (both request sites)."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1D36B10 always writes 2; copied as one byte by bg3.exe+0x1D36FE0."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "stride 0xC in bg3.exe+0x1D36FE0 and bg3.exe+0x1D36B10"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TimelineSavePostHUDEventRequest>",
+      "source": "inferred",
+      "evidence": "ecl::sound::TimelineSaveSystem (registration bg3.exe+0x731E70, callback bg3.exe+0x75B6B0): bg3.exe+0x1D36940 fetches the singleton (stride 0x10) and clears it when size (+0x0C) != 0; bg3.exe+0x1D36B10 appends 12-byte requests through bg3.exe+0x1D36FE0 (capacity at +8, size at +0xC). Read by ecl::sound::InterfaceSystem (registration bg3.exe+0x7479F0). Probe: empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of field_4 (always 3) and field_8 (always 2): probably a sound object / event type and a player or HUD index; the consumer in ecl::sound::InterfaceSystem (callback bg3.exe+0x761FF0) was not read."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

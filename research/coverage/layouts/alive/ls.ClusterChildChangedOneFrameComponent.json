@@ -1,0 +1,32 @@
+{
+  "component": "ls::ClusterChildChangedOneFrameComponent",
+  "ext_name": "ClusterChildChanged",
+  "size": 16,
+  "seen": true,
+  "summary": "Client one-frame event on a cluster child (world object grouped into a streaming cluster) whose cluster changed. Written by ls::ClusterSystem::ProcessMovedChilds (GameEngine.dll+0x137D70): when a moved child leaves its cluster, the system moves it from the old cluster's content to the new one, then sets this component to {old cluster, new cluster} and stores the new cluster into the child's ClusterChildComponent. Read by phx::PhysXDisableSimulationSystem::ProcessChangedClusters. Seen alive in many dialogs/events (objects moved during scenes).",
+  "fields": [
+    {
+      "name": "OldCluster",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0x137D70 lines 341-344: event = FUN_18012a9d0(view, child); event[0] = *ClusterChild (the previous cluster entity) just before ClusterChild is overwritten with the new one. Game creator bg3.exe+0x3E5FA40 allocates 0x10 bytes and writes the null handle. Live entity handles."
+    },
+    {
+      "name": "NewCluster",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "same lines: event[1] = lVar12 = the cluster the child is moved to (also written into ClusterChildComponent). Game default null handle. Live entity handles."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "FUN_18012a9d0 was taken to be the add/get of this component from the surrounding view (not opened)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

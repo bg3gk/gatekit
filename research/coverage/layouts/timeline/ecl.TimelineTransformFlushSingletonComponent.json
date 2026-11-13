@@ -1,0 +1,39 @@
+{
+  "component": "ecl::TimelineTransformFlushSingletonComponent",
+  "ext_name": "ClientTimelineTransformFlushSingleton",
+  "size": 160,
+  "fields": [
+    {
+      "name": "SwitchStage",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x1F24090 zeroes a 48-byte set at 0; destructor bg3.exe+0x69A6F0 calls the set destructor FUN_140582ad0 on +0. ecl::TimelineTransformFlushSystem update bg3.exe+0x1F238E0 walks the keys (+0x20, count +0x2C) as 8-byte entity handles (validity check against the entity world) and adds ecl::TimelineSwitchStageEventOneFrameComponent to each (bg3.exe+0x1F23C70). ecl::TimelineSystem update bg3.exe+0x1D41270 clears it every frame (FUN_141a743a0)."
+    },
+    {
+      "name": "SwitchLocation",
+      "offset": 48,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Same shape at +0x30 (destructor, clear). bg3.exe+0x1F238E0 walks keys at +0x50 / count +0x5C and adds ecl::TimelineSwitchLocationEventOneFrameComponent to each entity (bg3.exe+0x1F23DD0)."
+    },
+    {
+      "name": "ShowVisual",
+      "offset": 96,
+      "type": "HashMap<EntityHandle, bool>",
+      "source": "inferred",
+      "evidence": "64-byte map at +0x60: destructor frees the value array at +0x90 without element destructors, then the key set at +0x60. bg3.exe+0x1F238E0 walks keys at +0x80 (8-byte handles, count +0x8C) and values at +0x90 with a 1-byte stride, creating ecl::TimelineShowVisualEventOneFrameComponent (1 byte) on the entity and storing the value byte in it (bg3.exe+0x1F23F30). Cleared by FUN_140f82a80 in bg3.exe+0x1D41270."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The value of ShowVisual is one byte copied into the one-byte event component; bool is assumed (could be a small enum).",
+    "Probe instance was empty (all zero), so element contents were not seen live."
+  ],
+  "minutes": 10,
+  "functions_read": 9,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

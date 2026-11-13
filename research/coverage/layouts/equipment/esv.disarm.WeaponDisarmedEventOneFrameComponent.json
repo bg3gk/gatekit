@@ -1,0 +1,61 @@
+{
+  "component": "esv::disarm::WeaponDisarmedEventOneFrameComponent",
+  "ext_name": "ServerDisarmWeaponDisarmedEvent",
+  "size": 32,
+  "oneFrame": false,
+  "fields": [
+    {
+      "name": "Owner",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2E1FEA0 (size 0x20): three null handles at +0/+8/+0x10, word 0x16 at +0x18. esv::disarm::WeaponSystem update bg3.exe+0x2E1E150 creates it on a new entity for every entry of its request map (key = weapon, 0x18-byte value) and writes value[0] here. The Osiris event handler bg3.exe+0x30CF930 (registered by esv::StoryCharacterEventManager::Init) checks this handle as a character and sends it as the first argument."
+    },
+    {
+      "name": "Weapon",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2E1E150 writes the map key here - the entity whose eoc::EquipableComponent slot is read and which is dropped as an item (esv::Item::GetItemTemplate). bg3.exe+0x30CF930 resolves it as an item and sends it as the second argument of the event."
+    },
+    {
+      "name": "Disarmer",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2E1E150 writes value[1] of the request here. In the same function this entity, when alive and with a transform, gives the direction in which the weapon is thrown out (owner position minus its position, normalised) - the source of the disarm."
+    },
+    {
+      "name": "Slot",
+      "offset": 24,
+      "type": "ItemSlot",
+      "source": "inferred",
+      "evidence": "1 byte. bg3.exe+0x2E1E150 writes the byte at +0x10 of the weapon's eoc::EquipableComponent (Slot), or 0x13 when the component is missing; default 0x16. bg3.exe+0x30CF930 passes it to eoc::equipment::EquipmentSlotToString for the third argument of the event."
+    },
+    {
+      "name": "SkipDrop",
+      "offset": 25,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2E1E150 copies byte value[2] of the request here; in the same loop the whole branch that throws the weapon to the ground (direction, AI grid, drop movement) runs only when this byte is 0. Default 0."
+    },
+    {
+      "name": "_Pad1A",
+      "offset": 26,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "tail padding; the creator writes only a word at +0x18"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures.",
+    "Who sets SkipDrop (value[2] of the request) was not traced; the name comes from the branch it disables."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "status": "declared",
+  "second_pass": "Every member offset and width is established on Windows (creator bg3.exe+0x2E1FEA0, writer esv::disarm::WeaponSystem bg3.exe+0x2E1E150, Osiris event handler bg3.exe+0x30CF930); not saved, no macOS FieldMeta, so names stay inferred.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

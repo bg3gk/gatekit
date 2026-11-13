@@ -1,0 +1,159 @@
+{
+  "component": "ecl::TimelineOngoingScreenFadesComponent",
+  "ext_name": "ClientTimelineOngoingScreenFades",
+  "size": 272,
+  "structs": [
+    {
+      "name": "ScreenFadeToCallbackData",
+      "size": 56,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Toolkit default-constructor of the map value EoCClient.dll+0xC3B4D0 writes a 64-bit 0; copied as 8 bytes."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "EoCClient.dll+0xC3B4D0 runs ls::Guid::Guid on +8."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "EoCClient.dll+0xC3B4D0 runs ls::Guid::Guid on +0x18."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "EoCClient.dll+0xC3B4D0 runs ls::Guid::Guid on +0x28; total stride 0x38."
+        }
+      ]
+    },
+    {
+      "name": "JoinLeaveTransitionRequest",
+      "size": 72,
+      "fields": [
+        {
+          "name": "Timeline",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Toolkit EoCClient.dll+0xC46610 (ecl::TimelineSystem lambda taking the request) passes the request pointer itself to ecl::TimelineSystem::GetTimeline(Guid*) and ecl::TimelineHelper::TransitionFadeRequired."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "Copied as 16 bytes when the request is queued (EoCClient.dll+0xC46610, stride 0x48); meaning not established."
+        },
+        {
+          "name": "TimelineType",
+          "offset": 32,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0xC46610: 'ecl::TimelineHelper::FadeAllowed((uint)(byte) request[0x20])'."
+        },
+        {
+          "name": "_Pad21",
+          "offset": 33,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "alignment / tail padding"
+        },
+        {
+          "name": "Actor",
+          "offset": 40,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0xC46610 reads the qword at +0x28 and resolves it to an ecl::Character (through an optional redirect component) to get the reserved player id."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "Copied as 16 bytes; meaning not established."
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Copied with the last qword; not read in the functions seen."
+        },
+        {
+          "name": "IsJoin",
+          "offset": 65,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0xC46610: 'if (request[0x41] == 0) id = ecl::timeline::GetScreenFadeIdForLeaveTransition(player) else id = per-player table' - selects the join or the leave fade id."
+        },
+        {
+          "name": "_Pad42",
+          "offset": 66,
+          "type": "uint8_t[6]",
+          "source": "unknown",
+          "evidence": "alignment / tail padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "HashSet<Guid>",
+      "source": "unknown",
+      "evidence": "Toolkit ecl::TimelineSystem::GetOngoingScreenFades(TimelineOngoingScreenFadesComponent const&, FrameData&) (EoCClient.dll+0xC80D10, game bg3.exe+0x1D6D0E0) copies the set at +0 into FrameData +0xD0. bg3.exe+0x1D6CB10 (game copy of Toolkit ??@2d8da994...) removes the 16-byte keys listed in FrameData +0x2F0 and inserts those of FrameData +0x200 (Guid hash qword0 ^ qword1); emptiness test on size +0x2C."
+    },
+    {
+      "name": "ScreenFadeToCallbacks",
+      "offset": 48,
+      "type": "HashMap<Guid, ScreenFadeToCallbackData>",
+      "source": "inferred",
+      "evidence": "GetOngoingScreenFades copies the key set at +0x30 and reallocates the values with stride 0x38; the Toolkit's bounds assert names the element type ls::IndexedStorage<ecl::timeline::ScreenFadeToCallbackData>. bg3.exe+0x1D6CB10 inserts (bg3.exe+0x1D79A00) Guid keys from FrameData +0x230 and copies 0x38-byte values; size test at +0x5C."
+    },
+    {
+      "name": "JoinLeaveTransitions",
+      "offset": 112,
+      "type": "HashMap<Guid, JoinLeaveTransitionRequest>",
+      "source": "inferred",
+      "evidence": "GetOngoingScreenFades copies the key set at +0x70 and the values with stride 0x48; the Toolkit assert names ls::IndexedStorage<ecl::timeline::JoinLeaveTransitionRequest>. bg3.exe+0x1D6CB10 inserts through bg3.exe+0x1D72060(comp + 0x70, key, value) with value stride 0x48; size test at +0x9C."
+    },
+    {
+      "name": "field_B0",
+      "offset": 176,
+      "type": "HashSet<Guid>",
+      "source": "unknown",
+      "evidence": "GetOngoingScreenFades copies the set at +0xB0 into FrameData +0x180; bg3.exe+0x1D6CB10 removes the Guids of FrameData +0x320 and inserts those of FrameData +0x2B0; size test at +0xDC."
+    },
+    {
+      "name": "field_E0",
+      "offset": 224,
+      "type": "HashSet<Guid>",
+      "source": "unknown",
+      "evidence": "GetOngoingScreenFades copies the set at +0xE0 into FrameData +0x1B0; bg3.exe+0x1D6CB10 removes the Guids of FrameData +0x330 and inserts those of FrameData +0x2E0; size test at +0x10C. When all five containers are empty the entity is destroyed."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Roles of the three Guid sets at +0x00, +0xB0 and +0xE0 (keys are screen-fade ids); no named Toolkit function or macOS name distinguishes them.",
+    "Members of ecl::timeline::ScreenFadeToCallbackData and most of ecl::timeline::JoinLeaveTransitionRequest are unnamed, and their inner offsets come from the Toolkit (EoCClient.dll+0xC3B4D0, +0xC46610) only: no Windows counterpart of those two functions was found by decomp.py matches (also with --all)."
+  ],
+  "minutes": 19,
+  "functions_read": 9,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Container offsets and value strides (0x38, 0x48) are Windows-side (bg3.exe+0x1D6CB10, +0x1D6D0E0); the inner members of the two value structs could only be read in the Toolkit, so the confidence stays medium.",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found (GetOngoingScreenFades copies the sets into an unnamed FrameData)."
+}

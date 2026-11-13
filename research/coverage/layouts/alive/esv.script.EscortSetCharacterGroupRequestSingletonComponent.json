@@ -1,0 +1,59 @@
+{
+  "component": "esv::script::EscortSetCharacterGroupRequestSingletonComponent",
+  "ext_name": "ServerScriptEscortSetCharacterGroupRequests",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: Osiris escort requests that put a character into an escort group or take it out (ls::Variant alternative 3 of esv::script::RequestSystem's requests). Pushed by OsirisGameFunctions::EscortAddCharacter (group from the argument) and EscortRemoveCharacter (empty group); filled by esv::script::RequestSystem::ProcessEmitRequests. Seen.py context: singleton present in the idle level, all zero.",
+  "structs": [
+    {
+      "name": "EscortSetCharacterGroupRequestsEntry",
+      "size": 24,
+      "fields": [
+        {
+          "name": "RequestEntity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::script::Requester<T> +0: request entity copied by EoCServer.dll+0x4FA900."
+        },
+        {
+          "name": "Character",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Request +0: EoCServer.dll+0x126AFE0 (EscortAddCharacter) and +0x126B320 (EscortRemoveCharacter) store the character's entity handle."
+        },
+        {
+          "name": "Group",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Request +8: EscortAddCharacter stores the group string argument; EscortRemoveCharacter stores the empty FixedString."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x18 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<EscortSetCharacterGroupRequestsEntry>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x4FA900 case 3: assert ls::IndexedStorage<esv::script::Requester<esv::script::EscortSetCharacterGroupRequest>>, stride 0x18."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

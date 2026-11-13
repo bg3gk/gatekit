@@ -1,0 +1,27 @@
+{
+  "component": "esv::inventory::InvisibilityDisruptingEventsOneFrameComponent",
+  "ext_name": "ServerInventoryInvisibilityDisruptingEvents",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame list of inventory/equipment actions that break invisibility, per character. Built by esv::inventory::EquipmentSystem (game bg3.exe+0x34F6CA0 moves a per-entity Array out of a HashMap<EntityHandle, DynamicArray<esv::inventory::EInvisibilityDisruptingAction>> - macOS template name) and read by esv::invisibility::RevealingSystem::GatherEquipmentEvents (Toolkit EoCServer.dll+0xB32A10), which walks it byte by byte (`*p == 0`, `*p == 1`). Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Actions",
+      "offset": 0,
+      "type": "Array<uint8_t>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x34FF380 (AllocRaw 0x10) zeroes +0, +8, +0xC (Array) and registers destructor bg3.exe+0x686280 (frees +0); writer bg3.exe+0x34F6CA0 lines 95-108 move an Array (ptr, capacity, size) into it. Element: enum esv::inventory::EInvisibilityDisruptingAction (macOS DynamicArray<esv::inventory::EInvisibilityDisruptingAction>::Append), 1 byte by the Toolkit reader's byte walk."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Values of EInvisibilityDisruptingAction (0 and 1 are tested) are not named.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

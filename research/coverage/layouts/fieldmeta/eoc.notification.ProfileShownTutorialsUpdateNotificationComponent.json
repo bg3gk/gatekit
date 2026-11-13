@@ -1,0 +1,37 @@
+{
+  "component": "eoc::notification::ProfileShownTutorialsUpdateNotificationComponent",
+  "ext_name": "NotificationProfileShownTutorialsUpdate",
+  "size": 56,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Serializer bg3.exe+0x99F950 calls ecs::sync::Serialize(FixedString) on +0; macOS default ctor stores -1 at +0 (null FixedString). Not named by a FieldMeta symbol (profile id?)."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment)"
+    },
+    {
+      "name": "ShownTutorials",
+      "offset": 8,
+      "type": "HashSet<Guid>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::HashSet<class ls::Guid,struct ls::HashTableOpsDefault> eoc::notification::ProfileShownTutorialsUpdateNotificationComponent::*,8>; macOS ls::FieldMeta<ls::HashSet<ls::Guid, ls::HashTableOpsDefault> eoc::notification::ProfileShownTutorialsUpdateNotificationComponent::*, &eoc::notification::ProfileShownTutorialsUpdateNotificationComponent::m_ShownTutorials>"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the FixedString at +0."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

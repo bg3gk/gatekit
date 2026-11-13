@@ -1,0 +1,116 @@
+{
+  "component": "ecl::ragdoll::SoundRequestBusSingletonComponent",
+  "ext_name": "ClientRagdollSoundRequestBusSingleton",
+  "size": 32,
+  "seen": true,
+  "structs": [
+    {
+      "name": "RagdollCharacterSoundRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Toolkit push helper EoCClient.dll+0xDF3250 ('IndexedStorage<ecl::ragdoll::CharacterSoundRequest>', stride 0x10) copies a qword to +0; EoCClient.dll+0xDF3D20 fills it with the ragdoll character handle."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "byte copied to +8; EoCClient.dll+0xDF3D20 writes 3."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "Event",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "FixedString copied to +0xC (a sound event name from a global FixedString)."
+        }
+      ]
+    },
+    {
+      "name": "RagdollCharacterRTPCRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Toolkit push helper EoCClient.dll+0xDF3170 ('IndexedStorage<ecl::ragdoll::CharacterRTPCRequest>', stride 0x18) copies a qword to +0."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "byte copied to +8; EoCClient.dll+0xDF3D20 writes 3."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "RTPC",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "FixedString copied to +0xC (RTPC name)."
+        },
+        {
+          "name": "Value",
+          "offset": 16,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "4 bytes copied to +0x10; EoCClient.dll+0xDF3D20 passes the impact speed (vector length, > 200)."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "stride 0x18"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "SoundRequests",
+      "offset": 0,
+      "type": "Array<RagdollCharacterSoundRequest>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x6CC2F0 destroys two arrays (+0x10, +0) with element destructors. EoCClient.dll+0xDF3D20 pushes CharacterSoundRequest into param+0 and CharacterRTPCRequest into param+0x10 of the same bus; macOS names DynamicArray<ecl::ragdoll::CharacterSoundRequest> and <CharacterRTPCRequest>. Live: empty."
+    },
+    {
+      "name": "RTPCRequests",
+      "offset": 16,
+      "type": "Array<RagdollCharacterRTPCRequest>",
+      "source": "inferred",
+      "evidence": "see SoundRequests"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Struct names are prefixed Ragdoll to avoid clashing with ecl::thrown::CharacterRTPCRequest (a different 24-byte layout); game names are ecl::ragdoll::CharacterSoundRequest / CharacterRTPCRequest.",
+    "Meaning of the byte at +8 (value 3)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

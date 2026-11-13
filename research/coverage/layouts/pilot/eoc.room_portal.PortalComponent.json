@@ -1,0 +1,39 @@
+{
+  "component": "eoc::room_portal::PortalComponent",
+  "ext_name": "RoomPortal",
+  "size": 24,
+  "fields": [
+    {
+      "name": "ConnectedRooms",
+      "offset": 0,
+      "type": "std::array<EntityHandle, 2>",
+      "source": "game",
+      "evidence": "m_ConnectedRooms in the macOS symbols: ls::FieldMeta<ls::StaticArray<EntityHandle, 2> eoc::room_portal::PortalComponent::*, &...::m_ConnectedRooms>; the Windows build has the same FieldMeta at offset 0. Earlier evidence: Type is certain: the game has the replication type ls::FieldMeta<ls::StaticArray<ls::ID<ecs::EntityHandleTraits>,2> eoc::room_portal::PortalComponent::*,0> (symbols.py types, bg3.exe+0xE9E10; used at bg3.exe+0x2F1FC50 to mark field 0 dirty) - the member at offset 0 is a static array of 2 entity handles and it is the only replicated field. Creators default both to the null handle 0xFFC0000000000000 (bg3.exe+0x92E120, bg3.exe+0x25769C0). Probe: slot 0 always a live entity, slot 1 a live entity or null, on both sides. The NAME 'Rooms' is a guess from the feature (esv::room_portal::RoomPortalSystem::RebuildRoomConnections; eoc::room_portal::RoomStateComponent holds a DynamicArray<eoc::room_portal::Connection>); no code was read that proves the two handles are the rooms on either side of the portal."
+    },
+    {
+      "name": "IsOpen",
+      "offset": 16,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "1 byte: bg3.exe+0x92E120 (stream reader) copies exactly 1 byte into +0x10 and defaults it to 0; the savegame loader bg3.exe+0x25769C0 (ls::model::game::room_portal::v0::PortalComponent -> component) writes '+0x10 = (savedByte != 0)', so it is a bool and the only saved member. Name from the Toolkit method esv::room_portal::RoomPortalSystem::LEGACY_SetPortalIsOpen(EntityHandle,bool) and the Osiris-side function bg3.exe+0x3631180 that checks the entity has PortalComponent and queues {entity,bool} into that system; the function that copies the queued bool into +0x10 was not read. Probe: server 00/01; client always 0 (the field is not replicated - only field 0 has a FieldMeta)."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "Tail padding to the 8-byte alignment of EntityHandle. Server probe shows varying garbage here (copied from an uninitialised stack temporary at bg3.exe+0x25769C0: CONCAT71(uStack_57, bool)); client shows zeros."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Layout (types, offsets, sizes) is high confidence; the two names are medium: 'Rooms' is not proven by code, 'IsOpen' is proven only as far as 'the single saved bool of a portal, and the system has a LEGACY_SetPortalIsOpen(entity,bool) request'.",
+    "Which of Rooms[0]/Rooms[1] is which side, and why Rooms[1] is null on some portals (portal to outside / unresolved room?).",
+    "std::array<EntityHandle, 2> is outside the brief's type list; if the generator needs it, split into two EntityHandle fields (offsets 0 and 8).",
+    "ext_name: eoc::item::PortalComponent is already exposed as 'ItemPortal'; 'RoomPortal' does not collide with any DEFINE_COMPONENT."
+  ],
+  "minutes": 10,
+  "functions_read": 9,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

@@ -1,0 +1,118 @@
+{
+  "component": "esv::itemwall::ForcePushRequestOneFrameComponent",
+  "ext_name": "ServerItemwallForcePushRequest",
+  "size": 96,
+  "oneFrame": true,
+  "seen": false,
+  "structs": [
+    {
+      "name": "ItemwallForcePushRequestSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as Script Extender's SpellId (Base/ExposedTypes.h: SpellMetaId + Prototype). bg3.exe+0x25B4060 moves a FixedString to component +0x18."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "As SE SpellMetaId::_Pad."
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellSourceType (1 byte); copied with qword +0x20 of the component."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Alignment before the Guid."
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId::Source."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId::ProgressionSource."
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellId::Prototype; the Toolkit reader passes component+0x48 (= SpellId+0x30) to SpellPrototypeManager::GetPrototype."
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "Tail padding of SpellId (size 0x38)."
+        }
+      ]
+    }
+  ],
+  "summary": "One-frame request of esv::itemwall::WallSystem (per-frame update bg3.exe+0x3379B60) to push an entity out of a wall of items being created (Wall of Stone-like item walls): one per newly reached entity of CreateComponent.ForcePushEntities. Consumed by esv::GameActionManager::ProcessForcePushRequests (Toolkit EoCServer.dll+0x6A6400), which creates a force-push game action. Saved: model game.itemwall.v0.ForcePushRequestOneFrameComponent (48 bytes) with members m_Caster, m_TargetPosition, m_SpellUsed, m_SpellCastUuid - the component stores TargetPosition first. Never seen alive. Registry total 96 (server row).",
+  "fields": [
+    {
+      "name": "TargetPosition",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "Savegame model member 1 (m_TargetPosition). Load bg3.exe+0x25B4060: qword +0 and dword +8 from the converted model (FUN_14277c9b0). WallSystem bg3.exe+0x3379B60 lines 713-714: req[0] = value[0], dword req+8 = value+8 (the ForcePush position). Toolkit FUN_1806a3b40 copies 12 bytes from component+0 as the push target."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Not written."
+    },
+    {
+      "name": "Caster",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Savegame model member 0 (m_Caster). Load: puVar8[2] = resolved entity handle. WallSystem line 694: req[2] = CreateComponent.Owner. Toolkit FUN_1806a3b40: action+0x80 = *(component+0x10)."
+    },
+    {
+      "name": "SpellUsed",
+      "offset": 24,
+      "type": "ItemwallForcePushRequestSpellId",
+      "source": "game",
+      "evidence": "Savegame model member 2 (m_SpellUsed, ls::model::game::spell::v0::SpellId). Load: FixedString moved to +0x18, qwords +0x20..+0x40, FixedString at +0x48. WallSystem line 696 copies CreateComponent+0x30 with FUN_1407a2480 (SpellId copy) to +0x18. Toolkit: eoc::spell::SpellId::operator=(local, component+0x18)."
+    },
+    {
+      "name": "SpellCastUuid",
+      "offset": 80,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "Savegame model member 3 (m_SpellCastUuid). Load: dwords +0x50..+0x5C. WallSystem lines 710-712: req[10..11] = CreateComponent+0x68..+0x77. Toolkit reads qwords +0x50/+0x58."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

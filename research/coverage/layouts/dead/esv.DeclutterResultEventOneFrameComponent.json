@@ -1,0 +1,28 @@
+{
+  "component": "esv::DeclutterResultEventOneFrameComponent",
+  "ext_name": "ServerDeclutterResultEvent",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "Server one-frame event created on a fresh entity by esv::DeclutterSystem (per-frame update step 2, bg3.exe+0x41EABB0) after a declutter (move aside / send to camp) pass that concerned users: a list of 4-byte user ids, which the same code also sends to clients in network message 0x11B together with each user's name. The Toolkit's esv::DeclutterSystem::ProcessOneFrameComponents destroys the event entities. Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Users",
+      "offset": 0,
+      "type": "Array<UserId>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x41EB5F0: AllocRaw(0x10), zeroes +0, +8, +0xC (Array); storage destructor bg3.exe+0x686280 -> FUN_1405BD630 (no element destructor). Writer bg3.exe+0x41EABB0 lines 271-345: `p = create(newEntity)`, then for each 4-byte element of the system's list at +0x88 (count +0x94) appends it: `*(uint32*)(*p + size * 4) = *src; size++` - 4-byte elements. For the message it splits the same 4 bytes into the low uint16 and the high uint16, passing the high half to bg3.exe+0x4035D40, which looks up a peer's name - the UserId layout (peer id << 16 | user index)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "That the 4-byte elements are UserIds is inferred from the low/high split and the name lookup; the width and stride are established.",
+    "A parallel uint32 list (system +0x98) goes only into the message, not into the component.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

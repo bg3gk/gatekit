@@ -1,0 +1,40 @@
+{
+  "component": "ecl::PointSoundTriggerDummy",
+  "ext_name": "ClientPointSoundTriggerDummy",
+  "size": 128,
+  "fields": [
+    {
+      "name": "_Base",
+      "offset": 0,
+      "type": "Trigger",
+      "source": "inferred",
+      "evidence": "ecl::PointSoundTriggerDummy::PointSoundTriggerDummy bg3.exe+0x1BB4EF0 calls the trigger base ctor bg3.exe+0x3C11A30 and CullTrigger::SetTemplate; base = bg3se::Trigger (Trigger.h, 0x70 bytes: VMT, LoggableObjectVMT, Template, Flags, SyncFlags, TriggerType, TriggerEntity, Level, PreviousLevel, Protocol, HasCustomPoint, IsGlobal, CustomPointTransform). Base ctor bg3.exe+0x3C11A30 initialises up to +0x6C, like every SE trigger."
+    },
+    {
+      "name": "Entity",
+      "offset": 112,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "ecl::PointSoundTriggerDummy::PointSoundTriggerDummy bg3.exe+0x1BB4EF0 stores 0xFFC0000000000000 at +0x70, the same place SE's ecl::FloorTrigger/PortalTrigger keep EntityHandle Entity."
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "registry size 128 leaves 8 bytes after Entity; not touched by the ctor."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_78 (8 bytes) unknown; NO REPLICATED serializer exists for this class (ser.py), and the macOS default ctor is a stub",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "seen": false,
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet"
+}

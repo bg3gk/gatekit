@@ -1,0 +1,24 @@
+{
+  "component": "esv::inventory::StackGoldChangedEventOneFrameComponent",
+  "ext_name": "ServerInventoryStackGoldChangedEvent",
+  "size": 4,
+  "seen": true,
+  "summary": "One-frame event of esv::inventory::StackSystem (macOS StackSystem::AddGoldChange), born when gold in a stack changes (looting containers, dialogues paying gold, act-1 scripted events). Registered with size 4, no destructor (bg3.exe+0x34B2DB0).",
+  "fields": [
+    {
+      "name": "GoldChange",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Only member (adder bg3.exe+0x34B2DB0 allocates 4 bytes, stores 0). esv::inventory::StackSystem::AddGoldChange (bg3.exe+0x34ADAB0, Toolkit EoCServer.dll+0xF3D0D0 [export]) accumulates a signed int per stack entity in FrameData (HashMap at +0x70: keys +0x90, int values +0xA0; *v += amount); ProcessStackChanges (bg3.exe+0x34A9190, lines ~419-428) walks that map and writes each value into a new event: the summed (signed) gold change of the stack in this frame."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "second_pass": "AddGoldChange (Toolkit-named, game bg3.exe+0x34ADAB0) accumulates a signed int32 per stack and ProcessStackChanges copies it into the 4-byte event via the adder bg3.exe+0x34B2DB0: one int32 gold delta.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

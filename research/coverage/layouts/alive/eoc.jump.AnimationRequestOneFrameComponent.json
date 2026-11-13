@@ -1,0 +1,46 @@
+{
+  "component": "eoc::jump::AnimationRequestOneFrameComponent",
+  "ext_name": "JumpAnimationRequest",
+  "size": 12,
+  "seen": true,
+  "summary": "One-frame request to play the animation of a new jump phase. Added by bg3.exe+0x1A23890 from the jump trajectory animation systems (client ecl::jump::TrajectoryAnimationStateSystem::UpdateJumpAnimationState bg3.exe+0x1A21CA0, server esv::jump::TrajectoryAnimationStateSystem::UpdateJumpAnimationState) whenever eoc::jump::StateComponent.State advances. Born live in the jump situation, a mud-mephit fight and a tadpoling pod.",
+  "fields": [
+    {
+      "name": "Delay",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A21CA0 writes the remaining time to the next phase (e.g. StateComponent +0x18 - elapsed, clamped at 0) here; the server writes 0.5 on abort. Live 0.109 .. 0.32 (same value as jump::StateComponent +0x14)."
+    },
+    {
+      "name": "State",
+      "offset": 4,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A21CA0 writes the new jump::StateComponent.State (+0xC) as the second dword (CONCAT44(state, time)); server abort writes 3. Live 0."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1A21CA0 copies byte 0 of eoc::jump::InfoComponent here (4-byte write, low byte meaningful). Live 1 or 3; upper bytes garbage on the server."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding to 12"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of InfoComponent byte 0 (jump type?)."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "16 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

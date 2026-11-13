@@ -1,0 +1,138 @@
+{
+  "component": "ecl::character_creation::AppearanceCacheComponent",
+  "ext_name": "ClientCharacterCreationAppearanceCache",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CCAppearanceCacheMaterialSetting",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Material",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "same layout as Script Extender's AppearanceMaterialSetting (GameDefinitions/CharacterCreation.h)"
+        },
+        {
+          "name": "Color",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "as SE AppearanceMaterialSetting"
+        },
+        {
+          "name": "ColorIntensity",
+          "offset": 32,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "as SE AppearanceMaterialSetting"
+        },
+        {
+          "name": "MetallicTint",
+          "offset": 36,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "as SE AppearanceMaterialSetting"
+        },
+        {
+          "name": "GlossyTint",
+          "offset": 40,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "as SE AppearanceMaterialSetting"
+        },
+        {
+          "name": "_Pad2C",
+          "offset": 44,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "padding to 8-byte alignment (Guid)"
+        }
+      ]
+    },
+    {
+      "name": "CCAppearanceCacheSelectedAppearance",
+      "size": 128,
+      "fields": [
+        {
+          "name": "Visuals",
+          "offset": 0,
+          "type": "Array<Guid>",
+          "source": "inferred",
+          "evidence": "macOS InitializeAppearanceCacheComponent copies eoc::character_creation::Appearance +0xA8 (SE: Visuals) here; Windows value destructor bg3.exe+0x708260 frees arrays at +0, +0x10, +0x20"
+        },
+        {
+          "name": "Elements",
+          "offset": 16,
+          "type": "Array<CCAppearanceCacheMaterialSetting>",
+          "source": "inferred",
+          "evidence": "copied from Appearance +0xB8 (SE: Elements)"
+        },
+        {
+          "name": "AdditionalChoices",
+          "offset": 32,
+          "type": "Array<float>",
+          "source": "inferred",
+          "evidence": "copied from Appearance +0xC8 (SE: AdditionalChoices)"
+        },
+        {
+          "name": "HairColor",
+          "offset": 48,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "copied from Appearance +0x58 (SE: HairColor); default Guid::Empty"
+        },
+        {
+          "name": "SkinColor",
+          "offset": 64,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "copied from Appearance +0x68 (SE: SkinColor)"
+        },
+        {
+          "name": "EyeColor",
+          "offset": 80,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "from Appearance +0x78 (SE: EyeColor) - order inferred from the copy sequence"
+        },
+        {
+          "name": "SecondEyeColor",
+          "offset": 96,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "from Appearance +0x88 (SE: SecondEyeColor)"
+        },
+        {
+          "name": "AccessorySet",
+          "offset": 112,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "from Appearance +0x98 (SE: AccessorySet)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Appearances",
+      "offset": 0,
+      "type": "HashMap<Guid, CCAppearanceCacheSelectedAppearance>",
+      "source": "inferred",
+      "evidence": "macOS SubsystemHelper::InitializeAppearanceCacheComponent(ID, Guid const&, Appearance const&, ...) inserts into HashTable<ls::Guid> and resizes IndexedStorage<ecl::character_creation::SelectedAppearance> at +0x30 with stride 0x80. Windows destructor bg3.exe+0x6D0970 loops over the key count at +0x2C and destroys values at +0x30 with stride 0x80, then the key set. Creator bg3.exe+0x201AC40 zeroes 64 bytes. Live: bucket table of 5, one key, one value."
+    }
+  ],
+  "summary": "Cache of appearances already chosen in the character editor, keyed by Guid (ecl::character_creation::SelectedAppearance values). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "confidence": "medium",
+  "open_questions": [
+    "What the Guid key is (race/origin/body?).",
+    "Guid order inside SelectedAppearance beyond the first two copies is inferred from the copy sequence on macOS."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

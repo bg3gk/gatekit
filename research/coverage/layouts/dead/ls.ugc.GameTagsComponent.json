@@ -1,0 +1,76 @@
+{
+  "component": "ls::ugc::GameTagsComponent",
+  "ext_name": "UgcGameTags",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "The mod.io game tag groups (client only, registry total 16; a persistent component, not one-frame), shown by the mod browser (macOS gui::DCModBrowser::UpdateGameTags(GameTagsComponent const&)). Written by ls::PublishingSystem from HandleUGCTagsReceived(DynamicArray<net::UGCTagGroup>, net::UGCResult): bg3.exe+0x3BDFE40 creates it with bg3.exe+0x3BE24D0 when missing and copies the array in.",
+  "structs": [
+    {
+      "name": "UgcGameTagsTag",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "element of UGCTagGroup+0x30 (0x30 bytes): two STDStrings (FUN_1438baff0); net::UGCTag: macOS ParseModInfoFromModioJSON AppendEmplace(tag 'name', 'name_localized'); RequestGetGameTagsCallback fills tags from 'tag' / 'translations'"
+        },
+        {
+          "name": "LocalizedName",
+          "offset": 24,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "second STDString; net::UGCTag: macOS ParseModInfoFromModioJSON AppendEmplace(tag 'name', 'name_localized'); RequestGetGameTagsCallback fills tags from 'tag' / 'translations'"
+        }
+      ]
+    },
+    {
+      "name": "UgcGameTagsTagGroup",
+      "size": 64,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "net::UGCTagGroup (0x40): FUN_1438bb120 copies STDStrings at +0 and +0x18 and an array at +0x30; macOS modio::UGCManager::RequestGetGameTagsCallback: group JSON 'name'"
+        },
+        {
+          "name": "LocalizedName",
+          "offset": 24,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "second STDString of net::UGCTagGroup; macOS RequestGetGameTagsCallback: group JSON 'name_localization'"
+        },
+        {
+          "name": "Tags",
+          "offset": 48,
+          "type": "Array<UgcGameTagsTag>",
+          "source": "inferred",
+          "evidence": "FUN_1438baff0 copies an array of 0x30-byte elements (two STDStrings each); macOS RequestGetGameTagsCallback: 'tags_localization' entries ('tag', 'translations')"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "TagGroups",
+      "offset": 0,
+      "type": "Array<UgcGameTagsTagGroup>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BE24D0 (AllocRaw 0x10) zeroes an Array; destructor bg3.exe+0x3B7B050 resizes/frees it (FUN_1438bbac0, element 0x40). bg3.exe+0x3BDFE40 assigns the request's DynamicArray<net::UGCTagGroup> with FUN_1438bb120 (element 0x40)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "status": "declared",
+  "second_pass": "Nested structs reordered (UgcGameTagsTag now declared before UgcGameTagsTagGroup; that was the build error); Windows offsets were already established (bg3.exe FUN_1438bb120 / FUN_1438baff0); names from the JSON keys of macOS modio::UGCManager::RequestGetGameTagsCallback.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

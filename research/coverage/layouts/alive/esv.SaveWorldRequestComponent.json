@@ -1,0 +1,224 @@
+{
+  "component": "esv::SaveWorldRequestComponent",
+  "ext_name": "ServerSaveWorldRequest",
+  "size": 272,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Context",
+      "offset": 0,
+      "type": "SaveWorldRequestSaveGameContext",
+      "source": "inferred",
+      "evidence": "macOS ~SaveWorldRequestComponent ends with eoc::SaveGameContext::~SaveGameContext(this) - the component starts with an eoc::SaveGameContext (0x38 bytes; Windows destructor bg3.exe+0x22CEE10 calls its destructor bg3.exe+0x22D5830 on +0)."
+    },
+    {
+      "name": "SavePath",
+      "offset": 56,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Windows destructor bg3.exe+0x22CEE10 frees the buffer at +0x38 when the capacity at +0x4C exceeds 0xF and resets size +0x48 / capacity +0x4C (24-byte ls::STDString); creator bg3.exe+0x2B2D660 constructs it at +0x38. Toolkit DoSave (EoCServer.dll+0xC6BE70) uses it as the directory prefix of the save path. Live: an 86-character heap string."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Creator zeroes +0x50; not destroyed (not owned). Toolkit DoSaveFlow (EoCServer.dll+0xC6C840, Toolkit +0x58 = game +0x50 after the 8-byte larger Toolkit STDString) passes it with the Savegame to EoCServer.dll+0xC50B70 (sends the SavegameManager message and sets the server game state) and copies its byte +0x30 into a new entity's component: a pointer to the requesting game-state object. Live 0."
+    },
+    {
+      "name": "LevelName",
+      "offset": 88,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Windows destructor releases the FixedString at +0x58; creator sets it to 0xFFFFFFFF; Toolkit DoPrepareCaches / DoSave call LevelManager::GetLevel(Toolkit +0x60). Live: a level FixedString."
+    },
+    {
+      "name": "_Pad5C",
+      "offset": 92,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "not written by the creator; live garbage (alignment before the hash map)."
+    },
+    {
+      "name": "LevelInstanceParents",
+      "offset": 96,
+      "type": "HashMap<EntityHandle, EntityHandle>",
+      "source": "inferred",
+      "evidence": "Windows destructor bg3.exe+0x682800(+0x60) destroys two HashMaps with trivially destructible values (+0x60 and +0xA0); macOS ~SaveWorldRequestComponent: HashTable<ID<EntityHandleTraits>> at +0x58 (keys are entity handles). Toolkit FillLevelInstanceCache (EoCServer.dll+0xC6F770, called by DoPrepareCaches on Toolkit +0x68) inserts with ls::HashMap<ID<EntityHandleTraits>, ID<EntityHandleTraits>>::EmplaceUniversal (EoCServer.dll+0xC63760, 8-byte values, default null handle) - entity -> parent ('Could not find parent in cache'). Creator bg3.exe+0x2B2D660 zeroes +0x60..+0xA0."
+    },
+    {
+      "name": "LevelInstanceRoots",
+      "offset": 160,
+      "type": "HashMap<EntityHandle, EntityHandle>",
+      "source": "inferred",
+      "evidence": "Second map of the same destructor; FillLevelInstanceCache walks the first map's keys up their parent chain and stores the top-most entity (8-byte value, stride 8) into Toolkit +0xA8 = game +0xA0. Creator zeroes +0xA0..+0xE0."
+    },
+    {
+      "name": "Flags",
+      "offset": 224,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Toolkit DoPrepareCaches / DoSave test bits 1, 2, 4 of the byte at Toolkit +0xE8 (= game +0xE0): level caches, current level cache, globals. Creator zeroes +0xE0 as a qword. Live 3."
+    },
+    {
+      "name": "_PadE1",
+      "offset": 225,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "rest of the qword zeroed by the creator; never read."
+    },
+    {
+      "name": "State",
+      "offset": 228,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Toolkit DoSaveFlow switches on the int at Toolkit +0xEC (= game +0xE4) and stores 1, 2, 3 into it (save flow steps). Live 0."
+    },
+    {
+      "name": "ECBCheckFrameCount",
+      "offset": 232,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Toolkit SaveSystemECBCheckHelper::CheckEntityCommandBuffersIsEmpty prints and increments the int at Toolkit +0xF0 (= game +0xE8) as 'FrameCount'; DoSaveFlow compares it with the configured maximum. Creator zeroes it. Live 0."
+    },
+    {
+      "name": "_PadEC",
+      "offset": 236,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "not written by the creator (live 0xFFFFFFFF left over); alignment before the 8-byte aligned ScratchString."
+    },
+    {
+      "name": "ECBCheckLog",
+      "offset": 240,
+      "type": "SaveWorldRequestScratchString",
+      "source": "inferred",
+      "evidence": "Toolkit WriteToLogFile / CheckEntityCommandBuffersIsEmpty use an ls::ScratchString at Toolkit +0xF8 (= game +0xF0) as the ECB check log. Windows destructor frees the buffer at +0xF0 when byte +0x109 is set and clears +0xF0; creator writes 0 at +0xF0/+0xF8, -1 at +0x100 (qword) and 0x0101 at +0x108."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names are inferred from use (no savegame model, no replication); the SaveGameContext buffers' roles and the object at +0x50 are not named.",
+    "ScratchString member names follow SE CoreLib; the creator's -1 in the third dword (SE 'Size') suggests SE's order of Size/FloatPrecision may need a check."
+  ],
+  "summary": "Seen once at a level change (autosave). Written by esv::SaveSystem::DoSaveFlow/DoSaveMeta/DoSaveToCache/SaveEntities (macOS).",
+  "minutes": 16,
+  "functions_read": 14,
+  "oneFrame": false,
+  "status": "confirmed",
+  "structs": [
+    {
+      "name": "SaveWorldRequestSaveGameContext",
+      "size": 56,
+      "fields": [
+        {
+          "name": "MetaData",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "eoc::SaveGameContext +0: macOS ~SaveGameContext destroys a UniquePtr<SaveFileMetaData> here; Windows destructor bg3.exe+0x22D5830 frees the owned object at +0 last. Toolkit DoSave ORs a byte into (*(+0))+0x108. Live 0 (request not yet processed)."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "eoc::SaveGameContext: first of four UniquePtr<ls::ObjectVisitorBuffer> (macOS ~SaveGameContext; Windows bg3.exe+0x22D5830 destroys +8..+0x20 with the buffer destructor bg3.exe+0x22D8820); Toolkit DoSave passes it to SavegameManager as ObjectVisitorBuffer*. Live 0."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "second UniquePtr<ls::ObjectVisitorBuffer> (same destructors). Live 0."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "third UniquePtr<ls::ObjectVisitorBuffer> (same destructors). Live 0."
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "fourth UniquePtr<ls::ObjectVisitorBuffer> (same destructors). Live 0."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "Array<void*>",
+          "source": "unknown",
+          "evidence": "macOS: DynamicArray<UniquePtr<ls::ObjectVisitorBuffer>> at +0x28; Windows bg3.exe+0x22D5830 resizes it to 0 with bg3.exe+0x22E44D0 (8-byte elements, each destroyed by bg3.exe+0x22D8820) and frees +0x28; creator bg3.exe+0x2B2D660 zeroes +0..+0x38. Live empty."
+        }
+      ]
+    },
+    {
+      "name": "SaveWorldRequestScratchString",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Buffer",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "ls::ScratchString::Buffer (SE CoreLib BaseString.h member order); freed by the component destructor."
+        },
+        {
+          "name": "Position",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "SE ScratchString::Position; Toolkit WriteToLogFile writes the log only when the int at this offset is non-zero. Creator 0."
+        },
+        {
+          "name": "Capacity",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "SE ScratchString::Capacity. Creator 0."
+        },
+        {
+          "name": "Size",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "SE ScratchString::Size; creator writes 0xFFFFFFFF here (the qword -1 at +0x100 of the component). Live 0xFFFFFFFF."
+        },
+        {
+          "name": "FloatPrecision",
+          "offset": 20,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "SE ScratchString::FloatPrecision (default -1). Creator -1, live -1."
+        },
+        {
+          "name": "Managed",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE ScratchString::Managed. Creator 1, live 1."
+        },
+        {
+          "name": "CanGrow",
+          "offset": 25,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE ScratchString::CanGrow; the Windows destructor frees Buffer only when this byte is set. Creator 1, live 1."
+        },
+        {
+          "name": "_Pad1A",
+          "offset": 26,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "padding to the 8-byte aligned size (live garbage)."
+        }
+      ]
+    }
+  ],
+  "second_pass": "Every member's offset and width now comes from the Windows creator bg3.exe+0x2B2D660 (allocates 0x110) and destructor bg3.exe+0x22CEE10, with meanings from the Toolkit SaveSystem (offsets +8 there: 32-byte Toolkit STDString) and the macOS destructor: a SaveGameContext, the save path, a game-state pointer, the level, two entity->entity caches, flags, flow state, ECB check counter and its ScratchString log. The first version's 20 unknown qwords were two HashMaps.",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: eoc::SaveGameContext's four UniquePtr<ObjectVisitorBuffer> and the array have no named members in any source."
+}

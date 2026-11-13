@@ -1,0 +1,26 @@
+{
+  "component": "esv::teleport::HasTargetOverrideComponent",
+  "ext_name": "ServerTeleportHasTargetOverride",
+  "size": 8,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "The entity an item's teleport target is overridden with; kept by esv::teleport::TargetOverrideSystem (per-frame update bg3.exe+0x2B383F0 -> bg3.exe+0x2B38FD0), counted in esv::teleport::TargetOverrideRefCountsSingletonComponent; passed to esv::ActionHelpers::FetchTeleportTargetObject (macOS signature: ..., esv::teleport::HasTargetOverrideComponent const*, ...). Saved: model ls::model::game::teleport::v0::HasTargetOverrideComponent (8 bytes, written with ls::model::core::v0::EntityId), Save bg3_macos_x64+0x4EAA1F0; no member names in the macOS symbols.",
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2B38FD0 lines 142-144: AllocRaw(8) = DAT_146174970 (null EntityHandle); line 70-71 compares *component with the override entity of the request and updates the ref-count map keyed by entity when it differs. Model saved as an EntityId."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Game's own member name (model has none in the symbols)."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

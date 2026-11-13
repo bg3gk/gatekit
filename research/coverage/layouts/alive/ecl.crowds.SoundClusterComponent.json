@@ -1,0 +1,22 @@
+{
+  "component": "ecl::crowds::SoundClusterComponent",
+  "ext_name": "ClientCrowdsSoundCluster",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "GroupIndex",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "ecl::crowds::SoundClusterSystem::FinalizeCrowdState (EoCClient.dll+0xEA60C0) adds the component with the command buffer (EoCClient.dll+0xEA0A90) and writes the index of the SoundStateComponent group the character joined (*local_348 = iVar28, group index into SoundStateComponent::Groups, or the reused free index), asserting 'Crowd sound cluster component created without group index!' if it stays -1. The 'Remove Step' reads it back to find the group (FUN_180EA5840(groups, *index)). macOS default ctor: str w26,[x23] (a register value). Live (idle): 0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

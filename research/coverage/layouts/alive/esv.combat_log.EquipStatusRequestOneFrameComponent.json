@@ -1,0 +1,59 @@
+{
+  "component": "esv::combat_log::EquipStatusRequestOneFrameComponent",
+  "ext_name": "ServerCombatLogEquipStatusRequest",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CombatLogEquipStatusRequestEntry",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Target",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::combat_log::EquipStatusRequest +0: EquipStatusSystem copies esv::status::ApplyEventOneFrameComponent.Target (+8) here; the combat log resolves it to a NetEntity."
+        },
+        {
+          "name": "StatusId",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "EquipStatusRequest +8: FixedString::operator= from the status' id; becomes EquipStatusEntry +0x38."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "EquipStatusRequest +0x10: Guid copied from ApplyEventOneFrameComponent.field_18; becomes EquipStatusEntry +0x40."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<CombatLogEquipStatusRequestEntry>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll esv::combat_log::EquipStatusSystem::Update fills DynamicArray<esv::combat_log::EquipStatusRequest> (stride 0x20); CombatLogSystem::ProcessEquipStatusRequests iterates it (n * 0x20) into eoc::CombatLog::EquipStatusEntry. Live: heap, capacity 1, size 1."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "summary": "Born by casting self-buff spells / equipping (FalseLife, ArmorOfAgathys, Light...).",
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

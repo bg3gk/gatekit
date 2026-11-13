@@ -1,0 +1,75 @@
+{
+  "component": "esv::crowds::DetourComponent",
+  "ext_name": "ServerCrowdsDetour",
+  "size": 32,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Live 0xFFFFFFFF (null FixedString); macOS default stores w27 (-1) at +0."
+    },
+    {
+      "name": "TargetPosition",
+      "offset": 4,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "EoCServer.dll esv::crowds::DetourSystem::FindNextMainSplineTarget passes +4 as the Vector3f& output of GetSplineInfo (spline node position). Live 0."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "FindNextMainSplineTarget passes +0x10 as GetSplineInfo's float& (node value + 0.1). Live FLT_MAX."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Live 1.0."
+    },
+    {
+      "name": "NodeIndex",
+      "offset": 24,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "GetSplineInfo's short& node index (wrapped to the spline's node count). Live -1."
+    },
+    {
+      "name": "field_1a",
+      "offset": 26,
+      "type": "int16_t",
+      "source": "unknown",
+      "evidence": "FindNextMainSplineTarget compares it with node indices and sets it to 0x7FFF or 0."
+    },
+    {
+      "name": "field_1c",
+      "offset": 28,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "FindNextMainSplineTarget tests byte +0x1C. Live 0."
+    },
+    {
+      "name": "_Pad1D",
+      "offset": 29,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "names of +0, +0x10, +0x14, +0x1A, +0x1C"
+  ],
+  "summary": "Crowd characters walking detours along splines (4 holders, idle).",
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: not saved or replicated."
+}

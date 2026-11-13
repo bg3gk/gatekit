@@ -1,0 +1,38 @@
+{
+  "component": "ecl::item::animation::StateComponent",
+  "ext_name": "ClientItemAnimationState",
+  "size": 6,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x191FE90 creates it as 4; bg3.exe+0x191E800 copies it verbatim from the first uint16 of the 4-byte per-entity request record (the hash map returned by bg3.exe+0x191EAE0). Same value range as the two states after it; not touched again in the functions read. Probe: always 4."
+    },
+    {
+      "name": "State",
+      "offset": 2,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Created as 4 (bg3.exe+0x191FE90). bg3.exe+0x191E800 sets it from the second uint16 of the request record, with values 1,2,3,5,7 all turned into 7. bg3.exe+0x191E250 does [+4] = [+2]; [+2] = 7 for entities in the 'finished' set. bg3.exe+0x191EC10 reads it to pick which animation gameplay event to wait for (1 -> one event, 2 -> another, else a third). Probe: always 4."
+    },
+    {
+      "name": "PreviousState",
+      "offset": 4,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x191E250: [+4] = [+2] right before [+2] is overwritten; bg3.exe+0x191E800 sets it together with +2 on creation. Probe: always 4."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The three values are most likely of enum ls::model::game::item::animation::v0::EAnimationState (type name kept in the exe, bg3.exe+0x24BCC50); member names are not known - 4 is the idle default, 7 is the state everything collapses to after a transition, 1 and 2 wait for different animation events.",
+    "field_0: probably the state the item was asked to be in (requested / target state), not confirmed.",
+    "esv::item::animation::StateComponent: looks like the same struct. Same size 6; the savegame loader bg3.exe+0x25B68E0 builds it from three uint16 values written to +0, +2, +4, read from 0x18-byte records of ls::model::game::item::animation::v0::StateComponent. The server-side transition code (bg3.exe+0x35A1CE0) was not read, so the per-field meaning on the server is assumed, not checked; no section for it was found in probe-server.txt."
+  ],
+  "minutes": 10,
+  "functions_read": 7,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

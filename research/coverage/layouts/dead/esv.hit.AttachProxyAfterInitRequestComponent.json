@@ -1,0 +1,41 @@
+{
+  "component": "esv::hit::AttachProxyAfterInitRequestComponent",
+  "ext_name": "ServerHitAttachProxyAfterInitRequest",
+  "size": 24,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Deferred request of esv::hit::HitProxySystem: attach a hit proxy once the entity named by a UUID exists (macOS esv::hit::HitProxySystem::RequestAttachHitProxyAfterInit(EntityHandle const&, Guid const&, FixedString const&)). HitProxySystem::ProcessAttachAfterInitRequests (Toolkit EoCServer.dll+0x3BE210) resolves the Guid through the UUID mapping and, when it resolves, queues an AttachHitProxyRequest (24 bytes: resolved entity, the component's entity, FixedString). Never seen alive. Registry total 24 (server row).",
+  "fields": [
+    {
+      "name": "TargetUuid",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2B37660 (AllocRaw 0x18) copies four dwords from its 3rd argument to +0..+0xF; Toolkit ProcessAttachAfterInitRequests resolves the 16 bytes at element +0 with the UUID-to-handle lookup (FUN_1802c1830) and uses the result as the first entity of AttachHitProxyRequest. Guid by the macOS signature of RequestAttachHitProxyAfterInit."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator IncRefs its 4th argument and stores it at +0x10; Toolkit copies `(FixedString *)(element + 0x10)` into the request's FixedString (the same FixedString SE names field_8 in eoc::hit::ProxyComponent)."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 24 (element stride 0x18 in ProcessAttachAfterInitRequests)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether the UUID names the proxy owner or the proxy is not established; meaning of the FixedString (attachment bone?) unknown.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

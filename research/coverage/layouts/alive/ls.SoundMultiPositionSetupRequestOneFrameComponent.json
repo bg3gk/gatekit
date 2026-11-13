@@ -1,0 +1,25 @@
+{
+  "component": "ls::SoundMultiPositionSetupRequestOneFrameComponent",
+  "ext_name": "SoundMultiPositionSetupRequest",
+  "size": 16,
+  "seen": true,
+  "summary": "Client one-frame request to set up a multi-positioned sound emitter (one sound played from several world positions, e.g. rivers or crowds) with a list of positions; read by ls::SoundTransformSystem (ProcessSoundsActivated, ProcessVirtualPositionedSounds, Update ...). Seen alive at level load / level-swap teleports and in character creation.",
+  "fields": [
+    {
+      "name": "Positions",
+      "offset": 0,
+      "type": "Array<glm::vec3>",
+      "source": "inferred",
+      "evidence": "Game creator bg3.exe+0x3EACD80 allocates 0x10 bytes and builds the component with FUN_143eacb20 from a span of 0xC-byte elements: capacity = (end-begin)/0xC, buffer = count*0xC rounded to 16, then each 12-byte element is pushed - an ls::Array<glm::vec3>. Live: heap pointer, capacity = size = 1..0x65 (one sample empty)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name is inferred (the elements are 12-byte positions; not read as floats in code)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "29 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

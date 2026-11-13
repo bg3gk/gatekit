@@ -1,0 +1,23 @@
+{
+  "component": "esv::tutorial::ShowingSingletonComponent",
+  "ext_name": "ServerTutorialShowingSingleton",
+  "size": 48,
+  "fields": [
+    {
+      "name": "Users",
+      "offset": 0,
+      "type": "HashSet<UserId>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x342C140 (ShowingSystem update) inserts/removes 4-byte keys (key % buckets) from the system's queue filled by esv::tutorial::ShowingSystem::LEGACY_RefreshTutorialsShowing(net::UserID const&, bool) (macOS, Toolkit EoCServer.dll+0xE14FA0); destructor thunk_FUN_140582ad0 = HashSet"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Users for whom a tutorial is currently showing.",
+  "seen": true,
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

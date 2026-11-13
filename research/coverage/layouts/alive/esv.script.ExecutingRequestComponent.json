@@ -1,0 +1,39 @@
+{
+  "component": "esv::script::ExecutingRequestComponent",
+  "ext_name": "ServerScriptExecutingRequest",
+  "size": 48,
+  "seen": true,
+  "summary": "Put by esv::script::RequestSystem (Toolkit EoCServer.dll+0x4FCCE0 Update -> ProcessUpdateRequests; game factory bg3.exe+0x2372B70, update bg3.exe+0x2EA0290) on the entity of a script request (Osiris EnterCombat / SetRelation / SetCombatGroup / Escort* / ResetTutorialsMessage) while it executes; CompleteRequestSystem later lists finished request entities in CompletedRequestsSingletonComponent. The component holds one ls::Variant<EnterCombatRequest, SetRelationRequest, SetCombatGroupRequest, EscortSetCharacterGroupRequest, EscortRemoveAllRequest, EscortSetLeaderPriorityRequest, EscortSetLeaderRequest, ResetTutorialsMessageRequest> (order from macOS esv::script::request::Loader::Save signature). Seen.py context: born in an event-trigger step (S_CHA_Outside_BoulderTrigger) with QueuedRequestsSingletonComponent and combat/relation RequestCompletedEvent; also alive in idle levels.",
+  "fields": [
+    {
+      "name": "Request",
+      "offset": 0,
+      "type": "std::array<uint64_t, 5>",
+      "source": "game",
+      "evidence": "Savegame model ls::model::game::script::request::v0 has m_Request (macOS names). Variant storage of 0x28 bytes: bg3.exe+0x2EA0290 allocates 0x30, zeroes it and writes 0xFFC0000000000000 to +0 and +8 (default = alternative 0 EnterCombatRequest {m_Combatant1, m_Combatant2} two null handles); copy FUN_142ea1ff0 copies per alternative: 0 = 16 bytes (two EntityHandles), 1 = 0x28 bytes (SetRelationRequest: two Guids + 8 bytes), 2/3 = EntityHandle + FixedString at +8 (SetCombatGroupRequest m_Entity/m_CombatGroupID, EscortSetCharacterGroupRequest m_Entity/m_Group), 4 = FixedString at +0 (EscortRemoveAll m_Group), 5 = EntityHandle + FixedString +8 + int32 +0xC (EscortSetLeaderPriority m_Entity/m_Group/m_Priority), 6 = EntityHandle + FixedString, 7 = 8 bytes. Live: 16 random bytes at +0 (SetRelation Guids) or handles."
+    },
+    {
+      "name": "RequestType",
+      "offset": 40,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Variant index byte: FUN_142ea0c30 / FUN_142ea1ff0 switch on *(byte*)(p+0x28) (0..7, order above). Live: 1 (SetRelation) or 3 (EscortSetCharacterGroup)."
+    },
+    {
+      "name": "_Pad29",
+      "offset": 41,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to 0x30 (live zero)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The variant is written as raw storage; a typed union would need SE support for ls::Variant."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "30 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,55 @@
+{
+  "component": "esv::ChasmDataComponent",
+  "ext_name": "ServerChasmData",
+  "size": 48,
+  "fields": [
+    {
+      "name": "Position",
+      "offset": 0,
+      "type": "std::optional<glm::vec3>",
+      "source": "inferred",
+      "evidence": "16-byte block copied whole as four dwords by bg3.exe+0x2D605A0 (~ esv::ChasmSystem::UpdateNewChasmEntities: component stride 0x30, 'local_3b8 = *puVar17 .. puVar17[3]') and passed beside a second block of the same shape that the code builds as {translate of ls::TransformComponent (12 bytes), byte +0xC = 1} - an optional position with its has-value byte at +0xC. Live samples (9, bg3_dx11): when byte +0xC is 1, +0/+4/+8 are ordinary floats (268.75, 42.8, 10.25 ...); when it is 0 the 12 bytes hold stale data (heap-like values) - the disengaged storage. Byte +0xD (0/1/2) is padding of the optional. The source of the request, Toolkit esv::ChasmSystem::LEGACY_EntityEnteredChasm, takes an ls::Optional<Vector3f>. Name inferred."
+    },
+    {
+      "name": "Cause",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "bg3.exe+0x2D605A0 passes puVar17 + 4 (+0x10) as an entity to the event listeners and to bg3.exe+0x3090370; Toolkit UpdateNewChasmEntities passes &+0x10 as the second entity of StoryGameEventManager::ThrowEnteredChasm, whose Osiris event is EnteredChasm(_Object, _Cause, _Chasm, _fallbackPos...): the name is the Osiris parameter. Live: entity handles or the null handle 0xFFC0000000000000."
+    },
+    {
+      "name": "Chasm",
+      "offset": 24,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "bg3.exe+0x2D605A0 passes puVar17 + 6 (+0x18) as a Guid to bg3.exe+0x3009350 (fallback position in the chasm area; Toolkit: only user of 'Chasm trigger with GUID %s is not found') and converts it to an entity (bg3.exe+0x1013470) for the event; ProcessSavegameLoaded bg3.exe+0x2D5DD90 reads the four dwords +0x18..+0x24 of a 0x30-stride component and tests them for zero. Converted to the _Chasm entity of the Osiris event EnteredChasm. Live: random-looking 16 bytes."
+    },
+    {
+      "name": "FallbackTimer",
+      "offset": 40,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D605A0: 'if (puVar17[10] == -1) { ... puVar17[10] = 10; }' (+0x28). Toolkit esv::ChasmSystem::UpdateStoryFallbackTimer decrements it while > 0 and calls LEGACY_EnterChasmHandled at 0. Live: always 0xFFFFFFFF."
+    },
+    {
+      "name": "StoryActionId",
+      "offset": 44,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Toolkit UpdateHandledRequests copies these 4 bytes into an optional of a request (has-value byte 1 beside it); LEGACY_EntityEnteredChasm, the entry point that queues chasm entries, takes ls::TypeWrap<unsigned int, eoc::TStoryActionIDClassname> - the only 4-byte argument. Live (bg3_dx11): small integers 0, 0x21, 0xBF, 0xDF, 0xE0, 0xEC, 0xF7, 0x100 with the upper bytes zero - 4-byte width; the name follows that argument."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Server-only; registry totalSize 48 on the server row.",
+    "Names Position, FallbackTimer and StoryActionId are inferred (Cause and Chasm follow the Osiris event EnteredChasm); the mapping from LEGACY_EntityEnteredChasm's queued EnterChasmData (EntityHandle, Guid, uint32, Optional<Vector3f>) to this component was not read on Windows.",
+    "The earlier raw-check failure is explained: +0..+0xB is a disengaged optional in most instances (stale bytes), not a plain vec3."
+  ],
+  "seen": false,
+  "minutes": 14,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled on Windows: bg3.exe+0x2D605A0 (UpdateNewChasmEntities) copies a 16-byte block at +0, uses +0x10 as an entity, +0x18 as a Guid and +0x28 as the -1/10 timer; live samples show +0 is an optional<vec3> (has-value byte +0xC; garbage when empty) and +0x2C a small 4-byte id. field_0 vec3 + bool replaced by std::optional<glm::vec3>; Cause/Chasm named from the Osiris event EnteredChasm.",
+  "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

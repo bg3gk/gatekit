@@ -1,0 +1,172 @@
+{
+  "component": "ecl::projectile::ImpactEventOneFrameComponent",
+  "ext_name": "ClientProjectileImpactEvent",
+  "size": 168,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event added by the client projectile when it explodes (caller bg3.exe+0x1894B90 ~ ecl::Projectile::TryExplode). Holds the spell-cast target the projectile hit: exactly Script Extender's spell_cast::IntermediateTarget (0xA8 bytes), declared here as own structs. Born live while casting projectile spells (Eldritch Blast, Scorching Ray) together with ecl::Projectile and ecl::projectile::SpellComponent.",
+  "structs": [
+    {
+      "name": "ImpactEventBaseTarget",
+      "size": 48,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Creator bg3.exe+0x1897900 stores PTR_FUN_1454db0b8 (outer target) / PTR_FUN_1454db080 (initial target) here: a class with a virtual table, the Script Extender spell_cast::BaseTarget (SpellCastShared.h): VMT, EntityHandle Target, optional<EntityHandle> TargetProxy, optional<vec3> Position."
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Creator bg3.exe+0x1897900 sets 0xffc0000000000000 (null EntityHandle); live values are entity handles. SE BaseTarget::Target."
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Value of optional<EntityHandle> (SE BaseTarget::TargetProxy); live garbage while the has-value byte is 0."
+        },
+        {
+          "name": "HasTargetProxy",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Creator bg3.exe+0x1897900 zeroes this byte (optional has-value); live low byte always 0."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "optional tail padding (live garbage)"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Value of optional<vec3> (SE BaseTarget::Position); live world coordinates (51.4, 5.9, 208.8 ...)."
+        },
+        {
+          "name": "HasPosition",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Creator bg3.exe+0x1897900 zeroes this byte; live 0/1."
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "optional tail padding"
+        }
+      ]
+    },
+    {
+      "name": "ImpactEventInitialTarget",
+      "size": 112,
+      "fields": [
+        {
+          "name": "Base",
+          "offset": 0,
+          "type": "ImpactEventBaseTarget",
+          "source": "inferred",
+          "evidence": "SE spell_cast::InitialTarget derives from BaseTarget; second vtable PTR_FUN_1454db080 at the start of this part in the constructor."
+        },
+        {
+          "name": "TargetingType",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE InitialTarget::TargetingType (SpellType, 1-byte enum); constructor zeroes byte 0x60; live 0/3/0xB."
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment of the optional<BaseTarget>"
+        },
+        {
+          "name": "Target2",
+          "offset": 56,
+          "type": "ImpactEventBaseTarget",
+          "source": "inferred",
+          "evidence": "Value of SE InitialTarget::Target2 (optional<BaseTarget>); mostly zero live."
+        },
+        {
+          "name": "HasTarget2",
+          "offset": 104,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "constructor zeroes byte 0x98; live 0/1."
+        },
+        {
+          "name": "_Pad69",
+          "offset": 105,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "optional tail padding"
+        }
+      ]
+    },
+    {
+      "name": "ImpactEventIntermediateTarget",
+      "size": 168,
+      "fields": [
+        {
+          "name": "Base",
+          "offset": 0,
+          "type": "ImpactEventBaseTarget",
+          "source": "inferred",
+          "evidence": "SE spell_cast::IntermediateTarget : BaseTarget (vtable PTR_FUN_1454db0b8)."
+        },
+        {
+          "name": "InitialTarget",
+          "offset": 48,
+          "type": "ImpactEventInitialTarget",
+          "source": "inferred",
+          "evidence": "SE IntermediateTarget::InitialTarget."
+        },
+        {
+          "name": "field_A0",
+          "offset": 160,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE IntermediateTarget::field_A0; constructor zeroes byte 0xa0; live 0."
+        },
+        {
+          "name": "_PadA1",
+          "offset": 161,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "tail padding to 0xA8"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "ImpactEventIntermediateTarget",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1897900 allocates 0xA8, memsets, then constructs the target in place: +0 vtable PTR_FUN_1454db0b8, +8 null handle, bytes +0x18/+0x2C zero, +0x30 vtable PTR_FUN_1454db080, +0x38 null handle, bytes +0x48/+0x5C/+0x60/+0x98/+0xA0 zero - the field pattern of SE spell_cast::IntermediateTarget (same vtables as the target inside ecl::projectile::SpellComponent at +0x10). Live: 48 instances; vtables in the executable, handles and world positions where expected."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Could be replaced by SE spell_cast::IntermediateTarget when external types are allowed.",
+    "Field name 'Target' is inferred."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

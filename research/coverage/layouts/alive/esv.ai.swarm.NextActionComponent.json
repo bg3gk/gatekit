@@ -1,0 +1,58 @@
+{
+  "component": "esv::ai::swarm::NextActionComponent",
+  "ext_name": "ServerAiSwarmNextAction",
+  "size": 32,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Action",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "eoc::ai::swarm::EActionType (1 byte). EoCServer.dll FUN_1816b7530 (from ExecuteActionsSystem::Update, element stride 0x20): switches on byte +0 (3, 6/7, 0 ...). Live 0 or 6."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "Position",
+      "offset": 4,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Same function: ls::Optional<Vector3f>::Get on +4 (flag +0x10), passed as the move/cast position."
+    },
+    {
+      "name": "HasPosition",
+      "offset": 16,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Optional flag tested before Get. Live 0."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    },
+    {
+      "name": "Target",
+      "offset": 24,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "FUN_1816b7530: IsEntityAlive(+0x18), used as the action target. Live entity handles."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "summary": "AI swarm turn (idle levels). Read by ExecuteActionsSystem.",
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

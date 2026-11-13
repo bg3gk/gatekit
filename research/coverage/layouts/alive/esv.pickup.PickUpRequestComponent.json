@@ -1,0 +1,135 @@
+{
+  "component": "esv::pickup::PickUpRequestComponent",
+  "ext_name": "ServerPickupPickUpRequest",
+  "size": 64,
+  "seen": true,
+  "summary": "Server half of a pick-up request (eoc::pickup::PickUpRequestComponent holds the Guid and state). Added by esv::pickup::PickUpRequestSystem::HandleValidatedPickUpRequests (Toolkit EoCServer.dll+0xD384C0) to the request's first entity, copying an esv::pickup::ValidatedPickUpRequest (see esv.pickup.ValidatedPickUpRequestsSingletonComponent) and the target's transform. Read by PickUpSplitFinishedSystem / PickUpExecutionSystem / PickUpPermissionSystem. Seen.py context: tree3 dialogue UND_PanicRoom_HiddenGnome (an item was picked up), born with the other pickup components of this batch.",
+  "fields": [
+    {
+      "name": "TargetInventory",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "HandleValidatedPickUpRequests: *plVar6 = plVar10[-1] = ValidatedPickUpRequest+8 (second ID argument of LEGACY_RequestPickUp). Copied to BeingPickedUpComponent+8 and PickUpPermissionComponent+8. Live 0x13727 / 0x0200001E. Game name: member 0 (m_TargetInventory) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): model EntityId +0 -> component +0.",
+      "legacy": "field_0"
+    },
+    {
+      "name": "EntityToPickUp",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "plVar6[1] = ValidatedPickUpRequest+0x10; the same function adds esv::pickup::OriginalPickUpTargetComponent to that entity and reads its ls::TransformComponent into +0x20. Live 0x19F6D / 0x0200001C (also PickUpPermissionComponent+0). Game name: member 1 (m_EntityToPickUp) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): model EntityId +8 -> component +8.",
+      "legacy": "Target"
+    },
+    {
+      "name": "AmountToPickUp",
+      "offset": 16,
+      "type": "int32_t",
+      "source": "game",
+      "evidence": "plVar6[2] = ValidatedPickUpRequest+0x18 (ls::Optional<int> argument: value). Live 0. Game name: member 2 (m_AmountToPickUp) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): int32 model +0x10 -> component +0x10 when model +0x34 is set.",
+      "legacy": "Amount"
+    },
+    {
+      "name": "AmountToPickUpHasValue",
+      "offset": 20,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Presence byte of the Optional<int> (copied with the value as one qword). Live 0x00 (+0x15..+0x17 garbage 00 c0 ff). Game name: member 7 (m_AmountToPickUpHasValue) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): model byte +0x34 -> presence byte +0x14.",
+      "legacy": "HasAmount"
+    },
+    {
+      "name": "_Pad15",
+      "offset": 21,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "Optional padding; live garbage."
+    },
+    {
+      "name": "HotbarSlot",
+      "offset": 24,
+      "type": "int16_t",
+      "source": "game",
+      "evidence": "*(int*)(plVar6+3) = ValidatedPickUpRequest+0x30 (ls::Optional<short> argument, value). Live 0. Game name: member 3 (m_HotbarSlot) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): 16-bit model +0x14 -> component +0x18 when model +0x35 is set.",
+      "legacy": "field_18"
+    },
+    {
+      "name": "HotbarSlotHasValue",
+      "offset": 26,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Optional<short> presence byte (4-byte copy). Live 0. Game name: member 8 (m_HotbarSlotHasValue) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): model byte +0x35 -> presence byte +0x1A.",
+      "legacy": "Has_field_18"
+    },
+    {
+      "name": "_Pad1B",
+      "offset": 27,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Padding."
+    },
+    {
+      "name": "TargetSlot",
+      "offset": 28,
+      "type": "uint16_t",
+      "source": "game",
+      "evidence": "+0x1C = ValidatedPickUpRequest+0x34 (ls::Optional<unsigned short> argument, value). Live 0xE9C8 with presence 0 (stale value). Game name: member 4 (m_TargetSlot) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): 16-bit model +0x16 -> component +0x1C when model +0x36 is set.",
+      "legacy": "field_1C"
+    },
+    {
+      "name": "TargetSlotHasValue",
+      "offset": 30,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Optional<unsigned short> presence byte. Live 0. Game name: member 9 (m_TargetSlotHasValue) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): model byte +0x36 -> presence byte +0x1E.",
+      "legacy": "Has_field_1C"
+    },
+    {
+      "name": "_Pad1F",
+      "offset": 31,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Padding; live 0x13 garbage."
+    },
+    {
+      "name": "OrigRotation",
+      "offset": 32,
+      "type": "glm::quat",
+      "source": "game",
+      "evidence": "plVar6[4..5] = first 16 bytes of the Target's ls::TransformComponent (rotation quaternion). Live (0, 0.5509, 0, 0.8346) - a unit quaternion. Game name: member 5 (m_OrigRotation) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): quat model +0x18 (transformed) -> component +0x20.",
+      "legacy": "TargetRotation"
+    },
+    {
+      "name": "OrigTranslation",
+      "offset": 48,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "plVar6[6] and +0x38 = next 12 bytes of the transform (translation). Live (-525.5, 28.8, 465.3). Game name: member 6 (m_OrigTranslation) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): vec3 model +0x28 (transformed) -> component +0x30.",
+      "legacy": "TargetPosition"
+    },
+    {
+      "name": "MarkAsWares",
+      "offset": 60,
+      "type": "bool",
+      "source": "game",
+      "evidence": "+0x3C = byte ValidatedPickUpRequest+0x38 (trailing bool argument of LEGACY_RequestPickUp). Live 0 (+0x3D..+0x3F garbage ff). Game name: member 10 (m_MarkAsWares) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): bool(model byte +0x37) -> component +0x3C.",
+      "legacy": "field_3C"
+    },
+    {
+      "name": "_Pad3D",
+      "offset": 61,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "Padding."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which of the two entities is the item and which the picker/inventory (names of the LEGACY_RequestPickUp ID arguments are not known); meaning of the Optional<short>/<ushort> and the trailing bool (named field_* as in esv.pickup.ValidatedPickUpRequestsSingletonComponent)."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "All 11 model members matched by the Windows loader bg3.exe+0x2781040."
+}

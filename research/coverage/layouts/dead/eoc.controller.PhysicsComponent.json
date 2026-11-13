@@ -1,0 +1,29 @@
+{
+  "component": "eoc::controller::PhysicsComponent",
+  "ext_name": "ControllerPhysics",
+  "size": 8,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Client component of the controller (gamepad) feature: an owning pointer to a 0x30-byte heap object with a virtual table (bg3.exe+0x58A87B0, 7 slots) that wraps a physics object of the game's physics scene. Created and filled by the per-frame update of ecl::controller::PhysicsSystem (bg3.exe+0x1DAC600) for entities matched by its queries (with eoc::controller::FloodComponent / LocomotionComponent per the macOS query names). Registry total 8 (client row) = the pointer only, like eoc::controller::FloodComponent. Never seen alive. The savemodel tool matched an unrelated model (game.triggers.v0.UpdatedPhysicsComponent) by substring: this component is not saved.",
+  "fields": [
+    {
+      "name": "Physics",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1DAD5D0: AllocRaw(8), `*p = 0`; storage has no destructor (+0x20 = 0). Per-frame update bg3.exe+0x1DAC600: for each new entity `p = create(entity)`, allocates 0x30 bytes (FUN_1441beb10(..., 0x30, 0x10)), sets its vtable PTR_FUN_1458a87b0, +8 = FUN_144ab5f20() (a physics scene object), +0x10 = scene->vfunc(+0x88)(desc built with (1.0f, 10.0f)), +0x18 = scene->vfunc(+0xE8)(1.0f), zeroes +0x20..+0x2F, then `*p = object`."
+    }
+  ],
+  "class_size": 48,
+  "confidence": "high",
+  "open_questions": [
+    "Class of the 0x30-byte object (vtable bg3.exe+0x58A87B0) is unnamed; probably a controller physics shape/actor wrapper.",
+    "Who deletes the object (no component destructor): presumably the second step of the same system on removal - not read.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

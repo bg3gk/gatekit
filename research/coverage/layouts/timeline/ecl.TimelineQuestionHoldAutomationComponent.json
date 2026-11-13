@@ -1,0 +1,79 @@
+{
+  "component": "ecl::TimelineQuestionHoldAutomationComponent",
+  "ext_name": "ClientTimelineQuestionHoldAutomation",
+  "size": 28,
+  "fields": [
+    {
+      "name": "IsEnabled",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Created with 0 (bg3.exe+0x1D78810). bg3.exe+0x1D5EF90 sets it to 1 when the active source of aspk::QuestionHoldAutomationSettings (phase override, timeline header or TLSystemConfig default) has IsEnabled set and the node type is not 0x80; bg3.exe+0x1D64DF0 does nothing while it is 0. Live: 0."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "alignment of the float; live bytes 00 02 00 are garbage"
+    },
+    {
+      "name": "CycleSpeed",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D5EF90 copies it from QuestionHoldAutomationSettings+0x0C (phase +0x3C = CycleSpeed in AllSparkShared.h). Live: 5.0."
+    },
+    {
+      "name": "CycleSpeedDeviation",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Copied from QuestionHoldAutomationSettings+0x10 (CycleSpeedDeviation) in bg3.exe+0x1D5EF90. Live: 1.0."
+    },
+    {
+      "name": "Timer",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D64DF0 adds the frame time to it every update, compares it with StartTime / CurrentCycleTime and resets it to 0 when a camera switch is triggered. Live: 0."
+    },
+    {
+      "name": "IsCycling",
+      "offset": 16,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Set to 1 in bg3.exe+0x1D64DF0 once Timer reaches StartTime (start offset passed); after that a switch happens each time Timer reaches CurrentCycleTime. Copied to Timeline+0x498 (IsDuringQuestionHoldAutomation) every update; cleared in bg3.exe+0x1D5EF90 and bg3.exe+0x1D65580. Live: 0."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "alignment; live FF FF FF"
+    },
+    {
+      "name": "CurrentCycleTime",
+      "offset": 20,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Result of bg3.exe+0x1F96000(component) (random time from CycleSpeed and CycleSpeedDeviation), re-rolled in bg3.exe+0x1D65580 after each switch. Live: 4.197 (within 5 +- 1)."
+    },
+    {
+      "name": "StartTime",
+      "offset": 24,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D5EF90: phase duration (TimelinePhase+0x08) minus a random value in StartOffset +- StartOffsetDeviation (settings +0x14 / +0x18), 0 when there is no phase. bg3.exe+0x1D64DF0 starts cycling when Timer >= StartTime. Live: 6.98."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Field names are descriptive (no Toolkit accessor); the three settings sources and offsets were matched against aspk::QuestionHoldAutomationSettings in AllSparkShared.h."
+  ],
+  "minutes": 9,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

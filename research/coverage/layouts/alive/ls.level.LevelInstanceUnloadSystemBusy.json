@@ -1,0 +1,40 @@
+{
+  "component": "ls::level::LevelInstanceUnloadSystemBusy",
+  "ext_name": "LevelInstanceUnloadSystemBusy",
+  "size": 8,
+  "seen": true,
+  "summary": "Server-side marker (seen on at most 1 holder, during level changes, character creation level and level-swap teleports) added by ls::level::LevelInstanceUnloadSystem while it detaches and waits for level instances to unload (GameEngine.dll LevelInstanceUnloadSystem::DetachAllAndWait writes it, per macOS signatures). Not saved.",
+  "fields": [
+    {
+      "name": "LevelName",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "creator bg3.exe+0x3C22070 (alloc 8) sets *(uint32*)+0 = 0xFFFFFFFF (null FixedString); the per-frame update of LevelInstanceUnloadSystem bg3.exe+0x3C207E0 then assigns it from an element of a FixedString list with FixedString IncRef/DecRef (lines 515-525). Live values look like FixedString indices (0x3C8000A0, 0x457000A0)"
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "creator bg3.exe+0x3C22070 writes byte +4 = 0; never seen non-zero (live byte0 = 00)"
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "padding; live garbage"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "which level name is stored (the level being unloaded is likely)",
+    "meaning of the bool at +4"
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

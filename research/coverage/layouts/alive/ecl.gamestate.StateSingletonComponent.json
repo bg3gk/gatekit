@@ -1,0 +1,33 @@
+{
+  "component": "ecl::gamestate::StateSingletonComponent",
+  "ext_name": "ClientGamestateStateSingleton",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "State",
+      "offset": 0,
+      "type": "ecl::GameState",
+      "source": "inferred",
+      "evidence": "EoCClient.dll ecl::gamestate::StateTrackingSystem::Update (WorldView<StateSingletonComponent>): for each queued Variant<EnteredStateEvent, ExitedStateEvent>, Entered writes the state to +0, Exited writes 0 to +0. Events come from LEGACY_StateEntered(EClientGameState). SE enum ecl::GameState (ClientGameState, uint32_t) in Enumerations/Engine.inl. bg3.exe+0x1901F30 (SystemLoad) creates it zeroed, 8 bytes. Live: 0."
+    },
+    {
+      "name": "ExitedState",
+      "offset": 4,
+      "type": "ecl::GameState",
+      "source": "inferred",
+      "evidence": "Same function: ExitedStateEvent writes the exited state to +4. Live: 1 (Init)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Read from the Toolkit build's Update; the game's update was not located (not a vtable slot)",
+    "Live sample shows State=0 in 'idle', which fits 'last event was an exit' only if events are processed in an order not seen here"
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the layout file is not valid yet: type 'ecl::GameState' is not one generate.py knows the size of",
+  "hold": "uses types declared elsewhere (GameState, ecl): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

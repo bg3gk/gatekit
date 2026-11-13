@@ -1,0 +1,60 @@
+{
+  "component": "ecl::sound::UIPanelStateSingletonComponent",
+  "ext_name": "ClientSoundUIPanelStateSingleton",
+  "size": 72,
+  "seen": true,
+  "structs": [
+    {
+      "name": "UIPanelStatePlayerPanel",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Panel",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "UIPrioritySystem::ProcessPanelRequests (EoCClient.dll+0xD47FF0) passes value+0 as the FixedString panel name to SendMuffleEvent and copies it with FixedString::operator= when compacting the map."
+        },
+        {
+          "name": "OpenCount",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "ProcessPanelRequests tests *(int*)(value+4) < 1 / == 0 to decide whether to post the muffle on/off event (number of open panels of that player); copied as 4 bytes on compaction."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "HashMap<uint16_t, UIPanelStatePlayerPanel>",
+      "source": "inferred",
+      "evidence": "ProcessPanelRequests looks up the singleton (+0) with short keys (hash of *psVar14 % bucket count +8; keys at +0x20 stride 2, values at +0x30 stride 8) and removes entries for removed players (key from ProcessPlayerEvents, which reads short player ids from player_management::EventsSingletonComponent). Game key type is short (declared uint16_t). Live: 5 buckets, 1 entry."
+    },
+    {
+      "name": "IsMuffled",
+      "offset": 64,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ProcessPanelRequests sets byte +0x40 to 1 after SendMuffleEvent(..., true, ...) and to 0 after SendMuffleEvent(..., false, ...); checked before muffling. macOS default: str xzr, [x23, #0x40]. Live: 0."
+    },
+    {
+      "name": "_Pad41",
+      "offset": 65,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "Alignment to 8 (size 0x48); not accessed."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Value member names are ours (no game struct name found)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

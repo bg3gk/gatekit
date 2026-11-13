@@ -1,0 +1,28 @@
+{
+  "component": "esv::unsheath::StateChangedEventOneFrameComponent",
+  "ext_name": "ServerUnsheathStateChangedEvent",
+  "size": 8,
+  "oneFrame": true,
+  "fields": [
+    {
+      "name": "OldState",
+      "offset": 0,
+      "type": "stats::UnsheathState",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x32F3F00 (size 8, defaults 3,3 = Sheathed). bg3.exe+0x32F1AD0 (server unsheath state resolver: builds a list of 12-byte records {reason, stats::UnsheathState, 3 flag bytes}, sorts by reason, the last one wins) writes eoc::unsheath::StateComponent+0x14 (State, before the update) here when the resolved state differs from it. Enum underlying size 4. Capture: 3 (Sheathed)."
+    },
+    {
+      "name": "NewState",
+      "offset": 4,
+      "type": "stats::UnsheathState",
+      "source": "inferred",
+      "evidence": "Same place in bg3.exe+0x32F1AD0: the resolved state (state of the winning record) that is then stored into StateComponent.State. Capture: 1 (Melee) - the character drew a melee weapon."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

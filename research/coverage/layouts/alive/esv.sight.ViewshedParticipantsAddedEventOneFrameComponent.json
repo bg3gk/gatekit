@@ -1,0 +1,47 @@
+{
+  "component": "esv::sight::ViewshedParticipantsAddedEventOneFrameComponent",
+  "ext_name": "ServerSightViewshedParticipantsAddedEvent",
+  "size": 56,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event of esv::sight::ViewshedSystem (CollectViewshedsWhereAParticipantUpdated / UpdateViewshedParticipantComponents read it). Seen whenever characters enter viewsheds: spawns, spells, dialogues.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x2E64010 (AllocRaw 0x38) zeroes the 2 bytes at +0. The writer bg3.exe+0x2E5D940 (esv::sight::ViewshedSystem, per-entity 0x38-byte values of a local HashMap<EntityHandle, ...>) sets value byte 0 to 1 through the get-or-add bg3.exe+0x2E61B40 after walking an entity's added/removed participant list, and copies it with a byte store (*dst = *src) into the component. Live 0 or 1."
+    },
+    {
+      "name": "field_1",
+      "offset": 1,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Same writer sets value byte 1 to 1 when the entry is created for an entity checked for esv::sight::ViewshedParticipantComponent (FUN_1440103b0 with its type index) and copies it as a separate byte (dst[1] = src[1]). Live always 0."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "not written by the creator nor copied by the writer; live garbage."
+    },
+    {
+      "name": "Participants",
+      "offset": 8,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator zeroes a HashSet at +8..+0x38 (bucket ptr/count, NextIds +0x18, Keys +0x28 with size +0x34); destructor LAB_1406b4cb0. Writer bg3.exe+0x2E5D940 copies the local value's set with the HashSet copy bg3.exe+0x5DF700 and fills it with bg3.exe+0x721030 (find/insert comparing 8-byte keys at Keys + i*8) using the entity of each 0x20-byte change entry whose flag byte +8 is 0 (added; flag 1 = removed goes elsewhere). Live: up to 0x1D keys."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning (game names) of the two flag bytes at +0 and +1."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "confirmed",
+  "second_pass": "Windows writer bg3.exe+0x2E5D940 (ViewshedSystem) copies byte +0, byte +1 and the HashSet at +8 separately and inserts 8-byte entity keys (bg3.exe+0x721030), which settles all boundaries and the key width; only the two flags remain unnamed.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

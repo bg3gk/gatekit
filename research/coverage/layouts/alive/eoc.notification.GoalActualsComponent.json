@@ -1,0 +1,46 @@
+{
+  "component": "eoc::notification::GoalActualsComponent",
+  "ext_name": "NotificationGoalActuals",
+  "size": 32,
+  "seen": true,
+  "summary": "Notification entity made by the per-frame update of esv::notification::System from each esv::background::GoalRecordedEventOneFrameComponent (a background goal of a character was achieved; seen in the GOB_GuardUpset dialogue and the companion-death scenario, born with eoc::background::GoalsComponent, eoc::notification::BackgroundGoalComponent and eoc::analytics::EventGoalAchievedComponent). Same shape as SE's eoc::notification::BackgroundGoalComponent (EntityHandle, Guid, uint32).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2DF2000 (add helper, 0x20 bytes) sets +0 to the null handle 0xFFC0000000000000; bg3.exe+0x2DE7840 copies the event's +0 (GoalRecordedEvent.Entity, 0x28-byte stride) into it; live 0x0200003300000A2E-like handles"
+    },
+    {
+      "name": "Goal",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2DE7840 copies the event's 16 bytes at +8 (the background goal Guid, GoalRecord.Goal in esv::background::GoalSystem::Update) to +8"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x2DE7840 writes the constant 4 (a kind/enum value); live 4"
+    },
+    {
+      "name": "_Pad1C",
+      "offset": 28,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "zeroed by bg3.exe+0x2DF2000 (puVar4[3]=0), never written; live 0"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "meaning of the constant 4 at +0x18 (enum name not known)"
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,66 @@
+{
+  "component": "ecl::TimelineAutomatedLookatComponent",
+  "ext_name": "ClientTimelineAutomatedLookat",
+  "size": 32,
+  "fields": [
+    {
+      "name": "IsEnabled",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Created with 0 (16-bit store at +0 in bg3.exe+0x6D70B0). The look-at update bg3.exe+0x20548B0 (called per entity from bg3.exe+0x1D50BA0, query {eoc::TimelineActorDataComponent, this, eoc::timeline::steering::TimelineSteeringComponent, optional ecl::TimelineEyeLookAtOverrideComponent}, stride 0x20) returns at once when it is 0. Live: 0."
+    },
+    {
+      "name": "DelayRequested",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20548B0: when set, a random delay between TLLookAtAutomationConfig MinDelayTimeSeconds (+0x48) and MaxDelayTimeSeconds (+0x4C) is added to the timeline time and stored in TriggerTime, Pending is set to 1 and this flag is cleared. Live: 0."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "alignment of the Guid; live bytes are garbage (look like a heap pointer tail)"
+    },
+    {
+      "name": "Target",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Two qwords created as 0. bg3.exe+0x20548B0: when both are 0 the target is taken from the current speaker / listener of the timeline, otherwise these 16 bytes are passed as an actor Guid to the timeline's actor-to-entity lookup (bg3.exe+0x3CBB2F0). Live: 0."
+    },
+    {
+      "name": "Pending",
+      "offset": 24,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Created with 0; set together with TriggerTime, cleared when the look-at request has been issued to the steering component or the target turns out to be the actor itself (bg3.exe+0x20548B0). The decompiler lost the pointer assignment; +0x18 is the only byte of the constructor that fits. Live: 0."
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "alignment of the float; live garbage"
+    },
+    {
+      "name": "TriggerTime",
+      "offset": 28,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Created with 0; written as timeline time (Timeline+0x2C) + random delay, and the look-at is issued once the timeline time passes it (bg3.exe+0x20548B0). Live: 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Who sets IsEnabled / DelayRequested / Target (a timeline look-at automation key) was not located - writers go through a query pointer.",
+    "Pending at +0x18 rests on the constructor layout, see evidence."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

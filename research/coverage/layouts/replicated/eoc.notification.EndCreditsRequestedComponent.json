@@ -1,0 +1,26 @@
+{
+  "component": "eoc::notification::EndCreditsRequestedComponent",
+  "ext_name": "NotificationEndCreditsRequested",
+  "size": 4,
+  "fields": [
+    {
+      "name": "UserID",
+      "offset": 0,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "serializer bg3.exe+0x9A0F30: single member, bg3.exe+0x4016D50 reads a uint32 and writes its low 16 bits after a peer remap of the high 16 bits: net::UserID, SE UserId (4 bytes) at +0 (DAT_14627ff00); macOS default str w0,[x23]."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+    "Field name follows SE's UserId members (e.g. Combat.h UserID); not a game name."
+  ],
+  "seen": false,
+  "minutes": 2,
+  "functions_read": 0,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

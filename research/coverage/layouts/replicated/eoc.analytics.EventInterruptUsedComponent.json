@@ -1,0 +1,53 @@
+{
+  "component": "eoc::analytics::EventInterruptUsedComponent",
+  "ext_name": "AnalyticsEventInterruptUsed",
+  "size": 32,
+  "fields": [
+    {
+      "name": "Character",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "serializer bg3.exe+0x9F17C0/0x9F19C0 member 1: 16 bytes at +0 (global offset DAT_14627fbb8 = 0); EoCClient.dll ecl::GameAnalyticsSystem::ProcessInterruptResultEvents EoCClient.dll+0xD2F540 (stride 0x20) tests Guid::IsValid(+0), resolves it to the character entity. macOS ctor zero."
+    },
+    {
+      "name": "Type",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "serializer member 2: Serialize(FixedString) at +0x10; reaction_use recorder EoCClient.dll+0xD3C400 writes it under \"type\" (string at EoCClient.dll+0x15642B8). macOS ctor -1."
+    },
+    {
+      "name": "CauseStatsName",
+      "offset": 20,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "serializer member 3: FixedString at +0x14; recorder key \"cause_stats_name\"; macOS ctor -1."
+    },
+    {
+      "name": "Result",
+      "offset": 24,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "serializer member 4: FixedString at +0x18; recorder key \"result\"; macOS ctor -1."
+    },
+    {
+      "name": "_Pad1C",
+      "offset": 28,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Character name inferred",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "seen": false,
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

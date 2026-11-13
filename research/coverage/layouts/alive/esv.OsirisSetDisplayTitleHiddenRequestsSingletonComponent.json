@@ -1,0 +1,51 @@
+{
+  "component": "esv::OsirisSetDisplayTitleHiddenRequestsSingletonComponent",
+  "ext_name": "ServerOsirisSetDisplayTitleHiddenRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "OsirisSetDisplayTitleHiddenRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::DisplayNameSystem::HandleSetDisplayTitleHiddenRequests (EoCServer.dll+0x45ABA0) copies the 8 bytes at +0 of each element into one of two entity lists, then runs queries over those entities."
+        },
+        {
+          "name": "Hidden",
+          "offset": 8,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Same function: the byte at +8 selects the list - 0 goes to the 'show' list, non-zero to the 'hide' list."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Padding to the element size 0x10."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<OsirisSetDisplayTitleHiddenRequest>",
+      "source": "inferred",
+      "evidence": "Toolkit names the element esv::OsirisSetDisplayTitleHiddenRequest (ls::IndexedStorage<struct esv::OsirisSetDisplayTitleHiddenRequest> assert in EoCServer.dll+0x45ABA0); the system copies the singleton's array (pointer *+0, capacity +8, size +0xC) with stride 0x10 (AllocateInternal(n, 0x10, 8)). Read by esv::DisplayNameSystem::Update (macOS). Live: one instance, empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

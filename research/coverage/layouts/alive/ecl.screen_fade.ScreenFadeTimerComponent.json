@@ -1,0 +1,82 @@
+{
+  "component": "ecl::screen_fade::ScreenFadeTimerComponent",
+  "ext_name": "ClientScreenFadeTimer",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ScreenFadeTimerSettings",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Duration",
+          "offset": 0,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "ecl::screen_fade::ScreenFadeSystem::FinalizeComponents (EoCClient.dll+0x7E69E0, around its 'IndexedStorage<ecl::screen_fade::ScreenFadeTimerSettings>' assert) writes the fade's time (only when > 1e-7) to +0."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Same code copies one byte from the ScreenFadeData (+0x20 / +0x18 of the source) to +4."
+        },
+        {
+          "name": "_Pad5",
+          "offset": 5,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "New entries get 0.5f."
+        },
+        {
+          "name": "field_C",
+          "offset": 12,
+          "type": "float",
+          "source": "unknown",
+          "evidence": "New entries get 20.0f."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "New entries get 0."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "New entries get 0; element stride 0x18 (copies of three qwords)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Timers",
+      "offset": 0,
+      "type": "HashMap<Guid, ScreenFadeTimerSettings>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1908CB0 (0x40); destructor bg3.exe+0x5C4870 (trivial values + key set). In FinalizeComponents the EntityView slot +0x10 (ScreenFadeTimerComponent) is searched with Guid::GetHash of a fade id and its values (+0x30) are 0x18-byte ScreenFadeTimerSettings. Live: allocated, 0 keys."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of ScreenFadeTimerSettings +4..+0x17 (0.5 and 20.0 defaults look like a fade speed / timeout)."
+  ],
+  "minutes": 8,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found."
+}

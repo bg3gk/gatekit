@@ -1,0 +1,54 @@
+{
+  "component": "ecl::CustomPortraitTextureComponent",
+  "ext_name": "ClientCustomPortraitTexture",
+  "size": 24,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Decoded RGBA image of a player's custom portrait, registered with the UI under a FixedString URI. Written by bg3.exe+0x19795D0; read by the UI (bg3.exe+0x13D37A0 passes data/width/height/name to the Noesis texture provider).",
+  "fields": [
+    {
+      "name": "Data",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x197A8B0 writes 0. Writer bg3.exe+0x19795D0 frees the old pointer (FUN_14408b980) and stores the result of the image decoder FUN_14408a190(buffer, 4 channels, 0) here; bg3.exe+0x13D37A0 checks it for null and passes it to the texture registration FUN_14138bd60."
+    },
+    {
+      "name": "Width",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator writes 0 (8-byte store at +8). The writer stores the decoder's first output dimension here (4-byte store); passed as the 4-byte argument after Data by bg3.exe+0x13D37A0. Width/Height order assumed from the decoder's (x, y) output order."
+    },
+    {
+      "name": "Height",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "The writer stores the decoder's second output dimension at +0xC (4-byte store); bg3.exe+0x13D37A0 passes it as the next argument."
+    },
+    {
+      "name": "Uri",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator writes 0xFFFFFFFF (null FixedString); the component destructor bg3.exe+0x6A4570 releases a FixedString at +0x10. The writer sets it (IncRef/DecRef) to a FixedString taken from the request; bg3.exe+0x13D37A0 compares it with the UI's current icon name."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding to 24 (alignment 8)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Width vs Height order (from the decoder's output order, not from a named function)."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

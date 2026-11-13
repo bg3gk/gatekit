@@ -1,0 +1,24 @@
+{
+  "component": "ls::TerrainLoaderRegisteredComponent",
+  "ext_name": "TerrainLoaderRegistered",
+  "size": 4,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Client and server: marks that the entity is registered with the generic stream loader (ls::StreamSystemLoadHelper) and holds its slot index there; -1 = not registered. Same template as ls::PhysicsLoaderRegisteredComponent (SE Physics.h, int field_0) and ls::InstancingBatchRegisteredComponent (SE Coverage.h, int32 Index). Never seen alive.",
+  "fields": [
+    {
+      "name": "Index",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BA4A50 (AllocRaw 4) writes 0xFFFFFFFF and registers no destructor; bg3.exe+0x3BA4F20 / bg3.exe+0x3BA6AA0 are its get helpers (same shape as the light-probe twins). macOS names: ls::TerrainVisualLoaderSystem::Update and StreamSystemLoadHelper::Initialize/UpdateLoadRequests/Unregister<ls::TerrainLoaderRegisteredComponent, ls::TerrainLoadComponent, ls::TerrainObject, ...>. Name and meaning as SE's InstancingBatchRegisteredComponent::Index (live there: small distinct integers)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

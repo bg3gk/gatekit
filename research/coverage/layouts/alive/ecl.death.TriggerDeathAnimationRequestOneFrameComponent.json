@@ -1,0 +1,48 @@
+{
+  "component": "ecl::death::TriggerDeathAnimationRequestOneFrameComponent",
+  "ext_name": "ClientDeathTriggerDeathAnimationRequest",
+  "size": 20,
+  "seen": true,
+  "fields": [
+    {
+      "name": "AnimationType",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1959370 (the client death system, macOS name ecl::death::CharacterSystem::Update) writes it through bg3.exe+0x195CFC0: default 9, 8..11 chosen from the angle between the character's facing and the death impact direction (cos 45 deg test, front/back/left/right), then remapped to 4..7 when a longer animation variant is available. Live: 9."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1959370: byte set to 0, or 1 after a distance/length test against a float at character+0x300. Live: 1."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "alignment of the vec3 after it"
+    },
+    {
+      "name": "ImpactDirection",
+      "offset": 8,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1959370: piVar15[2..4] = the impact vector (read from the death impact component +0xC, default FLT_MAX each) rotated by the inverse of the character's rotation quaternion, i.e. impact direction in character space. Live: -inf, NaN, NaN (FLT_MAX rotated when there was no impact)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Exact meaning of the byte at +4.",
+    "Enum names of AnimationType values 4..11 (no SE enum found).",
+    "The failed raw check is a false alarm: with no impact the source vector is FLT_MAX, and FLT_MAX rotated by the inverse character rotation gives -inf / NaN, which the checker does not accept as ordinary floats."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "hypothesis",
+  "status_reason": "the raw check failed: client entity 126100798156315802: ImpactDirection: glm::vec3 part 2 is not an ordinary float; client entity 126100798156320001: ImpactDirection: glm::vec3 part 2 is not an ordinary float",
+  "second_pass": "All offsets come from the Windows writer bg3.exe+0x1959370 (int at +0, byte at +4, vec3 at +8 written through bg3.exe+0x195CFC0); confirmed that the vec3 is the DeathImpactComponent +0xC vector (read through bg3.exe+0x195CDC0) rotated into character space, so the NaN / inf samples are expected values."
+}

@@ -1,0 +1,255 @@
+{
+  "component": "esv::falling::DataComponent",
+  "ext_name": "ServerFallingData",
+  "size": 192,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Server state of a falling entity (jumps, shoves, falls; born with ecl::jump Takeoff/Land events and ecl::Projectile). Created and updated by esv::FallingSystem (LEGACY_RequestFallingStarted, UpdateFallingComponents, ProcessStopFallingRequest, DamageHitEntities, ForceOnImpact). macOS AddComponent<esv::falling::DataComponent, float, eoc::spell::SpellId, EAbility, bool, EntityHandle> names the constructor arguments.",
+  "structs": [
+    {
+      "name": "FallingDataActionOriginator",
+      "size": 32,
+      "fields": [
+        {
+          "name": "ActionGuid",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Same members as SE ActionOriginator (ExposedTypes.h). LEGACY_RequestFallingStarted assigns eoc::ActionOriginator(Guid::Generate()) to component+0."
+        },
+        {
+          "name": "PassiveId",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE ActionOriginator.PassiveId; macOS default -1 (d2 store at +0x10); live null."
+        },
+        {
+          "name": "StatusId",
+          "offset": 20,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE ActionOriginator.StatusId; live null."
+        },
+        {
+          "name": "InterruptId",
+          "offset": 24,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE ActionOriginator.InterruptId; macOS default w7=-1 at +0x18; live null."
+        },
+        {
+          "name": "CanApplyConcentration",
+          "offset": 28,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE ActionOriginator.CanApplyConcentration (default true); macOS strb 1 at +0x1C; live 1."
+        },
+        {
+          "name": "_Pad1D",
+          "offset": 29,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    },
+    {
+      "name": "FallingDataSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as SE SpellId (ExposedTypes.h, SpellMetaId + Prototype). LEGACY_RequestFallingStarted: eoc::spell::SpellId::operator=(component+0x28, request+8)."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId._Pad"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellSourceType (1 byte); macOS default 0x17 (Sentinel) at component+0x30."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.Source; live zero."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.ProgressionSource; live zero."
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellId.Prototype; LEGACY_RequestFallingStarted logs component+0x58 as 'Spell' and passes it to SpellPrototypeManager::GetPrototype."
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Originator",
+      "offset": 0,
+      "type": "FallingDataActionOriginator",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x669DF0 LEGACY_RequestFallingStarted: eoc::ActionOriginator::operator=(component, ActionOriginator(Guid::Generate())). Equals SE ActionOriginator. Live: random Guid, three null FixedStrings, byte 1."
+    },
+    {
+      "name": "Source",
+      "offset": 32,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "LEGACY_RequestFallingStarted: if the request's handle at +0x50 is valid it is stored at component+0x20 (last AddComponent argument, ls::ID<EntityHandleTraits>; the debug log prints it as 'Source'). macOS default null handle."
+    },
+    {
+      "name": "Spell",
+      "offset": 40,
+      "type": "FallingDataSpellId",
+      "source": "inferred",
+      "evidence": "SpellId::operator=(component+0x28, request+8); equals SE eoc::spell::SpellId (0x38 bytes)."
+    },
+    {
+      "name": "Ability",
+      "offset": 96,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "component+0x60 = request byte +0x40, the EAbility argument of the macOS AddComponent signature (SE enum AbilityId, 1 byte here). macOS default 0."
+    },
+    {
+      "name": "_Pad61",
+      "offset": 97,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "field_68",
+      "offset": 104,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "macOS default zero (stur q1 at +0x68); live always 0; not seen written."
+    },
+    {
+      "name": "field_70",
+      "offset": 112,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "macOS default zero; live always 0."
+    },
+    {
+      "name": "HitEntities",
+      "offset": 120,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "LEGACY_RequestFallingStarted clears component+0x78 (FUN_180226330) and inserts the group characters of the faller when the spell prototype has flag 4 (FUN_18021e210 = HashSet<EntityHandle> insert). Live: bucket pointer and count 5, key/next arrays with 1 element in 4 of 48 instances. Name is a guess (entities excluded from/handled by the fall damage)."
+    },
+    {
+      "name": "ExtraFallHeight",
+      "offset": 168,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "DamageHitEntities (EoCServer.dll+0x668AE0) computes (StartHeight - current height) + this; ForceOnImpact (EoCServer.dll+0x669B30) also reads it: an extra fall distance. Live 0. | Name: DamageHitEntities (EoCServer.dll+0x668AE0) computes (StartHeight - current height) + this value as the fall height; ForceOnImpact (EoCServer.dll+0x669B30) reads it too.",
+      "legacy": "field_A8"
+    },
+    {
+      "name": "FallTime",
+      "offset": 172,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "UpdateFallingComponents (EoCServer.dll+0x66C470) adds GetDeltaTimeForEntity to +0xAC every frame and aborts the fall when MaxFallTime <= it. Live 0."
+    },
+    {
+      "name": "MaxFallTime",
+      "offset": 176,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Compared with FallTime; assert text 'has been falling for longer than %.2f seconds and will now be aborted' prints it. Live always FLT_MAX (macOS default d8)."
+    },
+    {
+      "name": "StartHeight",
+      "offset": 180,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "LEGACY_RequestFallingStarted keeps the larger of the old and new start height at +0xB4 ('Start Height' in its log). Live 0.22..10.07."
+    },
+    {
+      "name": "field_B8",
+      "offset": 184,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "= request byte +0x48 (the bool argument of AddComponent). macOS default 1; live 0/1."
+    },
+    {
+      "name": "DeferredRemoval",
+      "offset": 185,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "UpdateFallingComponents logs 'Update deferred removal' when set; ProcessStopFallingRequest (EoCServer.dll+0x66BA70) prints it as 'Deferred: %s' and only stops falling when 0. LEGACY_RequestFallingStarted clears +0xB9/+0xBA."
+    },
+    {
+      "name": "field_BA",
+      "offset": 186,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Cleared together with +0xB9 by LEGACY_RequestFallingStarted (uint16 store)."
+    },
+    {
+      "name": "ApplyImpactOnLanding",
+      "offset": 187,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Set to 1 by LEGACY_RequestFallingStarted; when set, ProcessStopFallingRequest calls DamageHitEntities and ForceOnImpact on landing (apply impact). macOS default 1. | Name: Set to 1 by LEGACY_RequestFallingStarted; when set, ProcessStopFallingRequest calls DamageHitEntities and ForceOnImpact on landing.",
+      "legacy": "field_BB"
+    },
+    {
+      "name": "_PadBC",
+      "offset": 188,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to 0xC0 (never written; live garbage)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "+0x68..+0x78 never seen non-zero",
+    "meaning of bools +0xB8/+0xBA/+0xBB and float +0xA8",
+    "role of the entity set at +0x78",
+    "field_B8 is the bool argument of AddComponent in the macOS signature; the caller of LEGACY_RequestFallingStarted would name it."
+  ],
+  "minutes": 14,
+  "functions_read": 5,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Two members named from the Toolkit falling system (LEGACY_RequestFallingStarted, ProcessStopFallingRequest); Osiris Falling(_Entity, _Cause) carries nothing new."
+}

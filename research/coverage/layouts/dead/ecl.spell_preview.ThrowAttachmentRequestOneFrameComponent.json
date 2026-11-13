@@ -1,0 +1,63 @@
+{
+  "component": "ecl::spell_preview::ThrowAttachmentRequestOneFrameComponent",
+  "ext_name": "ClientSpellPreviewThrowAttachmentRequest",
+  "size": 24,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request from the throw spell preview to attach the object being thrown (a preview dummy) to an entity: two entity handles, two flags (both written 1) and a FixedString (attachment point). Written by the spell preview code bg3.exe+0x1F51980; read by ecl::thrown::AttachmentSystem (macOS Update / GatherDetachmentRequests). Shape close to the request behind eoc::thrown::AttachComponent (entity, bools, FixedString). Never seen alive. Registry total 24 (client row).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x1F52DC0 (AllocRaw 0x18) writes 0xFFC0000000000000 (null handle). Writer bg3.exe+0x1F51980 stores `*(u64*)(*value + 8)` of an entry of the preview's entity map (param_9) - an entity handle (probably the thrown object / preview dummy)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator writes the null handle at +8. Writer stores piVar36 (checked as a valid handle: index < 0x41 and != null) in one branch, or the entity at +0x40/+0x48 of another object (choice by its byte +0x50) in the other - the entity to attach to."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator writes uint16 0 at +0x10; writer always stores the uint16 0x101 -> bytes +0x10 and +0x11 both 1."
+    },
+    {
+      "name": "field_11",
+      "offset": 17,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Second byte of the 0x101 store (see field_10)."
+    },
+    {
+      "name": "_Pad12",
+      "offset": 18,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "alignment of the FixedString at +0x14; not written."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator writes 0xFFFFFFFF; destructor bg3.exe+0x6BD390 DecRefs +0x14. Writer assigns (IncRef/DecRef) a FixedString from bg3.exe+0x1F6F020: the FixedString at +8 of a component of the target entity (FUN_140f24fc0), or of the preview's attachment data (+0x90) - probably the attachment bone, like eoc::thrown::AttachComponent.field_C."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which entity is which (thrown object vs. attach target) and what the two flags mean; the macOS reader AttachmentSystem has no Toolkit version to name them.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it",
+  "names_pass_2": "No game names found."
+}

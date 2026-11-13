@@ -1,0 +1,60 @@
+{
+  "component": "ecl::InvisibilityFadingComponent",
+  "ext_name": "ClientInvisibilityFading",
+  "size": 12,
+  "seen": true,
+  "summary": "Born when characters turn invisible/visible (shadow enemies in TWN Morgue, Jailbreak/Oathbreaker dialogues). Two delay timers and flags, one per fade view (InvisibilityFadeView0/1); ecl::invisibility::EffectSystem counts them down and then queues a fade request.",
+  "fields": [
+    {
+      "name": "Delay0",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A45990 (invisibility effect update): while +0xA is set, subtracts frame time from +0 and, when <= 0, clears +0xA and pushes a fade request for view 0 (twin of the +4/+0xB path read in full). Creator bg3.exe+0x1A4CC40 writes 0. Live 0..2.54."
+    },
+    {
+      "name": "Delay1",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A45990: `if (*(char*)(c+0xB)) { t = *(float*)(c+4) - dt; *(float*)(c+4) = t; if (t <= 0) { *(c+0xB) = 0; ...fade request view 1 } }`. Creator writes 0. Live 0..2.54."
+    },
+    {
+      "name": "Visible0",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A45990 copies `(*(char*)(c+8) != 0)` into the first word of the fade request of view 0 (FadeView TargetValue side). Creator bg3.exe+0x1A4CC40 writes 1 (32-bit store of 1 over +8..+B). Live 0/1."
+    },
+    {
+      "name": "Visible1",
+      "offset": 9,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A45990 copies `(*(char*)(c+9) != 0)` into the fade request of view 1 (call with view index 1). Live 0/1."
+    },
+    {
+      "name": "Fading0",
+      "offset": 10,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A45990: gates the countdown of +0; component is removed when +0xA and +0xB are both 0. Live 0/1."
+    },
+    {
+      "name": "Fading1",
+      "offset": 11,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A45990: gates the countdown of +4 and is cleared when it runs out; removal when +0xA == +0xB == 0. Live 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The +0/+8/+A path was read only by symmetry with the +4/+9/+B path (same function, twin code); exact meaning of the copied flag (visible vs. invisible) not verified."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

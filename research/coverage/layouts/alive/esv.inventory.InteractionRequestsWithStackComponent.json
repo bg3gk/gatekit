@@ -1,0 +1,172 @@
+{
+  "component": "esv::inventory::InteractionRequestsWithStackComponent",
+  "ext_name": "ServerInventoryInteractionRequestsWithStack",
+  "size": 112,
+  "seen": true,
+  "summary": "Server component (one instance): the inventory interaction requests after stack processing (esv::inventory::StackSystem::ProcessInventoryRequests fills it from InteractionRequestsWithGroupComponent; esv::inventory::InteractionSystem consumes it). Seen once in an idle level, empty. Third step of the chain InteractionRequests -> WithGroup -> WithStack.",
+  "structs": [
+    {
+      "name": "InvInteractionRequestsWithStackContainerRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Inventory",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "StackSystem::ProcessInventoryRequests (EoCServer.dll+0xF4BBA0) appends 16-byte copies of WithGroup's ContainerInteractionRequestData to +0 (assert IndexedStorage<esv::inventory::ContainerInteractionRequestData>). Same as SE ContainerInteractionRequestData."
+        },
+        {
+          "name": "ActionData0",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant storage byte 0 (SortType / ToParent)."
+        },
+        {
+          "name": "ActionData1",
+          "offset": 9,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant storage byte 1 (MainInventory)."
+        },
+        {
+          "name": "ActionData2",
+          "offset": 10,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant storage byte 2 (OnlyDropOnDeathItems)."
+        },
+        {
+          "name": "ActionType",
+          "offset": 11,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index (0 Sort, 1 Scatter)."
+        },
+        {
+          "name": "_Pad12",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Padding to 0x10."
+        }
+      ]
+    },
+    {
+      "name": "InvInteractionRequestsWithStackMemberRequest",
+      "size": 216,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "First qword of esv::inventory::MemberInteractionWithStackRequestData (macOS name of the element). Not destroyed (trivial); EntityHandle by analogy with MemberInteractionRequestData::Inventory, not confirmed."
+        },
+        {
+          "name": "ActionData",
+          "offset": 8,
+          "type": "std::array<uint64_t, 25>",
+          "source": "unknown",
+          "evidence": "std::variant storage, 200 bytes: bg3.exe FUN_1422e2bd0 (stride 0xD8) destroys element+8 with FUN_1422d5900 when the index is 3 and FUN_1422d5960 when it is 5."
+        },
+        {
+          "name": "ActionType",
+          "offset": 208,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index at element+8+200 = +0xD0 (FUN_1422e2bd0 reads pFVar3[200])."
+        },
+        {
+          "name": "_Pad209",
+          "offset": 209,
+          "type": "std::array<uint8_t, 7>",
+          "source": "inferred",
+          "evidence": "Padding to the 0xD8 stride."
+        }
+      ]
+    },
+    {
+      "name": "InvInteractionRequestsWithStackNotifyRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Container",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "StackSystem::ProcessInventoryRequests appends 16-byte copies to +0x20 with assert IndexedStorage<esv::inventory::NotifyInteractionRequestData>. SE NotifyInteractionRequestData."
+        },
+        {
+          "name": "Actor",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Second member of SE NotifyInteractionRequestData."
+        }
+      ]
+    },
+    {
+      "name": "InvInteractionRequestsWithStackEntityRequest",
+      "size": 32,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Array<uint64_t>",
+          "source": "unknown",
+          "evidence": "bg3.exe FUN_140fce290 destroys each 0x20-byte value as two DynamicArrays with trivial elements (FUN_1405bd630 clear + free at +0 and +0x10). Element type unknown - uint64_t is a placeholder."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "Array<uint64_t>",
+          "source": "unknown",
+          "evidence": "Second DynamicArray of the value (see field_0). Element type unknown."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "ContainerInteractions",
+      "offset": 0,
+      "type": "Array<InvInteractionRequestsWithStackContainerRequest>",
+      "source": "inferred",
+      "evidence": "bg3.exe creator 0x34B3230 (0x70 bytes): arrays at +0,+0x10,+0x20 and a HashMap at +0x30. Destructor FUN_1422cfdc0 clears +0 with the trivial-array clear. StackSystem::ProcessInventoryRequests (param_2 = this component) pushes ContainerInteractionRequestData (stride 0x10) to +0."
+    },
+    {
+      "name": "MemberInteractions",
+      "offset": 16,
+      "type": "Array<InvInteractionRequestsWithStackMemberRequest>",
+      "source": "inferred",
+      "evidence": "Destructor clears +0x10 with FUN_1422e2bd0 (stride 0xD8, variant element). macOS: DynamicArray<esv::inventory::MemberInteractionWithStackRequestData>; InteractionSystem::RemoveBrokenInventoryMembersFromInventories takes such an array."
+    },
+    {
+      "name": "NotifyInteractions",
+      "offset": 32,
+      "type": "Array<InvInteractionRequestsWithStackNotifyRequest>",
+      "source": "inferred",
+      "evidence": "StackSystem::ProcessInventoryRequests pushes NotifyInteractionRequestData (stride 0x10) to +0x20 (capacity +0x28, size +0x2C)."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "HashMap<EntityHandle, InvInteractionRequestsWithStackEntityRequest>",
+      "source": "unknown",
+      "evidence": "Destructor: FUN_140fce290(+0x30) destroys the values at +0x60 (stride 0x20), frees them, then FUN_140582ad0(+0x30) frees the key set. Key assumed 8-byte EntityHandle (macOS StackSystem has HashMap<EntityHandle, StackSystem::EntityRequest>); not confirmed."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Key type and value element types of the HashMap at +0x30.",
+    "Members of MemberInteractionWithStackRequestData beyond the variant."
+  ],
+  "minutes": 13,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Not settled: key/value types of the HashMap at +0x30 and the head of the 0xD8 element were not traced in bg3.exe in this pass."
+}

@@ -1,0 +1,75 @@
+{
+  "component": "eoc::controller::LocomotionComponent",
+  "ext_name": "ControllerLocomotion",
+  "size": 132,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "std::array<uint32_t, 10>",
+      "source": "unknown",
+      "evidence": "macOS default ctor zeroes +0..+0x28 (stp q0,q0 +0; str xzr +0x20)."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "macOS ctor FLT_MAX at +0x28, +0x2C (d8) and +0x30 (w22)."
+    },
+    {
+      "name": "field_34",
+      "offset": 52,
+      "type": "std::array<uint32_t, 8>",
+      "source": "unknown",
+      "evidence": "macOS ctor zero (stur q0 +0x34, +0x44)."
+    },
+    {
+      "name": "field_54",
+      "offset": 84,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "macOS ctor 0 (stp wzr,w22 +0x54)."
+    },
+    {
+      "name": "field_58",
+      "offset": 88,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "macOS ctor FLT_MAX."
+    },
+    {
+      "name": "field_5C",
+      "offset": 92,
+      "type": "std::array<uint32_t, 5>",
+      "source": "unknown",
+      "evidence": "macOS ctor zero (+0x5C, +0x64 xzr; +0x6C wzr)."
+    },
+    {
+      "name": "field_70",
+      "offset": 112,
+      "type": "glm::vec4",
+      "source": "unknown",
+      "evidence": "macOS ctor q1 constant 0x1077EE0E0 = (1.0, 0, 0, 1.0) - maybe two vec2 or a 2x2 identity."
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "macOS ctor 0."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Not settled on Windows: not replicated, not saved, no FieldMeta, no live samples (seen.py has none). The Windows users opened (bg3.exe+0x42968A0, bg3.exe+0x42953D0, controller input code) only test for the component's presence and remove it; the members are read by eoc::legacy::PathingSystem::UpdateSystem / OnDirectionChanged and ecl::camera::TargetSystem (named on macOS), whose Windows copies were not decoded.",
+    "All widths of the zeroed regions (+0..+0x27, +0x34..+0x53, +0x5C..+0x6F) and all names rest on the macOS default constructor only."
+  ],
+  "seen": false,
+  "minutes": 12,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled: the Windows functions found through the type index (bg3.exe+0x42968A0, bg3.exe+0x42953D0) only check presence and remove the component; the readers are the pathing and camera-target systems (macOS names), not decoded here. Layout unchanged, confidence stays low."
+}

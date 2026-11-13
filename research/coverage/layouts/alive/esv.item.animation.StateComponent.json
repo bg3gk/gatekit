@@ -1,0 +1,41 @@
+{
+  "component": "esv::item::animation::StateComponent",
+  "ext_name": "ServerItemAnimationState",
+  "size": 6,
+  "seen": true,
+  "summary": "Server per-item animation state machine (doors, chests, levers): three 16-bit eoc::item::animation::EAnimationState values. Updated by esv::item::animation::StateTransitionSystem; read by esv::invisibility::ChangesSystem::ProcessItemAnimationStateChanges. Seen.py context: idle levels, up to 2811 holders (every animated item).",
+  "fields": [
+    {
+      "name": "DesiredState",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "game",
+      "evidence": "EoCServer.dll+0x13B1290 StateTransitionSystem::ProcessDesiredStateUpdates: for items whose eoc::item::animation::RequestComponent (4 bytes) changed, compares this +0 (stride 6) with the request's +0 and writes it here, logging 'New desired state requested'. EAnimationState (16-bit). Game name: member 0 (m_DesiredState) of savegame model ls::model::game::item::animation::v0::StateComponent; matched by the macOS Save (bg3_macos_x64+0x504BDC0) copies the three uint16 at component +0/+2/+4 in that order into model members 0/1/2."
+    },
+    {
+      "name": "CurrentState",
+      "offset": 2,
+      "type": "uint16_t",
+      "source": "game",
+      "evidence": "EoCServer.dll+0x13B03A0 FinalizeState switches on +2 (cases 0/4/6...), returns when +0 == +2, and after a transition writes the new state to +2 ('New DesiredState received: item current desired'). Game name: member 1 (m_CurrentState) of savegame model ls::model::game::item::animation::v0::StateComponent; matched by the macOS Save (bg3_macos_x64+0x504BDC0) copies the three uint16 at component +0/+2/+4 in that order into model members 0/1/2."
+    },
+    {
+      "name": "PreviousState",
+      "offset": 4,
+      "type": "uint16_t",
+      "source": "game",
+      "evidence": "Third 16-bit value, not decoded (probably the previous or target state). Live: 1 instance with 04 00 04 00 04 00. Game name: member 2 (m_PreviousState) of savegame model ls::model::game::item::animation::v0::StateComponent; matched by the macOS Save (bg3_macos_x64+0x504BDC0) copies the three uint16 at component +0/+2/+4 in that order into model members 0/1/2.",
+      "legacy": "field_4"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of +4; whether +0/+2 are swapped (desired vs current) - decided from the two log strings."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "All three model members matched by the macOS Save order and widths (three uint16, 6-byte component)."
+}

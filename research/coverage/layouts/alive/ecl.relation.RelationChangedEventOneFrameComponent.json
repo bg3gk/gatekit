@@ -1,0 +1,40 @@
+{
+  "component": "ecl::relation::RelationChangedEventOneFrameComponent",
+  "ext_name": "ClientRelationRelationChangedEvent",
+  "size": 8,
+  "seen": true,
+  "summary": "Event entity created by ecl::relation::RelationSystem::ProcessRelationChangeRequests (bg3.exe+0x19631A0, Toolkit EoCClient.dll+0x9E8C20): for every 4-byte key of two pending sets the system creates a new entity and adds this component (macOS: EntityCommandBuffer::AddComponentUnchecked<RelationChangedEventOneFrameComponent, unsigned int const&, bool>). The keys are the unsigned int keys of eoc::relation::RelationComponent's relation maps (HashMap<unsigned int, ERelation>, watched in SystemLoad). Born live in fights (faction/relation changes).",
+  "fields": [
+    {
+      "name": "RelationKey",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1963E20 (8 bytes) stores the 4-byte key from the system's set at +0 (stride 4 in bg3.exe+0x19631A0); macOS AddComponentUnchecked<..., unsigned int const&, bool>. Live values like 0x0031002B / 0x01310103 - two 16-bit halves (likely a pair of faction indices). Same key type as RelationComponent's HashMap<unsigned int, ERelation>."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Second constructor argument (bool) at +4: 1 for keys of the first pending set (system +0x1B8), 0 for the second set (system +0x1E8). Which change kind each set is (e.g. permanent vs temporary) was not established. Live 0/1."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding (live garbage)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the bool (which of the two request sets).",
+    "Exact packing of the 32-bit relation key."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,53 @@
+{
+  "component": "esv::timeline::FadeInTimeoutSingletonComponent",
+  "ext_name": "ServerTimelineFadeInTimeoutSingleton",
+  "size": 64,
+  "structs": [
+    {
+      "name": "TimelineFadeInTimeout",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Fade",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D112F0 copies the first 0x18 bytes as an STDString (ls::STDString copy constructor; small-string test 'capacity at +0x14 > 0xF', size at +0x10) into the 0x28-byte clear-screen-fade request it emits, and assigns it with bg3.exe+0x4122F50 when an entry is created. Game struct name (macOS): esv::timeline::CurrentFadeInData."
+        },
+        {
+          "name": "Timeout",
+          "offset": 24,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D112F0 writes 0x41A00000 (20.0) when the entry is created, subtracts the frame delta (GameTime + 8) every frame and, at <= 0, emits a request with duration 0x3E4CCCCD (0.2) and removes the entry (bg3.exe+0x2D11C90). Matches esv::timeline::FadeSystem::c_TimelineFadeInFinishedTimeout / c_TimeoutClearScreenDuration exported by the Toolkit."
+        },
+        {
+          "name": "_Pad1C",
+          "offset": 28,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "value stride 0x20 (uVar12 * 0x20 + values)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Timeouts",
+      "offset": 0,
+      "type": "HashMap<UserId, TimelineFadeInTimeout>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D112F0 (called from esv::timeline::FadeSystem update bg3.exe+0x2D10010; registration bg3.exe+0x235BC10, callback bg3.exe+0x2393ED0) fetches the singleton with stride 0x40; keys are 4 bytes (array at +0x20 walked with stride 4, hash = key % size, compared as uint32), values at +0x30 with stride 0x20. The keys looked up come from the system's set at +0x10..+0x40, filled with 4-byte user ids of finished fade-ins (the Toolkit exports FadeSystem::LEGACY_OsirisRequestFadeOut(float, net::UserID const&) and the component esv::timeline::FadedInUsersComponent). Probe: empty. macOS names the map type ls::HashMap<net::UserID, esv::timeline::CurrentFadeInData> (RemoveNode, ~CurrentFadeInData in the esv::timeline::FadeSystem code): the key is a net::UserID. Live: 11 instances with allocated buckets (count 5) and empty key/value arrays."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the string is (the name/id of the screen fade to clear) - named Fade descriptively."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Windows bg3.exe+0x2D112F0 gives the key width (4), value stride 0x20, STDString at +0 and float at +0x18; macOS names the map HashMap<net::UserID, esv::timeline::CurrentFadeInData>, which settles the key as a UserId. STDString is a builtin of generate.py now (24 bytes), so the earlier external_types override was removed.",
+  "raw_check": "12 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

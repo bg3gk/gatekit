@@ -1,0 +1,46 @@
+{
+  "component": "esv::character_creation::SessionOwnerComponent",
+  "ext_name": "ServerCCSessionOwner",
+  "size": 16,
+  "seen": true,
+  "summary": "Owner of a character-creation session (respec / change appearance / level-up editor) on the server: the user who opened it and the local time it started. Created by the respec and change-appearance subsystems (esv::character_creation::RespecSubsystem::Update, ChangeAppearanceSubsystem::Update/Abort write it); seen in SYS_CC_I after Osi.StartRespec.",
+  "fields": [
+    {
+      "name": "UserId",
+      "offset": 0,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3794650 (add helper, 0x10 bytes) initialises it from the global default UserID DAT_14617CEAC; bg3.exe+0x37A31D0 / bg3.exe+0x37ADDE0 store the requesting user's id; bg3.exe+0x316F540 reads it as 4 bytes for a user lookup; live 0x00010001"
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x3794650 sets it to 0; not written by the creators read; live 0"
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "never written; live 0xFF bytes"
+    },
+    {
+      "name": "StartTime",
+      "offset": 8,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x37A31D0 and bg3.exe+0x37ADDE0: GetLocalTime -> struct tm -> _mktime64, stored as __time64_t at +8; live 0x6AF63E85 (a Unix time in 2026)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "the byte at +4 (a flag) is never set in the code read"
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

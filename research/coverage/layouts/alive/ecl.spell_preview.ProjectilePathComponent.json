@@ -1,0 +1,97 @@
+{
+  "component": "ecl::spell_preview::ProjectilePathComponent",
+  "ext_name": "ClientSpellPreviewProjectilePath",
+  "size": 24,
+  "seen": true,
+  "summary": "Client spell-preview data of a projectile spell being aimed: projectile counts and one ProjectilePathTargetData per target. Seen once, all zero, in the inventory scenario when a Fireball scroll was used (preview opened). Read by ecl::spell_preview::GetAimDirection (macOS) for targeting types 3/0xB.",
+  "structs": [
+    {
+      "name": "SpellPreviewProjectilePathElement70",
+      "size": 112,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t[112]",
+          "source": "unknown",
+          "evidence": "Element of the array at ProjectilePathTargetData+0x40: the Windows array destroy/resize bg3.exe+0x70E230 works with stride 0x70. Members not read."
+        }
+      ]
+    },
+    {
+      "name": "SpellPreviewProjectilePathTargetData",
+      "size": 160,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint8_t[16]",
+          "source": "unknown",
+          "evidence": "not touched by the Windows destructor; not read"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "HashSet<uint64_t>",
+          "source": "unknown",
+          "evidence": "Windows element destructor bg3.exe+0x709510 destroys +0x10 with the plain-key HashSet destructor bg3.exe+0x582AD0 (48 bytes: buckets, next ids, keys - what the first worker read in the Toolkit as three arrays at +0x10/+0x20/+0x30). Key width NOT established: uint64_t is a placeholder."
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "Array<SpellPreviewProjectilePathElement70>",
+          "source": "unknown",
+          "evidence": "Windows element destructor bg3.exe+0x709510 resizes +0x40 to 0 with bg3.exe+0x70E230 (element stride 0x70) and frees its buffer."
+        },
+        {
+          "name": "field_50",
+          "offset": 80,
+          "type": "uint8_t[72]",
+          "source": "unknown",
+          "evidence": "not touched by the Windows destructor; macOS GetAimDirection reads 8 bytes at +0x74 when the bool at +0x80 is set (macOS offsets, hints only)"
+        },
+        {
+          "name": "field_98",
+          "offset": 152,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "Windows element destructor bg3.exe+0x709510 calls the virtual destructor (slot 0, flag 1) of the object at +0x98 and clears it - an owned polymorphic object."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Windows: bg3.exe+0x1EE0230 walks the query DAT_1463543D4, which bg3.exe+0x1EF1930 registers as {ecl::spell_preview::ProjectilePathComponent (written), ecl::spell_cast::StateComponent}, with component stride 0x18 and stores max(1, n) at +0 (a projectile count from the spell, targeting types 3/0xB); adder bg3.exe+0x1EEB120 zeroes it. Live 0."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Windows: same function bg3.exe+0x1EE0230 stores the result of bg3.exe+0xFCEA40 (types 3/0xB) or max(1, n) (type 4) at +4. Live 0."
+    },
+    {
+      "name": "Targets",
+      "offset": 8,
+      "type": "Array<SpellPreviewProjectilePathTargetData>",
+      "source": "inferred",
+      "evidence": "Windows: the component destructor bg3.exe+0x6BCAC0 (registered by the adder bg3.exe+0x1EEB120, size 0x18) resizes +8 to 0 with bg3.exe+0x6DEB10, which destroys elements with stride 0xA0 (bg3.exe+0x709510), and frees the buffer; macOS names the element ls::DynamicArray<ecl::spell_preview::ProjectilePathTargetData>."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "ProjectilePathTargetData (0xA0): only its containers are known on Windows (HashSet at +0x10 with an unknown key width, Array of 0x70-byte elements at +0x40, owned object at +0x98); +0..+0xF and +0x50..+0x97 are unread here.",
+    "The Toolkit-based first version had four arrays at +0x10/+0x20/+0x30/+0x40; the Windows destructor shows a 48-byte HashSet + one Array instead."
+  ],
+  "minutes": 20,
+  "functions_read": 12,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Tied the counts at +0/+4 to this type through its query (registered by bg3.exe+0x1EF1930, written by bg3.exe+0x1EE0230) and read the Windows destructors bg3.exe+0x6BCAC0 / bg3.exe+0x6DEB10 / bg3.exe+0x709510: the element is 0xA0 bytes with a HashSet at +0x10, an Array of 0x70-byte elements at +0x40 and an owned object at +0x98. The component's own three members are settled; the element's contents are not."
+}

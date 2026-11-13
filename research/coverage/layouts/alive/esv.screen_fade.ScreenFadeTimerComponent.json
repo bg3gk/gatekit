@@ -1,0 +1,25 @@
+{
+  "component": "esv::screen_fade::ScreenFadeTimerComponent",
+  "ext_name": "ServerScreenFadeTimer",
+  "size": 64,
+  "seen": true,
+  "summary": "Server singleton of esv::screen_fade::ScreenFadeSystem: per screen-fade id (Guid), the game time at which the fade times out. FinalizeComponents inserts 'current time + 30' for every fade-to request it registers (and logs 'Trying to finish a FadeTo for a ScreenFade that doesn't exist' otherwise). Sibling of ScreenFadeIdToFadeNameComponent (HashMap<Guid, ScreenFadeNameData>). Seen.py context: singleton present in the idle level and act1-idle; samples held 1 entry.",
+  "fields": [
+    {
+      "name": "Timers",
+      "offset": 0,
+      "type": "HashMap<Guid, float>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x399FD0 ScreenFadeSystem::FinalizeComponents gets the singleton (EoCServer.dll+0x397530; its error path names ScreenFadeTimerComponent), inserts a key with EoCServer.dll+0x27E580 (hashes the key with ls::Guid::GetHash) and writes param_3 + 30.0 into the values array at +0x30 (assert ls::IndexedStorage<float>, hash-table tag; values grown 4 bytes each). bg3.exe+0x2EEEA70 allocates 0x40 with HashMap shape; destructor bg3.exe+0x5C4870 frees the values block and the key set (trivial values). Live: buckets 5, one key."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether the float is an absolute game time or a remaining duration (code stores time parameter + 30)."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

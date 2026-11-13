@@ -1,0 +1,26 @@
+{
+  "component": "ls::ClusterPhysicsPartialLoadingComponent",
+  "ext_name": "ClusterPhysicsPartialLoading",
+  "size": 16,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Client physics streaming of level clusters (ls::ClusterPhysicsLoaderSystem): the load jobs of a cluster whose physics is loaded in parts; the component is removed when the list becomes empty. Never seen alive.",
+  "fields": [
+    {
+      "name": "Jobs",
+      "offset": 0,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3E83710 (AllocRaw 0x10) zeroes 16 bytes and registers destructor bg3.exe+0x3B71F50, which calls bg3.exe+0x3E83AD0 (resize to 0: stride 8, each element nulled and its reference count at +0x100 decremented, the pointee destroyed with bg3.exe+0x3F81F60 at zero) and frees the buffer: an ls::Array of intrusive SharedPtr. The same release code is the destructor of ls::ClusterPhysicsLoadingComponent (bg3.exe+0x3B71F00), whose pointer SE describes as SharedPtr<ls::ClusterPhysicsLoadingJob>. bg3.exe+0x3E7FAE0 pops elements (count at +0xC) and removes this component when the count reaches 0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Element pointee assumed ls::ClusterPhysicsLoadingJob from the identical release code; not named in this component's own code."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

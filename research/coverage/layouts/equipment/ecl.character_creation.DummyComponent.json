@@ -1,0 +1,53 @@
+{
+  "component": "ecl::character_creation::DummyComponent",
+  "ext_name": "ClientCCDummy",
+  "size": 24,
+  "fields": [
+    {
+      "name": "Definition",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x201BD20 (size 0x18: null handle, 12 zero bytes). bg3.exe+0x2018950 (creates the character creation dummy, name prefix \"DUM_\") writes *param_10 here. bg3.exe+0x1FED5C0 takes this handle and fetches ecl::character_creation::DummyDefinitionComponent from it (bg3.exe+0x1FEE6D0) to get the RootTemplate at +0x60 - the entity holding the dummy's definition (its DummyDefinitionComponent.Dummy points back)."
+    },
+    {
+      "name": "ChangeId",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x202FB70: compared with the int at +8 of the DummyDefinitionComponent (Script Extender: ChangeId) and overwritten with it when different, after which the dummy's visuals are rebuilt - the last applied revision."
+    },
+    {
+      "name": "ChangeId2",
+      "offset": 12,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x202FB70: compared with the int at +0xC of the DummyDefinitionComponent (Script Extender: ChangeId2) and overwritten with it, then bg3.exe+0x2018450 is called with definition+0xC8."
+    },
+    {
+      "name": "EquipmentChangeId",
+      "offset": 16,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x20302F0: compared with the int at +0x10 of the DummyDefinitionComponent (Script Extender: field_10) and overwritten with it; the function fetches ecl::character_creation::EquipmentVisualComponent of the same entity next to it (bg3.exe+0x2032710) and rebuilds the equipment."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "tail padding; the creator writes a dword at +0x10 and nothing after"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures (character creation was not opened).",
+    "EquipmentChangeId is named from the function that uses it; its counterpart in Script Extender's DummyDefinitionComponent is still field_10."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Re-read bg3.exe+0x202FB70 and bg3.exe+0x20302F0: int compares/stores at +8, +0xC and +0x10 against DummyDefinitionComponent +8/+0xC/+0x10 confirm every offset and width (with the creator bg3.exe+0x201BD20).",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,23 @@
+{
+  "component": "esv::status::SoundStateCantVocalStateComponent",
+  "ext_name": "ServerStatusSoundStateCantVocalState",
+  "size": 4,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Reference count of statuses that block vocals, kept by esv::status::SoundStateCapabilitySystem (read by CapabilitiesSystem::ProcessUpdateCanSpeakRequests).",
+  "fields": [
+    {
+      "name": "RefCount",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x4C09E0 (SoundStateCapabilitySystem::ProcessStatusOwner) adds the component with value 0, adds/subtracts a delta and removes it when the sum reaches 0; assert text 'Status sound state blocking vocals component ref-count going below zero'. Live: 1."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

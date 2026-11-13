@@ -1,0 +1,54 @@
+{
+  "component": "esv::crowds::TriggerSpawnStateComponent",
+  "ext_name": "ServerCrowdsTriggerSpawnState",
+  "size": 12,
+  "seen": true,
+  "summary": "Server-only, saved (models game.crowds.v0/v1 16 bytes, v2 12 bytes align 4; no member names known). Lives on crowd character triggers (esv::CrowdCharacterTrigger), up to 212 holders, from level load on. Driven by esv::crowds::SpawnSystem::ProcessTriggers / SpawnCharacters (EoCServer.dll, CrowdCharacterSpawnSystem.cpp): a spawn timer per trigger, the number of characters it has spawned, and a flag that blocks spawning while players are near.",
+  "fields": [
+    {
+      "name": "SpawnInterval",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD73760 ProcessTriggers: if (*(float*)(state+4) < *(float*)(state+0)) the trigger keeps waiting, otherwise it spawns; i.e. +0 is the time to wait before the next spawn (re-rolled with ls::Random). macOS Save copies 8 bytes (+0..+8) to the v2 model. Live floats 0 .. 24.6"
+    },
+    {
+      "name": "ElapsedTime",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "ProcessTriggers: *(float*)(state+4) = deltaTime + *(float*)(state+4) when no blocking query matches; compared with +0. Live floats 0 .. 2910"
+    },
+    {
+      "name": "SpawnedCount",
+      "offset": 8,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "SpawnCharacters EoCServer.dll+0xD74A30: *(ushort*)(state+8) + newCount <= trigger max (CrowdCharacterTrigger +0x7C scaled by crowd quality); ProcessTriggers compares the trigger's max with *(ushort*)(state+8). macOS Save copies a 2-byte value from +8. Live 0"
+    },
+    {
+      "name": "PlayersNearby",
+      "offset": 10,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ProcessTriggers: *(bool*)(state+10) = distance-to-players test (fVar27 < fVar30) and spawning is skipped while it is set; written from FUN_180d72950(players, transform). macOS Save copies one byte from +0xA. Live 0"
+    },
+    {
+      "name": "_Pad0B",
+      "offset": 11,
+      "type": "uint8_t[1]",
+      "source": "unknown",
+      "evidence": "padding; never read; live garbage (00/35/37/38/c1)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "exact meaning of the bool at +0xA (players near / in view)",
+    "whether +0 is an interval or a target time; units seconds"
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

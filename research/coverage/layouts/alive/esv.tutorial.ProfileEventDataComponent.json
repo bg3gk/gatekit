@@ -1,0 +1,41 @@
+{
+  "component": "esv::tutorial::ProfileEventDataComponent",
+  "ext_name": "ServerTutorialProfileEventData",
+  "size": 56,
+  "fields": [
+    {
+      "name": "ProfileId",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "constructor bg3.exe+0x3424B30 sets it to 0xFFFFFFFF (null FixedString), destructor FUN_140cabaf0 decrements a global string table ref; bg3.exe+0x34246A0 looks the component up by the FixedString returned by ProfileHelper (macOS GetProfileId(net::UserID const&)). Live: string-table indices Game name: member 0 (m_ProfileId) of savegame model ls::model::tutorial::v0::ProfileEventDataComponent; matched by the macOS Save (bg3_macos_x64+0x4E39FC0): the FixedString at component +0 becomes the model string at +0."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "alignment padding"
+    },
+    {
+      "name": "EnabledEvents",
+      "offset": 8,
+      "type": "HashSet<Guid>",
+      "source": "game",
+      "evidence": "destructor FUN_140cabaf0 frees a HashSet at +8; bg3.exe+0x34246A0 adds (FUN_1405ca360) or removes (FUN_1405da840) a 16-byte key hashed (hi^lo) % buckets for each ProfileRequest. Live: ~0x44 keys Game name: member 1 (m_EnabledEvents) of savegame model ls::model::tutorial::v0::ProfileEventDataComponent; matched by the macOS Save (bg3_macos_x64+0x4E39FC0): the keys of the set (count at component +0x34, i.e. the HashSet at +8) are copied as 16-byte elements into model +0x10.",
+      "legacy": "Events"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "exact meaning of the Guid set (tutorial events seen by that profile)"
+  ],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Saved by ls::savegame (macOS Framework::Ops<ProfileEventDataComponent, esv::tutorial::Loader>); maintained by esv::tutorial::ProfileSystem.",
+  "seen": true,
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "Both model members matched by the macOS Save (ProfileId +0, EnabledEvents = the HashSet at +8; the model stores the set flat as a span of 16-byte keys)."
+}

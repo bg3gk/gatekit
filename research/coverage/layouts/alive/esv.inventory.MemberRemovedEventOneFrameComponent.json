@@ -1,0 +1,40 @@
+{
+  "component": "esv::inventory::MemberRemovedEventOneFrameComponent",
+  "ext_name": "ServerInventoryMemberRemovedEvent",
+  "size": 16,
+  "seen": true,
+  "summary": "One-frame event of esv::inventory::InteractionSystem, born when an item leaves an inventory (equipment changes, dropping the dagger in shove-throw, deaths, scripted events). Its twin esv::inventory::MemberAddedEventOneFrameComponent is a tag. Registered with size 0x10 and no destructor (bg3.exe+0x348DE90). Readers: esv::hotbar::System (remove-slot requests), esv::status::recovery::RecoverySystem, esv::camp::SupplySystem (queried with MemberAdded and StackEntityAmountChanged).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Live: entity handles (0x0180000100000A38 ... 0x0200000900021CB6) in all 28 instances; probably the inventory the member left (the component sits on the member). Not established from code."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Live: byte 0 or 1; the following bytes are 00 or FF leftovers -> one byte (a flag) followed by padding."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "live bytes vary between 00 and FF/garbage (one-frame storage is not cleared) -> padding."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Which entity +0 is (inventory / container owner); meaning of the flag at +8; the writer in InteractionSystem was not found."
+  ],
+  "minutes": 10,
+  "functions_read": 8,
+  "oneFrame": true,
+  "status": "hypothesis",
+  "status_reason": "the author's confidence is low: types fit the live data, meanings are not established",
+  "second_pass": "Size confirmed only: bg3.exe+0x348DE90 registers the one-frame storage with element size 0x10; the reader in the hotbar system (bg3.exe+0x2DA83E0, ~ esv::hotbar::System::ProcessRemoveSlotRequests) was opened but the member reads were not isolated, so the members stay hypotheses."
+}

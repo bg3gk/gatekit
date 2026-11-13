@@ -1,0 +1,68 @@
+{
+  "component": "esv::ai::swarm::TargetsComponent",
+  "ext_name": "ServerAiSwarmTargets",
+  "size": 32,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AiSwarmTargetsTarget",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "FindTargets writes the candidate's EntityHandle to +0 of each eoc::ai::swarm::Target."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "FindTargets copies 2 bytes into +8 (a flag pair of the candidate)."
+        },
+        {
+          "name": "field_9",
+          "offset": 9,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Second byte of that pair."
+        },
+        {
+          "name": "_PadA",
+          "offset": 10,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Targets",
+      "offset": 0,
+      "type": "Array<AiSwarmTargetsTarget>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll esv::ai::swarm::FindTargetsSystem::FindTargets(..., DynamicArray<eoc::ai::swarm::Target>& param_4, DynamicArray<eoc::ai::swarm::Target>& param_5): two arrays of 16-byte Targets (IndexedStorage<eoc::ai::swarm::Target>, stride 0x10). Live: filled (capacity 1..8, size 1..6)."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Array<AiSwarmTargetsTarget>",
+      "source": "unknown",
+      "evidence": "The second Target array of FindTargets. Live always empty (zeros). Which of the two lists is which (e.g. preferred vs other) not established."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "names of the two lists and of Target +8/+9"
+  ],
+  "summary": "AI swarm target search (idle levels).",
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

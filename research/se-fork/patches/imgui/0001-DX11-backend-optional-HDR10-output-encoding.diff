@@ -1,0 +1,121 @@
+diff --git a/backends/imgui_impl_dx11.cpp b/backends/imgui_impl_dx11.cpp
+index 02e2c759..ccab7d2c 100644
+--- a/backends/imgui_impl_dx11.cpp
++++ b/backends/imgui_impl_dx11.cpp
+@@ -61,6 +61,10 @@ struct ImGui_ImplDX11_Data
+     ID3D11InputLayout*          pInputLayout;
+     ID3D11Buffer*               pVertexConstantBuffer;
+     ID3D11PixelShader*          pPixelShader;
++    ID3D11PixelShader*          pPixelShaderHDR10;
++    float                       PixelShaderHDR10PaperWhite;
++    bool                        HDR10Output;
++    float                       HDR10PaperWhite;
+     ID3D11SamplerState*         pFontSampler;
+     ID3D11ShaderResourceView*   pFontTextureView;
+     ID3D11RasterizerState*      pRasterizerState;
+@@ -84,6 +88,58 @@ static ImGui_ImplDX11_Data* ImGui_ImplDX11_GetBackendData()
+     return ImGui::GetCurrentContext() ? (ImGui_ImplDX11_Data*)ImGui::GetIO().BackendRendererUserData : nullptr;
+ }
+ 
++// The pixel shader for the current output encoding. The HDR10 one is compiled when first needed
++// and again when the paper white level changes (it is a constant in the shader).
++static ID3D11PixelShader* ImGui_ImplDX11_GetPixelShader()
++{
++    ImGui_ImplDX11_Data* bd = ImGui_ImplDX11_GetBackendData();
++    if (!bd->HDR10Output)
++        return bd->pPixelShader;
++
++    if (bd->pPixelShaderHDR10 != nullptr && bd->PixelShaderHDR10PaperWhite == bd->HDR10PaperWhite)
++        return bd->pPixelShaderHDR10;
++
++    if (bd->pPixelShaderHDR10) { bd->pPixelShaderHDR10->Release(); bd->pPixelShaderHDR10 = nullptr; }
++
++    static const char* pixelShaderFormat =
++        "struct PS_INPUT\
++        {\
++        float4 pos : SV_POSITION;\
++        float4 col : COLOR0;\
++        float2 uv  : TEXCOORD0;\
++        };\
++        sampler sampler0;\
++        Texture2D texture0;\
++        \
++        static const float3x3 Rec709ToRec2020 = {\
++        0.6274040, 0.3292820, 0.0433136,\
++        0.0690970, 0.9195400, 0.0113612,\
++        0.0163916, 0.0880132, 0.8955950 };\
++        \
++        float4 main(PS_INPUT input) : SV_Target\
++        {\
++        float4 out_col = input.col * texture0.Sample(sampler0, input.uv);\
++        float3 lin = pow(abs(out_col.rgb), 2.2);\
++        float3 nits = mul(Rec709ToRec2020, lin) * %f;\
++        float3 y = pow(saturate(nits / 10000.0), 0.1593017578125);\
++        float3 pq = pow((0.8359375 + 18.8515625 * y) / (1.0 + 18.6875 * y), 78.84375);\
++        return float4(pq, out_col.a);\
++        }";
++
++    char pixelShader[2048];
++    snprintf(pixelShader, sizeof(pixelShader), pixelShaderFormat, bd->HDR10PaperWhite);
++
++    ID3DBlob* pixelShaderBlob;
++    if (FAILED(D3DCompile(pixelShader, strlen(pixelShader), nullptr, nullptr, nullptr, "main", "ps_4_0", 0, 0, &pixelShaderBlob, nullptr)))
++        return bd->pPixelShader;
++    if (bd->pd3dDevice->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &bd->pPixelShaderHDR10) != S_OK)
++        bd->pPixelShaderHDR10 = nullptr;
++    pixelShaderBlob->Release();
++
++    bd->PixelShaderHDR10PaperWhite = bd->HDR10PaperWhite;
++    return bd->pPixelShaderHDR10 ? bd->pPixelShaderHDR10 : bd->pPixelShader;
++}
++
+ // Functions
+ static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data, ID3D11DeviceContext* device_ctx)
+ {
+@@ -128,7 +184,7 @@ static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data, ID3D11DeviceC
+     device_ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+     device_ctx->VSSetShader(bd->pVertexShader, nullptr, 0);
+     device_ctx->VSSetConstantBuffers(0, 1, &bd->pVertexConstantBuffer);
+-    device_ctx->PSSetShader(bd->pPixelShader, nullptr, 0);
++    device_ctx->PSSetShader(ImGui_ImplDX11_GetPixelShader(), nullptr, 0);
+     device_ctx->PSSetSamplers(0, 1, &bd->pFontSampler);
+     device_ctx->GSSetShader(nullptr, nullptr, 0);
+     device_ctx->HSSetShader(nullptr, nullptr, 0); // In theory we should backup and restore this as well.. very infrequently used..
+@@ -383,6 +439,14 @@ static void ImGui_ImplDX11_DestroyFontsTexture()
+     }
+ }
+ 
++void ImGui_ImplDX11_SetHDR10Output(bool enabled, float paper_white_nits)
++{
++    ImGui_ImplDX11_Data* bd = ImGui_ImplDX11_GetBackendData();
++    if (bd == nullptr) return;
++    bd->HDR10Output = enabled;
++    bd->HDR10PaperWhite = paper_white_nits;
++}
++
+ bool ImGui_ImplDX11_RenderObjectsInitialized()
+ {
+     ImGui_ImplDX11_Data* bd = ImGui_ImplDX11_GetBackendData();
+@@ -577,6 +641,7 @@ void    ImGui_ImplDX11_InvalidateDeviceObjects()
+     if (bd->pDepthStencilState)     { bd->pDepthStencilState->Release(); bd->pDepthStencilState = nullptr; }
+     if (bd->pRasterizerState)       { bd->pRasterizerState->Release(); bd->pRasterizerState = nullptr; }
+     if (bd->pPixelShader)           { bd->pPixelShader->Release(); bd->pPixelShader = nullptr; }
++    if (bd->pPixelShaderHDR10)      { bd->pPixelShaderHDR10->Release(); bd->pPixelShaderHDR10 = nullptr; }
+     if (bd->pVertexConstantBuffer)  { bd->pVertexConstantBuffer->Release(); bd->pVertexConstantBuffer = nullptr; }
+     if (bd->pInputLayout)           { bd->pInputLayout->Release(); bd->pInputLayout = nullptr; }
+     if (bd->pVertexShader)          { bd->pVertexShader->Release(); bd->pVertexShader = nullptr; }
+diff --git a/backends/imgui_impl_dx11.h b/backends/imgui_impl_dx11.h
+index 41bee364..127b8d55 100644
+--- a/backends/imgui_impl_dx11.h
++++ b/backends/imgui_impl_dx11.h
+@@ -33,6 +33,10 @@ IMGUI_IMPL_API void     ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data);
+ IMGUI_IMPL_API bool     ImGui_ImplDX11_CreateDeviceObjects();
+ IMGUI_IMPL_API void     ImGui_ImplDX11_InvalidateDeviceObjects();
+ IMGUI_IMPL_API bool     ImGui_ImplDX11_RenderObjectsInitialized();
++// Output encoding. By default colors are written to the render target as they are (sRGB values).
++// With HDR10 on, they are converted to Rec.2020 primaries and PQ-encoded, with sRGB white shown at
++// `paper_white_nits`: use it when the target is an HDR10 (ST.2084) swap chain.
++IMGUI_IMPL_API void     ImGui_ImplDX11_SetHDR10Output(bool enabled, float paper_white_nits);
+ 
+ // [BETA] Selected render state data shared with callbacks.
+ // This is temporarily stored in GetPlatformIO().Renderer_RenderState during the ImGui_ImplDX11_RenderDrawData() call.

@@ -1,0 +1,31 @@
+{
+  "component": "ecl::splitscreen::RequestsSingletonComponent",
+  "ext_name": "ClientSplitscreenRequestsSingleton",
+  "size": 2,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ForceMerge",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ecl::splitscreen::RequestSystem::Update (EoCClient.dll+0x8441B0): when the system's DynamicArray<bool> (system+0x10, filled by RequestSystem::LoadStateForceMergeRequest(bool) / LoadStateMovieForceMergeRequest(bool)) is not empty, comp[0] = its last element. GoalSystem::Update reads it (local_2e8[0] != 0 forces a merge). Default 1 (macOS mov w17,#1; strh w17,[x23]), live 0."
+    },
+    {
+      "name": "SplitRequested",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "RequestSystem::Update: comp[1] = any of the three RequestCountsSingleton counters > 0. GoalSystem::Update tests local_2e8[1] before GetForceMergePlayerFocus. Default 0, live 0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are ours."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

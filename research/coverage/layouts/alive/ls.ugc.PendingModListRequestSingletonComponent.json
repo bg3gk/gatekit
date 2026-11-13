@@ -1,0 +1,105 @@
+{
+  "component": "ls::ugc::PendingModListRequestSingletonComponent",
+  "ext_name": "UgcPendingModListRequest",
+  "size": 128,
+  "seen": true,
+  "summary": "Client singleton of mod.io mod-list queries in flight, used by ls::ugc::ModListCachedRequestSystem: two ls::HashMap<ls::Guid, ls::ugc::ModItemListInfoID> (macOS ~HashMap and EnsureUniversal<Guid const&> of that type; Windows destructor bg3.exe+0x3B7B150 destroys both halves with the same function bg3.exe+0x3B7D160, value stride 0x38). ModItemListInfoID is the query: an Array<STDString> (tags), a uint32, two bytes, a search STDString and two more bytes. Live: idle, all zero.",
+  "structs": [
+    {
+      "name": "UgcPendingModListRequestQuery",
+      "size": 56,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "Array<STDString>",
+          "source": "unknown",
+          "evidence": "ModItemListInfoID dtor bg3.exe+0x11FCB50 resizes the array at +0 to 0 with bg3.exe+0x5C3E80 (element stride 0x18, MSVC string reset per element) then frees it; move code in bg3.exe+0x11FC8C0 moves ptr/cap/size"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "moved as 4 bytes by bg3.exe+0x11FC8C0"
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "moved as 1 byte by bg3.exe+0x11FC8C0"
+        },
+        {
+          "name": "field_15",
+          "offset": 21,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "moved as 1 byte by bg3.exe+0x11FC8C0"
+        },
+        {
+          "name": "_Pad16",
+          "offset": 22,
+          "type": "uint8_t[2]",
+          "source": "unknown",
+          "evidence": "padding"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "MSVC std::string: dtor bg3.exe+0x11FCB50 frees +0x18 when capacity at +0x2C > 0xF, then resets size +0x28 = 0, capacity +0x2C = 0xF"
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "moved as 1 byte by bg3.exe+0x11FC8C0"
+        },
+        {
+          "name": "field_31",
+          "offset": 49,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "moved as 1 byte by bg3.exe+0x11FC8C0"
+        },
+        {
+          "name": "_Pad32",
+          "offset": 50,
+          "type": "uint8_t[6]",
+          "source": "unknown",
+          "evidence": "padding to 0x38"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<Guid, UgcPendingModListRequestQuery>",
+      "source": "inferred",
+      "evidence": "creator bg3.exe+0x3BEF3D0 allocates 0x80 and zeroes two HashMap patterns; destructor bg3.exe+0x3B7B150 -> bg3.exe+0x3B7D160(this): destroys values *(+0x30)+i*0x38 (i < keys size +0x2C) with bg3.exe+0x11FCB50, frees them, HashSet dtor on +0 Windows bg3.exe+0x3BEE060 looks request Guids up in it with the Guid hash '(lo ^ hi) % buckets' and reads the 0x38-byte query value at +0x30 + idx*0x38 to file the answer into the cache."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "HashMap<Guid, UgcPendingModListRequestQuery>",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x3B7B150 -> bg3.exe+0x3B7D160(this+0x40): same map type Same Guid-keyed map type (same destructor bg3.exe+0x3B7D160); role not established, name stays unknown."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Role of the +0x40 map (by analogy with the dependency/info singletons a subset of the requests); names of the ModItemListInfoID members."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Settled on Windows: the destructor bg3.exe+0x3B7B150/+0x3B7D160 gives both maps' 0x38-byte query values, and bg3.exe+0x3BEE060 shows Guid keys (Guid hash) for the request map.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

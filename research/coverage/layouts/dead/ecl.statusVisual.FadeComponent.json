@@ -1,0 +1,41 @@
+{
+  "component": "ecl::statusVisual::FadeComponent",
+  "ext_name": "ClientStatusVisualFade",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Fade-out of a status visual on the client: an entity handle, the current opacity and the fade speed (1 / fade time). Added by the status visual state machine bg3.exe+0x1BF6060 (state 4 -> 5) and run by the per-frame update of ecl::statusVisual::FadeSystem (bg3.exe+0x1A55070, query FadeComponent + ls::VisualComponent), which lowers the opacity each frame and destroys the visual when it drops to 1/256. Never seen alive. Registry total 16 (client row). The savegame model game.crowds.v0.FadeComponent matched by short name belongs to a crowds component, not to this one.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1BF6D20 (AllocRaw 0x10) writes 0xFFC0000000000000 (null handle) at +0. bg3.exe+0x1BF6060 writes `*p = *param_2` (an entity handle passed in by the status visual code). Which entity (visual owner vs. status) is not established."
+    },
+    {
+      "name": "Opacity",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator writes dword 0 at +8. bg3.exe+0x1BF6060 writes the float at +0x30 of the status visual (only when >= 1/256). FadeSystem update bg3.exe+0x1A55070: `v = *(float*)(p+8) - GameTime.DeltaTime(+8) * *(float*)(p+0xC); if (v > 0.00390625) { *(float*)(p+8) = v; apply } else remove`."
+    },
+    {
+      "name": "FadeSpeed",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator writes 0x3F800000 (1.0f) at +0xC. bg3.exe+0x1BF6060 writes `1.0 / *(float*)(settings + 0x4C)` (1 / fade duration); the update multiplies DeltaTime by it."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Exact meaning of Entity (the visual's entity or the status owner).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

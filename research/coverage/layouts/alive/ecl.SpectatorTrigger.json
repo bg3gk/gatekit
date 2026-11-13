@@ -1,0 +1,138 @@
+{
+  "component": "ecl::SpectatorTrigger",
+  "ext_name": "ClientSpectatorTrigger",
+  "size": 168,
+  "seen": true,
+  "base": "PointTrigger (GameDefinitions/Components/Trigger.h, sizeof 0x70) - declare as C++ base class",
+  "fields": [
+    {
+      "name": "Base",
+      "offset": 0,
+      "type": "PointTrigger",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x1BAB370 (~ ecl::SpectatorTrigger::SpectatorTrigger, EoCClient.dll+0x966810) runs the common trigger prologue (FUN_143c11a30, vtables at +0/+8, CullTrigger::SetTemplate); base = SE Trigger. Live (12 instances) matches the Trigger layout."
+    },
+    {
+      "name": "Entity",
+      "offset": 112,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1BAB370 writes 0xffc0000000000000 at +0x70; live equals TriggerEntity (+0x20)."
+    },
+    {
+      "name": "FocalDistance",
+      "offset": 120,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor ecl::SpectatorTrigger get/set FocalDistance at +0x78; constructor writes 10.0; live 10.0."
+    },
+    {
+      "name": "Aperture",
+      "offset": 124,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor Aperture at +0x7C; constructor writes 2.8; live 2.8."
+    },
+    {
+      "name": "DOFNearOnly",
+      "offset": 128,
+      "type": "bool",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor DOFNearOnly at +0x80 (bool); constructor writes 16-bit 0 over +0x80/+0x81."
+    },
+    {
+      "name": "DOFFarOnly",
+      "offset": 129,
+      "type": "bool",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor DOFFarOnly at +0x81 (bool)."
+    },
+    {
+      "name": "_Pad82",
+      "offset": 130,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "padding before the float at +0x84 (live bytes vary: 0x0000 / 0x5E00 = garbage)"
+    },
+    {
+      "name": "DOFNearSharpnessDistance",
+      "offset": 132,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor at +0x84; constructor writes 0 (8-byte store over +0x84/+0x88). Live 0."
+    },
+    {
+      "name": "DOFFarSharpnessDistance",
+      "offset": 136,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor at +0x88. Live 0."
+    },
+    {
+      "name": "UseDOF",
+      "offset": 140,
+      "type": "bool",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor UseDOF at +0x8C; constructor writes 0. Live 0 or 1 (bytes +0x8D..+0x8F garbage)."
+    },
+    {
+      "name": "_Pad8D",
+      "offset": 141,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "padding"
+    },
+    {
+      "name": "Fov",
+      "offset": 144,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor Fov at +0x90; constructor writes 0; live 45.0 / 60.0."
+    },
+    {
+      "name": "Speed",
+      "offset": 148,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor Speed at +0x94; constructor writes 1.0; live 5.0."
+    },
+    {
+      "name": "LerpEnabled",
+      "offset": 152,
+      "type": "bool",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor LerpEnabled at +0x98; constructor writes 1; live 0/1."
+    },
+    {
+      "name": "_Pad99",
+      "offset": 153,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "padding"
+    },
+    {
+      "name": "Rotation",
+      "offset": 156,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor Rotation at +0x9C (float); constructor writes 0; live 0."
+    },
+    {
+      "name": "field_A0",
+      "offset": 160,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Not written by the constructor (C++ object ends at 0xA0). Live: in all 12 samples exactly the object's own vtable pointer (same value as +0x00) - stale memory, not a member. Same trailing 8 bytes as in the other ecl triggers."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Trailing 8 bytes at +0xA0 (registry size = object + 8)."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

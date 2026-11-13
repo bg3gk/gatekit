@@ -1,0 +1,23 @@
+{
+  "component": "esv::inventory::OriginalOwnerUpdateRequestsSingletonComponent",
+  "ext_name": "ServerInventoryOriginalOwnerUpdateRequests",
+  "size": 64,
+  "seen": true,
+  "summary": "Singleton written by esv::inventory::StackSystem (non-const in its WorldView) and read by esv::ownership::TrackingSystem (Update, GenerateCleanupRequests, FinalizeOwnerRelationship). Toolkit EoCServer.dll+0x32AA60 TrackingSystem::ProcessInventoryRequests walks it: for each key entity whose current ownee record differs from the value, queues an original-owner change with the value.",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, EntityHandle>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x34B3420 initialises a 64-byte HashMap; destructor bg3.exe+0x5C4870 frees the value array at +0x30 then the HashSet part (trivial values). Toolkit ProcessInventoryRequests: keys = *(comp+0x20) stepping 8 bytes up to size *(comp+0x2C); values = *(comp+0x30) stepping 8 bytes; the key is looked up as an entity, the value is compared with an entity handle and stored as the new owner. Live: bucket count 5/7, capacity 4, size 0. Key = item, value = original owner (inferred from the ownership use)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

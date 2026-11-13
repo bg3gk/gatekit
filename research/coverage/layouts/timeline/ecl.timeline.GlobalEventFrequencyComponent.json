@@ -1,0 +1,25 @@
+{
+  "component": "ecl::timeline::GlobalEventFrequencyComponent",
+  "ext_name": "ClientTimelineGlobalEventFrequency",
+  "size": 64,
+  "fields": [
+    {
+      "name": "Cooldowns",
+      "offset": 0,
+      "type": "HashMap<FixedString, float>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A68ED0 (ecl::timeline::EventFrequencySystem update; registration bg3.exe+0x747030 lists the component as written, callback bg3.exe+0x761B60) fetches the singleton with stride 0x40. Loop 1: for every key (4 bytes, array at +0x20, count +0x2C) it subtracts the frame delta (GameTime + 8) from the float value (array at +0x30, stride 4) and removes the entry (bg3.exe+0xBDBA40, swap with last) when it reaches <= 0. Loop 2: for every row of a query over a 0x288-byte component it takes the 4-byte id at component + 0x28, finds its definition (bg3.exe+0xE7D7C0, a FixedString-hashed lookup through bg3.exe+0x412E1F0 in the object at system + 0x10) and inserts id -> the float at definition + 0x1C (bg3.exe+0x7D20D0). Probe: empty. Key type confirmed: the insert bg3.exe+0x7D20D0 hashes the key with the FixedString hash bg3.exe+0x412E1F0 (global string table lookup, 0 for -1) and pushes it with bg3.exe+0x78C8A0, which calls ls::FixedString::IncRef on it (key array grown by FUN_1405C4050, the Array<FixedString> resize)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The 0x288-byte component whose FixedString +0x28 adds an entry (query DAT_14633ADD0) was not resolved to a name; the key is the timeline event name (cf. TimelineThothCondition.field_14 in ecl.timeline.TimelineLoadedComponent.json).",
+    "Name 'Cooldowns' inferred (values count down by the frame delta and the entry is removed at <= 0)."
+  ],
+  "minutes": 4,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled on Windows: bg3.exe+0x1A68ED0 reads keys (4 bytes, +0x20/+0x2C) and float values (+0x30, stride 4), and the insert bg3.exe+0x7D20D0 hashes and IncRefs the key as a FixedString - HashMap<FixedString, float>.",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

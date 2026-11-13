@@ -1,0 +1,39 @@
+{
+  "component": "esv::GameStateUnloadLevelComponent",
+  "ext_name": "ServerGameStateUnloadLevel",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Live: heap pointers (2 samples); macOS default zeroes it (str xzr [x23])."
+    },
+    {
+      "name": "LevelName",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "EoCServer.dll esv::RootLevelSystem::StartUnload(GameStateUnloadLevelComponent&) passes +8 to GameEventManager::ExecuteLevelUnloadEvent and LevelManager::GetLevel. Live 0x3C8000A0 / 0x3CF000A0 (FixedString indices; the same value appears as LevelName of SaveWorldRequest)."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "what the pointer at +0 is"
+  ],
+  "summary": "Level change / leaving a level (WLD_Main_A, SCL_Main_A). Written by esv::RootLevelSystem::Update, read by camp/trade/trigger systems.",
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

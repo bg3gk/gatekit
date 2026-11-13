@@ -1,0 +1,53 @@
+{
+  "component": "ecl::sound::AutoFoleySettingsComponent",
+  "ext_name": "ClientSoundAutoFoleySettings",
+  "size": 80,
+  "seen": true,
+  "fields": [
+    {
+      "name": "FoleySettings",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "FUN_180ec0510 (ecl::sound::AutoFoleySystem update, EoCClient.dll) reads +0 of the singleton as an ls::FoleySettings* (falls back to the timeline's settings when null); live: null."
+    },
+    {
+      "name": "TimelineViewerCount",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "FUN_180ec1610 (EoCClient.dll) adds/removes the number of players viewing a timeline; asserts \"Less than 0 players are currently viewing a timeline?\" when it goes below 0. Live 0..3."
+    },
+    {
+      "name": "SoundEventsEnabled",
+      "offset": 12,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "FUN_180ec0510 stores ls::Timeline::IsSoundEventsEnabled of the last timeline at +0xC; macOS default constructor strb at +0xC; live 1."
+    },
+    {
+      "name": "_PadD",
+      "offset": 13,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Alignment of the hash map."
+    },
+    {
+      "name": "Timelines",
+      "offset": 16,
+      "type": "HashMap<Guid, int32_t>",
+      "source": "inferred",
+      "evidence": "FUN_180ebf9d0 / FUN_180ebfb40 (EoCClient.dll) add/decrement an int refcount (values at +0x40, 4 bytes) for a 16-byte key (keys at +0x30, stride 0x10) and erase it at 0; FUN_180ec1610 clears the map at +0x10. Live: bucket count 5."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key type Guid inferred from the 16-byte key stride (a timeline id).",
+    "Names are ours."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

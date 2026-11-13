@@ -1,0 +1,83 @@
+{
+  "component": "ecl::character_creation::SessionStateComponent",
+  "ext_name": "ClientCharacterCreationSessionState",
+  "size": 40,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Session",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Windows creator bg3.exe+0x201CB90 (AllocRaw 0x28) writes the null handle, then its entity parameter. macOS SubsystemHelper::InitializeLocalSessionComponents creates it on the session entity together with CameraComponent, CommandQueueComponent and StateMachineComponent. Live: the session character handle."
+    },
+    {
+      "name": "PlayerId",
+      "offset": 8,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "Windows creator writes a 16-bit 0. macOS InitializeLocalSessionComponents copies a 16-bit value of its arguments here; GetDataForLocalPlayers / TryGetLocalPlayerData (macOS) select sessions by it. Local player ids are 16-bit in the game (ui::Widget::GetPlayerId returns short). Live 1 (= ecl::character::AssignedComponent of the same character)."
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "padding (live 0xFFFF garbage)"
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator writes 0 (8-byte store +0xC..+0x13). Live 0."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator writes 0. Live 0."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Creator writes 0. Live 0."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "Creator writes 0 (16-bit). Live 0."
+    },
+    {
+      "name": "_Pad1A",
+      "offset": 26,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "not written by the creator (live 0xFFFF / 0xFFFFFFFF garbage)"
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Windows creator writes DAT_146174970 (the null EntityHandle; live 0xffc0000000000000). The macOS creator stores an exported Unassigned constant there instead (8 bytes), so the type is not settled."
+    }
+  ],
+  "summary": "Local state of a character-creation session (read with CameraComponent by the editor subsystems). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "confidence": "medium",
+  "open_questions": [
+    "Members between +0xC and +0x1A: the Windows creator stores 8 bytes at +0xC, 4 at +0x14 and 2 at +0x18, the macOS one 8 at +0xC and 8 at +0x12 - the split is not settled and no Windows reader was found.",
+    "Type of +0x20 (null EntityHandle on Windows, an Unassigned constant on macOS)."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Named +0 (session entity) and +8 (16-bit local player id) from the Windows creator bg3.exe+0x201CB90 plus macOS InitializeLocalSessionComponents; the middle members and +0x20 remain open because no Windows reader was found.",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

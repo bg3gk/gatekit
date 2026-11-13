@@ -1,0 +1,24 @@
+{
+  "component": "esv::teleport::TargetOverrideRefCountsSingletonComponent",
+  "ext_name": "ServerTeleportTargetOverrideRefCounts",
+  "size": 64,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Singleton of esv::teleport::TargetOverrideSystem: reference counts of teleport target overrides. Lives from level load; empty in the sample.",
+  "fields": [
+    {
+      "name": "RefCounts",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, uint32_t>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xBABB00 (TargetOverrideSystem::ProcessRemovedOverrideReferences) walks keys (+0x20, stride 8) and 4-byte values (+0x30, 'IndexedStorage<unsigned int>'), collects entities whose count is 0, erases them and removes their component. Creator bg3.exe+0x2B39A70 zeroes 0x40; destructor FUN_1405c4870 (trivial keys and values). Live: zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

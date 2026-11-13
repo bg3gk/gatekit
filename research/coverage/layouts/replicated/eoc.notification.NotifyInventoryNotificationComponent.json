@@ -1,0 +1,28 @@
+{
+  "component": "eoc::notification::NotifyInventoryNotificationComponent",
+  "ext_name": "NotificationNotifyInventoryNotification",
+  "size": 16,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x8FD2D0: single member, raw 16-byte scratch write at +0; macOS default stp xzr,xzr [x23]"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Type Guid guessed from width (16 raw bytes); meaning (inventory/owner id?) unknown."
+  ],
+  "seen": false,
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

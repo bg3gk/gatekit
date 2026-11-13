@@ -1,0 +1,33 @@
+{
+  "component": "ecl::death::DeathImpactComponent",
+  "ext_name": "ClientDeathImpact",
+  "size": 24,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ImpactPosition",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Size 0x18 (bg3.exe+0x6E9FE0 element size 0x18). +0..+0xB is not read as a vector by the Windows reader bg3.exe+0x1959370; only the float at +4 is used there (compared with a value returned by FUN_143c68880 for the death animation). The name is taken from eoc::death::DeathComponent (Death.h: ImpactPosition, ImpactDirection, 24 bytes together) whose values the client copies; FLT_MAX in all six floats when there was no hit."
+    },
+    {
+      "name": "ImpactDirection",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Windows client death system bg3.exe+0x1959370 gets the component through bg3.exe+0x195CDC0 (component size 0x18) and reads +0xC/+0x10/+0x14 as one vector: its dot product with the character forward vector picks the death animation (cos 45 deg test, AnimationType 8..11) and the vector rotated into character space is stored in TriggerDeathAnimationRequestOneFrameComponent +8. FLT_MAX in all three when there was no hit."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The component is only added through the legacy ImmediateWorldCache::AddComponent (macOS) - the writer that fills it was not found on Windows, so ImpactPosition stays a name by analogy with eoc::death::DeathComponent.",
+    "The failed raw check is a false alarm: FLT_MAX (0x7F7FFFFF) is the game default for no impact."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the raw check failed: client entity 18014402804450261: ImpactDirection: glm::vec3 part 1 is not an ordinary float",
+  "second_pass": "Settled the direction vector at +0xC from the Windows reader bg3.exe+0x1959370 (via bg3.exe+0x195CDC0); the first vec3 is read only partially (+4 as a float) and its writer was not found, so it stays medium. The raw-check failures come from FLT_MAX defaults, not from a wrong layout."
+}

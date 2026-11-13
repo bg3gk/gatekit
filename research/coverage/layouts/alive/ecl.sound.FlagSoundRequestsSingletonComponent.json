@@ -1,0 +1,53 @@
+{
+  "component": "ecl::sound::FlagSoundRequestsSingletonComponent",
+  "ext_name": "ClientSoundFlagSoundRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "SoundSwitchBusRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::character::SoundSystem::ProcessFeatSoundRequests (EoCClient.dll+0xEB5510) and ProcessFlagSoundRequests (EoCClient.dll+0xEB55C0) pass element+0 as the entity to ecl::character::SoundSystem::SetSwitches(EntityHandle const&, FixedString const&, FixedString const&)."
+        },
+        {
+          "name": "SwitchGroup",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Second argument of SetSwitches (element+8)."
+        },
+        {
+          "name": "Switch",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Third argument of SetSwitches (element+0xC)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<SoundSwitchBusRequest>",
+      "source": "inferred",
+      "evidence": "ProcessFlagSoundRequests iterates the singleton's array (size +0xC) with stride 0x10 calling SetSwitches(entity, +8, +0xC). Live capacity 0x10..0x100."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names of the request are ours."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

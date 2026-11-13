@@ -1,0 +1,24 @@
+{
+  "component": "ls::animation::BlueprintOverrideComponent",
+  "ext_name": "AnimationBlueprintOverride",
+  "size": 4,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Client photo-mode/dummy feature: the animation blueprint that replaces a dummy's own one. ecl::dummy::AnimationBlueprintOverrideSystem::ProcessDummyCreation adds it to new dummies with the blueprint from eoc::photo_mode::BlueprintOverrideManager::GetDummyBlueprintUUID (or the original); ecl::VisualSystem reads it. Never seen alive.",
+  "fields": [
+    {
+      "name": "Blueprint",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x19F05B0 (AllocRaw 4) writes 0xFFFFFFFF and registers the FixedString destructor bg3.exe+0x698FE0. Toolkit EoCClient.dll+0xB3BF10 (AnimationBlueprintOverrideSystem::ProcessDummyCreation) adds the component and assigns it with ls::FixedString::operator= the result of BlueprintOverrideManager::GetDummyBlueprintUUID (or, when that is null, the blueprint obtained from the dummy's visual through a helper)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

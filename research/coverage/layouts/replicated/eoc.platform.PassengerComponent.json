@@ -1,0 +1,34 @@
+{
+  "component": "eoc::platform::PassengerComponent",
+  "ext_name": "PlatformPassenger",
+  "size": 48,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x91C830: member 1, bg3.exe+0x4017090 (EntityHandle writer) on +0; macOS default str x1 [x23] (null handle). Probably the platform carrying the passenger."
+    },
+    {
+      "name": "Transform",
+      "offset": 8,
+      "type": "Transform",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x91C830: member 2, raw 0x28-byte write at +8. 40 bytes = SE Transform (quat + vec3 + vec3, CoreLib/Base/BaseTypes.h). macOS default: stur q0 [x23,#8], stur q0 [x23,#0x18], str d8 [x23,#0x28] - zeros with a 1.0 at +0x14 and +0x24 and 1.0,1.0 at +0x28: identity rotation and unit scale."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "The 40 bytes may instead be eoc::platform::TransformData without its trailing bool (Position, Rotation w-first, Scale; Coverage.h) - the defaults fit both orders. Relative transform on the platform presumably."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

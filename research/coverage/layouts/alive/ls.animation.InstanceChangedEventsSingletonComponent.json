@@ -1,0 +1,26 @@
+{
+  "component": "ls::animation::InstanceChangedEventsSingletonComponent",
+  "ext_name": "AnimationInstanceChangedEventsSingleton",
+  "size": 64,
+  "seen": true,
+  "summary": "Singleton of ls::AnimationBlueprintSystem (registered with GameplayEventsSingleton and TextKeyEventsSingleton, bg3.exe+0xE88B50): per entity, the list of animation-instance change types of this frame (ls::AnimationInstanceChangedEvent = {EntityHandle, EChangeType}).",
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Array<uint32_t>>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BD9330 allocates 0x40 bytes zeroed. Toolkit GameEngine.dll+0x511670 inserts into a HashMap whose values (+0x30, stride 0x10) are 'IndexedStorage<DynamicArray<enum ls::AnimationInstanceChangedEvent::EChangeType>>'; GameEngine.dll+0x51B620 appends EChangeType as 4 bytes (stride 4). ls::AnimationInstanceChangedEvent ctor (GameEngine.dll+0x158030) takes ID<EntityHandleTraits> + EChangeType. EChangeType is not declared in Script Extender: uint32_t. Live: buckets 5..0x2F, up to 3 entries on the server."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Values of ls::AnimationInstanceChangedEvent::EChangeType.",
+    "Key type taken from the event struct (EntityHandle), the key array stride (8) is not separately checked."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

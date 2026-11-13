@@ -1,0 +1,22 @@
+{
+  "component": "ls::SaveWithComponent",
+  "ext_name": "SaveWith",
+  "size": 8,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2CFEF30 creates it with the null handle 0xFFC0000000000000; the savegame reader bg3.exe+0x25A1B80 (ls::model::game::v0::SaveWithComponent) resolves a saved reference to an entity handle (FUN_144018730) and stores it at +0, null if the reference is empty; the probe shows live server entity handles in all 48 instances."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Exact semantics (the entity this one is saved together with / its save owner) are taken from the component name; the save-side systems (0x2B3xxxx) only use it as a query include/exclude and were not opened."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

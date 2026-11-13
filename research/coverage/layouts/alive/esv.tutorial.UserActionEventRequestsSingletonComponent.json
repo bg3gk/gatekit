@@ -1,0 +1,54 @@
+{
+  "component": "esv::tutorial::UserActionEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialUserActionEventRequestsSingleton",
+  "size": 16,
+  "structs": [
+    {
+      "name": "UserActionEventRequestsEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x34262E0 stores the user's entity"
+        },
+        {
+          "name": "Action",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x34262E0 copies the byte at request+4"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Activated",
+      "offset": 0,
+      "type": "Array<UserActionEventRequestsEntry>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34262E0 (UserActionSystem update) turns 8-byte {UserID, uint8} requests into 16-byte {entity, uint8}; ValidateSystem index 16 UserAction_Activated (bg3.exe+0x34291D0)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "meaning/enum of the action byte"
+  ],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done).",
+  "seen": true,
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

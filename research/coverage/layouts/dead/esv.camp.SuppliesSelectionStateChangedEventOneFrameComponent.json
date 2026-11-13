@@ -1,0 +1,42 @@
+{
+  "component": "esv::camp::SuppliesSelectionStateChangedEventOneFrameComponent",
+  "ext_name": "ServerCampSuppliesSelectionStateChangedEvent",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame event of esv::camp::EndTheDaySystem (long rest): the camp-supplies selection state changed. Created on a new event entity by bg3.exe+0x2BF73A0 (AllocRaw 0x10) only from esv::camp::EndTheDaySystem::FinalizeEndTheDayState (bg3.exe+0x2BF5FE0, named), which writes a flag and an entity handle. A savegame model game.camp.v0.SuppliesSelectionStateChangedEventOneFrameComponent exists (size 16, alignment 8, member names not known) - same size as the component. Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x2BF73A0 writes byte 0 at +0. FinalizeEndTheDayState writes `*puVar9 = 1` when the end-the-day state is 2 and the end-the-day entity is valid (line ~443), and `*puVar9 = 0` in the per-entity loop (line ~716): a selection open/closed flag."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding before the 8-byte handle at +8."
+    },
+    {
+      "name": "Entity",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator writes 0xffc0000000000000 (null EntityHandle) at +8. FinalizeEndTheDayState writes `*(longlong *)(puVar9 + 8) = lVar21` (the handle returned by FUN_142bf5d70, the end-the-day entity, checked valid just before) or `*(local_6c8 + 8)` (a handle of the system's argument)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the flag at +0 and which entity +8 is in the second write (end-the-day entity vs. a player).",
+    "Savegame model member names not available (savefields.py has none).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

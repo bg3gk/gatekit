@@ -1,0 +1,96 @@
+{
+  "component": "ecl::sound::TimelineStateSingletonComponent",
+  "ext_name": "ClientSoundTimelineStateSingleton",
+  "size": 72,
+  "structs": [
+    {
+      "name": "TimelinePlayerSoundState",
+      "size": 40,
+      "fields": [
+        {
+          "name": "Timeline",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D99430 fills the 16 bytes from the value of ecl::PlayersInTimelineGlobalComponent for the player (timeline instance id) and sets the flag at +0x10; bg3.exe+0x1D9BBC0 compares old and new entries by these two qwords and counts players per Guid."
+        },
+        {
+          "name": "HasTimeline",
+          "offset": 16,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D99430 clears it first and sets it when the player has a timeline; bg3.exe+0x1D9BBC0 tests it before using the Guid (std::optional<Guid> pattern)."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "alignment"
+        },
+        {
+          "name": "Time",
+          "offset": 24,
+          "type": "double",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D9A490 stores the time argument of the update here; bg3.exe+0x1D9BBC0 compares it as a double (the earlier one wins among equal priorities; initial best 0x47EFFFFFE0000000 = FLT_MAX as double)."
+        },
+        {
+          "name": "Priority",
+          "offset": 32,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x1D9A490 stores 0..3 (result of bg3.exe+0x1D99430: 0 or 2 by timeline state, else 1, 3 when the player has no entity); bg3.exe+0x1D9BBC0 picks the player with the lowest value (initial best 4) and compares it between old and new state."
+        },
+        {
+          "name": "_Pad21",
+          "offset": 33,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "stride 0x28 in bg3.exe+0x1D99C70 / bg3.exe+0x1D9BBC0"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "HashMap<PlayerId, TimelinePlayerSoundState>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D99C70 (ecl::sound::TimelinePrioritySystem update; registration bg3.exe+0x733260 lists the component as written) copies the map: keys are shorts (compared as *(short*)(keys + i*2)), values are copied with stride 0x28 from +0x30, count from +0x2C. bg3.exe+0x1D9BBC0 writes the new map back (alloc of count * 0x28). Probe: 1 key, 1 value."
+    },
+    {
+      "name": "ActivePlayer",
+      "offset": 64,
+      "type": "PlayerId",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D9BBC0 writes a short at +0x40: the key of the entry with the lowest Priority, then earliest Time. Probe: 1."
+    },
+    {
+      "name": "SharedTimeline",
+      "offset": 66,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D9BBC0 writes a byte at +0x42: true when all entries with a timeline name exactly one timeline and at least two players are in it. Probe: 0 (single player)."
+    },
+    {
+      "name": "_Pad43",
+      "offset": 67,
+      "type": "uint8_t[5]",
+      "source": "inferred",
+      "evidence": "size 72"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Exact meaning of the Priority values 0..3 (they come from eoc::TimelineDataComponent state bytes at +0x78 in bg3.exe+0x1D99430); names of ActivePlayer/SharedTimeline are descriptive, not from symbols.",
+    "Timeline + HasTimeline is most likely std::optional<Guid>.",
+    "PlayerId is int16_t in Script Extender (Base/ExposedTypes.h)."
+  ],
+  "minutes": 15,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

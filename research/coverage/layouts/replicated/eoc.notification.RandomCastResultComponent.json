@@ -1,0 +1,50 @@
+{
+  "component": "eoc::notification::RandomCastResultComponent",
+  "ext_name": "NotificationRandomCastResult",
+  "size": 80,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9939D0: member 1, raw 16-byte write at +0; macOS default zero"
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9939D0: member 2, raw 1-byte write at +0x10; default 0"
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment padding; nothing serialized or initialised here"
+    },
+    {
+      "name": "Spell",
+      "offset": 24,
+      "type": "SpellId",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x9939D0: member 3 is bg3.exe+0xB6CCB0 on +0x18 and member 4 ecs::sync::Serialize(FixedString) on +0x48. bg3.exe+0xB6CCB0 writes FixedString +0, 1 byte +8, 16 bytes +0x20, 16 bytes +0x10 = SE SpellMetaId (OriginatorPrototype, SourceType, ProgressionSource, Source; Base/ExposedTypes.h); the FixedString at +0x48 (=0x18+0x30) is SpellId::Prototype. 0x18+0x38 = 0x50 = size. macOS default: -1 (null FixedString) at +0x18 and +0x48, strb 0x17 (SpellSourceType::Sentinel) at +0x20. Reuses SE struct SpellId (56 bytes)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "field_0 Guid guessed from width; meaning of field_0 and of the byte at +0x10 unknown. Name 'Spell' inferred (the cast spell)."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "hold": "uses types declared elsewhere (SpellId): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

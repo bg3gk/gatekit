@@ -1,0 +1,25 @@
+{
+  "component": "esv::relation::FactionsChangedEventOneFrameComponent",
+  "ext_name": "ServerRelationFactionsChangedEvent",
+  "size": 16,
+  "seen": true,
+  "summary": "Server one-frame event of esv::relation::RelationSystem: the list of entities whose faction changed this frame (one holder at a time). Read by esv::trade::TraderMapMarkerRelationSystem::Update. Seen.py context: appears in fights, spells, shove/throw, deaths, dialogues and level changes - whenever factions/relations are touched (born together with BaseFactionChangedEventOneFrameComponent); samples held 1..12 entries.",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x50B6F0 ~FactionsChangedEventOneFrameComponent frees the array at +0; EoCServer.dll+0x50B790 operator= copies it with AllocateInternal(n, 8, 8) and asserts ls::IndexedStorage<ls::ID<ecs::EntityHandleTraits>>. Live: +0 heap, +8 capacity = +0xC size (1..12)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name chosen from the content; the game's member name is unknown."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

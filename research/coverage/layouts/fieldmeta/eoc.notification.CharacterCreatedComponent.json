@@ -1,0 +1,162 @@
+{
+  "component": "eoc::notification::CharacterCreatedComponent",
+  "ext_name": "NotificationCharacterCreated",
+  "size": 1000,
+  "fields": [
+    {
+      "name": "Definition",
+      "offset": 0,
+      "type": "character_creation::CharacterDefinition",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_Definition (eoc::character_creation::BaseDefinition), position 1 of 6 in the macOS serializer TypeList; serializer bg3.exe+0x990400 writes the definition via bg3.exe+0xABD910 (int +0, string +8, Basics +0x20, Appearance +0xB0, 7 ints +0x188, LevelUp +0x1A8) at +0x0 in the same order"
+    },
+    {
+      "name": "IsAvatar",
+      "offset": 648,
+      "type": "bool",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_IsAvatar (bool), position 2 of 6 in the macOS serializer TypeList; serializer bg3.exe+0x990400 writes 1 byte at +0x288 in the same order"
+    },
+    {
+      "name": "_Pad289",
+      "offset": 649,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "compiler padding (alignment)"
+    },
+    {
+      "name": "CompanionDefinition",
+      "offset": 656,
+      "type": "CompanionDefinition",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_CompanionDefinition (eoc::character_creation::CompanionDefinition), position 3 of 6 in the macOS serializer TypeList; serializer bg3.exe+0x990400 writes the companion definition via bg3.exe+0xABDA00 (0x138 bytes) at +0x290 in the same order"
+    },
+    {
+      "name": "CharacterGUID",
+      "offset": 968,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_CharacterGUID (ls::Guid), position 4 of 6 in the macOS serializer TypeList; serializer bg3.exe+0x990400 writes 16 bytes at +0x3C8 in the same order"
+    },
+    {
+      "name": "StartTime",
+      "offset": 984,
+      "type": "int64_t",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_StartTime (long long), position 5 of 6 in the macOS serializer TypeList; serializer bg3.exe+0x990400 writes 8 bytes at +0x3D8 in the same order"
+    },
+    {
+      "name": "IsRespec",
+      "offset": 992,
+      "type": "bool",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_IsRespec (bool), position 6 of 6 in the macOS serializer TypeList; serializer bg3.exe+0x990400 writes 1 byte at +0x3E0 in the same order"
+    },
+    {
+      "name": "_Pad3E1",
+      "offset": 993,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "structs": [
+    {
+      "name": "CompanionDefinition",
+      "size": 312,
+      "fields": [
+        {
+          "name": "Race",
+          "offset": 0,
+          "type": "Guid",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_Race (ls::Guid) of eoc::character_creation::CompanionDefinition; bg3.exe+0xABDA00 writes 16 bytes at +0x0 in TypeList order"
+        },
+        {
+          "name": "SubRace",
+          "offset": 16,
+          "type": "Guid",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_SubRace (ls::Guid) of eoc::character_creation::CompanionDefinition; bg3.exe+0xABDA00 writes 16 bytes at +0x10 in TypeList order"
+        },
+        {
+          "name": "BodyType",
+          "offset": 32,
+          "type": "uint8_t",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_BodyType (ls::EBodyType) of eoc::character_creation::CompanionDefinition; bg3.exe+0xABDA00 writes 1 byte at +0x20 in TypeList order"
+        },
+        {
+          "name": "BodyShape",
+          "offset": 33,
+          "type": "uint8_t",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_BodyShape (ls::EBodyShape) of eoc::character_creation::CompanionDefinition; bg3.exe+0xABDA00 writes 1 byte at +0x21 in TypeList order"
+        },
+        {
+          "name": "_Pad22",
+          "offset": 34,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "compiler padding (alignment)"
+        },
+        {
+          "name": "RootTemplateID",
+          "offset": 40,
+          "type": "Guid",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_RootTemplateID (ls::Guid) of eoc::character_creation::CompanionDefinition; bg3.exe+0xABDA00 writes 16 bytes at +0x28 in TypeList order"
+        },
+        {
+          "name": "Appearance",
+          "offset": 56,
+          "type": "character_creation::Appearance",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_Appearance (eoc::character_creation::Appearance) of eoc::character_creation::CompanionDefinition; bg3.exe+0xABDA00 writes an Appearance (bg3.exe+0xAD93E0) at +0x38 in TypeList order"
+        },
+        {
+          "name": "Voice",
+          "offset": 272,
+          "type": "Guid",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_Voice (ls::Guid) of eoc::character_creation::CompanionDefinition; bg3.exe+0xABDA00 writes 16 bytes at +0x110 in TypeList order"
+        },
+        {
+          "name": "VOLinesTable",
+          "offset": 288,
+          "type": "Guid",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_VOLinesTable (ls::Guid) of eoc::character_creation::CompanionDefinition; bg3.exe+0xABDA00 writes 16 bytes at +0x120 in TypeList order"
+        },
+        {
+          "name": "Identity",
+          "offset": 304,
+          "type": "uint8_t",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_Identity (ls::identity::EIdentity) of eoc::character_creation::CompanionDefinition; bg3.exe+0xABDA00 writes 1 byte at +0x130 in TypeList order"
+        },
+        {
+          "name": "_Pad131",
+          "offset": 305,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    }
+  ],
+  "external_types": {
+    "character_creation::CharacterDefinition": "Script Extender GameDefinitions/Components/CharacterCreation.h (= game eoc::character_creation::BaseDefinition), 0x288 bytes",
+    "character_creation::Appearance": "Script Extender GameDefinitions/CharacterCreation.h, 0xD8 bytes (same offsets as in SE CompanionDefinitionComponent.Visual at 0x38..0x110)"
+  },
+  "confidence": "high",
+  "open_questions": [
+    "character_creation::CharacterDefinition is reused on the strength of matching offsets (ModeFlags/Name/Basics/Appearance/PointBuyAbilities/FirstLevelUp = macOS BaseDefinition members); its LevelUpData part (0x1A8..0x288) was not re-checked field by field."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

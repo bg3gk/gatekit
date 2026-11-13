@@ -1,0 +1,134 @@
+{
+  "component": "esv::ai::swarm::DebugTurnActionsCalculationComponent",
+  "ext_name": "ServerAiSwarmDebugTurnActionsCalculation",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Debug record of the AI swarm's turn-action calculations (one entry per evaluated spell: a spell id and a full esv::ai::swarm::TurnActionsCalculation), read by esv::ai::swarm::DebugSystem::Update (Toolkit EoCServer.dll+0x16BE420) to fill the replicated eoc::ai::swarm::DebugTurnActionsComponent. Registered by the generic bg3.exe+0x30B43E0 (size/alignment 0x10/0x10, destructor thunk bg3.exe+0x30B8A90 -> bg3.exe+0x30B9F90). Never seen alive. Registry total 16 (server row).",
+  "structs": [
+    {
+      "name": "DebugTurnActionsCalcSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Equals SE SpellId (Base/ExposedTypes.h) as redeclared for esv::ai::swarm::TurnActionsCalculationComponent (AiSwarmTurnActionsCalculationSpellId, Coverage.h); destroyed by eoc::spell::SpellId::~SpellId at entry +0x10."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SpellSourceType (1 byte), as in SE SpellId."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId::Source"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SpellMetaId::ProgressionSource"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SpellId::Prototype"
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to 0x38"
+        }
+      ]
+    },
+    {
+      "name": "DebugTurnActionsCalcEntry",
+      "size": 392,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "not destroyed, not read here."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "not destroyed, not read here."
+        },
+        {
+          "name": "Spell",
+          "offset": 16,
+          "type": "DebugTurnActionsCalcSpellId",
+          "source": "inferred",
+          "evidence": "Destructor bg3.exe+0x30B9F90: eoc::spell::SpellId::~SpellId(entry + 0x10) (named in the game build)."
+        },
+        {
+          "name": "Calculation",
+          "offset": 72,
+          "type": "uint8_t[312]",
+          "source": "inferred",
+          "evidence": "Destructor: esv::ai::swarm::TurnActionsCalculation::~TurnActionsCalculation(entry + 0x48) (named). Equals the TurnActionsCalculation object that esv::ai::swarm::TurnActionsCalculationComponent holds at +8 (component 320 bytes - 8 = 312 = 0x138; 0x48 + 0x138 = 0x180). Kept as bytes: the object's members are described on that component's layout (Coverage.h, ServerAiSwarmTurnActionsCalculation)."
+        },
+        {
+          "name": "field_180",
+          "offset": 384,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "tail to the stride 0x188; not destroyed."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Calculations",
+      "offset": 0,
+      "type": "Array<DebugTurnActionsCalcEntry>",
+      "source": "inferred",
+      "evidence": "Registration bg3.exe+0x30B43E0 gives size/alignment 0x10 (local_68 = 0x100010) and destructor thunk bg3.exe+0x30B8A90 -> bg3.exe+0x30B9F90, which reads capacity +8 / size +0xC, walks `*(p) + i*0x188` destroying a TurnActionsCalculation at +0x48 and a SpellId at +0x10 per entry, then resets the size: an Array with element stride 0x188."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Entry +0..+0xF and +0x180 unknown (probably target / score data of the evaluated action).",
+    "The 312-byte TurnActionsCalculation is kept as bytes here (see ServerAiSwarmTurnActionsCalculation).",
+    "No creator with AllocRaw was found (debug-only component, written through the generic path); the writer was not read.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled this pass: the 312-byte TurnActionsCalculation inside each 0x188-byte entry stays a byte block and the entry's first 16 bytes / last 8 bytes are unexplained; no Windows writer was found."
+}

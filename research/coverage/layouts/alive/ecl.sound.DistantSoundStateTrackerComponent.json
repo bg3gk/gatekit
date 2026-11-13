@@ -1,0 +1,52 @@
+{
+  "component": "ecl::sound::DistantSoundStateTrackerComponent",
+  "ext_name": "ClientSoundDistantSoundStateTracker",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "State",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "eoc::sound::EDistantSoundState (4 bytes, as in eoc::sound::DistantSoundStateComponent.State): DistantSoundSystem::ProcessDistantSoundStatePosition (EoCClient.dll+0xE80E80) compares it with the replicated state and stores the new one; live 0x1/0x2/0x11/0x22 (flag values tested by HasDistantSoundStateFlag)."
+    },
+    {
+      "name": "SetupPending",
+      "offset": 4,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ProcessDistantSoundInfoAdded (EoCClient.dll+0xE7FC20) queues a setup request when +4 is set, then writes 0x0100 to +4 (clears +4, sets +5)."
+    },
+    {
+      "name": "PostInitSoundPending",
+      "offset": 5,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ProcessSoundsActivated (EoCClient.dll+0xE81A40) posts the init sound event when +5 is set; also set when the state has flag 4; ProcessDistantSoundStatePosition writes 0x0101 to +4."
+    },
+    {
+      "name": "field_6",
+      "offset": 6,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "ProcessSoundsActivated skips the entity and clears +6 when it is set."
+    },
+    {
+      "name": "_Pad7",
+      "offset": 7,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Live byte is garbage (0x00/0x07/0x15/0x3F)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the three flags are ours."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "16 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

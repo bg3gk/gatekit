@@ -1,0 +1,46 @@
+{
+  "component": "eoc::item::ISDoorClosedComponent",
+  "ext_name": "ItemISDoorClosed",
+  "size": 8,
+  "fields": [
+    {
+      "name": "AnimationRequested",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creators bg3.exe+0x1922120 (deferred add) and bg3.exe+0xDD4930 (immediate add) zero offsets 0-1 with one 2-byte store. The filler is ecl::legacy::item::DoorClosedSystem (factory bg3.exe+0x726860, update thunk bg3.exe+0x758100 -> bg3.exe+0x1921780 -> bg3.exe+0x1921910; the Toolkit names the last one ProcessAnimationsRequests, EoCClient.dll+0x9D57D0, same statements). Every tick, per door: if this byte is 0, or the door is in the entity set at +0x60 of eoc::animation::DoorEventCachingSingletonComponent (its animation events were re-cached), the function stores the word 1 at +0 (this byte 1, AnimationFinished 0), zeroes the float at +4 and adds eoc::item::ISDoorClosedAnimationRequestOneFrameComponent. Probe: always 1 on all 5 client and 5 server instances."
+    },
+    {
+      "name": "AnimationFinished",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Same function: while this byte is 0 the timer at +4 is checked; at 10.0 <= timer the byte is set to 1 (bg3.exe+0x1921910: '*(ptr + 1) = 1') and eoc::item::ISDoorClosedAnimationFinishedOneFrameComponent is added to the door. Reset to 0 by the word store of a new request. Probe: always 1 (doors closed long before the capture)."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "Never written by the creators or the system (2-byte store at 0, 4-byte store at 4); probe shows garbage here on the client (91 32 / ff ff) and zeros on the server - alignment padding before the float."
+    },
+    {
+      "name": "AnimationTimer",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Same function: while AnimationRequested is 1 and AnimationFinished is 0, the frame time (ls::GameTime+8) is added every tick, and the sum is compared with 10.0 - a timeout after which the closing animation counts as finished; zeroed on a new request. Probe: client always 0x412000D9 = 10.00002, server 10.015 / 10.018 - the value at which the accumulation stopped, with a larger overshoot on the coarser server tick, exactly as this code produces."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The probed doors all finished by the 10 s timeout. Whether another system sets AnimationFinished earlier when the animation really ends (the flags are public to the animation systems through the AnimationFinished one-frame component) was not looked for.",
+    "The server uses the same component through esv::legacy::item::DoorClosedSystem (factory bg3.exe+0x2357D20); its update was not opened, the server probe values fit the same logic.",
+    "eoc::item::ISDoorOpenedComponent has the same layout: see layouts/equipment/eoc.item.ISDoorOpenedComponent.json."
+  ],
+  "minutes": 22,
+  "functions_read": 14,
+  "status": "confirmed",
+  "oneFrame": false,
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

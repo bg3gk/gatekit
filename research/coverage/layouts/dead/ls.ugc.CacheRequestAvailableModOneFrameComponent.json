@@ -1,0 +1,148 @@
+{
+  "component": "ls::ugc::CacheRequestAvailableModOneFrameComponent",
+  "ext_name": "UgcCacheRequestAvailableMod",
+  "size": 96,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request to fill the mod.io info cache, posted by gui::AvailableModsSystem (macOS Update writes it) and read by ls::ugc::ModInfoCachedRequestSystem (macOS GatherRequests; Windows per-frame update bg3.exe+0x3BE8230). Two HashSet<ls::ugc::ModItemInfoID>. Registry total 96 (client row).",
+  "structs": [
+    {
+      "name": "UgcCacheRequestAvailableModModItemInfoId",
+      "size": 32,
+      "fields": [
+        {
+          "name": "ModId",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "Windows HashSet<ls::ugc::ModItemInfoID> insert bg3.exe+0x126FEA0 hashes the qword at +0 and the find bg3.exe+0x12705B0 compares it first (key stride 0x20); macOS ModInfoCachedRequestSystemHelper::RequestItemInfo(unsigned long long, Optional<Version>, bool, EHardwareType) takes the members in this order (mod id first)."
+        },
+        {
+          "name": "Version",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x126FEA0 hashes +8 only when the byte at +0x10 is set, and bg3.exe+0x12705B0 compares +8 only when both +0x10 bytes are set: the value of an optional (macOS Ensure<ModItemInfoID> identical) - the Optional<Version> argument."
+        },
+        {
+          "name": "HasVersion",
+          "offset": 16,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "has-value flag of the optional at +8 (bg3.exe+0x126FEA0 / bg3.exe+0x12705B0)."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x12705B0 compares the byte at +0x18 (not hashed); the bool argument of RequestItemInfo by order."
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "HardwareType",
+          "offset": 28,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x126FEA0 hashes the int at +0x1C and bg3.exe+0x12705B0 compares it: the EHardwareType argument of RequestItemInfo by order (enum not declared in Script Extender; 4 bytes)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "RefreshHashKeys",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x12706D0 (AllocRaw 0x60) zeroes two HashSet patterns (+0, +0x30); destructor bg3.exe+0x6C6A10 runs the plain-key HashSet destructor bg3.exe+0x582AD0 on +0x30 and +0. bg3.exe+0x3BE8B10 (ModInfoCachedRequestSystem gather step) unions the set at +0 into its first request set and the set at +0x30 into its second one (FUN_143bea2f0 walks the keys at set+0x20 with stride 0x20, count set+0x2C); afterwards ids already in the info cache are removed from the second set only (lines after the gather: CacheModInfoSingleton keys stride 0x20) - so +0 are requests that bypass the cache, +0x30 requests the cache may answer - bucket array of ls::HashSet"
+    },
+    {
+      "name": "RefreshHashKeysSize",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count"
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "RefreshNextIds",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "hash chains of ls::HashSet"
+    },
+    {
+      "name": "RefreshKeys",
+      "offset": 32,
+      "type": "Array<UgcCacheRequestAvailableModModItemInfoId>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x12706D0 (AllocRaw 0x60) zeroes two HashSet patterns (+0, +0x30); destructor bg3.exe+0x6C6A10 runs the plain-key HashSet destructor bg3.exe+0x582AD0 on +0x30 and +0. bg3.exe+0x3BE8B10 (ModInfoCachedRequestSystem gather step) unions the set at +0 into its first request set and the set at +0x30 into its second one (FUN_143bea2f0 walks the keys at set+0x20 with stride 0x20, count set+0x2C); afterwards ids already in the info cache are removed from the second set only (lines after the gather: CacheModInfoSingleton keys stride 0x20) - so +0 are requests that bypass the cache, +0x30 requests the cache may answer - keys (written out member by member because the key is a struct)"
+    },
+    {
+      "name": "HashKeys",
+      "offset": 48,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Second HashSet (same creator/destructor). bg3.exe+0x3BE8B10 (ModInfoCachedRequestSystem gather step) unions the set at +0 into its first request set and the set at +0x30 into its second one (FUN_143bea2f0 walks the keys at set+0x20 with stride 0x20, count set+0x2C); afterwards ids already in the info cache are removed from the second set only (lines after the gather: CacheModInfoSingleton keys stride 0x20) - so +0 are requests that bypass the cache, +0x30 requests the cache may answer - bucket array of ls::HashSet"
+    },
+    {
+      "name": "HashKeysSize",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count"
+    },
+    {
+      "name": "_Pad3C",
+      "offset": 60,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "NextIds",
+      "offset": 64,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "hash chains of ls::HashSet"
+    },
+    {
+      "name": "Keys",
+      "offset": 80,
+      "type": "Array<UgcCacheRequestAvailableModModItemInfoId>",
+      "source": "inferred",
+      "evidence": "Second HashSet (same creator/destructor). bg3.exe+0x3BE8B10 (ModInfoCachedRequestSystem gather step) unions the set at +0 into its first request set and the set at +0x30 into its second one (FUN_143bea2f0 walks the keys at set+0x20 with stride 0x20, count set+0x2C); afterwards ids already in the info cache are removed from the second set only (lines after the gather: CacheModInfoSingleton keys stride 0x20) - so +0 are requests that bypass the cache, +0x30 requests the cache may answer - keys (written out member by member because the key is a struct)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the two sets are inferred from behaviour (+0 always sent, +0x30 filtered by the cache).",
+    "Meaning of ModItemInfoID +0x18 (a bool)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "status": "declared",
+  "second_pass": "The 32-byte ls::ugc::ModItemInfoID key is now established from the Windows HashSet insert bg3.exe+0x126FEA0 and find bg3.exe+0x12705B0 (mod id, optional version + flag, a bool, a 4-byte hardware type), named by the order of RequestItemInfo's parameters; the two sets were already established.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

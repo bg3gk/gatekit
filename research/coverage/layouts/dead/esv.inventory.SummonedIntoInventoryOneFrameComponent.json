@@ -1,0 +1,27 @@
+{
+  "component": "esv::inventory::SummonedIntoInventoryOneFrameComponent",
+  "ext_name": "ServerInventorySummonedIntoInventory",
+  "size": 8,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame event of esv::inventory::SummoningSystem: a summoned item (e.g. a summoned weapon) was placed into an inventory. GatherSummonRequests (game bg3.exe+0x3507FA0 ~ Toolkit EoCServer.dll+0xF29D10) walks the 16-byte requests of esv::summon::PlaceInInventoryRequestOneFrameComponent (SE Summon.h: EntityHandle Owner at +0, bools at +8/+9) and adds this component to the summoned entity with the request's Owner. EntityReceivalNotificationSystem reads it. Never seen alive. Registry total 8 (server row).",
+  "fields": [
+    {
+      "name": "Owner",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3509D80 (AllocRaw 8) writes 0xffc0000000000000 (null EntityHandle); writer bg3.exe+0x3507FA0 line 411-412: `puVar15 = FUN_143509d80(param_2,&summon); *puVar15 = *puVar18;` where puVar18 is the 16-byte PlaceInInventory request (stride 0x10; its +8/+9 bools are tested nearby), i.e. its Owner."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Field name taken from SE's PlaceInInventoryRequest.Owner; the game's own member name is not known.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

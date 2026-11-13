@@ -1,0 +1,54 @@
+{
+  "component": "ecl::GameStateUnloadSessionComponent",
+  "ext_name": "ClientGameStateUnloadSession",
+  "size": 24,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Step machine of a client session unload: created by the unload game state's Enter (bg3.exe+0x18679F0), advanced by the per-frame update of ecl::SessionUnloadSystem (bg3.exe+0x18B4D00, 10 states) which removes the component in the last state.",
+  "fields": [
+    {
+      "name": "GameState",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1867B70 zeroes; bg3.exe+0x18679F0 stores the game state's this pointer; in state 9 bg3.exe+0x18B4D00 writes 1 to byte +0x28 of the pointed object (marks the state done) before removing the component."
+    },
+    {
+      "name": "Waiting",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes (8-byte store at +8). bg3.exe+0x18B4D00 sets it to 1 after each state step; while 1 it counts FramesWaited and resets to 0 after 5 frames, and the switch on State runs only when it is 0."
+    },
+    {
+      "name": "FramesWaited",
+      "offset": 12,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Incremented each frame while Waiting == 1, compared with 5 (bg3.exe+0x18B4D00)."
+    },
+    {
+      "name": "State",
+      "offset": 16,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes (4-byte store at +0x10); bg3.exe+0x18B4D00 switches on it (cases 0..9) and writes the next state as a 4-byte store."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding to 24"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Waiting may be a wider enum than a flag (only 0/1 seen)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

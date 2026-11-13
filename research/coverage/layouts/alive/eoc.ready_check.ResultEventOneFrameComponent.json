@@ -1,0 +1,46 @@
+{
+  "component": "eoc::ready_check::ResultEventOneFrameComponent",
+  "ext_name": "ReadyCheckResultEvent",
+  "size": 48,
+  "seen": true,
+  "summary": "One-frame event with the outcome of a ready check, put on a new entity by esv::ready_check::OverseerSystem::ProcessResultEvents from its esv::ready_check::ResultEvent list (seen at the level swap teleporter vote, with eoc::ready_check::StateComponent). Saved model game.ready_check.v0.ResultEventOneFrameComponent (40 bytes, member names not known).",
+  "fields": [
+    {
+      "name": "EventId",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x2E29D0 ProcessResultEvents: STDString::operator=(component, event+8); live heap ptr, size 0x17, capacity 0x1F - the same 23-character id as StateComponent.EventId (m_EventId of the state model)"
+    },
+    {
+      "name": "TransactionId",
+      "offset": 24,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "ProcessResultEvents copies two qwords (event+0x20/+0x28) to +0x18/+0x20; live: the same Guid as StateComponent.TransactionId"
+    },
+    {
+      "name": "Result",
+      "offset": 40,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ProcessResultEvents copies one byte (event+0x30) to +0x28; live 1; matches StateComponent.ResultVal"
+    },
+    {
+      "name": "_Pad29",
+      "offset": 41,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "never written; live garbage"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "names come from the state model's member names, not this event's own model"
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

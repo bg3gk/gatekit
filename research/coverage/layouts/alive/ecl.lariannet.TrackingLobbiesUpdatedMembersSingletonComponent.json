@@ -1,0 +1,84 @@
+{
+  "component": "ecl::lariannet::TrackingLobbiesUpdatedMembersSingletonComponent",
+  "ext_name": "ClientLariannetTrackingLobbiesUpdatedMembersSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "LobbyMemberUpdate",
+      "size": 96,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1B15E00 (element copy) copy-constructs a STDString at +0; bg3.exe+0x6EBF00 (element destroy) frees it"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x1B15E00 copies +0x18 as a qword; it starts a sub-object (+0x18..+0x58) destroyed by bg3.exe+0x7091E0"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "copied as a qword by bg3.exe+0x1B15E00"
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "STDString copy at +0x28 (bg3.exe+0x1B15E00); freed by bg3.exe+0x7091E0 (sub-object +0x10)"
+        },
+        {
+          "name": "field_40",
+          "offset": 64,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "STDString copy at +0x40 (bg3.exe+0x1B15E00); freed by bg3.exe+0x7091E0 (sub-object +0x28)"
+        },
+        {
+          "name": "field_58",
+          "offset": 88,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "copied as a dword by bg3.exe+0x1B15E00"
+        },
+        {
+          "name": "_Pad5C",
+          "offset": 92,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "stride 0x60 (bg3.exe+0x1B1B7E0: index*0x60; bg3.exe+0x6EBF00: index*0x60)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Updates",
+      "offset": 0,
+      "type": "Array<LobbyMemberUpdate>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1B1B7E0 (~ProcessLobbiesEvents): destroys every element of the view's component at +0x40 with bg3.exe+0x6EBF00 (stride 0x60) and zeroes its size each frame, then per member-update event grows it (FUN_1406DDB60) and copy-constructs an element at index*0x60 with bg3.exe+0x1B15E00. Element type lsnet::LobbyMemberUpdate (macOS/Toolkit names). Live: all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names of lsnet::LobbyMemberUpdate (lobby id, a 0x40-byte user record at +0x18 holding a 16-byte id and two strings, a 4-byte state at +0x58) are not established"
+  ],
+  "second_pass": "Element stride 0x60 and every member's offset and width confirmed on Windows from the element copy bg3.exe+0x1B15E00, the element destructor bg3.exe+0x6EBF00 / bg3.exe+0x7091E0 and the per-frame code bg3.exe+0x1B1B7E0; names remain unknown.",
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "names_pass_2": "No game names found."
+}

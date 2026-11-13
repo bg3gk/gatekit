@@ -1,0 +1,95 @@
+{
+  "component": "ecl::spell::RemovedSpellModificationOneFrameComponent",
+  "ext_name": "ClientSpellRemovedSpellModification",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "RemovedSpellModificationEntry",
+      "size": 136,
+      "fields": [
+        {
+          "name": "SourceType",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Element is eoc::spell::Modification (stride 0x88 in ModificationNotifySystem::Update, EoCClient.dll+0x8EAEC0); equals Script Extender spell::Modification (Spell.h): SpellModificationSource SourceType at +0 (1-byte enum in SE)."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "SE spell::Modification: FixedString Source at +4."
+        },
+        {
+          "name": "Source",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE spell::Modification::Source (+4)."
+        },
+        {
+          "name": "ModificationData",
+          "offset": 8,
+          "type": "uint8_t[72]",
+          "source": "inferred",
+          "evidence": "Payload of SE spell::Modification::Variant (14 alternatives, the largest ModifyUseCosts = 0x48 bytes: Type, Guid, STDString, Level, Guid). Declared as bytes because the variant alternatives are SE structs."
+        },
+        {
+          "name": "ModificationType",
+          "offset": 80,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant alternative index after the 0x48-byte payload (ls::Variant layout)."
+        },
+        {
+          "name": "_Pad51",
+          "offset": 81,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Alignment of the following HashSet."
+        },
+        {
+          "name": "Spells",
+          "offset": 88,
+          "type": "uint8_t[48]",
+          "source": "inferred",
+          "evidence": "SE spell::Modification::Spells = HashSet<SpellId> (48 bytes) ending at the 0x88 stride. Declared as bytes because SpellId is an SE struct."
+        }
+      ]
+    },
+    {
+      "name": "RemovedSpellModificationSources",
+      "size": 64,
+      "fields": [
+        {
+          "name": "Modifications",
+          "offset": 0,
+          "type": "HashMap<FixedString, Array<RemovedSpellModificationEntry>>",
+          "source": "inferred",
+          "evidence": "Element type named by the game: IndexedStorage<ls::HashMap<ls::FixedString, ls::DynamicArray<eoc::spell::Modification>>> (FUN_18034e320, stride 0x40) - the same map as eoc::spell::ModificationContainerComponent::m_ModificationSources (SE SpellModificationContainerComponent.Modifications)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Modifications",
+      "offset": 0,
+      "type": "Array<RemovedSpellModificationSources>",
+      "source": "inferred",
+      "evidence": "ecl::spell::ModificationNotifySystem::CreateOneFrameComponents (bg3.exe+0x1A6AF70, toolkit match) walks three FrameData lists (+0x50, +0x90, +0xD0); for the third it adds this component with FUN_141a6bed0 (bg3.exe+0x1A6BED0, the rx creator of this type, 16 bytes) and fills it with FUN_141a6b4b0, the same Array copy (elements of 0x40 bytes = HashMap<FixedString, DynamicArray<eoc::spell::Modification>>) used for AddedSpellModificationOneFrameComponent. Live: 29 instances, capacity 1, size 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Modification internals are declared as bytes; SE's spell::Modification (Spell.h) could replace RemovedSpellModificationEntry if external types are allowed."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": true,
+  "summary": "One-frame event of ecl::spell::ModificationNotifySystem: the spell modifications removed from an entity this frame, same shape as AddedSpellModificationOneFrameComponent (layout copied, struct names renamed). Born with no companions (a spell cast step that removed a modification).",
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

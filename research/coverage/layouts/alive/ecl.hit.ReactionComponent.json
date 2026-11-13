@@ -1,0 +1,24 @@
+{
+  "component": "ecl::hit::ReactionComponent",
+  "ext_name": "ClientHitReaction",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "HandledSources",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1EF9EF0 (client hit system, walks eoc::hit::ReactionComponent sources): looks entities up in this component with the HashSet layout (bucket count at +8, keys at +0x20, next at +0x10; 8-byte keys compared to the source EntityHandle), adds the newly handled source entities with bg3.exe+0x721030 and removes stale ones with bg3.exe+0x783130. macOS default ctor zeroes 48 bytes. Live: all zero (empty set)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Exact role of the set: sources already reacted to on the client is the best reading, name is inferred"
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

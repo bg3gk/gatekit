@@ -1,0 +1,38 @@
+{
+  "component": "eoc::reward::ChoiceComponent",
+  "ext_name": "RewardChoice",
+  "size": 56,
+  "fields": [
+    {
+      "name": "ChosenItems",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::HashSet<struct ls::ID<struct ecs::EntityHandleTraits>,struct ls::HashTableOpsDefault> eoc::reward::ChoiceComponent::*,0>; macOS ls::FieldMeta<ls::HashSet<ls::ID<ecs::EntityHandleTraits>, ls::HashTableOpsDefault> eoc::reward::ChoiceComponent::*, &eoc::reward::ChoiceComponent::m_ChosenItems>"
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "UserId",
+      "source": "unknown",
+      "evidence": "Replication reader bg3.exe+0x92C8B0 reads +0x30 with bg3.exe+0x40172B0 (UserID reader: u16 + peer string); no FieldMeta name"
+    },
+    {
+      "name": "_Pad34",
+      "offset": 52,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name of the UserId at +0x30 (the choosing user?)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

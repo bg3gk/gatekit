@@ -1,0 +1,107 @@
+{
+  "component": "ecl::DeathEffectComponent",
+  "ext_name": "ClientDeathEffect",
+  "size": 312,
+  "class_size": 304,
+  "storage_size": 8,
+  "seen": true,
+  "reuses": "EffectHandler (GameDefinitions/Effect.h:62) - the whole object; EffectHandlerInitInfo, resource::MultiEffectInfo, ConditionalEffect from the same headers",
+  "se_pattern": "Pointer-stored component: the creator bg3.exe+0x188F530 registers the ECS element size as 8 and stores a pointer to a separately allocated 0x130-byte object (FUN_1441beb10(..., 0x130) then constructor FUN_141c73c90). SE should map it like the proxy components (DEFINE_PROXY_COMPONENT) with the EffectHandler layout.",
+  "fields": [
+    {
+      "name": "VMT",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "EffectHandler.VMT (Effect.h); live module pointer in both samples."
+    },
+    {
+      "name": "TextKeyEventManager",
+      "offset": 8,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "EffectHandler layout (Effect.h); live heap pointer, same in both samples (a manager singleton)."
+    },
+    {
+      "name": "EffectManager",
+      "offset": 16,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "EffectHandler layout; live heap pointer, same in both samples."
+    },
+    {
+      "name": "ResourceManager",
+      "offset": 24,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "EffectHandler layout (ResourceManager*); live heap pointer, same in both samples."
+    },
+    {
+      "name": "InitInfo",
+      "offset": 32,
+      "type": "EffectHandlerInitInfo",
+      "source": "inferred",
+      "evidence": "SE struct EffectHandlerInitInfo (Effect.h:22, 0xA8 bytes with the 24-byte STDString). Live matches every member: +0x20 EventProviderEntity = the dead character's handle; +0x28 Player null; +0x30 SourceEffect.Entity null; +0x60 TargetEffect.Entity = same character, +0x68 TargetEffect.Position = world position (e.g. 43.99, 17.0, -420.8), +0x88 TargetEffect.Flags = 3; +0x90 PlayTime empty; +0xA0 MultiEffectDefinition STDString (heap ptr, Size 0x24 = a GUID string, Capacity 0x2F); +0xB8 WeaponBones null FixedString; +0xBC FXScale 1.0; +0xC0 ZoneRange 0; +0xC4..0xC7 DamageType 0, VerbalIntent 0, EnteredDuringSave 1, Reset 1."
+    },
+    {
+      "name": "Scene",
+      "offset": 200,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "EffectHandler.Scene (Scene*); live heap pointer, same in both samples."
+    },
+    {
+      "name": "EventProviderEntity",
+      "offset": 208,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "EffectHandler.EventProviderEntity; live null handle (0xFFC00000 high dword at +0xD4)."
+    },
+    {
+      "name": "MultiEffectInfo",
+      "offset": 216,
+      "type": "resource::MultiEffectInfo",
+      "source": "inferred",
+      "evidence": "Embedded resource::MultiEffectInfo (GuidResources.h:1312: GuidResource VMT + Guid ResourceUUID, STDString Name, Array<EffectInfo>, 0x40 bytes). Live: +0xD8 module pointer (VMT), +0xE0 16 random-looking bytes (Guid), +0xF0 heap ptr with Size 0x16/0x1B and Capacity 0x1F (Name), +0x108 heap ptr with capacity 1 / size 1 (EffectInfo)."
+    },
+    {
+      "name": "IsActive",
+      "offset": 280,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "EffectHandler.IsActive; live byte +0x118 = 1 in both samples (bytes after it are garbage)."
+    },
+    {
+      "name": "_Pad119",
+      "offset": 281,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "padding before the Array (live garbage, e.g. ASCII '9.5,236')."
+    },
+    {
+      "name": "ConditionalEffects",
+      "offset": 288,
+      "type": "Array<ConditionalEffect>",
+      "source": "inferred",
+      "evidence": "EffectHandler.ConditionalEffects; live heap ptr / capacity 1 / size 1 in one sample, empty in the other."
+    },
+    {
+      "name": "_Pad130",
+      "offset": 304,
+      "type": "uint8_t[8]",
+      "source": "unknown",
+      "evidence": "Not part of the object: the game allocates 0x130 bytes (bg3.exe+0x188F530). The registry size 312 = object + 8, the same +8 seen for every pointer-stored component of this batch (triggers, ecl::Item); live: 0 or a module pointer = whatever follows the allocation."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "FUN_141c73c90 (the constructor) was not read: the EffectHandler identity rests on the SE layout matching all live values; confirm it is an ecl EffectHandler (or subclass with no extra members).",
+    "The ECS storage holds an 8-byte pointer; SE must treat it as a proxy component, not inline 312 bytes."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "33 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "uses types declared elsewhere (ConditionalEffect, EffectHandlerInitInfo, MultiEffectInfo, resource): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

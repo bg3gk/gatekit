@@ -1,0 +1,23 @@
+{
+  "component": "ls::SoundRoomListenerComponent",
+  "ext_name": "SoundRoomListener",
+  "size": 8,
+  "seen": true,
+  "summary": "The sound room a listener (sound camera) is in, written by ecl::sound::RoomSystem (macOS: UpdateListenerRooms / FindRoomFirstFit).",
+  "fields": [
+    {
+      "name": "Room",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1DB5430 (component add, AllocRaw 8) initialises it to the null handle 0xFFC0000000000000; the caller bg3.exe+0x1DB0C60 (RoomSystem over SoundListenerComponent, stride 0x2C, flag +0x29) stores the 8-byte result of bg3.exe+0x1DAFAF0 (room lookup by the listener position) into it. Live: entity handles / null."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "17 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

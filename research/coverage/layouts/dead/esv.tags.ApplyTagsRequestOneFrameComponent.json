@@ -1,0 +1,41 @@
+{
+  "component": "esv::tags::ApplyTagsRequestOneFrameComponent",
+  "ext_name": "ServerTagsApplyTagsRequest",
+  "size": 256,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Request to (re)apply a full tag set to an entity: one Array<Guid> per tag component type, indexed by the TagComponentTypeContext index of the tag type (eoc::VoiceTag, esv::tags::AnubisTag, DialogTag, OsirisTag, RaceTag, BoostTag, TemplateTag, eoc::BackgroundTag, ClassTag, OriginTag, OriginAppearanceTag, eoc::god::Tag, esv::character_creation::AppearanceVisualTag ...), plus two more 16-byte-element arrays. Created by esv::party_preset::System (bg3.exe+0x2DBEC00, ProcessDirtyLoadStates, which copies 0xE0 bytes of arrays from the loaded preset and two arrays with FUN_140591AE0); consumed by the per-frame update of esv::TagSystem (bg3.exe+0x2D85B00 -> bg3.exe+0x2D864E0). The registry does not flag it as one-frame. Not saved.",
+  "fields": [
+    {
+      "name": "Tags",
+      "offset": 0,
+      "type": "std::array<Array<Guid>, 14>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2DC1D70: AllocRaw(0x100), memset 0xE0, vector constructor of 14 elements of 0x10 bytes (FUN_1405917F0 zeroes ptr/capacity/size); destructor bg3.exe+0x22AFF60 runs the vector destructor for 14 x 0x10. bg3.exe+0x2D864E0 reads *(comp + TypeIndex<X>_TagComponentTypeContext * 0x10) for every tag type X and walks the array with stride 0x10, passing each element (a tag Guid) to the per-type add function. The Toolkit esv::TagSystem::ExecuteRequests (EoCServer.dll+0xB641B0) WorldView lists exactly 14 tag components (eoc::VoiceTag, esv::tags::AnubisTag, DebugTag, DialogTag, OsirisTag, RaceTag, eoc::BackgroundTag, ClassTag, god::Tag, OriginAppearanceTag, OriginTag, esv::character_creation::AppearanceVisualTag, esv::tags::BoostTag, TemplateTag) and passes the range [comp, comp+0xE0) to the per-type step (FUN_180B5FCD0), like Windows bg3.exe+0x2D85B00 line 180 (local_300 = comp + 0xE0)."
+    },
+    {
+      "name": "AddedTags",
+      "offset": 224,
+      "type": "Array<Guid>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0xE0/+0xE8/+0xEC (Array shape); destructor clears it as a plain array (FUN_1405BD630) and frees +0xE0; party_preset bg3.exe+0x2DBEC00 line 362 fills it with FUN_140591AE0 (copy of an Array of 16-byte elements). Toolkit TagSystem::ExecuteRequests (EoCServer.dll+0xB641B0 lines 262-293) walks +0xE0 (count +0xEC, stride 0x10) and appends each tag Guid not yet present to the first Guid array (+0) of the entity's tag-change record - the AddedTags side (same order as esv::tags::TagsChangedEventOneFrameComponent: AddedTags, RemovedTags). Name inferred."
+    },
+    {
+      "name": "RemovedTags",
+      "offset": 240,
+      "type": "Array<Guid>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0xF0/+0xF8/+0xFC; destructor clears/frees +0xF0; bg3.exe+0x2DBEC00 line 363 copies it with FUN_140591AE0. Toolkit ExecuteRequests lines 294-326 walks +0xF0 (count +0xFC, stride 0x10) and appends each Guid to the second array (+0x10) of the tag-change record - the RemovedTags side. Name inferred."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which tag type each of the 14 slots holds is decided at run time by TagComponentTypeContext (the layout keeps them as one std::array)."
+  ],
+  "minutes": 10,
+  "functions_read": 6,
+  "status": "declared",
+  "second_pass": "Toolkit esv::TagSystem::ExecuteRequests confirms the 14 per-type Guid arrays (its WorldView has exactly 14 tag components) and shows +0xE0 / +0xF0 feed the added / removed sides of the entity's tag-change record; offsets and widths were already established by the Windows creator, destructor and party_preset copy.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

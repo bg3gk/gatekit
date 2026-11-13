@@ -1,0 +1,40 @@
+{
+  "component": "esv::timeline::ScriptEventOneFrameComponent",
+  "ext_name": "ServerTimelineScriptEvent",
+  "size": 40,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x2D150B0 (per-frame update of esv::timeline::ArenaScriptSystem) creates one component on a new entity per 0x28-byte esv::timeline::ArenaScriptEvent (queues at system +0x10 and +0x20, filled by LEGACY_AnubisRequestScriptEvent / LEGACY_OsirisRequestScriptEvent) through bg3.exe+0x2D15540 (default null handle) and copies the first qword; bg3.exe+0x2D15000 replaces it with the null handle when the entity is not alive. The Osiris call (EoCServer.dll+0x12A9360) fills it from its first GUIDSTRING argument."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Second qword of the ArenaScriptEvent, treated the same way; the Osiris call fills it from its second GUIDSTRING argument."
+    },
+    {
+      "name": "Event",
+      "offset": 16,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D150B0 copy-constructs the STDString at +0x10 of the event (small-string test on +0x24); the Osiris call fills it from its third (STRING) argument - by the component's name the script event id."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which roles the two entities have (the Osiris function name behind EoCServer.dll+0x12A9360 was not found); the client counterpart eoc::notification::CinematicArenaScriptEventComponent carries two Guids and the string in the same order.",
+    "Registered as a regular component (ComponentTypeIdContext) although named OneFrame."
+  ],
+  "minutes": 15,
+  "functions_read": 9,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Re-read bg3.exe+0x2D150B0: two 8-byte handles and an STDString copied from esv::timeline::ArenaScriptEvent (stride 0x28), which the Toolkit's Osiris call fills from (GUIDSTRING, GUIDSTRING, STRING) - offsets and widths settled on Windows, names of the two entities open. STDString is a builtin of generate.py now (24 bytes), so the earlier external_types override was removed.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

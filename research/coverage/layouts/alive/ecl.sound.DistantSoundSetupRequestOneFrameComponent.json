@@ -1,0 +1,38 @@
+{
+  "component": "ecl::sound::DistantSoundSetupRequestOneFrameComponent",
+  "ext_name": "ClientSoundDistantSoundSetupRequest",
+  "size": 12,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ActivationRange",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "ecl::sound::DistantSoundSystem::ProcessSetupRequests (EoCClient.dll+0xE81910) copies DistantSoundSystem::DistantSoundSetupRequest {4 bytes, FixedString, FixedString} into the component; the 4 bytes come from DistantSoundInfo.ActivationRange (+0x60 of DistantSoundStateComponent, ProcessDistantSoundInfoAdded). Live 150.0 / 200.0."
+    },
+    {
+      "name": "Name",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Second member: DistantSoundInfo.Name (+0 of the state component) in ProcessDistantSoundInfoAdded."
+    },
+    {
+      "name": "InitSound",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Third member, assigned after Name; live always null (0xFFFFFFFF); probably DistantSoundInfo.InitSound."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Third FixedString source (InitSound or Level) not confirmed."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "14 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

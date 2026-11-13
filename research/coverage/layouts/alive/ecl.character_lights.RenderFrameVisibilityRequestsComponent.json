@@ -1,0 +1,24 @@
+{
+  "component": "ecl::character_lights::RenderFrameVisibilityRequestsComponent",
+  "ext_name": "ClientCharacterLightsRenderFrameVisibilityRequests",
+  "size": 16,
+  "seen": true,
+  "reuses": "TimelineRenderFrameVisibilityRequest (GameDefinitions/Components/Coverage.h) - game name ecl::RenderFrameVisibilityRequest",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TimelineRenderFrameVisibilityRequest>",
+      "source": "inferred",
+      "evidence": "Drained in ecl::invisibility::EffectSystem::Update (EoCClient.dll+0xAFFB40) by the shared helper EoCClient.dll+0xAFDDE0 (ls::IndexedStorage<ecl::RenderFrameVisibilityRequest>, size at +0xC set to 0). Writers per macOS: ecl::CharacterLightSystem::SetupCharacterLightComponent and ::Update. Live (idle): +0 heap pointer, +8 capacity 4, +0xC size 0 - exactly a used-then-cleared DynamicArray."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "uses types declared elsewhere (TimelineRenderFrameVisibilityRequest): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

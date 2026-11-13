@@ -1,0 +1,60 @@
+{
+  "component": "ecl::ActiveTurnComponent",
+  "ext_name": "ClientActiveTurn",
+  "size": 12,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Timer",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Toolkit ecl::TurnOrderSystem::UpdateActiveTurns (EoCClient.dll+0x913FF0) walks the components with stride 0xC: when +4 is 0 it sets +0 to an RPGStats ExtraData value (FixedString global DAT_181a170d0, default 1.0) and sets +4 = 1; otherwise it subtracts GameTime+8 (frame delta) from +0 each update and, when it reaches <= 0, writes 0 here, sets +8 = 1 and calls FUN_180907360 (turn end handling). Creator bg3.exe+0x1951F50 writes 0. Live 0. A countdown in seconds."
+    },
+    {
+      "name": "TimerStarted",
+      "offset": 4,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Same function: set to 1 when Timer is loaded from ExtraData or expires; cleared to 0 when the entity no longer qualifies (end of the loop body). Creator writes 0; live 0."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "padding (creator's 8-byte zero store covers it)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "UpdateActiveTurns sets it to 1 when the countdown expires, or (when a turn-participant flag pcVar19[2] is set and it was 0) sets it to 1 and adds a component through the command buffer; cleared to 0 when pcVar19[2] == 0, pcVar19[6] != 0 and pcVar19[3] == 0. Looks like 'turn end requested/handled'. Creator writes 0 (16-bit store with +9); live 0."
+    },
+    {
+      "name": "field_9",
+      "offset": 9,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Zeroed by the creator's 16-bit store at +8; no reader seen."
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "Not written by the creator (live 0xFFFF = garbage); size 12 with no 8-byte member means 4-byte alignment."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Name of the ExtraData key that seeds Timer (FixedString DAT_181a170d0 in EoCClient.dll) - probably a turn-time-limit setting.",
+    "Exact meaning of field_8 (turn end requested?) and whether field_9 is used."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

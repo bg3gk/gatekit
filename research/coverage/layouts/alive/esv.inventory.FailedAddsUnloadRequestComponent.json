@@ -1,0 +1,34 @@
+{
+  "component": "esv::inventory::FailedAddsUnloadRequestComponent",
+  "ext_name": "ServerInventoryFailedAddsUnloadRequest",
+  "size": 32,
+  "seen": true,
+  "summary": "Server component (one instance, singleton-like): entities to unload/destroy because they could not be added to an inventory (esv::inventory::MemberUnloadSystem::ProcessMemberUnloadRequests, log 'Destroying entity %s because it failed to be added to an inventory'). Written by InteractionRequestSystem. Seen once, empty.",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "MemberUnloadSystem::ProcessMemberUnloadRequests (EoCServer.dll+0xF59380) iterates the component's array at +0 with stride 8, logs each element with GetEntityDataStr and destroys/unloads them. bg3.exe creator 0x3476260 zeroes two arrays; destructor FUN_1406a2280 clears both with the trivial-array clear."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Array<EntityHandle>",
+      "source": "unknown",
+      "evidence": "Second trivially-destructible DynamicArray (destructor FUN_1406a2280 frees +0x10). Element type not read; EntityHandle assumed by analogy with +0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Element type and role of the second array.",
+    "Which of the two singletons read in ProcessMemberUnloadRequests (FUN_180f59070 / FUN_180f58d60) is this component was inferred from the log texts."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Not settled in this pass: the role and element type of the second array (+0x10) need the bg3.exe MemberUnloadSystem, which was not reached; the macOS index names InteractionRequestSystem as the only writer of the component."
+}

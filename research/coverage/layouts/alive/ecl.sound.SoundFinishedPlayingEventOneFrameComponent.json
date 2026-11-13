@@ -1,0 +1,23 @@
+{
+  "component": "ecl::sound::SoundFinishedPlayingEventOneFrameComponent",
+  "ext_name": "ClientSoundSoundFinishedPlayingEvent",
+  "size": 4,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "One-frame event read by ecl::sound::PointAndClickSoundSystem::ProcessSoundFinishedEvents (Toolkit EoCClient.dll, called from Update at EoCClient.dll+0xDFF6F0): for each event the 4-byte value is compared with the keys of the system's HashMap<net::UserID, PointAndClickSoundStateComponent*>; on a match the state's +0x40 byte is cleared and +0x44 refreshed. Born live together with PointAndClickSoundRequestComponent (sneaking step).",
+  "fields": [
+    {
+      "name": "User",
+      "offset": 0,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "ProcessSoundFinishedEvents (Toolkit, EoCClient.dll) compares *(int*)(component) with each key of HashMap<net::UserID, PointAndClickSoundStateComponent*> (4-byte stride). Live: 1 instance, value 1 (the local user, same as PointAndClickSoundStateComponent.User)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

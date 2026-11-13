@@ -1,0 +1,26 @@
+{
+  "component": "esv::tutorial::MetaMagicEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialMetaMagicEventRequestsSingleton",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Gained",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34213F0 (MetaMagicEventSystem update over eoc::PassiveComponent) appends the 8-byte handle at PassiveComponent+0x10 when not yet present; ValidateSystem index 13 MetaMagic_Gained (bg3.exe+0x3428C90) treats it as the entity"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "PassiveComponent+0x10 is Item in SE's header; here it is resolved to a user, so it may be the owner - check"
+  ],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done).",
+  "seen": true,
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

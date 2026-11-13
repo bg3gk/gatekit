@@ -1,0 +1,25 @@
+{
+  "component": "esv::platform::MovementPausedReasonsComponent",
+  "ext_name": "ServerPlatformMovementPausedReasons",
+  "size": 8,
+  "seen": true,
+  "summary": "Why a moving platform is paused: a bit mask maintained by esv::platform::MovementSystem::ProcessPlatformPauseReasons (Toolkit EoCServer.dll+0x648850), which ORs in bit 1 and bit 2 for different conditions (combat / turn-based checks of the queried components) and tests them. Seen.py context: trigger S_UND_KethericCity_Firewall_EventTrigger_2 and a trader scene.",
+  "fields": [
+    {
+      "name": "Reasons",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "ProcessPlatformPauseReasons: *(ulonglong*)(x) = *(ulonglong*)(x) | 1 and *puVar22 | 2, and tests (byte & 1) / (byte >> 1 & 1) on the 8-byte-stride component storage. macOS default ctor zeroes one qword. Live 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the individual reason bits."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

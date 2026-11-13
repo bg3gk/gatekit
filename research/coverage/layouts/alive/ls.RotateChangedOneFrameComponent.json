@@ -1,0 +1,26 @@
+{
+  "component": "ls::RotateChangedOneFrameComponent",
+  "ext_name": "RotateChanged",
+  "size": 16,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame marker of the transform pipeline (sibling of ls::TranslateChangedOneFrameComponent / ls::ScaleChangedOneFrameComponent), added when an entity's rotation changes; read only for presence by trigger tracking, sound transform, inventory member transform and navcloud obstacle systems. Holds one quaternion.",
+  "fields": [
+    {
+      "name": "Rotation",
+      "offset": 0,
+      "type": "glm::quat",
+      "source": "inferred",
+      "evidence": "The whole 16-byte component. Windows ls::TransformSystem::Update (bg3.exe+0x3C77860) walks the system's HashMap<EntityHandle, Quaternionf> at this+0xB0 (keys +0xD0, values +0xE0, 16-byte stride) and for each live entity adds this one-frame component (bg3.exe+0x3C79480: ComponentFrameStorageAllocRaw(.., 0x10, ..), identity default (0,0,0,1)) and copies the 16-byte value into it (two qword stores). The map is filled by ls::TransformSystem::OnRotationChanged(ID const&, Quaternionf const&) (Toolkit GameEngine.dll+0x61F7B0), the listener of SetRotate's change signal (bg3.exe+0x3C78460 fires it with the entity and the rotation). Same pattern for translate (12 bytes, bg3.exe+0x3C79320) right before it. Live: unit quaternions in (x, y, z, w) order; server yaw-only samples have x = 0, z = 0 or -0.0. The raw check's 'part 2 not an ordinary float' is -0.0f (0x80000000), a valid float."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Whether the stored quaternion is the rotation before or after the change (OnRotationChanged keeps the first value per entity per frame; SetRotate's signal passes the transform's rotation) - the layout does not depend on it."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "status": "confirmed",
+  "second_pass": "Settled from the Windows ls::TransformSystem::Update bg3.exe+0x3C77860, which adds the 16-byte component and copies a Quaternionf from the OnRotationChanged queue into it; the failed raw check was -0.0f, which the raw checker should accept.",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

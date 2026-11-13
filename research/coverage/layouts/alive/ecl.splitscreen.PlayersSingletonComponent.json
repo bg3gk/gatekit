@@ -1,0 +1,82 @@
+{
+  "component": "ecl::splitscreen::PlayersSingletonComponent",
+  "ext_name": "ClientSplitscreenPlayersSingleton",
+  "size": 48,
+  "seen": true,
+  "structs": [
+    {
+      "name": "SplitscreenPlayersSingletonPlayer",
+      "size": 24,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Not touched by UpdatePlayer (EoCClient.dll+0x83F420). Default 0 (macOS stores q0 = 0 over the whole object). Live: 0 in player 1's entry, 1 in player 2's entry - perhaps a player index, not established."
+        },
+        {
+          "name": "PlayerId",
+          "offset": 4,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "UpdatePlayer (EoCClient.dll+0x83F420, `anonymous-namespace'::UpdatePlayer in SplitscreenSplitReasonsSystem.cpp): if (*(short*)(entry+4) != id) { *(short*)(entry+4) = id; log \"Player%d set ID to %d\" }. GoalSystem::Update looks up entry+4 / entry+0x1C as a short key in a HashSet<short>. Live 1 for player 1, 0 for player 2 (none)."
+        },
+        {
+          "name": "_Pad6",
+          "offset": 6,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "Alignment padding before the entity handle."
+        },
+        {
+          "name": "Character",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "UpdatePlayer: if (*(int64*)(entry+8) != character) { store; add PlayerCharacterChangedOneFrameComponent; log \"Player%d set entity to %s\" }. macOS default constructor stores 0xFFC0000000000000 (null handle) at +8 and +0x20. Live: a character handle in player 1's entry, null in player 2's."
+        },
+        {
+          "name": "HasRenderView",
+          "offset": 16,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "UpdatePlayer: entry[0x10] = PlayerId != 0 && the id is found in one of two HashSet<short> of the singleton passed as param_2 (at +0 and +0x30; probably ecl::player_management::PlayersWithRenderViewAssignedSingletonComponent). GoalSystem merges when entry+0x10 or entry+0x28 is 0. Live 1 / 0."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Padding to the 24-byte entry size (entries at +0 and +0x18)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Player1",
+      "offset": 0,
+      "type": "SplitscreenPlayersSingletonPlayer",
+      "source": "inferred",
+      "evidence": "ecl::splitscreen::SplitReasonsSystem::Update (EoCClient.dll+0x83E0C0) calls UpdatePlayer(world, set, 1, character1, playerId1, singleton) and UpdatePlayer(world, set, 2, character2, playerId2, singleton + 0x18); writes the singleton (macOS: SplitReasonsSystem::Update writes PlayersSingletonComponent)."
+    },
+    {
+      "name": "Player2",
+      "offset": 24,
+      "type": "SplitscreenPlayersSingletonPlayer",
+      "source": "inferred",
+      "evidence": "Second UpdatePlayer call with singleton + 0x18; GoalSystem::Update reads +0x1C (PlayerId), +0x20 (Character) and +0x28 (bool)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "What the uint32 at entry+0 is (0/1 live: a player index?).",
+    "Which singleton the HashSets checked for entry+0x10 belong to (named HasRenderView on that assumption)."
+  ],
+  "minutes": 12,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "20 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,145 @@
+{
+  "component": "ecl::sound::ItemSwitchDataComponent",
+  "ext_name": "ClientSoundItemSwitchData",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "ItemMaterial",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "ecl::inventory::SoundSystem::SetInventorySoundSwitches (EoCClient.dll+0xE265A0) gets the item's switch data (FUN_180e21860) and, when +0 != -1, sets sound switch \"Item_Material\" (strItem_Material) and also \"Weapon_Material\" to this FixedString. Live: valid FixedString indices; macOS RefreshItemUnderlyingGroundMaterial also updates it."
+    },
+    {
+      "name": "ItemWeight",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "SetInventorySoundSwitches sets switch \"Item_Weight\" (strItem_Weight) from +4."
+    },
+    {
+      "name": "WeaponType",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xE20520 / ecl::inventory::SoundSystem::SetInventorySoundSwitches (+0xE265A0) set the sound switch named by DAT_181a3ae00 from +8; that global is created from the string \"Weapon_Type\" (EoCClient.dll+0x16CBD0). | first pass: SetInventorySoundSwitches sets the switch named by global FixedString EoCClient.dll+0x1A3AE00 (name not resolved) from +8. Live: -1 or a valid index.",
+      "legacy": "field_8"
+    },
+    {
+      "name": "WeaponTypeUnique",
+      "offset": 12,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Same setters, switch DAT_181a3ade8 = \"Weapon_Type_Unique\" (EoCClient.dll+0x16CC00), value from +0xC. | first pass: SetInventorySoundSwitches sets the switch named by global FixedString EoCClient.dll+0x1A3ADE8 (name not resolved) from +0xC.",
+      "legacy": "field_c"
+    },
+    {
+      "name": "WeaponWeight",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "SetInventorySoundSwitches sets switch \"Weapon_Weight\" (strWeapon_Weight) from +0x10."
+    },
+    {
+      "name": "AttackType",
+      "offset": 20,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xE20E30 sets switch DAT_181a3adf8 = \"Attack_Type\" from +0x14. | first pass: Live: -1 or a FixedString index like its neighbours; macOS default constructor fills 0x00-0x1F with one 16-byte pattern (all FixedStrings). Not used by SetInventorySoundSwitches.",
+      "legacy": "field_14"
+    },
+    {
+      "name": "WeaponDamageType",
+      "offset": 24,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xE20E30 sets switch DAT_181a3ade0 = \"Weapon_DamageType\" from +0x18. | first pass: As field_14 (FixedString-shaped live values, same default).",
+      "legacy": "field_18"
+    },
+    {
+      "name": "ArmorType",
+      "offset": 28,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "SetInventorySoundSwitches sets switch \"Armor_Type\" (strArmor_Type) from +0x1C."
+    },
+    {
+      "name": "ItemGoldSize",
+      "offset": 32,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "SetInventorySoundSwitches sets switch \"Item_Gold_Size\" (strItem_Gold_Size) from +0x20. Live: always -1 (no gold among the 48 samples)."
+    },
+    {
+      "name": "MaterialType",
+      "offset": 36,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xE20520 sets switch strMaterial_Type (\"Material_Type\") from +0x24 when != -1. | first pass: Live: always the same FixedString index 0x2F200010 (a default value); macOS default stores x0 (non-zero pair) at +0x20.",
+      "legacy": "field_24"
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Default 0. Live: mostly 0, sometimes 0xFFFFFFFFFFFFFFFF or other values; not decoded."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Default 0 (stp xzr, xzr, [x23, #0x30]). Live: mostly 0, sometimes 0xFFFFFFFFFFFFFF00; not decoded."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Live: 0."
+    },
+    {
+      "name": "field_39",
+      "offset": 57,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Live: always 1."
+    },
+    {
+      "name": "field_3a",
+      "offset": 58,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Live: 0 or 1."
+    },
+    {
+      "name": "_Pad3B",
+      "offset": 59,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Live: always 0."
+    },
+    {
+      "name": "field_3c",
+      "offset": 60,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Live: 0 or 0xFFFFFFFF or small values; not decoded."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the switches behind globals EoCClient.dll+0x1A3AE00 (+8) and +0x1A3ADE8 (+0xC); meaning of +0x14, +0x18, +0x24.",
+    "The 24 bytes at +0x28..+0x3F (read the writer ecl::inventory::SoundSystem / RefreshItemUnderlyingGroundMaterial).",
+    "names pass 2: +0x28..+0x3F (field_28, field_30, field_38, field_39, field_3a, field_3c) still not decoded.",
+    "names pass 2: ItemMaterial at +0 is also sent as the Weapon_Material switch by the same setters (name kept)."
+  ],
+  "minutes": 9,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "FixedString members named after the Wwise switch groups the client sets from them (strings resolved from the Toolkit's global FixedString initialisers); the names are the game's switch names, the member names themselves are inferred."
+}

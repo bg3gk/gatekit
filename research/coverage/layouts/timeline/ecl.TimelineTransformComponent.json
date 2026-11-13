@@ -1,0 +1,210 @@
+{
+  "component": "ecl::TimelineTransformComponent",
+  "ext_name": "ClientTimelineTransform",
+  "size": 280,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1F21140 (add helper): '*comp = entity' right after the constructor bg3.exe+0x1C708A0, which writes the null handle. Probe: 32 distinct live entity handles."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Constructor writes the null Guid constant (DAT_14625aad0/8). bg3.exe+0x1D69190 (ecl::TimelineSystem) copies 16 bytes from the Timeline object +0x478 (a Guid member of ecl Timeline; which one not established). Probe: zero."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "Transform",
+      "source": "inferred",
+      "evidence": "Constructor writes identity: quaternion (0,0,0,1) at 0x18, translate 0 at 0x28, scale 1 at 0x34 (40 bytes = Script Extender's Transform). bg3.exe+0x1D69190 writes the 40 bytes from the result of FUN_141f91dd0 or from another entity's transform (FUN_140e5a590). Probe: unit quaternion / position / scale 1 or 0.2."
+    },
+    {
+      "name": "Transform",
+      "offset": 64,
+      "type": "Transform",
+      "source": "inferred",
+      "evidence": "Identity in the constructor (w at 0x4C, scale at 0x5C). The TLTransform component handler bg3.exe+0x203C000 writes the normalised quaternion channel to 0x40..0x4C, the three translate channels to 0x50/0x54/0x58 and the scale channel to 0x5C/0x60/0x64 (uniform, clamped to >= 0.0001)."
+    },
+    {
+      "name": "FrameOfReference",
+      "offset": 104,
+      "type": "TimelineTransformFrameOfReference",
+      "source": "inferred",
+      "evidence": "Same layout as Script Extender's aspk::keys::TransformChannelFrameOfReferenceKey::FrameOfReference (AllSpark.h: Guid, FixedString, bool, bool; 0x18 bytes), redeclared under a name unique to the component. bg3.exe+0x203C000 assigns it from the frame-of-reference channel value (FUN_142003ed0(comp + 0x68, ..)); bg3.exe+0x203BDB0 resets it to {null, -1, 0, 1}."
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "Transform",
+      "source": "unknown",
+      "evidence": "Constructor zeroes 0x80..0xA8 (five 8-byte writes) - 40 bytes, no writer found; typed as a Transform only because of its size and its neighbours. Probe: always zero."
+    },
+    {
+      "name": "field_A8",
+      "offset": 168,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Constructor writes a 4-byte 0 at 0xA8. Probe: always zero."
+    },
+    {
+      "name": "field_AC",
+      "offset": 172,
+      "type": "Transform",
+      "source": "inferred",
+      "evidence": "Constructor zeroes it. Probe (3 instances): unit quaternion (0, 0.94, 0, -0.34) at 0xAC, world position (45.0, 17.2, -424.8) at 0xBC, scale (1,1,1) at 0xC8 - the quat/vec3/vec3 shape of Transform starting at 0xAC. No code writer was read."
+    },
+    {
+      "name": "field_D4",
+      "offset": 212,
+      "type": "Transform",
+      "source": "inferred",
+      "evidence": "Constructor zeroes it. Probe (3 instances): identity quaternion (w = 1.0 at 0xE0), translate 0, scale (1,1,1) at 0xF0. No code writer was read."
+    },
+    {
+      "name": "field_FC",
+      "offset": 252,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Constructor writes a 4-byte 0 at 0xFC. Probe: 0 or 1 (could be a bool with padding)."
+    },
+    {
+      "name": "field_100",
+      "offset": 256,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Constructor writes one byte 0 at 0x100; probe shows garbage in the following 7 bytes."
+    },
+    {
+      "name": "_Pad101",
+      "offset": 257,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "alignment (garbage in the probe)"
+    },
+    {
+      "name": "field_108",
+      "offset": 264,
+      "type": "int64_t",
+      "source": "unknown",
+      "evidence": "Constructor writes -1 (8 bytes). The timeline animation component handler bg3.exe+0x203C6D0 stores the 8-byte result of FUN_143d8ce60(component) here once; bg3.exe+0x203C560 resets it to -1. Probe: -1."
+    },
+    {
+      "name": "Continuous",
+      "offset": 272,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x203BDB0 (TLTransform component handler): 'comp[0x110] = tlComponent[0x98]', the bool that follows the six channel pointers of TLTransformComponent (Script Extender names it Continuous); when it is 0 the FrameOfReference is reset."
+    },
+    {
+      "name": "field_111",
+      "offset": 273,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Constructor writes 1 (qword 0x100 at 0x110). bg3.exe+0x203C560: set to '(tlAnimComponent[0x178] == 6)'; bg3.exe+0x203C6D0 clears it when tlAnimComponent[0x1C8] is set. Probe: 0/1."
+    },
+    {
+      "name": "field_112",
+      "offset": 274,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x203C6D0 ORs in '(tlAnimComponent[0x178] != 0)'; bg3.exe+0x203C560 tests then clears it."
+    },
+    {
+      "name": "field_113",
+      "offset": 275,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x203C560 writes 0 or '(tlAnimComponent[0x13C] || [0x13D])'."
+    },
+    {
+      "name": "field_114",
+      "offset": 276,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x203C4B0 and 0x203C6D0: 'comp[0x114] = tlAnimComponent[0x1C8]'."
+    },
+    {
+      "name": "field_115",
+      "offset": 277,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Zeroed by the constructor's 8-byte write; no user found."
+    },
+    {
+      "name": "field_116",
+      "offset": 278,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Zeroed by the constructor; probe shows 0 or 1 (byte 2 of the dword at 0x114), so it is a live member."
+    },
+    {
+      "name": "_Pad117",
+      "offset": 279,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "last byte of the constructor's 8-byte write; always 0 in the probe"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which Guid field_8 is (Timeline +0x478) and what the transforms at 0x18 / 0xAC / 0xD4 are called - only the TLTransform-driven one at 0x40 is identified.",
+    "0x80..0xAB: 40 zero bytes + a dword, typed Transform/uint32 by size only (no writer found; never non-zero live).",
+    "Flags 0x111..0x116 are written by the timeline animation component handlers (bg3.exe+0x203C4B0..0x203C6D0); their meaning is not established."
+  ],
+  "minutes": 27,
+  "functions_read": 16,
+  "oneFrame": false,
+  "status": "confirmed",
+  "structs": [
+    {
+      "name": "TimelineTransformFrameOfReference",
+      "size": 24,
+      "fields": [
+        {
+          "name": "TargetId",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Script Extender AllSpark.h TransformChannelFrameOfReferenceKey::FrameOfReference.targetId; constructor writes the null Guid at component +0x68; bg3.exe+0x203C000 assigns it from the channel value."
+        },
+        {
+          "name": "TargetBone",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "AllSpark.h targetBone; constructor writes -1 at component +0x78, destructor bg3.exe+0x69A240 DecRefs it."
+        },
+        {
+          "name": "OneFrameOnly",
+          "offset": 20,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "AllSpark.h OneFrameOnly; constructor byte 0 at component +0x7C; bg3.exe+0x203BDB0 resets it to 0."
+        },
+        {
+          "name": "KeepScale",
+          "offset": 21,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "AllSpark.h KeepScale; constructor byte 1 at component +0x7D; bg3.exe+0x203BDB0 resets it to 1."
+        },
+        {
+          "name": "_Pad16",
+          "offset": 22,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "tail padding to 0x18 (alignment 8 from the Guid); probe shows garbage in 0x7E..0x7F"
+        }
+      ]
+    }
+  ],
+  "second_pass": "Made the file valid: the frame of reference is redeclared as TimelineTransformFrameOfReference (same fields as Script Extender's AllSpark FrameOfReference, offsets from the constructor). No new source for the unnamed transforms and flags, so the confidence stays medium.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "build 2026-11-13: a member named Transform hides the type Transform for the members after it; rename the member or qualify the type in generate.py"
+}

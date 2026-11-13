@@ -1,0 +1,131 @@
+{
+  "component": "esv::inventory::ReplicateMembersRequestComponent",
+  "ext_name": "ServerInventoryReplicateMembersRequest",
+  "size": 128,
+  "seen": true,
+  "summary": "Request component of esv::inventory::InteractionSystem (query with MemberUnloadRequest, MembersCreatedSingleton, MemberChangesSingleton registered at bg3.exe+0x3499210). One holder, idle level, seen empty. Two HashMaps with trivially destructible values; value types not established, so each value array is given as raw parts.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "first HashMap: bucket table. Adder bg3.exe+0x348AF70 zeroes two HashMap patterns (sizes at +0x1C/+0x2C and +0x5C/+0x6C). Destructor bg3.exe+0x682800: frees +0x70, HashSet dtor on +0x40, frees +0x30, HashSet dtor on +0."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "first map bucket count."
+    },
+    {
+      "name": "_Pad0C",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "padding."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "first map NextIds."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "first map keys (8-byte; EntityHandle assumed)."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "first map value array pointer (trivial values, type unknown)."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "first map value capacity."
+    },
+    {
+      "name": "field_3c",
+      "offset": 60,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "first map value size."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "second HashMap: bucket table."
+    },
+    {
+      "name": "field_48",
+      "offset": 72,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "second map bucket count."
+    },
+    {
+      "name": "_Pad4C",
+      "offset": 76,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "padding."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "second map NextIds."
+    },
+    {
+      "name": "field_60",
+      "offset": 96,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "second map keys (8-byte; EntityHandle assumed)."
+    },
+    {
+      "name": "field_70",
+      "offset": 112,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "second map value array pointer (trivial values, type unknown)."
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "second map value capacity."
+    },
+    {
+      "name": "field_7c",
+      "offset": 124,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "second map value size."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Value types of both maps; key types assumed EntityHandle."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Not settled in this pass: value types of both maps not established; not saved (no savegame model); the bg3.exe query bg3.exe+0x347C370 that names it only removes the entity at shutdown."
+}

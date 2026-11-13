@@ -1,0 +1,40 @@
+{
+  "component": "ecl::timeline::MainMenuActiveEventComponent",
+  "ext_name": "ClientTimelineMainMenuActiveEvent",
+  "size": 24,
+  "fields": [
+    {
+      "name": "Event",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1F01AE0: ComponentFrameStorageAllocRaw(storage, 0x18, ...), then two zero qwords at +0/+8 and a zero byte at +0x10. bg3.exe+0x1F007A0 (ecl::timeline::MainMenuTimelineSystem) creates one entity per 16-byte element of the main-menu trigger's Guid array (trigger object +0x98, count +0xA4) and copies the Guid here."
+    },
+    {
+      "name": "State",
+      "offset": 16,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Written 1 on creation; when the trigger's PlayedMainMenuTriggerComponent::State toggles (1 <-> 2) the same value is written to +0x10 of every event entity of the trigger (fetch helper bg3.exe+0x1F01EF0)."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "alignment / tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Values of State (1, 2) are seen as constants only; they mirror PlayedMainMenuTriggerComponent::State. Names inferred.",
+    "Never alive in the captures (main menu only)."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Settled on Windows: the creator bg3.exe+0x1F01AE0 allocates 0x18 bytes and initialises a 16-byte block and a byte at +0x10; bg3.exe+0x1F007A0 copies a Guid into +0 and writes the 1-byte state at +0x10.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

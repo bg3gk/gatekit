@@ -1,0 +1,133 @@
+[
+ {
+  "label": "lockpick",
+  "wait": 3,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() Scene = GK.Stage.Spawn{ template = \"chest\", distance = 2, items = { \"potion\" } } Osi.TemplateAddTo(GK.Stage.Templates.thieves_tools, H, 3, 0) return Scene",
+  "then": [
+   {
+    "server": "Osi.Lock(Scene[1], \"\") return Osi.IsLocked(Scene[1])",
+    "wait": 2
+   },
+   {
+    "server": "local H = Osi.GetHostCharacter() Osi.Use(H, Scene[1], \"\") return true",
+    "wait": 10,
+    "expect": 5
+   },
+   {
+    "server": "local H = Osi.GetHostCharacter() pcall(Osi.UseSpell, H, \"Target_Knock\", Scene[1]) return true",
+    "wait": 5
+   }
+  ]
+ },
+ {
+  "label": "lock-with-key",
+  "wait": 3,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() Scene = GK.Stage.Spawn{ template = \"chest\", distance = 2 } Osi.Lock(Scene[1], \"TourKey\") return Scene",
+  "then": [
+   {
+    "server": "local H = Osi.GetHostCharacter() Osi.Use(H, Scene[1], \"\") return true",
+    "wait": 6
+   }
+  ]
+ },
+ {
+  "label": "trap-disarm",
+  "wait": 4,
+  "keep": true,
+  "server": "local rows = GK.Stage.Usables(\"DisarmTrap\", { limit = 2 }) SceneTraps = rows if rows[1] then GK.Stage.UseItem(rows[1].uuid) end return rows",
+  "expect": 4
+ },
+ {
+  "label": "combine",
+  "wait": 5,
+  "keep": true,
+  "server": "local rows = GK.Stage.Usables(\"Combine\", { limit = 3 }) for _, r in ipairs(rows) do Osi.ToInventory(r.uuid, Osi.GetHostCharacter(), 1, 1, 0) end SceneCombine = rows return rows",
+  "then": [
+   {
+    "server": "local H = Osi.GetHostCharacter() if SceneCombine[1] then Osi.Use(H, SceneCombine[1].uuid, \"\") end return true",
+    "wait": 5
+   },
+   {
+    "server": "local H = Osi.GetHostCharacter() if SceneCombine[1] and SceneCombine[2] then pcall(Osi.Combine, H, SceneCombine[1].uuid, SceneCombine[2].uuid, \"\", \"\", \"\", 0) end return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "insert-and-teleport-items",
+  "wait": 5,
+  "keep": true,
+  "server": "local out = {} for _, kind in ipairs({ \"Insert\", \"Teleport\", \"Throw\", \"UseSpell\", \"PlaySound\", \"Unknown31\", \"SpawnCharacter\", \"ConstrainedAction\" }) do local rows = GK.Stage.Usables(kind, { limit = 1 }) if rows[1] then GK.Stage.UseItem(rows[1].uuid) out[#out + 1] = kind end end return out"
+ },
+ {
+  "label": "experience",
+  "wait": 4,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() local did = {} for _, name in ipairs({ \"PartyAddActualExperience\", \"PartyAddExplorationExperience\", \"PartyAddExperience\", \"AddExperience\", \"SetLevel\" }) do if Osi[name] then did[#did + 1] = name .. \"=\" .. tostring(pcall(Osi[name], H, 400)) end end return did"
+ },
+ {
+  "label": "tadpole",
+  "wait": 4,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() local did = {} for _, call in ipairs({ { \"SetTadpoleTreeState\", H, 2 }, { \"AddTadpole\", H, 2 }, { \"AddTadpolePower\", H, \"TAD_Charm\", 1 }, { \"SetTag\", H, \"c15c2234-9b19-453e-99cc-00b7358b9fce\" } }) do if Osi[call[1]] then did[#did + 1] = call[1] .. \"=\" .. tostring(pcall(Osi[call[1]], table.unpack(call, 2))) end end return did"
+ },
+ {
+  "label": "party-split",
+  "wait": 5,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() local n = 0 for _, c in ipairs({ \"S_Player_ShadowHeart_3ed74f06-3c60-42dc-83f6-f034cb47c679\", \"S_Player_Gale_ad9af97d-75da-406a-ae13-7071c563f604\" }) do pcall(Osi.SetOnStage, c, 1) pcall(Osi.TeleportTo, c, H, \"\", 0, 0, 0, 0, 1) pcall(Osi.PROC_GLO_PartyMembers_Add, c, H) end return GK.Stage.Party()",
+  "then": [
+   {
+    "ui": "return { pcall(GK.Command, \"ToggleGroupMode\") }",
+    "wait": 3,
+    "fixed": true
+   },
+   {
+    "server": "local H = Osi.GetHostCharacter() for _, m in ipairs(GK.Stage.Party()) do if m:sub(-36) ~= H:sub(-36) then pcall(Osi.DetachFromPartyGroup, m) end end return true",
+    "wait": 3
+   },
+   {
+    "server": "local H = Osi.GetHostCharacter() for _, m in ipairs(GK.Stage.Party()) do if m:sub(-36) ~= H:sub(-36) then pcall(Osi.AttachToPartyGroup, m, H) end end return true",
+    "wait": 3
+   },
+   {
+    "ui": "return { pcall(GK.Command, \"ToggleGroupMode\") }",
+    "wait": 3,
+    "fixed": true
+   },
+   {
+    "server": "local H = Osi.GetHostCharacter() for _, m in ipairs(GK.Stage.Party()) do if m:sub(-36) ~= H:sub(-36) then pcall(Osi.PROC_GLO_PartyMembers_Remove, m, H, 1) end end return GK.Stage.Party()",
+    "wait": 3
+   }
+  ]
+ },
+ {
+  "label": "photo-mode",
+  "wait": 7,
+  "fixed": true,
+  "keep": true,
+  "ui": "return { pcall(GK.Command, \"TogglePhotoModeCommand\") }",
+  "then": [
+   {
+    "ui": "return { pcall(GK.Command, \"TogglePhotoModeCommand\") }",
+    "wait": 4,
+    "fixed": true
+   }
+  ]
+ },
+ {
+  "label": "misty-step",
+  "wait": 5,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() GK.Stage.Teach(\"Target_MistyStep\") Osi.RestoreParty(H) local p = GK.Stage.Position() Osi.UseSpellAtPosition(H, \"Target_MistyStep\", p[1] + 6, p[2], p[3], 1) return true",
+  "then": [
+   {
+    "server": "local H = Osi.GetHostCharacter() GK.Stage.Teach(\"Target_DimensionDoor\") Osi.RestoreParty(H) local p = GK.Stage.Position() Osi.UseSpellAtPosition(H, \"Target_DimensionDoor\", p[1] + 9, p[2], p[3], 1) return true",
+    "wait": 6
+   }
+  ],
+  "reset": true
+ }
+]

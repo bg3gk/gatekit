@@ -1,0 +1,39 @@
+{
+  "component": "esv::tutorial::AttackHitEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialAttackHitEventRequestsSingleton",
+  "size": 48,
+  "fields": [
+    {
+      "name": "Immunity",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "ValidateSystem::Update helper bg3.exe+0x3426F70 (macOS esv::tutorial::ValidateSystem::Update) copies every request array into ls::Variant<ActionResource_Depleted, ActionResource_Gained, ActiveRoll_Advantage, ActiveRoll_Disadvantage, ActiveRoll_Dialog, AttackHit_Immunity, AttackHit_Resistance, AttackHit_Vulnerable, DualWielding_Enabled, Functor, HotbarSlot_Added, HotbarSlot_Removed, MagicPockets, MetaMagic_Gained, Save_Quicksave, UIEvent, UserAction_Activated> (full name from the macOS symbol of DynamicArray<Variant<...>>); variant index written at +0x18 of each 32-byte entry; +0 -> index 5 AttackHit_Immunity (bg3.exe+0x3428590, 8-byte element). AppendEvents bg3.exe+0x341A6A0 (macOS (anonymous)::AppendEvents(EntityHandle const&, EnumFlags<EResistanceType>, bool, component&)) adds the entity to +0 for flags 0x20/0x4 (ImmuneToNonMagical/ImmuneToMagical)"
+    },
+    {
+      "name": "Resistance",
+      "offset": 16,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "index 6 AttackHit_Resistance (bg3.exe+0x3428670); AppendEvents adds for flags 0x10/0x2 (Resistant)"
+    },
+    {
+      "name": "Vulnerable",
+      "offset": 32,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "index 7 AttackHit_Vulnerable (bg3.exe+0x3428750); AppendEvents adds for flags 0x40/0x8 (Vulnerable); destructor FUN_1406c9c70 frees 3 arrays"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "the game's element structs (AttackHit_Immunity etc.) are 8 bytes and hold only the entity; written here as Array<EntityHandle>"
+  ],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Filled by esv::tutorial::AttackHitSystem from esv::hit::HitResultEventOneFrameComponent and resistance boosts.",
+  "seen": true,
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

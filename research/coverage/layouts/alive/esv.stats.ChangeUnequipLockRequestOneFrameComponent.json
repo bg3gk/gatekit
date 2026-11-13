@@ -1,0 +1,39 @@
+{
+  "component": "esv::stats::ChangeUnequipLockRequestOneFrameComponent",
+  "ext_name": "ServerStatsChangeUnequipLockRequest",
+  "size": 16,
+  "seen": true,
+  "summary": "Request raised when a character's equipment becomes disabled or enabled again (eoc::DisabledEquipmentComponent added/removed in the same helper bg3.exe+0x31BB9A0). Seen.py context: born in the 'spells-6' step (Wild Shape / Rage / Animate Dead casts) together with eoc::DisabledEquipmentComponent and shapeshift components.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x31C9ED0 allocates 0x10, defaults +0 to the null handle; caller bg3.exe+0x31BB9A0 stores the character whose DisabledEquipmentComponent it just added/removed. Live: entity handles."
+    },
+    {
+      "name": "Locked",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Creator zeroes the byte at +8; caller writes (flag == 0), where the flag also selects between getting/creating a 1-byte component (FUN_1431c9d70, set to 0) and calling FUN_1440103b0 with eoc::DisabledEquipmentComponent's type index (add or remove - not established). Live: byte 1 in all samples. Polarity of the name not verified."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "Never written; live bytes are garbage."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Name 'Locked' inferred from the component name and the DisabledEquipment path; game name not found."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

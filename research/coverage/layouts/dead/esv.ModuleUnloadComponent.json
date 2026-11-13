@@ -1,0 +1,41 @@
+{
+  "component": "esv::ModuleUnloadComponent",
+  "ext_name": "ServerModuleUnload",
+  "size": 8,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server game-state component created by the module-unload game state (bg3.exe+0x2A973B0, slot 3 of the state table bg3.exe+0x57880F0) on a new entity; carries one flag copied from the game state. Never seen alive. Registry total 8 (server row).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x2A973B0: AllocRaw(8), `*(uint32*)p = 0`; never written otherwise in the creator."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator writes byte 0 at +4, then `*(byte*)(p + 4) = *(byte*)(state + 0x19)` and clears the state's byte +0x18."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding to 8."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of both members unknown; readers are only the generic ECS helpers found by symbols.py users.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,98 @@
+{
+  "component": "esv::spell::SpellUnpreparedEventOneFrameComponent",
+  "ext_name": "ServerSpellSpellUnpreparedEvent",
+  "size": 24,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Event of unprepared spells (read by esv::spell::ModificationApplySystem); seen in spell scenes, fights, equipment changes.",
+  "structs": [
+    {
+      "name": "SpellUnpreparedSpellUnprepareInfo",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "esv::spell::SpellUnprepareInfo starts with eoc::spell::MetaId (Toolkit default ctor EoCServer.dll+0x3E9040 calls MetaId::MetaId(this)); bg3.exe+0x3393070 copies a FixedString at +0."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "enum SpellSourceType (SE Enumerations/Stats.inl: BEGIN_ENUM(SpellSourceType, uint8_t), 1 byte) written as its integer; SE SpellMetaId.SourceType. copied as part of the qword at +8 by bg3.exe+0x3393070."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "MetaId.Source; qwords +0x10/+0x18 copied."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "MetaId.ProgressionSource; qwords +0x20/+0x28 copied."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Toolkit default ctor sets this[0x30] = 0; bg3.exe+0x3393070 copies one byte at +0x30."
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Toolkit ctor SpellUnpreparedEventOneFrameComponent(ID<EntityHandleTraits>, DynamicArray<esv::spell::SpellUnprepareInfo> const&); bg3.exe+0x3393070 stores *param_3 at +0."
+    },
+    {
+      "name": "Spells",
+      "offset": 8,
+      "type": "Array<SpellUnpreparedSpellUnprepareInfo>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3393070 copies elements of stride 0x38 into the array at +8 (capacity +0x10, size +0x14). Live: capacity/size 1..2."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name of the bool at +0x30 of SpellUnprepareInfo (SE Spell.h calls it field_20 although it sits at +0x30)."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "status": "confirmed",
+  "second_pass": "SourceType is now written as uint8_t (enum SpellSourceType, uint8_t in SE) so generate.py can size it; layout re-checked against bg3.exe+0x3393070 (stride 0x38). SE's own esv::spell::SpellUnprepareInfo (Spell.h) has the same shape but calls the byte at +0x30 'field_20'.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "live check 2026-11-13: raw bytes fit, but entity.ServerSpellSpellUnpreparedEvent reads nil on live entities (its twin SpellPreparedEvent reads fine) - the storage kind is probably not what the registry flag says; not understood yet"
+}

@@ -1,0 +1,27 @@
+{
+  "component": "ecl::time::TemporaryPauseComponent",
+  "ext_name": "ClientTimeTemporaryPause",
+  "size": 4,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Client-side temporary game pause: seconds left (default 2 s). Added and counted down by the per-frame update of ecl::TimeSystem (bg3.exe+0x77EB10), which removes it when the time runs out. Never seen alive. Registry total 4 (client row).",
+  "fields": [
+    {
+      "name": "TimeLeft",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x77F580 (AllocRaw 4) stores 0x40000000 (2.0f). ecl::TimeSystem update bg3.exe+0x77EB10 (lines ~343-371): `v = *(float*)(storage + i*4) - GameTime.DeltaTime(+8); *(float*)(...) = v; if (old == 0.0 || v < 0.0) remove TemporaryPauseComponent`. The same function calls the creator (FUN_14077f580) when a float it reads elsewhere is non-zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What triggers the temporary pause (the source of the request read at lines ~234-285 of bg3.exe+0x77EB10) is not established.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

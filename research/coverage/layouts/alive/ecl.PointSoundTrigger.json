@@ -1,0 +1,133 @@
+{
+  "component": "ecl::PointSoundTrigger",
+  "ext_name": "ClientPointSoundTrigger",
+  "size": 176,
+  "seen": true,
+  "base": "PointTrigger (GameDefinitions/Components/Trigger.h, sizeof 0x70) - declare as C++ base class",
+  "fields": [
+    {
+      "name": "Base",
+      "offset": 0,
+      "type": "PointTrigger",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x1BB4F70 (~ ecl::PointSoundTrigger::PointSoundTrigger, EoCClient.dll+0x96A390 where it calls PointTriggerBase::PointTriggerBase) runs the common trigger prologue; base = SE Trigger. Live (12 instances) matches the Trigger layout."
+    },
+    {
+      "name": "Entity",
+      "offset": 112,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Constructor writes 0xffc0000000000000 at +0x70; live equals TriggerEntity (+0x20)."
+    },
+    {
+      "name": "ExtraPositions",
+      "offset": 120,
+      "type": "Array<glm::vec3>",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor ExtraPositions at +0x78 returns ls::DynamicArray<Vector3f> const&; constructor zeroes +0x78 (pointer), +0x80 (capacity), +0x84 (size). Live: empty."
+    },
+    {
+      "name": "LoadedEventName",
+      "offset": 136,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Toolkit constructor builds a FixedString at +0x88. bg3.exe+0x1BB5500 (~ PointSoundTrigger::Play) loads the sound only when +0x88 is empty and EventName (+0x8C) is set, then copies EventName into +0x88 (FUN_14412e090); ecl::PointSoundTrigger::Stop (bg3.exe+0x1BB56D0) calls ResourceManager::UnloadSound(+0x88, +0x9E) and resets it to -1. Live: -1 in all samples."
+    },
+    {
+      "name": "EventName",
+      "offset": 140,
+      "type": "FixedString",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor EventName at +0x8C (FixedString const&); Play resolves it through the resource manager. Live: 5 different FixedStrings."
+    },
+    {
+      "name": "AttenuationScale",
+      "offset": 144,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor at +0x90; constructor writes 1.0; live 1.0."
+    },
+    {
+      "name": "MixdownDelayTime",
+      "offset": 148,
+      "type": "float",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor at +0x94; constructor writes -1.0; live -1.0."
+    },
+    {
+      "name": "MixdownSpeed",
+      "offset": 152,
+      "type": "uint8_t",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor MixdownSpeed at +0x98, enum ls::ESoundTriggerMixdownSpeed (1 byte, not declared in SE); constructor writes 3; live 3."
+    },
+    {
+      "name": "_Pad99",
+      "offset": 153,
+      "type": "uint8_t[1]",
+      "source": "unknown",
+      "evidence": "padding (live 0x00 / 0xFF garbage)"
+    },
+    {
+      "name": "CustomMixRadius",
+      "offset": 154,
+      "type": "int16_t",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor CustomMixRadius at +0x9A (short); constructor writes 0xffffffff over +0x9A..+0x9D. Live -1."
+    },
+    {
+      "name": "ActivationRadius",
+      "offset": 156,
+      "type": "int16_t",
+      "source": "toolkit",
+      "evidence": "Toolkit setter ActivationRadius at +0x9C (2 bytes); default -1 from the same 4-byte store. Live 0x3C (60) or -1."
+    },
+    {
+      "name": "LoadedSoundFlag",
+      "offset": 158,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Constructor writes 16-bit 0 over +0x9E/+0x9F. Play (bg3.exe+0x1BB5500) stores bit 1 of byte +0x39 of the sound resource here and Stop passes it as the bool argument of ResourceManager::UnloadSound - remembers how the loaded sound must be unloaded. Exact meaning of that bit unknown. Live 0."
+    },
+    {
+      "name": "field_9F",
+      "offset": 159,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Zeroed by the constructor's 16-bit store at +0x9E. Live 0 or 1."
+    },
+    {
+      "name": "UseOcclusion",
+      "offset": 160,
+      "type": "bool",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor UseOcclusion at +0xA0; constructor writes 1; live 1."
+    },
+    {
+      "name": "_PadA1",
+      "offset": 161,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "Not written by the constructor; C++ object ends at 0xA1 (sizeof 0xA8). Live garbage (0x00 / 0xFF bytes)."
+    },
+    {
+      "name": "field_A8",
+      "offset": 168,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Beyond the C++ object; live 0, 0x1B or 0xFFFFFFFF in the low dword. Same trailing 8 bytes as in the other ecl triggers."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "LoadedSoundFlag: what bit 1 of sound-resource byte +0x39 means (streamed? external?).",
+    "field_9F and the trailing 8 bytes at +0xA8.",
+    "ls::ESoundTriggerMixdownSpeed is not declared in SE (uint8_t used)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,120 @@
+{
+  "component": "ecl::ServerControlledEffectComponent",
+  "ext_name": "ClientServerControlledEffect",
+  "size": 88,
+  "seen": true,
+  "summary": "Client side of an effect the server controls (born in dialogues/act1-idle with ServerControlledEffectReference/Attached). Read by ecl::ServerControlledEffectSystem per-frame step bg3.exe+0x1EA88B0.",
+  "fields": [
+    {
+      "name": "Position",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1FF8760 zeroes it; bg3.exe+0x1EA88B0 passes the component start as a position-like argument to a beam/effect update (FUN_14189e8e0). Live world-coordinate-like floats (43.4, 17.0, -420.8) or 0.",
+      "legacy": "field_0"
+    },
+    {
+      "name": "Translate",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1EA88B0 copies +0xC (8 bytes) and +0x14 (4) into the translation slot of a transform it builds. Creator writes 0; live 0."
+    },
+    {
+      "name": "RotationQuat",
+      "offset": 24,
+      "type": "glm::quat",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1EA88B0 copies +0x18 and +0x20 (16 bytes) into the rotation slot of that transform. Creator: zero with 1.0 at +0x24 (w); live (0,0,0,1)."
+    },
+    {
+      "name": "Scale",
+      "offset": 40,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1EA88B0: `s = *(float*)(c+0x28); if (s < 0) s = 0;` written as uniform scale (x,y,z) of the transform. Creator 0; live 1.0."
+    },
+    {
+      "name": "_Pad2C",
+      "offset": 44,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "padding (creator zeroes it as part of an 8-byte store)"
+    },
+    {
+      "name": "Target",
+      "offset": 48,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator null. bg3.exe+0x1EA88B0 checks IsEntityAlive on it and resets it to null when dead; looked up first (FUN_140f24fc0) to find the visual to attach to; when +0x55 is set and this is null a detach request is issued. Live entity handles."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator null; live entity handles."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator null; bg3.exe+0x1EA88B0 uses it as the fallback lookup when +0x30 gives nothing, and passes it to the beam update. Live 0/handles."
+    },
+    {
+      "name": "Effect",
+      "offset": 72,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator writes -1 (8-byte store of 0xFFFFFFFFFFFFFFFF over +0x48/+0x4C). bg3.exe+0x1EA88B0 looks +0x48 up in the global resource manager (gGlobalResourceManager+0x50) - an effect resource id. Live FixedString-like values."
+    },
+    {
+      "name": "field_4C",
+      "offset": 76,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator -1; passed by address to the beam update together with +0x50. Live values or empty (bone/attachment name?)."
+    },
+    {
+      "name": "field_50",
+      "offset": 80,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator -1; passed by address to the beam update. Live always empty."
+    },
+    {
+      "name": "field_54",
+      "offset": 84,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator 0 (32-bit store over +0x54..+0x57); passed to the beam update. Live 0/1."
+    },
+    {
+      "name": "field_55",
+      "offset": 85,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1EA88B0: `*(c+0x55) |= flag`; when set and Target is null a detach request is issued. Live 0/1."
+    },
+    {
+      "name": "_Pad56",
+      "offset": 86,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "tail padding"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "field_0 vs Translate: which is the world position and which an offset is not proven.",
+    "field_38/field_40/field_4C/field_50/field_54/field_55 meanings.",
+    "names pass 2: Other unnamed members: see evidence; the beam/effect update FUN_14189e8e0 was not decoded."
+  ],
+  "minutes": 12,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Position: the component start is passed as the position argument of the beam/effect update in bg3.exe+0x1EA88B0; live world coordinates."
+}

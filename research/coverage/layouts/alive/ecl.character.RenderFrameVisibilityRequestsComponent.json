@@ -1,0 +1,26 @@
+{
+  "component": "ecl::character::RenderFrameVisibilityRequestsComponent",
+  "ext_name": "ClientCharacterRenderFrameVisibilityRequests",
+  "size": 16,
+  "seen": true,
+  "reuses": "TimelineRenderFrameVisibilityRequest (GameDefinitions/Components/Coverage.h) - the game's own name of the element is ecl::RenderFrameVisibilityRequest",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TimelineRenderFrameVisibilityRequest>",
+      "source": "inferred",
+      "evidence": "ecl::invisibility::EffectSystem::Update (EoCClient.dll+0xAFFB40) takes character/character_creation/character_lights/crowds/timeline::RenderFrameVisibilityRequestsComponent in one WorldView and clears each singleton with the same helper EoCClient.dll+0xAFDDE0, whose boundary check names ls::IndexedStorage<struct ecl::RenderFrameVisibilityRequest> (size reset at +0xC => DynamicArray). The timeline variant is already declared in Coverage.h as Array<TimelineRenderFrameVisibilityRequest> (16-byte element: EntityHandle, int16 PlayerId, bool Visible). Writer per macOS: (anonymous)::UpdateCharacterHighlights. macOS default ctor: stp xzr,xzr,[x23] (empty array). Live (idle): all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Element type name: SE calls it TimelineRenderFrameVisibilityRequest, the game ecl::RenderFrameVisibilityRequest - consider renaming / aliasing it since five components share it."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "uses types declared elsewhere (TimelineRenderFrameVisibilityRequest): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

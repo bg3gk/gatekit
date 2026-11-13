@@ -1,0 +1,59 @@
+{
+  "component": "esv::pickup::ScriptPermissionResponsesSingletonComponent",
+  "ext_name": "ServerPickupScriptPermissionResponses",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: Osiris/script answers to pick-up permission requests, moved in each frame from esv::pickup::PickUpLegacyRequestProxySystem (LEGACY_RequestPickUpScriptPermissionsResponse) and consumed by esv::pickup::PickUpPermissionSystem. Seen.py context: idle level.",
+  "structs": [
+    {
+      "name": "PickupScriptPermissionResponse",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xD408F0 LEGACY_RequestPickUpScriptPermissionsResponse(ID const&, int, bool) stores param_1 (entity) at +0 of the element (ls::IndexedStorage<esv::pickup::PickUpScriptPermissionResponse>, stride 0x10). Same layout as Script Extender's esv::lock ScriptPermissionResponse (Data.h: Entity, RequestId, Response)."
+        },
+        {
+          "name": "RequestId",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "The int argument, stored at +8; named like SE's esv::lock::ScriptPermissionResponse::RequestId."
+        },
+        {
+          "name": "Response",
+          "offset": 12,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "The bool argument, stored at +0xC (granted or not)."
+        },
+        {
+          "name": "_Pad0D",
+          "offset": 13,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x10 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Responses",
+      "offset": 0,
+      "type": "Array<PickupScriptPermissionResponse>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD40A50 esv::pickup::PickUpLegacyRequestProxySystem::ProcessPickUpScriptPermissionResponses(EntityView<ScriptPermissionResponsesSingletonComponent>) moves the system's DynamicArray at this+0x20 (filled by LEGACY_RequestPickUpScriptPermissionsResponse, element esv::pickup::PickUpScriptPermissionResponse, stride 0x10) into the component: pointer at +0, capacity +8, size +0xC. Live (idle): all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

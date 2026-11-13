@@ -1,0 +1,39 @@
+{
+  "component": "esv::background::GoalRecordedEventOneFrameComponent",
+  "ext_name": "ServerBackgroundGoalRecordedEvent",
+  "size": 40,
+  "seen": true,
+  "summary": "Server event put on a new entity by esv::background::GoalSystem::Update when a character's background goal is recorded into eoc::background::GoalsComponent (seen in the GOB_GuardUpset dialogue and the companion-death scenario). esv::notification::System turns each into eoc::notification::GoalActualsComponent. Saved: model game.background.v0.GoalRecordedEventOneFrameComponent, 40 bytes, written with an ls::model::core::v0::EntityId (member names not known).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x377D50 GoalSystem::Update: *event = request's entity handle (*plVar25); savegame Save writes an EntityId model along with it; live entity handles"
+    },
+    {
+      "name": "Goal",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "GoalSystem::Update copies the request's goal Guid (this_01, the same value stored in GoalRecord.Goal) to +8/+0x10; GoalActualsComponent+8 receives it"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "GoalSystem::Update copies the Guid local_8b0 (returned by a resolver for the goal and used as the hash key into eoc::background::GoalsComponent) to +0x18/+0x20; live random-looking Guid"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "what the second Guid is (the GoalsComponent map key: character uuid or goal resource?)"
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

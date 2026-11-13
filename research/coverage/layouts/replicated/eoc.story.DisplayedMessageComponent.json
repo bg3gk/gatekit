@@ -1,0 +1,34 @@
+{
+  "component": "eoc::story::DisplayedMessageComponent",
+  "ext_name": "StoryDisplayedMessage",
+  "size": 8,
+  "fields": [
+    {
+      "name": "MessageId",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Replication serializer (handler vtable bg3.exe+0x551F180, slots bg3.exe+0x8E1810 / bg3.exe+0x8E19C0): dirty bit 1 -> ecs::sync::Serialize(writer, (FixedString *)(DAT_146280600 + base)), i.e. offset 0; the reader bg3.exe+0x8E1BF0 reads it back with bg3.exe+0x4016110 (FixedString). Default from the removal path of bg3.exe+0x8E1A60: -1 (null FixedString). Meaning unknown: no macOS FieldMeta names, macOS index lists no system that writes or reads it, Toolkit has no accessor. Game name: member 0 (m_MessageId) of savegame model ls::model::game::story::v0::DisplayedMessageComponent; matched by the macOS Save (bg3_macos_x64+0x4EE50C0): FixedString component +0 -> model +0."
+    },
+    {
+      "name": "DisplayTSKey",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Same serializers: dirty bit 2 -> ecs::sync::Serialize(writer, (FixedString *)(base + 4)); default -1. Meaning unknown. Game name: member 1 (m_DisplayTSKey) of savegame model ls::model::game::story::v0::DisplayedMessageComponent; matched by the macOS Save (bg3_macos_x64+0x4EE50C0): FixedString component +4 -> model +0x10."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive; meaning of the two strings beyond their game names (a story message id and the TranslatedString key it displays) is not traced to a system."
+  ],
+  "seen": false,
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "names_pass": "Both model members matched by the macOS Save (two FixedStrings, an 8-byte component: the layout cannot differ between platforms).",
+  "second_pass": "Settled from Windows code: the replication serializer bg3.exe+0x8E19C0 serializes FixedStrings at +0 (DAT_146280600, zero-filled) and +4, and the savegame model ls::model::game::story::v0::DisplayedMessageComponent names them m_MessageId, m_DisplayTSKey in that order; an 8-byte component leaves no other room.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,23 @@
+{
+  "component": "ls::ClusterContentComponent",
+  "ext_name": "ClusterContent",
+  "size": 48,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "The whole component is one SE-style HashSet (HashKeys ptr+size at +0/+8, NextIds Array at +0x10, Keys Array at +0x20): the creator bg3.exe+0x3E60C60 zeroes exactly these; bg3.exe+0x3E5EB30 passes the fresh component to bg3.exe+0x2E61850, which inserts a span of 8-byte items with bg3.exe+0x721030 (bucket = key % *(int*)(this+8), chain in *(this+0x10), 8-byte keys compared in *(this+0x20), size at +0x2C); bg3.exe+0x3E5E400 removes and adds 8-byte items the same way when a cluster's content changes. Probe agrees: prime bucket counts (5..193) at +8, capacity/size pairs at +0x18 and +0x28 identical to each other."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key type: 8-byte values hashed as raw integers, which fits EntityHandle (members of the cluster, cf. ls::ClusterChildComponent::Parent), but no key value was seen live and the source of the item lists in bg3.exe+0x3E5E400 was not traced - confirm by reading Keys on a live instance.",
+    "HashSet<T> is not in the brief's list of plain types; it is the existing SE container (48 bytes). Field name 'Entities' is mine."
+  ],
+  "minutes": 12,
+  "functions_read": 8,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

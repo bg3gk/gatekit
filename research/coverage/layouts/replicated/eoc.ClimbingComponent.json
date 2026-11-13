@@ -1,0 +1,55 @@
+{
+  "component": "eoc::ClimbingComponent",
+  "ext_name": "Climbing",
+  "size": 52,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Live samples (seen.py, 48 client + 48 server instances, Windows build): +0/+4/+8 hold world coordinates (x 15..44, y 0.3..1.9, z 7.6..44), the shape of a position; macOS ctor FLT_MAX x3."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Live samples (seen.py, 48 client + 48 server instances, Windows build): +0xC/+0x10/+0x14 a second position near the first (x 15..44, y 0.5..1.7, z 8.7..44); macOS ctor FLT_MAX x3."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Live samples (seen.py, 48 client + 48 server instances, Windows build): +0x18/+0x1C/+0x20 a third position (y 1.2..2.8, higher than the other two); macOS ctor FLT_MAX x3."
+    },
+    {
+      "name": "field_24",
+      "offset": 36,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Live samples (seen.py, 48 client + 48 server instances, Windows build): +0x24 and +0x2C range over -1..0.42, +0x28 is always 0 or -0.0: a horizontal unit direction (x, 0, z). The raw check's 'not an ordinary float' is that -0.0, a valid value. macOS ctor FLT_MAX x3."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Live samples (seen.py, 48 client + 48 server instances, Windows build): 0 or 1 with the upper three bytes zero; macOS ctor stores -1 with a 32-bit store (w27): a 4-byte integer (index or state)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names: three positions (start / ledge / end of the climb?), a horizontal direction and an int; no FieldMeta, not replicated, not saved. No Windows reader was decoded: bg3.exe users of the type are query registrations and world-view builders (bg3.exe+0x1B0B190, +0x2D3F120, +0x3061C40, +0x1BE6030); the Toolkit reader ecl::GroundMaterialSystem::ProcessTransformChanges was not traced to its accesses.",
+    "Whether +0x30 is signed (default -1 suggests int32)."
+  ],
+  "seen": false,
+  "minutes": 12,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled from 96 live Windows instances: the 13 dwords group into three positions, a horizontal unit direction (y always 0/-0) and a small int (0/1, default -1); the failed raw check was -0.0, not a layout error. Widths from the samples and the macOS ctor's 32-bit stores; no Windows code reader was decoded, so confidence is medium (live data only), up from low.",
+  "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: not replicated in this build, not saved."
+}

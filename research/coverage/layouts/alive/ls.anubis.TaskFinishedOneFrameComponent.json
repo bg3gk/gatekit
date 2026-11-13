@@ -1,0 +1,26 @@
+{
+  "component": "ls::anubis::TaskFinishedOneFrameComponent",
+  "ext_name": "AnubisTaskFinished",
+  "size": 8,
+  "seen": true,
+  "summary": "Server one-frame event on an Anubis (behaviour script) entity: a task of it finished. Added by bg3.exe+0x2A41960 (Anubis task runner) through the adder bg3.exe+0x2A44980; read by ls::anubis::System::RunPending.",
+  "fields": [
+    {
+      "name": "TaskId",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x2A44980 (AllocRaw 8) copies the 8 bytes *param_3; its caller, the esv::AnubisExecutor per-frame update bg3.exe+0x2A41960, passes the entity's esv::AnubisExecutorComponent (SE Runtime.h: field_0, Task) whose first qword it had set from ls::anubis::RuntimeComponent +0x70, then releases the Task pointer at +8. Windows ls::anubis::System::Update bg3.exe+0x3829400 (storage index DAT_1463be8a0) compares the whole 8-byte value with RuntimeComponent +0x70 (SE Script.h RuntimeComponent::field_70, uint64_t; stride 0x98) and queues the entity when they are equal: a 64-bit operation/task id. Live 1..0x11D."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Game name of the id (SE calls RuntimeComponent's matching member field_70)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": true,
+  "status": "confirmed",
+  "second_pass": "Windows System::Update bg3.exe+0x3829400 compares this value as a full qword with ls::anubis::RuntimeComponent +0x70, and the executor bg3.exe+0x2A41960 copies it from esv::AnubisExecutorComponent +0 - the 64-bit width is established.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

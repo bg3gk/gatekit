@@ -1,0 +1,180 @@
+{
+  "component": "ecl::AiPathVisualDataComponent",
+  "ext_name": "ClientAiPathVisualData",
+  "size": 88,
+  "seen": true,
+  "structs": [
+    {
+      "name": "AiPathVisualDataIcon",
+      "size": 64,
+      "fields": [
+        {
+          "name": "Position",
+          "offset": 0,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x205BAD0 appends 0x40-byte elements to the array at component+0: +0..+8 = position interpolated between two path points (point +0/+4/+8); bg3.exe+0x1EA51E0 passes the element to the effect spawner as its position."
+        },
+        {
+          "name": "Distance",
+          "offset": 12,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x205BAD0: value interpolated from path point +0x2C (cumulative path length, written by bg3.exe+0x205B790); bg3.exe+0x205C070 compares it with the distance of path segments (*(float*)(elem + 0xC))."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "glm::vec4",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x205BAD0: x,y,z interpolated from path point +0x18/+0x1C/+0x20, w = 1.0f."
+        },
+        {
+          "name": "Rotation",
+          "offset": 32,
+          "type": "glm::quat",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x205BAD0: identity (0,0,0,1) or the result of Quaternionf::rotation for kind 1; bg3.exe+0x1EA51E0 passes elem+0x20 with scale 1.0 to the effect transform."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "void*",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x205BAD0: for kind 2 the object pointer of path point +0x30 (the surface object whose +0xB0 byte is the SurfaceType); bg3.exe+0x1EA51E0 checks its +0x1E8 int against -1 and its +0x1EC int."
+        },
+        {
+          "name": "Kind",
+          "offset": 56,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x205BAD0 copies the marker kind (1, 2 or 3) of the icon request; bg3.exe+0x1EA51E0 picks the effect by it (3 = use field_39)."
+        },
+        {
+          "name": "field_39",
+          "offset": 57,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x205BAD0: set for kind 3 from the request byte +5; bg3.exe+0x1EA51E0 selects one of three effect FixedStrings (system +0x8C/+0x90/+0x94) by its value 1/2/3."
+        },
+        {
+          "name": "_Pad3A",
+          "offset": 58,
+          "type": "uint8_t[6]",
+          "source": "unknown",
+          "evidence": "tail padding of the 0x40 element (8-byte store of the two bytes plus garbage)."
+        }
+      ]
+    },
+    {
+      "name": "AiPathVisualDataVertex",
+      "size": 112,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "glm::vec4",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x205C070 appends 0x70-byte elements to the array at component+0x10: +0x00/+0x10/+0x20 are the three rows of a 3x4 transform (orientation from the segment direction, translation = segment midpoint)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "glm::vec4",
+          "source": "unknown",
+          "evidence": "second transform row (bg3.exe+0x205C070)."
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "glm::vec4",
+          "source": "unknown",
+          "evidence": "third transform row (bg3.exe+0x205C070)."
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "std::array<float, 16>",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x205C070 fills +0x30..+0x6F with per-segment floats copied from the two end points (negated directions, colours packed as (float)(r<<16|g<<8|b), widths, cumulative distances); consumed by the render object through FUN_14205e090 (bg3.exe+0x1EA51E0). All 4-byte floats."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Icons",
+      "offset": 0,
+      "type": "Array<AiPathVisualDataIcon>",
+      "source": "inferred",
+      "evidence": "Array (ptr, capacity +8, size +0xC): grown by FUN_1406da1c0 and appended with stride 0x40 in bg3.exe+0x205BAD0; size reset to 0 by the job kernel bg3.exe+0x205A520; iterated with stride 0x40 by bg3.exe+0x1EA51E0 to spawn marker effects. Destructor FUN_14069b690 frees it. macOS names an ecl::AiVisualPathDataBuilderJob::IconArea array (name hint)."
+    },
+    {
+      "name": "Vertices",
+      "offset": 16,
+      "type": "Array<AiPathVisualDataVertex>",
+      "source": "inferred",
+      "evidence": "Array (ptr +0x10, capacity +0x18, size +0x1C): grown by FUN_1406da2f0 and appended with stride 0x70 in bg3.exe+0x205C070; size reset by bg3.exe+0x205A520; bg3.exe+0x1EA51E0 passes ptr and size (+0x1C) to the path render object (FUN_14205e090) and hides the visual when the size is 0."
+    },
+    {
+      "name": "StartPosition",
+      "offset": 32,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x205A870 copies the +0x2C vector here (the job's start position, job data +0x28 = the character's world position from FUN_141ea2330); bg3.exe+0x1EA51E0 copies +0x20 (8 bytes) and +0x28 (4 bytes) into the render object (+0x58/+0x60)."
+    },
+    {
+      "name": "Origin",
+      "offset": 44,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x205A870 writes the job's start position (job +0x28/+0x30) here; bg3.exe+0x1EA51E0 copies +0x2C/+0x34 into the render object (+0x64/+0x6C)."
+    },
+    {
+      "name": "EndPosition",
+      "offset": 56,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x205A870 writes the path's last checkpoint (or the spell's preview end point when job +0x40 is set) here and passes component+0x38 to the per-checkpoint builder FUN_14205ab20."
+    },
+    {
+      "name": "field_44",
+      "offset": 68,
+      "type": "uint8_t[12]",
+      "source": "unknown",
+      "evidence": "Zeroed by the creator bg3.exe+0x1EA2A70; neither the builder job (bg3.exe+0x205A520 and its helpers 0x205A870/0x205B790/0x205BAD0/0x205C070) nor the drawing step bg3.exe+0x1EA51E0 touches it."
+    },
+    {
+      "name": "Length",
+      "offset": 80,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x205B790 sums the distances between consecutive path points and stores the total here (0 when fewer than 2 points); bg3.exe+0x1EA51E0 passes it to the render object."
+    },
+    {
+      "name": "Visible",
+      "offset": 84,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "AiPathVisualDataSystem::ProcessAiPaths (bg3.exe+0x1EA1E50) stores the result of FUN_141ea2330 (a movement/spell preview path exists and a job was queued) here; bg3.exe+0x1EA51E0 hides the path visual when it is 0."
+    },
+    {
+      "name": "_Pad55",
+      "offset": 85,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "tail padding to 0x58."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meanings (not offsets) of the inner members of the two element structs and of the 12 untouched bytes at +0x44; Origin vs StartPosition differ only in that +0x20 is copied from +0x2C."
+  ],
+  "second_pass": "Offsets and widths established from the Windows builder job bg3.exe+0x205A520 and its helpers (0x205A870 writes the three vectors, 0x205B790 the length, 0x205BAD0/0x205C070 append 0x40- and 0x70-byte elements) and from AiPathVisualSystem's drawing step bg3.exe+0x1EA51E0; +0x54 is the 'has preview path' flag stored by bg3.exe+0x1EA1E50.",
+  "minutes": 14,
+  "functions_read": 9,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found; no further inference."
+}

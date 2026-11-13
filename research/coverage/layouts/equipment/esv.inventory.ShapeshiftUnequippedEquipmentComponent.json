@@ -1,0 +1,24 @@
+{
+  "component": "esv::inventory::ShapeshiftUnequippedEquipmentComponent",
+  "ext_name": "ServerShapeshiftUnequippedEquipment",
+  "size": 16,
+  "fields": [
+    {
+      "name": "ShapeshiftState",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34FD8F0 (executes an unequip request) creates the component (storage bg3.exe+0x2701A60, size 0x10, zeroed) on the unequipped item when the 16 bytes at param_12 are non-zero and copies them into it; param_12 is the ShapeshiftState Guid of the UnequipRequest (Script Extender: esv::inventory::UnequipRequest.ShapeshiftState). bg3.exe+0x34F7990 compares both qwords with an entry of esv::inventory::ShapeshiftEquipmentHistoryComponent.History (Array<Guid>) and removes the component on a match (the item is then equipped back). Same shape as esv::inventory::ShapeshiftAddedEquipmentComponent."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures (needs a shapeshift that unequips items)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

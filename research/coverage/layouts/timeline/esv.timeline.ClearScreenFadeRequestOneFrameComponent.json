@@ -1,0 +1,67 @@
+{
+  "component": "esv::timeline::ClearScreenFadeRequestOneFrameComponent",
+  "ext_name": "ServerTimelineClearScreenFadeRequest",
+  "size": 16,
+  "structs": [
+    {
+      "name": "TimelineClearScreenFadeRequest",
+      "size": 40,
+      "fields": [
+        {
+          "name": "Fade",
+          "offset": 0,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D112F0 copy-constructs it (ls::STDString::STDString) from the string of the user's entry in esv::timeline::FadeInTimeoutSingletonComponent - the id of the screen fade to clear. Game struct name (macOS): esv::timeline::ClearFadeRequest."
+        },
+        {
+          "name": "Duration",
+          "offset": 24,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D112F0 stores the value of the system's per-user map (filled from esv::timeline::TimelineFadeClearRequestOneFrameComponent+4, 0.5) or, on timeout, the constant 0.2 (Toolkit: esv::timeline::FadeSystem::c_TimeoutClearScreenDuration). Toolkit ProcessClearScreenFadeRequests copies it as the first float, which becomes ScreenFadeData.Duration."
+        },
+        {
+          "name": "WaitTime",
+          "offset": 28,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D112F0 writes 0. Toolkit esv::screen_fade::ScreenFadeSystem::ProcessClearScreenFadeRequests (EoCServer.dll+0x39CF30) copies +0x18 and +0x1C of each element into the two float members of its own ClearScreenFadeRequest (LEGACY_ClearScreenFadeRequest(name, float, float, user)), which FinalizeComponents writes to eoc::screen_fade::ScreenFadeData Duration (+0x18) and WaitTime (+0x1C)."
+        },
+        {
+          "name": "User",
+          "offset": 32,
+          "type": "UserId",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D112F0 stores the 4-byte key of the per-user map / of the timeout map."
+        },
+        {
+          "name": "_Pad24",
+          "offset": 36,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "element stride 0x28"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TimelineClearScreenFadeRequest>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D112F0 (~esv::timeline::FadeSystem::ProcessClearScreenFades) builds a local array with element stride 0x28 and, when it is not empty, creates the component on a new entity (bg3.exe+0x2D12040) and moves pointer, capacity and size into +0/+8/+0xC."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Duration / WaitTime are named after the eoc::screen_fade::ScreenFadeData members they end up in (Toolkit chain ProcessClearScreenFadeRequests -> FinalizeComponents); the Windows copy of that chain was not read."
+  ],
+  "minutes": 15,
+  "functions_read": 6,
+  "oneFrame": true,
+  "status": "confirmed",
+  "second_pass": "Windows bg3.exe+0x2D112F0 gives every offset and width of the 0x28-byte esv::timeline::ClearFadeRequest; the Toolkit consumer ProcessClearScreenFadeRequests maps +0x18/+0x1C to the fade's Duration/WaitTime and +0x20 to the user. STDString is a builtin of generate.py now (24 bytes), so the earlier external_types override was removed.",
+  "raw_check": "24 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

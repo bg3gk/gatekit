@@ -1,0 +1,39 @@
+{
+  "component": "ecl::item::DestroyingHandledComponent",
+  "ext_name": "ClientItemDestroyingHandled",
+  "size": 16,
+  "seen": true,
+  "summary": "Marker with data added to client items whose destruction (eoc::item::DestroyingComponent) has been handled: queried as <eoc::item::DestroyingComponent, ecl::Item> without DestroyingHandledComponent (macOS query spec), added by bg3.exe+0x1CC5130 after it plays the destroy visuals. Born live with eoc::item::DestroyingComponent / DestroyedComponent when items were destroyed during spell casts.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x1CC6630 (0x10 bytes) copies 16 bytes from a local pair in bg3.exe+0x1CC5130: an 8-byte value defaulting to 0xffc0000000000000 (null handle), set by FUN_141cc4de0 when a destroy effect/animation entry (type 5) of the item is found. Live: entity handles (0x00400001_xxxx shape) or null."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Byte defaulting to 0, set together with +0 by FUN_141cc4de0. Live low byte 0/1."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding (live garbage, pointer-shaped)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "What FUN_141cc4de0 stores (a destroy-effect entity and a flag?) was not read."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

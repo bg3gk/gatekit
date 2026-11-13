@@ -1,0 +1,46 @@
+{
+  "component": "eoc::thrown::IsThrownComponent",
+  "ext_name": "ThrownIsThrown",
+  "size": 16,
+  "seen": true,
+  "summary": "Replicated marker of an object in flight after a throw, written by esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (bg3.exe+0x2AFA000) from a 0x28-byte throw request. Born live in shove-throw with RotationParametersComponent, drop components and the client thrown components.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Serializer bg3.exe+0x8EE450: 4 bytes at +0 (DAT_1462805a0 base); bg3.exe+0x2AFA000 copies the request's float at +0xC (only when it is non-zero). Live 0.33 .. 1.31."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Serializer: 1 byte at +4; bg3.exe+0x2AFA000 copies the request's byte at +0x10. Live 3; upper bytes garbage."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Serializer writes an EntityHandle (FUN_144017090) from +8; creator bg3.exe+0x2AFBE90 writes the null handle; copied from the request's +0x18. Live entity handles (the thrower?)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names: float (throw duration/speed?), byte (throw type?), handle (thrower?)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "11 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

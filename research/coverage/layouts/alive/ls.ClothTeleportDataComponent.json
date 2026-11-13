@@ -1,0 +1,26 @@
+{
+  "component": "ls::ClothTeleportDataComponent",
+  "ext_name": "ClothTeleportData",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Data",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Windows reader bg3.exe+0x1BB9E30 (client visual/cloth setup): when the visual has cloth (flags at Visual+0xF6 & 3) it fetches this component (getter bg3.exe+0x1BBA700) and passes its 8-byte value as a pointer (falling back to the static DAT_146179888 when the entity has no component) to the phx::NVClothScene method bg3.exe+0x3A67180, which reads 12 bytes through it (*p as 8 bytes, p[1] as 4 bytes - a vec3-sized record) into the cloth instance it creates. macOS: AddComponent<ls::ClothTeleportDataComponent, ls::ClothTeleportData&> - the component holds an 8-byte ls::ClothTeleportData. Live: addresses inside the executable image (static records), not heap."
+    }
+  ],
+  "summary": "Client cloth: marks that an entity's cloth must be reset after a teleport (position jump), carrying an 8-byte ls::ClothTeleportData; seen in dialogues and fights (characters placed by timelines).",
+  "confidence": "high",
+  "open_questions": [
+    "What the pointed-to 12-byte record is (a teleport offset vec3 by its size) and which static the live pointers target."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Windows bg3.exe+0x1BB9E30 dereferences the component's 8 bytes as a pointer to a 12-byte record handed to the NVCloth scene (bg3.exe+0x3A67180), with a static default when absent: the member is a pointer, width and offset established.",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

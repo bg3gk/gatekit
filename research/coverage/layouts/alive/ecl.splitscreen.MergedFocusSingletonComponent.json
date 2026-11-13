@@ -1,0 +1,33 @@
+{
+  "component": "ecl::splitscreen::MergedFocusSingletonComponent",
+  "ext_name": "ClientSplitscreenMergedFocusSingleton",
+  "size": 2,
+  "seen": true,
+  "fields": [
+    {
+      "name": "FocusPlayer",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "GoalSystem::Update (EoCClient.dll+0x84FED0): *(uint16*)comp = result of ecl::splitscreen::GetForceMergePlayerFocus (byte 0 value, byte 1 has-value) when that has a value; set to 0 when a forced merge query has entities. ViewSystem::Update (EoCClient.dll+0x834200) uses it: view = focus + 1 when byte 1 is set, i.e. 0 = player 1, 1 = player 2. Default 0, live 0. Windows: GoalSystem per-frame update bg3.exe+0x192E320 takes this 2-byte singleton (stride 2, writable), clears byte +1 when set, and stores the 2-byte result of GetForceMergePlayerFocus (bg3.exe+0x1B30410) into +0 when its byte 1 is set."
+    },
+    {
+      "name": "IsSet",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "GoalSystem::Update clears byte 1 at the start of every frame and sets it with the focus; ViewSystem::Update tests byte 1 before using byte 0 (an ls::Optional<uint8_t>-like pair). Default 0, live 0. Windows: bg3.exe+0x192E320 'if (*(char*)(p+1)) *(char*)(p+1) = 0' at the start of the frame."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names are ours (the pair behaves like ls::Optional<uint8_t> of a player index)."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Offsets and widths confirmed on Windows in the GoalSystem update bg3.exe+0x192E320: a 2-byte singleton, byte +1 cleared each frame, 2-byte store of GetForceMergePlayerFocus's {value, has-value} pair.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

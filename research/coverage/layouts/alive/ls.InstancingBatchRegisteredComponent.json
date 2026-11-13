@@ -1,0 +1,25 @@
+{
+  "component": "ls::InstancingBatchRegisteredComponent",
+  "ext_name": "InstancingBatchRegistered",
+  "size": 4,
+  "seen": true,
+  "summary": "Registration of an instancing batch in the stream loader (ls::StreamSystemLoadHelper::UpdateLoadRequests / Unregister<..., ls::InstancingBatchRegisteredComponent> in macOS names), written by ls::InstancingSystem. Same shape as Script Extender's ls::PhysicsLoaderRegisteredComponent (int field_0 = -1, Physics.h) and the terrain twin TerrainLoaderRegisteredComponent.",
+  "fields": [
+    {
+      "name": "Index",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Game creator bg3.exe+0x3B03070 allocates 4 bytes and writes -1 (not registered); live 0..0x203, distinct small integers per batch - a slot index in the stream helper's registry (macOS StreamSystemLoadHelper::Unregister<..., InstancingBatchRegisteredComponent>)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Exact meaning of the index (slot in StreamSystemLoadHelper's list) not read in code."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

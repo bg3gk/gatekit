@@ -1,0 +1,54 @@
+{
+  "component": "esv::history::TargetStartRequestsSingletonComponent",
+  "ext_name": "ServerHistoryTargetStartRequests",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: the frame's requests to start target-history tracking (filled by esv::history::TargetStartRequestSystem, drained by TargetSystem::ProcessStartRequests). The component itself is a DynamicArray<esv::history::StartRequest> (macOS name of the element). Alive in idle levels.",
+  "structs": [
+    {
+      "name": "HistoryTargetStartRequest",
+      "size": 72,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "TargetSystem::ProcessStartRequests (EoCServer.dll+0x5B7220) checks qword +0 with the entity-handle validity test and logs it as the entity of 'request for UUID (%s) entity (%s)'; it is stored as value of TargetContainer's second map. macOS CreateStartRequest(view, EntityHandle const&, Guid const&, HashSet<EntityHandle> const&, DynamicArray<StartRequest>&) passes it first."
+        },
+        {
+          "name": "TargetUUID",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Same function: Guid::IsValid / Guid::ToString / Guid::GetHash on element+8; used as key of TargetContainer."
+        },
+        {
+          "name": "Targets",
+          "offset": 24,
+          "type": "HashSet<EntityHandle>",
+          "source": "inferred",
+          "evidence": "Same function iterates keys at element+0x38 (count at +0x44) with stride 8 logging 'initial target: (%s)' and copies element+0x18 (48 bytes) into TargetContainer's HashSet<EntityHandle> values. Element stride 0x48 (loop step)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<HistoryTargetStartRequest>",
+      "source": "inferred",
+      "evidence": "TargetSystem::ProcessStartRequests reads the singleton as an array: pointer at +0, size at +0xC, stride 0x48. macOS names ls::DynamicArray<esv::history::StartRequest>. Live: capacity 0x100, size 0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Element member names are descriptive."
+  ],
+  "minutes": 6,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

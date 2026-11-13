@@ -1,0 +1,26 @@
+{
+  "component": "eoc::notification::DropInApprovedNotificationComponent",
+  "ext_name": "NotificationDropInApproved",
+  "size": 2,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x9017C0: single 2-byte scratch write at +0; macOS default strh wzr,[x23]. EoCClient.dll ecl::multiplayer::DropInApprovalSystem::UpdateComponents copies a 2-byte ToApproveInfoClient alternative - probably a player id (int16)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+    "Whether it is a PlayerId (int16) or two bytes is not established."
+  ],
+  "seen": false,
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

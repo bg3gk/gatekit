@@ -1,0 +1,195 @@
+[
+ {
+  "label": "recruit",
+  "wait": 5,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() local n = 0 for _, c in ipairs({ \"S_Player_ShadowHeart_3ed74f06-3c60-42dc-83f6-f034cb47c679\", \"S_Player_Astarion_c7c13742-bacd-460a-8f65-f864fe41f255\", \"S_Player_Gale_ad9af97d-75da-406a-ae13-7071c563f604\", \"S_Player_Laezel_58a69333-40bf-8358-1d17-fff240d7fb12\", \"S_Player_Wyll_c774d764-4a17-48dc-b470-32ace9ce447d\", \"S_Player_Karlach_2c76687d-93a2-477b-8b18-8a14b549304c\" }) do if c:sub(-36) ~= H:sub(-36) and n < 3 and Ext.Entity.Get(c:sub(-36)) then pcall(Osi.SetOnStage, c, 1) pcall(Osi.TeleportTo, c, H, \"\", 0, 0, 0, 0, 1) pcall(Osi.PROC_GLO_PartyMembers_Add, c, H) n = n + 1 end end return GK.Stage.Party()"
+ },
+ {
+  "label": "party-fight",
+  "wait": 2,
+  "keep": true,
+  "server": "Scene = GK.Stage.Spawn{ template = \"goblin\", count = 4, faction = \"enemy\", distance = 8, equipment = { \"longsword\" } } return Scene",
+  "then": [
+   {
+    "server": "return GK.Stage.Skirmish(Scene, 10)",
+    "wait": 10,
+    "until": "not GK.Stage.SkirmishState().running"
+   }
+  ]
+ },
+ {
+  "label": "companion-death",
+  "wait": 4,
+  "keep": true,
+  "server": "GK.Stage.Guard(false) local H = Osi.GetHostCharacter() for _, m in ipairs(GK.Stage.Party()) do if m:sub(-36) ~= H:sub(-36) then Osi.SetImmortal(m, 0) Osi.Die(m, 0, \"NULL_00000000-0000-0000-0000-000000000000\", 0, 1, 0) SceneDead = m break end end return SceneDead",
+  "then": [
+   {
+    "server": "if SceneDead then Osi.UseSpell(Osi.GetHostCharacter(), \"Target_Revivify_Scroll\", SceneDead) end return true",
+    "wait": 5
+   },
+   {
+    "server": "if SceneDead then Osi.Resurrect(SceneDead, \"\", 0) end GK.Stage.Guard(true) return true",
+    "wait": 4
+   }
+  ]
+ },
+ {
+  "label": "downed-and-helped",
+  "wait": 4,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() for _, m in ipairs(GK.Stage.Party()) do if m:sub(-36) ~= H:sub(-36) then Osi.ApplyStatus(m, \"DOWNED\", 18.0, 1, m) SceneDead = m break end end return SceneDead",
+  "then": [
+   {
+    "server": "if SceneDead then Osi.UseSpell(Osi.GetHostCharacter(), \"Target_Help\", SceneDead) end return true",
+    "wait": 5
+   }
+  ]
+ },
+ {
+  "label": "fall",
+  "wait": 6,
+  "keep": true,
+  "server": "local p = GK.Stage.Position() Osi.TeleportToPosition(Osi.GetHostCharacter(), p[1], p[2] + 14, p[3], \"\", 0, 0, 0, 0, 1) return true"
+ },
+ {
+  "label": "sneak",
+  "wait": 4,
+  "keep": true,
+  "server": "return GK.Stage.Cast(\"Shout_Hide\")",
+  "then": [
+   {
+    "server": "local p = GK.Stage.Position() Osi.CharacterMoveToPosition(Osi.GetHostCharacter(), p[1] + 6, p[2], p[3], \"Sneak\", \"\") return true",
+    "wait": 5
+   },
+   {
+    "server": "Osi.RemoveStatus(Osi.GetHostCharacter(), \"SNEAKING\") return true",
+    "wait": 2
+   }
+  ]
+ },
+ {
+  "label": "crime-assault",
+  "wait": 3,
+  "keep": true,
+  "server": "Scene = GK.Stage.Spawn{ template = \"human\", count = 2, faction = \"neutral\", distance = 4 } return Scene",
+  "then": [
+   {
+    "server": "return GK.Stage.Cast(\"Target_MainHandAttack\", Scene[1])",
+    "wait": 6
+   },
+   {
+    "server": "return GK.Stage.EndCombat()",
+    "wait": 3
+   }
+  ]
+ },
+ {
+  "label": "crime-theft",
+  "wait": 3,
+  "keep": true,
+  "server": "Scene = GK.Stage.Spawn{ template = \"human\", count = 1, faction = \"neutral\", distance = 3 } ScenePick = GK.Stage.Spawn{ template = \"potion\", distance = 2 }[1] return ScenePick",
+  "then": [
+   {
+    "server": "pcall(Osi.SetOwner, ScenePick, Scene[1]) Osi.ToInventory(ScenePick, Osi.GetHostCharacter(), 1, 1, 0) return true",
+    "wait": 6
+   }
+  ]
+ },
+ {
+  "label": "inventory",
+  "wait": 3,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() for _, name in ipairs({ \"potion\", \"dagger\", \"scroll_fireball\", \"thieves_tools\", \"torch\" }) do Osi.TemplateAddTo(GK.Stage.Templates[name], H, 5, 1) end return true",
+  "then": [
+   {
+    "server": "local H = Osi.GetHostCharacter() local other for _, m in ipairs(GK.Stage.Party()) do if m:sub(-36) ~= H:sub(-36) then other = m end end local p = GK.Find(GK.Stage.Templates.potion)[1] if other and p then Osi.ToInventory(p, other, 2, 1, 0) end local d = GK.Find(GK.Stage.Templates.dagger)[1] if d then pcall(Osi.SendToCampChest, d, H) end return true",
+    "wait": 4
+   },
+   {
+    "server": "local s = GK.Find(GK.Stage.Templates.scroll_fireball)[1] if s then Osi.Use(Osi.GetHostCharacter(), s, \"\") end return true",
+    "wait": 5
+   }
+  ]
+ },
+ {
+  "label": "gold-and-xp",
+  "wait": 4,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() Osi.AddGold(H, 500) Osi.AddExplorationExperience(H, 3000) pcall(Osi.AddExplorationExperience, GK.Stage.Party()[2] or H, 3000) return true"
+ },
+ {
+  "label": "level-up-window",
+  "wait": 4,
+  "keep": true,
+  "ui": "return GK.Command(\"StartLevelUp\")",
+  "then": [
+   {
+    "ui": "return GK.Key(\"ESCAPE\")",
+    "wait": 3,
+    "fixed": true
+   }
+  ]
+ },
+ {
+  "label": "short-rest",
+  "wait": 6,
+  "keep": true,
+  "ui": "return GK.Command(\"ShortRest\")"
+ },
+ {
+  "label": "approval",
+  "wait": 3,
+  "keep": true,
+  "server": "local H = Osi.GetHostCharacter() for _, m in ipairs(GK.Stage.Party()) do if m:sub(-36) ~= H:sub(-36) then pcall(Osi.ChangeApprovalRating, m, H, 0, 5) pcall(Osi.ChangeApprovalRating, m, H, 0, -3) end end return true"
+ },
+ {
+  "label": "camp",
+  "wait": 20,
+  "keep": true,
+  "ui": "return GK.Command(\"GoToCamp\")",
+  "expect": 15
+ },
+ {
+  "label": "camp-life",
+  "wait": 4,
+  "keep": true,
+  "server": "return GK.Stage.Scout()",
+  "then": [
+   {
+    "server": "local rows = GK.Stage.Usables(\"Lie\", { limit = 1 }) if rows[1] then GK.Stage.UseItem(rows[1].uuid) end return rows",
+    "wait": 6
+   },
+   {
+    "server": "local rows = GK.Stage.Usables(\"OpenClose\", { limit = 2 }) for _, r in ipairs(rows) do GK.Stage.UseItem(r.uuid) end return #rows",
+    "wait": 5
+   }
+  ]
+ },
+ {
+  "label": "long-rest",
+  "wait": 40,
+  "keep": true,
+  "server": "return GK.Stage.LongRest()",
+  "expect": 20
+ },
+ {
+  "label": "leave-camp",
+  "wait": 20,
+  "keep": true,
+  "ui": "return GK.Command(\"GoToCamp\")",
+  "expect": 15
+ },
+ {
+  "label": "waypoint",
+  "wait": 10,
+  "keep": true,
+  "server": "local rows = GK.Stage.Triggers(\"teleport\", { limit = 3 }) if rows[1] then GK.Stage.Visit(rows[1].uuid, nil, true) end return rows"
+ },
+ {
+  "label": "dismiss",
+  "wait": 4,
+  "server": "local H = Osi.GetHostCharacter() for _, m in ipairs(GK.Stage.Party()) do if m:sub(-36) ~= H:sub(-36) then pcall(Osi.PROC_GLO_PartyMembers_Remove, m, H, 1) end end return GK.Stage.Party()",
+  "reset": true
+ }
+]

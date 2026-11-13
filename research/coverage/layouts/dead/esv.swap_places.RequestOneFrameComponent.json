@@ -1,0 +1,84 @@
+{
+  "component": "esv::swap_places::RequestOneFrameComponent",
+  "ext_name": "ServerSwapPlacesRequest",
+  "size": 24,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Created by esv::swap_places::RequestSystem (bg3.exe+0x2E9E370 = ProcessSwapPlacesRequests, called from the per-frame update bg3.exe+0x2E9DEF0) on a new helper entity, filled with one RequestData (0x30 bytes) per queued swap (queued by LEGACY_RequestSwapPlaces(entity, entity, FixedString, bool, bool), Toolkit EoCServer.dll+0x5D7B60). The element type is named on macOS: ls::DynamicArray<esv::swap_places::RequestData>. Creator bg3.exe+0x2E9F560, destructor bg3.exe+0x22CC9C0.",
+  "structs": [
+    {
+      "name": "SwapPlacesRequestOneFrameRequestData",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Entity1",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2E9E370 line 354: element+0 = first handle of the queued SwapPlacesRequest (first EntityHandle argument of LEGACY_RequestSwapPlaces); its transform is read by FUN_140e5a590."
+        },
+        {
+          "name": "Entity2",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "line 355: element+8 = second handle of the request (second argument of LEGACY_RequestSwapPlaces)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "line 356: copied FixedString (FixedString argument of LEGACY_RequestSwapPlaces); array clear bg3.exe+0x22E5C30 DecRefs +0x10 with stride 0x30."
+        },
+        {
+          "name": "Entity1Position",
+          "offset": 20,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "lines 357-358: +0x14 (8 bytes) and +0x1C (float) = Translate of Entity1's transform (FUN_140e5a590 result +0x10/+0x18) or the position already assigned to it earlier in the same frame (local hash map of 12-byte values)."
+        },
+        {
+          "name": "Entity2Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "lines 359-360: +0x20 (8 bytes) and +0x28 (float) = Entity2's position, same source."
+        },
+        {
+          "name": "_Pad44",
+          "offset": 44,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Never written; copy loop (lines 462-472) copies only up to +0x2C; stride 0x30 (alloc size *0x30, line 451)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2E9F560: AllocRaw(0x18), *puVar3 = param_2 = the entity the component is added to (also the key of the entity map); in bg3.exe+0x2E9E370 the new entity created by FUN_14401aff0."
+    },
+    {
+      "name": "Requests",
+      "offset": 8,
+      "type": "Array<SwapPlacesRequestOneFrameRequestData>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +8 (pointer), +0x10 (capacity), +0x14 (size); bg3.exe+0x2E9E370 lines 425-475 assigns the local request array to component+8 (alloc count*0x30, size at +0x14); destructor bg3.exe+0x22CC9C0 clears and frees +8. macOS: ls::DynamicArray<esv::swap_places::RequestData>."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the FixedString (+0x10 of an element) - passed in by LEGACY_RequestSwapPlaces callers; the two bools of the queued request are not copied into RequestData.",
+    "Which of the two entities is the caster and which the target."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,51 @@
+{
+  "component": "ecl::sound::AmbienceMixRTPCEventRequestSingletonComponent",
+  "ext_name": "ClientSoundAmbienceMixRTPCEventRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "GameplaySoundRTPCRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "game",
+          "evidence": "ls::GameplaySoundRTPCRequest constructor (GameEngine.dll+0x1C4320, exported signature (ID<EntityHandleTraits> const&, FixedString const&, float)) stores the handle at +0."
+        },
+        {
+          "name": "RTPC",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same constructor: FixedString at +8 (the RTPC name)."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Same constructor: float at +0xC."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<GameplaySoundRTPCRequest>",
+      "source": "inferred",
+      "evidence": "ecl::sound::AmbienceMixSystem::ProcessRTPCRequests (EoCClient.dll+0xDDC7F0) gets the singleton, destroys every element as ls::GameplaySoundRTPCRequest (stride 0x10, size +0xC), resets size, then appends the frame's requests (FUN_180da4cc0)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

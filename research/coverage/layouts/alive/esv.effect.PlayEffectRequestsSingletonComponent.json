@@ -1,0 +1,74 @@
+{
+  "component": "esv::effect::PlayEffectRequestsSingletonComponent",
+  "ext_name": "ServerEffectPlayEffectRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ServerEffectPlayEffectOnEntityRequest",
+      "size": 32,
+      "fields": [
+        {
+          "name": "EffectEntity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D665F0 (the per-element handler of the drain loop in bg3.exe+0x2D660E0) passes *elem (8 bytes) as the entity argument of CreateEffect (bg3.exe+0x2D66670 ~ esv::EffectManager::CreateEffect), which becomes esv::Effect.Entity (Coverage.h); same role as ScriptLightPlayEffectOnEntityRequest.EffectEntity of the sibling esv::script::light singleton."
+        },
+        {
+          "name": "Effect",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D665F0 passes elem+8 as the effect name to CreateEffect (assigned to esv::Effect.EffectName +0x28); the bg3.exe destructor bg3.exe+0x22AA5F0 -> 0x22E1F20 releases a FixedString here."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "Padding before the 8-byte member at +0x10; never read by bg3.exe+0x2D665F0."
+        },
+        {
+          "name": "Target",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D665F0 copies elem+0x10 as 8 bytes to esv::Effect+0x38 (Effect.Target in Coverage.h, the entity the effect is attached to)."
+        },
+        {
+          "name": "Bone",
+          "offset": 24,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x2D665F0 assigns the 4-byte FixedString at elem+0x18 to esv::Effect+0x2C (Effect.Bone in Coverage.h) with IncRef/DecRef; destructor releases it."
+        },
+        {
+          "name": "_Pad1C",
+          "offset": 28,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "Padding (element stride 0x20)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ServerEffectPlayEffectOnEntityRequest>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D660E0 (server effect manager update, reads the singleton through storage index DAT_14638e8fc) walks the array at +0 with stride 0x20 and hands every element to bg3.exe+0x2D665F0 (PlayEffectOnEntity). Element named by the game ls::PlayEffectOnEntityRequest (Toolkit IndexedStorage assert in EoCServer.dll+0xCF3DD0). Live (seen.py, idle): empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Every element member read in bg3.exe: the drain loop bg3.exe+0x2D660E0 (stride 0x20) and its handler bg3.exe+0x2D665F0 copy +0/+8/+0x10/+0x18 into esv::Effect.Entity/EffectName/Target/Bone, whose layout is already in Coverage.h; widths follow from those copies.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

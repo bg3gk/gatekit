@@ -1,0 +1,54 @@
+{
+  "component": "esv::status::DangerousAuraComponent",
+  "ext_name": "ServerStatusDangerousAura",
+  "size": 8,
+  "seen": true,
+  "summary": "Put on an aura status entity (status type 5 = AURA) whose aura prototype is flagged dangerous, by the server status execution code (bg3.exe+0x2C4FE90, weak match to esv::status::ExecutionSystem::UpdateStatusStates); read by esv::danger::GetDangerousAurasForPathfinding (macOS; WorldView<status::ActiveComponent, DangerousAuraComponent, OwnershipComponent, ...>, with an eoc::aura::EDangerousAuraAvoidance argument) so AI pathfinding avoids it. Seen.py context: born in 'spells-5' (aura spells), also in idle/character-creation levels.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x2C5AFF0 zeroes it; writer bg3.exe+0x2C4FE90 stores ((statusPrototype+0x10 flags) & 6) != 0. Live: 1."
+    },
+    {
+      "name": "field_1",
+      "offset": 1,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Writer stores bit 5 of status-prototype byte +0x122. Live: 0."
+    },
+    {
+      "name": "field_2",
+      "offset": 2,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Writer stores bit 6 of status-prototype byte +0x122 (the component is only written when field_0 or this bit is set). Live: 0."
+    },
+    {
+      "name": "_Pad3",
+      "offset": 3,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Not written by the creator (writes 2 bytes + 1 byte); live garbage 0..3."
+    },
+    {
+      "name": "Radius",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Writer stores (float) of eoc::StatusPrototype::GetMappedValue(proto, <FixedString DAT_14617619c>) and only when it is > 0 - the aura's radius value. Live: 2.0 and 5.0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the three flag bytes (status-prototype flags; perhaps the EDangerousAuraAvoidance categories).",
+    "Which mapped value DAT_14617619c names (radius assumed)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

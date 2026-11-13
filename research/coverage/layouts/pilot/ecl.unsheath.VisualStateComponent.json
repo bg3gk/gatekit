@@ -1,0 +1,31 @@
+{
+  "component": "ecl::unsheath::VisualStateComponent",
+  "ext_name": "ClientUnsheathVisualState",
+  "size": 8,
+  "fields": [
+    {
+      "name": "State",
+      "offset": 0,
+      "type": "stats::UnsheathState",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A1D8C0 creates the component with 3 (Sheathed) here; bg3.exe+0x1A1C3D0 then copies eoc::unsheath::StateComponent+0x14 (State) into it; bg3.exe+0x1A1CF80 (handler of eoc::animation::GameplayEventsOneFrameComponent / text-key events) sets it to StateComponent.State when one of two event FixedStrings (globals bg3.exe+0x6176168 / +0x6176170) arrives; bg3.exe+0x1F760B0 compares it with StateComponent.State. Probe: always 3."
+    },
+    {
+      "name": "State2",
+      "offset": 4,
+      "type": "stats::UnsheathState",
+      "source": "inferred",
+      "evidence": "Same creator (3) and same copy from StateComponent.State as +0, but bg3.exe+0x1A1CF80 updates it on a different pair of event FixedStrings (globals bg3.exe+0x6176164 / +0x617616C), independently of +0, through its own 'has value' flag in the pending record; bg3.exe+0x1F760B0 requires both +0 and +4 to equal StateComponent.State. Probe: always 3."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "What separates +0 from +4: they follow the same eoc::unsheath::StateComponent.State but are switched by different animation events (two FixedString pairs whose text could not be resolved offline). Possibly main hand / off hand, or two stages of the draw animation; State2 is a placeholder name.",
+    "bg3.exe+0x75F4D0 copies both values twice into a 16-byte record (cur0, cur1, cur0, cur1) - that record's owner was not identified.",
+    "A live check with drawn weapons (melee=1 / ranged=2) while the unsheath animation plays would show which field changes first."
+  ],
+  "minutes": 11,
+  "functions_read": 7,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

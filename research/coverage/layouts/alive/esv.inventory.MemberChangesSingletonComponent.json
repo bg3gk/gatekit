@@ -1,0 +1,34 @@
+{
+  "component": "esv::inventory::MemberChangesSingletonComponent",
+  "ext_name": "ServerInventoryMemberChanges",
+  "size": 128,
+  "seen": true,
+  "summary": "Server singleton: inventory membership changes of this frame (object -> one inventory, object -> the other inventory). Read by TopOwnerSystem, WieldingSystem, WieldedSystem and NewInventoryMemberSystem (Toolkit); written by InteractionSystem::CreateMemberChanges (macOS). Seen once, empty.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34BB2F0 (per-frame update of esv::inventory::TopOwnerSystem; Toolkit TopOwnerSystem::Update/ProcessInventoryChanges, EoCServer.dll+0xF580B0) walks the 8-byte keys at +0x20 (count +0x2C; the changed objects) together with the 8-byte values at +0x30 (one inventory handle per object), and looks each key up in the map at +0x40; the Toolkit logs 'Ignored MemberChangesSingletonComponent entry for object ... (source and target inventories are the same)' when the two values are equal. Live: empty."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "HashMap<EntityHandle, EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x34BB2F0 looks the object handle up in +0x40 (buckets +0x40, bucket count +0x48, next +0x50, 8-byte keys +0x60) and reads the 8-byte value from +0x70; a missing key yields the null handle (DAT_146174970). The other inventory of the change (source or target)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which of the two maps holds the source inventory and which the target (the code only compares them)."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "bg3.exe+0x34BB2F0 (TopOwnerSystem update) reads both maps as HashMap<EntityHandle, EntityHandle> with 8-byte keys and values at the expected offsets (+0x20/+0x30 and +0x60/+0x70); only which map is the source and which the target stays open.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

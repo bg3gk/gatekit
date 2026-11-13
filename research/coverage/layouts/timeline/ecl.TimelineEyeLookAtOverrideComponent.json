@@ -1,0 +1,66 @@
+{
+  "component": "ecl::TimelineEyeLookAtOverrideComponent",
+  "ext_name": "ClientTimelineEyeLookAtOverride",
+  "size": 48,
+  "fields": [
+    {
+      "name": "IsEnabled",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Created with 0 (bg3.exe+0x6D7390). The automated look-at bg3.exe+0x20548B0 writes TLLookAtAutomationConfig+0x37 (IsEyeLookAtEnabled, Timeline.h) here and fills the other fields only when it is set; the eye update bg3.exe+0x1D918A0 uses the component only when it is non-zero. Live: 0."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment of the EntityHandle; live bytes are garbage"
+    },
+    {
+      "name": "Target",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Created as the null handle (live 0xFFC0000000000000 on all 4 instances); bg3.exe+0x20548B0 stores the entity the actor was told to look at; bg3.exe+0x1D918A0 passes &Target, &Bone to bg3.exe+0x2054C00 to compute the position."
+    },
+    {
+      "name": "Bone",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Created invalid (0xFFFFFFFF, live the same); assigned with the FixedString copy helper bg3.exe+0x412E090 from TLLookAtAutomationConfig+0x38 (EyeLookAtBone)."
+    },
+    {
+      "name": "Offset",
+      "offset": 20,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "12 bytes copied from TLLookAtAutomationConfig+0x3C (EyeLookAtOffset) in bg3.exe+0x20548B0; created as 0."
+    },
+    {
+      "name": "TargetPosition",
+      "offset": 32,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Output of bg3.exe+0x2054C00(&Target, &Bone, &this) in bg3.exe+0x1D918A0; when that fails the 12 bytes are overwritten with the default look-at position passed by the caller. Created as 0."
+    },
+    {
+      "name": "_Pad2C",
+      "offset": 44,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding (alignment 8); live bytes are garbage / FF"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "All live instances are in the default state (not enabled), so the value fields are confirmed by code only.",
+    "Timeline.h declares TLLookAtAutomationConfig::EyeLookAtBone as uint8_t; the code copies it as a FixedString (4 bytes at +0x38, the vec3 follows at +0x3C)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

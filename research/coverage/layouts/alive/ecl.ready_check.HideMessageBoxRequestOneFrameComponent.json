@@ -1,0 +1,39 @@
+{
+  "component": "ecl::ready_check::HideMessageBoxRequestOneFrameComponent",
+  "ext_name": "ClientReadyCheckHideMessageBoxRequest",
+  "size": 24,
+  "seen": true,
+  "oneFrame": true,
+  "fields": [
+    {
+      "name": "MessageBoxId",
+      "offset": 0,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "Filler bg3.exe+0x78C380 copies a 2-byte value from the system's request (stride 0x18); gui::MessageBoxManager::OnHideMessageBoxRequested(short const&, FixedString const&) takes a short id. Creator bg3.exe+0x78D1E0 zeroes +0 (8 bytes). Live 1."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "padding before the array"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "Array<FixedString>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x78C500 copies it element by element with stride 4 and FixedString IncRef. Live: capacity 4, size 3."
+    }
+  ],
+  "summary": "One-frame request of ecl::ready_check::UserSystem (per-frame update bg3.exe+0x78B6C0) to hide the ready-check message box; seen when using a level-swap teleporter / elevator (party ready check).",
+  "confidence": "medium",
+  "open_questions": [
+    "What the FixedStrings are (message box ids / owners)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,27 @@
+{
+  "component": "esv::light::GameplayObscurityComponent",
+  "ext_name": "ServerLightGameplayObscurity",
+  "size": 4,
+  "seen": false,
+  "summary": "Server-side gameplay obscurity value of an entity, maintained by esv::light::GameplayObscuritySystem (reads eoc::GameplayObscurityBoostComponent, boost changes and transform changes; macOS Update queues esv::light::ObscurityRequest). bg3.exe+0x2C9EBB0 adds it, updates it when the requested value differs, or removes it. Never seen alive. Registry total 4 (server row).",
+  "fields": [
+    {
+      "name": "Obscurity",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2CA05B0 (AllocRaw 4) writes 0. bg3.exe+0x2C9EBB0 lines 112-127: `pf = get(entity); if (!pf) { c = create(); *c = request+4 } else if (*pf != *(float*)(request+4)) ...` - a float compared and replaced; the macOS Update compares the boost's float (*(float*)GameplayObscurityBoostComponent) in the same role."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name inferred; the value's scale (obscurity level vs. light amount) is not established.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

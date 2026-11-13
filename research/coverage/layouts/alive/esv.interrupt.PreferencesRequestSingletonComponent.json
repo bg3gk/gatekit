@@ -1,0 +1,61 @@
+{
+  "component": "esv::interrupt::PreferencesRequestSingletonComponent",
+  "ext_name": "ServerInterruptPreferencesRequest",
+  "size": 64,
+  "seen": true,
+  "summary": "Server singleton of the interrupt (reaction) feature: per entity, requested changes of two interrupt preference flags, applied by esv::interrupt::ManagementSystem::UpdatePreferencesComponent to eoc::interrupt::PreferencesComponent. Alive in idle levels.",
+  "structs": [
+    {
+      "name": "InterruptPreferencesRequestFlags",
+      "size": 4,
+      "fields": [
+        {
+          "name": "Value0",
+          "offset": 0,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "UpdatePreferencesComponent (EoCServer.dll+0x10C3950) walks the value as ls::StaticArray<ls::Optional<bool>,2> (assert 'ls::StaticArray<class ls::Optional<bool>,2>::Get' in the sibling ProcessPreferencesUpdates; Optional<bool>::Get assert): for i in 0..1 it reads the has-value byte at +2i+1 and the value at +2i, then sets or clears bit i of the preferences byte."
+        },
+        {
+          "name": "HasValue0",
+          "offset": 1,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Optional<bool> has-value flag of element 0 (checked before use)."
+        },
+        {
+          "name": "Value1",
+          "offset": 2,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Optional<bool> value of element 1."
+        },
+        {
+          "name": "HasValue1",
+          "offset": 3,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Optional<bool> has-value flag of element 1."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, InterruptPreferencesRequestFlags>",
+      "source": "inferred",
+      "evidence": "UpdatePreferencesComponent iterates keys at +0x20 (count +0x2C, stride 8, used as entity handles to fetch interrupt components) and values at +0x30 with stride 4 (local_260 += 4). bg3.exe creator 0x3583BF0 allocates 0x40; destructor FUN_1405c4870 frees +0x30 raw (trivial values) and the key set at +0. Live: bucket count 0x301, values capacity 0x200."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the two preference bits (bit 0/1 of eoc::interrupt::PreferencesComponent)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

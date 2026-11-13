@@ -1,0 +1,113 @@
+{
+  "component": "ecl::sound::AutoFoleyDataComponent",
+  "ext_name": "ClientSoundAutoFoleyData",
+  "size": 112,
+  "class_size": 104,
+  "base": "The component slot holds only a pointer: the add-helper bg3.exe+0x1DD0050 allocates a 0x68-byte object (FUN_1441BEB10(..., 0x68)), constructs it with bg3.exe+0x2058380 and stores the pointer through ComponentFrameStorageAllocRaw(storage, 8); the registry size 112 = object 0x68 + 8, as with the other objects stored behind a pointer. The fields below are that object; the last 8 bytes are outside it.",
+  "seen": true,
+  "structs": [
+    {
+      "name": "AutoFoleyWindowQueue",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Values",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "ls::PrimitiveQueue<ecl::sound::AutoFoleyDataComponent::WindowValue> (macOS template names) ring buffer. Constructor bg3.exe+0x2058380 allocates it with FUN_141DCFA10(capacity) when the capacity is non-zero, then pushes capacity default elements of 0x28 bytes (FUN_141DCEB30: vec3 0, quat 0,0,0,1, double time 0 at +0x20)."
+        },
+        {
+          "name": "Capacity",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Constructor stores the capacity argument here (live: always 2)."
+        },
+        {
+          "name": "Count",
+          "offset": 12,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Constructor zeroes it before the pushes (live: 2)."
+        },
+        {
+          "name": "Head",
+          "offset": 16,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Constructor writes -1 (empty queue); live 0/1."
+        },
+        {
+          "name": "Tail",
+          "offset": 20,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Constructor writes 0; live 0/1."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "TransformWindow",
+      "offset": 0,
+      "type": "AutoFoleyWindowQueue",
+      "source": "inferred",
+      "evidence": "Constructor bg3.exe+0x2058380 builds the queue at +0 with the first capacity argument; the per-entity job of AutoFoleySystem (Toolkit FUN_180EBDD70) pushes {translation, rotation, game time} of the skeleton sound object into it."
+    },
+    {
+      "name": "VelocityWindow",
+      "offset": 24,
+      "type": "AutoFoleyWindowQueue",
+      "source": "inferred",
+      "evidence": "Constructor builds the queue at +0x18 (pointer +0x18, capacity +0x20, count +0x24, head -1 at +0x28, tail +0x2C) with the second capacity argument; the job pushes the per-second deltas of the first queue."
+    },
+    {
+      "name": "Velocity",
+      "offset": 48,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Constructor zeroes +0x30..+0x3B; reader bg3.exe+0x1DCB410 takes the length of the three floats +0x30/+0x34/+0x38 as a maximum speed."
+    },
+    {
+      "name": "AngularVelocity",
+      "offset": 60,
+      "type": "glm::quat",
+      "source": "inferred",
+      "evidence": "Constructor writes 0,0,0 and 1.0 at +0x48 (identity, w last); reader bg3.exe+0x1DCB410 takes the length of the four floats +0x3C..+0x48."
+    },
+    {
+      "name": "Acceleration",
+      "offset": 76,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Constructor zeroes +0x4C..+0x57; reader takes the length of +0x4C/+0x50/+0x54."
+    },
+    {
+      "name": "AngularAcceleration",
+      "offset": 88,
+      "type": "glm::quat",
+      "source": "inferred",
+      "evidence": "Constructor writes 0,0,0 and 1.0 at +0x64; reader takes the length of the four floats +0x58..+0x64. The object ends at +0x68. Live values here include very small (denormal) floats, which the raw check rejects although they are ordinary deltas of a quaternion."
+    },
+    {
+      "name": "_Pad68",
+      "offset": 104,
+      "type": "uint8_t[8]",
+      "source": "inferred",
+      "evidence": "Outside the 0x68-byte object (registry size = object + 8); live bytes there are whatever follows the allocation (heap pointers, a null entity handle)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the vector members are ours; whether the deltas are per second or per frame is not re-checked on Windows (the Windows per-entity job was not located; the Toolkit's FUN_180EBDD70 was the source).",
+    "The raw check on this type rejects denormal floats in AngularAcceleration; the type is still float (reader bg3.exe+0x1DCB410 squares and sums them)."
+  ],
+  "second_pass": "Windows add-helper bg3.exe+0x1DD0050 shows the slot is a pointer to a 0x68-byte object; its constructor bg3.exe+0x2058380 sets every member (two 24-byte queues, zeros, identity quaternions with 1.0 at +0x48 and +0x64) and the reader bg3.exe+0x1DCB410 reads the four vectors at +0x30/+0x3C/+0x4C/+0x58; the old field_68/field_6C were bytes past the object.",
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

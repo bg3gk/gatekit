@@ -1,0 +1,42 @@
+{
+  "component": "esv::party::MemberParticipationRequestOneFrameComponent",
+  "ext_name": "ServerPartyMemberParticipationRequest",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Request to add or remove an entity from party participation, read by esv::party::PartySystem::ProcessMemberParticipationRequests (Toolkit EoCServer.dll+0xAAF310) and written only by esv::party::UnitTestHelper on macOS. No Windows function of bg3.exe creates it except the generic adder (bg3.exe+0x2BC64F0), so the member offsets are not established on Windows. The system's own legacy queue (this+0xB0, 16-byte elements: bool toAdd at +0, entity at +8, log text \"LEGACY MemberParticipation request: entity (%s) toAdd (%s)\") shows the content but not the component's order. Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Windows: bg3.exe+0x2BBB200 (called from the per-frame update of esv::party::PartySystem bg3.exe+0x2BB7AD0) iterates the component's query with stride 0x10 and reads `uVar4 = *puVar15` (8 bytes at +0) and `bVar23 = *(byte*)(puVar15 + 1)` (+8), then appends them to its legacy queue as {byte at +0, handle at +8}; the handle is later checked as an entity (>>0x36 < 0x41, != null) and inserted into a HashSet with FUN_140721030. macOS default constructor agrees."
+    },
+    {
+      "name": "ToAdd",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Windows: bg3.exe+0x2BBB200 reads the byte at +8 and stores it as the flag of the legacy request (whose log text calls it toAdd); macOS default constructor stores 1 at +8 (default true)."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "Never read by bg3.exe+0x2BBB200; padding to the registry size 16."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name ToAdd is inferred from the legacy request log text, not from a game field name.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "status": "declared",
+  "second_pass": "Settled on Windows: the reader bg3.exe+0x2BBB200 of esv::party::PartySystem takes an 8-byte entity handle at +0 and a byte at +8 from each 16-byte component; the macOS order (entity first) is right, the legacy queue just stores them the other way round.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

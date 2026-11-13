@@ -1,0 +1,39 @@
+{
+  "component": "esv::ConstellationHelperComponent",
+  "ext_name": "ServerConstellationHelper",
+  "size": 24,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Not replicated. Toolkit constructor ConstellationHelperComponent(ConstellationHelperTemplate const*) (EoCServer.dll+0x5969B0) writes the null handle 0xFFC0000000000000 here; GetUUID is shared with esv::ConstellationComponent (same address EoCServer.dll+0xD050D0, both symbols) and resolves *this as an entity to its Guid."
+    },
+    {
+      "name": "Template",
+      "offset": 8,
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor annotation '+0x8 Template'; the constructor stores its eoc::ConstellationHelperTemplate const* argument."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Constructor writes the null handle 0xFFC0000000000000; operator= copies 8 bytes. Probably the owning constellation entity (not traced)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Server-only; registry totalSize 24 on the server row only.",
+    "Meaning of field_10."
+  ],
+  "seen": false,
+  "minutes": 3,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

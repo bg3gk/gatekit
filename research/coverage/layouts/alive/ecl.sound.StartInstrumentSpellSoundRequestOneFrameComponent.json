@@ -1,0 +1,25 @@
+{
+  "component": "ecl::sound::StartInstrumentSpellSoundRequestOneFrameComponent",
+  "ext_name": "ClientSoundStartInstrumentSpellSoundRequest",
+  "size": 4,
+  "seen": true,
+  "oneFrame": true,
+  "fields": [
+    {
+      "name": "Sound",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1A84F00 (AllocRaw 4) writes 0xFFFFFFFF (null FixedString). Written only by ecl::sound::SpellInstrumentSoundSystem::ProcessSpellRequest (macos_index), which takes a FixedString from eoc::SpellPrototype::GetFixedStringValue(spell, <field name>) (EoCClient.dll+0x7F9580). Live: 0x15801632 (a FixedString index)."
+    }
+  ],
+  "summary": "One-frame request: start the instrument sound of a spell cast (bard instrument); seen in a fight in CTY_Main_A (S_LOW_HagSurvivors_Bandit_Barbarian_01).",
+  "confidence": "medium",
+  "open_questions": [
+    "Which spell-data field the FixedString comes from (sound event name)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

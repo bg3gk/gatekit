@@ -1,0 +1,25 @@
+{
+  "component": "esv::interrupt::ValidateOwnersRequestOneFrameComponent",
+  "ext_name": "ServerInterruptValidateOwnersRequest",
+  "size": 48,
+  "seen": true,
+  "summary": "Server one-frame component written by esv::interrupt::ManagementSystem (Update / FinalizeInterruptEntities, macOS): a set of interrupt owners to re-validate. Came alive in fights, spell casts, statuses, shove/throw, deaths and dialogues - every situation where interrupts are added or removed.",
+  "fields": [
+    {
+      "name": "Owners",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe creator 0x35848C0 allocates 0x30 and zeroes a HashSet (buckets +0, next ids +0x10, keys +0x20). Live (24 instances): bucket count 5/7/11 (small primes) at +8, next-ids capacity 1..8 / size 1..7 at +0x18/+0x1C, keys capacity 1..8 / size 1..7 at +0x28/+0x2C - a HashSet whose key array grows like the next-id array, consistent with 8-byte keys. Key type EntityHandle is inferred from the name (owners are entities) and the ManagementSystem working on entity handles; not read in code."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key type not confirmed in code (could be another 8-byte key); the keys array content was not sampled."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "43 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,26 @@
+{
+  "component": "ecl::screen_fade::ScreenFadeComponent",
+  "ext_name": "ClientScreenFade",
+  "size": 64,
+  "seen": true,
+  "external_types": [
+    "ScreenFadeData (layouts/fieldmeta/eoc.screen_fade.ScreenFadeFromServerComponent.json, 40 bytes: ScreenFadeId, State, FadeStyle, IntensityLevel, IsTransparent, HasSpin, Duration, WaitTime, field_20)"
+  ],
+  "fields": [
+    {
+      "name": "ScreenFades",
+      "offset": 0,
+      "type": "HashMap<int16_t, Array<ScreenFadeData>>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1908AF0 (0x40); destructor bg3.exe+0x591CF0 destroys 16-byte array values then the key set. Toolkit EoCClient.dll+0x7DA130 / +0x7DA370 (called from ecl::screen_fade::ScreenFadeSyncingSystem::Update with ScreenFadeComponent const) walk its keys at +0x20 with stride 2 (short player ids) and its values at +0x30 with stride 0x10, each an array of 0x28-byte elements whose +0 is a Guid (Guid::GetHash) and +0x10 the state byte - the eoc::screen_fade::ScreenFadeData layout. macOS: ls::HashMap<short, DynamicArray<eoc::screen_fade::ScreenFadeData>>::DestroyValues/RemoveNode. Live: allocated, 0 keys."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 8,
+  "functions_read": 3,
+  "hold": "uses types of Script Extender's own headers (ScreenFadeData (layouts/fieldmeta/eoc.screen_fade.ScreenFadeFromServerComponent.json, 40 bytes: ScreenFadeId, State, FadeStyle, IntensityLevel, IsTransparent, HasSpin, Duration, WaitTime, field_20)): whether they are declared before Coverage.h is included is not checked yet",
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the layout file is not valid yet: 'list' object has no attribute 'items'"
+}

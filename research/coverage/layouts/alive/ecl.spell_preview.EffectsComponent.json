@@ -1,0 +1,500 @@
+{
+  "component": "ecl::spell_preview::EffectsComponent",
+  "ext_name": "ClientSpellPreviewEffects",
+  "size": 768,
+  "class_size": 760,
+  "seen": true,
+  "base": "none known in Script Extender; the component storage holds an 8-byte pointer to this object (creator bg3.exe+0x1EEA9E0 registers element size 8 and stores the pointer of a 0x2F8-byte allocation).",
+  "summary": "Spell-preview visual effects of the spell being targeted: an object stored behind a pointer (creator bg3.exe+0x1EEA9E0, called from the spell preview update bg3.exe+0x1ED9230) that holds a small chained hash map and two effect-handler sub-objects, each carrying an ecl::EffectHandlerInitInfo. Born live in a targeting step together with ForceComponent, HighlightsComponent, SurfaceTilesComponent and spell_cast::TargetingComponent. Partial layout: mostly unknown members.",
+  "structs": [
+    {
+      "name": "SpellPreviewEffectEffectObject",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE ecl::ProvidedMultiEffectObject::Entity; the default constructor initialises it to the null handle."
+        },
+        {
+          "name": "Position",
+          "offset": 8,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "SE ProvidedMultiEffectObject::Position (live world coordinates in the target object)."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "alignment of the following array"
+        },
+        {
+          "name": "Tags",
+          "offset": 24,
+          "type": "Array<Guid>",
+          "source": "inferred",
+          "evidence": "SE ProvidedMultiEffectObject::Tags (Array<Guid>); zeroed by the creator; live empty."
+        },
+        {
+          "name": "Flags",
+          "offset": 40,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "SE ProvidedMultiEffectObject::Flags (ProvidedMultiEffectObjectFlags, 4-byte bitmask); creator writes a 4-byte 0; live 3 in TargetEffect."
+        },
+        {
+          "name": "_Pad2C",
+          "offset": 44,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    },
+    {
+      "name": "SpellPreviewEffectPlayTime",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Phase",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE ecl::EffectHandlerPlayTime::Phase"
+        },
+        {
+          "name": "Time",
+          "offset": 8,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "SE ecl::EffectHandlerPlayTime::Time"
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    },
+    {
+      "name": "SpellPreviewEffectInitInfo",
+      "size": 168,
+      "fields": [
+        {
+          "name": "EventProviderEntity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h); null handle by default."
+        },
+        {
+          "name": "Player",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h); null handle by default (live null)."
+        },
+        {
+          "name": "SourceEffect",
+          "offset": 16,
+          "type": "SpellPreviewEffectEffectObject",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::SourceEffect."
+        },
+        {
+          "name": "TargetEffect",
+          "offset": 64,
+          "type": "SpellPreviewEffectEffectObject",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::TargetEffect."
+        },
+        {
+          "name": "PlayTime",
+          "offset": 112,
+          "type": "Array<SpellPreviewEffectPlayTime>",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::PlayTime (Array<EffectHandlerPlayTime>); zeroed by default."
+        },
+        {
+          "name": "MultiEffectDefinition",
+          "offset": 128,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::MultiEffectDefinition: 24-byte ls::STDString (size at +0x10, capacity +0x14 = 0xF when empty, set so by the default constructor); live: heap pointer, size 0x20, capacity 0x2F when filled."
+        },
+        {
+          "name": "WeaponBones",
+          "offset": 152,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::WeaponBones; the default constructor sets 0xFFFFFFFF (null)."
+        },
+        {
+          "name": "FXScale",
+          "offset": 156,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::FXScale; default 1.0 (0x3F800000) written by the default constructor; live 1.0."
+        },
+        {
+          "name": "ZoneRange",
+          "offset": 160,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::ZoneRange; default 0."
+        },
+        {
+          "name": "DamageType",
+          "offset": 164,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::DamageType (enum DamageType, uint8_t)."
+        },
+        {
+          "name": "VerbalIntent",
+          "offset": 165,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::VerbalIntent."
+        },
+        {
+          "name": "EnteredDuringSave",
+          "offset": 166,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::EnteredDuringSave."
+        },
+        {
+          "name": "Reset",
+          "offset": 167,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::Reset."
+        }
+      ]
+    },
+    {
+      "name": "SpellPreviewEffectHandler",
+      "size": 304,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Live: the same executable address (vtable) at +0x20 and +0x150 of the object; built by FUN_141c73c90 called twice from the creator."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "InitInfo",
+          "offset": 32,
+          "type": "SpellPreviewEffectInitInfo",
+          "source": "inferred",
+          "evidence": "Live pattern of SE ecl::EffectHandlerInitInfo at sub-object +0x20: null handles at +0x20/+0x28/+0x30/+0x60, STDString capacity 0xF at +0xB4, null FixedString at +0xB8, 1.0f at +0xBC."
+        },
+        {
+          "name": "field_c8",
+          "offset": 200,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "field_d0",
+          "offset": 208,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "Live: null handle in both sub-objects."
+        },
+        {
+          "name": "VMT2",
+          "offset": 216,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Live: an executable address (second vtable) in both sub-objects."
+        },
+        {
+          "name": "field_e0",
+          "offset": 224,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "field_e8",
+          "offset": 232,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "field_f0",
+          "offset": 240,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "Live: capacity 0xF at +0x104 (empty ls::STDString pattern)."
+        },
+        {
+          "name": "field_108",
+          "offset": 264,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "field_110",
+          "offset": 272,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "field_118",
+          "offset": 280,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "field_120",
+          "offset": 288,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        },
+        {
+          "name": "field_128",
+          "offset": 296,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not established (live 0)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Base constructor FUN_141c80640 writes 0xB here, allocates 0xB*8 bytes and stores the pointer at +8 - a bucket count of a chained hash map (legacy ls::Map shape: count, bucket table, item count). Live 0xB."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Bucket table (11 pointers) allocated by FUN_141c80640. Live heap pointer."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Zeroed by FUN_141c80640 (item count of the map). Live varies."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Zeroed by FUN_141c80640. Live 0."
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "SpellPreviewEffectHandler",
+      "source": "unknown",
+      "evidence": "First 0x130-byte sub-object, constructed by FUN_141c73c90(obj+0x20) with a local mode value 1."
+    },
+    {
+      "name": "field_150",
+      "offset": 336,
+      "type": "SpellPreviewEffectHandler",
+      "source": "unknown",
+      "evidence": "Second 0x130-byte sub-object, FUN_141c73c90(obj+0x150) with mode value 3."
+    },
+    {
+      "name": "field_280",
+      "offset": 640,
+      "type": "Array<void*>",
+      "source": "unknown",
+      "evidence": "Creator zeroes +0x280 (8), +0x288 (8), +0x28C (4): a 16-byte array; element type not established (declared as pointers to keep the size). Live empty."
+    },
+    {
+      "name": "field_290",
+      "offset": 656,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "Not written by the creator; live floats (-411, 33, 27 ...) - looks like a world position."
+    },
+    {
+      "name": "field_29c",
+      "offset": 668,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator zeroes this byte. Live 0 or float garbage."
+    },
+    {
+      "name": "_Pad29D",
+      "offset": 669,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "field_2a0",
+      "offset": 672,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator writes the null handle. Live null."
+    },
+    {
+      "name": "field_2a8",
+      "offset": 680,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Creator zeroes it. Live 0."
+    },
+    {
+      "name": "field_2b0",
+      "offset": 688,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Part of a 48-byte HashSet-shaped block +0x2B0..+0x2DF (creator zeroes +0x2B0, +0x2B8, +0x2C8/+0x2CC, +0x2D0, +0x2D8/+0x2DC exactly like a HashSet constructor); key type not established. Live mostly zero."
+    },
+    {
+      "name": "field_2b8",
+      "offset": 696,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Part of a 48-byte HashSet-shaped block +0x2B0..+0x2DF (creator zeroes +0x2B0, +0x2B8, +0x2C8/+0x2CC, +0x2D0, +0x2D8/+0x2DC exactly like a HashSet constructor); key type not established. Live mostly zero."
+    },
+    {
+      "name": "field_2c0",
+      "offset": 704,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Part of a 48-byte HashSet-shaped block +0x2B0..+0x2DF (creator zeroes +0x2B0, +0x2B8, +0x2C8/+0x2CC, +0x2D0, +0x2D8/+0x2DC exactly like a HashSet constructor); key type not established. Live mostly zero."
+    },
+    {
+      "name": "field_2c8",
+      "offset": 712,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Part of a 48-byte HashSet-shaped block +0x2B0..+0x2DF (creator zeroes +0x2B0, +0x2B8, +0x2C8/+0x2CC, +0x2D0, +0x2D8/+0x2DC exactly like a HashSet constructor); key type not established. Live mostly zero."
+    },
+    {
+      "name": "field_2d0",
+      "offset": 720,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Part of a 48-byte HashSet-shaped block +0x2B0..+0x2DF (creator zeroes +0x2B0, +0x2B8, +0x2C8/+0x2CC, +0x2D0, +0x2D8/+0x2DC exactly like a HashSet constructor); key type not established. Live mostly zero."
+    },
+    {
+      "name": "field_2d8",
+      "offset": 728,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Part of a 48-byte HashSet-shaped block +0x2B0..+0x2DF (creator zeroes +0x2B0, +0x2B8, +0x2C8/+0x2CC, +0x2D0, +0x2D8/+0x2DC exactly like a HashSet constructor); key type not established. Live mostly zero."
+    },
+    {
+      "name": "field_2e0",
+      "offset": 736,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator writes the null handle. Live null."
+    },
+    {
+      "name": "field_2e8",
+      "offset": 744,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator writes the null handle. Live null."
+    },
+    {
+      "name": "field_2f0",
+      "offset": 752,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Creator zeroes this byte (last store; object size 0x2F8)."
+    },
+    {
+      "name": "_Pad2F1",
+      "offset": 753,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "class tail padding"
+    },
+    {
+      "name": "_Pad2F8",
+      "offset": 760,
+      "type": "uint8_t[8]",
+      "source": "unknown",
+      "evidence": "Registry size 0x300 is 8 more than the object (0x2F8 allocated by the creator), as for other objects stored behind a pointer; live floats here are the next element."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Identity of the 0x130-byte sub-object class (FUN_141c73c90) and its members.",
+    "Key/value types of the chained map at +0 and of the HashSet-shaped block at +0x2B0.",
+    "Element type of the array at +0x280.",
+    "Whether the live sample reads the object itself (it matches the creator's stores, so it seems so).",
+    "+0x290..+0x29B is not written by the creator (bg3.exe+0x1EEA9E0 writes +0x280/+0x288/+0x28C, then +0x29C) and one live sample holds a heap pointer there, so glm::vec3 is doubtful; no reader was found (no bg3.exe pseudo-code near the spell-preview functions uses +0x290).",
+    "The block +0x2A8..+0x2DF: the creator stores qword +0x2A8, dword +0x2B0, qwords +0x2B8/+0x2C0/+0x2C8, dword +0x2CC, +0x2D0 (taken by address), qword +0x2D8, dword +0x2DC - not a clean HashSet constructor starting at +0x2B0 as the first version said."
+  ],
+  "second_pass": "Not settled: only the creator bg3.exe+0x1EEA9E0 was re-read; its stores contradict the HashSet-at-+0x2B0 reading and do not cover +0x290, whose live values are not always floats. The two 0x130-byte sub-objects (FUN_141C73C90) and the map at +0 still need their own classes identified.",
+  "minutes": 14,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the raw check failed: client entity 126101038674500598: field_290: glm::vec3 part 0 is not an ordinary float; client entity 126100819631291687: field_290: glm::vec3 part 1 is not an ordinary float"
+}

@@ -1,0 +1,26 @@
+{
+  "component": "ls::photo_mode::ExposureComponent",
+  "ext_name": "PhotoModeExposure",
+  "size": 4,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Photo-mode exposure (client only; registry total 4). Written by ecl::photo_mode::ExposureSystem (per-frame update bg3.exe+0x766840, apply step bg3.exe+0x1AF77C0) from its pending request, set by ExposureSystem::LEGACY_UpdateExposure(float) from the photo-mode UI property 'Exposure'. Never seen alive.",
+  "fields": [
+    {
+      "name": "Exposure",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1AF77C0: component stride 4, compares (epsilon) and copies the float at system+0x10 (the request) into +0; registry size 4; macOS default constructor stores 0. Name from LEGACY_UpdateExposure / the UI property 'Exposure' (NoesisGameUI.dll+0x715A00)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

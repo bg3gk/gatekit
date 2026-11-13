@@ -1,0 +1,69 @@
+{
+  "component": "esv::tags::StatusTagChangedEventOneFrameComponent",
+  "ext_name": "ServerStatusTagChangedEvent",
+  "size": 32,
+  "seen": true,
+  "summary": "One-frame event written by esv::TagSystem::ProcessStatusTagNotificationRequest (EoCServer.dll+0xB66290): for each entity with queued esv::TagSystem::StatusTagNotificationRequest (32-byte elements: data + bool at +0x1C) it pushes an esv::tags::StatusTagNotificationData (32 bytes, name from the IndexedStorage assert in EoCServer.dll+0xB53DB0) into one of two arrays, chosen by that bool. The data matches esv::StoryGameEventManager::ThrowStatusTagSet/Cleared(entity, entity, Guid tag, StoryActionID). Seen alive on status/tag changes (dialogs, spells, statuses).",
+  "structs": [
+    {
+      "name": "StatusTagChangedEventData",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Cause",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xB64C30 ProcessBoostChangedEvents writes request +0 = *FUN_1803ad100(world, boost owner/source entity) (a component holding an entity, default DAT_1821ea008); matches the second EntityHandle of ThrowStatusTagSet(ls::ID const&, ls::ID const&, Guid const&, StoryActionID). Live samples hold entity handles."
+        },
+        {
+          "name": "Tag",
+          "offset": 8,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xB64C30 copies 16 bytes from the tag Guid returned by FUN_180b563c0 to +8; FUN_180b53db0 copies param_3 (16 bytes) to element +8"
+        },
+        {
+          "name": "StoryActionId",
+          "offset": 24,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "FUN_180b53db0 copies a 4-byte value to element +0x18; ThrowStatusTagSet takes TypeWrap<unsigned int, eoc::TStoryActionIDClassname> as last argument; the value comes from +0x10 of a component in ProcessBoostChangedEvents"
+        },
+        {
+          "name": "_Pad1C",
+          "offset": 28,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "in the request this byte is the bool selecting the array; FUN_180b53db0 does not copy it into the event element"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Array<StatusTagChangedEventData>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xB66290: element stride 0x20; target is the component itself when request byte +0x1C == 0. Request byte +0x1C = (BoostChangedEvent.field_4 == 0) in EoCServer.dll+0xB64C30 line 319. Live: pointer + small cap/size. Which of Set/Cleared this is is not established."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Array<StatusTagChangedEventData>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xB66290: target is component+0x10 when request byte +0x1C != 0. Live: pointer in 44 of 48 samples, sizes 1-2."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which array holds set and which cleared tags (depends on meaning of BoostChangedEvent.field_4)",
+    "Exact meaning of the first entity (cause vs status entity)"
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

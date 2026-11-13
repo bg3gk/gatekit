@@ -1,0 +1,47 @@
+{
+  "component": "esv::trade::TraderMapChangesSingletonComponent",
+  "ext_name": "ServerTradeTraderMapChangesSingleton",
+  "size": 192,
+  "fields": [
+    {
+      "name": "Added",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll esv::trade::TraderMapTrackingSystem::ApplyComponentChanges copies FrameData+0/+0x30/+0x60/+0x90 (4 HashSets) into the singleton at the same offsets; ProcessAddedTraders adds the trader entity to FrameData+0 (FUN_180265780 -> HashSet insert hashing a uint64 key by modulo). bg3.exe destructor FUN_140d73580 frees 4 HashSets (FUN_140582ad0) at +0x90,+0x60,+0x30,+0; size 0xC0 at bg3.exe+0x30F4280."
+    },
+    {
+      "name": "Unhidden",
+      "offset": 48,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll TraderMapTrackingSystem::ProcessUnhiddenTraders adds to FrameData+0x30"
+    },
+    {
+      "name": "Hidden",
+      "offset": 96,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll TraderMapTrackingSystem::ProcessHiddenTraders adds to FrameData+0x60"
+    },
+    {
+      "name": "Removed",
+      "offset": 144,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll TraderMapTrackingSystem::ProcessRemovedTraders adds to FrameData+0x90"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Set names come from the Toolkit method that fills each set (offsets confirmed on bg3.exe by the destructor and live samples, membership by the Toolkit only)",
+    "key confirmed as a uint64 hashed by modulo; EntityHandle inferred from the trader entity being added"
+  ],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Written by esv::trade::TraderMapTrackingSystem (macOS: ProcessAddedTraders writes it), read by TraderMapMarkersSystem. Live: four allocated, empty hash sets.",
+  "seen": true,
+  "minutes": 7,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

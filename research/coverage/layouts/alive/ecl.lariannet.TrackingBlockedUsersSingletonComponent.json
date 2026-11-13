@@ -1,0 +1,26 @@
+{
+  "component": "ecl::lariannet::TrackingBlockedUsersSingletonComponent",
+  "ext_name": "ClientLariannetTrackingBlockedUsersSingleton",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Users",
+      "offset": 0,
+      "type": "HashMap<Guid, STDString>",
+      "source": "inferred",
+      "evidence": "EoCClient.dll ecl::lariannet::TrackingSystem::ProcessBlockEvents clears this singleton (and the unblocked one) with EoCClient.dll+0x9C4D40: values first via +0x34C410 (IndexedStorage<ls::STDString>, stride 0x18, at +0x30), then keys (IndexedStorage<ls::Guid>, size at +0x2C). On a BlockedUser event (from TrackingSystem::OnUserBlocked(BlockedUser const&)) it inserts the Guid key and assigns the STDString from event+0x10 (user name). Live: all zero. Windows: the component destructor FUN_1406ca550 (registered by bg3.exe+0x66E220) runs FUN_1405da6d0 over the values at +0x30 - one 24-byte ls::STDString per key (stride 0x18, size/capacity at +0x10/+0x14, count = key count at +0x2C) - then frees them and destroys the key HashSet with the plain-key helper FUN_140582AD0: so the game build has 24-byte strings as values and trivially destructible keys (Guid in the Toolkit)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The key width (16-byte Guid) comes from the Toolkit insert path; the Windows code read only shows trivially destructible keys."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Value stride and type confirmed on Windows (destructor FUN_1406ca550 -> FUN_1405da6d0: 24-byte STDString per entry at +0x30; key set destroyed as plain keys), so the Toolkit-derived HashMap<Guid, STDString> holds for bg3.exe.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

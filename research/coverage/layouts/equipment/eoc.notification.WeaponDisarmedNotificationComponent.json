@@ -1,0 +1,40 @@
+{
+  "component": "eoc::notification::WeaponDisarmedNotificationComponent",
+  "ext_name": "NotificationWeaponDisarmedNotification",
+  "size": 16,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x2DF1640 (size 0x10): null handle at +0, byte 0x16 at +8. The server notification system bg3.exe+0x2DF53B0 (message kind 0x30) copies the first qword of the message here. The client side of replication bg3.exe+0x8FB2A0 builds the default {null handle, 0x16} and reads the handle through the entity serializer. Which entity it is (the disarmed weapon or its owner) was not established."
+    },
+    {
+      "name": "Slot",
+      "offset": 8,
+      "type": "ItemSlot",
+      "source": "inferred",
+      "evidence": "1 byte. bg3.exe+0x2DF53B0 copies the byte at +8 of the message; replication bg3.exe+0x8FB2A0 reads exactly one byte into +8. Default 0x16 - the same default as the Slot byte of esv::disarm::WeaponDisarmedEventOneFrameComponent (+0x18), which holds the weapon's EquipableComponent slot."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "tail padding; neither the creator nor replication touches it"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures.",
+    "Identity of the entity at +0 (weapon or character): the sender of message kind 0x30 was not found."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Offsets and widths are established on Windows: creator bg3.exe+0x2DF1640, notification system bg3.exe+0x2DF53B0 and replication reader bg3.exe+0x8FB2A0 (entity handle at +0, exactly one byte at +8); no game member names exist (no macOS FieldMeta, not saved).",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

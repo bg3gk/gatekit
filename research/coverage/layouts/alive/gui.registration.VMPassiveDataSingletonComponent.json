@@ -1,0 +1,25 @@
+{
+  "component": "gui::registration::VMPassiveDataSingletonComponent",
+  "ext_name": "GuiRegistrationVMPassiveData",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Objects",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, void*>",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x450070 (Toolkit, VMXDataSingletonComponent::CreateVM(EntityHandle const&)) hashes the EntityHandle key modulo the bucket count at this+8, inserts the key, allocates a gui::VMPassive (Noesis::BaseObject::operator_new(0x1c8)) and stores it in the values storage at this+0x30 (stride 8, capacity at this+0x38); the IndexedStorage assert names the value type Noesis::Ptr<gui::VMPassive> (intrusive ref-counted pointer, 8 bytes, written as void*). The game's methods call these entries '...Object' (InternalGetPassiveObject, RemovePassiveObject). HashMap = HashSet of keys (StaticArray<int32> buckets +0, Array<int32> NextIds +0x10, Array<key> Keys +0x20) followed by the values storage +0x30 (pointer + count at +0x38); live samples show exactly that shape (bucket counts 0x13/0x1D/0xC1/0x607 at +8, cap/size pairs at +0x18/+0x28, value count at +0x38). registry size 64 (coverage.json)"
+    }
+  ],
+  "summary": "Client UI (Noesis) registry: one view-model object per registered passive entity, keyed by the entity; created and removed by gui::registration::VMPassiveRegistrationSystem (Update NoesisGameUI.dll+0x453AD0). Lives as a singleton from game start (seen in idle, act1-idle and level-change samples).",
+  "confidence": "high",
+  "open_questions": [
+    "Values are Noesis::Ptr<gui::VMPassive>; Script Extender has no binding for Noesis view-model classes, so they are exposed as void*."
+  ],
+  "minutes": 4,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "23 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

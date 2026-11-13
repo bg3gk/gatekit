@@ -1,0 +1,75 @@
+{
+  "component": "esv::script::QueuedRequestsSingletonComponent",
+  "ext_name": "ServerScriptQueuedRequests",
+  "size": 16,
+  "seen": true,
+  "summary": "Singleton of esv::script::RequestSystem: script requests waiting for a request they depend on (DynamicArray<esv::script::QueuedRequest>, macOS template). ProcessUpdateRequests (EoCServer.dll) moves them to ExecutingRequestComponent once request::IsDependent says so. Seen.py context: born in an event-trigger step with ExecutingRequestComponent; samples held 0 or 1 entries (capacity 2/7).",
+  "structs": [
+    {
+      "name": "ScriptQueuedRequest",
+      "size": 64,
+      "fields": [
+        {
+          "name": "Request",
+          "offset": 0,
+          "type": "std::array<uint64_t, 5>",
+          "source": "game",
+          "evidence": "Savegame model ls::model::game::script::request::v0::QueuedRequest: m_Request (macOS Visit<..._Field_m_Request, _Field_m_DependsOnPrevious, ...>). Same ls::Variant<EnterCombatRequest, SetRelationRequest, SetCombatGroupRequest, EscortSetCharacterGroupRequest, EscortRemoveAllRequest, EscortSetLeaderPriorityRequest, EscortSetLeaderRequest, ResetTutorialsMessageRequest> as ExecutingRequestComponent: copied with FUN_142ea1ff0 (bg3.exe+0x2EA0290) / FUN_1804f41c0 (EoCServer.dll ProcessUpdateRequests)."
+        },
+        {
+          "name": "RequestType",
+          "offset": 40,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index: copied first as a byte at +0x28 in both copy loops."
+        },
+        {
+          "name": "_Pad29",
+          "offset": 41,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "DependsOnPrevious",
+          "offset": 48,
+          "type": "bool",
+          "source": "game",
+          "evidence": "model field m_DependsOnPrevious (second); copy loop copies a byte at +0x30 (bg3.exe+0x2EA0290, EoCServer.dll ProcessUpdateRequests)."
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "DependsOnRequest",
+          "offset": 56,
+          "type": "EntityHandle",
+          "source": "game",
+          "evidence": "model field m_DependsOnRequest (third); copy loop copies 8 bytes at +0x38. Request entities are what CompletedRequestsSingletonComponent (HashSet<EntityHandle>) holds, which request::IsDependent consults."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ScriptQueuedRequest>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2EA0290 allocates the singleton (0x10, zeroed) and appends elements with stride 0x40 (IndexedStorage<esv::script::QueuedRequest> assert in EoCServer.dll ProcessUpdateRequests). Live: heap pointer, capacity 2/7, size 0/1."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "DependsOnRequest typed EntityHandle from the request-entity design; no element was sampled live."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "12 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

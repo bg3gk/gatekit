@@ -1,0 +1,40 @@
+{
+  "component": "ls::TerrainLoadComponent",
+  "ext_name": "TerrainLoad",
+  "size": 16,
+  "seen": true,
+  "summary": "Pending terrain load request of the terrain visual loader (ls::TerrainVisualLoaderSystem, StreamSystemLoadHelper::UpdateLoadRequests<TerrainLoaderRegisteredComponent, TerrainLoadComponent, TerrainObject>): an aio::Priority (level + value) and a shared callback pointer. Live: one idle client instance, priority level 1, value -1000.0, callback null.",
+  "fields": [
+    {
+      "name": "PriorityLevel",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Toolkit ls::TerrainVisualLoaderSystem::ProcessLoadRequests (GameEngine.dll+0x1F1350) reads the first 8 bytes of the component as the aio::Priority passed to TerrainLoadData and counts requests with level==2 separately (this+0x304 vs +0x300). The same priority encoding 0xC47A0000_00000001 (level 1, -1000.0) appears in ls::TwoStepLoadable::Load. Live: always 1."
+    },
+    {
+      "name": "Priority",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Second half of aio::Priority (float, compared second in the BinaryHeap of StreamSystemLoadHelper::ProcessLoadRequests). Live: -1000.0."
+    },
+    {
+      "name": "Callback",
+      "offset": 8,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Toolkit ProcessLoadRequests moves an ls::SharedPtr<Callback<void(TerrainDescription const&, TerrainLoadResult)>> into component+8 (refcount at +0x50 of the pointee, freed with size 0x58). Creator bg3.exe+0x19DC490 zeroes 16 bytes. Live: 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Toolkit offsets; bg3.exe confirms only size and zero init.",
+    "Game member names."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

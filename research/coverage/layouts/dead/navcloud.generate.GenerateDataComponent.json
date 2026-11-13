@@ -1,0 +1,187 @@
+{
+  "component": "navcloud::generate::GenerateDataComponent",
+  "ext_name": "NavcloudGenerateData",
+  "size": 136,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "State of an offline NavCloud generation run (editor/tool feature: the last phase can run a 'p4 ... reconcile' on the written file). navcloud::generate::GenerationSystem (per-frame update bg3.exe+0x3932DC0, macOS navcloud::generate::GenerationSystem::Update with GenerateDataComponent, TransformComponent, RegionLoadingComponent, GenerateEventOneFrameComponent, IsWaitingForGenerateComponent, ZoneComponent) creates a new entity with this component (creator bg3.exe+0x39341F0, 0x88 bytes), stores a path built with the 'NavCloud' folder name at +0 and sets State = 1; then walks State 1 -> 2 -> 3 -> 4: phase-1 jobs fill a map of cells, phase-2 jobs mark bytes in each cell's array, phase 3 runs one write job, State 4 destroys the entity. Client-only registry row. Never seen alive.",
+  "structs": [
+    {
+      "name": "NavcloudGenerateDataCellKey",
+      "size": 12,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "key of the cell map: 12 bytes (keys iterated with stride 0xC at bg3.exe+0x3932DC0 and bg3.exe+0x393A1D0), hashed as k0 ^ k1 ^ k2 - three 32-bit integers, probably cell coordinates."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "second integer of the 12-byte key, see field_0."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "third integer of the 12-byte key, see field_0."
+        }
+      ]
+    },
+    {
+      "name": "NavcloudGenerateDataCell",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Resolution",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x393A1D0 writes the job's level here and keeps the finer one on collisions: 0 -> cell size 3.0, 1 -> 1.0, else 9999999.0 (same mapping when jobs are created in bg3.exe+0x3932DC0, 6/size cubed = job work count)."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding before the 8-aligned array; never written."
+        },
+        {
+          "name": "Flags",
+          "offset": 8,
+          "type": "Array<uint8_t>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x393A1D0 moves an Array{ptr,cap,size} here (value+8/+0x10/+0x14); State-2 handling in bg3.exe+0x3932DC0 sets bit 0 of byte [index] of this buffer for each int index a phase-2 job reports; the map destructor bg3.exe+0x6D0580 clears and frees it (value stride 0x18)."
+        }
+      ]
+    },
+    {
+      "name": "NavcloudGenerateDataCellMap",
+      "size": 64,
+      "fields": [
+        {
+          "name": "HashKeys",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "HashMap<CellKey, Cell> (64 bytes) laid out as Script Extender's HashMap (CoreLib\\Base\\BaseMap.h): StaticArray<int32_t> HashKeys {ptr, size}; bucket count read at +8 (bg3.exe+0x393A1D0: hash % *(int*)(map+8)). Written as raw members because the key is a struct of this file."
+        },
+        {
+          "name": "HashKeysSize",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "bucket count, see HashKeys."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding of the StaticArray."
+        },
+        {
+          "name": "NextIds",
+          "offset": 16,
+          "type": "Array<int32_t>",
+          "source": "inferred",
+          "evidence": "HashSet NextIds; creator bg3.exe+0x39341F0 zeroes it (size u32 at map+0x1C)."
+        },
+        {
+          "name": "Keys",
+          "offset": 32,
+          "type": "Array<NavcloudGenerateDataCellKey>",
+          "source": "inferred",
+          "evidence": "keys array at map+0x20 (component +0x68), capacity +0x28, size +0x2C; iterated with stride 0xC in bg3.exe+0x3932DC0."
+        },
+        {
+          "name": "Values",
+          "offset": 48,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "values buffer (UninitializedStaticArray<Cell>) at map+0x30, elements of 0x18 bytes (bg3.exe+0x6D0580, bg3.exe+0x393A1D0)."
+        },
+        {
+          "name": "ValuesSize",
+          "offset": 56,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "values capacity compared with keys capacity map+0x28 before growing (bg3.exe+0x393A1D0)."
+        },
+        {
+          "name": "_Pad3C",
+          "offset": 60,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to 64 bytes."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Path",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "destructor bg3.exe+0x6C6050 frees a 24-byte game string at +0; per-frame update bg3.exe+0x3932DC0 assigns a path built by bg3.exe+0xF822F0 with the 'NavCloud' folder name (PTR_s_NavCloud_14589a1d8) right after creating the component; the State-3 write job copies it (bg3.exe+0x3932DC0 line with STDString(job+0x10, component)) and the optional p4 reconcile uses the file."
+    },
+    {
+      "name": "State",
+      "offset": 24,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "creator bg3.exe+0x39341F0 writes 1; bg3.exe+0x3932DC0 switches on it: 1 = start region jobs -> 2, 2 = start cell jobs -> 3, 3 = write job -> 4, 4 = destroy the entity."
+    },
+    {
+      "name": "_Pad1C",
+      "offset": 28,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding before the 8-aligned array; never written."
+    },
+    {
+      "name": "RegionJobs",
+      "offset": 32,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3932DC0 (State 1) appends pointers to 0xA0-byte job objects (FUN_143939980) here, pushes them to the worker scheduler, then merges each into CellMap (bg3.exe+0x393A1D0), frees it and sets size +0x2C = 0; destructor bg3.exe+0x6C6050 frees the buffer (plain Array)."
+    },
+    {
+      "name": "CellJobs",
+      "offset": 48,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3932DC0 (State 2) appends pointers to 0x50-byte job objects (vtable bg3.exe+0x589A288), one per CellMap key, then marks their results in CellMap values and clears size +0x3C; destructor bg3.exe+0x6C6050 frees the buffer."
+    },
+    {
+      "name": "WriteJob",
+      "offset": 64,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3932DC0 (State 3) creates a 0x38-byte job (vtable bg3.exe+0x589A228, holding a copy of Path and a pointer to CellMap) when this is null, waits, frees it; creator writes 0; not touched by the destructor."
+    },
+    {
+      "name": "CellMap",
+      "offset": 72,
+      "type": "NavcloudGenerateDataCellMap",
+      "source": "inferred",
+      "evidence": "HashMap<12-byte key, 24-byte cell> at +0x48: destructor bg3.exe+0x6D0580 (called by bg3.exe+0x6C6050 on +0x48) frees each value's array (stride 0x18, count = keys size map+0x2C) then the HashSet (FUN_140582AD0); creator bg3.exe+0x39341F0 zeroes +0x48..+0x88."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the three integers of the cell key (probably cell coordinates) and of the per-cell byte flags.",
+    "Names are inferred from the code; the component is not saved, not replicated, and the Toolkit has no named accessor."
+  ],
+  "minutes": 14,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,111 @@
+{
+  "component": "esv::reward::GiveRewardRequestComponent",
+  "ext_name": "ServerRewardGiveRewardRequest",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton of esv::RewardManager: quest reward requests (esv::reward::RewardRequest) for this frame, created by RewardManager::CreateGiveRewardRequests from the manager's pending GiveRewardRequest list (character + quest id + quest step id), with the reward inventory, the items found in it and an additional gold amount. Read by esv::inventory::ManagementSystem::ProcessInventoryRequests. Seen.py context: singleton present in the idle level; samples after level-change held up to 4 elements.",
+  "structs": [
+    {
+      "name": "GiveRewardRequestEntry",
+      "size": 104,
+      "fields": [
+        {
+          "name": "Character",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0xD55B50 CreateGiveRewardRequests copies the entity of RewardManager's GiveRewardRequest (this+0xA8 array, stride 0x10) here; it is checked with CharacterComponent/uuid mapping before."
+        },
+        {
+          "name": "QuestId",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "FixedString passed to eoc::QuestManager::GetQuestByID."
+        },
+        {
+          "name": "QuestStepId",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "FixedString passed to QuestManager::GetStepByID together with the quest id."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Set from QuestStep +0x8C != 0."
+        },
+        {
+          "name": "field_11",
+          "offset": 17,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Set from QuestStep +0x7C != 0; forced to 1 when an additional gold reward is affordable or QuestStep +0x130 != -1."
+        },
+        {
+          "name": "HasRewardInventory",
+          "offset": 18,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Set to 1 when eoc::inventory::GetInventory of the quest step's reward container returned a valid inventory (the entity stored at +0x18)."
+        },
+        {
+          "name": "_Pad13",
+          "offset": 19,
+          "type": "uint8_t[5]",
+          "source": "inferred",
+          "evidence": "Alignment for the entity at +0x18."
+        },
+        {
+          "name": "RewardInventory",
+          "offset": 24,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Inventory entity from eoc::inventory::GetInventory (default 0xffc0000000000000)."
+        },
+        {
+          "name": "Items",
+          "offset": 32,
+          "type": "HashMap<EntityHandle, uint16_t>",
+          "source": "inferred",
+          "evidence": "64 zeroed bytes copied by EoCServer.dll+0xD54550, whose asserts name IndexedStorage<ls::ID<ecs::EntityHandleTraits>> and IndexedStorage<unsigned short> (hash-table tag); filled by the ForEachEntityInInventory callback (ID, unsigned short) - items of the reward inventory and their amounts."
+        },
+        {
+          "name": "GoldAmount",
+          "offset": 96,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "RewardManager::GetAdditionalGoldRewardAmount result, stored at +0x60."
+        },
+        {
+          "name": "_Pad64",
+          "offset": 100,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x68 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<GiveRewardRequestEntry>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD55B50 gets the singleton (EoCServer.dll+0xD50BD0, error path names GiveRewardRequestComponent) and appends elements with stride 0x68 (assert IndexedStorage<esv::reward::RewardRequest>). bg3.exe+0x30EFD60 allocates 0x10 (Array shape)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the two quest-step flags at +0x10/+0x11.",
+    "HashMap<EntityHandle, uint16_t> layout assumed standard (keys + values arrays) from the two asserts."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "11 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

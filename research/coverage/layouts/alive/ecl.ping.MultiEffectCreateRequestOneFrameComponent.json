@@ -1,0 +1,199 @@
+{
+  "component": "ecl::ping::MultiEffectCreateRequestOneFrameComponent",
+  "ext_name": "ClientPingMultiEffectCreateRequest",
+  "size": 168,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame request of the ping feature (writer bg3.exe+0x18A2F90, the ping system whose WorldView holds GameplayVFXSingleton, ping Play/Targeting singletons and Multi-effect create/destroy requests): asks the effect handler to create a ping multi-effect. Same payload as SE's ecl::dummy::MultiEffectCreateRequestOneFrameComponent (Dummy.h: EffectHandlerInitInfo Effect), declared here with own structs. Born live with ecl::effect::HandlerComponent / InitializedComponent and eoc::notification::PingRequestComponent.",
+  "structs": [
+    {
+      "name": "PingMultiEffectEffectObject",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE ecl::ProvidedMultiEffectObject::Entity; creator bg3.exe+0x18A4700 initialises it to the null handle."
+        },
+        {
+          "name": "Position",
+          "offset": 8,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "SE ProvidedMultiEffectObject::Position (live world coordinates in the target object)."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "alignment of the following array"
+        },
+        {
+          "name": "Tags",
+          "offset": 24,
+          "type": "Array<Guid>",
+          "source": "inferred",
+          "evidence": "SE ProvidedMultiEffectObject::Tags (Array<Guid>); zeroed by the creator; live empty."
+        },
+        {
+          "name": "Flags",
+          "offset": 40,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "SE ProvidedMultiEffectObject::Flags (ProvidedMultiEffectObjectFlags, 4-byte bitmask); creator writes a 4-byte 0; live 3 in TargetEffect."
+        },
+        {
+          "name": "_Pad2C",
+          "offset": 44,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    },
+    {
+      "name": "PingMultiEffectPlayTime",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Phase",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE ecl::EffectHandlerPlayTime::Phase"
+        },
+        {
+          "name": "Time",
+          "offset": 8,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "SE ecl::EffectHandlerPlayTime::Time"
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    },
+    {
+      "name": "PingMultiEffectInitInfo",
+      "size": 168,
+      "fields": [
+        {
+          "name": "EventProviderEntity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h); null handle by default."
+        },
+        {
+          "name": "Player",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h); null handle by default (live null)."
+        },
+        {
+          "name": "SourceEffect",
+          "offset": 16,
+          "type": "PingMultiEffectEffectObject",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::SourceEffect."
+        },
+        {
+          "name": "TargetEffect",
+          "offset": 64,
+          "type": "PingMultiEffectEffectObject",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::TargetEffect."
+        },
+        {
+          "name": "PlayTime",
+          "offset": 112,
+          "type": "Array<PingMultiEffectPlayTime>",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::PlayTime (Array<EffectHandlerPlayTime>); zeroed by default."
+        },
+        {
+          "name": "MultiEffectDefinition",
+          "offset": 128,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::MultiEffectDefinition: 24-byte ls::STDString (size at +0x10, capacity +0x14 = 0xF when empty, set so by creator bg3.exe+0x18A4700); live: heap pointer, size 0x20, capacity 0x2F when filled."
+        },
+        {
+          "name": "WeaponBones",
+          "offset": 152,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::WeaponBones; creator bg3.exe+0x18A4700 sets 0xFFFFFFFF (null)."
+        },
+        {
+          "name": "FXScale",
+          "offset": 156,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::FXScale; default 1.0 (0x3F800000) written by creator bg3.exe+0x18A4700; live 1.0."
+        },
+        {
+          "name": "ZoneRange",
+          "offset": 160,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::ZoneRange; default 0."
+        },
+        {
+          "name": "DamageType",
+          "offset": 164,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::DamageType (enum DamageType, uint8_t)."
+        },
+        {
+          "name": "VerbalIntent",
+          "offset": 165,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::VerbalIntent."
+        },
+        {
+          "name": "EnteredDuringSave",
+          "offset": 166,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::EnteredDuringSave."
+        },
+        {
+          "name": "Reset",
+          "offset": 167,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Script Extender ecl::EffectHandlerInitInfo (Effect.h)::Reset."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Effect",
+      "offset": 0,
+      "type": "PingMultiEffectInitInfo",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x18A4700 allocates 0xA8 and writes: +0/+8/+0x10/+0x40 null handles, 4-byte zeros at +0x38/+0x68 (Flags), +0x70 array, +0x80 STDString (byte 0, size 0, capacity 0xF at +0x94), +0x98 0xFFFFFFFF, +0x9C 1.0f, +0xA0 0 - exactly SE ecl::EffectHandlerInitInfo (0xA8). Live 14 instances: +0 an entity handle, +0x40 the same handle, +0x48 a world position, +0x68 = 3, +0x80 heap string of 0x20 chars, +0x98 null FixedString, +0x9C 1.0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Could reuse SE ecl::EffectHandlerInitInfo when external types are allowed."
+  ],
+  "minutes": 6,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "15 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

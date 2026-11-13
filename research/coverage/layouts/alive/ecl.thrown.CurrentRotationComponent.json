@@ -1,0 +1,46 @@
+{
+  "component": "ecl::thrown::CurrentRotationComponent",
+  "ext_name": "ClientThrownCurrentRotation",
+  "size": 28,
+  "seen": true,
+  "summary": "Client-side rotation state of a thrown object. Born live in situation shove-throw (and a Moonrise bazaar dialogue) together with eoc::thrown::IsThrownComponent, RotationParametersComponent, ThrownSoundComponent and the drop components. Written by bg3.exe+0x1A25F70, called from the per-frame update of ecl::thrown::ThrowAnimationSystem (bg3.exe+0x1A25B70).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1A25F70 copies 12 bytes from +0xC of a 0x38-stride component of the same entity (eoc::thrown::RotationParametersComponent, 56 bytes, its vec3 at +0xC). Live (0, 0.71, 1.571) / (0, 9.54, 1.571)."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1A25F70 stores the 12-byte result of FUN_141a25960(transform +0x10 of a 0x28-stride component = ls::TransformComponent) here: a vector derived from the entity's transform (probably Euler angles). Live (0, 0.0189, 0.0602) or 0."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1A25F70 writes (component already existed) here; creator bg3.exe+0x1A27F20 writes byte 0. Live low byte 0, upper bytes vary (padding)."
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding to 28"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the two vectors (start rotation and current Euler rotation?) not established; FUN_141a25960 not read."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

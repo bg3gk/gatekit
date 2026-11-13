@@ -1,0 +1,76 @@
+{
+  "component": "esv::item::ObjectInteractionSingletonComponent",
+  "ext_name": "ServerItemObjectInteraction",
+  "size": 16,
+  "seen": true,
+  "summary": "Singleton filled each frame by esv::ObjectInteractionSystem (Toolkit EoCServer.dll+0xADDDD0, ObjectInteractionSystem.cpp) and read by esv::item::UseSystem and esv::item::animation::RequestsSystem. The system turns its 0x18-byte requests (entity, entity, request type 1/2/3) into esv::item::UseItemEvent records (assert string 'ls::IndexedStorage<struct esv::item::UseItemEvent,...>') collected in a local DynamicArray that is moved into this component at the end.",
+  "structs": [
+    {
+      "name": "ObjectInteractionSingletonUseItemEvent",
+      "size": 32,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Toolkit ObjectInteractionSystem::Update writes the low dword of the first qword (0 for request type 1) - an event kind."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "upper half of the first qword, cleared."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "copied from request+0 (an entity handle)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "copied from request+8 (an entity handle)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "low 16 bits of the last qword cleared (two flags or a short)."
+        },
+        {
+          "name": "_Pad1A",
+          "offset": 26,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "not written."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "Array<ObjectInteractionSingletonUseItemEvent>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x2CEFAF0: ptr/capacity/size zeroed; destructor bg3.exe+0x686280 (trivial array). Toolkit EoCServer.dll+0xADDDD0: builds UseItemEvent entries with stride 0x20 and at the end frees the component's buffer and moves the local array (pointer, capacity, size) into it. Live: empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the UseItemEvent members (user vs item entity, event kind enum)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names for UseItemEvent's members; not saved or replicated."
+}

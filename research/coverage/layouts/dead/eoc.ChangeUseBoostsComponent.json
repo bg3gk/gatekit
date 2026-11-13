@@ -1,0 +1,153 @@
+{
+  "component": "eoc::ChangeUseBoostsComponent",
+  "ext_name": "ChangeUseBoosts",
+  "size": 72,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server-side boost entity data that changes an item's use boosts (the boosts its eoc::UseComponent applies on use): the list of boost descriptions, the boost source, the boost parameters and a flag. Written by esv::StatsSystem::UpdateUseBoostRequests (Toolkit EoCServer.dll+0x1047330, game ~bg3.exe+0x31C3A60) from a request element (stride 0x40), cleared by esv::StatsSystem::ClearChangeUseBoostsRequests; esv::BoostSystem::Initialize connects a signal on it. Never seen alive. Registry total 72 (client and server rows).",
+  "structs": [
+    {
+      "name": "ChangeUseBoostsDescription",
+      "size": 12,
+      "fields": [
+        {
+          "name": "Boost",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as SE eoc::BoostDescription (Base/ExposedTypes.h, 3 FixedStrings); the Toolkit assert names ls::IndexedStorage<struct eoc::BoostDescription> and the stride is 0xC."
+        },
+        {
+          "name": "Params",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE BoostDescription.Params"
+        },
+        {
+          "name": "Params2",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE BoostDescription.Params2"
+        }
+      ]
+    },
+    {
+      "name": "ChangeUseBoostsSource",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Type",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE BoostSource.Type (enum BoostSourceType, 1 byte); bg3.exe creator writes byte 0 at component +0x10."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Cause",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE BoostSource.Cause; creator writes 0xFFFFFFFF at +0x14, destructor DecRefs +0x14."
+        },
+        {
+          "name": "Entity",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE BoostSource.Entity; creator writes the null handle constant DAT_146174970 at +0x18."
+        },
+        {
+          "name": "Status",
+          "offset": 16,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "SE BoostSource.Status (ComponentHandle, 8 bytes); creator writes 0xFFFFFFFFFFFFFFFF at +0x20."
+        }
+      ]
+    },
+    {
+      "name": "ChangeUseBoostsParameters",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Owner",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE BoostParameters.Owner (Base/ExposedTypes.h); creator copies a 16-byte constant (DAT_14625aad0, the null Guid) to +0x28."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE BoostParameters.field_10; creator writes byte 0 at +0x38."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to 8-byte alignment (Toolkit copies +0x38 as a whole qword)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Boosts",
+      "offset": 0,
+      "type": "Array<ChangeUseBoostsDescription>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x31D1BD0 (AllocRaw 0x48) zeroes pointer + capacity/size at 0..0xF. Destructor bg3.exe+0xD79980 calls bg3.exe+0x6DAFC0(p,0) (walks elements with stride 0xC) and frees the buffer. Toolkit UpdateUseBoostRequests destroys each eoc::BoostDescription (stride 0xC), reallocates (AllocateInternal(n, 0xC, 4)) and copies the request's array into component+0."
+    },
+    {
+      "name": "Source",
+      "offset": 16,
+      "type": "ChangeUseBoostsSource",
+      "source": "inferred",
+      "evidence": "Toolkit UpdateUseBoostRequests: eoc::BoostSource::operator=((BoostSource*)(p + 0x10), request + 8). Equals SE BoostSource (Base/ExposedTypes.h, 24 bytes); bg3.exe creator defaults match (Type 0, Cause null, Entity null, Status -1)."
+    },
+    {
+      "name": "Params",
+      "offset": 40,
+      "type": "ChangeUseBoostsParameters",
+      "source": "inferred",
+      "evidence": "Toolkit copies request qwords 4,5 to component +0x28/+0x30 and qword 6 to +0x38: a Guid followed by a byte - SE BoostParameters {Guid Owner; uint8_t field_10} (24 bytes with padding). bg3.exe creator: null Guid at +0x28, byte 0 at +0x38."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe creator writes byte 1 at +0x40; Toolkit copies the request's byte at +0x38 (`*(u8*)(p+0x40) = *(u8*)(req+0x38)`)."
+    },
+    {
+      "name": "_Pad41",
+      "offset": 65,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 0x48."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "field_40 (default true) meaning; the request it is copied from is filled elsewhere in esv::StatsSystem.",
+    "Whether eoc::ChangeUseBoostsComponent sits on a boost entity (like other boost components) or on the item; the Toolkit takes the entity from the request.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

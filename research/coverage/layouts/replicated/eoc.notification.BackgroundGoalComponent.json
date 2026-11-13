@@ -1,0 +1,46 @@
+{
+  "component": "eoc::notification::BackgroundGoalComponent",
+  "ext_name": "NotificationBackgroundGoal",
+  "size": 32,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x992DA0 member 1: written through bg3.exe+0x4017090 (the 64-bit entity-handle writer that also writes the replicated entity key) at +0 (global offset DAT_14627ffa0); macOS default stp x0,xzr,[x23] (x0 = null handle)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x992DA0 member 2: 16-byte scratch write at +8 (goal id?)."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x992DA0 member 3: 4-byte scratch write at +0x18; macOS default zero."
+    },
+    {
+      "name": "_Pad1C",
+      "offset": 28,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+    "Meaning of the members not established (no named macOS reader)."
+  ],
+  "seen": false,
+  "minutes": 3,
+  "functions_read": 0,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

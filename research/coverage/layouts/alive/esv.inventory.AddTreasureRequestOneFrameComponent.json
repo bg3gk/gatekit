@@ -1,0 +1,52 @@
+{
+  "component": "esv::inventory::AddTreasureRequestOneFrameComponent",
+  "ext_name": "ServerInventoryAddTreasureRequest",
+  "size": 16,
+  "seen": true,
+  "summary": "Server one-frame component on an inventory: treasure items to add to it. Born together with GeneratedAsTreasure and EntityMergeEvent when containers/levels generate treasure (dialogues, events, container tests). Read by esv::inventory::InteractionRequestSystem::GatherRequests (log 'Adding treasure %s to %s (trade treasure: %s)').",
+  "structs": [
+    {
+      "name": "InvAddTreasureRequestEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Item",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "GatherRequests (EoCServer.dll+0xFC7B40) iterates the component's array with stride 0x10, logs element+0 as the treasure entity in 'Adding treasure %s to %s' and queues it as a member-add request."
+        },
+        {
+          "name": "IsTradeTreasure",
+          "offset": 8,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Same loop: '(trade treasure: %s)' prints GetBoolStr of byte element+8; the add type becomes (element[8] != 0) + 1."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "std::array<uint8_t, 7>",
+          "source": "inferred",
+          "evidence": "Padding to the 0x10 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Treasure",
+      "offset": 0,
+      "type": "Array<InvAddTreasureRequestEntry>",
+      "source": "inferred",
+      "evidence": "bg3.exe creator 0x34C3A40 allocates 0x10 and zeroes an Array (ptr +0, capacity +8, size +0xC). Live (48 instances): heap pointer, capacity 1..16, size 1..9."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

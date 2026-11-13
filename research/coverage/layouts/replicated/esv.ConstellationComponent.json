@@ -1,0 +1,40 @@
+{
+  "component": "esv::ConstellationComponent",
+  "ext_name": "ServerConstellation",
+  "size": 64,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Not replicated. Toolkit constructor esv::ConstellationComponent(ConstellationTemplate const*) (EoCServer.dll+0x596950) writes 0xFFC0000000000000 (null EntityHandle) here; esv::ConstellationComponent::GetUUID (EoCServer.dll+0xD050D0) passes *this to an entity->Guid lookup, i.e. it is the handle whose UUID the constellation reports."
+    },
+    {
+      "name": "Template",
+      "offset": 8,
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "Toolkit accessor annotation '+0x8 Template' on the constructors/operator=; the constructor stores its eoc::ConstellationTemplate const* argument here."
+    },
+    {
+      "name": "Children",
+      "offset": 16,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Constructor zeroes +0x10..+0x3F; move constructor/operator= treat +0x10 (pointer + u32), +0x20 and +0x30 (pointer, capacity, size) as three buffers - the 48-byte HashSet layout; the key buffer cleanup (EoCServer.dll+0x597190) is ls::IndexedStorage<ls::ID<ecs::EntityHandleTraits>, mem::s_TagHashTable>. Name inferred from esv::ConstellationSystem (ProcessChildrenListChangedEvents, ConstellationChildComponent)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Server-only; registry totalSize 64 on the server row only.",
+    "Offsets from the Toolkit (EoCServer.dll) constructors; macOS default constructor is a stub (pointer-free component constructed by the template constructor). Not seen alive.",
+    "Children: whether the set holds constellation children or helpers was not traced; Template is typed void* (eoc::ConstellationTemplate is not declared in Script Extender)."
+  ],
+  "seen": false,
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

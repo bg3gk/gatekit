@@ -1,0 +1,39 @@
+{
+  "component": "ecl::PlayerTargetEntityChangedOneFrameComponent",
+  "ext_name": "ClientPlayerTargetEntityChanged",
+  "size": 16,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Born in spell/fight steps (spells-3, death, dialogues) together with ecl::highlight::DataComponent, StealthVFX, spell_cast::Targeting: one-frame event that a player's target entity changed.",
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x182C090 stores *param_4 (8 bytes) here; its caller bg3.exe+0x182BCB0 walks a map of short -> EntityHandle (keys stride 2 at +0x60, values stride 8 at +0x70) and passes the value. Live: entity handles and null."
+    },
+    {
+      "name": "PlayerId",
+      "offset": 8,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x182C090 stores *param_3 (16-bit) here; caller bg3.exe+0x182BCB0 passes the short key of the same map (player id, as in ecl::highlight::DataComponent). Live 1."
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint8_t[6]",
+      "source": "unknown",
+      "evidence": "tail padding (not written by the creator; live garbage)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Name of the producing system (bg3.exe+0x182BCB0, called from bg3.exe+0x4287D30) not established; PlayerId vs. user id not verified."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

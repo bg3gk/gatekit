@@ -1,0 +1,26 @@
+{
+  "component": "ecl::multiplayer::DestroyPlayerRequestsSingletonComponent",
+  "ext_name": "ClientMultiplayerDestroyPlayerRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "Array<int16_t>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x5A9500 ecl::multiplayer::DropInApprovalSystem::ProcessDecisions builds a local ls::DynamicArray of shorts (element stride 2: *(short*)(data + i*2)) from approved host-side join requests whose user id's peer equals the local peer ((short)UserId), then gets this singleton (its 'No singleton found' path names GetTypeName<ecl::multiplayer::DestroyPlayerRequestsSingletonComponent>, FUN_1805A3AC0) and move-assigns the local array into it. macOS default: 16 zero bytes; live: empty."
+    }
+  ],
+  "confidence": "high",
+  "second_pass": "Confirmed on Windows: bg3.exe+0x1AD4430 (~ProcessDecisions) builds a local array of shorts (stride 2, the low 16 bits of an approved UserId) and move-assigns it into the singleton (buffer +0, capacity +8, size +0xC); creator bg3.exe+0x1AD73A0 allocates 0x10 bytes and zeroes them.",
+  "open_questions": [
+    "Element is the low 16 bits of a UserId (local user/player number); whether SE should expose it as int16_t or uint16_t is not settled (code declares short)."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

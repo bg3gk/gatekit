@@ -1,0 +1,23 @@
+{
+  "component": "esv::tutorial::DualWieldingEventRequestsSingletonComponent",
+  "ext_name": "ServerTutorialDualWieldingEventRequestsSingleton",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Enabled",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x341B7C0 (DualWieldingSystem update, query DualWielding/RunningComponent/WeaponSet) clears size then appends the query row's entity (8-byte element); ValidateSystem maps it to variant index 8 DualWielding_Enabled (bg3.exe+0x3428830)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "summary": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Filled by esv::tutorial::DualWieldingSystem.",
+  "seen": true,
+  "minutes": 5,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

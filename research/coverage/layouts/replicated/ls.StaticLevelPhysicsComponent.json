@@ -1,0 +1,35 @@
+{
+  "component": "ls::StaticLevelPhysicsComponent",
+  "ext_name": "StaticLevelPhysics",
+  "size": 16,
+  "class_size": 8,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Storage set-up bg3.exe+0xE25200 registers an 8-byte slot with the destructor FUN_140591900, which frees the pointer held in the slot (GlobalAllocator::Free(*slot)) without destroying anything inside: the slot holds a heap object, and the object's member is not owned. Registry totalSize 16 = 8-byte object + 8. bg3.exe+0x2D6CC70 (~ Toolkit ls::StaticLevelPhysicsComponent::GetPhysicsFilePath, only user of 'StaticPhysics') reads the component's first qword as a pointer and the qword it points to as the level/resource record (STDString array at +0x10/+0x1C, FixedString at +8) to build '<path>/StaticPhysics/<name>'; Toolkit GetUniqueKey returns (**this) + 0xC. macOS default constructor stores one zero qword in the allocated object."
+    },
+    {
+      "name": "_Pad8",
+      "offset": 8,
+      "type": "uint8_t[8]",
+      "source": "unknown",
+      "evidence": "The registry size (16, client and server) is 8 bytes larger than the 8-byte object, the convention of the pointer-stored objects already declared (layouts/alive/ecl.CullTrigger.json); nothing writes it."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What the pointer refers to (a level description / resource record holding the physics name, unique key and path list) is not named; kept void*.",
+    "Not seen alive; the creator of the component was not found (only the generic set-up and add/remove handlers bg3.exe+0x2D6E2D0 / bg3.exe+0x2D6E0F0)."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "The Windows set-up bg3.exe+0xE25200 (8-byte slot, destructor frees the slot's pointer) and the registry's 16 show a heap object of one qword, which bg3.exe+0x2D6CC70 dereferences as a pointer to the level physics record; size set to 16 with class_size 8 and an 8-byte tail (convention of the confirmed trigger layouts), fixing the raw-check size mismatch.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

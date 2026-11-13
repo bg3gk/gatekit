@@ -1,0 +1,155 @@
+{
+  "component": "ls::anubis::debug::TreeViewBuiltOneFrameComponent",
+  "ext_name": "AnubisDebugTreeViewBuilt",
+  "size": 56,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Server Anubis debugging, one frame: the tree view (a serialized description of an entity's behaviour tree) built by bg3.exe+0x3830880 for a debugged entity, which also gets ls::anubis::debug::HistoryComponent. Never seen alive.",
+  "structs": [
+    {
+      "name": "AnubisDebugTreeViewBuiltNode",
+      "size": 16,
+      "equals": "a node of ls::anubis::debug::TreeView (macOS TreeView::AddNode)",
+      "fields": [
+        {
+          "name": "TextStart",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Windows TreeView::AddNode bg3.exe+0x38836B0: *node = CONCAT44(end, start) where start = the text size (+0x20) before the node's label is appended."
+        },
+        {
+          "name": "TextEnd",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "same store: the text size after the label is appended (clamped to start)."
+        },
+        {
+          "name": "Flags",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x38836B0: = kind & 0xF | bool << 4 | bool << 5 (macOS AddNode(..., ETreeNodeKind, bool, bool, int, int, int): the node kind in the low 4 bits and two flags)."
+        },
+        {
+          "name": "Depth",
+          "offset": 9,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x38836B0: 0 for a root, else the parent's +9 plus one."
+        },
+        {
+          "name": "Parent",
+          "offset": 10,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x38836B0: = the parent index argument (negative for a root; the parent's depth is read at nodes + index * 0x10 + 9)."
+        },
+        {
+          "name": "field_C",
+          "offset": 12,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x38836B0: = 16-bit argument 7 of AddNode."
+        },
+        {
+          "name": "field_E",
+          "offset": 14,
+          "type": "uint16_t",
+          "source": "unknown",
+          "evidence": "bg3.exe+0x38836B0: = 16-bit argument 8 of AddNode."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "NameStart",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "The component is an ls::anubis::debug::TreeView (Windows constructor bg3.exe+0x3883600, called by the builder bg3.exe+0x3865F80 and moved in by the creator bg3.exe+0x383ACA0 (AllocRaw 0x38)): +0 = CONCAT44(end, start) of the tree's name in the text buffer; start = text size before it was appended."
+    },
+    {
+      "name": "NameEnd",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "same store: end of the name in the text buffer."
+    },
+    {
+      "name": "Nodes",
+      "offset": 8,
+      "type": "Array<AnubisDebugTreeViewBuiltNode>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3883600 allocates capacity * 0x10 bytes for +8 (capacity +0x10, size +0x14); AddNode bg3.exe+0x38836B0 appends 16-byte nodes; destructor bg3.exe+0x38834C0 clears it as a plain array (bg3.exe+0x5BD630) and frees it."
+    },
+    {
+      "name": "Text",
+      "offset": 24,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Character buffer of the tree's labels: the constructor appends the name with bg3.exe+0x411A610 to +0x18, AddNode appends each label; the destructor frees it only when OwnsBuffer (+0x31) is set."
+    },
+    {
+      "name": "TextSize",
+      "offset": 32,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3883600 / 0x38836B0 read the current text size here (start offset of the next label); macOS TreeView::AddNode updates it."
+    },
+    {
+      "name": "TextCapacity",
+      "offset": 36,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "constructor zeroes it (8-byte store with +0x20); macOS AddNode compares the required size with it before reallocating."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "constructor writes 0xFFFFFFFF (one 8-byte store of -1 over +0x28..+0x2F); macOS AddNode treats +0x28 as a size limit (0 = write nothing, -1 = unlimited)."
+    },
+    {
+      "name": "field_2c",
+      "offset": 44,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "constructor default -1 (same 8-byte store)."
+    },
+    {
+      "name": "CanGrow",
+      "offset": 48,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "constructor writes 0x101 to +0x30 (two bytes = 1); macOS AddNode reallocates the text buffer only when +0x30 and +0x31 are both set."
+    },
+    {
+      "name": "OwnsBuffer",
+      "offset": 49,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "destructor bg3.exe+0x38834C0 and bg3.exe+0x3883520 free the pointer at +0x18 only when this byte is non-zero; default 1."
+    },
+    {
+      "name": "_Pad32",
+      "offset": 50,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "padding to 0x38"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of node +0xC/+0xE and of the two -1 defaults at +0x28/+0x2C."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "status": "declared",
+  "second_pass": "The component is an ls::anubis::debug::TreeView: its Windows constructor bg3.exe+0x3883600 and AddNode bg3.exe+0x38836B0 (paired with the macOS TreeView::TreeView / AddNode by name and logic) give every member, including the 16-byte node of the array at +8.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,169 @@
+{
+  "component": "esv::multiplayer::DropInApprovalPendingRequestsSingletonComponent",
+  "ext_name": "ServerMultiplayerDropInApprovalPendingRequests",
+  "size": 48,
+  "seen": true,
+  "summary": "Server singleton of the drop-in approval flow: connection requests waiting for the host's approval, as a hash set of esv::multiplayer::PlayerConnectInfo (keyed by the request Guid at +0x58). Filled by DropInApprovalSystem::ProcessApprovalRequests, emptied by ProcessApprovalAnswers; read by esv::JoiningProtocol::SendRefuseMessage (macOS). Seen.py context: idle level, never non-empty.",
+  "structs": [
+    {
+      "name": "DropInPendingPlayerConnectInfo",
+      "size": 104,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "unknown",
+          "evidence": "EoCServer.dll+0x2D8760 copies the PlayerConnectInfo field by field: FixedString at +0 (ls::FixedString::FixedString(local, elem)). Confirmed on Windows by bg3.exe+0x2F38A90 (FixedString +0, STDString +8 and +0x20, bytes +0x38..+0x3A, UserId +0x3C) and bg3.exe+0x2F390C0 (Guid hash of +0x58/+0x60)."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "STDString",
+          "source": "unknown",
+          "evidence": "STDString copy of elem+8. Confirmed on Windows by bg3.exe+0x2F38A90 (FixedString +0, STDString +8 and +0x20, bytes +0x38..+0x3A, UserId +0x3C) and bg3.exe+0x2F390C0 (Guid hash of +0x58/+0x60)."
+        },
+        {
+          "name": "Name",
+          "offset": 32,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "STDString copy of elem+0x20; the same string becomes DropInRequestInfo's name shown to the host. Confirmed on Windows by bg3.exe+0x2F38A90 (FixedString +0, STDString +8 and +0x20, bytes +0x38..+0x3A, UserId +0x3C) and bg3.exe+0x2F390C0 (Guid hash of +0x58/+0x60)."
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Byte copy of elem+0x38. Confirmed on Windows by bg3.exe+0x2F38A90 (FixedString +0, STDString +8 and +0x20, bytes +0x38..+0x3A, UserId +0x3C) and bg3.exe+0x2F390C0 (Guid hash of +0x58/+0x60)."
+        },
+        {
+          "name": "field_39",
+          "offset": 57,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Byte copy of elem+0x39. Confirmed on Windows by bg3.exe+0x2F38A90 (FixedString +0, STDString +8 and +0x20, bytes +0x38..+0x3A, UserId +0x3C) and bg3.exe+0x2F390C0 (Guid hash of +0x58/+0x60)."
+        },
+        {
+          "name": "field_3A",
+          "offset": 58,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Byte copy of elem+0x3A. Confirmed on Windows by bg3.exe+0x2F38A90 (FixedString +0, STDString +8 and +0x20, bytes +0x38..+0x3A, UserId +0x3C) and bg3.exe+0x2F390C0 (Guid hash of +0x58/+0x60)."
+        },
+        {
+          "name": "_Pad3B",
+          "offset": 59,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "UserID",
+          "offset": 60,
+          "type": "UserId",
+          "source": "inferred",
+          "evidence": "Dword elem+0x3C: the joining user's id (put into the Canceled/Processed UserId sets by ProcessPlayerCanceledRequests / ProcessApprovalAnswers; compared with user ids in ProcessPlayerConnections). Confirmed on Windows by bg3.exe+0x2F38A90 (FixedString +0, STDString +8 and +0x20, bytes +0x38..+0x3A, UserId +0x3C) and bg3.exe+0x2F390C0 (Guid hash of +0x58/+0x60)."
+        },
+        {
+          "name": "CommunityIdKind",
+          "offset": 64,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Windows ProcessApprovalRequests (bg3.exe+0x2F38A90) copies the PlayerConnectInfo (stride 0x68) member by member: dword +0x40 is the index of the id variant: 0 -> 8 bytes copied from +0x48, 1 -> 16 bytes from +0x48 (net::ExternalCommunityUserID, 24 bytes +0x40..+0x57). SE Net.h calls it field_0."
+        },
+        {
+          "name": "CommunityType",
+          "offset": 68,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Windows ProcessApprovalRequests (bg3.exe+0x2F38A90) copies the PlayerConnectInfo (stride 0x68) member by member: byte +0x44 copied on its own. Name from SE Net.h ExternalCommunityUserID.CommunityType."
+        },
+        {
+          "name": "_Pad45",
+          "offset": 69,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Alignment of the 8-aligned id payload; never copied."
+        },
+        {
+          "name": "CommunityId",
+          "offset": 72,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "Windows ProcessApprovalRequests (bg3.exe+0x2F38A90) copies the PlayerConnectInfo (stride 0x68) member by member: first 8 bytes of the id payload at +0x48 (the whole id when the kind is 0, e.g. a Steam id). SE Net.h: ExternalCommunityUserID.ID."
+        },
+        {
+          "name": "CommunityIdHigh",
+          "offset": 80,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "Windows ProcessApprovalRequests (bg3.exe+0x2F38A90) copies the PlayerConnectInfo (stride 0x68) member by member: second 8 bytes of the payload, copied only when the kind at +0x40 is 1 (a 16-byte id); otherwise stale."
+        },
+        {
+          "name": "RequestId",
+          "offset": 88,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "ls::Guid at +0x58: the hash key (ls::Guid::GetHash(elem+0x58) in ProcessApprovalAnswers / ProcessPlayerConnections); set to the generated request Guid. Stride 0x68. Confirmed on Windows by bg3.exe+0x2F38A90 (FixedString +0, STDString +8 and +0x20, bytes +0x38..+0x3A, UserId +0x3C) and bg3.exe+0x2F390C0 (Guid hash of +0x58/+0x60)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "HashKeys",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "ls::HashTable<esv::multiplayer::PlayerConnectInfo> written out by hand (a struct of this file may not be a HashSet key): bucket array."
+    },
+    {
+      "name": "HashKeysSize",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Bucket count (Guid hash % *(int*)(set+8) in EoCServer.dll+0x2D8290)."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Padding."
+    },
+    {
+      "name": "NextIds",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "Collision chain array."
+    },
+    {
+      "name": "Requests",
+      "offset": 32,
+      "type": "Array<DropInPendingPlayerConnectInfo>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x2D8760 ProcessApprovalRequests inserts each new request's PlayerConnectInfo (with the generated Guid at +0x58) via FUN_1802D5050 into the set returned by FUN_1802D6020; EoCServer.dll+0x2D8290 ProcessApprovalAnswers finds answered requests in it by Guid hash (FUN_1802D5A60) and removes them (FUN_1802D9FF0). Live (idle): all zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the FixedString at +0, the STDString at +8 and the three bytes at +0x38..+0x3A of PlayerConnectInfo (no named accessor; widths are established)."
+  ],
+  "minutes": 6,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Windows ProcessApprovalRequests (bg3.exe+0x2F38A90) and ProcessApprovalAnswers (bg3.exe+0x2F390C0) confirm the hash set of 0x68-byte PlayerConnectInfo keyed by the Guid at +0x58 and every member width; the 24-byte ExternalCommunityUserID is a kind dword, a type byte and an 8- or 16-byte id (SE's 16-byte Net.h struct is too short). Getter bg3.exe+0x2F3ADF0 is this component's (users of its type index).",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "names_pass_2": "esv::multiplayer::PlayerConnectInfo has no named members in the macOS symbols or SE; left as is."
+}

@@ -1,0 +1,52 @@
+{
+  "component": "esv::screen_fade::ScreenFadeIdToFadeNameComponent",
+  "ext_name": "ServerScreenFadeIdToFadeName",
+  "size": 64,
+  "seen": true,
+  "summary": "Server singleton of esv::screen_fade::ScreenFadeSystem: screen-fade id (Guid) -> the fade's script name and the user it belongs to. Written in ScreenFadeSystem::FinalizeComponents, searched by FrameDataWrapper::GetScreenFadeIdFromNameAndUser. Sibling of ScreenFadeTimerComponent (HashMap<Guid, float>). Seen.py context: present from exploration/scene steps on WLD_Main_A / SCL_Main_A; samples held one entry.",
+  "structs": [
+    {
+      "name": "ScreenFadeIdToFadeNameData",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "STDString",
+          "source": "game",
+          "evidence": "esv::screen_fade::ScreenFadeNameData (macOS type name); log 'FinalizeComponents::m_FadeToFinishedData: Guid[%s], Name[%s], User[%d]' prints this STDString (EoCServer.dll+0x399FD0 copies an STDString to element+0)."
+        },
+        {
+          "name": "User",
+          "offset": 24,
+          "type": "int32_t",
+          "source": "game",
+          "evidence": "Same log 'User[%d]'; copied as 4 bytes at element+0x18 (EoCServer.dll+0x399FD0). macOS GetScreenFadeIdFromNameAndUser(StringView, net::UserID const&) compares it. net::UserID (4 bytes)."
+        },
+        {
+          "name": "_Pad1C",
+          "offset": 28,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Element stride 0x20 (IndexedStorage<ScreenFadeNameData>, index*0x20 in EoCServer.dll+0x399FD0)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Names",
+      "offset": 0,
+      "type": "HashMap<Guid, ScreenFadeIdToFadeNameData>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2EEF260 allocates 0x40 zeroed in HashMap shape. macOS ScreenFadeSystem::FrameDataWrapper::GetScreenFadeIdFromNameAndUser walks keys (+0x20, stride 0x10 = Guid) and values (+0x30) comparing name string and user. EoCServer.dll+0x399FD0 writes values at index*0x20 (STDString copy + int at +0x18). Live: buckets 5, 1 key, values pointer. ScreenFadeNameData equals no SE struct (declared here)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 9,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "26 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

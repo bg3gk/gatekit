@@ -1,0 +1,23 @@
+{
+  "component": "eoc::tutorial::RevealedEntriesComponent",
+  "ext_name": "TutorialRevealedEntries",
+  "size": 48,
+  "fields": [
+    {
+      "name": "Entries",
+      "offset": 0,
+      "type": "HashSet<Guid>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::HashSet<class ls::Guid,struct ls::HashTableOpsDefault> eoc::tutorial::RevealedEntriesComponent::*,0>; macOS ls::FieldMeta<ls::HashSet<ls::Guid,ls::HashTableOpsDefault> eoc::tutorial::RevealedEntriesComponent::*, &eoc::tutorial::RevealedEntriesComponent::m_Entries>. Registered size 48 = one HashSet. Windows side: replication reader bg3.exe+0x8F5C50 (slot 1 of bg3.exe+0x551E958) builds a fresh component as a 48-byte zeroed local, deserializes into it at the FieldMeta offset global DAT_146280530 and destroys it with FUN_140582AD0 (HashSet with plain keys). A 48-byte member in a 48-byte component can only sit at +0."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "1 of 1 members have their offset from the macOS build alone (0 have no evidence): the two builds lay structures out differently, so the Windows side must confirm them before the layout is declared",
+  "needs_windows": "1 of 1 members have their offset from the macOS build alone (0 have no evidence): the two builds lay structures out differently, so the Windows side must confirm them before the layout is declared",
+  "second_pass": "Confirmed on Windows: the replication reader bg3.exe+0x8F5C50 builds the component as a 48-byte local holding only this HashSet (destroyed by the plain-key HashSet destructor), and the Windows FieldMeta type name gives offset 0."
+}

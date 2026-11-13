@@ -1,0 +1,24 @@
+{
+  "component": "esv::boost::AttachmentRequestOneFrameComponent",
+  "ext_name": "ServerBoostAttachmentRequest",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Owner",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3188BC0 (boost creation: eoc::ParseBoostData, then a new boost entity from FUN_1412dd6a0) adds this component to the new boost entity via bg3.exe+0x3196220 and stores *param_5 in it - an 8-byte entity handle; the boost is then created by bg3.exe+0x319FD20 on the same entity. The handle is the entity the boost should be attached to (owner). Live: 48 instances, all entity-handle shaped."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Whether the handle is the boost owner or the boost's cause/source - only one writer read."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

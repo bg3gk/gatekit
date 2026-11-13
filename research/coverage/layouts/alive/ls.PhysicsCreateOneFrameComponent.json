@@ -1,0 +1,41 @@
+{
+  "component": "ls::PhysicsCreateOneFrameComponent",
+  "ext_name": "PhysicsCreate",
+  "size": 16,
+  "seen": true,
+  "summary": "Client/server one-frame-like request to create (register) an entity's physics from an already built physics object; handled by ls::PhysicsLoaderSystem::ProcessCreateRequests / FlushCreateQueue (Toolkit GameEngine.dll+0x789E00 / +0x788F00) and read by phx::PhysXDisableSimulationSystem::ProcessChangedClusters. Not a one-frame type by registry (removed by the loader). Seen alive after level changes and in new areas (dialog trees).",
+  "fields": [
+    {
+      "name": "PhysicsObject",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Windows bg3.exe+0x3B0E120 (= Toolkit ls::PhysicsLoaderSystem::FlushCreateQueue, GameEngine.dll+0x788F00) adds the component with its creator bg3.exe+0x3B12080 (0x10 bytes, zeroed) and writes the queued request's 8-byte object here ('*puVar14 = *puVar25'); when an entity's request is replaced or the entity is dead the old object is handed to a manager's virtual slot +0x18 (Toolkit: SavegameObjectFactory::IsReserved on the ObjectHandle), and in the drain loop the 0x10-stride column of this component (the type that is removed right after with FUN_1440103b0) is released the same way and cleared. Live: heap pointers (an ls::PhysicsObject, cf. macOS ProcessUnloadRequests' Span<ls::PhysicsObject*>)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x3B0E120 copies the request's 4-byte value (request +0x10 in the Toolkit queue element) here ('*(uint *)(puVar14 + 1) = ...'); meaning not established. Live: always 1."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Zeroed by the creator, never written by the filler; padding to 16."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the 4-byte value at +8 (always 1 live).",
+    "The +0 pointer's class is named only through macOS (ls::PhysicsObject*) and the Toolkit's ObjectHandle parameter."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled from the Windows FlushCreateQueue bg3.exe+0x3B0E120: it creates the component (bg3.exe+0x3B12080), stores an 8-byte object at +0 and a 4-byte value at +8, and its drain loop releases +0 of the 0x10-stride column before removing the component - which also proves the column is this component.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

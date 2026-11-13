@@ -1,0 +1,27 @@
+{
+  "component": "esv::jump::InitJumpRequestOneFrameComponent",
+  "ext_name": "ServerJumpInitJumpRequest",
+  "size": 8,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request to start a jump, read by esv::jump::TrajectoryAnimationStateSystem::ProcessInfoComponentCreation (Toolkit EoCServer.dll+0x3E37C0), which logs \"InitJumpRequest received: caster (%s)\" and adds the 8-byte value to the set of jumpers for which eoc::jump::InfoComponent is created (the other branch takes the caster at +8 of eoc::spell_cast::StateComponent for JumpStartEventOneFrameComponent). No Windows writer found (macOS: none either). Never seen alive. Registry total 8 (server row).",
+  "fields": [
+    {
+      "name": "Caster",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Toolkit ProcessInfoComponentCreation lines 196-209: element = page + index*8; local = *element (8 bytes), then FUN_18021e210(set, local) - the same set that receives the spell cast state's caster entity in the JumpStart branch (puVar14[1] of the 200-byte eoc::spell_cast::StateComponent). The log names the request's subject \"caster\". Size 8 = registry total."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Offset/width rest on the Toolkit reader plus the registry size; no bg3.exe creator exists (only the generic adder).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

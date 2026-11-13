@@ -1,0 +1,91 @@
+{
+  "component": "esv::character_creation::DebugBaseDefinitionRequestOneFrameComponent",
+  "ext_name": "ServerCCDebugBaseDefinitionRequest",
+  "size": 664,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Debug request to create / reset a character from a full character-creation definition at a position (used by party presets: esv::party_preset::System::SystemLoad ~bg3.exe+0x2DBB770 reads it). The first 0x288 bytes are an SE character_creation::CharacterDefinition (the same object eoc::character_creation::RespecDefinitionComponent holds at +0x10), followed by a position. Created by bg3.exe+0x2DC0C60 -> bg3.exe+0x2DC29C0 (AllocRaw 0x298); consumed by bg3.exe+0x378F960, which calls esv::Character::SetTranslate(character, comp + 0x288) and then removes the component. Registered as a normal component although named OneFrame. Destructor thunk bg3.exe+0x6AA750 -> bg3.exe+0x6CF3C0. Never seen alive. Registry total 664 (server row).",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "SE CharacterDefinition.field_0 (Components/CharacterCreation.h); not touched by the destructor."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding before the STDString."
+    },
+    {
+      "name": "Name",
+      "offset": 8,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x6CF3C0 frees the heap buffer at +8 when the capacity at +0x1C > 0xF, then resets size +0x18 = 0, capacity +0x1C = 0xF, first char +8 = 0 (LS STDString). SE CharacterDefinition.Name."
+    },
+    {
+      "name": "Definition",
+      "offset": 32,
+      "type": "uint8_t[144]",
+      "source": "inferred",
+      "evidence": "Equals SE BaseCharacterDefinition (Origin, Race, Subrace Guids, BodyType, BodyShape, RootTemplate, Background, Deity, Voice, VOLines Guids, field_A8; 0x90 bytes with padding) at CharacterDefinition +0x20; kept as bytes (SE struct). Plain data: the destructor does not touch +0x20..+0xAF."
+    },
+    {
+      "name": "Visual",
+      "offset": 176,
+      "type": "uint8_t[216]",
+      "source": "inferred",
+      "evidence": "Equals SE character_creation::Appearance (CharacterDefinition.Visual); destructor calls FUN_1406cf220 on comp + 0xB0. Size 0xD8 follows from the next members' offsets (Abilities must end where LevelUpData begins at 0x1A8)."
+    },
+    {
+      "name": "Abilities",
+      "offset": 392,
+      "type": "std::array<int32_t, 7>",
+      "source": "inferred",
+      "evidence": "SE CharacterDefinition.Abilities (7 ints) between Visual and LevelUpData; offset derived, not read."
+    },
+    {
+      "name": "_Pad1A4",
+      "offset": 420,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to the 8-aligned LevelUpData."
+    },
+    {
+      "name": "LevelUpData",
+      "offset": 424,
+      "type": "uint8_t[224]",
+      "source": "inferred",
+      "evidence": "Equals SE LevelUpData (Progression.h: Class, SubClass, Feat, AccessorySet Guids, Abilities[7], LevelUpUpgrades, Array<SpellMetaId> Spells; 0xE0). Creator bg3.exe+0x2DC29C0 writes the null Guid (DAT_14625aad0) at +0x1A8, +0x1B8, +0x1C8, +0x1D8, zeroes +0x1E8..+0x203 (abilities), seven Array patterns at +0x208..+0x277 (LevelUpUpgrades; destructor bg3.exe+0x5F18C0(comp + 0x208)) and the Array at +0x278 (destructor bg3.exe+0x67D5E0(comp + 0x278), SpellMetaId stride 0x30)."
+    },
+    {
+      "name": "Position",
+      "offset": 648,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Creator zeroes the qword at +0x288 and the dword at +0x290; consumer bg3.exe+0x378F960: `esv::Character::SetTranslate(character, (Vector3f *)(comp + 0x288), false, false, true)`."
+    },
+    {
+      "name": "_Pad294",
+      "offset": 660,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 0x298 (not written by the creator)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Definition / Visual / LevelUpData are kept as bytes equal to SE BaseCharacterDefinition / Appearance / LevelUpData; the split between Visual and Abilities (Visual 0xD8, Abilities at 0x188) is derived, not read from code.",
+    "field_0 meaning (SE CharacterDefinition.field_0).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled this pass: the 0x288-byte CharacterDefinition part stays as SE-equal byte blocks (Definition / Visual / LevelUpData), whose internal split is SE's, not read from Windows code; Position at +0x288 is Windows (bg3.exe+0x378F960)."
+}

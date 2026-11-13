@@ -1,0 +1,46 @@
+{
+  "component": "eoc::TimelineActorDataRequestComponent",
+  "ext_name": "TimelineActorDataRequest",
+  "size": 32,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "No function of the game or of the Toolkit DLLs reads or writes the component (only the registration bg3.exe+0xD0EBF0 and ls::GetTypeName exist)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "see field_0"
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "see field_0"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "see field_0"
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Dead type in every build examined: bg3.exe has only the registrations (bg3.exe+0x139DA0, +0xD0EBF0), the Toolkit and macOS have no reader or writer.",
+    "macOS default constructor: 'stp x0, xzr, [x23]' and 'stp xzr, xzr, [x23, #0x10]' - a non-zero first qword (likely the null EntityHandle) and zeros after it, which fits the ecl TimelineActorDataCreateDestroyRequest shape (EntityHandle, Guid, flags) better than (Guid, Guid). macOS only, so not used."
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Re-checked users and macOS: still nothing reads or writes the component; the macOS default constructor hints at an EntityHandle first, which is not enough to declare members. Left as four opaque qwords, low."
+}

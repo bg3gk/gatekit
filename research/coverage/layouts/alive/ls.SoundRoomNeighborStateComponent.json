@@ -1,0 +1,54 @@
+{
+  "component": "ls::SoundRoomNeighborStateComponent",
+  "ext_name": "SoundRoomNeighborState",
+  "size": 32,
+  "seen": true,
+  "summary": "For a sound in a room next to the listener's room: which neighbouring room, through which portal and where the portal is. Written by ecl::sound::RoomSystem (macOS: IsInNeighborRoom / GetPortalPosition), read by ls::SoundTransformSystem and ls::SoundOcclusionSystem (sound positioned at the portal).",
+  "fields": [
+    {
+      "name": "Room",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1DB5A80 (component add, AllocRaw 0x20) copies *param_3 to +0; caller bg3.exe+0x1DB4200 passes local_280 = *(room object + 0x70) (an entity of the room) or the null handle. Live: entity handles."
+    },
+    {
+      "name": "Portal",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "+8 = *param_4, filled by bg3.exe+0x1DAF910 (nearest portal search: loops over 0x20-byte portal records, keeps the alive entity with the smallest squared distance, default null). Live: entity handles / null."
+    },
+    {
+      "name": "PortalPosition",
+      "offset": 16,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "+0x10..+0x1B = the 12-byte position from bg3.exe+0x1DAF910 (portal transform +0x10..+0x18), default (FLT_MAX, FLT_MAX, FLT_MAX). Live: world coordinates and 3.403e+38."
+    },
+    {
+      "name": "field_1C",
+      "offset": 28,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "+0x1C = *param_6 (one byte) from the caller. Live: low byte 0/1."
+    },
+    {
+      "name": "_Pad1D",
+      "offset": 29,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "tail padding."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the flag at +0x1C.",
+    "Whether +0 is the neighbouring room or the sound's own room (taken from a room object's +0x70)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

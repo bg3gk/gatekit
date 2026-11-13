@@ -1,0 +1,78 @@
+{
+  "component": "eoc::aigrid::FloodRequestComponent",
+  "ext_name": "AigridFloodRequest",
+  "size": 32,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Request to run an AI-grid flood (reachability flood fill) on a level: pointer to the eoc::AiFlood result object, level name, flood flags and three integer parameters. Consumed by eoc::aigrid::FloodRequestSystem (game per-frame update bg3.exe+0xF2C0B0, ProcessNewRequests bg3.exe+0xF2C150; Toolkit EoCShared.dll+0xE4B9C0), which calls eoc::AiGrid::RequestFlood(AiFlood*, Flags<EAiFloodFlag> const&, int, int, int) and stores the returned request handle in eoc::aigrid::_private::FloodRequestStateComponent. eoc::controller::FloodComponent holds the same pointer/handle/level trio on the client. Never seen alive. Registry total 32 (client and server rows).",
+  "fields": [
+    {
+      "name": "Flood",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Game ProcessNewRequests bg3.exe+0xF2C150 (storage stride 0x20): lVar4 = *(u64*)(req+0); it writes the flood object's +0x54 (uint16 flags), +0x56 (byte 0) and +0x58 (int) and stores lVar4 into the new AiGrid request. Toolkit ProcessNewRequests passes *(req+0) as the AiFlood* argument of AiGrid::RequestFlood. macOS default: zero."
+    },
+    {
+      "name": "Level",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Toolkit ProcessNewRequests: LevelManager::GetLevel(levelManager, (FixedString*)(req + 8)) and the assert 'Trying to request a flood on unexisting level '%s''. Game: `*(uint*)(req+8)` hashed and compared as the level-map key. macOS default stores w24 (null FixedString) at +8."
+    },
+    {
+      "name": "Flags",
+      "offset": 12,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Game ProcessNewRequests copies `*(undefined2*)(req+0xC)` to AiFlood+0x54; Toolkit passes req+0xC as `ls::Flags<eoc::EAiFloodFlag,0,33> const&` to AiGrid::RequestFlood, which copies 2 bytes to AiFlood+0x54. Enum eoc::EAiFloodFlag (written as uint16). macOS default strh at +0xC."
+    },
+    {
+      "name": "_PadE",
+      "offset": 14,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "alignment of the int at +0x10; not read."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Game ProcessNewRequests: lVar5 = *(u64*)(req+0x10); stores (int)lVar5 (+0x10) at AiGrid request +0x14. Toolkit: passed as the first int of RequestFlood (to FUN_180e32d60). macOS default 'str d8, [+0x10]' covers +0x10..+0x17."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Game: uVar1 = *(u32*)(req+0x14) stored at AiGrid request +0x10. Toolkit: second int of RequestFlood."
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Game: iVar7 = *(int*)(req+0x18), 0x7FFFFFFF clamped to 0x7FFFFFFE, written to AiFlood+0x58 (Toolkit RequestFlood does the same with its last int) - probably a maximum distance/cost of the flood. macOS default str w8 at +0x18."
+    },
+    {
+      "name": "_Pad1C",
+      "offset": 28,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to the 8-aligned size 0x20; not read."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the three ints (+0x10, +0x14, +0x18) beyond where they go; AiGrid::RequestFlood's parameters are unnamed.",
+    "No Windows creator with defaults was found (only registration helpers bg3.exe+0x1454C0/0xE6710); the component is probably added by script/Osiris code with full values.",
+    "Flood is an owning pointer to eoc::AiFlood (0x100-byte object with a virtual destructor, see eoc::controller::FloodComponent) - kept as void*.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 12,
+  "functions_read": 9,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,26 @@
+{
+  "component": "ls::ClusterVisibilityComponent",
+  "ext_name": "ClusterVisibility",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Visibility",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "The whole 4-byte component. Windows per-frame update of ls::ClusterVisibilitySystem bg3.exe+0x3E66F20 (the only writer: the system's only 'write' component) gathers the camera data and calls the SSE float kernel bg3.exe+0x7B10 (all-float arithmetic) that fills the column; then marks each changed entity's ClusterVisibilityComponent (FUN_1440103b0 with its type index). Toolkit GameEngine.dll+0x145C10 ProcessVisibility writes it as one 4-byte value per cluster. Live: 48 values 0.2 .. -5.0 as floats. The raw check's 0x80000000 is -0.0f, an ordinary float (the sign of a zero product), not a sign that the member is not a float."
+    }
+  ],
+  "summary": "Client scene streaming: per-cluster visibility score computed each frame from the camera and the cluster sphere (and cull-trigger planes); ClusterVisualLoaderSystem loads or unloads the cluster's visuals from it. On every cluster entity in idle levels.",
+  "confidence": "high",
+  "open_questions": [
+    "Meaning/scale of the value (a signed score; negative presumably outside the view) not decoded from the SIMD kernel - the layout does not depend on it."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Size 4 = one member; the Windows writer bg3.exe+0x3E66F20 fills it from an SSE float kernel and live values are floats. The failed raw check was -0.0f (0x80000000), a valid float: the raw checker should accept negative zero.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,32 @@
+{
+  "component": "ls::FadingEntitiesForRenderingSingletonComponent",
+  "ext_name": "FadingEntitiesForRenderingSingleton",
+  "size": 96,
+  "seen": true,
+  "summary": "Client singleton of ecl::FadeResolveSystem: the entities that currently have ls::FadingView0Component / ls::FadingView1Component, one set per view.",
+  "fields": [
+    {
+      "name": "View0Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "ecl::FadeResolveSystem::HandleDestroyedFadingEntitiesForRenderingSingletonComponent (EoCClient.dll+0x8ABB30): for every entity of the first dead-query it looks up the entity (bucket count at +8, 8-byte keys) in the set at +0 and erases it; bg3.exe+0x18E2A20 adds the entity to this kind of set right after creating ls::FadingView0Component (bg3.exe+0x18EBEB0). Live: prime bucket counts 5..0xC07, keys arrays of 1..0x60."
+    },
+    {
+      "name": "View1Entities",
+      "offset": 48,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Same handler, second dead-query: erases from the set at +0x30 (bucket count at +0x38). Live: prime bucket counts at +0x38, keys arrays at +0x50."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which of the two dead-queries is View0 and which View1 (assumed in declaration order)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "30 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

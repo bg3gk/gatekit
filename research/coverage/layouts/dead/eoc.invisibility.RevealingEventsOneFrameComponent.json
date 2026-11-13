@@ -1,0 +1,27 @@
+{
+  "component": "eoc::invisibility::RevealingEventsOneFrameComponent",
+  "ext_name": "InvisibilityRevealingEvents",
+  "size": 16,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame list of 'revealing' events (1-byte codes) gathered for an invisible entity by esv::invisibility::RevealingSystem (per-frame update bg3.exe+0x2E0A320, which gathers events through bg3.exe+0x2E0AC70 / +0x2E0AFA0 and writes them with bg3.exe+0x2E0B210). Never seen alive. Registry total 16 on both rows; no savegame model, not replicated.",
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "Array<uint8_t>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2E0B380: AllocRaw(0x10), zeroes +0 (pointer), +8 and +0xC (capacity/size) - the Array pattern; storage destructor thunk_FUN_1405946c0. Writer bg3.exe+0x2E0B210: for each entity in a gathered list, grows the component (`(int)p[1] < size+other`) and appends byte by byte: `*(byte*)(*p + size) = *src; size++` - 1-byte elements. The update pushes the value 1 for one event kind (`local_218[0] = 1; FUN_1405c8c80(list, local_218)`). Element enum not named."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The 1-byte event codes (an enum of revealing reasons: attack, spell cast, ...) are not named; 1 is pushed for entities whose 0xC0-stride component has the flag at +0xB0 and a valid handle at +0x88.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

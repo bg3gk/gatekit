@@ -1,0 +1,118 @@
+{
+  "component": "esv::placement::StateComponent",
+  "ext_name": "ServerPlacementState",
+  "size": 120,
+  "seen": true,
+  "summary": "A placement (moving a group of actors to positions, used by behaviour/dialogue timelines) in progress: its id, the per-entity placements and an entity set. Built by esv::placement::StateSystem::ProcessPlacementRequests from esv::timeline::PlacementStartRequestOneFrameComponent (same 0x78 shape: map at 0, set at 0x40, id at 0x70) and read by placement::ExecutionSystem / ValidationSystem and the timeline helpers (macOS: TimelineProcessPrepareRequestsHelper::TriggerBehaviorTimelinePlacement, TimelineSystem::StopBehaviorTimelinePlacement). Seen.py context: dialogues with several NPCs (CAMP_GoblinHuntCelebration, DEN refugees) and scripted events, born with PlacementComponent, ValidationComponent and PlacementResultEvent.",
+  "structs": [
+    {
+      "name": "PlacementStateEntityPlacement",
+      "size": 88,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not read in the functions seen."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not read in the functions seen."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Not read in the functions seen."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "Toolkit ExecutionSystem::ProcessPlacementRequests (EoCServer.dll+0x2FD330): when byte +0x29 is 0, FUN_1802c1830(&out, element+0x18, world) turns these 16 bytes into an entity handle (uuid -> entity lookup); a null/dead result fails the placement with codes 5/3."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Byte between the Guid and the flag; not read in the functions seen."
+        },
+        {
+          "name": "HasTransform",
+          "offset": 41,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "ProcessPlacementRequests: if byte +0x29 != 0 the 40 bytes at +0x2C are copied as the destination transform instead of resolving the Guid at +0x18."
+        },
+        {
+          "name": "_Pad2A",
+          "offset": 42,
+          "type": "uint8_t[2]",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "Transform",
+          "offset": 44,
+          "type": "Transform",
+          "source": "inferred",
+          "evidence": "Copied dword by dword (+0x2C..+0x53) into the first 40 bytes of the 0x78 placement entry whose defaults are an identity transform (quat w=1, scale 1)."
+        },
+        {
+          "name": "field_54",
+          "offset": 84,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Tail of the 0x58 stride; not read."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Id",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2F09F80 (size 0x78, destructor bg3.exe+0x22D31E0) zeroes the dword +0. ProcessPlacementRequests hashes *(uint*)component % buckets to look it up in a HashMap<uint, PlacementData> of its frame data (macOS names ls::HashMap<unsigned int, esv::placement::PlacementData>). Live 6..0x33 (increasing ids)."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Never zeroed by the creator; live garbage."
+    },
+    {
+      "name": "Placements",
+      "offset": 8,
+      "type": "HashMap<EntityHandle, PlacementStateEntityPlacement>",
+      "source": "inferred",
+      "evidence": "ProcessPlacementRequests walks keys *(component+0x28) for size *(+0x34) as entity handles (validity and IsEntityAlive checks) and the values *(component+0x38) with stride 0x58 (puVar27 += 0x16 dwords); its assert names ls::IndexedStorage<esv::placement::EntityPlacement>; the map copy FUN_1802f7580 allocates values with element size 0x58. Destructor frees +0x38 and destroys the set at +8. Live: bucket table 5, one entry."
+    },
+    {
+      "name": "field_48",
+      "offset": 72,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "ProcessPlacementRequests iterates *(component+0x68) for size *(+0x74), 8-byte entity handles; destructor destroys a set at +0x48. Live: empty in 18 of 48 instances, else one key. Meaning (extra actors?) not established."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Members +0..+0x17 of EntityPlacement; meaning of the entity set at +0x48; Id name is inferred from the uint hash key."
+  ],
+  "minutes": 14,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names: not saved, not replicated."
+}

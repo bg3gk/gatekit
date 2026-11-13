@@ -1,0 +1,109 @@
+{
+  "component": "ecl::crowds::SoundStateComponent",
+  "ext_name": "ClientCrowdsSoundState",
+  "size": 32,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CrowdSoundGroupEntityData",
+      "size": 20,
+      "fields": [
+        {
+          "name": "Position",
+          "offset": 0,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "FinalizeCrowdState (EoCClient.dll+0xEA60C0) fills the element from the member's Vector3f position (local_1e0 = 8 bytes + 4 bytes). Game name ecl::crowds::SoundStateComponent::GroupEntityData, stride 0x14."
+        },
+        {
+          "name": "LastSentCount",
+          "offset": 12,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "'Send RTPC requests' step compares +0xC with the current member count and, when different, stores it and emits SetRTPCRequests."
+        },
+        {
+          "name": "Moved",
+          "offset": 16,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Byte at +0x10 set from the 'moved this frame' flag on insert and cleared for every entity in 'Mark all not moved'."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Stride 0x14."
+        }
+      ]
+    },
+    {
+      "name": "CrowdSoundGroup",
+      "size": 96,
+      "fields": [
+        {
+          "name": "Entities",
+          "offset": 0,
+          "type": "HashMap<EntityHandle, CrowdSoundGroupEntityData>",
+          "source": "inferred",
+          "evidence": "Group stride 0x60 in FinalizeCrowdState; keys (8-byte handles) at +0x20 with count +0x2C, values at +0x30 stride 0x14 (IndexedStorage<SoundStateComponent::GroupEntityData>)."
+        },
+        {
+          "name": "Bounds",
+          "offset": 64,
+          "type": "std::array<glm::vec3, 2>",
+          "source": "inferred",
+          "evidence": "ls::Bound at +0x40 (24 bytes up to +0x58): ls::Bound::GetCenter/Merge on +0x40, a new member merges Bound(position, 0.5); members join a group whose centre is within 8 m (squared distance <= 64). Assumed min/max corners."
+        },
+        {
+          "name": "StillCount",
+          "offset": 88,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "+0x58 set to the number of entities in 'Mark all not moved', incremented when a non-moving member joins, reset to 0 when the group empties; used as count - moved for the RTPCs."
+        },
+        {
+          "name": "Available",
+          "offset": 92,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "+0x5C set to 1 when the group becomes empty (assert 'group that became empty already marked available'); groups with it set are skipped."
+        },
+        {
+          "name": "_Pad5D",
+          "offset": 93,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "Stride 0x60."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Groups",
+      "offset": 0,
+      "type": "Array<CrowdSoundGroup>",
+      "source": "inferred",
+      "evidence": "Singleton read in ecl::crowds::SoundClusterSystem::FinalizeCrowdState (EoCClient.dll+0xEA60C0): pointer +0, size +0xC, element stride 0x60 (macOS: DynamicArray<ecl::crowds::SoundStateComponent::Group>); new groups appended with FUN_180EA5ED0 when no free index. Live (idle): heap pointer, capacity 1, size 1."
+    },
+    {
+      "name": "FreeGroupIndices",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "When +0x1C (size) is non-zero, an index is popped from +0x10 (FUN_180777440) and the group at that index is overwritten (FUN_180EA9030) instead of appending. Live: heap pointer, capacity 1, size 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "ls::Bound's real layout (assumed two vec3 corners, 24 bytes) - SE's 'Bound' is an unrelated AI type.",
+    "Member names of the group/entity-data structs are ours; macOS gives only the struct names Group and GroupEntityData."
+  ],
+  "minutes": 10,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

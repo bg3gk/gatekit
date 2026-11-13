@@ -1,0 +1,32 @@
+{
+  "component": "ls::HLODChildRequestOneFrameComponent",
+  "ext_name": "HLODChildRequest",
+  "size": 32,
+  "seen": true,
+  "summary": "Client one-frame request to attach an entity as a child of an HLOD (hierarchical level-of-detail proxy). Drained by ls::HLODSystem::UpdateAddRequests (GameEngine.dll+0x1659E0): it converts the Guid at +0 to a FixedString and looks it up in the system's HLOD map (macOS ls::HLODSystem::GetHLOD(ls::Guid const&)), then checks the Guid at +0x10 against two Guid sets of the level (FUN_1801532f0 at level +0x28/+0x38) and logs it with Guid::ToString when missing. Seen alive on level change / level-swap teleport.",
+  "fields": [
+    {
+      "name": "HLOD",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Game creator bg3.exe+0x3D61AD0 copies 16 bytes from param_3 to +0; GameEngine.dll+0x1659E0 line 179: ls::Guid::ToFS(request+0) and hash lookup in the HLODSystem map (this+0x10..+0x40), giving the HLOD entity. Live random 128-bit values."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Creator copies four dwords from param_4 to +0x10..+0x1C; GameEngine.dll+0x1659E0 lines 200-203 look this Guid up in two sets of the level object and print it with ls::Guid::ToString in the HLODSystem.cpp warning. Live random 128-bit values (the child's own id?)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the second Guid (child object / level instance id)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "15 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,32 @@
+{
+  "component": "esv::character::ExecuteTeleportRequestComponent",
+  "ext_name": "ServerCharacterExecuteTeleportRequest",
+  "size": 32,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x32FCD10 creates the 0x20-byte component with +0 = 0xFFC0000000000000 (null handle); bg3.exe+0x32FBF00 sets +0 = *param_3 (an EntityHandle)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "STDString",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x32FBF00 constructs an ls::STDString at +8 from its string argument; the creator sets the SSO capacity +0x1C = 0xF. Called from bg3.exe+0x32FB160 right before LoadProtocol::LoadLevel (a level/trigger name?). Live: empty string."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "what the string holds"
+  ],
+  "summary": "Seen once at a level change (teleport between levels).",
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

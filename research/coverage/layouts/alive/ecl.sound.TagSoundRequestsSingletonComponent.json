@@ -1,0 +1,67 @@
+{
+  "component": "ecl::sound::TagSoundRequestsSingletonComponent",
+  "ext_name": "ClientSoundTagSoundRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "TagSoundSwitchRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Game name of the element: ecl::sound::TagSoundSwitchRequest (IndexedStorage<...> in EoCClient.dll+0xD5E8A0, stride 0x18). ecl::tag::SoundSystem::ProcessTagComponent (EoCClient.dll+0xD61370) fills +0 with the tagged entity's handle (param_2)."
+        },
+        {
+          "name": "Switch",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "ProcessTagComponent copies SoundState+0x30 (from eoc::tag::SoundStateManager::GetByTagUUID) to +8 - the same FixedString that TagSwitchData.Switch gets."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "ProcessTagComponent copies SoundState+0x34 to +0xC (switch state)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "ProcessTagComponent stores its bool argument (param_4) at +0x10; meaning not established (caller ProcessView not read)."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Stride 0x18."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TagSoundSwitchRequest>",
+      "source": "inferred",
+      "evidence": "ecl::tag::SoundSystem::ProcessTagComponent(..., TagSoundRequestsSingletonComponent&) appends with EoCClient.dll+0xD5E8A0 to the singleton's IndexedStorage<ecl::sound::TagSoundSwitchRequest> at +0 (capacity +8, size +0xC). macOS default zeroes 16 bytes. Live: heap pointer, capacity 0x40-0x80, size 0 (drained each frame)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the bool at element +0x10."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

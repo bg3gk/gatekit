@@ -1,0 +1,34 @@
+{
+  "component": "ecl::RoomTriggerCharacterFadeRequestsSingletonComponent",
+  "ext_name": "ClientRoomTriggerCharacterFadeRequestsSingleton",
+  "size": 224,
+  "seen": true,
+  "reuses": "TimelineFadeRequest (GameDefinitions/Components/Coverage.h); whole layout identical to ecl::TimelineFadeRequestsSingletonComponent",
+  "fields": [
+    {
+      "name": "FadeRequests",
+      "offset": 0,
+      "type": "std::array<HashMap<EntityHandle, TimelineFadeRequest>, 2>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x18C2360 (rx3 user of the type index) calls FUN_1418c2f60, the shared constructor of the two 0x40-byte fade-request maps (same as ecl::TimelineFadeRequestsSingletonComponent, bg3.exe+0x1D77460). Read by the macOS template ecl::FadeResolveSystem::ProcessFadeRequests with the other fade singletons; value type ecl::StartFadeRequest (16 bytes = SE TimelineFadeRequest). Live: map 0 at +0x00 bucket pointer, 5 buckets, key/value arrays capacity 2 size 0; map 1 at +0x40 the same; +0x80..+0xE0 zero."
+    },
+    {
+      "name": "RemoveFadeRequests",
+      "offset": 128,
+      "type": "std::array<HashSet<EntityHandle>, 2>",
+      "source": "inferred",
+      "evidence": "Same template as the Timeline singleton (name from there). Live: zero."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Game name of the value struct is ecl::StartFadeRequest; SE calls it TimelineFadeRequest.",
+    "RemoveFadeRequests name inherited from the Timeline layout."
+  ],
+  "minutes": 2,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "uses types declared elsewhere (TimelineFadeRequest): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

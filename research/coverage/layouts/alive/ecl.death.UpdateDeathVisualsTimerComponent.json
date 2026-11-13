@@ -1,0 +1,22 @@
+{
+  "component": "ecl::death::UpdateDeathVisualsTimerComponent",
+  "ext_name": "ClientDeathUpdateDeathVisualsTimer",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Timer",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x195A920 creates it (via bg3.exe+0x195BDE0) with 0x3A83126F = 0.001f, and each frame subtracts GameTime delta (param_3+8) from it; when it drops below 0 the entity is queued for the death visual update. Another path (bg3.exe+0x195D3D0) resets it to 0. macOS default ctor: str wzr,[x23] (0). Live: 0.001."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

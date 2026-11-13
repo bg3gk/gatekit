@@ -1,0 +1,27 @@
+{
+  "component": "ecl::item::animation::PendingRequestComponent",
+  "ext_name": "ClientItemAnimationPendingRequest",
+  "size": 2,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Client-side pending item animation state request: one uint16 animation state (same kind of value as ecl::item::animation::RequestComponent.State, which SE already maps; default 4 like that one). Written by the per-frame update of ecl::item::animation::RequestsSystem. Never seen alive. Registry total 2 (client row). The savegame model game.item.animation.v0.PendingRequestComponent (size 8) belongs to esv::item::animation::PendingRequestComponent, not to this client type.",
+  "fields": [
+    {
+      "name": "State",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x191B320 (AllocRaw 2) stores `*(undefined2*)p = 4`. bg3.exe+0x191A410 (called from the per-frame update of ecl::item::animation::RequestsSystem bg3.exe+0x1919320) takes a ushort state uVar3 from a per-item ushort array, skips states 1,2,3,5,7, and writes `*(ushort*)p = uVar3` into this component (getting it with FUN_14191b320 when absent); it later compares `*p != uVar3`. Same value domain as RequestComponent.State (eoc::item::animation::StateToString in SE's comment), whose default is also 4."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The state enumeration (eoc::item::animation state) is not declared in SE; the name State is inferred.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

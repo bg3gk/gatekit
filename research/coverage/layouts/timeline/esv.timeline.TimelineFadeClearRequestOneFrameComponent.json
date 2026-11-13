@@ -1,0 +1,30 @@
+{
+  "component": "esv::timeline::TimelineFadeClearRequestOneFrameComponent",
+  "ext_name": "ServerTimelineFadeClearRequest",
+  "size": 8,
+  "fields": [
+    {
+      "name": "User",
+      "offset": 0,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3309500 (esv::TimelineSystem, handler of the 'player watching dialog timeline' protocol message; calls ~LSDialogs::DialogManager::SetIsPlayerWatchingDialogTimeline) creates the component on a new entity (bg3.exe+0x3312260) and copies the 4 bytes at the start of the request, whose low 16 bits it has just compared with the peer part of the character's user id (esv::Character +0x188). bg3.exe+0x2D112F0 (~esv::timeline::FadeSystem::ProcessClearScreenFades) uses it as the 4-byte key of its per-user map (system +0x10). Live: 0x10001 = user 65537 (the host)."
+    },
+    {
+      "name": "Duration",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3309500 writes the constant 0x3F000000 (0.5); bg3.exe+0x2D112F0 stores it as the value of the per-user map and then into the float at +0x18 of the clear-screen-fade request it emits (esv::timeline::ClearScreenFadeRequestOneFrameComponent). Live: 0.5."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Duration is the fade-out time handed to the screen fade clear request; the Toolkit name of the member is not known."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,57 @@
+{
+  "component": "ecl::death::StateComponent",
+  "ext_name": "ClientDeathState",
+  "size": 16,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Windows creator bg3.exe+0x188F8C0 (AllocRaw 0x10) stores a 32-bit 0 here. Live 2 and 6 - a small state enum (the system bg3.exe+0x195F4A0 queries it together with eoc::death::StateComponent, whose Script Extender layout is one uint32_t State). Readers (macOS): ecl::timeline::ArenaDecisionSystem, gui::CapabilitiesSystem::Update; the Toolkit ActiveEventSystemHelper::HasDeathSavingThrowEnded only tests its presence."
+    },
+    {
+      "name": "DeathType",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "macOS ecl::death::CharacterSystem::Update compares eoc::death::DeathTypeComponent with the byte at StateComponent+4 and issues ecl::death::SetVisualImmediateRequestOneFrameComponent when they differ (a cached copy of the death type); Windows creator bg3.exe+0x188F8C0 writes one byte at +4, live 0x0B / 0x03 (DeathType values). Offset +4 from macOS is a hint, the Windows byte store agrees. | first pass: Windows creator bg3.exe+0x188F8C0 stores one byte 0 at +4. Live 0x0B / 0x03.",
+      "legacy": "field_4"
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "Not written by the Windows creator (live 00 CE 01 / FF FF FF): padding after the byte at +4."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Windows creator writes one 8-byte store of 0xFFFFFFFFFFFFFFFF at +8 (macOS: the same with a vector register). Live -1."
+    },
+    {
+      "name": "field_c",
+      "offset": 12,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Second half of the 8-byte -1 store at +8. Live -1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Whether +8 is one 64-bit value or two int32 (the Windows creator writes it with a single 8-byte store of -1); no Windows reader of the members was found (bg3.exe+0x195F4A0 only registers the query of the client death system).",
+    "Meanings of the state value and of the byte at +4.",
+    "names pass 2: field_0 (state enum, live 2/6), field_8 / field_c (-1) not named."
+  ],
+  "minutes": 8,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "The Windows creator bg3.exe+0x188F8C0 fixes a 32-bit +0, a byte at +4 (so +5..+7 is padding) and an 8-byte -1 at +8; the split of +8 and all meanings stay open.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "DeathType from macOS ecl::death::CharacterSystem::Update; other members open."
+}

@@ -1,0 +1,34 @@
+{
+  "component": "esv::party::PartyMergedEventOneFrameComponent",
+  "ext_name": "ServerPartyMergedEvent",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Event of the server party system: two parties became one. Created on a fresh event entity by bg3.exe+0x2BBFD20 (party regrouping step of esv::party::PartySystem) from a list of 16-byte (party, other party) pairs whenever the second party is a valid entity (otherwise a PartySplitEvent is made). Read by esv::FlagManager::OnPartyMergedEvent (Toolkit EoCServer.dll+0x852610), which turns both members into Guids and re-broadcasts the party flags; also listed in esv::party::DataSystem views. Never seen alive. Registry total 16 (server row; the registry does not flag it one-frame).",
+  "fields": [
+    {
+      "name": "Party",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2BC4390 (AllocRaw 0x10) sets both qwords to 0xffc0000000000000 (null EntityHandle). Writer bg3.exe+0x2BBFD20 line 260: *ev = pair.first. Toolkit esv::FlagManager::OnPartyMergedEvent: FUN_1802b45e0(world, *param_3) -> Guid -> ls::Guid::ToFS; flags whose owner equals this Guid are the ones moved, so this is the party that went away (direction inferred, see open questions)."
+    },
+    {
+      "name": "MergedInto",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Writer bg3.exe+0x2BBFD20 lines 251-261: taken only when pair.second passes the entity-type check (< 0x41) and is not null, then ev[1] = pair.second. OnPartyMergedEvent resolves it to a Guid as well (FUN_1802b45e0(world, param_3[1]))."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which of the two parties survives is inferred from esv::FlagManager::OnPartyMergedEvent comparing flag owners with the Guid of member 0; the names Party / MergedInto may be swapped.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,41 @@
+{
+  "component": "eoc::thrown::ThrownAnimationRequestOneFrameComponent",
+  "ext_name": "ThrownThrownAnimationRequest",
+  "size": 8,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame request to play the in-flight animation of a thrown object, carrying the same float and byte as eoc::thrown::IsThrownComponent +0/+4. Written on the server by esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (bg3.exe+0x2AFA000) from esv::thrown::EntityThrownRequestOneFrameComponent +0xC/+0x10, and on the client by the per-frame update of ecl::thrown::ThrowAnimationSystem (bg3.exe+0x1A25B70) from a 16-byte component (IsThrownComponent). Never seen alive. Registry total 8 on both rows.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x1A27DE0 (AllocRaw 8): `*(uint32*)p = 0`. Server bg3.exe+0x2AFA000 line 396: `*p = *(uint32*)(req + 0xC)` where req is the 0x28-stride throw request; the same value is compared `ABS(x) > FLT_EPSILON` and used as a divisor of pi (line 186/295) - a float. Client bg3.exe+0x1A25B70: `*p = *(uint32*)(src + 0)` from a 0x10-stride component (eoc::thrown::IsThrownComponent, whose +0 is that float)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator writes byte 0 at +4. Server copies the request byte at +0x10, client the byte at +4 of the 16-byte component (IsThrownComponent.field_4, live value 3 there)."
+    },
+    {
+      "name": "_Pad5",
+      "offset": 5,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding to 8; not written."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meanings of the float (flight duration? spin period - pi is divided by it) and of the byte are not established; they mirror eoc::thrown::IsThrownComponent field_0/field_4 (layouts\\alive).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

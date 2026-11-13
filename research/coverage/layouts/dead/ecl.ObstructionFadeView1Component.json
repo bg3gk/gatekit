@@ -1,0 +1,84 @@
+{
+  "component": "ecl::ObstructionFadeView1Component",
+  "ext_name": "ClientObstructionFadeView1",
+  "size": 20,
+  "seen": false,
+  "oneFrame": false,
+  "reuses": "same 20-byte fade-view template as ecl::TimelineFadeView1Component (layouts\\timeline, confirmed live for View0) and ecl::ObstructionFadeView0Component (layouts\\alive, 31 live instances); field names copied from there",
+  "summary": "Per-entity fade state for render view 1, one of the ~13 ecl::*FadeView0/1 sources that bg3.exe+0x18E1E00 handles side by side (it removes the component for entities no longer in its source list). Never alive in the captures; layout from the Windows creator only.",
+  "fields": [
+    {
+      "name": "TargetValue",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x18F4E10 (only rx3 user; ComponentFrameStorageAllocRaw(.., 0x14)) writes 0 as a 4-byte store (*puVar4 = 0); meaning from the identical creator/system pair of the Timeline sibling (bg3.exe+0x18F6530 / 0x18EB2D0)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x18F4E10 writes 0x40800000 = 4.0 (puVar4[1]). Probably the fade speed, as in the Timeline sibling; no reader found."
+    },
+    {
+      "name": "Immediate",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F4E10 writes 0 with one 16-bit store covering +8/+9; the Timeline sibling's system copies byte 8 of the request here and, when set, writes TargetValue into CurrentValue at once."
+    },
+    {
+      "name": "field_9",
+      "offset": 9,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x18F4E10: second byte of the 16-bit zero store at +8; byte-wide in the Timeline sibling's request copy."
+    },
+    {
+      "name": "field_A",
+      "offset": 10,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x18F4E10 writes 1 as a byte at +10."
+    },
+    {
+      "name": "_PadB",
+      "offset": 11,
+      "type": "uint8_t[1]",
+      "source": "inferred",
+      "evidence": "not written by bg3.exe+0x18F4E10; padding before the float at +0xC (live garbage in the siblings)"
+    },
+    {
+      "name": "CurrentValue",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F4E10 writes 0x3f800000 = 1.0 (puVar4[3]); meaning from the Timeline sibling."
+    },
+    {
+      "name": "Active",
+      "offset": 16,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F4E10 writes 1 as a byte at +0x10; meaning from the Timeline sibling."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding to the registry size 20 (alignment 4)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "field_4 / field_9 / field_A meaning (open in all fade-view siblings).",
+    "Widths of +8/+9 rest on the Timeline sibling's byte-wise request copy; the creator writes them with one 16-bit store."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

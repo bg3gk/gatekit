@@ -1,0 +1,24 @@
+{
+  "component": "esv::crowds::DetourStopMoveToRequestsSingletonComponent",
+  "ext_name": "ServerCrowdsDetourStopMoveToRequests",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "48 bytes = HashSet. esv::crowds::CharacterMovementSystem::Update (EoCServer.dll+0xD8C530) reads the three StopMoveTo singletons: keys at +0x20, count at +0x2C, stride 8, each key added to an entity set and removed from the pending MoveTo map (hashed as uint64) = crowd character entity handles. esv::crowds::PatrolSystem::Update (EoCServer.dll+0xD86770) also walks StopMoveTo and DetourStopMoveTo keys with stride 8 and passes them to an EntityHandle set insert (FUN_18021e210). Writer: esv::crowds::DetourSystem::Update (macOS index). Live (seen.py, idle): one instance, all bytes zero (empty container)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member name is ours."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

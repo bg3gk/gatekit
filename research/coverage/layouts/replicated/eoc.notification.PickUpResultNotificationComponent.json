@@ -1,0 +1,41 @@
+{
+  "component": "eoc::notification::PickUpResultNotificationComponent",
+  "ext_name": "NotificationPickUpResultNotification",
+  "size": 24,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x903620: member 1, raw 16-byte write at +0; macOS default str xzr [x23], stp xzr,xzr [x23,#8]"
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x903620: member 2, raw 1-byte write at +0x10; default 0"
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment padding; nothing serialized or initialised here"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Guid guessed from width; the byte is probably a bool/result code."
+  ],
+  "seen": false,
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

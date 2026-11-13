@@ -1,0 +1,171 @@
+{
+  "component": "ecl::sound::SpellImpactStateComponent",
+  "ext_name": "ClientSoundSpellImpactState",
+  "size": 424,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "State of a spell-impact sound emitter entity on the client: a path mover that moves the sound from the impact position towards the local listener, plus the impact position/rotation, the computed sound position, the spell, two FixedStrings (sound names) and the owning entity and listener index. Created and updated by ecl::spell::ImpactSoundSystem (Toolkit EoCClient.dll+0xD6A6C0: ProcessNewSpellImpacts / ProcessCurrentSpellImpacts / FinalizeState). Never seen alive. Registry total 424 (client row).",
+  "fields": [
+    {
+      "name": "Path",
+      "offset": 0,
+      "type": "uint8_t[296]",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1DDD7D0 (AllocRaw 0x1A8) does memset(p,0,0x128) then eoc::PathMover::PathMover(p); destructor bg3.exe+0x6C2510 ends with FUN_1405946c0(p+0x110) (the PathMover's ComputedVelocityValues array) and FUN_1405f3fd0(p). Toolkit FinalizeState assigns eoc::path::Settings::operator=(p) and writes +0x50/+0x58 (SourcePosition), +0x5C..+0x68 (SourceRotation), +0x6C..+0x74 (TargetPosition), +0x78..+0x84 (TargetRotation) - exactly Script Extender's path::PathMover (Base/ExposedTypes.h, 0x128 bytes). Kept as bytes because PathMover holds std::variant members; it equals SE path::PathMover."
+    },
+    {
+      "name": "ImpactPosition",
+      "offset": 296,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Creator zeroes 0x128..0x133. Toolkit FinalizeState: `*(u64*)(p+0x128) = req.pos.xy; *(float*)(p+0x130) = req.pos.z` (the same vector it writes as the path's SourcePosition +0x50). Game ProcessCurrentSpellImpacts bg3.exe+0x1DDC0C0 / Toolkit read +0x128 (8) and +0x130 (4) to build a transform."
+    },
+    {
+      "name": "ImpactRotation",
+      "offset": 308,
+      "type": "glm::quat",
+      "source": "inferred",
+      "evidence": "Creator: qwords 0x130/0x138 zero and `*(u64*)(p+0x140) = 0x3F800000` -> +0x140 = 1.0f, i.e. identity quaternion x,y,z,w at 0x134..0x143. Toolkit ProcessCurrentSpellImpacts reads +0x134 and +0x13C as two qwords into the transform beside the position."
+    },
+    {
+      "name": "SoundPosition",
+      "offset": 324,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Toolkit FinalizeState writes +0x144/+0x14C = impact position + direction * (distance + offset) and copies it into the path's TargetPosition (+0x6C); ProcessCurrentSpellImpacts rewrites +0x144/+0x14C when the listener moves. Creator zeroes it."
+    },
+    {
+      "name": "DistanceOffset",
+      "offset": 336,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator writes dword 0 at +0x150. Toolkit FinalizeState stores a float from a settings object (+0x24) here and adds it to the listener distance; ProcessCurrentSpellImpacts adds `*(float*)(p+0x150)` to the distance again."
+    },
+    {
+      "name": "_Pad154",
+      "offset": 340,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding before the 8-aligned SpellId (creator writes the dword at 0x150 only)."
+    },
+    {
+      "name": "Spell",
+      "offset": 344,
+      "type": "SpellImpactStateSpellId",
+      "source": "inferred",
+      "evidence": "Creator writes 0xFFFFFFFF at +0x158 (OriginatorPrototype), 0x17 at +0x160 (SourceType Sentinel), zeroes 0x168..0x187 (Source, ProgressionSource) and 0xFFFFFFFF at +0x188 (Prototype). Destructor calls eoc::spell::SpellId::~SpellId(p+0x158); Toolkit FinalizeState does SpellId::operator=(p+0x158, request spell). Equals SE eoc::spell::SpellId (0x38)."
+    },
+    {
+      "name": "field_190",
+      "offset": 400,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Creator writes 0xFFFFFFFF to the qword at +0x190 (two FixedStrings); destructor DecRefs +0x190. Toolkit FinalizeState assigns a FixedString (local_1e0) here, the same one it puts into the path Settings' MappedVelocity variant (Mapping) - probably the velocity mapping / sound name."
+    },
+    {
+      "name": "field_194",
+      "offset": 404,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Destructor DecRefs +0x194. Toolkit FinalizeState assigns another FixedString (local_248) here; a later loop copies +0x194 into an ecl::sound::SpellImpactRequestBusComponent::SpellImpactSoundRequest (entity + FixedString, stride 0x10) - probably the sound event to post."
+    },
+    {
+      "name": "Entity",
+      "offset": 408,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator writes 0xFFC0000000000000 (null handle) at +0x198. Toolkit FinalizeState stores the iterated source entity (`*(u64*)(p+0x198) = *pIVar22`)."
+    },
+    {
+      "name": "ListenerIndex",
+      "offset": 416,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator writes 0xFF (-1) at +0x1A0. Toolkit ProcessCurrentSpellImpacts reads `(char)p[0x1A0]` and uses it as index (asserting 0..3) into ls::StaticArray<ls::Optional<Vector3f>,4> of listener positions (one per local player input); FinalizeState writes it from local_2b8."
+    },
+    {
+      "name": "_Pad1A1",
+      "offset": 417,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 0x1A8."
+    }
+  ],
+  "structs": [
+    {
+      "name": "SpellImpactStateSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId (Base/ExposedTypes.h); creator writes 0xFFFFFFFF at component +0x158"
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId _Pad"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellSourceType (1 byte); creator writes 0x17 (Sentinel) at component +0x160"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId Source"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId ProgressionSource"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellId Prototype; creator writes 0xFFFFFFFF at component +0x188"
+        },
+        {
+          "name": "_Pad52",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to 0x38"
+        }
+      ]
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Path is kept as 296 bytes (SE path::PathMover has std::variant members); its internals are not redeclared.",
+    "Meaning of the two FixedStrings at 0x190/0x194 (mapping vs. sound event) is a guess from FinalizeState; named field_*.",
+    "ImpactRotation is never written by FinalizeState (stays identity?) - only read.",
+    "ListenerIndex is a signed char in the code (0xFF = none); written as uint8_t because int8_t is not in the build's type list.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 12,
+  "functions_read": 6,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

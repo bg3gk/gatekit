@@ -1,0 +1,251 @@
+{
+  "component": "esv::interrupt::ConditionalRollAdjustmentOneFrameComponent",
+  "ext_name": "ServerInterruptConditionalRollAdjustment",
+  "size": 136,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame event of esv::interrupt::EventSystem: the roll adjustments an interrupt applied to a conditional roll. Filled by the named Toolkit functions esv::interrupt::FillRollAdjustmentEvent(eoc::interrupt::ConditionalRollEvent const&, eoc::interrupt::AppliedChange const&, ConditionalRollAdjustmentOneFrameComponent&) (EoCServer.dll+0x10D1150) and FillEmptyRollAdjustmentEvent (EoCServer.dll+0x10D1130): the event's two roll Guids, roll index and passive, then the AppliedChange's roll adjustments (a copy of the SE struct interrupt::RollAdjustments, Interrupt.h) at +0x30. Never seen alive. Registry total 136 (server row).",
+  "structs": [
+    {
+      "name": "CondRollAdjMetadata",
+      "size": 20,
+      "fields": [
+        {
+          "name": "Adjustment",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "eoc::interrupt::RollAdjustmentMetadata (Toolkit assert text in the copy EoCServer.dll+0x10CCB10; SE Interrupt.h RollAdjustmentMetadata.Adjustment): stride 0x14, allocated with alignment 4."
+        },
+        {
+          "name": "SourceHandle",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE RollAdjustmentMetadata.Source is a TranslatedString (element +4, destroyed with ls::TranslatedString::~TranslatedString at `(i * 5 + 1) * 4`); written out as its RuntimeStringHandle parts to keep 4-byte alignment."
+        },
+        {
+          "name": "SourceVersion",
+          "offset": 8,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "TranslatedString.Handle.Version."
+        },
+        {
+          "name": "_Pad0A",
+          "offset": 10,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "padding inside RuntimeStringHandle."
+        },
+        {
+          "name": "SourceArgumentHandle",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "TranslatedString.ArgumentString.Handle."
+        },
+        {
+          "name": "SourceArgumentVersion",
+          "offset": 16,
+          "type": "uint16_t",
+          "source": "inferred",
+          "evidence": "TranslatedString.ArgumentString.Version."
+        },
+        {
+          "name": "_Pad12",
+          "offset": 18,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "padding to the stride 0x14."
+        }
+      ]
+    },
+    {
+      "name": "CondRollAdjRerollCondition",
+      "size": 2,
+      "fields": [
+        {
+          "name": "RollValue",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE RerollCondition (Hit.h); stride 2, alignment 1 in the copy EoCServer.dll+0x10CCB10."
+        },
+        {
+          "name": "KeepNew",
+          "offset": 1,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "SE RerollCondition.KeepNew."
+        }
+      ]
+    },
+    {
+      "name": "CondRollAdjRerollValue",
+      "size": 2,
+      "fields": [
+        {
+          "name": "RollValue",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE RerollValue (Hit.h); stride 2."
+        },
+        {
+          "name": "RerollType",
+          "offset": 1,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE RerollValue.RerollType."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "RollUuid2",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x357DC00 (AllocRaw 0x88) zeroes +0..+0x27; FillRollAdjustmentEvent copies ConditionalRollEvent+0x10 (SE Interrupt.h ConditionalRollEvent.RollUuid2) to +0/+8."
+    },
+    {
+      "name": "RollIndex",
+      "offset": 16,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Fill copies ConditionalRollEvent+0x20 (SE RollIndex) to +0x10."
+    },
+    {
+      "name": "RollUuid",
+      "offset": 24,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Fill copies ConditionalRollEvent+0 (SE RollUuid) to +0x18/+0x20."
+    },
+    {
+      "name": "Passive",
+      "offset": 40,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator writes 0xffc0000000000000 at +0x28; Fill copies ConditionalRollEvent+0x28 (SE Passive)."
+    },
+    {
+      "name": "BaseAdjustment",
+      "offset": 48,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes the dword at +0x30; copy EoCServer.dll+0x10CCB10 `*param_1 = *param_2` (SE RollAdjustments.BaseAdjustment)."
+    },
+    {
+      "name": "_Pad34",
+      "offset": 52,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding."
+    },
+    {
+      "name": "Metadata",
+      "offset": 56,
+      "type": "Array<CondRollAdjMetadata>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x38/+0x40/+0x44 (Array); copy +8 of RollAdjustments with 0x14-byte elements (SE names this array FixedRollBonuses, but the Toolkit's element type is eoc::interrupt::RollAdjustmentMetadata)."
+    },
+    {
+      "name": "FixedAdjustment",
+      "offset": 72,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x48 and the byte +0x4C; copy moves the qword +0x18 of RollAdjustments (SE std::optional<int> FixedAdjustment: value then has-value flag)."
+    },
+    {
+      "name": "HasFixedAdjustment",
+      "offset": 76,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "the optional's flag at +0x4C."
+    },
+    {
+      "name": "_Pad4D",
+      "offset": 77,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding."
+    },
+    {
+      "name": "RerollType",
+      "offset": 80,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes the byte +0x50; copy `*(undefined1 *)(param_1 + 8) = ...` (RollAdjustments+0x20, SE RerollType)."
+    },
+    {
+      "name": "_Pad51",
+      "offset": 81,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding."
+    },
+    {
+      "name": "RerollConditions",
+      "offset": 88,
+      "type": "Array<CondRollAdjRerollCondition>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x58/+0x60/+0x64; copy allocates (count, 2, 1) for RollAdjustments+0x28."
+    },
+    {
+      "name": "RerollValues",
+      "offset": 104,
+      "type": "Array<CondRollAdjRerollValue>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x68/+0x70/+0x74; copy allocates (count, 2, 1) for RollAdjustments+0x38."
+    },
+    {
+      "name": "ResolvedRoll",
+      "offset": 120,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x78 and the byte +0x7C; copy moves the qword +0x48 of RollAdjustments (SE std::optional<int> ResolvedRoll)."
+    },
+    {
+      "name": "HasResolvedRoll",
+      "offset": 124,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "the optional's flag at +0x7C."
+    },
+    {
+      "name": "_Pad7D",
+      "offset": 125,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding."
+    },
+    {
+      "name": "UseMaxRoll",
+      "offset": 128,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes the byte +0x80; copy moves RollAdjustments+0x50 (SE UseMaxRoll)."
+    },
+    {
+      "name": "_Pad81",
+      "offset": 129,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding to the registry size 136."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names follow SE's ConditionalRollEvent / RollAdjustments (Interrupt.h); the Metadata array is what SE calls FixedRollBonuses - its 20-byte element is RollAdjustmentMetadata by the Toolkit, not SE's 24-byte FixedRollBonus.",
+    "Element strides of the two reroll arrays come from the Toolkit copy (agreeing with the bg3.exe creator and the registry size).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 9,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

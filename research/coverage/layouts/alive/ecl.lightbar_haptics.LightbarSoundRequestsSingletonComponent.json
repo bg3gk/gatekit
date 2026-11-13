@@ -1,0 +1,61 @@
+{
+  "component": "ecl::lightbar_haptics::LightbarSoundRequestsSingletonComponent",
+  "ext_name": "ClientLightbarHapticsLightbarSoundRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ClientSoundPostEventRequest",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Subject",
+          "offset": 0,
+          "type": "std::variant<EntityHandle, uint64_t>",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0x7CC3A0 LightbarSoundSystem::FinalizeSingleton zeroes +0..+0xF, sets the byte at +8 to 1 (variant index 1 = uint64_t) and stores the per-input-player sound object id from SoundManager+0x48+index*8 at +0. Same first member as ls SoundPostEventRequest (Sound.h)."
+        },
+        {
+          "name": "Event",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Constructed from a FixedString of the per-user list (HashMap<short, Array<FixedString>> argument); the clear loop destroys the FixedString at element+0x10."
+        },
+        {
+          "name": "field_14",
+          "offset": 20,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Set to 3 by FinalizeSingleton (probably an event type / flags enum)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "Set to 0 by FinalizeSingleton (probably a callback pointer or seek/extra data)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<ClientSoundPostEventRequest>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x7CC3A0 ecl::lightbar_haptics::LightbarSoundSystem::FinalizeSingleton gets the singleton, destroys every element (stride 0x20, FixedString at +0x10), sets size (+0xC) to 0, then appends one element per FixedString; bounds asserts name ls::IndexedStorage<ecl::sound::PostEventRequest> (the game's element type). macOS default: 16 zero bytes; live (idle): all zero = empty array."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "ecl::sound::PostEventRequest members +0x14 (=3) and +0x18 (=0) are not named; who drains the array (an ecl::sound system) was not read."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the layout file is not valid yet: type 'std::variant<EntityHandle, uint64_t>' is not one generate.py knows the size of",
+  "hold": "uses types declared elsewhere (variant): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet"
+}

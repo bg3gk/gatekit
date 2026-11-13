@@ -1,0 +1,67 @@
+{
+  "component": "esv::crowds::MoveToComponent",
+  "ext_name": "ServerCrowdsMoveTo",
+  "size": 36,
+  "seen": true,
+  "summary": "Movement order of an Act 3 crowd character (lower-city civilians walking their splines / detours): target, last seen position, arrival radius, a path state and a stuck counter. Created and driven by esv::crowds::CharacterMovementSystem::Update from the MoveTo/Detour/Patrol request singletons. Saved: model game.crowds.v0.MoveToComponent (32 bytes, alignment 4); bg3.exe+0x25FB4C0 loads it back (two vec3 through a level-offset transform, then the rest).",
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0xD8C530 CharacterMovementSystem::Update copies the request's position (+0..+0xB, request stride 0x14) to +0..+0xB; the distance from the character to +0..+8 is compared with the radius at +0x18; live world coordinates"
+    },
+    {
+      "name": "LastPosition",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Update copies the character's ls::TransformComponent translation (+0x10..+0x18) to +0xC..+0x14 and each frame compares the current position with it (epsilon 1.19e-7) to detect a character that does not move"
+    },
+    {
+      "name": "Radius",
+      "offset": 24,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Update copies request+0xC here; arrival when squared distance <= radius^2; increased by 0.05 when the character is stuck for 30 frames; live 0.5..3.3"
+    },
+    {
+      "name": "field_1c",
+      "offset": 28,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Update zeroes it when a request arrives and when stuck; compared with an id at +0x10 of another object (a path/request id); live 0..0x3E1"
+    },
+    {
+      "name": "StuckFrames",
+      "offset": 32,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Update increments the byte at +0x20 while the position is unchanged and resets it at 30 (0x1E) or when the character moves; live 0"
+    },
+    {
+      "name": "field_21",
+      "offset": 33,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Update copies the request's byte at +0x10 here (a movement kind/speed enum?); live 1..4"
+    },
+    {
+      "name": "_Pad22",
+      "offset": 34,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "never written; live garbage"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "meaning of +0x1C and +0x21 (enum names unknown)"
+  ],
+  "minutes": 9,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

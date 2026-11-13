@@ -1,0 +1,26 @@
+{
+  "component": "ls::StaticPhysicsParentComponent",
+  "ext_name": "StaticPhysicsParent",
+  "size": 16,
+  "seen": true,
+  "summary": "Server: an array of 8-byte items on construction entities with static physics (esv::StaticPhysicsManager; created by bg3.exe+0x307DF90 which then calls bg3.exe+0x2D6D1D0, the loader of construction tile/filling physics, that reserves this array to the tile count).",
+  "fields": [
+    {
+      "name": "PhysicsObjects",
+      "offset": 0,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "Array of phx::PhysicsObject pointers, one or two per construction tile. Creator bg3.exe+0x30890A0 allocates 0x10 bytes zeroed; destructor thunk -> bg3.exe+0x5946C0 (plain array: frees the buffer only). Windows bg3.exe+0x2D6D1D0 reserves the array (from the view's StaticPhysicsParentComponent, EntityView+0x10) to the tile count with bg3.exe+0x5C4620, then the game's LoadConstructionTilePhysics bg3.exe+0x2D6D3F0 creates each physics object (bg3.exe+0x3B24440 / +0x3B24670) and appends it: '*(longlong **)(*array + count * 8) = object' (8-byte elements, count at +0xC, grow with bg3.exe+0x5C4620). The Toolkit esv::StaticPhysicsManager::LoadConstructionTilePhysics (EoCServer.dll+0x4B8CB0, view TypeList<StaticPhysicsComponent, StaticPhysicsParentComponent, TransformComponent const>) types the objects as PhysicsObject*. Live: capacity 2..0x10, size 2..0xA."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Elements are typed as void*: the build has no phx::PhysicsObject pointer type here (Script Extender's StaticPhysicsComponent uses phx::PhysicsObject*)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Element type settled: the Windows LoadConstructionTilePhysics bg3.exe+0x2D6D3F0 appends freshly created physics objects (8-byte pointers) to this array, named PhysicsObject* in the Toolkit's EoCServer.dll copy.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

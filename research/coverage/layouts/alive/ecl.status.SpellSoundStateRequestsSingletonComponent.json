@@ -1,0 +1,67 @@
+{
+  "component": "ecl::status::SpellSoundStateRequestsSingletonComponent",
+  "ext_name": "ClientStatusSpellSoundStateRequestsSingleton",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "SpellSoundStateRequestsSwitchRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Target",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "ls::GameplaySoundSwitchRequest (GameEngine.dll+0x1C4440, ctor(Variant<EntityHandle, TypeWrap<uint64, SoundObjectHandleClassname>> const&, FixedString const&, FixedString const&)) copies the 16-byte variant to +0/+8. The value is an EntityHandle or a sound object handle depending on the variant index; ProcessSpellCastEvent passes the caster's EntityHandle."
+        },
+        {
+          "name": "TargetType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index (second qword of the variant): FUN_180d629e0 sets it 0 (= EntityHandle alternative). Width of the index assumed 1 byte; the whole qword is copied."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "Rest of the variant's index qword."
+        },
+        {
+          "name": "SwitchGroup",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Ctor second argument stored at +0x10; ProcessSpellCastEvent passes strVocal_Combat_Type or SoundState+0x20."
+        },
+        {
+          "name": "SwitchState",
+          "offset": 20,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Ctor third argument stored at +0x14; the SoundState's value (strStandard when the cast ends)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<SpellSoundStateRequestsSwitchRequest>",
+      "source": "inferred",
+      "evidence": "ecl::status::SpellSoundStateSystem::ProcessSpellCastEvent (EoCClient.dll+0xD64540) pushes into the singleton through FUN_180d629e0: grow (size +0xC vs capacity +8), element at *comp + i*0x18 built by ls::GameplaySoundSwitchRequest::GameplaySoundSwitchRequest; bounds assert names ls::IndexedStorage<ls::GameplaySoundSwitchRequest>. Default 16 zero bytes (macOS stp xzr,xzr), live empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Width of the variant index (1 byte assumed)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

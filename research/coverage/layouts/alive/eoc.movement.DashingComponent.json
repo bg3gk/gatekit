@@ -1,0 +1,38 @@
+{
+  "component": "eoc::movement::DashingComponent",
+  "ext_name": "MovementDashing",
+  "size": 28,
+  "seen": true,
+  "fields": [
+    {
+      "name": "StartPosition",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Live: world coordinates (x 46.26, y 2.15..17, z -391..-420) close to but different from +0xC; the position the dash started from. Not read in the update path that was examined."
+    },
+    {
+      "name": "TargetPosition",
+      "offset": 12,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "ecl::movement::DashingSystem update bg3.exe+0x1917090 (registered by bg3.exe+0x726190 with DashingComponent + DashTransformRequestsSingleton): computes (+0xC,+0x10,+0x14) minus the transform translation, and when arrived copies +0xC..+0x14 into the TransformComponent translation and removes DashingComponent. Live: world coordinates."
+    },
+    {
+      "name": "Speed",
+      "offset": 24,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "same update reads the float at +0x18 together with the frame time (param_3+8) to advance toward the target. Live always 6.0 (metres per second)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Speed vs. duration for +0x18 not fully traced; StartPosition name from live data only."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "75 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,215 @@
+{
+  "component": "esv::itemwall::CreateComponent",
+  "ext_name": "ServerItemwallCreate",
+  "size": 200,
+  "seen": false,
+  "structs": [
+    {
+      "name": "ItemwallCreateSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Same members as Script Extender's SpellId (Base/ExposedTypes.h). Creator writes 0xFFFFFFFF (null FixedString) at component +0x30."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "As SE SpellMetaId::_Pad."
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellSourceType (1 byte); creator default byte 0x17 at component +0x38."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "unknown",
+          "evidence": "Alignment."
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId::Source; creator zeroes +0x40/+0x48."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId::ProgressionSource; creator zeroes +0x50/+0x58."
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellId::Prototype; creator writes 0xFFFFFFFF at component +0x60."
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "unknown",
+          "evidence": "Tail padding."
+        }
+      ]
+    },
+    {
+      "name": "ItemwallCreateItemSpawn",
+      "size": 40,
+      "fields": [
+        {
+          "name": "Template",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Element type eoc::itemwall::ItemSpawn (macOS template names). WallSystem bg3.exe+0x3379B60 lines 635-646 copy element+0 (FixedString) to RequestSummonOneFrameComponent.Template; element destructor bg3.exe+0xF33BB0 DecRefs a FixedString at element+0 (stride 0x28)."
+        },
+        {
+          "name": "Position",
+          "offset": 4,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "WallSystem lines 648-649: element+4..+0xF -> RequestSummon.Position."
+        },
+        {
+          "name": "Rotation",
+          "offset": 16,
+          "type": "glm::quat",
+          "source": "inferred",
+          "evidence": "WallSystem lines 650-656: element+0x10..+0x1F -> RequestSummon.Rotation."
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "WallSystem line 581: element+0x20 compared with the slot id (0..63, used as a bit index) popped from AnimationComponent's queue - the item's animation slot."
+        }
+      ]
+    },
+    {
+      "name": "ItemwallCreateForcePush",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Position",
+          "offset": 0,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Value type eoc::itemwall::ForcePush (macOS HashMap<EntityHandle, eoc::itemwall::ForcePush>). WallSystem lines 713-714: value+0 (qword) and +8 (dword) -> ForcePushRequestOneFrameComponent.TargetPosition."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Not read."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "WallSystem line 683: `(value[2] & spawnedSlotsMask) != 0` - a bit mask of item slots whose arrival pushes this entity. Value stride 0x18 (puVar19 += 3)."
+        }
+      ]
+    }
+  ],
+  "summary": "Server state of an item wall being raised (e.g. walls of items made by a spell): created by esv::itemwall::WallCreationSystem (per-frame update bg3.exe+0x33790A0) from an eoc::itemwall::CreateWallRequest, consumed by esv::itemwall::WallSystem (bg3.exe+0x3379B60), which spawns the items (RequestSummonOneFrameComponent), the capsule surface and force-push requests. Saved: model game.itemwall.v0.CreateComponent (128 bytes) with members m_Owner, m_SpellCastEntity, m_Template, m_Start, m_End, m_Level, m_SpellUsed, m_SpellCastUuid, m_ForcePushEntities, m_ItemSpawns - the component keeps ItemSpawns before ForcePushEntities. Never seen alive. Registry total 200 (server row).",
+  "fields": [
+    {
+      "name": "Owner",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Savegame model member 0 (m_Owner). Creator bg3.exe+0x3379780 (AllocRaw 200) writes the null handle; WallCreationSystem line 117: +0 = request+0. Copied as Owner/Caster into the wall's requests."
+    },
+    {
+      "name": "SpellCastEntity",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Model member 1 (m_SpellCastEntity). Creator: null handle at +8; WallCreationSystem line 118: +8 = request+8."
+    },
+    {
+      "name": "Template",
+      "offset": 16,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Model member 2 (m_Template). Creator: 0xFFFFFFFF at +0x10; WallCreationSystem lines 106-116: FixedString at +0x10 = request+0x14. Copy ctor bg3.exe+0x2708BE0 moves it."
+    },
+    {
+      "name": "Start",
+      "offset": 20,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "Model member 3 (m_Start). WallCreationSystem lines 119-120: qword +0x14, dword +0x1C = request+0x18..+0x23."
+    },
+    {
+      "name": "End",
+      "offset": 32,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "Model member 4 (m_End). WallCreationSystem lines 121-122: qword +0x20, dword +0x28 = request+0x24..+0x2F."
+    },
+    {
+      "name": "Level",
+      "offset": 44,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Model member 5 (m_Level). Creator: 0xFFFFFFFF at +0x2C; WallCreationSystem lines 123-133: FixedString +0x2C = request+0x10."
+    },
+    {
+      "name": "SpellUsed",
+      "offset": 48,
+      "type": "ItemwallCreateSpellId",
+      "source": "game",
+      "evidence": "Model member 6 (m_SpellUsed). WallCreationSystem line 134: FUN_1407a2480(c+0x30, request+0x40) (SpellId copy); Prototype at +0x60 = request+0x70."
+    },
+    {
+      "name": "SpellCastUuid",
+      "offset": 104,
+      "type": "Guid",
+      "source": "game",
+      "evidence": "Model member 7 (m_SpellCastUuid). Creator zeroes +0x68/+0x70; copied by WallSystem into requests' SpellCastUuid."
+    },
+    {
+      "name": "ItemSpawns",
+      "offset": 120,
+      "type": "Array<ItemwallCreateItemSpawn>",
+      "source": "game",
+      "evidence": "Model member 9 (m_ItemSpawns); macOS type DynamicArray<eoc::itemwall::ItemSpawn>. Creator zeroes +0x78/+0x80 and dword +0x84; container destructor bg3.exe+0xF338F0 clears it with bg3.exe+0xF33BB0 (stride 0x28, FixedString at element+0); WallSystem reads data +0x78, size +0x84, stride 40."
+    },
+    {
+      "name": "ForcePushEntities",
+      "offset": 136,
+      "type": "HashMap<EntityHandle, ItemwallCreateForcePush>",
+      "source": "game",
+      "evidence": "Model member 8 (m_ForcePushEntities); macOS type HashMap<EntityHandle, eoc::itemwall::ForcePush>. Destructor bg3.exe+0xF338F0 frees the values array at +0xB8 then the HashSet at +0x88 (FUN_140582ad0); WallSystem lines 677-683: keys data +0xA8 (count +0xB4, stride 8), values data +0xB8 (stride 0x18)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "ItemSpawn.field_20 and ForcePush.field_10 are slot id / slot mask by their use; no game names (no model visitor for ItemSpawn / ForcePush).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 15,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

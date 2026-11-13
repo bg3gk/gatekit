@@ -1,0 +1,31 @@
+{
+  "component": "eoc::PathingMovementSpeedChangedOneFrameComponent",
+  "ext_name": "PathingMovementSpeedChanged",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "PreviousSpeed",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "eoc::legacy::PathingSystem::SetPathMovementSpeed (EoCShared.dll+0x10AB4E0) stores {old speed (PathingComponent+0x44 before), new speed} as eoc::legacy::PathMovementSpeedChangedData into a map keyed by entity; PathingSystem::UpdateSystem (EoCShared.dll+0x10AB7B0) adds this component per entry and copies both floats (*c = data[0]; c[1] = data[1]). Live: 0, 1.4, 2, 3.75."
+    },
+    {
+      "name": "Speed",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Second float of PathMovementSpeedChangedData = the new movement speed passed to SetPathMovementSpeed. Live: 0, 0.8, 2, 3.75."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Whether the map keeps the first old value or the last one within a frame; names are ours (sibling eoc::PathingDistanceChangedOneFrameComponent has DistanceXZ + field_4)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "25 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

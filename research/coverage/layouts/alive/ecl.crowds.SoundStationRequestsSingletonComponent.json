@@ -1,0 +1,129 @@
+{
+  "component": "ecl::crowds::SoundStationRequestsSingletonComponent",
+  "ext_name": "ClientCrowdsSoundStationRequests",
+  "size": 112,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CrowdSoundNewStationRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Station",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::crowds::SoundStationSystem::FinalizeStations (EoCClient.dll+0xE9B950) creates a station entity with the command buffer and appends {new entity handle, 8 bytes, 4 bytes} at stride 0x18 (IndexedStorage<...::NewStationRequest>)."
+        },
+        {
+          "name": "Position",
+          "offset": 8,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "ecl::transform::GameplayTransformRequestSystem::Update (EoCClient.dll+0x548D10) reads each element's +8 (8 bytes) and +0x10 (4 bytes) as a translation and builds a Transform with identity rotation/scale for the handle at +0."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Stride 0x18."
+        }
+      ]
+    },
+    {
+      "name": "CrowdSoundStationSoundRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Station",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Assumed: 8-byte first member like the other requests of this singleton; not decoded."
+        },
+        {
+          "name": "Event",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SoundStationSystem::Update (EoCClient.dll+0xE9CF20) destroys a FixedString at element+8 (stride 0x10) when clearing IndexedStorage<...::StationSoundRequest>; consumed by ecl::sound::InterfaceSystem::Update."
+        },
+        {
+          "name": "field_c",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Not read."
+        }
+      ]
+    },
+    {
+      "name": "CrowdSoundStationSizeRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Station",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Assumed: 8-byte first member like the other requests; not decoded."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Not read (a size value, int or float)."
+        },
+        {
+          "name": "RTPC",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SoundStationSystem::Update destroys a FixedString at element+0xC (stride 0x10) when clearing IndexedStorage<...::StationSizeRequest>."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "NewStations",
+      "offset": 0,
+      "type": "Array<CrowdSoundNewStationRequest>",
+      "source": "inferred",
+      "evidence": "SoundStationSystem::Update resets size +0xC after a CheckBoundary loop on IndexedStorage<ecl::crowds::SoundStationRequestsSingletonComponent::NewStationRequest>; FinalizeStations appends with growth FUN_1803A44F0, stride 0x18. GameplayTransformRequestSystem::Update reads it through the getter of the same type index (EoCClient.dll+0x5473D0 and the system's own getter EoCClient.dll+0xE9A700 both use DAT_1819fa0a4)."
+    },
+    {
+      "name": "StationTranslations",
+      "offset": 16,
+      "type": "HashMap<EntityHandle, glm::vec3>",
+      "source": "inferred",
+      "evidence": "SoundStationSystem::Update clears a hash table at +0x10 (buckets memset 0xFF, keys IndexedStorage<ls::ID<EntityHandleTraits>> size at +0x3C); GameplayTransformRequestSystem::Update iterates keys at +0x30 (8-byte handles) with values at +0x40 of stride 0xC (a translation, turned into a Transform)."
+    },
+    {
+      "name": "StationSoundRequests",
+      "offset": 80,
+      "type": "Array<CrowdSoundStationSoundRequest>",
+      "source": "inferred",
+      "evidence": "+0x50/+0x58/+0x5C: IndexedStorage<...::StationSoundRequest>, stride 0x10, cleared every frame in SoundStationSystem::Update."
+    },
+    {
+      "name": "StationSizeRequests",
+      "offset": 96,
+      "type": "Array<CrowdSoundStationSizeRequest>",
+      "source": "inferred",
+      "evidence": "+0x60/+0x68/+0x6C: IndexedStorage<...::StationSizeRequest>, stride 0x10, cleared every frame in SoundStationSystem::Update."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The non-FixedString members of StationSoundRequest / StationSizeRequest (+0 assumed EntityHandle, +8 / +0xC unknown) - read the writer ProcessStationaryClusters (EoCClient.dll+0xE9C160) or ecl::sound::InterfaceSystem::Update.",
+    "Member names are ours; the game names only the three request structs."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

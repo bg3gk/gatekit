@@ -1,0 +1,25 @@
+{
+  "component": "ls::SwapLevelRequestOneFrameComponent",
+  "ext_name": "SwapLevelRequest",
+  "size": 8,
+  "seen": true,
+  "summary": "One-frame request on a level-instance entity to swap it to another level entity; created by the per-frame update of ls::LevelInstanceAttachRequestSystem (bg3.exe+0x3C15550) from its request map, queried with LevelInstanceComponent / LevelComponent (and esv::replication::ReplicationDependencyComponent on the server).",
+  "fields": [
+    {
+      "name": "Level",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3C15550 iterates its map (keys at system+0x58, 8-byte values at +0x68), checks each value for a valid handle (>>0x36 < 0x41, != 0xFFC0000000000000) and writes it with *component = value after the creator bg3.exe+0x3C15830 (8 bytes). Live: entity handles and the null handle 0xFFC0000000000000 on the server."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Name of the member (target level / parent level entity)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "47 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

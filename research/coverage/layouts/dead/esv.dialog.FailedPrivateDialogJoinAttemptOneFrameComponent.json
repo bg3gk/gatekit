@@ -1,0 +1,48 @@
+{
+  "component": "esv::dialog::FailedPrivateDialogJoinAttemptOneFrameComponent",
+  "ext_name": "ServerDialogFailedPrivateDialogJoinAttempt",
+  "size": 40,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Event of esv::dialog::PrivacySystem (ProcessFailedJoinAttempts): a character tried to listen in on a private dialog. The client sends it with ecl::LSDialogsProtocol::SendFailedJoinDialog(unsigned int const& dialogId, Guid const& listener, Guid const& speaker) (EoCClient.dll+0xECF160, called from CharacterTask_Listen with the listening character's UUID first and the speaker's second); the server keeps a HashMap<dialog id, set of 32-byte (Guid, Guid) records> and turns every record into one event entity with this component (game bg3.exe+0x2E1C020). Registered as a normal component although named OneFrame. Never seen alive. Registry total 40 (server row).",
+  "fields": [
+    {
+      "name": "DialogId",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2E1CC60 (AllocRaw 0x28) zeroes the dword at +0; writer bg3.exe+0x2E1C020 line 153 `*puVar9 = *puVar14` - the 4-byte key of the system's HashMap (the dialog instance id, first parameter of SendFailedJoinDialog)."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding before the 8-aligned Guid; never written."
+    },
+    {
+      "name": "Listener",
+      "offset": 8,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator zeroes +8/+0x10; writer lines 154-158 copy the first 16 bytes of the 32-byte record to +8. By the order of SendFailedJoinDialog's arguments (EoCClient.dll+0x114A820 passes the listening character's UUID first), the character that tried to join."
+    },
+    {
+      "name": "Speaker",
+      "offset": 24,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x18/+0x20; writer lines 159-165 copy the record's second 16 bytes to +0x18 (dwords puVar9[6..9]). Second Guid of SendFailedJoinDialog = the speaker entity's UUID ('no speaker entity' assert)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Listener/Speaker naming assumes the server record keeps the order of the client message (not traced through the network handler).",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

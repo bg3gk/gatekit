@@ -1,0 +1,25 @@
+{
+  "component": "esv::item::MarkedForDestructionSingletonComponent",
+  "ext_name": "ServerItemMarkedForDestruction",
+  "size": 48,
+  "seen": true,
+  "summary": "Singleton of esv::item::MarkEntityForDestructionSystem (factory bg3.exe+0x2365D50; Toolkit EoCServer.dll+0x13A3880 MarkEntityForDestructionSystem::Update with WorldView<MarkedForDestructionSingletonComponent, MarkEntityForDestructionComponent const>). Alive in every level (idle).",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x33D7440 initialises a 48-byte HashSet (bucket ptr/count, NextIds at +0x10 size +0x1C, Keys at +0x20 size +0x2C); destructor thunk bg3.exe+0x582AD0 is the trivial HashSet destructor (frees +0x20, +0x10, +0). Toolkit Update iterates a HashSet of 8-byte keys (this+0x30, count this+0x3C) checking IsEntityAlive on each -> EntityHandle keys. Live: bucket counts 0x13/0x185, capacity 0x10/0x100, size 0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key type taken from the system's own identical set (Toolkit) - the copy into the singleton was not traced."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

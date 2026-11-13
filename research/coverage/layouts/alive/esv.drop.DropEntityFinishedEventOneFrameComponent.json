@@ -1,0 +1,54 @@
+{
+  "component": "esv::drop::DropEntityFinishedEventOneFrameComponent",
+  "ext_name": "ServerDropEntityFinishedEvent",
+  "size": 16,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event on the dropper when dropped entities finished moving ('shove-throw' step); built by esv::drop::DropEntityEndUpSystem::ProcessFinishedEvents.",
+  "structs": [
+    {
+      "name": "DropEntityFinishedEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::inventory_transfer::TransferFinishedDescription (name from the IndexedStorage assert in ProcessFinishedEvents, EoCServer.dll+0x9A7AD0): +0 = the entity whose moving-finished event was processed (query entity)."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "+8 = dword +8 of the entity's moving-finished event component (16-byte stride; a byte at +0xC of that event decides whether the entry is added)."
+        },
+        {
+          "name": "_Pad0C",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to the 0x10 stride"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "Array<DropEntityFinishedEntry>",
+      "source": "inferred",
+      "evidence": "bg3.exe creator FUN_142e36770 zeroes 16 bytes and registers destructor FUN_1405946c0 (frees an array buffer, no element destructors). ProcessFinishedEvents appends 16-byte TransferFinishedDescription elements (stride 0x10) to a HashMap<EntityHandle, DynamicArray<...>> keyed by the dropper. Live: heap pointer, capacity 1, size 1."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the dword at element +8 (taken from the moving-finished event)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

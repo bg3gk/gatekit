@@ -1,0 +1,29 @@
+{
+  "component": "ecl::EquipmentVisualsVFXTargetComponent",
+  "ext_name": "ClientEquipmentVisualsVFXTarget",
+  "size": 16,
+  "fields": [
+    {
+      "name": "VFXTarget",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1993EC0 creates the component with both slots = null handle (0xFFC0000000000000); bg3.exe+0x1991200 (ecl::EquipmentVisualsSystem; reads the system's hash map at +0x318..+0x348 that Script Extender already names VFXTargetRequest) writes the requested value here, both on creation and on change. Probe: live entity handle in all 6 instances."
+    },
+    {
+      "name": "PreviousVFXTarget",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1991200: when the requested target differs from +0 the code first does [+8] = [+0], then [+0] = new, and marks the component modified. Probe: always the null handle (target never changed after creation)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Who consumes PreviousVFXTarget (the Modified query at bg3.exe+0x1989250) was not read."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

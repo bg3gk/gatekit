@@ -1,0 +1,25 @@
+{
+  "component": "esv::interrupt::TimeFactorRequestsComponent",
+  "ext_name": "ServerInterruptTimeFactorRequests",
+  "size": 64,
+  "seen": true,
+  "summary": "Server component (one instance, on a singleton-like entity) written by esv::interrupt::ZoneUpdateSystem (macOS) and read by esv::TimeSystem::ProcessTimeFactorRequests together with the ftb time-factor request singletons: entity -> time factor to apply while an interrupt is pending. Alive in idle levels, empty.",
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, float>",
+      "source": "inferred",
+      "evidence": "bg3.exe creator 0x3594BB0 builds exactly the PreferencesRequest shape (0x40 bytes, HashSet + values) and uses the same destructor FUN_1405c4870 (raw free of values at +0x30 = trivial 4-byte or 8-byte values). EoCServer.dll+0x2B26D0 TimeSystem::ProcessTimeFactorRequests (whose view includes esv::interrupt::TimeFactorRequestsComponent const) copies maps of EntityHandle keys (stride 8 at +0x20) and 4-byte values (stride 4 at +0x30) into HashMap<EntityHandle,float>; the sibling ftb::TimeFactorRequestsSingletonComponent is HashMap<EntityHandle, float> in SE (Combat.h). Live: empty."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The loop that reads exactly this component in ProcessTimeFactorRequests was not singled out (two map loops read singletons via FUN_1802b0a40/FUN_1802b0730); value could in theory be another 4-byte type."
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

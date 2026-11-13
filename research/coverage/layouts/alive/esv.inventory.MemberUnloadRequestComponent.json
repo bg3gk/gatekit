@@ -1,0 +1,24 @@
+{
+  "component": "esv::inventory::MemberUnloadRequestComponent",
+  "ext_name": "ServerInventoryMemberUnloadRequest",
+  "size": 16,
+  "seen": true,
+  "summary": "Persistent request list (one holder, idle level) drained by esv::inventory::MemberUnloadSystem (factory bg3.exe+0x2378A90 names the system; Toolkit EoCServer.dll+0xF59900 MemberUnloadSystem::Update, InventoryMemberUnloadSystem.cpp). Members removed from an inventory that cannot be placed in a level are logged ('Inventory member %s could not be placed in a valid level...') and passed as Span<EntityHandle> to EntityManager::UnloadLocalEntities. Its sibling FailedAddsUnloadRequestComponent is handled the same way.",
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x348B190 zeroes ptr/capacity/size (Array shape); destructor bg3.exe+0x686280 frees a trivially-destructible array. Toolkit MemberUnloadSystem::Update walks ptr .. ptr+size*8, logs each element as an entity and hands the range to EntityManager::UnloadLocalEntities(Span<ID<EntityHandleTraits> const>). Live: empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

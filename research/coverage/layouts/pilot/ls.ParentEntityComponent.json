@@ -1,0 +1,22 @@
+{
+  "component": "ls::ParentEntityComponent",
+  "ext_name": "ParentEntity",
+  "size": 8,
+  "fields": [
+    {
+      "name": "Parent",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3D441D0 and bg3.exe+0x1DA2E10 allocate 8 bytes for the component and copy one 64-bit entity handle argument into +0; the probe shows a live client entity handle in all 48 instances. The name comes from the component's own name, not from a reader."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "No reader of the field was opened, so 'Parent' is taken from the component name; which systems consume it (0x1C923E0, 0x1DD1600 ...) was not checked."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "2026-11-12, se-fork/coverage/check.py raw stage, game 4.1.1.7631656, test level TUT_Avernus_C"
+}

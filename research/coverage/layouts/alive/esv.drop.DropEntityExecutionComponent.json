@@ -1,0 +1,37 @@
+{
+  "component": "esv::drop::DropEntityExecutionComponent",
+  "ext_name": "ServerDropEntityExecution",
+  "size": 32,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Put on the dropping character when the drop is executed (action resources spent; 'shove-throw' step). Written by esv::drop::DropEntityExecuteSystem::ProcessWaitingForActionResourceSpending from its DropEntityStateComponent.",
+  "fields": [
+    {
+      "name": "RequestGuid",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "ProcessWaitingForActionResourceSpending (EoCServer.dll+0x9B4590) adds the component (FUN_1809b1eb0) and copies state+0x30/+0x38 (the request Guid matched against ActionResourceSpendEvent) into +0/+8. Live equals DropEntityState+0x30."
+    },
+    {
+      "name": "Position",
+      "offset": 16,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Same function: +0x10 = state+0x10 (8 bytes), +0x18 = state+0x18. Live 56.25/17.24/104.8 like the state."
+    },
+    {
+      "name": "_Pad1C",
+      "offset": 28,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Never written by the creator; live 0xFFFFFFFF (left-over), macOS default constructor zeroes it with the whole +0x10 block."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 4,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

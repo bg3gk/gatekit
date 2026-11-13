@@ -1,0 +1,82 @@
+{
+  "component": "ecl::TimelineFadeView0Component",
+  "ext_name": "ClientTimelineFadeView0",
+  "size": 20,
+  "fields": [
+    {
+      "name": "TargetValue",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x18F6530 creates the component with 0.0. bg3.exe+0x18EB2D0 copies the first 8 bytes of the per-entity fade request (16-byte values of a HashMap<EntityHandle, request> in ecl::TimelineFadeRequestsSingletonComponent) here on every request, and copies this value into +0x0C when the request is immediate - so +0 is the value being faded to and +0x0C the value reached so far. Live: 0.0 (faded out)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Default 4.0 in bg3.exe+0x18F6530; overwritten from the second float of the fade request in bg3.exe+0x18EB2D0. Live: 4.0. Probably the fade speed, but no reader was found."
+    },
+    {
+      "name": "Immediate",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Default 0; copied from byte 8 of the request. When set, bg3.exe+0x18EB2D0 writes TargetValue into CurrentValue at once instead of leaving the fade to run. Live: 1."
+    },
+    {
+      "name": "field_9",
+      "offset": 9,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Default 0 (one 16-bit store with +8); copied from byte 9 of the request. Live: 1."
+    },
+    {
+      "name": "field_A",
+      "offset": 10,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "Default 1; copied from byte 10 of the request, which bg3.exe+0x18EB2D0 also forwards (with a 'fully faded out at once' flag) into a second per-entity request map. Live: 0."
+    },
+    {
+      "name": "_PadB",
+      "offset": 11,
+      "type": "uint8_t[1]",
+      "source": "inferred",
+      "evidence": "copied with the request's padding; live 0x33 garbage"
+    },
+    {
+      "name": "CurrentValue",
+      "offset": 12,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Default 1.0; set to TargetValue by bg3.exe+0x18EB2D0 when Immediate is set. Live: 0.0."
+    },
+    {
+      "name": "Active",
+      "offset": 16,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Default 1; bg3.exe+0x18EB2D0 sets 1 when a request arrives (0 only when a new component is created by an immediate request on an entity that already had the fade tag), and writes 0 when the entity is in the 'remove fade' list (it then also removes ecl::TimelineFadeActiveView0Component). Live: 1."
+    },
+    {
+      "name": "_Pad11",
+      "offset": 17,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "tail padding to 20 bytes (alignment 4); live FF FF FF"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The consumer that advances CurrentValue towards TargetValue and blends all ecl::*FadeView0Component sources into ls::FadingView0Component (query registered at bg3.exe+0x18FC3D0 / 0x18FCA90, system bg3.exe+0x18DFEC0) was not read: field_4, field_9, field_A are unnamed because of that.",
+    "Whether the value is an opacity (1 = visible) - consistent with defaults (current 1.0, target 0.0) but not proven.",
+    "The 11 other ecl::*FadeView0/1Component types (BasicGOVisual, CharacterAttachToScene, CharacterCreation, CharacterOutOfSight, Crowd, Invisibility, ItemPreview, Obstruction, RoomTrigger, RoomTriggerCharacter) are handled side by side in bg3.exe+0x18E1E00 and very likely share this 20-byte structure."
+  ],
+  "same_as": "ecl::TimelineFadeView1Component - the two creation helpers (bg3.exe+0x18F6530 and bg3.exe+0x18F69D0) are identical apart from the type index (same size 0x14, same default stores), and the two system functions bg3.exe+0x18EB2D0 / bg3.exe+0x18EB8C0 differ only in which request map of the singleton they read (+0x00.. vs +0x40..)",
+  "minutes": 12,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

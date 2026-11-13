@@ -1,0 +1,58 @@
+{
+  "component": "esv::move::EnterAttackRangeEventOneFrameComponent",
+  "ext_name": "ServerMoveEnterAttackRangeEvent",
+  "size": 32,
+  "seen": true,
+  "summary": "Server one-frame event (registry does not mark it one-frame) emitted when a moving entity enters the attack range of an entity that can react (attacks of opportunity). Built from esv::move::ReactionSystem::InAttackRangeChangedEventData in ReactionSystem::TriggerInAttackRangeChangedEvents; consumed by esv::interrupt::EventSystem. Seen.py context: fights, shove/throw, spell steps, the first fight - whenever something moved near enemies.",
+  "fields": [
+    {
+      "name": "Source",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "EoCServer.dll+0x422760 TriggerInAttackRangeChangedEvents builds InAttackRangeChangedEventData (stride 0x20): +0 = entity of the candidate reactor (list element +0, stride 0x28) that can see the mover. Live: entity handles. Game name: member 0 (m_Source) of savegame model ls::model::game::move::v0::EnterAttackRangeEventOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x4FF1FA0) and the Windows loader bg3.exe+0x259F9C0: model EntityId +0 <-> component +0.",
+      "legacy": "Observer"
+    },
+    {
+      "name": "Target",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "+8 = the moving entity (EntityView param +0x38). Live: entity handles. Game name: member 1 (m_Target) of savegame model ls::model::game::move::v0::EnterAttackRangeEventOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x4FF1FA0) and the Windows loader bg3.exe+0x259F9C0: model EntityId +8 <-> component +8.",
+      "legacy": "Mover"
+    },
+    {
+      "name": "EnterPosition",
+      "offset": 16,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "+0x10..+0x1C = three floats from candidate +0x10/+0x18. Live: world coordinates (47.3, 2.1, 404.9). Game name: member 2 (m_EnterPosition) of savegame model ls::model::game::move::v0::EnterAttackRangeEventOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x4FF1FA0) and the Windows loader bg3.exe+0x259F9C0: model vec3 +0x10 <-> component +0x10.",
+      "legacy": "Position"
+    },
+    {
+      "name": "field_1C",
+      "offset": 28,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Low byte from candidate +0x20 (upper three bytes are left over from the stack). Live: 0x00 or 0xFF in every byte."
+    },
+    {
+      "name": "_Pad1D",
+      "offset": 29,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "Uninitialised bytes (copied from a stack word)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Assumes the component stores InAttackRangeChangedEventData unchanged (same 32 bytes); the hand-over into the component was not read.",
+    "Whether Position is the observer's or the mover's position; meaning of the byte at +0x1C."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "All three model members matched by the Windows loader bg3.exe+0x259F9C0 and the macOS Save. field_1C is not saved (the loader writes 16 bytes at +0x10, leaving +0x1C as junk) - not in the model."
+}

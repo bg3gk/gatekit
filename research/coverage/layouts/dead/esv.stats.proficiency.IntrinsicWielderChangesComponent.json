@@ -1,0 +1,32 @@
+{
+  "component": "esv::stats::proficiency::IntrinsicWielderChangesComponent",
+  "ext_name": "ServerStatsProficiencyIntrinsicWielderChanges",
+  "size": 16,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Change record of esv::stats::proficiency::IntrinsicProficiencySystem (per-frame update bg3.exe+0x2EF81B0), written next to eoc::stats::proficiency::IntrinsicallyProficientWielderComponent; read by esv::FeatSystem::Update (macOS).",
+  "fields": [
+    {
+      "name": "Wielder",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2EF8E50 writes 0xFFC0000000000000. Windows bg3.exe+0x2EF81B0 line 476-477 (16-byte column of this component, stride 0x10): puVar16[1] = *puVar16; *puVar16 = new value. Toolkit esv::stats::proficiency::IntrinsicProficiencySystem::UpdateIntrinsicProficiencies (EoCServer.dll+0x70E1D0 lines 536-537) does the same, the new value being +0 of the anonymous-namespace IntrinsicProficiency that GetIntrinsicWielder (EoCServer.dll+0x70DA20) returns, which it prints with ls::GetDebugName as an entity; when the component is first added (lines 290-294) only +0 is set. Name inferred: the current intrinsic wielder."
+    },
+    {
+      "name": "PreviousWielder",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator writes the null handle; bg3.exe+0x2EF81B0 line 476 and Toolkit UpdateIntrinsicProficiencies line 536 copy the old +0 here before overwriting +0: the previous wielder."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 2,
+  "status": "declared",
+  "second_pass": "The Windows update bg3.exe+0x2EF81B0 and the Toolkit UpdateIntrinsicProficiencies both shift +0 into +8 before storing the new wielder entity (from GetIntrinsicWielder) into +0: current/previous wielder, both 8-byte entity handles.",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

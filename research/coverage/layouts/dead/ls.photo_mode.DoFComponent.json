@@ -1,0 +1,70 @@
+{
+  "component": "ls::photo_mode::DoFComponent",
+  "ext_name": "PhotoModeDoF",
+  "size": 24,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Photo-mode depth of field on the camera entity (client only; registry total 24 on the client row, none on the server). Written by ecl::photo_mode::DoFSystem (per-frame update bg3.exe+0x1AF6AC0 / step 2 bg3.exe+0x1AF6D30) from its pending ls::Optional<DoFSystem::DoFRequest>, which the photo-mode UI fills through DoFSystem::LEGACY_UpdateDoF(bool,bool,float,float,EntityHandle) (NoesisGameUI.dll+0x71C990 passes the VM properties DepthOfField, SelectedDOFFocusType==0, DOFDistance, DOFStrength and the focused actor). The request and the component have the same 24-byte shape. Never seen alive.",
+  "fields": [
+    {
+      "name": "Enabled",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1AF6D30: component stride 0x18 (`base + idx*0x18`); writes byte +0 = request.bool0 && GraphicSettings+0x50 (engine DoF option on); the UI passes VM property 'DepthOfField' here (NoesisGameUI.dll+0x71C990 -> LEGACY_UpdateDoF param 1, +0xBF0 whose symbol 'DepthOfField' is registered at +0xBF4 in NoesisGameUI.dll+0x715A00)."
+    },
+    {
+      "name": "AutoFocus",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1AF6D30 compares and copies byte +1. The UI passes `SelectedDOFFocusType == 0` (gui::EDOFFocusType; VM +0xBD8, symbol at +0xBDC) - true for focus type 0; the name follows the FixedString 'DOFAutoFocus' of the render settings, not proven to be type 0's name."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "padding before the float at +4"
+    },
+    {
+      "name": "Distance",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1AF6D30 compares (epsilon 1.1920929e-07) and copies float +4. The UI passes VM property 'DOFDistance' (VM +0xB48, symbol at +0xB4C) as param 3, which LEGACY_UpdateDoF stores at request+4; request default 5.0 (0x40a00000), macOS default constructor also stores 5.0 at +4."
+    },
+    {
+      "name": "Strength",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1AF6D30 compares and copies float +8. The UI passes VM property 'DOFStrength' (VM +0xB30, symbol at +0xB34) as param 4 -> request+8; request default 2.5 (0x40200000) in EoCClient.dll LEGACY_UpdateDoF; macOS default constructor leaves 0."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Neither compared nor copied by bg3.exe+0x1AF6D30; LEGACY_UpdateDoF stores a separate 4-byte 0 at request+0xC, macOS default constructor zeroes it (stp xzr,xzr [x23]). Unused member or padding before the 8-byte handle."
+    },
+    {
+      "name": "FocusTarget",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1AF6D30 compares and copies the qword +0x10; request default 0xffc0000000000000 (null EntityHandle), macOS default constructor stores -0x40000000000000 at +0x10. The UI passes an entity taken from the VM (the focused actor, cf. VM property 'DepthFocusedActor')."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Offsets and widths are established on Windows (bg3.exe+0x1AF6D30 and its Toolkit twin EoCClient.dll+0x592640 ecl::photo_mode::DoFSystem::UpdateDoF); the names come from the photo-mode UI properties, not from member names.",
+    "Meaning of the bool at +1 (focus type 0 = auto focus?) and of the 4 bytes at +0xC.",
+    "Not seen alive."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

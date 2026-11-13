@@ -1,0 +1,32 @@
+{
+  "component": "ecl::item::animation::RequestComponent",
+  "ext_name": "ClientItemAnimationRequest",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "State",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "EoCClient.dll ecl::item::animation::RequestsSystem::ProcessAddedItems adds this component and copies both uint16 of eoc::item::animation::RequestComponent into it; the first one is the value printed with eoc::item::animation::StateToString and compared as 'desired state' in RequestsSystem::ProcessRequests. Live: 4."
+    },
+    {
+      "name": "field_2",
+      "offset": 2,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "second uint16 copied from eoc::item::animation::RequestComponent in ProcessAddedItems; the same pair default 0x00040004 in the singleton's InitialStateInfo. Live: 4."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the second uint16 (SE's ecl::item::animation::StateComponent calls the value it ends up in 'State')",
+    "No SE enum for item animation states"
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

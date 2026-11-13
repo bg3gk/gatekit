@@ -1,0 +1,78 @@
+{
+  "component": "esv::itemwall::AnimationComponent",
+  "ext_name": "ServerItemwallAnimation",
+  "size": 72,
+  "seen": false,
+  "structs": [
+    {
+      "name": "ItemwallAnimationItemAnimation",
+      "size": 16,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "WallSystem bg3.exe+0x3379B60 line 573: slot = element+0 (8 bytes); used as a bit index (1 << (slot & 63)) and compared with ItemSpawn+0x20 of the CreateComponent - the item slot this animation step spawns."
+        },
+        {
+          "name": "Time",
+          "offset": 8,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Line 571: the loop stops while the component's elapsed time is below element+8 - the moment at which the slot spawns. Element type eoc::itemwall::ItemAnimation (macOS: eoc::itemwall::GetItemAnimations fills it; QuickSort<ItemAnimation>)."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Stride 0x10 per element; not read."
+        }
+      ]
+    }
+  ],
+  "summary": "Progress of an item wall's raising animation, owned by esv::itemwall::WallSystem (per-frame update bg3.exe+0x3379B60): created with bg3.exe+0x337AD40 when a CreateComponent is processed, filled by eoc::itemwall::GetItemAnimations(ItemWall, ItemSpawns, out DynamicArray<ItemAnimation>) at +8, then each frame its time grows by the delta time and the animation steps that are due are popped from the back of the array; when the array is empty the component is removed. Saved: model game.itemwall.v0.AnimationComponent (40 bytes, no member names known). Never seen alive. Registry total 72 (server row).",
+  "fields": [
+    {
+      "name": "Time",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x337AD40 (AllocRaw 0x48) writes dword 0. WallSystem line 787: `*(float*)(c) = dt + *(float*)(c)` (stride 0x48), and line 571 compares it with each animation step's time."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Not written by the creator."
+    },
+    {
+      "name": "ItemAnimations",
+      "offset": 8,
+      "type": "Array<ItemwallAnimationItemAnimation>",
+      "source": "inferred",
+      "evidence": "Creator zeroes qwords +8/+0x10 and dword +0x14 (Array shape). WallSystem line 356: GetItemAnimations(..., (DynamicArray<eoc::itemwall::ItemAnimation>*)(c + 8)); line 769: component removed when *(int*)(c+0x14) == 0; lines 568-574 pop elements from the back (count at +0x14, data at +8, stride 0x10)."
+    },
+    {
+      "name": "PushedEntities",
+      "offset": 24,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x18..+0x47 in the HashSet pattern (dword +0x34 and +0x44 counts). WallSystem line 685: FUN_140721030(c + 0x18, ..., entity) (8-byte key set insert, bg3.exe+0x721030); a ForcePushRequestOneFrameComponent is created only when the entity was newly inserted - the set of entities already pushed."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names inferred (no visitor names for the 40-byte savegame model).",
+    "ItemAnimation.field_0 is an item slot id by use.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 10,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

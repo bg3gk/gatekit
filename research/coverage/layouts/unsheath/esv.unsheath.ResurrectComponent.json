@@ -1,0 +1,23 @@
+{
+  "component": "esv::unsheath::ResurrectComponent",
+  "ext_name": "ServerUnsheathResurrect",
+  "size": 4,
+  "fields": [
+    {
+      "name": "Timer",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x32EB590 (size 4, default 0). bg3.exe+0x32EAF90 (esv::unsheath::ResurrectSystem) writes 0x40900000 (4.5 s) right after creating/refreshing it, then every tick subtracts the frame time (GameTime+8, scaled by an optional per-entity time factor; 0 while paused) and removes the component when the value is <= 0. The resolver bg3.exe+0x32F1AD0 tests presence only and adds reason 0x1B with Sheathed."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the capture; layout from code only."
+  ],
+  "minutes": 2,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

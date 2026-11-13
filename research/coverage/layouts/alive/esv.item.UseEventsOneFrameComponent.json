@@ -1,0 +1,84 @@
+{
+  "component": "esv::item::UseEventsOneFrameComponent",
+  "ext_name": "ServerItemUseEvents",
+  "size": 16,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "Server one-frame component holding the item-use events (esv::item::UseItemEvent) of the frame, put on one event entity by esv::item::UseSystem::SendEvents (the entity is destroyed when there are no events). Seen.py context: appears at most once at a time, in steps that use items (potion, dialogues and trigger events that interact with objects: doors, chests, explosions).",
+  "structs": [
+    {
+      "name": "ItemUseEvent",
+      "size": 32,
+      "fields": [
+        {
+          "name": "Type",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x13BFF30 UseSystem::SendEvents builds each element (ls::IndexedStorage<esv::item::UseItemEvent>, stride 0x20) from the system's request (stride 0x20): +0 = 0 when the request's first byte is 0, 1 otherwise (use started / use finished or similar)."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "Qword copied from request +8 (an entity: item or user)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "Qword copied from request +0x10 (an entity: item or user)."
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "1 by default; for Type 1 the byte at request +0x18."
+        },
+        {
+          "name": "field_19",
+          "offset": 25,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Always written 0 (the 16-bit store of 1 at +0x18)."
+        },
+        {
+          "name": "_Pad1A",
+          "offset": 26,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "Padding to 0x20."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Events",
+      "offset": 0,
+      "type": "Array<ItemUseEvent>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x13BFF30 esv::item::UseSystem::SendEvents fills a local DynamicArray<UseItemEvent> (stride 0x20) and moves it into the one-frame component added to the event entity (pointer +0, capacity +8, size +0xC). Live: 47 instances, heap pointer at +0, capacity 1-2 at +8, size 1-2 at +0xC."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which of the two entities is the item and which the user; meaning of Type and of the byte at +0x18.",
+    "Read the story handler of esv::item::UseEventsOneFrameComponent (StoryGameEventManager) to map +8/+0x10/+0x18 to UseFinished(_Character, _Item, _Sucess)."
+  ],
+  "minutes": 6,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names for UseItemEvent's members; Osiris UseFinished(_Character, _Item, _Sucess) suggests user / item / success but the order was not tied to offsets."
+}

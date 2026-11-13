@@ -1,0 +1,97 @@
+{
+  "component": "ecl::multiplayer::MessageBoxRequestsSingletonComponent",
+  "ext_name": "ClientMultiplayerMessageBoxRequestsSingleton",
+  "size": 32,
+  "seen": true,
+  "structs": [
+    {
+      "name": "DropInMessageBoxRequest",
+      "size": 40,
+      "fields": [
+        {
+          "name": "Player",
+          "offset": 0,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0x5ABC00 UpdateMessageBoxes sets it to the local player id returned by the IDropInApprovalHelper slot 8, or 1."
+        },
+        {
+          "name": "IsOwnRequest",
+          "offset": 2,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Set to (host info user == local player id)."
+        },
+        {
+          "name": "_Pad3",
+          "offset": 3,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "alignment."
+        },
+        {
+          "name": "RequestId",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Assigned from the FixedString request id of the drop-in notification (same key as AttemptsToJoinSingletonComponent)."
+        },
+        {
+          "name": "Text",
+          "offset": 8,
+          "type": "STDString",
+          "source": "inferred",
+          "evidence": "Assigned from the ToApproveInfoHost name STDString (empty for cancel/close requests)."
+        },
+        {
+          "name": "Type",
+          "offset": 32,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Value byte of an optional: bg3.exe+0x1AD5CE0 (~UpdateMessageBoxes) stores the 16-bit word 0x111 (approval prompt) or 0x112 (other notice) at +0x20 = value 0x11/0x12 + has-flag 1; the close-request branch leaves it empty. Probably the message box kind."
+        },
+        {
+          "name": "HasType",
+          "offset": 33,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "has-value flag of the optional at +0x20 (high byte of the 0x111/0x112 word)"
+        },
+        {
+          "name": "_Pad22",
+          "offset": 34,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "padding to the element stride 0x28 (bg3.exe+0x1AD5CE0 appends at index*0x28)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "OpenRequests",
+      "offset": 0,
+      "type": "Array<DropInMessageBoxRequest>",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x5ABC00 ecl::multiplayer::DropInApprovalSystem::UpdateMessageBoxes clears the array at +0 (size +0xC) each frame and appends requests (FUN_1805A8730(component, &request)) for new approval prompts (type 0x11) and other notices (0x12)."
+    },
+    {
+      "name": "CloseRequests",
+      "offset": 16,
+      "type": "Array<DropInMessageBoxRequest>",
+      "source": "inferred",
+      "evidence": "Same function clears the array at +0x10 (size +0x1C) and appends requests of the same struct (FUN_1805A8730(component+0x10, ...)) for canceled requests (Player = 1, RequestId set, no Type). macOS default: zeroed 32 bytes; live: empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names Open/Close are inferred from which notifications feed them (approval request vs canceled request)."
+  ],
+  "second_pass": "Confirmed on Windows: bg3.exe+0x1AD5CE0 (~UpdateMessageBoxes) appends to the arrays at +0 and +0x10 with element stride 0x28 and writes int16 +0, byte +2, FixedString +4, STDString +8 and the 16-bit optional word at +0x20; creator bg3.exe+0x1AD76C0 allocates and zeroes 0x20 bytes. The std::optional<uint8_t> of the first version is now a value byte plus a flag byte (build types only).",
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

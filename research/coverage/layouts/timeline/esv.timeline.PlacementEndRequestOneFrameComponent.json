@@ -1,0 +1,24 @@
+{
+  "component": "esv::timeline::PlacementEndRequestOneFrameComponent",
+  "ext_name": "ServerTimelinePlacementEndRequest",
+  "size": 4,
+  "fields": [
+    {
+      "name": "DialogInstanceId",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x33053E0 (~esv::TimelineSystem::StopBehaviorTimelinePlacement(WorldView&, unsigned int, bool, unsigned int)) creates the component (bg3.exe+0x3311AE0) and stores its first unsigned int argument, the key of the system's placement maps (system +0x608 / +0x648); the same value goes into esv::timeline::PlacementStartRequestOneFrameComponent+0x70."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "That the unsigned int is the dialog instance id (as elsewhere in esv::TimelineSystem) and not a separate placement id is not proven; 48 live instances hold small ints 5..0x6A."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "second_pass": "Width and offset are from Windows (bg3.exe+0x33053E0 stores its first unsigned int argument); live values 5..0x6A agree.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,53 @@
+{
+  "component": "esv::timeline::PlayerFadeInEventOneFrameComponent",
+  "ext_name": "ServerTimelinePlayerFadeInEvent",
+  "size": 40,
+  "fields": [
+    {
+      "name": "User",
+      "offset": 0,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D10A20 (esv::timeline::FadeSystem) creates one component on a new entity (bg3.exe+0x2D124E0, default = the invalid user id constant) per user of an esv::timeline::DeferredEndingStateComponent whose fade-in finished or timed out, and stores the 4-byte user id."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "Fade",
+      "offset": 8,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2D10A20 copy-constructs it from the string at +0 of the deferred ending state (default empty, capacity 15)."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x2D10A20 copies the dword at +0x50 of the deferred ending state. The consumer bg3.exe+0x3451800 (query of added PlayerFadeInEventOneFrameComponent, called from the per-frame update of esv::script::GameplayEventSystem) calls every registered listener with (component, component + 8, this dword)."
+    },
+    {
+      "name": "_Pad24",
+      "offset": 36,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "field_20: probably the dialog instance id (same values as esv::timeline::DeferredEndingStateComponent+0x50, live 1..0x11C), not proven; the listener of esv::script::GameplayEventSystem was not identified.",
+    "Registered as a regular component (ComponentTypeIdContext) although named OneFrame."
+  ],
+  "minutes": 11,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Offsets and widths are Windows-side (bg3.exe+0x2D10A20 writer, bg3.exe+0x3451800 reader passing +0, +8 and the dword at +0x20); 24 live instances agree (user 0x10001 at +0, STDString at +8). STDString is a builtin of generate.py now (24 bytes), so the earlier external_types override was removed.",
+  "raw_check": "24 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

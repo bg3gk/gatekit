@@ -1,0 +1,61 @@
+{
+  "component": "ecl::sound::MixStateRTPCRequestsSingletonComponent",
+  "ext_name": "ClientSoundMixStateRTPCRequestsSingleton",
+  "size": 32,
+  "seen": true,
+  "structs": [
+    {
+      "name": "MixStateRTPCRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Element is ls::GameplaySoundRTPCRequest (IndexedStorage<ls::GameplaySoundRTPCRequest> in MixStateSystem::SetMixRTPC, EoCClient.dll+0xDA7BC0). Its constructor GameEngine.dll+0x1C42A0 (ID<EntityHandleTraits>, FixedString, float) stores the handle at +0. SetMixRTPC passes a global (null) handle."
+        },
+        {
+          "name": "RTPC",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "GameplaySoundRTPCRequest ctor stores the FixedString at +8; SetMixRTPC builds \"Gameplay_Prepare...<magnitude>_Compensation_RTPC\"."
+        },
+        {
+          "name": "Value",
+          "offset": 12,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "GameplaySoundRTPCRequest ctor stores the float at +0xC."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "ResetRTPCs",
+      "offset": 0,
+      "type": "Array<FixedString>",
+      "source": "inferred",
+      "evidence": "Element is ls::GameplaySoundResetRTPCRequest, whose only member is a FixedString (copy ctor GameEngine.dll+0x1C4380 copies one FixedString); MixStateSystem::ResetMixRTPC (EoCClient.dll+0xDA77E0) appends to FrameData+0x40 with stride 4, and ProcessSingletonRequests (EoCClient.dll+0xDA6680) moves FrameData+0x40 into singleton+0 (after clearing it with FUN_180da7730). Consumed by InterfaceSystem::ProcessMixStateRTPCGlobalResetRequests."
+    },
+    {
+      "name": "SetRTPCs",
+      "offset": 16,
+      "type": "Array<MixStateRTPCRequest>",
+      "source": "inferred",
+      "evidence": "ProcessSingletonRequests moves FrameData+0x50 (IndexedStorage<ls::GameplaySoundRTPCRequest>, stride 0x10, filled by SetMixRTPC) into singleton+0x10. Consumed by InterfaceSystem::ProcessMixStateRTPCRequests."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names are ours; element struct names come from the game (ls::GameplaySoundResetRTPCRequest, ls::GameplaySoundRTPCRequest).",
+    "Only empty instances were seen."
+  ],
+  "minutes": 6,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

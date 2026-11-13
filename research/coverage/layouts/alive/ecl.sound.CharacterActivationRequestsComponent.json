@@ -1,0 +1,226 @@
+{
+  "component": "ecl::sound::CharacterActivationRequestsComponent",
+  "ext_name": "ClientSoundCharacterActivationRequests",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CharacterSoundSwitchRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::character::SoundSystem::ProcessCharacterSoundActivationRequests (EoCClient.dll+0xEB4740) passes element+0 as the entity."
+        },
+        {
+          "name": "SoundObjectIndex",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same function passes (uint)(byte)element[8] as ls::ESoundObjectIndex (SE uses uint8_t SoundObjectIndex elsewhere)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "FixedString follows at +0xC."
+        },
+        {
+          "name": "SwitchGroup",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Passed as 3rd argument of ecl::character::SoundSystem::SetSwitch(EntityHandle const&, ESoundObjectIndex, FixedString const& group, FixedString const& state)."
+        },
+        {
+          "name": "Switch",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "4th argument of SetSwitch."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Stride 0x18."
+        }
+      ]
+    },
+    {
+      "name": "CharacterSoundPlayRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::character::SoundSystem::ProcessCharacterSoundActivationRequests (EoCClient.dll+0xEB4740) passes element+0 as the entity."
+        },
+        {
+          "name": "SoundObjectIndex",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same function passes (uint)(byte)element[8] as ls::ESoundObjectIndex (SE uses uint8_t SoundObjectIndex elsewhere)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "FixedString follows at +0xC."
+        },
+        {
+          "name": "Event",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Passed to SoundSystem::PlaySound(EntityHandle const&, ESoundObjectIndex, FixedString const&, ...) with stride 0x10."
+        }
+      ]
+    },
+    {
+      "name": "CharacterSoundPlayResourceRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::character::SoundSystem::ProcessCharacterSoundActivationRequests (EoCClient.dll+0xEB4740) passes element+0 as the entity."
+        },
+        {
+          "name": "SoundObjectIndex",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same function passes (uint)(byte)element[8] as ls::ESoundObjectIndex (SE uses uint8_t SoundObjectIndex elsewhere)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "FixedString follows at +0xC."
+        },
+        {
+          "name": "Resource",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Looked up with ls::ResourceManager::GetSound, the result passed to PlaySound(..., SoundEvent const*, unsigned int, ...)."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint32_t",
+          "source": "unknown",
+          "evidence": "Passed as the unsigned int argument of PlaySound (Toolkit signature: ..., unsigned int, float, FixedString const&, SoundCallback*)."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Stride 0x18."
+        }
+      ]
+    },
+    {
+      "name": "CharacterSoundSetRTPCRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::character::SoundSystem::ProcessCharacterSoundActivationRequests (EoCClient.dll+0xEB4740) passes element+0 as the entity."
+        },
+        {
+          "name": "SoundObjectIndex",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Same function passes (uint)(byte)element[8] as ls::ESoundObjectIndex (SE uses uint8_t SoundObjectIndex elsewhere)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "FixedString follows at +0xC."
+        },
+        {
+          "name": "RTPC",
+          "offset": 12,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Copied into an RTPC request with the entity and the value at +0x10 (FUN_180eb1510)."
+        },
+        {
+          "name": "Value",
+          "offset": 16,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "4 bytes copied as the RTPC value (SetRTPC signature takes float)."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Stride 0x18."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "SwitchRequests",
+      "offset": 0,
+      "type": "Array<CharacterSoundSwitchRequest>",
+      "source": "inferred",
+      "evidence": "Game name CharacterActivationRequestsComponent::CharacterSwitchRequest (macOS DynamicArray instantiations; destructor order SetRTPC, PlayResource, Play, Switch = reverse member order). Stride 0x18 in ProcessCharacterSoundActivationRequests. Live capacity up to 0x1000."
+    },
+    {
+      "name": "PlayRequests",
+      "offset": 16,
+      "type": "Array<CharacterSoundPlayRequest>",
+      "source": "inferred",
+      "evidence": "Game name ...::CharacterPlayRequest; stride 0x10, array at +0x10/size +0x1C."
+    },
+    {
+      "name": "PlayResourceRequests",
+      "offset": 32,
+      "type": "Array<CharacterSoundPlayResourceRequest>",
+      "source": "inferred",
+      "evidence": "Game name ...::CharacterPlayResourceRequest; stride 0x18, array at +0x20/size +0x2C."
+    },
+    {
+      "name": "SetRTPCRequests",
+      "offset": 48,
+      "type": "Array<CharacterSoundSetRTPCRequest>",
+      "source": "inferred",
+      "evidence": "Game name ...::CharacterSetRTPCRequest; stride 0x18, array at +0x30/size +0x3C."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "field_10 of the play-resource request (an unsigned int passed to PlaySound, maybe a seek/offset).",
+    "Member names inside the requests are ours."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

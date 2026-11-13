@@ -1,0 +1,53 @@
+{
+  "component": "esv::profile::UpdateRequestOneFrameComponent",
+  "ext_name": "ServerProfileUpdateRequest",
+  "size": 12,
+  "seen": true,
+  "summary": "Server one-frame event entity of esv::profile::ManagementSystem: one per (user, profile setting) change queued in the system's HashMap<net::UserID, HashMap<FixedString, UpdateData>>; ProcessUpdateRequests creates a fresh entity with this component for each pair and ClearOneFrameComponents removes them. Read by esv::notification::System. Seen.py context: appears during dialogues, fights, jumps, events and explorations - i.e. whenever the player's profile flags change (one holder at a time).",
+  "fields": [
+    {
+      "name": "User",
+      "offset": 0,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x8168A0 ProcessUpdateRequests copies the outer map key (net::UserID, 4 bytes; macOS: ls::HashMap<net::UserID, ls::HashMap<ls::FixedString, esv::profile::ManagementSystem::UpdateData>>) to +0. bg3.exe+0x2F377A0 default: a global (invalid user id). Live: always 0x10001 (user 1)."
+    },
+    {
+      "name": "Key",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "FixedString::operator= from the inner map key (the profile setting name). Default 0xFFFFFFFF (null FixedString)."
+    },
+    {
+      "name": "Value",
+      "offset": 8,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Copied from UpdateData byte 0 when its byte 1 is set (ls::Optional<bool> assignment). Live: 1."
+    },
+    {
+      "name": "HasValue",
+      "offset": 9,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Set to 1 together with Value (Optional engaged flag); default 0 in bg3.exe+0x2F377A0. Live: 1."
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "Padding to 12 bytes (live: uninitialised bytes)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Name of the FixedString (which profile setting) and whether +8/+9 are an ls::Optional<bool> (likely)."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

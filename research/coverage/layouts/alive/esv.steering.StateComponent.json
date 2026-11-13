@@ -1,0 +1,68 @@
+{
+  "component": "esv::steering::StateComponent",
+  "ext_name": "ServerSteeringState",
+  "size": 24,
+  "seen": true,
+  "summary": "Current steering target of an entity, written by esv::steering::StateSystem::ProcessSteering (Toolkit EoCServer.dll+0x9BE470): the first 0x14 bytes of the started esv::steering::Request plus a re-randomised timer. Seen.py context: born with ChangedOneFrameComponent at the first shove/throw step; up to 5 holders.",
+  "structs": [
+    {
+      "name": "SteeringStateTarget",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Data",
+          "offset": 0,
+          "type": "std::array<uint32_t, 3>",
+          "source": "inferred",
+          "evidence": "Storage of ls::Variant<eoc::steering::ToDirection, eoc::steering::ToEntity>: a vec3 direction (floats) or an EntityHandle at +0. Same layout as ChangedOneFrameComponent.Target."
+        },
+        {
+          "name": "Type",
+          "offset": 12,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Variant index (0 = ToDirection, 1 = ToEntity). Live: 0/1."
+        },
+        {
+          "name": "_PadD",
+          "offset": 13,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "SteeringStateTarget",
+      "source": "inferred",
+      "evidence": "ProcessSteering copies two qwords from the request to +0 (EoCServer.dll+0x9BE470, lines after FUN_1809b7640). Creator bg3.exe+0x2B495A0 zeroes 0x18."
+    },
+    {
+      "name": "Flags",
+      "offset": 16,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Copied 4 bytes from request +0x10; ProcessSteering tests bit 1 (angle check), bits 2 and 3 ((flags & 0xC) == 0xC) of *(uint*)(state+0x10). Live: 0 / 0xF."
+    },
+    {
+      "name": "Timer",
+      "offset": 20,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Set to ls::Random::GenerateRand(2.0, 5.0) on start and when it expires; decremented by GetDeltaTimeForEntity each frame (EoCServer.dll+0x9BE470). Live: 0.96 .. 2.18."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the Flags bits."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

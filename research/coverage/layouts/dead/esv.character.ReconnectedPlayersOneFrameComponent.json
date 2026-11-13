@@ -1,0 +1,34 @@
+{
+  "component": "esv::character::ReconnectedPlayersOneFrameComponent",
+  "ext_name": "ServerCharacterReconnectedPlayers",
+  "size": 56,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Event of esv::CharacterManager telling esv::party::PartySystem (ProcessPlayerReconnecting) that users reconnected for a character: the character's handle and the set of user ids. Registered as a normal (not one-frame-typed) component although named OneFrame. Created by bg3.exe+0x3335E20 (AllocRaw 0x38) from bg3.exe+0x3323880 (CharacterManager per-frame helper), which writes the handle and inserts 4-byte ids into the set. Never seen alive. Registry total 56 (server row).",
+  "fields": [
+    {
+      "name": "Character",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3335E20 writes 0xffc0000000000000 (null EntityHandle) at +0; writer bg3.exe+0x3323880 line ~504 `*plVar16 = *plVar14` (an entity of a handle list). Toolkit esv::party::PartySystem::ProcessPlayerReconnecting (EoCServer.dll+0xAB1FB0) checks `*(longlong*)comp` is a valid handle (< 0x61 type, != 0xffc0000000000000) and looks it up in the entity storage."
+    },
+    {
+      "name": "Users",
+      "offset": 8,
+      "type": "HashSet<UserId>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +8..+0x37 in the HashSet pattern (buckets +8/+0x10, next ids +0x18/+0x24, keys +0x28/+0x34). Writer bg3.exe+0x3323880 lines 505-511: for each 4-byte key of a source set (keys at +0x20, count +0x2C, i.e. a HashSet) `FUN_140bdcf90(comp + 8, ..., key)` = set insert with 4-byte elements. Toolkit ProcessPlayerReconnecting requires `*(int*)(comp+0x34) != 0` (keys count) and iterates the keys array at +0x28, logging 'evaluating player (%s, %s)'. (The Toolkit build steps the keys by 8 in a helper, bg3.exe by 4.)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Key type: 4-byte in bg3.exe (UserId assumed from the 'player' log text and the source set); the Toolkit helper FUN_180aac710 steps 8 bytes - build difference.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 12,
+  "functions_read": 6,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

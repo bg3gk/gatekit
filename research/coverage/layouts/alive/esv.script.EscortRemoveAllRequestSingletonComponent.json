@@ -1,0 +1,55 @@
+{
+  "component": "esv::script::EscortRemoveAllRequestSingletonComponent",
+  "ext_name": "ServerScriptEscortRemoveAllRequests",
+  "size": 16,
+  "seen": true,
+  "summary": "Server singleton: Osiris requests to dissolve an escort group (ls::Variant alternative 4 of esv::script::RequestSystem's requests). Pushed by the Osiris call at EoCServer.dll+0x126B1F0 (one string argument, probably EscortRemoveAll(group)); filled by esv::script::RequestSystem::ProcessEmitRequests. Seen.py context: singleton present in the idle level, all zero.",
+  "structs": [
+    {
+      "name": "EscortRemoveAllRequestsEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "RequestEntity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "esv::script::Requester<T> +0: request entity copied by EoCServer.dll+0x4FA900."
+        },
+        {
+          "name": "Group",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "The request's only member: EoCServer.dll+0x126B1F0 creates it from the Osiris string argument; EoCServer.dll+0x4FA900 case 4 copy-constructs it at +8."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "Padding to the 0x10 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<EscortRemoveAllRequestsEntry>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x4FA900 case 4: assert ls::IndexedStorage<esv::script::Requester<esv::script::EscortRemoveAllRequest>>, stride 0x10."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name of the Osiris function at EoCServer.dll+0x126B1F0 not confirmed."
+  ],
+  "minutes": 3,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

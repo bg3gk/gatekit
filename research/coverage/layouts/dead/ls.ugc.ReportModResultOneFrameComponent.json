@@ -1,0 +1,26 @@
+{
+  "component": "ls::ugc::ReportModResultOneFrameComponent",
+  "ext_name": "UgcReportModResult",
+  "size": 8,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame result of reporting a mod to mod.io (client only, registry total 8). ls::PublishingSystem (per-frame update bg3.exe+0x3BDE2A0; Toolkit GameEngine.dll ls::PublishingSystem::Process*Requests) creates it on a new entity from a request queued by the matching HandleUGC... callback of the mod.io back-end; the same frame also gets a UGCRequestResultOneFrameComponent with the net::UGCResult and request Guid. Request queue filled by HandleUGCItemReported(unsigned __int64, net::UGCResult); drained by bg3.exe+0x3BDF3C0.",
+  "fields": [
+    {
+      "name": "ModId",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3BE1860 allocates 8 bytes and zeroes them; bg3.exe+0x3BDF3C0 stores the request's first qword (the unsigned __int64 mod id of HandleUGCItemReported; request stride 0x40: id +0, UGCResult +8, Guid +0x30) into +0. Toolkit GameEngine.dll ProcessUGCItemReportedRequests does the same (`*comp = *request`)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive."
+  ],
+  "minutes": 4,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

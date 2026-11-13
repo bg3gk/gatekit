@@ -1,0 +1,59 @@
+{
+  "component": "ecl::timeline::RenderFrameVisibilityRequestsComponent",
+  "ext_name": "ClientTimelineRenderFrameVisibilityRequests",
+  "size": 16,
+  "structs": [
+    {
+      "name": "TimelineRenderFrameVisibilityRequest",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Toolkit build, ecl::TLPreviewDummyHelpers::SetDummyVisibility(RenderFrameVisibilityRequestsComponent*, ecs::EntityRef const&, bool, short const&) at EoCClient.dll+0xA99830: the handle of the EntityRef is the first 8 bytes of the 16-byte element pushed with EoCClient.dll+0x67EFA0."
+        },
+        {
+          "name": "PlayerId",
+          "offset": 8,
+          "type": "int16_t",
+          "source": "inferred",
+          "evidence": "Same function: the 'short const&' argument is stored at +8. The game caller bg3.exe+0x1D51B60 passes each entry of the timeline's int16 player list (bg3.exe+0x1F916C0), i.e. Script Extender's PlayerId (int16_t)."
+        },
+        {
+          "name": "Visible",
+          "offset": 10,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Same function: the bool argument is stored at +10."
+        },
+        {
+          "name": "_PadB",
+          "offset": 11,
+          "type": "uint8_t[5]",
+          "source": "inferred",
+          "evidence": "tail padding to the 16-byte stride"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<TimelineRenderFrameVisibilityRequest>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A4BF00 creates the component as an empty array (pointer 0, capacity 0, size 0) and registers the array destructor thunk bg3.exe+0x5946C0. The component argument of SetDummyVisibility is used directly as the array (EoCClient.dll+0x67EFA0: growth with element size 0x10, alignment 8). Live: heap pointer, capacity 256, size 0 (requests are consumed every frame)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Lives on one entity created by bg3.exe+0x1A42FF0 together with the character / character_creation / crowds / character_lights RenderFrameVisibilityRequests components; those were not checked but are consumed by the same query (bg3.exe+0x1A4F9E0) and very likely have the same element."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

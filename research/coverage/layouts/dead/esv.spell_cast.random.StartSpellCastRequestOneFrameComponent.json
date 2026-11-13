@@ -1,0 +1,403 @@
+{
+  "component": "esv::spell_cast::random::StartSpellCastRequestOneFrameComponent",
+  "ext_name": "ServerSpellCastRandomStartSpellCastRequest",
+  "size": 192,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Request to start the cast of a randomly chosen spell; created by bg3.exe+0x332C980 (called from the per-frame update of esv::CharacterManager) and read by esv::spell_cast::CastRequestSystem::CollectSpellCastRequests (macOS). Its layout is Script Extender's esv::spell_cast::CastStartRequest (SpellCast.h) up to +0xB8 WITHOUT the trailing RequestGuid (component is 0xC0, CastStartRequest with RequestGuid would be 0xD0).",
+  "structs": [
+    {
+      "name": "SpellCastRandomStartSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Equals Script Extender's SpellId (ExposedTypes.h); destructor bg3.exe+0x22D6020 ends with eoc::spell::SpellId::~SpellId(comp). Creator writes 0xFFFFFFFF."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "creator writes byte 0x17 (SpellSourceType::Sentinel)"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "creator zeroes +0x10..+0x20"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "creator zeroes +0x20..+0x30"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "creator writes 0xFFFFFFFF at +0x30"
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    },
+    {
+      "name": "SpellCastRandomStartBaseTarget",
+      "size": 48,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Equals Script Extender's BaseTarget (SpellCastShared.h). Array relocation bg3.exe+0x6D9FE0 writes vtable PTR_FUN_1454DB050 here for the nested target."
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "8-byte copy at +8"
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "std::optional<EntityHandle>: 8-byte copies at +0x10 and +0x18"
+        },
+        {
+          "name": "TargetProxyHasValue",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag"
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "std::optional<glm::vec3>: 16 bytes copied as four 4-byte values at +0x20"
+        },
+        {
+          "name": "PositionHasValue",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag"
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding to 0x30"
+        }
+      ]
+    },
+    {
+      "name": "SpellCastRandomStartInitialTarget",
+      "size": 112,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "Equals Script Extender's InitialTarget (SpellCastShared.h). bg3.exe+0x6D9FE0 (resize of the array at comp+0x48, stride 0x70) writes vtable PTR_FUN_1454DB080 at +0."
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "8-byte copy at +8"
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "8-byte copies at +0x10/+0x18"
+        },
+        {
+          "name": "TargetProxyHasValue",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag"
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "16 bytes copied at +0x20"
+        },
+        {
+          "name": "PositionHasValue",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "optional flag"
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "TargetingType",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "byte copy at +0x30 (SpellType enum, 1 byte)"
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Target2",
+          "offset": 56,
+          "type": "SpellCastRandomStartBaseTarget",
+          "source": "inferred",
+          "evidence": "std::optional<BaseTarget>: constructed at +0x38 only when the byte at +0x68 is set; its virtual destructor is called through *(+0x38)"
+        },
+        {
+          "name": "Target2HasValue",
+          "offset": 104,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "flag at +0x68 tested and cleared in bg3.exe+0x6D9FE0"
+        },
+        {
+          "name": "_Pad69",
+          "offset": 105,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to 0x70"
+        }
+      ]
+    },
+    {
+      "name": "SpellCastRandomStartActionOriginator",
+      "size": 32,
+      "fields": [
+        {
+          "name": "ActionGuid",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "Equals Script Extender's ActionOriginator (ExposedTypes.h); creator copies the null Guid DAT_14625AAD0 to comp+0x58; destructor FUN_140A54E60(comp + 0x58)."
+        },
+        {
+          "name": "PassiveId",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "creator: 8-byte 0xFFFFFFFFFFFFFFFF at comp+0x68"
+        },
+        {
+          "name": "StatusId",
+          "offset": 20,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "see PassiveId"
+        },
+        {
+          "name": "InterruptId",
+          "offset": 24,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "creator: 0xFFFFFFFF at comp+0x70"
+        },
+        {
+          "name": "CanApplyConcentration",
+          "offset": 28,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "creator: byte 1 at comp+0x74"
+        },
+        {
+          "name": "_Pad1D",
+          "offset": 29,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Spell",
+      "offset": 0,
+      "type": "SpellCastRandomStartSpellId",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x3335FE0 initialises a SpellId at +0..+0x38; destructor bg3.exe+0x22D6020 ends with SpellId::~SpellId(comp). Name from CastStartRequest.Spell."
+    },
+    {
+      "name": "CastOptions",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "creator writes 4-byte 0 at +0x38; CastStartRequest.CastOptions (SpellCastOptions flags, 4 bytes) sits here."
+    },
+    {
+      "name": "_Pad3C",
+      "offset": 60,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding before the handle"
+    },
+    {
+      "name": "Caster",
+      "offset": 64,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "creator writes 0xFFC0000000000000 at +0x40; CastStartRequest.Caster."
+    },
+    {
+      "name": "Targets",
+      "offset": 72,
+      "type": "Array<SpellCastRandomStartInitialTarget>",
+      "source": "inferred",
+      "evidence": "creator zeroes +0x48 ptr, +0x50 capacity, +0x54 size; destructor FUN_1406D9FE0(comp + 0x48, 0) - element stride 0x70, InitialTarget vtable."
+    },
+    {
+      "name": "Originator",
+      "offset": 88,
+      "type": "SpellCastRandomStartActionOriginator",
+      "source": "inferred",
+      "evidence": "creator +0x58..+0x78 (null Guid, -1 FixedStrings, byte 1); destructor FUN_140A54E60(comp + 0x58)."
+    },
+    {
+      "name": "Item",
+      "offset": 120,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "creator writes the null handle at +0x78; CastStartRequest.Item."
+    },
+    {
+      "name": "field_80",
+      "offset": 128,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "creator writes the null handle at +0x80; CastStartRequest.field_70 in Script Extender (its offset there is +0x80 too)."
+    },
+    {
+      "name": "CastPosition",
+      "offset": 136,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "std::optional<glm::vec3>: creator zeroes +0x88 and +0x90 (8-byte stores) and the byte +0x94; CastStartRequest.CastPosition."
+    },
+    {
+      "name": "CastPositionHasValue",
+      "offset": 148,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "creator writes byte 0 at +0x94"
+    },
+    {
+      "name": "_Pad95",
+      "offset": 149,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding"
+    },
+    {
+      "name": "StoryActionId",
+      "offset": 152,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "creator writes 4-byte 0 at +0x98; CastStartRequest.StoryActionId."
+    },
+    {
+      "name": "_Pad9C",
+      "offset": 156,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding before the string"
+    },
+    {
+      "name": "NetGuid",
+      "offset": 160,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "creator: +0xA0 = 0, +0xA8 = 0, +0xB0 size 0, +0xB4 capacity 0xF, first byte 0; destructor frees +0xA0 when capacity > 0xF. CastStartRequest.NetGuid."
+    },
+    {
+      "name": "field_B8",
+      "offset": 184,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "creator writes byte 1 at +0xB8; CastStartRequest.field_A8 (default 1) in Script Extender."
+    },
+    {
+      "name": "_PadB9",
+      "offset": 185,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding to 0xC0 = registry size; no RequestGuid here"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Field names come from Script Extender's esv::spell_cast::CastStartRequest; offsets and defaults are from the Windows creator and destructor. The copy function bg3.exe+0x32D6960 (request -> component) was not read.",
+    "Script Extender's CastStartRequest has a Guid RequestGuid after field_A8 (would end at 0xD0); this component stops at 0xC0."
+  ],
+  "minutes": 10,
+  "functions_read": 3,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

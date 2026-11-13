@@ -1,0 +1,38 @@
+{
+  "component": "ecl::TimelineActorLeftEventOneFrameComponent",
+  "ext_name": "ClientTimelineActorLeftEvent",
+  "size": 176,
+  "fields": [
+    {
+      "name": "ActorGuids",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Guid>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1D4E250 (called from ecl::TimelineSystem update bg3.exe+0x1D41270) drains ecl::TimelineSystem::ActorLeftEventRequests (system +0x710, stride 0x30 = Script Extender TimelineActorLeftEventRequest {Timeline, PlayerIndex, Actor, ActorGuid, DialogInstanceId}); component created on request.Timeline by bg3.exe+0x1D711F0. Inserts key request.Actor (8 bytes, FUN_14127f6f0) and writes 16 bytes of request.ActorGuid to 'values(+0x30) + index * 0x10'. Probe: 5 hash buckets, 1 key, 1 value."
+    },
+    {
+      "name": "ActorPlayers",
+      "offset": 64,
+      "type": "HashMap<EntityHandle, PlayerId>",
+      "source": "inferred",
+      "evidence": "Same function: key = the actor entity, or qword +0x88 of a component of the actor when FUN_1413fb710 finds one (owner/original entity), skipped when it is the null handle; inserted with the 8-byte set insert on comp+0x40; value array at comp+0x70 is regrown with 2-byte elements and 'values[index] = (int16) request.PlayerIndex'. Probe: 5 buckets, 1 key, 1 value."
+    },
+    {
+      "name": "Players",
+      "offset": 128,
+      "type": "HashSet<PlayerId>",
+      "source": "inferred",
+      "evidence": "Same function: 'if (request.PlayerIndex != 0) FUN_140796c40(comp + 0x80, .., &request.PlayerIndex)' - the int16 set insert used for player sets elsewhere. Probe: 5 buckets, 1 key."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Key of ActorPlayers: which component bg3.exe+0x13FB710 fetches (its +0x88 handle replaces the actor) was not resolved.",
+    "Member names are descriptive."
+  ],
+  "minutes": 8,
+  "functions_read": 2,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

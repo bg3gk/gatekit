@@ -1,0 +1,55 @@
+{
+  "component": "eoc::platform::MoveOnSplineProgressComponent",
+  "ext_name": "PlatformMoveOnSplineProgress",
+  "size": 24,
+  "fields": [
+    {
+      "name": "Progress",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Toolkit EoCShared.dll+0xDBDBA0 (called from eoc::platform::MovePlatform EoCShared.dll+0xDBD980 with this component as param_4): *param_4 compared with 1.0, advanced by dt*speed/length, reset to 0.0/1.0 - fraction along the current spline segment; Windows save loader bg3.exe+0x25885B0 (model ls::model::game::platform::v0::MoveOnSplineProgressComponent, 12 bytes, align 4; member names unknown) creates the component with ComponentFrameStorageAllocRaw(0x18) and copies model +4 to component +0 (4 bytes)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "same function: param_4[1] used as an integer-valued float (cast to int, +/-1) - current point/segment index; Windows save loader bg3.exe+0x25885B0 (model ls::model::game::platform::v0::MoveOnSplineProgressComponent, 12 bytes, align 4; member names unknown) creates the component with ComponentFrameStorageAllocRaw(0x18) and copies model +8 to component +4 (4 bytes)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "same function: *(int64*)(param_4+2) checked for 0xFFC0000000000000 and type bits (EntityHandle validity), then passed to world lookups; Windows save loader bg3.exe+0x25885B0 (model ls::model::game::platform::v0::MoveOnSplineProgressComponent, 12 bytes, align 4; member names unknown) creates the component with ComponentFrameStorageAllocRaw(0x18) and writes 0xFFC0000000000000 (null EntityHandle) at +8: not saved."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "same function: param_4[4] accumulates dt and is compared with a wait time read from the spline point (+0x20); reset to 0; Windows save loader bg3.exe+0x25885B0 (model ls::model::game::platform::v0::MoveOnSplineProgressComponent, 12 bytes, align 4; member names unknown) creates the component with ComponentFrameStorageAllocRaw(0x18) and zeroes the qword at +0x10 (both timers): not saved."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "same function: param_4[5] accumulates dt; reset when >= 6.0; zeroed by the Windows loader together with +0x10."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "Windows confirms +0 (4), +4 (4), +8 (8, null-handle default) and the zeroed qword at +0x10; its split into two 4-byte float timers rests on the Toolkit EoCShared.dll+0xDBDBA0 only (no Windows counterpart was matched by decomp.py matches).",
+    "Model +0 (4 bytes) is not copied into the component by the loader; its meaning was not checked."
+  ],
+  "seen": false,
+  "minutes": 16,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "The Windows save loader bg3.exe+0x25885B0 confirms size 0x18, the two 4-byte values at +0/+4, the entity handle at +8 (null default) and a zeroed qword at +0x10; the two-float split of that qword is still Toolkit-only, so confidence stays medium."
+}

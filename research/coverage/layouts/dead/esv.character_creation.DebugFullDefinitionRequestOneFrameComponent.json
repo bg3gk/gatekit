@@ -1,0 +1,398 @@
+{
+  "component": "esv::character_creation::DebugFullDefinitionRequestOneFrameComponent",
+  "ext_name": "ServerCCDebugFullDefinitionRequest",
+  "size": 448,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Debug request of server character creation carrying a complete character definition: the same memory as SE's character_creation::FullRespecDefinition (Components/CharacterCreation.h: Name, BaseCharacterDefinition, Appearance, Abilities, Array<LevelUpData>, Array<LevelUpKnownSpell>), redeclared here. Written by esv::character_creation::ChangeAppearanceSubsystem::Update/Abort and RespecSubsystem::Update (macOS), read by bg3.exe+0x2DBB770 (~ esv::party_preset::System::SystemLoad) and bg3.exe+0x37A3E40. Registered as a normal component although named OneFrame. Windows differs from SE in one place: the LevelUpData element is 0xE0 bytes (Spells array at +0xD0), not SE's 0xC0. Never seen alive. Registry total 448 (server row).",
+  "structs": [
+    {
+      "name": "DbgFullDefMaterialSetting",
+      "size": 48,
+      "fields": [
+        {
+          "name": "Material",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE AppearanceMaterialSetting (CharacterCreation.h)."
+        },
+        {
+          "name": "Color",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE AppearanceMaterialSetting.Color."
+        },
+        {
+          "name": "ColorIntensity",
+          "offset": 32,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "SE."
+        },
+        {
+          "name": "MetallicTint",
+          "offset": 36,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "SE."
+        },
+        {
+          "name": "GlossyTint",
+          "offset": 40,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "SE."
+        },
+        {
+          "name": "_Pad2C",
+          "offset": 44,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to 8-byte alignment of the Guids (stride not checked on Windows; the array is trivially destructible)."
+        }
+      ]
+    },
+    {
+      "name": "DbgFullDefSpellMetaId",
+      "size": 48,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId (Base/ExposedTypes.h); element destructor bg3.exe+0x67D5E0 DecRefs a FixedString per 0x30-byte element."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "SE _Pad."
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellSourceType (1 byte)."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding."
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.Source."
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.ProgressionSource; stride 0x30 from bg3.exe+0x67D5E0."
+        }
+      ]
+    },
+    {
+      "name": "DbgFullDefLevelUpData",
+      "size": 224,
+      "fields": [
+        {
+          "name": "Class",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE LevelUpData (Progression.h)."
+        },
+        {
+          "name": "SubClass",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE."
+        },
+        {
+          "name": "Feat",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE."
+        },
+        {
+          "name": "AccessorySet",
+          "offset": 48,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE."
+        },
+        {
+          "name": "Abilities",
+          "offset": 64,
+          "type": "std::array<int32_t, 7>",
+          "source": "inferred",
+          "evidence": "SE std::array<int, 7>."
+        },
+        {
+          "name": "_Pad5C",
+          "offset": 92,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding."
+        },
+        {
+          "name": "Upgrades",
+          "offset": 96,
+          "type": "uint8_t[112]",
+          "source": "inferred",
+          "evidence": "SE LevelUpUpgrades, kept as bytes: on Windows it is 0x70 bytes - bg3.exe+0xAF2390 destroys it with bg3.exe+0x5F18C0 at element +0x60, which frees arrays at its +0x20..+0x60 (SE's layout of LevelUpUpgrades is shorter; not redeclared)."
+        },
+        {
+          "name": "Spells",
+          "offset": 208,
+          "type": "Array<DbgFullDefSpellMetaId>",
+          "source": "inferred",
+          "evidence": "bg3.exe+0xAF2390 destroys an Array at element +0xD0 with bg3.exe+0x67D5E0 (stride 0x30, SpellMetaId); SE has it at +0xB0 (outdated for this build)."
+        }
+      ]
+    },
+    {
+      "name": "DbgFullDefKnownSpell",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Class",
+          "offset": 0,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE LevelUpKnownSpell (CharacterCreation.h)."
+        },
+        {
+          "name": "SpellId",
+          "offset": 16,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "bg3.exe+0xAF25F0 DecRefs the FixedString at element +0x10, stride 0x18."
+        },
+        {
+          "name": "_Pad14",
+          "offset": 20,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "padding to the stride 0x18."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Name",
+      "offset": 0,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2DC16A0 (AllocRaw 0x1C0) builds an empty STDString at +0 (size 0 at +0x10, capacity 0xF at +0x14); destructor bg3.exe+0xA557B0 frees it when capacity > 0xF. SE FullRespecDefinition.Name."
+    },
+    {
+      "name": "Origin",
+      "offset": 24,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator copies the null Guid constant DAT_14625aad0 to +0x18; SE BaseCharacterDefinition.Origin."
+    },
+    {
+      "name": "Race",
+      "offset": 40,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "null Guid at +0x28; SE Race."
+    },
+    {
+      "name": "Subrace",
+      "offset": 56,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "null Guid at +0x38; SE Subrace."
+    },
+    {
+      "name": "BodyType",
+      "offset": 72,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator zeroes the uint16 at +0x48 (two bytes); SE BodyType."
+    },
+    {
+      "name": "BodyShape",
+      "offset": 73,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "second byte at +0x49; SE BodyShape."
+    },
+    {
+      "name": "_Pad4A",
+      "offset": 74,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "padding."
+    },
+    {
+      "name": "RootTemplate",
+      "offset": 80,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "null Guid at +0x50; SE RootTemplate."
+    },
+    {
+      "name": "Background",
+      "offset": 96,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "null Guid at +0x60; SE Background."
+    },
+    {
+      "name": "Deity",
+      "offset": 112,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "null Guid at +0x70; SE Deity."
+    },
+    {
+      "name": "Voice",
+      "offset": 128,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "null Guid at +0x80 (dword stores); SE Voice."
+    },
+    {
+      "name": "VOLines",
+      "offset": 144,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "null Guid at +0x90; SE VOLines."
+    },
+    {
+      "name": "field_A0",
+      "offset": 160,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator writes 3 to the byte +0xA0; SE BaseCharacterDefinition.field_A8 (unnamed)."
+    },
+    {
+      "name": "_PadA1",
+      "offset": 161,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding."
+    },
+    {
+      "name": "Icon",
+      "offset": 168,
+      "type": "uint8_t[88]",
+      "source": "inferred",
+      "evidence": "SE ScratchBuffer (Appearance.Icon), kept as bytes: the Appearance block starts at +0xA8 (creator calls its constructor bg3.exe+0x5F14D0 there; destructor bg3.exe+0x6CF220 ends with the ScratchBuffer destructor bg3.exe+0x5F1670 at block +0, which frees owned buffers flagged at +0 and +0x18)."
+    },
+    {
+      "name": "HairColor",
+      "offset": 256,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "SE Appearance.HairColor (block +0x58)."
+    },
+    {
+      "name": "SkinColor",
+      "offset": 272,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "SE Appearance.SkinColor."
+    },
+    {
+      "name": "EyeColor",
+      "offset": 288,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "SE Appearance.EyeColor."
+    },
+    {
+      "name": "SecondEyeColor",
+      "offset": 304,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "SE Appearance.SecondEyeColor."
+    },
+    {
+      "name": "AccessorySet",
+      "offset": 320,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "SE Appearance.AccessorySet (block +0x98)."
+    },
+    {
+      "name": "Visuals",
+      "offset": 336,
+      "type": "Array<Guid>",
+      "source": "inferred",
+      "evidence": "Appearance destructor bg3.exe+0x6CF220 frees an array at block +0xA8 (= +0x150); SE Appearance.Visuals."
+    },
+    {
+      "name": "Elements",
+      "offset": 352,
+      "type": "Array<DbgFullDefMaterialSetting>",
+      "source": "inferred",
+      "evidence": "array freed at block +0xB8 (= +0x160); SE Appearance.Elements."
+    },
+    {
+      "name": "AdditionalChoices",
+      "offset": 368,
+      "type": "Array<float>",
+      "source": "inferred",
+      "evidence": "array freed at block +0xC8 (= +0x170); SE Appearance.AdditionalChoices."
+    },
+    {
+      "name": "Abilities",
+      "offset": 384,
+      "type": "std::array<int32_t, 7>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x180..+0x19B (three qwords and a dword); SE FullRespecDefinition.Abilities."
+    },
+    {
+      "name": "_Pad19C",
+      "offset": 412,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding."
+    },
+    {
+      "name": "LevelUpData",
+      "offset": 416,
+      "type": "Array<DbgFullDefLevelUpData>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x1A0/+0x1A8/+0x1AC (Array); destructor bg3.exe+0xA557B0 runs bg3.exe+0xAF2390 on it (element stride 0xE0)."
+    },
+    {
+      "name": "KnownSpells",
+      "offset": 432,
+      "type": "Array<DbgFullDefKnownSpell>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x1B0/+0x1B8/+0x1BC; destructor runs bg3.exe+0xAF25F0 on it (stride 0x18, FixedString at +0x10)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "All top-level offsets are established from the bg3.exe creator and destructors; names are SE's (FullRespecDefinition), not the game's.",
+    "Kept as bytes: ScratchBuffer Icon (88) and LevelUpUpgrades (112 on Windows); the material-setting stride (48) is SE's, not checked on Windows.",
+    "SE's LevelUpData (0xC0, Spells at +0xB0) does not match this build's 0xE0 element - worth a look in Progression.h.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 12,
+  "functions_read": 8,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled this pass: top-level offsets are Windows (creator bg3.exe+0x2DC16A0, destructor bg3.exe+0xA557B0), but the Icon ScratchBuffer (88) and the LevelUpUpgrades block (112) stay as bytes and the material-setting stride is SE's."
+}

@@ -1,0 +1,39 @@
+{
+  "component": "eoc::lookat::TargetComponent",
+  "ext_name": "LookAtTarget",
+  "size": 16,
+  "fields": [
+    {
+      "name": "Target",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "serializer bg3.exe+0x985CA0/0x985E50 member 1: written through bg3.exe+0x4017090 (the 64-bit entity-handle writer that also writes the replicated entity key) at +0; macOS default ctor str q0,[x23]."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "serializer bg3.exe+0x985CA0/0x985E50 member 2: ecs::sync::Serialize(FixedString) at +8; macOS default str w27,[x23,#8] (bone or attachment name?)."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding (8-byte alignment of the handle)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+    "No named macOS system writes or reads it (macos_index empty); meaning of the FixedString not established."
+  ],
+  "seen": false,
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

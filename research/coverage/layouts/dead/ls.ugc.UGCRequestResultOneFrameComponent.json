@@ -1,0 +1,69 @@
+{
+  "component": "ls::ugc::UGCRequestResultOneFrameComponent",
+  "ext_name": "UgcRequestResult",
+  "size": 56,
+  "oneFrame": true,
+  "seen": false,
+  "summary": "One-frame outcome of any mod.io request (client only, registry total 56): the net::UGCResult plus the request's Guid. ls::PublishingSystem (per-frame update bg3.exe+0x3BDE2A0; Toolkit GameEngine.dll ls::PublishingSystem::Process*Requests) creates it on a new entity from a request queued by the matching HandleUGC... callback of the mod.io back-end; Written in the PublishingSystem update bg3.exe+0x3BDE2A0 from the per-frame result list (stride 0x38) via the creator bg3.exe+0x3BE21B0. Read by many gui/ecl mod systems (gui::mod::RequestSystem::ProcessDependencyResponses etc.).",
+  "fields": [
+    {
+      "name": "ResultCode",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "net::UGCResult part (0x28 bytes): Windows creator of UGCRequestResult bg3.exe+0x3BE21B0 stores u16 0xE at +0 (byte +0 = 0xE, byte +1 = 0), an empty ls STDString at +8 (size u32 +0x18, capacity +0x1C = 0xF), zero at +0x20; copied member by member in the PublishingSystem update bg3.exe+0x3BDE2A0 (bytes +0,+1, STDString +8, u32 +0x20); macOS net::UGCResult::Visit reads 1,1 byte, a string, 4 bytes. bg3.exe+0x3BDFA70 treats byte 0 == 0 as success (then calls the UGC back-end with the mod id); default 0xE."
+    },
+    {
+      "name": "field_1",
+      "offset": 1,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "net::UGCResult part (0x28 bytes): Windows creator of UGCRequestResult bg3.exe+0x3BE21B0 stores u16 0xE at +0 (byte +0 = 0xE, byte +1 = 0), an empty ls STDString at +8 (size u32 +0x18, capacity +0x1C = 0xF), zero at +0x20; copied member by member in the PublishingSystem update bg3.exe+0x3BDE2A0 (bytes +0,+1, STDString +8, u32 +0x20); macOS net::UGCResult::Visit reads 1,1 byte, a string, 4 bytes"
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "padding before the STDString"
+    },
+    {
+      "name": "Message",
+      "offset": 8,
+      "type": "STDString",
+      "source": "inferred",
+      "evidence": "net::UGCResult part (0x28 bytes): Windows creator of UGCRequestResult bg3.exe+0x3BE21B0 stores u16 0xE at +0 (byte +0 = 0xE, byte +1 = 0), an empty ls STDString at +8 (size u32 +0x18, capacity +0x1C = 0xF), zero at +0x20; copied member by member in the PublishingSystem update bg3.exe+0x3BDE2A0 (bytes +0,+1, STDString +8, u32 +0x20); macOS net::UGCResult::Visit reads 1,1 byte, a string, 4 bytes. Name assumed (a text that travels with the result code)."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "net::UGCResult part (0x28 bytes): Windows creator of UGCRequestResult bg3.exe+0x3BE21B0 stores u16 0xE at +0 (byte +0 = 0xE, byte +1 = 0), an empty ls STDString at +8 (size u32 +0x18, capacity +0x1C = 0xF), zero at +0x20; copied member by member in the PublishingSystem update bg3.exe+0x3BDE2A0 (bytes +0,+1, STDString +8, u32 +0x20); macOS net::UGCResult::Visit reads 1,1 byte, a string, 4 bytes"
+    },
+    {
+      "name": "_Pad24",
+      "offset": 36,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding to 0x28"
+    },
+    {
+      "name": "RequestId",
+      "offset": 40,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3BDE2A0 copies four u32 from list element +0x20..+0x2F to +0x28..+0x37; the Process*Requests helpers fill that part from the request's trailing 16 bytes, which macOS modio::UGCManagerHelper::OnUGC...(ls::Guid const&, ...) callbacks pass as the request Guid. Creator zeroes +0x28/+0x30."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the UGCResult members (ResultCode / Message are inferred; byte +1 and int +0x20 unknown).",
+    "Not seen alive."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

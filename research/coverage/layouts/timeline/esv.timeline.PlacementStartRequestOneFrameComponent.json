@@ -1,0 +1,121 @@
+{
+  "component": "esv::timeline::PlacementStartRequestOneFrameComponent",
+  "ext_name": "ServerTimelinePlacementStartRequest",
+  "size": 120,
+  "structs": [
+    {
+      "name": "TimelinePlacementActor",
+      "size": 88,
+      "fields": [
+        {
+          "name": "Type",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x33046D0 compares it with 2 (then the Guid at +0x18 is replaced by the uuid of an entity) and with 0 (then a transform is taken from the character when none is present)."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "copied from the placement record, 16 bytes; default 0"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "Guid",
+          "source": "unknown",
+          "evidence": "copied from the placement record; for Type 2 overwritten with the 16-byte uuid returned by bg3.exe+0x107E6F0 (ls::uuid of an entity)."
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "default 1 (the pair at +0x28 is initialised with 0x0101)."
+        },
+        {
+          "name": "HasTransform",
+          "offset": 41,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3.exe+0x33046D0: when 0 and Type is 0 it copies 40 bytes of a transform into +0x2C and sets the byte to 1; when 1 it combines the transform at +0x2C with the scene transform."
+        },
+        {
+          "name": "_Pad2A",
+          "offset": 42,
+          "type": "uint8_t[2]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Transform",
+          "offset": 44,
+          "type": "Transform",
+          "source": "inferred",
+          "evidence": "40 bytes: quaternion at +0x2C (default w = 1.0 at +0x38), translation at +0x3C, scale at +0x48 (default 1,1,1) - the order of Script Extender's Transform; bg3.exe+0x33046D0 multiplies it with the scene transform."
+        },
+        {
+          "name": "_Pad54",
+          "offset": 84,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "value stride 0x58"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Actors",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, TimelinePlacementActor>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x33046D0 (~esv::TimelineSystem::TriggerBehaviorTimelinePlacement) creates the component on a new entity (bg3.exe+0x3313BF0) and, for every placement record of the timeline content whose actor resolves to a character, inserts the character's entity handle (8-byte key, bg3.exe+0x721030) and fills a value of stride 0x58 (grow bg3.exe+0x3316E20)."
+    },
+    {
+      "name": "InvolvedEntities",
+      "offset": 64,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x33046D0 inserts 8-byte entity handles of other involved entities that pass bg3.exe+0xAB4D90 (bg3.exe+0x721030 on component + 0x40). Constructor zeroes 0x40..0x70 as a set.",
+      "legacy": "field_40"
+    },
+    {
+      "name": "DialogInstanceId",
+      "offset": 112,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x33046D0 stores the first 4 bytes of its request argument, the same value it uses as key of the system's placement maps and later passes to StopBehaviorTimelinePlacement."
+    },
+    {
+      "name": "_Pad74",
+      "offset": 116,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "tail padding"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "TimelinePlacementActor is a copy of the 0x58-byte placement record of ls::TimelineContent; only Type, the Guid at +0x18, the flag at +0x29 and the transform are interpreted by the code read; field_8 / field_18 / field_28 are unnamed.",
+    "What the entities of the set at +0x40 are.",
+    "DialogInstanceId: see esv::timeline::PlacementEndRequestOneFrameComponent (live values 6..0x4A at +0x70).",
+    "names pass 2: TimelinePlacementActor field_8 / field_18 / field_28 not named."
+  ],
+  "minutes": 15,
+  "functions_read": 4,
+  "oneFrame": true,
+  "status": "confirmed",
+  "second_pass": "All offsets and widths are from Windows (bg3.exe+0x33046D0, value stride 0x58, set at +0x40, dword at +0x70); 48 live instances agree (two hash containers, small ints at +0x70, garbage tail padding at +0x74).",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "InvolvedEntities: bg3.exe+0x33046D0 inserts the handles of the other entities involved in the placement. One-frame, not saved, not replicated."
+}

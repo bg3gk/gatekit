@@ -1,0 +1,110 @@
+{
+  "component": "esv::sound::DistantSoundInfoProxyComponent",
+  "ext_name": "ServerSoundDistantSoundInfoProxy",
+  "size": 176,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Server proxy of a distant sound: written by esv::sound::DistantSoundSystem (CreateDistantSoundInfo, Update, FinalizeDistantSoundState), read by ServerSoundHelper::GetPlaySoundContextType. Up to 8 holders in idle levels.",
+  "structs": [
+    {
+      "name": "DistantSoundInfoProxyInfo",
+      "size": 104,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "game",
+          "evidence": "Same layout as eoc::sound::DistantSoundInfo (macOS FieldMeta m_Name; SE Coverage.h DistantSoundInfo); FinalizeDistantSoundState copies proxy +0x48 into the state component's Name."
+        },
+        {
+          "name": "Level",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "game",
+          "evidence": "eoc::sound::DistantSoundInfo m_Level (macOS FieldMeta)."
+        },
+        {
+          "name": "InitSound",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "game",
+          "evidence": "eoc::sound::DistantSoundInfo m_InitSound; live 0xFFFFFFFF (null FixedString) at proxy +0x50."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        },
+        {
+          "name": "EntityUUID",
+          "offset": 16,
+          "type": "Guid",
+          "source": "game",
+          "evidence": "eoc::sound::DistantSoundInfo m_EntityUUID; live random 16 bytes at proxy +0x58; FinalizeDistantSoundState copies proxy +0x58."
+        },
+        {
+          "name": "Switches",
+          "offset": 32,
+          "type": "HashMap<FixedString, FixedString>",
+          "source": "game",
+          "evidence": "eoc::sound::DistantSoundInfo m_Switches; FinalizeDistantSoundState copies the values array at proxy +0x98 (= +0x20 + 0x30) as FixedStrings. Live: 8-element key/value arrays."
+        },
+        {
+          "name": "ActivationRange",
+          "offset": 96,
+          "type": "float",
+          "source": "game",
+          "evidence": "eoc::sound::DistantSoundInfo m_ActivationRange; FinalizeDistantSoundState reads proxy +0xA8. Live 60/65/150/200."
+        },
+        {
+          "name": "UseOcclusion",
+          "offset": 100,
+          "type": "bool",
+          "source": "game",
+          "evidence": "eoc::sound::DistantSoundInfo m_UseOcclusion; FinalizeDistantSoundState reads proxy +0xAC."
+        },
+        {
+          "name": "_Pad65",
+          "offset": 101,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "compiler padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2E3D210 (FUN_142e3df60 constructs 0xB0 bytes) stores its handle argument at +0. Live: 48 distinct entity handles. Probably the real sound entity the proxy stands for."
+    },
+    {
+      "name": "UserProxies",
+      "offset": 8,
+      "type": "HashMap<UserId, EntityHandle>",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x4D69E0 (DistantSoundSystem::FinalizeDistantSoundState) inserts a net::UserID into the key set at proxy+8 (FUN_180274920, the HashSet<UserID> insert), grows the value array at +0x38 with 8-byte elements ('IndexedStorage<ID<EntityHandleTraits>>') and stores the per-user state-proxy entity. Live: 1 key, 1 value."
+    },
+    {
+      "name": "Info",
+      "offset": 72,
+      "type": "DistantSoundInfoProxyInfo",
+      "source": "inferred",
+      "evidence": "A copy of eoc::sound::DistantSoundInfo (0x68 bytes): FinalizeDistantSoundState reads FixedString +0x48, Guid +0x58, Switches values +0x98, float +0xA8, byte +0xAC of the proxy (local lVar20/lVar18) and writes them into the state component in DistantSoundInfo order. Live samples match (FixedStrings at +0x48/+0x4C, null at +0x50, HashMap at +0x68, ranges 60..200 at +0xA8)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Exact role of the handle at +0 (source sound entity assumed)."
+  ],
+  "minutes": 12,
+  "functions_read": 4,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

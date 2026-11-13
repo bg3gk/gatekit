@@ -1,0 +1,31 @@
+{
+  "component": "ecl::splitscreen::LetterboxSingletonComponent",
+  "ext_name": "ClientSplitscreenLetterboxSingleton",
+  "size": 2,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Player1Letterbox",
+      "offset": 0,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "ecl::splitscreen::RenderViewportSystem update (bg3.exe+0x1930120, reached from the system factory bg3.exe+0x727ED0 via bg3.exe+0x758550): b0 = FUN_141930ce0(world, first viewport/player); comp[0] = b0; comp[1] = FUN_141930ce0(world, second); the component is marked changed when either byte differs. Default 0 (macOS strh wzr). Live 0 or 1."
+    },
+    {
+      "name": "Player2Letterbox",
+      "offset": 1,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "Same function, second call of bg3.exe+0x1930CE0 for the other player's viewport. Live always 0 (single player)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which argument of bg3.exe+0x1930CE0 is player 1 and which player 2 is assumed from order; FUN_141930ce0 itself (the letterbox test) was not read."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

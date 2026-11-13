@@ -1,0 +1,24 @@
+{
+  "component": "eoc::ai::swarm::MemberComponent",
+  "ext_name": "AiSwarmMember",
+  "size": 4,
+  "seen": true,
+  "fields": [
+    {
+      "name": "SwarmGroup",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Replication slot 1 (bg3.exe+0x9FC430) creates it from local = -1 and DecRefs it through ls::GlobalStringTable::MainTable::DecRef: one FixedString member; macOS default constructor stores one 32-bit register (str w26,[x23]). Readers are turn-order code (eoc::TurnOrderSort, esv::GetShareInitiativeParameters, esv::SplitSharedInitiativeGroups): swarm members share a turn. Live: FixedString-shaped indexes. Name after Osiris' swarm group concept (RequestSetSwarmGroup), not taken from code."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Member name not confirmed by code."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "67 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

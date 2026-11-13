@@ -1,0 +1,63 @@
+{
+  "component": "ls::ugc::PendingModDependencyRequestSingletonComponent",
+  "ext_name": "UgcPendingModDependencyRequest",
+  "size": 128,
+  "seen": true,
+  "summary": "Client singleton of mod.io dependency requests in flight, used by ls::ugc::ModDependencyCachedRequestSystem (macOS Update and SendRequests(HashSet<ModItemDependenciesInfoID> const&, HashMap<ls::Guid, ModItemDependenciesInfoID>&)): SendRequests asks the UGC service for each id and stores request Guid -> id. The component holds two maps of that same type (same Windows destructor for both halves). Live: idle, all zero.",
+  "structs": [
+    {
+      "name": "UgcPendingModDependencyRequestId",
+      "size": 16,
+      "fields": [
+        {
+          "name": "ModId",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "inferred",
+          "evidence": "ls::ugc::ModItemDependenciesInfoID: Windows bg3.exe+0x3BE4540 compares ids as '(*a == *b) && ((char)a[1] == (char)b[1])' (a qword and the byte at +8) and hashes them as '*id % bucket count'; keys/elements have a 16-byte stride. macOS ModDependencyCachedRequestSystemHelper::RequestItemDependencies(unsigned long long, bool): the 64-bit mod item id."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "The byte compared at +8 (Windows bg3.exe+0x3BE4540): the bool argument of RequestItemDependencies(unsigned long long, bool) on macOS; meaning not established."
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to 16 (never compared)"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<Guid, UgcPendingModDependencyRequestId>",
+      "source": "inferred",
+      "evidence": "ls::HashMap<ls::Guid, ls::ugc::ModItemDependenciesInfoID> (macOS SendRequests parameter type). Windows bg3.exe+0x3BE4ED0 (gets this singleton through bg3.exe+0x3BE40D0) hashes keys as '(guid.lo ^ guid.hi) % buckets' (the Guid hash), removes answered request Guids and inserts new ones with 16-byte values ('*v = id.lo; v[1] = id.hi', value storage +0x30, key count +0x2C); EVERY sent request goes here. Creator bg3.exe+0x3BE5960 zeroes two map patterns; destructor bg3.exe+0x682800 frees trivial values and the plain-key set."
+    },
+    {
+      "name": "field_40",
+      "offset": 64,
+      "type": "HashMap<Guid, UgcPendingModDependencyRequestId>",
+      "source": "unknown",
+      "evidence": "Same map type at +0x40 (buckets +0x48, values +0x70, count +0x6C): bg3.exe+0x3BE4ED0 inserts into it only the requests of its second input list (written into both maps), and removes answered Guids from both; the per-frame update bg3.exe+0x3BE3780 walks its values (16-byte stride, qword = mod id). Which request kind the second list is was not established - so the name stays unknown."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What distinguishes the requests that also go into the +0x40 map (the second list built by bg3.exe+0x3BE4270) - the +0x40 map keeps an unknown name."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Both maps settled on Windows from bg3.exe+0x3BE4ED0: Guid keys (Guid hash), 16-byte ModItemDependenciesInfoID values (qword + bool, compared in bg3.exe+0x3BE4540), the second map a subset of the first.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

@@ -1,0 +1,25 @@
+{
+  "component": "esv::party::RecipesUnlockedEventOneFrameComponent",
+  "ext_name": "ServerPartyRecipesUnlockedEvent",
+  "size": 64,
+  "seen": true,
+  "summary": "Server event (registry does not mark it one-frame) of esv::party::DataSystem::ProcessRecipeRequests (bg3.exe+0x2BD0DA0 / Toolkit EoCServer.dll+0xAD2100, logs 'Recipe request: party (%s)', 'recipe (%s)'): recipes unlocked for a party in this frame. Read by esv::StoryCharacterEventManager::Init and the per-frame update of esv::party::DataSystem. Seen.py context: crafting / item combine (use-Combine) steps.",
+  "fields": [
+    {
+      "name": "Recipes",
+      "offset": 0,
+      "type": "HashMap<FixedString, bool>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2BD3D20 allocates 0x40 and zeroes it as a hash map. ProcessRecipeRequests (bg3.exe+0x2BD0DA0 lines ~493-501) walks a request's 4-byte keys (FixedString recipe ids) and inserts each (FUN_140ca9830), then stores a 1-byte value at values[+0x30][index]. The Toolkit version names the type in an assert: IndexedStorage<class ls::HashMap<class ls::FixedString,bool,struct ls::HashTableOpsDefault>. Live (1): buckets 5, 2 keys, values size 2."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of the bool value (new / notify flag)."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,25 @@
+{
+  "component": "gui::registration::VMInventoryRegisteredSingletonComponent",
+  "ext_name": "GuiRegistrationVMInventoryRegistered",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "NoesisGameUI.dll+0x44D530 (VMInventoryRegistrationSystem::Update): clears the set when its key count (+0x2C) is non-zero (line ~179), then after VMInventoryDataSingletonComponent::CreateVM(entity) inserts the entity with the HashSet<EntityHandle> insert FUN_1800f88d0 (line ~1064). HashSet = StaticArray<int32> buckets +0, Array<int32> NextIds +0x10, Array<key> Keys +0x20; live samples: bucket count at +8, cap/size pairs at +0x18/+0x28. Samples always show an empty key array (size 0), consistent with a per-frame 'newly registered' set."
+    }
+  ],
+  "summary": "Client UI registry: the inventory entities whose view-model was created in this frame (the set is cleared at the start of each update, then filled after CreateVM). Singleton, lives from game start.",
+  "confidence": "medium",
+  "open_questions": [
+    "Shape established from the Toolkit's system code and live samples; the bg3.exe creator was not read for this one (registry size 48 matches)."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

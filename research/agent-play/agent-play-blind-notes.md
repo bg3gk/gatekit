@@ -1,0 +1,18 @@
+# Notes
+- Start: Astarion (L1 rogue, 10hp, dagger), alone, level TUT_Avernus_C. Dead illithid nearby, many illithid pods, a "Nursery", a gristly chest, charred corpse. Goal: look around, loot, find exit.
+- Looted illithid (jade), chest (12 gold), picked onyx+rune tablet. Nursery check failed. Pods do nothing. Goal: find exit of pod room.
+- Through sphincter door W: goblin corpse (2 gold), illithid notes (read: goblin visions). Got stuck standing on something, freed by jump.
+- Talked to psionic presence (intellect devourer in Mirnat's skull), it asked to be freed; destroyed the brain. Goal: find way out of ship.
+- Met Laezel (githyanki), joined party. Plan: kill imps, reach helm, take control of ship. Combat vs 3 imps (6hp each).
+- Fight 1: 3 imps, won (Astarion sneak attack 15, Laezel slash 11, dagger 6). Astarion 9/10.
+- Ladder a8e40469 near dead slaves won't climb (game doesn't start the climb). Helm marker 13.7m NE, +14m. Looking for another way up.
+- Now up at y=7.5 (ladder climb seemed to work partly). Helm marker NE/up.
+- Both up the first ladder (y 7.5). Second ladder 73876474 'cannot get to it' 6 m N. Interface briefly broken (SyntaxError) during dev edits.
+- Climbed second ladder to y 18.1. Helm marker near [-31.4,18.7,-354.8].
+- Shadowheart trapped in a pod; device next to it opens it. Laezel impatient.
+- Console next to Shadowheart's pod has a slot; nothing to insert via interface. Picked up dark mind brain, illithid manuscript, nautiloid tank, agate. Reliquary locked (no lockpick cmd). Moving on to helm (marker SE).
+- Reached area near helm; fight 2 begins: hell boar 8hp, 2 lesser imps 6hp.
+- Fight 2: killed boar (sneak shot 14) + 2 imps. Commander Zhalk (150hp, AC18) fights an allied illithid between us and the transmitter (47 m W). Countdown 12 turns. Plan: dash past.
+- Astarion downed by Zhalk (12+3). Laezel disengages toward transmitter (13.7 m W).
+- Laezel disengaged and used the transmitter in time! Astarion revived to 10/10 by the scene.
+- ESCAPED: level now WLD_Main_A, Astarion alone 10/10hp, new quest ORI_Avatar_Astarion. Shadowheart quest closed as LeftBehind. End of run (~170 commands).

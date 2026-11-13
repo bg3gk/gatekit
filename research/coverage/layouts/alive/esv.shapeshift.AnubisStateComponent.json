@@ -1,0 +1,98 @@
+{
+  "component": "esv::shapeshift::AnubisStateComponent",
+  "ext_name": "ServerShapeshiftAnubisState",
+  "size": 40,
+  "seen": true,
+  "summary": "Server-only, saved (model game.shapeshift.v0.AnubisStateComponent, 32 bytes, members m_Config, m_ParameterOverrides; other model written along: engine.v0.GlobalConfigParameterSimpleValue). 48 holders seen: shapeshifted characters keep the Anubis (behaviour script) config they had before, so it can be restored; read by ls::anubis::game::ConfigChangeSystem (per-frame update bg3.exe+0x2810C50).",
+  "structs": [
+    {
+      "name": "ServerShapeshiftAnubisStateOverride",
+      "size": 64,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "element of ParameterOverrides, stride 0x40 (array helper bg3.exe+0xF4CEC0 allocates count << 6); non-trivial destructor bg3.exe+0xF4D0F0; savegame model engine.v0.GlobalConfigParameterSimpleValue (56 bytes) is written per element"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "unknown"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "unknown"
+        },
+        {
+          "name": "field_18",
+          "offset": 24,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "unknown"
+        },
+        {
+          "name": "field_20",
+          "offset": 32,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "unknown"
+        },
+        {
+          "name": "field_28",
+          "offset": 40,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "unknown"
+        },
+        {
+          "name": "field_30",
+          "offset": 48,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "unknown"
+        },
+        {
+          "name": "field_38",
+          "offset": 56,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "unknown"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Config",
+      "offset": 0,
+      "type": "STDString",
+      "source": "game",
+      "evidence": "savegame model game.shapeshift.v0.AnubisStateComponent, member 0 m_Config (savefields.py). Windows creator bg3.exe+0x26E0E30 moves a 24-byte ls string into +0..+0x18 (source reset to size 0 / capacity 0xF, the small-string pattern); destructor bg3.exe+0x22D59D0 frees *(comp+0) only if *(uint32*)(comp+0x14) > 0xF and resets size/capacity. Live: heap buffer, size 0x15, capacity 0x1F"
+    },
+    {
+      "name": "ParameterOverrides",
+      "offset": 24,
+      "type": "Array<ServerShapeshiftAnubisStateOverride>",
+      "source": "game",
+      "evidence": "savegame model member 1 m_ParameterOverrides (savefields.py). Windows creator moves ptr +0x18, uint32 +0x20, uint32 +0x24 (Array); destructor calls bg3.exe+0xF4CEC0(comp+0x18, 0) (64-byte elements) and frees the buffer. Live: empty (0/0/0)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "members of one parameter override (64 bytes, probably a parameter name plus a variant value)",
+    "Lay out the 0x40-byte element (destructor bg3.exe+0xF4D0F0, Save of engine.v0.GlobalConfigParameter) to place Name / Value."
+  ],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Element of m_ParameterOverrides is most likely an engine GlobalConfigParameter (savegame model ls::model::engine::v0::GlobalConfigParameter: Name, Value; Value = GlobalConfigParameterValue: IsArray, Array, SimpleValue), but its 64-byte layout is still opaque qwords, so no name can be put on an offset."
+}

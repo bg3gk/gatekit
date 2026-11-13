@@ -1,0 +1,35 @@
+{
+  "component": "ecl::CharacterCreationFadeRequestsSingletonComponent",
+  "ext_name": "ClientCharacterCreationFadeRequestsSingleton",
+  "size": 224,
+  "seen": true,
+  "reuses": "TimelineFadeRequest (GameDefinitions/Components/Coverage.h); whole layout identical to ecl::TimelineFadeRequestsSingletonComponent",
+  "fields": [
+    {
+      "name": "FadeRequests",
+      "offset": 0,
+      "type": "std::array<HashMap<EntityHandle, TimelineFadeRequest>, 2>",
+      "source": "inferred",
+      "evidence": "Same component type as ecl::TimelineFadeRequestsSingletonComponent (Coverage.h, sizeof 224): every fade-request singleton is registered with the same destructor FUN_140697cd0 (12 registrations bg3.exe+0x6867A0..0x689400) and created with the same constructor helpers FUN_1418c2f60 (2 maps of 0x40) / FUN_1418c2fe0 (2 sets of 0x30) after zeroing 0xE0 bytes (seen in bg3.exe+0x1CB0DE0 for CharacterOutOfSight). The macOS build reads all of them in one template ecl::FadeResolveSystem::ProcessFadeRequests<BasicGOVisual..., CharacterAttachToScene..., CharacterCreation..., CharacterOutOfSight..., Crowd..., Invisibility..., ...>. One map per render view (View0/View1). The value type is named ecl::StartFadeRequest by the macOS build (ls::HashMap<ls::ID<EntityHandleTraits>, ecl::StartFadeRequest>::EnsureUniversal at macOS 0x102EAABA0, next to the Crowd query registration); 16-byte value, same as SE's TimelineFadeRequest. Live: all zero (empty containers)."
+    },
+    {
+      "name": "RemoveFadeRequests",
+      "offset": 128,
+      "type": "std::array<HashSet<EntityHandle>, 2>",
+      "source": "inferred",
+      "evidence": "Zeroed 0x80..0xE0 then FUN_1418c2fe0 in bg3.exe+0x1CB0DE0; same as the Timeline singleton (name taken from there, not confirmed). Live: empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The value struct's game name is ecl::StartFadeRequest; SE calls the same 16-byte struct TimelineFadeRequest - consider renaming / aliasing.",
+    "Name of the two HashSets (RemoveFadeRequests) is inherited from the Timeline layout, not confirmed for this producer."
+  ],
+  "minutes": 2,
+  "functions_read": 0,
+  "oneFrame": false,
+  "status": "declared",
+  "hold": "uses types declared elsewhere (TimelineFadeRequest): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

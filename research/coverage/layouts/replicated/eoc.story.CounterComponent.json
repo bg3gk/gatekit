@@ -1,0 +1,42 @@
+{
+  "component": "eoc::story::CounterComponent",
+  "ext_name": "StoryCounter",
+  "size": 12,
+  "fields": [
+    {
+      "name": "Value",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x8E2400: member 1, raw 4-byte write at +0; Toolkit esv::story::DisplayedMessageSystem::ProcessCounterUpdates (EoCServer.dll+0x4105F0) adds a delta, clamps to [0, +4] and stores it here. macOS default -1 (str d0 with d0 = all ones)."
+    },
+    {
+      "name": "Max",
+      "offset": 4,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x8E2400: member 2, raw 4-byte write at +4; the upper clamp bound in the same function; default -1"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x8E2400: member 3, ecs::sync::Serialize(FixedString) on +8; macOS default str w27(=-1) (null FixedString)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Meaning of the FixedString (counter id or message text key?) not established."
+  ],
+  "seen": false,
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

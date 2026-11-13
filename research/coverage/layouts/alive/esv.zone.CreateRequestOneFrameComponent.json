@@ -1,0 +1,629 @@
+{
+  "component": "esv::zone::CreateRequestOneFrameComponent",
+  "ext_name": "ServerZoneCreateRequest",
+  "size": 392,
+  "seen": true,
+  "summary": "Server one-frame request to create a spell zone (cone/line area of a spell; seen alive when a Mud Mephit cast a spell, born together with esv::zone::SpellComponent and FinishedEventOneFrameComponent). It is one esv::zone::CreationParams (0x188 bytes): esv::zone::CreationSystem::ProcessCreateRequests (EoCServer.dll+0x114C5E0) walks CreationParams with stride 0x188, creates the zone entity, fills esv::zone::SpellComponent from it and copies the whole CreationParams with the assignment FUN_18114c290 (EoCServer.dll+0x114C290), which gives every member's offset and width. The builder FUN_18164dc50 (EoCServer.dll+0x164DC50) names the member types (SpellId, InitialTarget, eoc::SpellZoneInfo, optional arrays of AiTilePos / EntityHandle / HitDesc). Game defaults from creator bg3.exe+0x3377AF0.",
+  "structs": [
+    {
+      "name": "ZoneCreateRequestSpellId",
+      "size": 56,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "equals Script Extender SpellId (ExposedTypes.h); game default 0xFFFFFFFF (null FixedString) at component +0x40"
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId _Pad"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellSourceType (1 byte); game default 0x17 = Sentinel at component +0x48"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.Source"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.ProgressionSource"
+        },
+        {
+          "name": "Prototype",
+          "offset": 48,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "SE SpellId.Prototype; game default null at component +0x70; live equal to OriginatorPrototype"
+        },
+        {
+          "name": "_Pad34",
+          "offset": 52,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "padding (live 0xFFFFFFFF garbage)"
+        }
+      ]
+    },
+    {
+      "name": "ZoneCreateRequestBaseTarget",
+      "size": 48,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "SE eoc::spell_cast::BaseTarget has virtual methods"
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.Target"
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.TargetProxy (std::optional<EntityHandle> value)"
+        },
+        {
+          "name": "HasTargetProxy",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "std::optional engaged flag"
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.Position (std::optional<glm::vec3> value)"
+        },
+        {
+          "name": "HasPosition",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "std::optional engaged flag"
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    },
+    {
+      "name": "ZoneCreateRequestInitialTarget",
+      "size": 112,
+      "fields": [
+        {
+          "name": "VMT",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "game creator bg3.exe+0x3377AF0 writes &PTR_FUN_1454db080 at component +0x80; equals SE eoc::spell_cast::InitialTarget (0x70 bytes, Toolkit local 'InitialTarget local_378 [112]')"
+        },
+        {
+          "name": "Target",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "game default null handle at +0x88"
+        },
+        {
+          "name": "TargetProxy",
+          "offset": 16,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.TargetProxy value"
+        },
+        {
+          "name": "HasTargetProxy",
+          "offset": 24,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "game default byte 0 at component +0x98"
+        },
+        {
+          "name": "_Pad19",
+          "offset": 25,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Position",
+          "offset": 32,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "SE BaseTarget.Position value"
+        },
+        {
+          "name": "HasPosition",
+          "offset": 44,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "game default byte 0 at component +0xAC"
+        },
+        {
+          "name": "_Pad2D",
+          "offset": 45,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "TargetingType",
+          "offset": 48,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE InitialTarget.TargetingType (SpellType, 1 byte); game default 0 at component +0xB0; live 1"
+        },
+        {
+          "name": "_Pad31",
+          "offset": 49,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Target2",
+          "offset": 56,
+          "type": "ZoneCreateRequestBaseTarget",
+          "source": "inferred",
+          "evidence": "SE InitialTarget.Target2 (std::optional<BaseTarget> value)"
+        },
+        {
+          "name": "HasTarget2",
+          "offset": 104,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "game default byte 0 at component +0xE8"
+        },
+        {
+          "name": "_Pad69",
+          "offset": 105,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    },
+    {
+      "name": "ZoneCreateRequestAiTilePos",
+      "size": 8,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "eoc::AiTilePos, 8 bytes, alignment 4 (EoCServer.dll+0x6A9380 allocates count*8 align 4; assert names ls::IndexedStorage<struct eoc::AiTilePos>)"
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "int32_t",
+          "source": "unknown",
+          "evidence": "second half of eoc::AiTilePos"
+        }
+      ]
+    },
+    {
+      "name": "ZoneCreateRequestOptionalTiles",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Value",
+          "offset": 0,
+          "type": "Array<ZoneCreateRequestAiTilePos>",
+          "source": "inferred",
+          "evidence": "std::optional<Array<eoc::AiTilePos>> copied by EoCServer.dll+0x6A9380"
+        },
+        {
+          "name": "HasValue",
+          "offset": 16,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "engaged flag tested at +0x10 by FUN_18114c290"
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    },
+    {
+      "name": "ZoneCreateRequestOptionalEntities",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Value",
+          "offset": 0,
+          "type": "Array<EntityHandle>",
+          "source": "inferred",
+          "evidence": "std::optional<Array<EntityHandle>> copied by EoCServer.dll+0x6A92C0 (assert IndexedStorage<ls::ID<ecs::EntityHandleTraits>>, ECS container allocator)"
+        },
+        {
+          "name": "HasValue",
+          "offset": 16,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "engaged flag"
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    },
+    {
+      "name": "ZoneCreateRequestOptionalHits",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Buffer",
+          "offset": 0,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "std::optional<Array<eoc::HitDesc>> (EoCServer.dll+0x6A9450 allocates count*0x1B0 in the Toolkit build; Script Extender HitDesc is 448 bytes in the game, so the element is not declared): array buffer"
+        },
+        {
+          "name": "Capacity",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Array capacity"
+        },
+        {
+          "name": "Size",
+          "offset": 12,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Array size"
+        },
+        {
+          "name": "HasValue",
+          "offset": 16,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "engaged flag"
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "FUN_18114c290 copies a dword; builder FUN_18164dc50 stores param_2; game default -1. Live 0x2E / 0x126."
+    },
+    {
+      "name": "_Pad4",
+      "offset": 4,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "not copied by the assignment; live 0xFFFFFFFF garbage"
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "game default null handle; ProcessCreateRequests copies it to esv::zone::SpellComponent +0 only when valid (the caster/source). Live entity handles."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "builder: ls::Guid default-constructed then copied from param_4 (16 bytes). Live random 128-bit values (a cast Guid?)."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "builder copies *param_9; game default null handle. Live entity handles."
+    },
+    {
+      "name": "field_28",
+      "offset": 40,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "copied as 8+4 bytes; builder from param_7. Live (48.75, 17, 209.5) - a world position (equal to +0x118)."
+    },
+    {
+      "name": "field_34",
+      "offset": 52,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "copied as 8+4 bytes; builder from param_8. Live (51.25, 17.21, 204.8) - a second position (target/end point?)."
+    },
+    {
+      "name": "SpellId",
+      "offset": 64,
+      "type": "ZoneCreateRequestSpellId",
+      "source": "inferred",
+      "evidence": "FUN_18114c290: eoc::spell::SpellId::operator= at +0x40 (0x38 bytes, equals SE SpellId)"
+    },
+    {
+      "name": "field_78",
+      "offset": 120,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "byte copy; builder from *param_11; game default 0. Live 2 / 4."
+    },
+    {
+      "name": "_Pad79",
+      "offset": 121,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "padding before the 8-aligned InitialTarget"
+    },
+    {
+      "name": "Target",
+      "offset": 128,
+      "type": "ZoneCreateRequestInitialTarget",
+      "source": "inferred",
+      "evidence": "FUN_18114c290: eoc::spell_cast::InitialTarget::operator= at +0x80 (equals SE InitialTarget); copied to esv::zone::SpellComponent +8"
+    },
+    {
+      "name": "field_F0",
+      "offset": 240,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "dword copy; builder param_24; copied to SpellComponent +0x7C; game default 0. Live 0."
+    },
+    {
+      "name": "Shape",
+      "offset": 244,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "start of eoc::SpellZoneInfo (builder: SpellZoneInfo::SpellZoneInfo at this offset, 0x34 bytes up to +0x128); game default byte 0. Live 0. | Name: eoc::SpellZoneInfo::Init (EoCShared.dll+0x10075A0, same offsets in the macOS build) stores (stats Shape == \"Square\") in SpellZoneInfo +0, i.e. 0 = cone, 1 = square (stats property Shape of the zone spell).",
+      "legacy": "field_F4"
+    },
+    {
+      "name": "_PadF5",
+      "offset": 245,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "live garbage"
+    },
+    {
+      "name": "field_F8",
+      "offset": 248,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "SpellZoneInfo member; live 0.2 / 0.249"
+    },
+    {
+      "name": "field_FC",
+      "offset": 252,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "SpellZoneInfo member; live 1.614 / 1.663"
+    },
+    {
+      "name": "field_100",
+      "offset": 256,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "SpellZoneInfo member; live 5.2 / 5.249"
+    },
+    {
+      "name": "field_104",
+      "offset": 260,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "SpellZoneInfo member; live 5"
+    },
+    {
+      "name": "field_108",
+      "offset": 264,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "SpellZoneInfo member; live 5 (range?)"
+    },
+    {
+      "name": "AngleOrBase",
+      "offset": 268,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "SpellZoneInfo member; live 60 (cone angle in degrees?) | Name: SpellZoneInfo::Init stores stats Angle (cone) or Base (square) as float at SpellZoneInfo +0x18 = component +0x10C; live 60 = a cone angle.",
+      "legacy": "field_10C"
+    },
+    {
+      "name": "FrontOffset",
+      "offset": 272,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "SpellZoneInfo member; live 0 | Name: SpellZoneInfo::Init stores stats FrontOffset as float at SpellZoneInfo +0x1C = component +0x110; live 0.",
+      "legacy": "field_110"
+    },
+    {
+      "name": "field_114",
+      "offset": 276,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "SpellZoneInfo member; live 1.4 / 2"
+    },
+    {
+      "name": "field_118",
+      "offset": 280,
+      "type": "glm::vec3",
+      "source": "unknown",
+      "evidence": "SpellZoneInfo member; live equal to +0x28 (a world position)"
+    },
+    {
+      "name": "ZoneFlags",
+      "offset": 292,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "game creator clears its low two bits (flags byte, end of SpellZoneInfo); live 8 | Name: SpellZoneInfo::Init sets bit 1 of SpellZoneInfo +0x30 (= component +0x124) from bit 4 of SpellPrototype byte +0x10; the other bits are set elsewhere.",
+      "legacy": "field_124"
+    },
+    {
+      "name": "_Pad125",
+      "offset": 293,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "padding (live 0)"
+    },
+    {
+      "name": "field_128",
+      "offset": 296,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "byte; builder from *param_13; game default 0xFF. Live 0x15 / 0x4B (a surface type from eoc::GetSurfaceTypeFromStats?)."
+    },
+    {
+      "name": "_Pad129",
+      "offset": 297,
+      "type": "uint8_t[3]",
+      "source": "inferred",
+      "evidence": "live 0xFF garbage"
+    },
+    {
+      "name": "field_12C",
+      "offset": 300,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "builder param_15; game default 10. Live 5."
+    },
+    {
+      "name": "field_130",
+      "offset": 304,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "builder param_16; game default 1.0. Live 0.01."
+    },
+    {
+      "name": "field_134",
+      "offset": 308,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "builder param_17; game default 0. Live 0 / 18."
+    },
+    {
+      "name": "Tiles",
+      "offset": 312,
+      "type": "ZoneCreateRequestOptionalTiles",
+      "source": "inferred",
+      "evidence": "optional<Array<eoc::AiTilePos>>, flag at +0x148. Live: engaged, capacity 0x199-0x1A0, size 0x3C-0x3F."
+    },
+    {
+      "name": "Entities",
+      "offset": 336,
+      "type": "ZoneCreateRequestOptionalEntities",
+      "source": "inferred",
+      "evidence": "optional<Array<EntityHandle>>, flag at +0x160. Live empty."
+    },
+    {
+      "name": "Hits",
+      "offset": 360,
+      "type": "ZoneCreateRequestOptionalHits",
+      "source": "inferred",
+      "evidence": "optional<Array<eoc::HitDesc>>, flag at +0x178. Live empty."
+    },
+    {
+      "name": "field_180",
+      "offset": 384,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "FixedString::operator=; builder from param_23; copied to SpellComponent +0x78; game default null. Live 0."
+    },
+    {
+      "name": "field_184",
+      "offset": 388,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "builder param_21; game default 0"
+    },
+    {
+      "name": "field_185",
+      "offset": 389,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "builder param_22; game default 0; live 0/1"
+    },
+    {
+      "name": "field_186",
+      "offset": 390,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "builder param_25; game default 0"
+    },
+    {
+      "name": "_Pad187",
+      "offset": 391,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "padding (live 0xFF garbage)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Names of the scalar members and of eoc::SpellZoneInfo's members (its split into floats is from live values only).",
+    "Element size of the HitDesc array in the game build (Toolkit 0x1B0).",
+    "SpellZoneInfo floats +0xF8..+0x108, +0x114 and the vec3 +0x118: written by esv::zone::CreationSystem / SpellZoneInfo::ComputeZoneCells (origin, target, range); reading the Toolkit callers of FUN_18164dc50 (the builder) with their argument sources would name them."
+  ],
+  "minutes": 18,
+  "functions_read": 7,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "Names of the SpellZoneInfo part settled by eoc::SpellZoneInfo::Init (Toolkit EoCShared.dll and the macOS build), which reads the spell's stats Shape, FrontOffset and Angle/Base into it; no savegame model, FieldMeta or Osiris parameter names this one-frame request."
+}

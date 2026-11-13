@@ -1,0 +1,89 @@
+{
+  "component": "ecl::sound::MixStateComponent",
+  "ext_name": "ClientSoundMixState",
+  "size": 72,
+  "seen": true,
+  "structs": [
+    {
+      "name": "MixStatePlayerSpellData",
+      "size": 8,
+      "fields": [
+        {
+          "name": "RTPCValue",
+          "offset": 0,
+          "type": "float",
+          "source": "inferred",
+          "evidence": "Game name of the struct: ecl::sound::PlayerSpellMixStateData (MixStateSystem::SetMixRTPC signature). SetMixRTPC (EoCClient.dll+0xDA7BC0) passes *(float*)data as the value of a ls::GameplaySoundRTPCRequest named \"Gameplay_Prepare<activity><magnitude>_Compensation_RTPC\"; FinalizeMixState copies it from the frame state (computed in UpdateListenerDistance - probably a listener distance)."
+        },
+        {
+          "name": "SpellCastState",
+          "offset": 4,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "FinalizeMixState (EoCClient.dll+0xDA4EE0) writes +4 from ls::Optional<ecl::sound::ESpellCastSoundMixState>; PostMixEvent selects the event name table by it (values 2,3 reset the RTPC)."
+        },
+        {
+          "name": "SpellMagnitude",
+          "offset": 5,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "FinalizeMixState writes +5 from ls::Optional<ecl::sound::ESpellSoundMixMagnitude>; SetMixRTPC/PostMixEvent use it to index a name table (1 = no event)."
+        },
+        {
+          "name": "PlayerActivity",
+          "offset": 6,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "FinalizeMixState writes +6 from ls::Optional<ecl::sound::EPlayerActivityMixState>; SetMixRTPC/PostMixEvent append its name."
+        },
+        {
+          "name": "_Pad7",
+          "offset": 7,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Value stride 8 in the hash map (+0x30 walked with stride 8 in MixStateSystem::Update)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Players",
+      "offset": 0,
+      "type": "HashMap<uint16_t, MixStatePlayerSpellData>",
+      "source": "inferred",
+      "evidence": "MixStateSystem::Update (EoCClient.dll+0xDA8110) iterates keys at +0x20 with stride 2 and values at +0x30 with stride 8 (reads value+4) to build a HashMap<short, MixStateSystem::FrameState>; FinalizeMixState (EoCClient.dll+0xDA4EE0) looks up PlayerSpellMixStateData by short key (FUN_180da46e0). Game key type is short (declared uint16_t). Live: 5 buckets, 1 key, values UninitializedStaticArray size 1."
+    },
+    {
+      "name": "ActivePlayer",
+      "offset": 64,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "FinalizeMixState reads/writes 4 bytes at +0x40 as ls::Optional<short> (value at +0x40, has-value byte at +0x42): the player whose mix state is currently posted. Live: 0."
+    },
+    {
+      "name": "HasActivePlayer",
+      "offset": 66,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "FinalizeMixState tests (char)(+0x40 >> 16) and clears byte +0x42 when the mix is reset (ls::Optional<short> flag)."
+    },
+    {
+      "name": "_Pad43",
+      "offset": 67,
+      "type": "uint8_t[5]",
+      "source": "inferred",
+      "evidence": "Optional<short> padding plus alignment to 8 (component 0x48); macOS default constructor zeroes the 8 bytes at +0x40 (str xzr, [x23, #0x40]); never read."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of PlayerSpellData.RTPCValue (frame state from MixStateSystem::UpdateListenerDistance - not read).",
+    "Enum values of ESpellCastSoundMixState / ESpellSoundMixMagnitude / EPlayerActivityMixState are not declared in Script Extender; kept as uint8_t."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

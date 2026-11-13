@@ -1,0 +1,25 @@
+{
+  "component": "gui::registration::VMRemotePlayerRegisteredSingletonComponent",
+  "ext_name": "GuiRegistrationVMRemotePlayerRegistered",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Adder bg3.exe+0x12AA270 allocates 0x30 and zeroes a HashSet; destructor thunk_FUN_140582ad0 (trivial keys). Windows gui::registration::VMPlayerRegistrationSystem remote-player step bg3.exe+0x12A8B60 (component via storage index DAT_146320398, getter bg3.exe+0x12A95C0) clears the set (buckets memset -1, sizes +0x1C/+0x2C zeroed), then for every matching query row calls gui::registration::VMRemotePlayerDataSingletonComponent::CreateVM(entity) and inserts that same entity handle with bg3.exe+0x721030 (8-byte keys)."
+    }
+  ],
+  "summary": "Client UI registry: remote-player entities whose VMPlayer view-model was created this frame (counterpart of VMLocalPlayerRegisteredSingletonComponent). Singleton from game start; empty in single player.",
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Windows bg3.exe+0x12A8B60 (found through the storage index DAT_146320398) inserts each entity it creates a VMPlayer view-model for into this set, so the HashSet<EntityHandle> is now established from Windows code rather than from the local-player twin.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

@@ -1,0 +1,64 @@
+{
+  "component": "ecl::character_creation::RandomAppearancesComponent",
+  "ext_name": "ClientCCRandomAppearances",
+  "size": 40,
+  "seen": false,
+  "oneFrame": false,
+  "summary": "Pool of randomised appearances for the 'random appearance' button of character creation (gui::DCCharacterCreation RandomAppearanceIndex/Count, HasNewRandomAppearance). Created by bg3.exe+0x2027B00 with 16 slots.",
+  "structs": [
+    {
+      "name": "RandomAppearancesAppearance",
+      "size": 216,
+      "equals": "Script Extender character_creation::Appearance (GameDefinitions/CharacterCreation.h), game type eoc::character_creation::Appearance (0xD8 bytes)",
+      "fields": [
+        {
+          "name": "Data",
+          "offset": 0,
+          "type": "uint8_t[216]",
+          "source": "inferred",
+          "evidence": "0xD8-byte element (stride from bg3.exe+0x6DAAE0: alloc count*0xD8, element dtor FUN_1406CF220); members as in SE Appearance - kept as bytes"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "Creator bg3.exe+0x201D380 copies the 16-byte global DAT_14625AAD0 (a Guid that bg3.exe+0x2027B00 tests for all-zero, i.e. the null Guid) to +0..+0x10."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Creator and bg3.exe+0x2027B00 write -1 to the 8 bytes +0x10..+0x18 (macOS InitializeRandomAppearancesComponent too). Probably the current random index; width not established."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "second half of the 8-byte -1 store."
+    },
+    {
+      "name": "Appearances",
+      "offset": 24,
+      "type": "Array<RandomAppearancesAppearance>",
+      "source": "inferred",
+      "evidence": "Creator zeroes +0x18..+0x28; destructor bg3.exe+0x6ACFB0 resizes the array at +0x18 to 0 with bg3.exe+0x6DAAE0 (stride 0xD8) and frees it; bg3.exe+0x2027B00 resizes it to 16. macOS: ls::DynamicArray<eoc::character_creation::Appearance>::Reallocate(.., 0x10)."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the Guid at +0 and of the 8 bytes at +0x10.",
+    "Appearance element kept as bytes."
+  ],
+  "minutes": 6,
+  "functions_read": 4,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled: all Windows users (bg3.exe+0x1F8A210, 0x208DA70, 0x208EB70, 0x20769F0) only fetch the component into view structures for the command processor; the reader of +0x10 (macOS ecl::character_creation::_private::ProcessCommands template, bg3_macos_x64+0x39DE7A0) has no matched Windows counterpart (decomp.py matches finds none), so the width of the 8 bytes at +0x10 is still open."
+}

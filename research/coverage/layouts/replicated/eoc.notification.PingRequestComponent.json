@@ -1,0 +1,62 @@
+{
+  "component": "eoc::notification::PingRequestComponent",
+  "ext_name": "NotificationPingRequest",
+  "size": 40,
+  "fields": [
+    {
+      "name": "Position",
+      "offset": 0,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "write-all serializer bg3.exe+0x9183D0: member 1, raw 12-byte write at +0; macOS default zero. 12 bytes = three floats; a ping marks a place, hence Position."
+    },
+    {
+      "name": "_PadC",
+      "offset": 12,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "alignment padding; nothing serialized or initialised here"
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9183D0: member 2, bg3.exe+0x4017090 (EntityHandle writer) on +0x10; macOS default str q1 [x23,#0x10] with q1 = dup of 0xFFC0000000000000 (null handle)"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9183D0: member 3, bg3.exe+0x4017090 on +0x18; default null handle (same q1 store)"
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x9183D0: member 4, raw 1-byte write at +0x20; macOS default strb w17(=1) [x23,#0x20]"
+    },
+    {
+      "name": "_Pad21",
+      "offset": 33,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "alignment padding; nothing serialized or initialised here"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Position named from width and the component name only; which handle is the pinging character and which the pinged target is unknown; the byte defaults to 1 (a ping type/flag?)."
+  ],
+  "seen": false,
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "28 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

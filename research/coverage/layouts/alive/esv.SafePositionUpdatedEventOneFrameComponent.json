@@ -1,0 +1,37 @@
+{
+  "component": "esv::SafePositionUpdatedEventOneFrameComponent",
+  "ext_name": "ServerSafePositionUpdatedEvent",
+  "size": 24,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "EoCServer.dll esv::safe_position::TrackingSystem::ProcessNotSafePositionChanges iterates the event storage with stride 0x18, takes the EntityHandle at +0 and looks up that character's esv::SafePositionComponent; the event entity itself is destroyed. Live: entity-handle shaped values."
+    },
+    {
+      "name": "Position",
+      "offset": 8,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Same function compares +8/+0xC/+0x10 with the SafePositionComponent's position and copies them into it. Live floats (world coordinates)."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "compiler padding / bytes nobody reads"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "summary": "Born by a jump (Projectile_Jump) and many other moves; up to 2 holders. Written by esv::safe_position::TrackingSystem.",
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

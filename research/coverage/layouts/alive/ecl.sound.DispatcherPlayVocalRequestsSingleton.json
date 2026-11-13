@@ -1,0 +1,66 @@
+{
+  "component": "ecl::sound::DispatcherPlayVocalRequestsSingleton",
+  "ext_name": "ClientSoundDispatcherPlayVocalRequests",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "CharacterPlayVocalRequest",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::character::SoundSystem::PlayVocalInternal (EoCClient.dll+0xEB4310) checks element+0 alive as the character."
+        },
+        {
+          "name": "SoundObjectIndex",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "PlayVocalInternal passes byte +8 as ESoundObjectIndex (PlayVocal signature: EntityHandle const&, ESoundObjectIndex, EVocalType, SoundCallback*)."
+        },
+        {
+          "name": "VocalType",
+          "offset": 9,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "PlayVocalInternal passes byte +9 to the vocal lookup (EVocalType; SE stores VocalType as uint8_t in Animation.h)."
+        },
+        {
+          "name": "_PadA",
+          "offset": 10,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "Pointer follows at +0x10."
+        },
+        {
+          "name": "Callback",
+          "offset": 16,
+          "type": "void*",
+          "source": "inferred",
+          "evidence": "PlayVocalInternal passes *(SoundCallback**)(element+0x10) to PlaySound."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "Array<CharacterPlayVocalRequest>",
+      "source": "inferred",
+      "evidence": "Game element name ecl::sound::CharacterPlayVocalRequest (IndexedStorage strings). ecl::character::SoundSystem::ProcessPlayVocalRequests (EoCClient.dll+0xEB5FD0) copies elements of stride 0x18 from this 16-byte array; ecl::sound::DispatcherSystem::Update (EoCClient.dll+0xDCA820) clears the singleton's CharacterPlayVocalRequest array every frame."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 7,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

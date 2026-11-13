@@ -1,0 +1,62 @@
+{
+  "component": "ecl::sound::CharacterSwitchDataComponent",
+  "ext_name": "ClientSoundCharacterSwitchData",
+  "size": 120,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "Guid",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1E50410 (adds the component) zeroes 16 bytes at +0 (macOS default constructor stp xzr,xzr too); 16 bytes of arbitrary values live. Possibly the speaker id written by GameplayActivationLegacyHelper::RefreshSpeakerID (it takes ls::uuid::Component)."
+    },
+    {
+      "name": "Switches",
+      "offset": 16,
+      "type": "std::array<FixedString, 25>",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1E50410 fills +0x10..+0x73 with 0xFF (25 null FixedStrings); live values are FixedString indices or 0xFFFFFFFF. Written by the GameplayActivationLegacyHelper::Refresh* functions (StepSpeed, CharacterWeight, FootstepsType, BodyType, Race, Equipment, SpellCastSwitches, GroundMaterial, SpeakerID) - one switch value each. Slot hints from the macOS build only (offsets there are not proof): +0x10 SpeakerID (RefreshSpeakerID writes the FixedString at +0x10 and posts it as switch group SpeakerID), +0x18 Race, +0x1C BodyType, +0x24 StepSpeed (Steps_Walk/...), +0x28 CharacterWeight; the Windows Refresh* functions are virtual methods of the helper object at GameplayActivationSystem+0x10 (calls through slots 0x70..0x98 in bg3.exe+0x1E43860) and were not located."
+    },
+    {
+      "name": "field_74",
+      "offset": 116,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "bg3.exe+0x1E50410 zeroes the dword at +0x74; live bytes +0x74/+0x75/+0x76 are 0 or 1. macOS RefreshSpeakerID (hint only) refreshes the speaker switch only when +0x74 is set, and takes the dialogue-dummy branch when +0x75 is set."
+    },
+    {
+      "name": "field_75",
+      "offset": 117,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "See field_74."
+    },
+    {
+      "name": "field_76",
+      "offset": 118,
+      "type": "bool",
+      "source": "unknown",
+      "evidence": "See field_74."
+    },
+    {
+      "name": "_Pad77",
+      "offset": 119,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Live always 0; size 0x78."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Which switch group each of the 25 FixedStrings is on Windows: the bg3.exe copies of GameplayActivationLegacyHelper::Refresh* are virtual methods of a helper object passed into the system (not paired, no Toolkit export); macOS hints are in the evidence.",
+    "Type of the 16 bytes at +0 (Guid assumed; live values include heap-like qwords and 0xFFFFFFFF halves) and meaning of the three flags at +0x74."
+  ],
+  "second_pass": "Windows creator bg3.exe+0x1E50410 (zero 16 bytes, 0xFF over +0x10..+0x73, zero dword +0x74) and live FixedString values per 4-byte slot fix the shape; slot names come from macOS GameplayActivationLegacyHelper::Refresh* only, so they stay in the evidence and the member stays an array.",
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No game names found."
+}

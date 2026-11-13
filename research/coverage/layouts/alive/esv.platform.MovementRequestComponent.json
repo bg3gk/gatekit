@@ -1,0 +1,113 @@
+{
+  "component": "esv::platform::MovementRequestComponent",
+  "ext_name": "ServerPlatformMovementRequest",
+  "size": 56,
+  "seen": true,
+  "summary": "A request to move a movable platform (elevator, lift): an entity followed by one esv::platform::MoveRequest (0x30 bytes, the element type of the system map ls::HashMap<EntityHandle, DynamicArray<esv::platform::MoveRequest>> named in the macOS build). Consumed by esv::platform::MovementSystem::ProcessMoveRequests (Toolkit EoCServer.dll+0x644CB0), which appends component+8 (FUN_180642720, element stride 0x30) to the per-platform request list. Seen.py context: level change (a platform got a scripted move on level load).",
+  "fields": [
+    {
+      "name": "Platform",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "ProcessMoveRequests reads the component with stride 0x38 and copies from +8 onward; +0 is an entity (live 0x8B0A / 0x02000001). Probably the platform or the requester. Game name: member 1 (m_Platform) of savegame model ls::model::game::platform::v0::MovementRequestComponent; matched by the Windows loader bg3.exe+0x25847E0 -> bg3.exe+0x2781190: the model EntityId member 1 is remapped and stored at component +0.",
+      "legacy": "field_0"
+    },
+    {
+      "name": "MoveType",
+      "offset": 8,
+      "type": "uint64_t",
+      "source": "game",
+      "evidence": "MoveRequest+0. macOS default ctor zeroes it (stp xzr,xzr [x23,#8]). Live 0. | Name: savegame model ls::model::game::platform::v0::MoveRequest (savefields.py: MoveType, TargetPos, SplineId, SourceSplineNode, TargetSplineNode, Speed, EventId, IgnoreTurnbased), the component's RequestedMovement member at +8; Windows model converter bg3.exe+0x2781330 (called by the loader bg3.exe+0x25847E0 via bg3.exe+0x2781190) maps model->runtime: model MoveType (+0, 8 bytes) is copied to runtime MoveRequest +0 = component +8.",
+      "legacy": "field_8"
+    },
+    {
+      "name": "TargetPos",
+      "offset": 16,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "MoveRequest+8..+0x13: MovementSystem compares *(float*)(request+8/+0xC/+0x10) with the platform's current target floats (ABS(a-b) checks) and copies them into the target. Live (-413.2, -5.575, 565.1). | Name: savegame model ls::model::game::platform::v0::MoveRequest (savefields.py: MoveType, TargetPos, SplineId, SourceSplineNode, TargetSplineNode, Speed, EventId, IgnoreTurnbased), the component's RequestedMovement member at +8; Windows model converter bg3.exe+0x2781330 (called by the loader bg3.exe+0x25847E0 via bg3.exe+0x2781190) maps model->runtime: model TargetPos (+8) is transformed and stored at MoveRequest +8 = component +0x10.",
+      "legacy": "TargetPosition"
+    },
+    {
+      "name": "SplineId",
+      "offset": 28,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Destructor bg3.exe+0x22CAAC0 -> bg3.exe+0x22D5ED0(this+8) releases FixedStrings at +8+0x14 = +0x1C and +8+0x28 = +0x30. Live -1 (null FixedString). Meaning not established. | Name: savegame model ls::model::game::platform::v0::MoveRequest (savefields.py: MoveType, TargetPos, SplineId, SourceSplineNode, TargetSplineNode, Speed, EventId, IgnoreTurnbased), the component's RequestedMovement member at +8; Windows model converter bg3.exe+0x2781330 (called by the loader bg3.exe+0x25847E0 via bg3.exe+0x2781190) maps model->runtime: model SplineId (string at +0x18) becomes a FixedString at MoveRequest +0x14 = component +0x1C.",
+      "legacy": "field_1C"
+    },
+    {
+      "offset": 32,
+      "type": "int32_t",
+      "name": "SourceSplineNode",
+      "source": "game",
+      "evidence": "savegame model platform::v0::MoveRequest; the Windows converter bg3.exe+0x2781330 copies model +0x28 / +0x2C to component +0x20 / +0x24"
+    },
+    {
+      "offset": 36,
+      "type": "int32_t",
+      "name": "TargetSplineNode",
+      "source": "game",
+      "evidence": "savegame model platform::v0::MoveRequest; the Windows converter bg3.exe+0x2781330 copies model +0x28 / +0x2C to component +0x20 / +0x24"
+    },
+    {
+      "name": "Speed",
+      "offset": 40,
+      "type": "float",
+      "source": "game",
+      "evidence": "MoveRequest+0x20. Live 1.5 (a speed or duration). | Name: savegame model ls::model::game::platform::v0::MoveRequest (savefields.py: MoveType, TargetPos, SplineId, SourceSplineNode, TargetSplineNode, Speed, EventId, IgnoreTurnbased), the component's RequestedMovement member at +8; Windows model converter bg3.exe+0x2781330 (called by the loader bg3.exe+0x25847E0 via bg3.exe+0x2781190) maps model->runtime: model Speed (+0x30) -> MoveRequest +0x20 = component +0x28 (live 1.5). Osiris PlatformMoveTo/PlatformMoveOnSpline also take _Speed.",
+      "legacy": "field_28"
+    },
+    {
+      "name": "field_2C",
+      "offset": 44,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "MoveRequest+0x24 byte. Live 0."
+    },
+    {
+      "name": "IgnoreTurnbased",
+      "offset": 45,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "MoveRequest+0x25 byte, copied by MovementSystem into the platform state (+9 of the target struct). Live 0. | Name: savegame model ls::model::game::platform::v0::MoveRequest (savefields.py: MoveType, TargetPos, SplineId, SourceSplineNode, TargetSplineNode, Speed, EventId, IgnoreTurnbased), the component's RequestedMovement member at +8; Windows model converter bg3.exe+0x2781330 (called by the loader bg3.exe+0x25847E0 via bg3.exe+0x2781190) maps model->runtime: model IgnoreTurnbased (bool +0x48) -> MoveRequest +0x25 = component +0x2D. Osiris PlatformMoveTo(..., _IgnoreTurnbased).",
+      "legacy": "field_2D"
+    },
+    {
+      "name": "_Pad2E",
+      "offset": 46,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "Padding."
+    },
+    {
+      "name": "EventId",
+      "offset": 48,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "FixedString released by the destructor (MoveRequest+0x28); MovementSystem passes request+0x28 as FixedString to esv::StoryGameEventManager (the Osiris event raised when the movement finishes). Live 0x02502591, equal to esv::platform::MovementComponent+0 of the same platform. | Name: savegame model ls::model::game::platform::v0::MoveRequest (savefields.py: MoveType, TargetPos, SplineId, SourceSplineNode, TargetSplineNode, Speed, EventId, IgnoreTurnbased), the component's RequestedMovement member at +8; Windows model converter bg3.exe+0x2781330 (called by the loader bg3.exe+0x25847E0 via bg3.exe+0x2781190) maps model->runtime: model EventId (string at +0x38) -> FixedString at MoveRequest +0x28 = component +0x30; MovementSystem raises it to Osiris as PlatformMovementFinished/Canceled(_Object, _EventId).",
+      "legacy": "field_30"
+    },
+    {
+      "name": "_Pad34",
+      "offset": 52,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Padding to 0x38."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Role of the entity at +0; meanings of the qwords +8/+0x20, the float +0x28 and both FixedStrings (the +0x30 one is probably the story event/movement id).",
+    "field_20 is two int32 members, not one uint64: model SourceSplineNode (+0x28) -> component +0x20 and TargetSplineNode (+0x2C) -> component +0x24 (bg3.exe+0x2781330). Split the type, then name them.",
+    "field_2C (MoveRequest +0x24) is not in the save model (zeroed by the converter); a runtime-only byte."
+  ],
+  "minutes": 9,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "Matched 1 of 2: Platform = +0. The model member 0 m_RequestedMovement is a nested record that the loader (bg3.exe+0x2781190 -> bg3.exe+0x2781330) unpacks into component +8..+0x37; this layout keeps those bytes as separate flat rows, so no single row can carry that name (a struct RequestedMovement at +8, 48 bytes, would). Its inner member names are not in this batch.",
+  "names_pass_2": "Settled by the savegame model ls::model::game::platform::v0::MoveRequest (member names from savefields.py) and the Windows model->runtime converter bg3.exe+0x2781330, which gives every member's runtime offset."
+}

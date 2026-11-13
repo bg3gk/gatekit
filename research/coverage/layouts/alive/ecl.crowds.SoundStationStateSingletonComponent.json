@@ -1,0 +1,25 @@
+{
+  "component": "ecl::crowds::SoundStationStateSingletonComponent",
+  "ext_name": "ClientCrowdsSoundStationState",
+  "size": 64,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Stations",
+      "offset": 0,
+      "type": "HashMap<int32_t, EntityHandle>",
+      "source": "inferred",
+      "evidence": "ecl::crowds::SoundStationSystem::FinalizeStations(..., SoundStationRequestsSingletonComponent&, SoundStationStateSingletonComponent& param_4) (EoCClient.dll+0xE9B950): for each new station it inserts the 4-byte key taken from the frame data (*puVar12, stride 4 - a sound group / cluster index) with FUN_18078B130 and stores the new station entity handle in the values array at +0x30 (8-byte elements, grown to the key capacity at +0x28 / +0x38, IndexedStorage<ls::ID<EntityHandleTraits>>); removed stations are erased by key (FUN_180E9CBB0) and their entity destroyed. 64 bytes = one HashMap. macOS default ctor: 64 zero bytes. Live (idle): all zero."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Key meaning: a 4-byte id from SoundStationSystem::FrameData (probably the SoundStateComponent group index); not tied to its source here.",
+    "Key could be uint32_t rather than int32_t."
+  ],
+  "minutes": 5,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "11 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

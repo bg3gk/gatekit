@@ -1,0 +1,48 @@
+{
+  "component": "esv::party::ExperienceRequestOneFrameComponent",
+  "ext_name": "ServerPartyExperienceRequest",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Request to give experience, made on a fresh entity by esv::party::DataSystem (bg3.exe+0x2BCFEE0, ~ ProcessExperienceRequests) from the legacy queue that esv::party::DataSystem::LEGACY_AddExperience(EntityHandle const&, int, eoc::EXPType) fills (Toolkit EoCServer.dll+0xACF440); consumed by esv::exp::ExperienceSystem (Toolkit lists HandleXPIncreases and others with this type). Never seen alive. Registry total 16 (server row; not flagged one-frame).",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2BD33F0 (AllocRaw 0x10) writes 0xffc0000000000000 (null EntityHandle). Writer bg3.exe+0x2BCFEE0 line 80: *req = key of the system's request map (the entity given to LEGACY_AddExperience)."
+    },
+    {
+      "name": "Amount",
+      "offset": 8,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "Creator writes dword 0 at +8; writer line 81 copies a 4-byte element of the per-entity amount list. LEGACY_AddExperience's second parameter is an int (amount, skipped when 0)."
+    },
+    {
+      "name": "Type",
+      "offset": 12,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "Creator writes byte 0 at +0xC; writer lines 82-84 copy a 1-byte element of the per-entity type list. LEGACY_AddExperience's third parameter is enum eoc::EXPType (1 byte here; Script Extender declares no such enum)."
+    },
+    {
+      "name": "_PadD",
+      "offset": 13,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "Not written by the creator."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names are inferred from the parameters of LEGACY_AddExperience; the entity may be a party member or the party.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 8,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

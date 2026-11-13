@@ -1,0 +1,33 @@
+{
+  "component": "esv::surface_action::CreatedEventOneFrameComponent",
+  "ext_name": "ServerSurfaceActionCreatedEvent",
+  "size": 16,
+  "seen": false,
+  "oneFrame": true,
+  "summary": "Apparently unused in this build: bg3.exe has only the registration function (bg3.exe+0x2F9310) and the generic storage helper bg3.exe+0x2211560; no creator, no system reads it; macOS index shows no writer or reader either. Siblings in Script Extender (ServerData.h): FinishedEventOneFrameComponent / GrownEventOneFrameComponent of esv::surface_action.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "Registry size 16. No code writes or reads it in bg3.exe, the Toolkit (no esv::SurfaceManager WorldView names it) or the macOS build (only ComponentOps). Its storage registration bg3.exe+0x2211560 is byte-for-byte the one of esv::surface_action::FinishedEventOneFrameComponent (bg3.exe+0x22119D0: size 0x10, same ops tables PTR_FUN_1454bdf30 / PTR_FUN_1454d9020, no destructor), so the 16 bytes are trivially destructible: no container. Widths of the members are a guess."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint64_t",
+      "source": "unknown",
+      "evidence": "see field_0"
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Unused in every build available: member boundaries cannot be established from code. Only known: 16 bytes, trivially destructible (same storage ops as FinishedEventOneFrameComponent, whose member is a Guid)."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Not settled: the type has no writer or reader in bg3.exe, the Toolkit or macOS; the only new fact is that its storage registration equals the one of FinishedEventOneFrameComponent (16 bytes, no destructor, so no container)."
+}

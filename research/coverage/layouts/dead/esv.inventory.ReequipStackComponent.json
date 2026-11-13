@@ -1,0 +1,92 @@
+{
+  "component": "esv::inventory::ReequipStackComponent",
+  "ext_name": "ServerInventoryReequipStack",
+  "size": 64,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Kept by esv::inventory::SummoningSystem (ProcessReequipUpdates, game bg3.exe+0x35087A0 ~ Toolkit EoCServer.dll+0xF2AB60): remembers what was unequipped when a summoned item took an equipment slot, so it can be re-equipped when the summon goes away. A HashMap<EntityHandle, Array<esv::inventory::UnequippedEntry>> (macOS names: ls::HashMap<ls::ID<ecs::EntityHandleTraits>, ls::DynamicArray<esv::inventory::UnequippedEntry>>). Saved (model game.inventory.v0.ReequipStackComponent, 16 bytes; member names not in the macOS symbols). Never seen alive. Registry total 64 (server row).",
+  "structs": [
+    {
+      "name": "ReequipStackUnequippedEntry",
+      "size": 40,
+      "fields": [
+        {
+          "name": "Slot",
+          "offset": 0,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Game bg3.exe+0x35087A0 line 435 `if (*local_3b8 != 0x16)` (0x16 = no slot) and passes the byte as the slot to eoc::equipment::GetEquipmentEntityInSlot; Toolkit EoCServer.dll+0xF2AB60 line ~538 the same. Equipment slot enum, 1 byte."
+        },
+        {
+          "name": "_Pad1",
+          "offset": 1,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to the 8-aligned entity."
+        },
+        {
+          "name": "Item",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "game line 436 `local_3d0 = pbVar16 + -0x20` (entry +8) is looked up as an entity and its owner compared with the stack's entity; the entry is filled from the 0x38-byte ReequipStackUpdate (lines 576-586, qword copies to +0/+8)."
+        },
+        {
+          "name": "Slot2",
+          "offset": 16,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "game line 448 `if (local_3b8[0x10] != 0x16)` - a second slot, same 0x16 = none."
+        },
+        {
+          "name": "_Pad11",
+          "offset": 17,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding (dword copies at +0x10..+0x1F in lines 581-585)."
+        },
+        {
+          "name": "Item2",
+          "offset": 24,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "game line 449 `local_3d0 = local_3b8 + 0x18` - the second entity, looked up like +8."
+        },
+        {
+          "name": "Processed",
+          "offset": 32,
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "game line 431 `pbVar16[-8] = 1` (entry +0x20) for every entry visited; Toolkit removes entries whose `*(char *)(entry + 0x20) != 0` (line ~798) with the DynamicArray<esv::inventory::UnequippedEntry> remover."
+        },
+        {
+          "name": "_Pad21",
+          "offset": 33,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to the stride 0x28 (game loops `+ 0x28`, `/ 0x28`)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entries",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, Array<ReequipStackUnequippedEntry>>",
+      "source": "inferred",
+      "evidence": "Storage registration bg3.exe+0x2702560: size 0x40, destructor bg3.exe+0x591CF0 (frees the value array at +0x30, then the 48-byte HashSet of keys via bg3.exe+0x582AD0). Game bg3.exe+0x35087A0 walks it as a HashMap: keys at +0x20 with count at +0x2C, values at +0x30 with stride 0x10 (`lVar15 * 0x10 + plVar21[6]`), each value an Array of 0x28-byte entries. Key and value types from the macOS template name ls::HashMap<ls::ID<ecs::EntityHandleTraits>, ls::DynamicArray<esv::inventory::UnequippedEntry>>."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Entry member names are inferred; which slot enum the two slot bytes use (0x16 = none) and why an entry holds two slot/item pairs (main hand / off hand?) is not established.",
+    "Savegame model game.inventory.v0.ReequipStackComponent (16 bytes) has no member names in the macOS symbols.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 12,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

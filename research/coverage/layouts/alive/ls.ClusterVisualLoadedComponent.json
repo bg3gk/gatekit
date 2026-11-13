@@ -1,0 +1,104 @@
+{
+  "component": "ls::ClusterVisualLoadedComponent",
+  "ext_name": "ClusterVisualLoaded",
+  "size": 184,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Visuals",
+      "offset": 0,
+      "type": "HashMap<EntityHandle, void*>",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0x8B11F0 (Toolkit, ls::SoundMaterialSystem::ProcessClusterVisuals) addresses the component with stride 0xB8 (=184, the registry size); it looks up an EntityHandle in the map at +0 (buckets +8, keys +0x20/+0x2C) and reads the value at *(+0x30) + index*8, IndexedStorage<ls::ClusterVisualData, s_TagCluster> assert: 8-byte ls::ClusterVisualData values, dereferenced as an object pointer. Live: HashMap shape with values."
+    },
+    {
+      "name": "field_40_Keys",
+      "offset": 64,
+      "type": "HashSet<EntityHandle>",
+      "source": "unknown",
+      "evidence": "Second HashMap: live samples show bucket count at +0x48, cap/size pairs at +0x58/+0x68 and value storage at +0x70/+0x78; value type not established. Key part of a ls::HashMap (buckets +0, NextIds +0x10, Keys +0x20)."
+    },
+    {
+      "name": "field_40_Values",
+      "offset": 112,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "Value storage of the same HashMap (likely uint32_t as in ClusterPhysicsAlwaysLoadedComponent+0x40); element size not established, so spelled out as raw parts."
+    },
+    {
+      "name": "field_40_ValueCapacity",
+      "offset": 120,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Value storage capacity of the same HashMap (live: equals the key capacity)."
+    },
+    {
+      "name": "_Pad7C",
+      "offset": 124,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "Padding of the value storage (always 0 live)."
+    },
+    {
+      "name": "Frame",
+      "offset": 128,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0xA0B900 compares *(int*)(this+0x80) with the current frame index (param_2+0x10), stores the new one and then empties the ModifiedPair list (+0x94 = 0) and the arrays at +0x98/+0xA8. Live: 0x36D..0x9FA0."
+    },
+    {
+      "name": "field_84",
+      "offset": 132,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Not read by the code seen; live values vary (0..0xFFFFFFFF), maybe uninitialised padding."
+    },
+    {
+      "name": "ModifiedPairs",
+      "offset": 136,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0xA0B900 walks +0x88 with capacity +0x90 and size +0x94 under the assert IndexedStorage<ls::ClusterVisualLoadedComponent::ModifiedPair>; GameEngine.dll+0x6F42E0 reallocates it with 0x10-byte, 8-aligned elements (16-byte ModifiedPair). Live: capacity 0/0x20, size 0/0x12."
+    },
+    {
+      "name": "ModifiedPairsCapacity",
+      "offset": 144,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Capacity of the same ls::Array."
+    },
+    {
+      "name": "ModifiedPairsSize",
+      "offset": 148,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Size of the same ls::Array."
+    },
+    {
+      "name": "Added",
+      "offset": 152,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0xA0B900 clears +0x98 each new frame; SoundMaterialSystem::ProcessClusterVisuals ('LatestClusterAdded') walks *(+0x98) up to the count at +0xA4, stride 8, dereferencing each element as an object (reads +0x108) - ls::ClusterVisualData pointers. Live: empty."
+    },
+    {
+      "name": "Removed",
+      "offset": 168,
+      "type": "Array<void*>",
+      "source": "inferred",
+      "evidence": "GameEngine.dll+0xA0B900 clears +0xA8 together with +0x98; the physics twin (GameEngine.dll+0x120E90) pushes ClusterPhysicsData into +0x98 on add and into +0xA8 when replacing/removing. Name inferred. Live: empty."
+    }
+  ],
+  "summary": "Client visual streaming: the visuals of a loaded cluster, keyed by the source entity (HashMap<EntityHandle, ClusterVisualData*>), with a second map, a frame stamp, the per-frame ModifiedPair list and per-frame added/removed lists that ls::SoundMaterialSystem and ls::SceneSystem consume. Added by ls::ClusterVisualLoaderSystem when a cluster's visuals finish loading; on cluster entities of idle levels.",
+  "confidence": "medium",
+  "open_questions": [
+    "Value type of the second HashMap (+0x40) not established.",
+    "ModifiedPair members (16 bytes) not established.",
+    "Exact meaning of Added/Removed (names inferred from the physics twin)."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,48 @@
+{
+  "component": "eoc::controller::FloodComponent",
+  "ext_name": "ControllerFlood",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Client-side AI-grid flood run for the controller (gamepad) UI: owning pointer to an eoc::AiFlood object, the AiGrid flood request handle and the level name. Created and cleaned up by the per-frame update of ecl::controller::FloodSystem (bg3.exe+0x1DA9A90); same trio as in eoc::aigrid::FloodRequestComponent / _private::FloodRequestStateComponent. Never seen alive. Registry total 16 (client row).",
+  "fields": [
+    {
+      "name": "Flood",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1DAA5B0 (AllocRaw 0x10) zeroes the qword at +0. ecl::controller::FloodSystem update bg3.exe+0x1DA9A90 allocates a 0x100-byte object (FUN_1441beb10, constructor FUN_142057110 - the eoc::AiFlood passed to AiGrid flood requests) and stores it at +0; on removal it calls the object's virtual destructor `(**(code**)*p)(p, 1)`."
+    },
+    {
+      "name": "RequestHandle",
+      "offset": 8,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Creator writes uint16 0 at +8. The update writes `*(undefined2*)(p+8) = DAT_1461766d0` (the invalid-handle constant) on creation; on removal it calls FUN_140e4dd40(aiGrid, (short)p[8], 0) (cancel the AiGrid flood request with this handle), as eoc::aigrid::_private::FloodRequestStateComponent holds it."
+    },
+    {
+      "name": "_PadA",
+      "offset": 10,
+      "type": "uint8_t[2]",
+      "source": "inferred",
+      "evidence": "alignment of the FixedString at +0xC; not written."
+    },
+    {
+      "name": "Level",
+      "offset": 12,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "Creator writes 0xFFFFFFFF at +0xC; destructor bg3.exe+0x69EE80 DecRefs +0xC. The update copies (IncRef/DecRef) the FixedString at +8 of a 16-byte source element into +0xC, and on removal hashes `*(uint*)(p+0xC)` into the level map to find the level's AiGrid (+0x80) - the level name, like FloodRequestComponent.Level."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Which entity carries it and what the controller uses the flood for (movement range preview?) is not established.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

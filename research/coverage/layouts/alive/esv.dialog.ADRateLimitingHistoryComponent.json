@@ -1,0 +1,74 @@
+{
+  "component": "esv::dialog::ADRateLimitingHistoryComponent",
+  "ext_name": "ServerDialogADRateLimitingHistory",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ADRateLimitingHistoryEntry",
+      "size": 12,
+      "fields": [
+        {
+          "name": "DialogInstanceId",
+          "offset": 0,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "ADRateLimitingSystem::ProcessStartRequests (EoCServer.dll+0x69A010) stores the uint32 returned by the ADRateLimitingSystemHelper start call (vtable +0x10) here; UpdateADHistory (EoCServer.dll+0x69B920) looks this value up in the system's uint32 sets (this+0x138, +0x168, +0x108)."
+        },
+        {
+          "name": "field_4",
+          "offset": 4,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Set to 1 by UpdateADHistory when the instance id is in the set at system+0x138."
+        },
+        {
+          "name": "field_5",
+          "offset": 5,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Set to 1 by UpdateADHistory when the id is in the set at system+0x108 (or with field_6 by the failed-start set)."
+        },
+        {
+          "name": "field_6",
+          "offset": 6,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Set together with field_5 (uint16 0x0101 at +5) when the id is in the start/load-failed set at system+0x168."
+        },
+        {
+          "name": "_Pad7",
+          "offset": 7,
+          "type": "uint8_t",
+          "source": "unknown",
+          "evidence": "Padding."
+        },
+        {
+          "name": "FailReason",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Set to 1 next to the assert \"AD is rate limited: start or load failed. Fail reason: %d\" which prints this value (UpdateADHistory, EoCServer.dll+0x69B920)."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "History",
+      "offset": 0,
+      "type": "HashMap<Guid, ADRateLimitingHistoryEntry>",
+      "source": "inferred",
+      "evidence": "UpdateADHistory(ADRateLimitingHistoryComponent*) (EoCServer.dll+0x69B920): keys at +0x20 are ls::Guid (Guid::GetHash, stride 0x10, count +0x2C), values at +0x30 with stride 12 (uint* += 3), parallel index. bg3.exe destructor bg3.exe+0x5C4870 frees values without element destructors. Live (11 instances, act1): bucket count at +8 up to 13, key capacity up to 8, sizes up to 7."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the three flags at +4..+6; key Guid is probably the AD dialog resource id."
+  ],
+  "minutes": 7,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

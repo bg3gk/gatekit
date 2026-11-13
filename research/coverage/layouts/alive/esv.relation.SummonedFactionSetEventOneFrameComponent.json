@@ -1,0 +1,25 @@
+{
+  "component": "esv::relation::SummonedFactionSetEventOneFrameComponent",
+  "ext_name": "ServerRelationSummonedFactionSetEvent",
+  "size": 8,
+  "seen": true,
+  "oneFrame": true,
+  "summary": "One-frame event of esv::relation::RelationSystem: a summon got its faction set (from its owner). Seen.py context: fights with summoners (mud mephits, woad, cloaker), spell casts (spells-5) and dialogues that summon.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "unknown",
+      "evidence": "Toolkit ctor EoCServer.dll+0x23B250 SummonedFactionSetEventOneFrameComponent(ls::ID<ecs::EntityHandleTraits> const&) copies the 8-byte entity id to +0. Live: 9 instances, values like 0x7C3..0x19047 with high dword 0x00800001..0x02000013 (entity handles). Which entity (summon owner or faction source) is not established."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Role of the entity (owner of the summon vs. the summon itself)."
+  ],
+  "minutes": 3,
+  "functions_read": 1,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

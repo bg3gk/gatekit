@@ -1,0 +1,111 @@
+{
+  "component": "esv::inventory::SummonRequestSingletonComponent",
+  "ext_name": "ServerInventorySummonRequest",
+  "size": 32,
+  "seen": true,
+  "summary": "Singleton of esv::inventory::SummoningSystem (macOS writer SummoningSystem::ProcessReequipUpdates; Toolkit EoCServer.dll+0xF2AB60, game copy bg3.exe+0x35087A0 paired 0.23; GatherSummonRequests EoCServer.dll+0xF29D10 ~ bg3.exe+0x3507FA0). Holds two request arrays: summon requests (0xE0 bytes each) and re-equip requests (0x110 bytes each). Alive everywhere (idle), seen empty. Element members beyond the first entity are a variant/optional payload not decoded.",
+  "structs": [
+    {
+      "name": "SummonRequestSingletonSummonRequest",
+      "size": 224,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "not decoded."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint64_t",
+          "source": "unknown",
+          "evidence": "not decoded."
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "uint8_t[200]",
+          "source": "unknown",
+          "evidence": "variant storage (raw: the alternatives overlay each other). Windows: the array resize bg3.exe+0x22E29E0 calls bg3.exe+0x22D5900 on element+0x10 when the index byte at element+0xD8 == 3; for that alternative bg3.exe+0x22D5900 shows an optional FixedString at element+0x24 (has-value byte element+0x28, DecRef unless -1) and an optional object at element+0x30 (has-value byte element+0xC8, destroyed by bg3.exe+0x21BCD00). Other alternatives are trivially destructible and not decoded."
+        },
+        {
+          "name": "field_d8",
+          "offset": 216,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "variant index of the payload at +0x10 (compared with 3 before destruction)."
+        },
+        {
+          "name": "_PadD9",
+          "offset": 217,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to the 0xE0 stride."
+        }
+      ]
+    },
+    {
+      "name": "SummonRequestSingletonReequipRequest",
+      "size": 272,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Toolkit ProcessReequipUpdates walks comp+0x10 with stride 0x110 and compares *(u64*)element with the character entity it is re-equipping."
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "uint8_t[256]",
+          "source": "unknown",
+          "evidence": "payload copied with FUN_180f28f00(&local, element+8) and released with FUN_180f29550; bg3.exe+0x22E2CD0 destroys element+0x28 when the byte at element+0x108 == 1. Contains the target item entity (compared with the item found by eoc::equipment::GetEquipmentEntityInSlot)."
+        },
+        {
+          "name": "field_108",
+          "offset": 264,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "variant index / has-value byte of the payload (compared with 1)."
+        },
+        {
+          "name": "_Pad109",
+          "offset": 265,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding to the 0x110 stride."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "SummonRequests",
+      "offset": 0,
+      "type": "Array<SummonRequestSingletonSummonRequest>",
+      "source": "inferred",
+      "evidence": "destructor bg3.exe+0x22D0470: bg3.exe+0x22E29E0(comp+0, 0) (element stride 0xE0) then free. Adder bg3.exe+0x3509EF0 zeroes both arrays."
+    },
+    {
+      "name": "ReequipRequests",
+      "offset": 16,
+      "type": "Array<SummonRequestSingletonReequipRequest>",
+      "source": "inferred",
+      "evidence": "destructor: bg3.exe+0x22E2CD0(comp+0x10, 0) (element stride 0x110) then free. Toolkit ProcessReequipUpdates iterates comp+0x10 / size comp+0x1C with stride 0x110 and appends new entries there (FUN_180f266a0)."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Members of both element structs beyond the strides (0xE0, 0x110), the variant index at +0xD8 and the optional flag at +0x108; the alternatives of the 0xE0 element's variant (only alternative 3 is partly known: optional FixedString at +0x24, optional object at +0x30). Toolkit GatherSummonRequests (EoCServer.dll+0xF29D10) fills the system's FrameData, not the component, so it does not name them.",
+    "Which array is summon vs re-equip rests on ProcessReequipUpdates using the 0x110 one."
+  ],
+  "minutes": 8,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Re-read the Windows element destructors (bg3.exe+0x22E29E0 / 0x22D5900 for the 0xE0 element, bg3.exe+0x22E2CD0 for the 0x110 one): the strides, the variant index byte (+0xD8) and the optional flag (+0x108) are confirmed, but no writer on the Windows or Toolkit side names the element members, so the layout stays low."
+}

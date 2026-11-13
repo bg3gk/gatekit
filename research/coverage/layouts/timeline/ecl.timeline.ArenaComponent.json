@@ -1,0 +1,25 @@
+{
+  "component": "ecl::timeline::ArenaComponent",
+  "ext_name": "ClientTimelineArena",
+  "size": 48,
+  "fields": [
+    {
+      "name": "Triggers",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1A57300 zeroes 0x30 bytes in the set pattern (4-byte sizes at +0x1C and +0x2C). bg3.exe+0x1A56B80 (called from bg3.exe+0x1A56E10, ecl::timeline::ArenaTriggerSystem) clears it (memset of the bucket array to -1, sizes +0x1C/+0x2C = 0) and re-inserts with the 8-byte set insert bg3.exe+0x721030 every entity of a trigger query whose trigger object holds, in a HashSet<Guid> at +0x78, the timeline Guid taken from the first 16 bytes of the entity's ecl::timeline::TimelineLoadedComponent. The macOS function (anonymous)::UpdateTriggerReferences(WorldView<ecl::CinematicArenaTrigger const, ecl::timeline::ArenaTriggerHasPlayersComponent const, ecl::timeline::TimelineLoadedComponent const, ecl::timeline::ArenaComponent>&, ls::Guid, ls::HashSet<ls::ID<ecs::EntityHandleTraits>> ...) - the component's only writer per the macOS index - names the queried triggers (ecl::CinematicArenaTrigger) and the set type. Windows bg3.exe+0x1A56B80 clears the set at the start (memset buckets -1, sizes +0x1C/+0x2C = 0)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name 'Triggers' is inferred (the set holds the ecl::CinematicArenaTrigger entities that reference the loaded timeline).",
+    "Never alive in the captures."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Settled: Windows bg3.exe+0x1A56B80 clears and refills a 48-byte HashSet with 8-byte entity keys, and the macOS writer UpdateTriggerReferences names it HashSet<EntityHandle> filled from ecl::CinematicArenaTrigger entities.",
+  "raw_check": "23 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

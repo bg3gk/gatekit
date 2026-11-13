@@ -1,0 +1,110 @@
+{
+  "component": "ls::SoundCameraComponent",
+  "ext_name": "SoundCamera",
+  "size": 64,
+  "seen": true,
+  "summary": "Per-camera sound state kept by ecl::sound::CameraSystem (EoCClient.dll, SoundCameraSystem.cpp): the sound volume trigger the camera is in, the look-at/direction last sent to the listener, idle tracking (after 25 s without camera movement a sound state is requested) and change flags. Read by ecl::sound::RoomSystem, PerformanceSystem and ls::SoundOcclusionSystem.",
+  "fields": [
+    {
+      "name": "SoundVolume",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "ecl::sound::CameraSystem::CheckSoundTriggersToUpdateSoundVolumes (EoCClient.dll+0xDD0760): *camera = SoundVolumeTrigger::GetEntityObjectHandle(trigger) or null 0xFFC0000000000000; the old value goes into SoundCameraVolumeChangedEventOneFrameComponent. Live: entity handles / null. Windows creator bg3.exe+0x1E97C60 (AllocRaw 0x40) writes the null handle 0xFFC0000000000000."
+    },
+    {
+      "name": "LookAt",
+      "offset": 8,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "ecl::sound::CameraSystem::UpdateCameraSoundInfo (EoCClient.dll+0xDD1EC0): compared with and then set from ls::CameraComponent::GetLookAt. Live: world positions (47.36, 2.243, 208.4) or FLT_MAX. Windows bg3.exe+0x1E96510 (UpdateCameraSoundInfo) compares +8/+0xC/+0x10 with the camera look-at and stores 8 + 4 bytes; creator FLT_MAX x3."
+    },
+    {
+      "name": "Direction",
+      "offset": 20,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "UpdateCameraSoundInfo: compared with and set from ls::TransformComponent::GetDirVector of the camera. Live: unit vectors (-0.1048, -0.5257, 0.8377 ...). Windows bg3.exe+0x1E96510 compares +0x14/+0x18/+0x1C (squared distance) and stores 8 + 4 bytes; creator FLT_MAX x3. Live tiny values such as 0x319D77F7 (4.6e-9) are ordinary floats - the raw check's 'not an ordinary float' is too strict there."
+    },
+    {
+      "name": "GameCameraPosition",
+      "offset": 32,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "ecl::sound::CameraSystem::UpdateCameraIdleState (EoCClient.dll+0xDD1D20): at the end copies 12 bytes from GameCameraBehavior +0x48 into +0x20; helpers::HasGameCameraTranslated(behavior, soundCamera) compares against it. Live: same magnitudes as LookAt. Windows creator writes FLT_MAX to +0x20/+0x24 and the 8-byte FLT_MAX store at +0x28 (low half +0x28 = FLT_MAX)."
+    },
+    {
+      "name": "IdleTime",
+      "offset": 44,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "UpdateCameraIdleState: += GameTime delta each frame, reset to 0 when the game camera moved; reaching 25.0 sets IsIdle and calls SoundManager::RequestState. Live: 0..25. Windows creator: the high half of the 8-byte store at +0x28 = 0."
+    },
+    {
+      "name": "ZoomLevel",
+      "offset": 48,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "UpdateCameraSoundInfo: compared with and set from helpers::GetCameraZoomLevel (the same value goes to SoundListenerComponent +0x24). Live: 0, 0.7647, 1. Windows bg3.exe+0x1E96510 compares it with the zoom (epsilon) and stores it; creator 0."
+    },
+    {
+      "name": "PlayerId",
+      "offset": 52,
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "CheckSoundTriggersToUpdateSoundVolumes: *(short*)(camera+0x34) = its short argument, which UpdateSoundForCameras passes from the list of player ids (also given to PlayerManager::GetInputPlayerIndex); passed to SoundSystem::SetActiveSoundVolume. Live: 1 or -1. Windows creator writes 0x0100FFFF as 4 bytes at +0x34: +0x34 = 0xFFFF (-1)."
+    },
+    {
+      "name": "IsIdle",
+      "offset": 54,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "UpdateCameraIdleState: set to 1 when IdleTime reaches 25, cleared when the camera moves (each switch requests a sound state). Windows creator: byte +0x36 = 0 (from the 0x0100FFFF store)."
+    },
+    {
+      "name": "field_37",
+      "offset": 55,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "UpdateCameraSoundInfo: copied from byte +0x14 of a component fetched by EoCClient.dll FUN_180c23030 for the camera entity; tested (with +0x3A) in UpdateSoundForCameras before the listener is updated. Live: always 1. Windows bg3.exe+0x1E96510: param_3[0x37] = byte +0x14 of a component fetched by FUN_141d7a190; creator 1 (top byte of 0x0100FFFF)."
+    },
+    {
+      "name": "ForceUpdate",
+      "offset": 56,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "UpdateCameraSoundInfo: set to 1 from another component's +0x3A flag; when set, LookAt/Direction/Zoom are rewritten regardless of change; CheckSoundTriggersToUpdateSoundVolumes clears it. Live: 0/1. Windows bg3.exe+0x1E96510: set to 1 when the camera's other component has its +0x3A flag; creator zeroes 2 bytes at +0x38."
+    },
+    {
+      "name": "HasTranslated",
+      "offset": 57,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "UpdateCameraIdleState: 1 when helpers::HasGameCameraTranslated, else 0. Windows creator zeroes it (2-byte store at +0x38)."
+    },
+    {
+      "name": "Changed",
+      "offset": 58,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "UpdateCameraSoundInfo: set to 1 when LookAt, Direction or ZoomLevel changed (or ForceUpdate), cleared otherwise; UpdateSoundForCameras tests it. Windows bg3.exe+0x1E96510 sets it to 1 when LookAt/Direction/Zoom changed or ForceUpdate, else clears it; creator 0."
+    },
+    {
+      "name": "_Pad3B",
+      "offset": 59,
+      "type": "uint8_t[5]",
+      "source": "inferred",
+      "evidence": "No access seen in the camera system; live bytes vary like uninitialised padding. Never written by the Windows creator or bg3.exe+0x1E96510: padding to 0x40."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Meaning of +0x37 (copied from byte +0x14 of the component behind FUN_141d7a190, not identified)."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "second_pass": "Every offset and width confirmed on Windows: the creator bg3.exe+0x1E97C60 (null handle, nine FLT_MAX floats, 0, 0x0100FFFF at +0x34, zero bytes at +0x38..+0x3A) and the game's UpdateCameraSoundInfo bg3.exe+0x1E96510 match the Toolkit reading. The failed raw check was on tiny but ordinary floats in Direction.",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

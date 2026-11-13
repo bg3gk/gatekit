@@ -1,0 +1,52 @@
+{
+  "component": "ecl::lightbar_haptics::LightbarColorComponent",
+  "ext_name": "ClientLightbarHapticsLightbarColor",
+  "size": 28,
+  "seen": true,
+  "fields": [
+    {
+      "name": "UserId",
+      "offset": 0,
+      "type": "UserId",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x7C6300 LightbarHapticsSystem::CalculateEntityColor puts eoc::user::ReservedForComponent's user id (or Unassigned) at LightbarColorData+0, after checking its high 16 bits against net::GetLocalPeerID(); FinalizeComponents (EoCClient.dll+0x7C6B90) copies data+0 to component+0. Live: 1 in all 3 instances."
+    },
+    {
+      "name": "Color",
+      "offset": 4,
+      "type": "glm::vec4",
+      "source": "inferred",
+      "evidence": "ls::Color<float> filled by CalculateSpell/CalculateStatus (EoCClient.dll+0x7C6560 copies 16 bytes of a lightbar settings entry); FinalizeComponents copies data+4..+0x13 to component+4..+0x13. Live: all zero (no spell/status color in idle)."
+    },
+    {
+      "name": "Brightness",
+      "offset": 20,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "CalculateEntityColor stores CalculateBrightness(this, anyQueryHit) at data+0x14; FinalizeComponents copies it to component+0x14 (component stride 0x1C). Live: 1.0."
+    },
+    {
+      "name": "HasColor",
+      "offset": 24,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "bool set to true by CalculateSpell/CalculateStatus when they supplied a color (param_4 = true), stored at data+0x18 and copied as one byte to component+0x18; FinalizeComponents uses 1.0 when it is 0. Live: 0."
+    },
+    {
+      "name": "_Pad19",
+      "offset": 25,
+      "type": "uint8_t[3]",
+      "source": "unknown",
+      "evidence": "Padding up to the 28-byte size; live bytes there vary (05/33/59) = uninitialised."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "HasColor name: the flag means a spell or status color overrides the default; its consumer was not read in full."
+  ],
+  "minutes": 8,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

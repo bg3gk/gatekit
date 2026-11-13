@@ -1,0 +1,45 @@
+{
+  "component": "ecl::lightbar_haptics::LightbarSoundFallbackComponent",
+  "ext_name": "ClientLightbarHapticsLightbarSoundFallback",
+  "size": 12,
+  "seen": true,
+  "fields": [
+    {
+      "name": "User",
+      "offset": 0,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x7C6B90 LightbarHapticsSystem::FinalizeComponents writes *(uint16*)component = low 16 bits of LightbarColorData+0 (the ReservedFor user id). Live: 1 in all 5 instances (same as LightbarColorComponent.UserId); macOS default constructor: strh at +0."
+    },
+    {
+      "name": "_Pad2",
+      "offset": 2,
+      "type": "uint16_t",
+      "source": "unknown",
+      "evidence": "Never written; live bytes there vary (00/42/aa/ff) = uninitialised padding."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "FinalizeComponents compares component+4/+8 with LightbarColorData+0x1C/+0x20 and assigns them (FixedString::operator=) when they differ, after calling the lightbar helper's slot 0x18. The data comes from CalculateSpell (EoCClient.dll+0x7C6560): the FixedStrings at +0x18/+0x1C of a lightbar settings entry of the spell - most likely sound event names (component is the 'sound fallback'). Live: null (0xFFFFFFFF)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Second FixedString of the same pair (data+0x20 <- settings entry +0x1C). Live: null."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Exact meaning of the two FixedStrings (probably start/stop sound events of the lightbar effect); not checked against game data."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

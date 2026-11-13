@@ -1,0 +1,23 @@
+{
+  "component": "esv::unsheath::ConsumingComponent",
+  "ext_name": "ServerUnsheathConsuming",
+  "size": 4,
+  "fields": [
+    {
+      "name": "Timer",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x32E7A00 (size 4, default 0). bg3.exe+0x32E73A0 (esv::unsheath::ConsumingSystem; for a status of type 5 whose item use type is 2 or 3) writes 0x3F19999A (0.6 s) right after creating/refreshing it, then every tick subtracts the frame time (GameTime+8, scaled by an optional per-entity time factor; 0 while paused) and removes the component when the value is <= 0. The resolver bg3.exe+0x32F1AD0 tests presence only and adds reason 0xF with Sheathed."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the capture; layout from code only."
+  ],
+  "minutes": 2,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

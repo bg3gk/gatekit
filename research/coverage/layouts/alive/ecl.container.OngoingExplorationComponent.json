@@ -1,0 +1,47 @@
+{
+  "component": "ecl::container::OngoingExplorationComponent",
+  "ext_name": "ClientContainerOngoingExploration",
+  "size": 16,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ContainerExplorationEntry",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Container",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Toolkit ctor ecl::container::ExplorationEntry::ExplorationEntry(ID const&, ID const&) at EoCClient.dll+0x294020 stores the first handle at +0; LEGACY_ContainerExplorationSystem::LEGACY_OpenContainerRequest(short const&, ID const& p2, ID const& p3) (EoCClient.dll+0x8C9490) stores p2 at +0, and its caller EoCClient.dll+0xA6EF60 passes the item (checked with ecl::Item::IsContainer) as p2 and the character's handle as p3 (via LEGACY_ToggleContainerRequest, same argument order)."
+        },
+        {
+          "name": "Character",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Second ctor argument (+8); the caller passes ecl::Character::GetEntityObjectHandle(this) - the character that opens the container. operator== (EoCClient.dll+0x2AE870) compares both 8-byte halves."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Entries",
+      "offset": 0,
+      "type": "Array<ContainerExplorationEntry>",
+      "source": "inferred",
+      "evidence": "Toolkit move ctor / operator= of ecl::container::OngoingExplorationComponent (EoCClient.dll+0x294C60 / +0x2AC360): pointer +0, capacity +8, size +0xC, freed with the DynamicArray allocator; element type named by ls::IndexedStorage<struct ecl::container::ExplorationEntry> (EoCClient.dll+0x352690) and the stride 0x10 in LEGACY_ContainerExplorationSystem::CloseContainer (EoCClient.dll+0x8C8D60). Lives on the user entity (query OngoingExploration + ecl::player_management::UserComponent). macOS default ctor: 16 zero bytes. Live (idle): empty."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "The Toolkit gives the type and element name, not the member name; 'Entries' is ours.",
+    "Container/Character order rests on the argument order of the Toggle/Open request path; not checked against a live non-empty sample."
+  ],
+  "minutes": 7,
+  "functions_read": 6,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

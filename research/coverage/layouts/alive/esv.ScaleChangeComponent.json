@@ -1,0 +1,39 @@
+{
+  "component": "esv::ScaleChangeComponent",
+  "ext_name": "ServerScaleChange",
+  "size": 12,
+  "seen": true,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Live 1.0. Not used by ProcessScaleChange's step (start or original scale?)."
+    },
+    {
+      "name": "TargetScale",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "EoCServer.dll esv::VisualSystem::ProcessScaleChange (stride 0xC): step = clamp(+4 - +8, rate) and +8 += step. Live 1.33 after ENLARGE."
+    },
+    {
+      "name": "Scale",
+      "offset": 8,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Same function: the current scale, moved toward +4 each frame, clamped to >= 0.01, written to the visual (+0xC of the visual component). Live 1.0."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "meaning of +0"
+  ],
+  "summary": "Born by statuses (ENLARGE/REDUCE etc. in TUT_Avernus_C, with ScaleMultiplierBoost). Driven by esv::VisualSystem::ProcessScaleChange.",
+  "minutes": 4,
+  "functions_read": 1,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

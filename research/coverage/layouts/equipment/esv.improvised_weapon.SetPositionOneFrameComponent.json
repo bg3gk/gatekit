@@ -1,0 +1,39 @@
+{
+  "component": "esv::improvised_weapon::SetPositionOneFrameComponent",
+  "ext_name": "ServerImprovisedWeaponSetPosition",
+  "size": 24,
+  "oneFrame": true,
+  "fields": [
+    {
+      "name": "Wielder",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2EB3320 creates it (storage bg3.exe+0x2702660, size 0x18: null handle, 12 zero bytes) on the improvised weapon being put down (the key of a map whose entities have eoc::improvised_weapon::WieldedComponent) and writes the first qword of the 0x18-byte map value. bg3.exe+0x2EB2C70 fills that value as {wielder handle, wielder translation} (bg3.exe+0x127E500). Windows save loader bg3.exe+0x25CC740 (model ls::model::game::improvisedweapon::v1::SetPositionOneFrameComponent, 24 bytes, align 8; member names unknown) converts the model's EntityId at model +0 (FUN_144018730) and stores the 8-byte handle at component +0."
+    },
+    {
+      "name": "Position",
+      "offset": 8,
+      "type": "glm::vec3",
+      "source": "inferred",
+      "evidence": "Same place: 8+4 bytes of the map value (the wielder's position), replaced by the result of eoc::AiGrid::GetNearestSpiral when the weapon has bounds and a level - the position where the weapon is put. Windows save loader bg3.exe+0x25CC740 (model ls::model::game::improvisedweapon::v1::SetPositionOneFrameComponent, 24 bytes, align 8; member names unknown) converts the model's position at model +8 (FUN_142772030) and stores 12 bytes at component +8..+0x13; the creator in bg3.exe+0x2EB3320 writes 8 bytes at +8 and 4 at +0x10."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "tail padding (size 0x18, 8-aligned by the handle); the loader writes the upper half of the qword at +0x10 from an uninitialised stack slot, the creator writes only the dword at +0x10"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the captures; the game's member names are not known (the savegame model has no named visitor)."
+  ],
+  "minutes": 10,
+  "functions_read": 5,
+  "status": "declared",
+  "second_pass": "Settled on Windows by the creator bg3.exe+0x2EB3320 (null handle + 12 zero bytes, size 0x18) and the save loader bg3.exe+0x25CC740 of the v1 savegame model (EntityId -> +0, position -> +8, 12 bytes).",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

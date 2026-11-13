@@ -1,0 +1,30 @@
+{
+  "component": "esv::unsheath::CoatingComponent",
+  "ext_name": "ServerUnsheathCoating",
+  "size": 8,
+  "fields": [
+    {
+      "name": "State",
+      "offset": 0,
+      "type": "stats::UnsheathState",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x32E1FC0 (size 8, writes qword 3: State=Sheathed, Timer=0). bg3.exe+0x32E1920 (esv::unsheath::CoatingSystem; a status of type 5 whose item use type is 4) writes 1 or 2 here - the character's preferred weapon set computed exactly as the resolver does it (byte of the component returned by bg3.exe+0xAFB090: 0 or 2 -> Melee, else Ranged). The resolver bg3.exe+0x32F1AD0 (getter bg3.exe+0x32F4900) uses it as the state of reason 0xD. Enum underlying size 4."
+    },
+    {
+      "name": "Timer",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "bg3.exe+0x32E1920 writes 0x40166666 (2.35 s), subtracts the frame time every tick (stride 8, +4) and removes the component at <= 0 - the same timer as in the 4-byte family."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Never alive in the capture."
+  ],
+  "minutes": 5,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

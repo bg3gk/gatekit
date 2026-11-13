@@ -1,0 +1,28 @@
+{
+  "component": "esv::PerItemPassiveCooldownComponent",
+  "ext_name": "ServerPerItemPassiveCooldown",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server per-item passive cooldown list: the names (FixedString) of passives of an item that are on a per-item cooldown. Saved (savegame model game.cooldown.v0.PerItemPassiveCooldownComponent, 16 bytes; no member names known), handled by esv::PerItemPassiveCooldownRestoreSystem together with the Restored/Removed events and esv::PerItemPassiveRestoredCooldownComponent. Never seen alive. Registry total 16 (server row).",
+  "fields": [
+    {
+      "name": "Passives",
+      "offset": 0,
+      "type": "Array<FixedString>",
+      "source": "inferred",
+      "evidence": "Storage set-up bg3.exe+0x2705760: size 0x10, destructor bg3.exe+0x6CC770 -> FUN_1405C4050(p, 0), which DecRefs `*(uint32*)(*p + i * 4)` for i < size(+0xC) and frees `*p` - an Array of FixedStrings. Savegame loader slot bg3.exe+0x2601C00 (table bg3.exe+0x5716548, loader object built by bg3.exe+0x24EA1A0) reads the strings with ls__FixedString__GetString(*p + i*4) and writes `*(int*)(*p + i*4)`. Name inferred from the component name (passive ids)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "That the strings are passive names (and not boost ids) is inferred from the component's name.",
+    "savefields.py has no member names for this model.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

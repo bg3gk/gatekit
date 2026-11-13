@@ -1,0 +1,39 @@
+{
+  "component": "ecl::roll::PassiveRollSuccessOneFrameEventComponent",
+  "ext_name": "ClientRollPassiveRollSuccessEvent",
+  "size": 16,
+  "seen": true,
+  "summary": "Event entity created by ecl::RollSystem's per-frame update (bg3.exe+0x19D6730 -> bg3.exe+0x19D74C0) from a system array of 16-byte requests (entity alive check), read by ecl::sound::PointAndClickSoundSystem::ProcessPassiveRollSuccessEvents (plays a reaction when the byte equals 3). Born live in a dialogue/party step together with eoc::RequestedRollComponent.",
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x19D82A0 (0x10 bytes) copies the request's 8-byte handle (checked with IsEntityAlive in bg3.exe+0x19D74C0); ProcessPassiveRollSuccessEvents (Toolkit) passes it as the entity of the sound reaction. Live: entity handles."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Creator copies one byte from request +8; PointAndClickSoundSystem::ProcessPassiveRollSuccessEvents reacts only when it equals 3. An enum of the roll (type/ability?) - not identified. Live low byte 0/7/8."
+    },
+    {
+      "name": "_Pad9",
+      "offset": 9,
+      "type": "uint8_t[7]",
+      "source": "inferred",
+      "evidence": "tail padding (live garbage)"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The enum at +8 (compared with 3) was not identified."
+  ],
+  "minutes": 7,
+  "functions_read": 4,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

@@ -1,0 +1,26 @@
+{
+  "component": "esv::death::DeadEntitiesSingletonComponent",
+  "ext_name": "ServerDeathDeadEntities",
+  "size": 48,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Entities",
+      "offset": 0,
+      "type": "HashSet<EntityHandle>",
+      "source": "inferred",
+      "evidence": "48 bytes = HashSet (bg3.exe creator bg3.exe+0x2B99A60, 426 bytes like the other HashSet singletons, no element destructor). esv::death::DeathSystem::Update (EoCServer.dll+0xCB30A0) ends by moving the frame's dead-entity set into the singleton with the generic 8-byte-key HashSet move EoCServer.dll+0x28E750 (the same helper family used for HashSet<EntityHandle> elsewhere). Readers: `anonymous`::FindPlayerEntity (macOS index), esv::death::CombatEntityAssignmentSystem query (bg3.exe+0x2345A70). Live (seen.py, idle): one instance, all bytes zero (empty container). Windows: creator bg3.exe+0x2B99A60 registers 0x30-byte storage with the plain-key HashSet destructor and zeroes the set; the DeathSystem update bg3.exe+0x2B8DEC0 ends by move-assigning (bg3.exe+0x5DF700) its frame-data set at FrameData+0x180 into this singleton (query DAT_14638356C, registered by bg3.exe+0x2B9B340). That frame-data set has 8-byte keys: bg3.exe+0x2B927E0 looks up query entities in it (buckets +0x180, count +0x188, next ids +0x190, keys +0x1A0 compared as 8-byte entity handles)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "What exactly qualifies an entity for the set (dead this frame vs. dead and not yet resurrected) is not traced."
+  ],
+  "minutes": 13,
+  "functions_read": 8,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "Confirmed on Windows: DeathSystem update bg3.exe+0x2B8DEC0 moves its FrameData+0x180 set into the singleton, and bg3.exe+0x2B927E0 shows that set's keys are 8-byte entity handles of its query.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

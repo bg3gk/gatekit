@@ -1,0 +1,35 @@
+{
+  "component": "esv::ai::swarm::MemberChangedEventOneFrameComponent",
+  "ext_name": "ServerAiSwarmMemberChangedEvent",
+  "size": 8,
+  "seen": true,
+  "fields": [
+    {
+      "name": "OldGroup",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "EoCServer.dll esv::ai::swarm::MemberSystem::UpdateMembers builds a pair {current group from eoc::ai::swarm::MemberComponent, requested group} (see esv.ai.swarm.MembersChangedComponent layout) and copies it into this event. Live always 0xFFFFFFFF (null: no previous group). Game name: member 1 (m_OldGroup) of savegame model ls::model::game::ai::swarm::v0::MemberChangedEventOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x5213BB0): the FixedString at component +0 goes to model +0x10 (member 1), the one at +4 to model +0 (member 0) - saved order is New, Old.",
+      "legacy": "OldSwarmGroup"
+    },
+    {
+      "name": "NewGroup",
+      "offset": 4,
+      "type": "FixedString",
+      "source": "game",
+      "evidence": "Same pair, +4 = requested group. Live: FixedString indices. Game name: member 0 (m_NewGroup) of savegame model ls::model::game::ai::swarm::v0::MemberChangedEventOneFrameComponent; matched by the macOS Save (bg3_macos_x64+0x5213BB0): component +4 -> model +0.",
+      "legacy": "NewSwarmGroup"
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Old/New order rests on the MembersChanged layout"
+  ],
+  "summary": "Born in fights with swarm enemies (S_HAG_WoodWoad, MudMephit) and at level change. Written by esv::ai::swarm::MemberSystem.",
+  "minutes": 3,
+  "functions_read": 0,
+  "oneFrame": true,
+  "status": "confirmed",
+  "raw_check": "29 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass": "Both model members matched: NewGroup is component +4 and OldGroup +0 (saved in the reverse of memory order), by the macOS Save; agrees with the earlier inferred meaning."
+}

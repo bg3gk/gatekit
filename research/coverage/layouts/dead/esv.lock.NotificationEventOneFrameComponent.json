@@ -1,0 +1,55 @@
+{
+  "component": "esv::lock::NotificationEventOneFrameComponent",
+  "ext_name": "ServerLockNotificationEvent",
+  "size": 24,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Lockpicking notification event of esv::lock::LockpickingSystem (macOS writer GetNotificationOneFrameComponent; per-frame update step 2/2 at bg3.exe+0x2E2B830); read by esv::trap::DisarmSystem. Saved: savegame model ls::model::game::lock::v1::NotificationEventOneFrameComponent with members m_Type, m_ItemToLockpick, m_RequestId (same in v0). Never seen alive. Registry total 24 (server row; not flagged one-frame).",
+  "fields": [
+    {
+      "name": "Type",
+      "offset": 0,
+      "type": "uint8_t",
+      "source": "game",
+      "evidence": "Savegame model game.lock.v1.NotificationEventOneFrameComponent, member 0 (m_Type). Creator bg3.exe+0x2E2C250 (AllocRaw 0x18) writes byte 5 at +0. An enum (no Script Extender enum declared)."
+    },
+    {
+      "name": "_Pad1",
+      "offset": 1,
+      "type": "uint8_t[7]",
+      "source": "unknown",
+      "evidence": "Not written by the creator."
+    },
+    {
+      "name": "ItemToLockpick",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "game",
+      "evidence": "Savegame model member 1 (m_ItemToLockpick). Creator writes 0xffc0000000000000 (null EntityHandle) at +8."
+    },
+    {
+      "name": "RequestId",
+      "offset": 16,
+      "type": "uint32_t",
+      "source": "game",
+      "evidence": "Savegame model member 2 (m_RequestId). Creator writes dword 0 at +0x10; matched by order and width."
+    },
+    {
+      "name": "_Pad14",
+      "offset": 20,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "Not written by the creator; padding to 24."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Values of Type (default 5) are not decoded.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 4,
+  "functions_read": 1,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

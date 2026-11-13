@@ -1,0 +1,139 @@
+{
+  "component": "ecl::CullTrigger",
+  "ext_name": "ClientCullTrigger",
+  "size": 128,
+  "class_size": 120,
+  "seen": true,
+  "se_pattern": "struct [[bg3::component]] CullTrigger : public bg3se::AreaTrigger { DEFINE_PROXY_COMPONENT(...); EntityHandle Entity; ... } as for ecl::RoomTrigger in Trigger.h. The existing SE bg3se::CullTrigger (empty AreaTrigger) fits: the ecl class adds only Entity.",
+  "fields": [
+    {
+      "name": "VMT",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; constructor stores the class vtable; live: module pointer."
+    },
+    {
+      "name": "LoggableObjectVMT",
+      "offset": 8,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; second vtable (ILoggableObject in the Toolkit ctor); live: module pointer, same for all trigger types."
+    },
+    {
+      "name": "Template",
+      "offset": 16,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples (TriggerTemplate* in SE); ctor sets it via SetTemplate; live heap pointer."
+    },
+    {
+      "name": "Flags",
+      "offset": 24,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; the ecl ctor ORs 2 into +0x18; live 2."
+    },
+    {
+      "name": "SyncFlags",
+      "offset": 26,
+      "type": "uint16_t",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; zeroed by the base ctor (4-byte store at +0x18); live 0."
+    },
+    {
+      "name": "TriggerType",
+      "offset": 28,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; base ctor copies its FixedString argument here (IncRef); live a FixedString index."
+    },
+    {
+      "name": "TriggerEntity",
+      "offset": 32,
+      "type": "ecs::EntityRef",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; base ctor writes null handle 0xffc0000000000000 + world 0; live: own entity handle + world pointer (16 bytes)."
+    },
+    {
+      "name": "Level",
+      "offset": 48,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; base ctor writes -1 pair at +0x30; live FixedString (same value as ecl::Item.CurrentLevel)."
+    },
+    {
+      "name": "PreviousLevel",
+      "offset": 52,
+      "type": "FixedString",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; live 0xFFFFFFFF (null)."
+    },
+    {
+      "name": "Protocol",
+      "offset": 56,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; base ctor writes 0; live 0."
+    },
+    {
+      "name": "HasCustomPoint",
+      "offset": 64,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; base ctor 16-bit store of 0 at +0x40; live 0."
+    },
+    {
+      "name": "IsGlobal",
+      "offset": 65,
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples; live 0."
+    },
+    {
+      "name": "_Pad42",
+      "offset": 66,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "padding before the Transform (live garbage 0xFFFF in one sample)."
+    },
+    {
+      "name": "CustomPointTransform",
+      "offset": 68,
+      "type": "Transform",
+      "source": "inferred",
+      "evidence": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 and the live samples (Transform = quat + vec3 Translate + vec3 Scale, 40 bytes); base ctor writes 0 at +0x44..+0x50, 1.0 at +0x50 (quat w), 1.0 at +0x60/+0x64/+0x68 (scale); live identical."
+    },
+    {
+      "name": "_Pad6C",
+      "offset": 108,
+      "type": "uint8_t[4]",
+      "source": "unknown",
+      "evidence": "alignment padding; live garbage."
+    },
+    {
+      "name": "Entity",
+      "offset": 112,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "ecl::CullTrigger::CullTrigger bg3.exe+0x1BB4950 writes null handle 0xffc0000000000000; live = the trigger's own entity (same as TriggerEntity). SE names this member Entity in the other ecl trigger proxies (Trigger.h:726ff); the Toolkit annotates the same store in ecl::RegionTrigger::RegionTrigger as Entity."
+    },
+    {
+      "name": "_Pad78",
+      "offset": 120,
+      "type": "uint8_t[8]",
+      "source": "unknown",
+      "evidence": "The registry size is 8 bytes larger than the class: the same +8 is seen for the trigger proxies SE already maps (ecl::RoomTrigger SE sizeof 0x80 vs registry 136, ecl::AtmosphereTrigger 0x90 vs 152, ecl::RegionTrigger 0x7B->0x80 vs 136); live, these 8 bytes often hold the next element's VMT (e.g. FadeTrigger +0x80 = its own VMT value). Not written by any constructor."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Registry size 128 vs class 0x78: what the trailing 8 bytes are (live values 1/0x44/0xE3/-1 rather than a VMT, unlike the other triggers)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet"
+}

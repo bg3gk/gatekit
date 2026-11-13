@@ -1,0 +1,114 @@
+{
+  "component": "ecl::roll::ActiveRollEventsSingletonComponent",
+  "ext_name": "ClientRollActiveRollEventsSingleton",
+  "size": 64,
+  "seen": true,
+  "structs": [
+    {
+      "name": "ActiveRollResultEvent",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Toolkit EoCClient.dll+0x8216C0 appends 8 bytes (an entity handle) to the system's IndexedStorage<ecl::roll::ActiveRollResultEvent>."
+        }
+      ]
+    },
+    {
+      "name": "ServerRequestedActiveRollStateEvent",
+      "size": 16,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "ecl::RollSystem::ServerRequestedActiveRollState (EoCClient.dll+0x825A70) writes the roll entity (looked up by Guid) at +0, stride 0x10."
+        },
+        {
+          "name": "Request",
+          "offset": 8,
+          "type": "uint32_t",
+          "source": "inferred",
+          "evidence": "Same function stores its ecl::roll::EServerActiveRollStateRequest argument at +8 (enum, not declared in SE)."
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "stride 0x10"
+        }
+      ]
+    },
+    {
+      "name": "ActiveRollSelectedModifiersChangedEvent",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0x8219A0 appends one qword (entity from the signal) with stride 8."
+        }
+      ]
+    },
+    {
+      "name": "ActiveRollFailedModifiersChangedEvent",
+      "size": 8,
+      "fields": [
+        {
+          "name": "Entity",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "EoCClient.dll+0x821A50 appends one qword with stride 8."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "ResultEvents",
+      "offset": 0,
+      "type": "Array<ActiveRollResultEvent>",
+      "source": "inferred",
+      "evidence": "Destructor bg3.exe+0x6B6C50 frees four trivial arrays. Toolkit ecl::RollSystem::ProcessActiveRollEventsSingleton (EoCClient.dll+0x8241D0, WorldView<ActiveRollEventsSingletonComponent,...>) moves the system's four buffers into singleton +0, +0x10, +0x20, +0x30 with asserts naming ActiveRollResultEvent, ServerRequestedActiveRollStateEvent, ActiveRollSelectedModifiersChangedEvent, ActiveRollFailedModifiersChangedEvent in that order. Live: empty."
+    },
+    {
+      "name": "ServerRequestedStateEvents",
+      "offset": 16,
+      "type": "Array<ServerRequestedActiveRollStateEvent>",
+      "source": "inferred",
+      "evidence": "see ResultEvents"
+    },
+    {
+      "name": "SelectedModifiersChangedEvents",
+      "offset": 32,
+      "type": "Array<ActiveRollSelectedModifiersChangedEvent>",
+      "source": "inferred",
+      "evidence": "see ResultEvents"
+    },
+    {
+      "name": "FailedModifiersChangedEvents",
+      "offset": 48,
+      "type": "Array<ActiveRollFailedModifiersChangedEvent>",
+      "source": "inferred",
+      "evidence": "see ResultEvents"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "EServerActiveRollStateRequest width assumed 4 bytes (stored as the enum parameter)."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

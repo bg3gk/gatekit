@@ -1,0 +1,75 @@
+{
+  "component": "esv::inventory::MembersCreatedSingletonComponent",
+  "ext_name": "ServerInventoryMembersCreated",
+  "size": 64,
+  "seen": true,
+  "summary": "Singleton of esv::inventory::InteractionSystem (queried together with ReplicateMembersRequestComponent, MemberUnloadRequestComponent and MemberChangesSingletonComponent, query registered at bg3.exe+0x3499210) and read by esv::notification::System. Alive in every level (idle), seen empty. It is a HashMap with trivially destructible values; the value type was not established, so the value array is given as its raw parts.",
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "HashMap bucket table pointer (HashKeys). Adder bg3.exe+0x348B300 zeroes +0..+0x38 in the HashMap pattern (sizes at +0x1C and +0x2C); destructor bg3.exe+0x5C4870 frees +0x30 then calls the HashSet destructor bg3.exe+0x582AD0 (frees +0x20, +0x10, +0)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "bucket count of the HashMap (0 when never used)."
+    },
+    {
+      "name": "_Pad0C",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "padding of the bucket StaticArray."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "Array<int32_t>",
+      "source": "inferred",
+      "evidence": "HashMap NextIds chain array (freed by the HashSet destructor)."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "Array<EntityHandle>",
+      "source": "inferred",
+      "evidence": "HashMap key array; 8-byte keys, assumed EntityHandle as in every other inventory map of this system (macOS: InteractionSystem keeps HashMap<ID<EntityHandleTraits>, ...> for its per-container data)."
+    },
+    {
+      "name": "field_30",
+      "offset": 48,
+      "type": "void*",
+      "source": "unknown",
+      "evidence": "value array pointer; values are trivially destructible (freed without per-element destructor); element type/size not established."
+    },
+    {
+      "name": "field_38",
+      "offset": 56,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "value array capacity."
+    },
+    {
+      "name": "field_3c",
+      "offset": 60,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "value array size."
+    }
+  ],
+  "confidence": "low",
+  "open_questions": [
+    "Value type of the map (it should become HashMap<EntityHandle, T>); key type assumed EntityHandle."
+  ],
+  "minutes": 9,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+  "second_pass": "Not settled: the value type of the map was not established on the Windows side; the bg3.exe query that names this singleton (bg3.exe+0x347C370) only removes the singleton entity at shutdown."
+}

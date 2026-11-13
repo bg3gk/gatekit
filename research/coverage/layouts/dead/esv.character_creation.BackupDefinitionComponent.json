@@ -1,0 +1,113 @@
+{
+  "component": "esv::character_creation::BackupDefinitionComponent",
+  "ext_name": "ServerCCBackupDefinition",
+  "size": 168,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Server backup of a character's level-up / respec choices kept while esv::character_creation::ChangeAppearanceSubsystem runs (macOS: its Update and Abort write the component) so they can be restored. Its shape is exactly the tail of a full respec definition - the same members as SE ecl::character_creation::FullRespecDefinitionComponent (Components/CharacterCreation.h): class Guid, subclass Guid, an int, LevelUpUpgrades (7 selector arrays) and an Array<SpellMetaId>. Created by bg3.exe+0x37B01A0 (AllocRaw 0xA8); destructor bg3.exe+0x6AB900. Saved: model game.character_creation.v2.BackupDefinitionComponent (8 bytes - a reference) written with the v2 selector models (AbilityBonusSelector, AbilitySelector, EquipmentSelector, LevelUpComponentSelectors, PassiveSelector, SkillExpertiseSelector, SkillSelector, SpellSelector) and DiffDefinition. Never seen alive. Registry total 168 (server row).",
+  "structs": [
+    {
+      "name": "BackupDefinitionSpellMetaId",
+      "size": 48,
+      "fields": [
+        {
+          "name": "OriginatorPrototype",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "inferred",
+          "evidence": "Equals SE SpellMetaId (Base/ExposedTypes.h); element stride 0x30 from the array destructor bg3.exe+0x67D5E0."
+        },
+        {
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId._Pad"
+        },
+        {
+          "name": "SourceType",
+          "offset": 8,
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.SourceType (SpellSourceType, 1 byte)"
+        },
+        {
+          "name": "_Pad9",
+          "offset": 9,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "padding"
+        },
+        {
+          "name": "Source",
+          "offset": 16,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.Source"
+        },
+        {
+          "name": "ProgressionSource",
+          "offset": 32,
+          "type": "Guid",
+          "source": "inferred",
+          "evidence": "SE SpellMetaId.ProgressionSource"
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "NewClass",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x37B01A0 copies the null Guid (DAT_14625aad0..dc) to +0..+0xF. Name from the identical SE layout ecl::character_creation::FullRespecDefinitionComponent.NewClass."
+    },
+    {
+      "name": "NewSubclass",
+      "offset": 16,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Creator copies the null Guid to +0x10..+0x1F (SE FullRespecDefinitionComponent.NewSubclass)."
+    },
+    {
+      "name": "field_20",
+      "offset": 32,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Creator writes dword 0 at +0x20 (SE FullRespecDefinitionComponent.field_20)."
+    },
+    {
+      "name": "_Pad24",
+      "offset": 36,
+      "type": "uint8_t[4]",
+      "source": "inferred",
+      "evidence": "padding before the 8-aligned arrays."
+    },
+    {
+      "name": "LevelUpUpgrades",
+      "offset": 40,
+      "type": "uint8_t[112]",
+      "source": "inferred",
+      "evidence": "Equals SE LevelUpUpgrades (Progression.h: 7 arrays Feats, AbilityBonuses, Skills, SkillExpertise, Spells, Passives, Equipment), kept as bytes because its selector element types are SE structs. Destructor bg3.exe+0x6AB900 calls bg3.exe+0x5F18C0(comp + 0x28), which destroys seven Arrays at +0x60, +0x50, +0x40, +0x30, +0x20, +0x10, +0 of it with element destructors FUN_14067d3e0, d1a0, cf80, cd80, c940, cb40, c940 - the same destructor for arrays 0 and 2 (FeatSelector and SkillSelector have the same shape in SE). Creator zeroes +0x28..+0x97 in seven Array patterns."
+    },
+    {
+      "name": "Spells",
+      "offset": 152,
+      "type": "Array<BackupDefinitionSpellMetaId>",
+      "source": "inferred",
+      "evidence": "Destructor: bg3.exe+0x67D5E0(comp + 0x98, 0) with element stride 0x30, then frees the buffer at +0x98; creator zeroes +0x98/+0xA0/+0xA4. Same as SE FullRespecDefinitionComponent.Spells (Array<SpellMetaId>)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member names come from the identical SE FullRespecDefinitionComponent shape, not from the game; the purpose (backup during appearance change) is from the macOS writers only.",
+    "LevelUpUpgrades kept as bytes (SE struct LevelUpUpgrades); its selector element layouts were not re-checked on Windows.",
+    "Not seen alive (seen.py has no samples); savegame member names not available."
+  ],
+  "minutes": 10,
+  "functions_read": 4,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}

@@ -1,0 +1,46 @@
+{
+  "component": "esv::pickup::PickUpExecutionInFlightComponent",
+  "ext_name": "ServerPickupPickUpExecutionInFlight",
+  "size": 8,
+  "seen": true,
+  "summary": "Tracks a pick-up whose item transfers are running. Added by PickUpExecutionSystem::ProcessTransferRequests (Toolkit EoCServer.dll+0xD4A630, FUN_180d48510 default-constructs it) and updated by PickUpExecutionFinishedSystem::UpdateTrackComponents (EoCServer.dll+0xD47E60). Seen.py context: tree3 dialogue UND_PanicRoom_HiddenGnome.",
+  "fields": [
+    {
+      "name": "PendingCount",
+      "offset": 0,
+      "type": "int32_t",
+      "source": "inferred",
+      "evidence": "UpdateTrackComponents reads *(int*)(element+0) of an 8-byte-stride storage and acts when it reaches 0. Live 1 (one transfer in flight)."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "Byte +4 tested in UpdateTrackComponents ((char)... != 0). Live 0."
+    },
+    {
+      "name": "Result",
+      "offset": 5,
+      "type": "uint8_t",
+      "source": "inferred",
+      "evidence": "UpdateTrackComponents: if byte +5 == 0x0E it is replaced by a new value; live 0x0E (default/pending result code of the pick-up result enum, same family as the 0x13/0x14 codes in PickUpExecutionFinishedSystem)."
+    },
+    {
+      "name": "_Pad6",
+      "offset": 6,
+      "type": "uint8_t[2]",
+      "source": "unknown",
+      "evidence": "Live garbage d0 07; macOS default ctor stores one qword (str x0, [x23])."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "The storage read in UpdateTrackComponents is assumed to be this component's (8-byte stride matches); the enum behind Result is not named."
+  ],
+  "minutes": 5,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

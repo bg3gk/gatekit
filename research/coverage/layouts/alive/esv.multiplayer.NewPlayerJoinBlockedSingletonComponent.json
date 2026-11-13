@@ -1,0 +1,27 @@
+{
+  "component": "esv::multiplayer::NewPlayerJoinBlockedSingletonComponent",
+  "ext_name": "ServerMultiplayerNewPlayerJoinBlocked",
+  "size": 4,
+  "seen": true,
+  "summary": "Server singleton (saved: ls::model::game::multiplayer::v2::NewPlayerJoinBlockedSingletonComponent) present while joining of new players is blocked; holds the block type. Managed by esv::multiplayer::JoinBlockSystem (AddOrRemoveSingletonComponent, ProcessSetJoinBlockRequest), read by esv::JoiningProtocol::SendRefuseMessage and esv::item::animation::RequestsSystem. Seen.py context: idle level, value 0.",
+  "fields": [
+    {
+      "name": "BlockType",
+      "offset": 0,
+      "type": "uint32_t",
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x31DDE0 JoinBlockSystem::ProcessSetJoinBlockRequest compares the singleton's dword +0 with the requested int (system optional at this+0x10, flag this+0x14) and writes it when different. The savegame model of the component (macOS ls::model::game::multiplayer::v0/v1/v2) registers the enum ls::model::game::multiplayer::v0::EJoinBlockType alongside it, so the value is an EJoinBlockType (4 bytes; Script Extender has no such enum). Live (idle): 0. Windows save loader bg3.exe+0x259F0F0 (model ls::model::game::multiplayer::v2::NewPlayerJoinBlockedSingletonComponent, 8 bytes per item) allocates the 4-byte component and stores the model's first dword at +0: one 32-bit member."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Values of the block type enum (the member's width is established)."
+  ],
+  "minutes": 3,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "declared",
+  "second_pass": "The Windows save loader bg3.exe+0x259F0F0 copies one dword of the v2 model into the 4-byte component, which with the Toolkit's ProcessSetJoinBlockRequest (compare/write of dword +0) settles the single 32-bit member.",
+  "live": "not verified",
+  "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+}

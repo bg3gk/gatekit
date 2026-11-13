@@ -1,0 +1,67 @@
+{
+  "component": "eoc::platform::MoveOnSplineComponent",
+  "ext_name": "PlatformMoveOnSpline",
+  "size": 28,
+  "fields": [
+    {
+      "name": "field_0",
+      "offset": 0,
+      "type": "FixedString",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x91DB20 (slot 2 of bg3.exe+0x551D600) serializes a FixedString at the FieldMeta offset global DAT_1462803D0 (never assigned, so 0); macOS default stores the null FixedString."
+    },
+    {
+      "name": "field_4",
+      "offset": 4,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x91DB20 (slot 2 of bg3.exe+0x551D600) writes 4 raw bytes at +0x4. Type float is inferred (no reader opened)."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x91DB20 (slot 2 of bg3.exe+0x551D600) writes 4 raw bytes at +0x8. Type float is inferred (no reader opened)."
+    },
+    {
+      "name": "LastServerPercentage",
+      "offset": 12,
+      "type": "float",
+      "source": "game",
+      "evidence": "Windows replication writer bg3.exe+0x91DB20 (slot 2 of bg3.exe+0x551D600) writes 4 raw bytes at +0xC. Toolkit EoCClient.dll: ls::FieldMeta<float eoc::platform::MoveOnSplineComponent::*,12>; macOS ls::FieldMeta<float eoc::platform::MoveOnSplineComponent::*, &eoc::platform::MoveOnSplineComponent::m_LastServerPercentage>. Assignment of the three Toolkit offsets 12/20/24 to the three names assumes declaration order = macOS listener order (MovementSystem::SystemLoad $_1/$_2/$_3)."
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Windows replication writer bg3.exe+0x91DB20 (slot 2 of bg3.exe+0x551D600) writes 4 raw bytes at +0x10. Type float is inferred (no reader opened)."
+    },
+    {
+      "name": "LastServerTimer",
+      "offset": 20,
+      "type": "float",
+      "source": "game",
+      "evidence": "Windows replication writer bg3.exe+0x91DB20 (slot 2 of bg3.exe+0x551D600) writes 4 raw bytes at +0x14. Toolkit ls::FieldMeta<float eoc::platform::MoveOnSplineComponent::*,20>; macOS ls::FieldMeta<float eoc::platform::MoveOnSplineComponent::*, &eoc::platform::MoveOnSplineComponent::m_LastServerTimer> (order assumption as above)"
+    },
+    {
+      "name": "LastServerTimePassed",
+      "offset": 24,
+      "type": "float",
+      "source": "game",
+      "evidence": "Windows replication writer bg3.exe+0x91DB20 (slot 2 of bg3.exe+0x551D600) writes 4 raw bytes at +0x18. Toolkit ls::FieldMeta<float eoc::platform::MoveOnSplineComponent::*,24>; macOS ls::FieldMeta<float eoc::platform::MoveOnSplineComponent::*, &eoc::platform::MoveOnSplineComponent::m_LastServerTimePassed> (order assumption as above)"
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Name-to-offset mapping of the three LastServer* floats: the Toolkit gives the offsets (FieldMeta<float,12/20/24>), macOS the names; matched by declaration order (members in declaration order have rising offsets, and the macOS FieldMeta list follows the replicated field order). The three change listeners are identical, so the code cannot tell them apart.",
+    "Meaning of the FixedString at +0 (spline id?) and the floats at +4, +8, +0x10; whether those three are floats or ints."
+  ],
+  "minutes": 18,
+  "functions_read": 7,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Every offset and width is settled by the Windows replication writer bg3.exe+0x91DB20 (FixedString at 0, six 4-byte values at 4..0x18); the names of +0xC/+0x14/+0x18 still rest on declaration order."
+}

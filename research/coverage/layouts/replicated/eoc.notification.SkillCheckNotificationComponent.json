@@ -1,0 +1,59 @@
+{
+  "component": "eoc::notification::SkillCheckNotificationComponent",
+  "ext_name": "NotificationSkillCheckNotification",
+  "size": 48,
+  "fields": [
+    {
+      "name": "EntityUuid",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Server: bg3.exe+0x2DF53B0 (notification dispatch, case '$') creates the component through bg3.exe+0x2DF3D50 and fills +0/+8 with the 16 bytes returned by FUN_14107e6f0(entity) (the ls::uuid of the notification's entity); client consumer bg3.exe+0x18A7E20 resolves the Guid back to an entity (FUN_141013470). Replication member 1 (bg3.exe+0x99E3F0). | first pass: write-all serializer bg3.exe+0x99E3F0: member 1, raw 16-byte write at +0; macOS default stp q0,q0 [x23] = 0",
+      "legacy": "field_0"
+    },
+    {
+      "name": "field_10",
+      "offset": 16,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x99E3F0: member 2, raw 1-byte write at +0x10 | names pass 2: Server: notification byte +8. Client bg3.exe+0x18A7E20 calls its listeners with event kind '(byte == 0) + 10' (10 when set, 11 when 0) - most likely success / failure of the skill check, direction not proven."
+    },
+    {
+      "name": "field_11",
+      "offset": 17,
+      "type": "uint8_t",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x99E3F0: member 3, raw 1-byte write at +0x11 | names pass 2: Server: notification byte +9; client bg3.exe+0x18A7E20 copies it into the listener payload."
+    },
+    {
+      "name": "_Pad12",
+      "offset": 18,
+      "type": "uint8_t[6]",
+      "source": "inferred",
+      "evidence": "alignment padding; nothing serialized or initialised here"
+    },
+    {
+      "name": "field_18",
+      "offset": 24,
+      "type": "STDString",
+      "source": "unknown",
+      "evidence": "write-all serializer bg3.exe+0x99E3F0: member 4 is bg3.exe+0x4016480 (24-byte STDString writer) on +0x18; macOS default zeroes +0x18..0x28 (str xzr [x23,#0x20] + q0) and calls 0x106536d10 (string init) | names pass 2: Server: STDString from notification +0x10; client copies it into the listener payload."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Not seen alive (seen.py has no samples).",
+    "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+    "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+    "Guid guessed from width; the two bytes may be skill/ability enums or bools; meaning of the string unknown. Client readers (bg3.exe+0x18A86A0) not decoded.",
+    "names pass 2: field_10: listener event kinds 10/11 not decoded (would settle Success vs Failed).",
+    "names pass 2: Who queues notification '$' (the server side source of bytes +8/+9 and the string) was not found; the related Toolkit esv::stats::RollNotificationSystem::LEGACY_NotifySkillCheck (EoCServer.dll+0x10499E0) only queues eoc::stats::SkillCheckData."
+  ],
+  "seen": false,
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+  "names_pass_2": "No FieldMeta or savegame names (replication: no macOS field names). EntityUuid from the server dispatch bg3.exe+0x2DF53B0 and the client consumer bg3.exe+0x18A7E20."
+}

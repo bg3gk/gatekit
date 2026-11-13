@@ -1,0 +1,74 @@
+{
+  "component": "eoc::swap_places::AnimationRequestComponent",
+  "ext_name": "SwapPlacesAnimationRequest",
+  "size": 24,
+  "fields": [
+    {
+      "name": "Entity",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Not replicated. Windows creator bg3.exe+0x2E9F6E0 (ComponentFrameStorageAllocRaw 0x18, the only caller is bg3.exe+0x2E9E370) stores its entity argument - the same value it uses as the key of the storage's entity map - at +0 and zeroes the array at +8: the handle of the entity that owns the component. macOS default ctor: null handle."
+    },
+    {
+      "name": "Requests",
+      "offset": 8,
+      "type": "Array<SwapPlacesAnimationRequestData>",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<class ls::DynamicArray<struct eoc::swap_places::AnimationRequestData,struct ls::TaggedAllocator<int> > eoc::swap_places::AnimationRequestComponent::*,8>; macOS m_Requests. Serializer bg3.exe+0x8E5FE0 -> bg3.exe+0xA7FD00 (stride 0x18). Windows: the replication writer bg3.exe+0x8E5FE0 passes +8 to the array writer bg3.exe+0xA7FD00 (count from +0xC, stride 0x18)."
+    }
+  ],
+  "structs": [
+    {
+      "name": "SwapPlacesAnimationRequestData",
+      "size": 24,
+      "fields": [
+        {
+          "name": "field_0",
+          "offset": 0,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes an entity at the FieldMeta offset global DAT_14627A028 (never assigned, so 0)"
+        },
+        {
+          "name": "field_8",
+          "offset": 8,
+          "type": "EntityHandle",
+          "source": "unknown",
+          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes an entity at +8"
+        },
+        {
+          "name": "field_10",
+          "offset": 16,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes 1 byte at +0x10"
+        },
+        {
+          "name": "field_11",
+          "offset": 17,
+          "type": "bool",
+          "source": "unknown",
+          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes 1 byte at +0x11"
+        },
+        {
+          "name": "_Pad12",
+          "offset": 18,
+          "type": "uint8_t[6]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Names of the eoc::swap_places::AnimationRequestData members (no FieldMeta names)."
+  ],
+  "minutes": 7,
+  "functions_read": 5,
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "no live or captured instance: needs a situation that creates it",
+  "second_pass": "Settled on Windows: the creator bg3.exe+0x2E9F6E0 writes the owner entity at +0 and an empty array at +8; the array writer bg3.exe+0xA7FD00 gives the element (two entities, two bytes, stride 0x18)."
+}

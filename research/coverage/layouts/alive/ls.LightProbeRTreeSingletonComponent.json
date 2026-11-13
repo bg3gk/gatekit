@@ -1,0 +1,69 @@
+{
+  "component": "ls::LightProbeRTreeSingletonComponent",
+  "ext_name": "LightProbeRTreeSingleton",
+  "size": 80,
+  "seen": true,
+  "summary": "Client singleton spatial index of light probes, filled by ls::LightProbeHierarchySystem::HandleAdds (macOS). Its 80 bytes are one ls::EntityRTree (Toolkit GameEngine.dll ctor/operator=): a root node pointer, a constant, and a hash map from entity to its bound (EntityRTree::EntityBound, 0x18 bytes). The macOS build keeps a ls::StaticArray<ls::EntityRTree, 37> elsewhere, so the type is shared.",
+  "structs": [
+    {
+      "name": "LightProbeRTreeEntityBound",
+      "size": 24,
+      "fields": [
+        {
+          "name": "Min",
+          "offset": 0,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Value type ls::EntityRTree::EntityBound (IndexedStorage assert in EntityRTree copy ctor GameEngine.dll+0x2F79D0), allocated with element size 0x18 and alignment 4 - six floats; macOS ls::EntityRTree::Insert(Vector3f const&, Vector3f const&, ID const&) takes two corners. Min/Max naming inferred."
+        },
+        {
+          "name": "Max",
+          "offset": 12,
+          "type": "glm::vec3",
+          "source": "inferred",
+          "evidence": "Second corner, see Min."
+        }
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "Root",
+      "offset": 0,
+      "type": "void*",
+      "source": "inferred",
+      "evidence": "EntityRTree copy ctor (GameEngine.dll+0x2F79D0) allocates a 0x148-byte node (8 children with null entity handles every 0x28 bytes, two dword counters at +0/+4) and stores it at +0, then deep-copies the source tree. Live: heap pointer."
+    },
+    {
+      "name": "field_8",
+      "offset": 8,
+      "type": "float",
+      "source": "unknown",
+      "evidence": "Ctor: *(this+8) = 0x40860A91 (4.18879 = 4*pi/3). Live: always 4.189."
+    },
+    {
+      "name": "field_C",
+      "offset": 12,
+      "type": "uint32_t",
+      "source": "unknown",
+      "evidence": "operator= (GameEngine.dll+0x2F8CB0) copies +0..+0xC as four dwords; live always 0."
+    },
+    {
+      "name": "Bounds",
+      "offset": 16,
+      "type": "HashMap<EntityHandle, LightProbeRTreeEntityBound>",
+      "source": "inferred",
+      "evidence": "operator=: FUN_1800BF710(this+0x10) copies an entity hash set (IndexedStorage<ls::ID<EntityHandleTraits>> keys + int buckets/next), then values at +0x40 with count +0x48, element 0x18 = EntityRTree::EntityBound; loop bound +0x3C = key count. Live: +0x18 bucket count 0x61..0xC07, key arrays with sizes 0x37..0x408, value storage capacity 0x40..0x800."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Meaning of the 4*pi/3 constant and of +0xC.",
+    "Read from the Toolkit build (GameEngine.dll); the live layout matches it."
+  ],
+  "minutes": 6,
+  "functions_read": 3,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

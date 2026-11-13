@@ -1,0 +1,106 @@
+{
+  "component": "eoc::sound::DistantSoundStateComponent",
+  "ext_name": "SoundDistantSoundState",
+  "size": 120,
+  "fields": [
+    {
+      "name": "Info",
+      "offset": 0,
+      "type": "DistantSoundInfo",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_Info (eoc::sound::DistantSoundInfo), position 1 of 3 in the macOS serializer TypeList; serializer bg3.exe+0x9D7420 writes the info struct via bg3.exe+0xAD1930 at +0x0 in the same order"
+    },
+    {
+      "name": "Position",
+      "offset": 104,
+      "type": "glm::vec3",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_Position (Vector3f), position 2 of 3 in the macOS serializer TypeList; serializer bg3.exe+0x9D7420 writes 12 bytes at +0x68 in the same order"
+    },
+    {
+      "name": "State",
+      "offset": 116,
+      "type": "uint32_t",
+      "source": "game",
+      "evidence": "macOS FieldMeta m_State (eoc::sound::EDistantSoundState (no SE enum)), position 3 of 3 in the macOS serializer TypeList; serializer bg3.exe+0x9D7420 writes 4 bytes at +0x74 in the same order"
+    }
+  ],
+  "structs": [
+    {
+      "name": "DistantSoundInfo",
+      "size": 104,
+      "fields": [
+        {
+          "name": "Name",
+          "offset": 0,
+          "type": "FixedString",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_Name (ls::FixedString) of eoc::sound::DistantSoundInfo; bg3.exe+0xAD1930 writes a FixedString at +0x0 in TypeList order"
+        },
+        {
+          "name": "Level",
+          "offset": 4,
+          "type": "FixedString",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_Level (ls::FixedString) of eoc::sound::DistantSoundInfo; bg3.exe+0xAD1930 writes a FixedString at +0x4 in TypeList order"
+        },
+        {
+          "name": "InitSound",
+          "offset": 8,
+          "type": "FixedString",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_InitSound (ls::FixedString) of eoc::sound::DistantSoundInfo; bg3.exe+0xAD1930 writes a FixedString at +0x8 in TypeList order"
+        },
+        {
+          "name": "_PadC",
+          "offset": 12,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding (alignment)"
+        },
+        {
+          "name": "EntityUUID",
+          "offset": 16,
+          "type": "Guid",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_EntityUUID (ls::Guid) of eoc::sound::DistantSoundInfo; bg3.exe+0xAD1930 writes 16 bytes at +0x10 in TypeList order"
+        },
+        {
+          "name": "Switches",
+          "offset": 32,
+          "type": "HashMap<FixedString, FixedString>",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_Switches (ls::HashMap<ls::FixedString, ls::FixedString>) of eoc::sound::DistantSoundInfo; bg3.exe+0xAD1930 writes count +0x4C, keys +0x40, values +0x50 (HashMap 0x20..0x60) at +0x20 in TypeList order"
+        },
+        {
+          "name": "ActivationRange",
+          "offset": 96,
+          "type": "float",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_ActivationRange (float) of eoc::sound::DistantSoundInfo; bg3.exe+0xAD1930 writes 4 bytes (written before Switches, as in the TypeList) at +0x60 in TypeList order"
+        },
+        {
+          "name": "UseOcclusion",
+          "offset": 100,
+          "type": "bool",
+          "source": "game",
+          "evidence": "macOS FieldMeta m_UseOcclusion (bool) of eoc::sound::DistantSoundInfo; bg3.exe+0xAD1930 writes 1 byte at +0x64 in TypeList order"
+        },
+        {
+          "name": "_Pad65",
+          "offset": 101,
+          "type": "uint8_t[3]",
+          "source": "inferred",
+          "evidence": "tail padding"
+        }
+      ]
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [],
+  "minutes": 6,
+  "functions_read": 2,
+  "oneFrame": false,
+  "status": "confirmed",
+  "raw_check": "16 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

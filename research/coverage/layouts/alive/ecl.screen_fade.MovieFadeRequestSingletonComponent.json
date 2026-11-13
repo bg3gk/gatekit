@@ -1,0 +1,28 @@
+{
+  "component": "ecl::screen_fade::MovieFadeRequestSingletonComponent",
+  "ext_name": "ClientScreenFadeMovieFadeRequestSingleton",
+  "size": 64,
+  "seen": true,
+  "external_types": [
+    "ScreenFadeCreationData (BG3Extender/GameDefinitions/Components/Camera.h, 32 bytes)"
+  ],
+  "fields": [
+    {
+      "name": "Requests",
+      "offset": 0,
+      "type": "HashMap<int16_t, Array<ScreenFadeCreationData>>",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x1915110 (0x40, zeroed). Toolkit ecl::screen_fade::MovieSystem::ProcessStartRequests (EoCClient.dll+0x7F2640) clears this component (EntityView slot +0x10) and gets-or-adds an array value by a short player id (FUN_1807ef3a0(map, &short)), appending elements of stride 0x20 under 'IndexedStorage<eoc::screen_fade::ScreenFadeCreationData>' (Guid from Guid::Generate at +0). macOS has ls::HashMap<short, DynamicArray<eoc::screen_fade::ScreenFadeCreationData>>::DestroyValues. Live: empty. Same container type as SE's ecl::camera::ScreenFadeToRequestManualOneFrameComponent.Requests."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Destructor pointer of this type (bg3.exe+0x6A2760) is not a recognised function start; not read."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "hold": "uses types of Script Extender's own headers (ScreenFadeCreationData (BG3Extender/GameDefinitions/Components/Camera.h, 32 bytes)): whether they are declared before Coverage.h is included is not checked yet",
+  "oneFrame": false,
+  "status": "hypothesis",
+  "status_reason": "the layout file is not valid yet: 'list' object has no attribute 'items'"
+}

@@ -1,0 +1,32 @@
+{
+  "component": "esv::crowds::DetourIdlingComponent",
+  "ext_name": "ServerCrowdsDetourIdling",
+  "size": 8,
+  "seen": true,
+  "oneFrame": false,
+  "summary": "Crowd character idling at the end of a detour (lower-city crowds seen during the Shadow-cursed / morgue fights in SCL_Main_A; born alone). Written and counted by esv::crowds::DetourSystem::Update.",
+  "fields": [
+    {
+      "name": "Duration",
+      "offset": 0,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "esv::crowds::DetourSystem::Update (macOS bg3_macos_x64+0x5F0E5C0; Windows EoCServer.dll+0xD99D20) adds the component when the crowd member reached its detour target, zeroes 8 bytes and stores at +0 a random value between the CrowdCharacterTrigger's floats +0xA8 and +0xAC (min/max idle time). Live 5.9..9.5."
+    },
+    {
+      "name": "Elapsed",
+      "offset": 4,
+      "type": "float",
+      "source": "inferred",
+      "evidence": "Same Update adds GetDeltaTimeForEntity to +4 each frame and ends idling when Duration <= Elapsed. Live 0..1.22."
+    }
+  ],
+  "confidence": "medium",
+  "open_questions": [
+    "Offsets read from the macOS Update only; live data fits (Windows Update delegates to unnamed helpers)."
+  ],
+  "minutes": 6,
+  "functions_read": 2,
+  "status": "confirmed",
+  "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656"
+}

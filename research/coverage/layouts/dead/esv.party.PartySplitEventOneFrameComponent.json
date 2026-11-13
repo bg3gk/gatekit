@@ -1,0 +1,34 @@
+{
+  "component": "esv::party::PartySplitEventOneFrameComponent",
+  "ext_name": "ServerPartySplitEvent",
+  "size": 16,
+  "oneFrame": false,
+  "seen": false,
+  "summary": "Event of the server party system: a party was split and a new party entity created. Made on a fresh event entity by bg3.exe+0x2BBFD20 when the second member of a (party, other) pair is null: the new party comes from bg3.exe+0x2BBBED0, which creates eoc::party::CompositionComponent and esv::party::NewPartyOneFrameComponent on it. Read by esv::FlagManager::OnPartySplitEvent (Toolkit EoCServer.dll+0x852B80). Never seen alive. Registry total 16 (server row; not flagged one-frame).",
+  "fields": [
+    {
+      "name": "Party",
+      "offset": 0,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Creator bg3.exe+0x2BC4500 (AllocRaw 0x10) sets both qwords to 0xffc0000000000000 (null EntityHandle). Writer bg3.exe+0x2BBFD20 line 299: *ev = pair.first (the same member that PartyMergedEvent gets at +0)."
+    },
+    {
+      "name": "NewParty",
+      "offset": 8,
+      "type": "EntityHandle",
+      "source": "inferred",
+      "evidence": "Writer bg3.exe+0x2BBFD20 lines 289-302: ev[1] = an element of the local array filled with the return value of bg3.exe+0x2BBBED0 (`*param_2` = the entity on which it adds eoc::party::CompositionComponent and NewPartyOneFrameComponent)."
+    }
+  ],
+  "confidence": "high",
+  "open_questions": [
+    "Member 0 is the original party by analogy with PartyMergedEvent; not checked in OnPartySplitEvent.",
+    "Not seen alive (seen.py has no samples)."
+  ],
+  "minutes": 4,
+  "functions_read": 2,
+  "status": "declared",
+  "live": "not verified",
+  "live_reason": "no live or captured instance: needs a situation that creates it"
+}
