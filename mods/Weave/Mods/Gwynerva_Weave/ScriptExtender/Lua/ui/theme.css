@@ -1,0 +1,133 @@
+/* The look every Weave window shares. Colours are written as in a browser (#rrggbb); the kit
+   converts them to what IMGUI needs. To change the look while the game runs, run
+   Weave.Eject("theme.css") and edit the copy in Script Extender\Gwynerva_Weave\ui\ -
+   or put only your additions into user.css there (it is read after this file). */
+
+/* Dark, warm, gold on near-black: made to sit beside Baldur's Gate 3's own panels. */
+@theme gate {
+  --bg: #15110dF7;          --bg-alt: #0c0a08;
+  --panel: #2a2119;         --panel-hover: #3b2e20;      --panel-active: #4d3b27;
+  --text: #e9dec8;          --muted: #a08f76;
+  --accent: #d6ab58;        --accent-strong: #f3cd7c;
+  --border: #6e5735;
+  --button: #3c2d1b;        --button-hover: #5c4526;     --button-active: #7d5d2d;
+  --header: #37291a;        --header-hover: #56411f;     --header-active: #705427;
+  --title: #1c1610;         --title-active: #3a2a15;
+  --tab: #241b13;           --tab-hover: #5c4526;        --tab-active: #4c3920;
+  --selection: #7d5d2d;     --scroll: #5b4a31;
+  --log-cmd: #74d4ff;       --log-result: #9fe89f;       --log-error: #ff7f76;
+  --log-warning: #f4c861;   --log-debug: #8f8a82;        --log-client: #eee8dc;
+  --log-server: #abc8ee;
+}
+
+/* Dark and neutral, blue accent: the look of a developer tool. */
+@theme slate {
+  --bg: #14171cF7;          --bg-alt: #0e1014;
+  --panel: #252a32;         --panel-hover: #313845;      --panel-active: #3d4655;
+  --text: #dbe0e8;          --muted: #8a94a2;
+  --accent: #62b2ff;        --accent-strong: #93ccff;
+  --border: #3b434f;
+  --button: #2b333f;        --button-hover: #3b4758;     --button-active: #4b5b72;
+  --header: #29313c;        --header-hover: #384455;     --header-active: #47576c;
+  --title: #0f1217;         --title-active: #1f2733;
+  --tab: #1a1f26;           --tab-hover: #384455;        --tab-active: #2c3849;
+  --selection: #2f5e8e;     --scroll: #47515f;
+  --log-cmd: #74d4ff;       --log-result: #9fe89f;       --log-error: #ff7f76;
+  --log-warning: #f4c861;   --log-debug: #858b94;        --log-client: #e6e9ee;
+  --log-server: #abc8ee;
+}
+
+/* Light: ink on parchment. */
+@theme parchment {
+  --bg: #efe4ccF9;          --bg-alt: #e5d8ba;
+  --panel: #d8c8a5;         --panel-hover: #ccb88e;      --panel-active: #bfa97b;
+  --text: #2a2016;          --muted: #6e5f49;
+  --accent: #8b4a1d;        --accent-strong: #6a330f;
+  --border: #a18b61;
+  --button: #d1be97;        --button-hover: #c3ac7f;     --button-active: #b29968;
+  --header: #d7c7a3;        --header-hover: #c8b487;     --header-active: #b8a171;
+  --title: #d8c8a5;         --title-active: #c8b081;
+  --tab: #dfd1b1;           --tab-hover: #c8b487;        --tab-active: #ccb88e;
+  --selection: #c9a25e;     --scroll: #b29968;
+  --log-cmd: #0a5b89;       --log-result: #1e6a29;       --log-error: #a4201a;
+  --log-warning: #8a5900;   --log-debug: #7b705f;        --log-client: #2a2016;
+  --log-server: #29497a;
+}
+
+:root {
+  --radius: 5;
+  --gap: 6 8;
+}
+
+/* A window sets every IMGUI colour once; whatever is inside inherits them. The names in
+   CamelCase are IMGUI's own slots - the full palette, state by state. */
+window {
+  WindowBg: var(--bg);
+  ChildBg: var(--bg-alt);
+  PopupBg: var(--bg);
+  MenuBarBg: var(--title);
+  Text: var(--text);
+  TextDisabled: var(--muted);
+  Border: var(--border);
+  TitleBg: var(--title);
+  TitleBgCollapsed: var(--title);
+  TitleBgActive: var(--title-active);
+  FrameBg: var(--panel);
+  FrameBgHovered: var(--panel-hover);
+  FrameBgActive: var(--panel-active);
+  Button: var(--button);
+  ButtonHovered: var(--button-hover);
+  ButtonActive: var(--button-active);
+  Header: var(--header);
+  HeaderHovered: var(--header-hover);
+  HeaderActive: var(--header-active);
+  Tab: var(--tab);
+  TabHovered: var(--tab-hover);
+  TabActive: var(--tab-active);
+  TabUnfocused: var(--tab);
+  TabUnfocusedActive: var(--tab-active);
+  CheckMark: var(--accent-strong);
+  SliderGrab: var(--accent);
+  SliderGrabActive: var(--accent-strong);
+  Separator: var(--border);
+  SeparatorHovered: var(--accent);
+  SeparatorActive: var(--accent-strong);
+  ResizeGrip: var(--button);
+  ResizeGripHovered: var(--button-hover);
+  ResizeGripActive: var(--accent);
+  ScrollbarBg: alpha(var(--bg-alt), 0.6);
+  ScrollbarGrab: var(--scroll);
+  ScrollbarGrabHovered: var(--button-hover);
+  ScrollbarGrabActive: var(--accent);
+  TextSelectedBg: var(--selection);
+  TextLink: var(--accent-strong);
+  TableHeaderBg: var(--header);
+  TableBorderStrong: var(--border);
+  TableBorderLight: alpha(var(--border), 0.5);
+  NavHighlight: var(--accent);
+
+  rounding: 7;
+  border: 1;
+  padding: 10 12;
+  gap: var(--gap);
+  frame-rounding: var(--radius);
+  frame-padding: 8 4;
+  tab-rounding: var(--radius);
+  popup-rounding: var(--radius);
+  child-rounding: var(--radius);
+  grab-rounding: var(--radius);
+  scrollbar-rounding: 8;
+  scrollbar-size: 14;
+}
+
+/* Classes any Weave window can use. */
+heading     { color: var(--accent); }
+.muted      { color: var(--muted); }
+.accent     { color: var(--accent-strong); }
+.error      { color: var(--log-error); }
+.warning    { color: var(--log-warning); }
+.ok         { color: var(--log-result); }
+button.primary        { background: var(--button-active); color: var(--accent-strong); }
+button.primary:hover  { background: var(--accent); }
+button.quiet          { background: transparent; }
+button.quiet:hover    { background: var(--panel-hover); }

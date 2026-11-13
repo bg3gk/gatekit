@@ -1,0 +1,69 @@
+<!-- The overlay's settings window. Mounted by Client/Overlay.lua (GK.OverlaySettings), which
+     keeps the state below equal to the settings and provides set(), captureKey() and the rest. -->
+<template>
+  <window id="overlay" title="GateKit · overlay settings" width="640" height="720" center>
+
+    <heading>Appearance</heading>
+    <combo id="theme" :options="themes" #model="theme" @change="set('theme', value)" label="Theme" width="280"
+           tip="Themes are @theme blocks in theme.css and user.css"/>
+    <combo id="font" :options="fonts" #model="font" @change="set('font', value)" label="Text size" width="280"
+           tip="Script Extender's six text sizes. Applies to every Weave window, of any mod; sizes in a window's own style count from it."/>
+    <child id="preview" height="74" border>
+      <row>
+        <text>Text</text>
+        <text class="muted">muted</text>
+        <text class="accent">accent</text>
+        <text class="ok">result</text>
+        <text class="warning">warning</text>
+        <text class="error">error</text>
+      </row>
+      <row>
+        <button>Button</button>
+        <button class="primary">Primary</button>
+        <checkbox checked="true" label="Check"/>
+        <input value="input" width="120"/>
+      </row>
+    </child>
+
+    <heading>Opening the console</heading>
+    <row>
+      <text id="key-text">Open / close key:  {{ key }}</text>
+      <button id="key-change" @click="captureKey()">{{ capturing ? "Press a key..." : "Change..." }}</button>
+    </row>
+    <checkbox id="hud" #model="hudButton" @change="set('hudButton', value)" label="Show a button under the minimap"
+              tip="A small GK button on the game's HUD. Click: console. Right click: this window."/>
+    <group #if="hudButton">
+      <slider id="hud-x" #model="hudX" @change="set('hudX', value)" int min="-600" max="600" label="Button offset, right" width="280"/>
+      <slider id="hud-y" #model="hudY" @change="set('hudY', value)" int min="-200" max="800" label="Button offset, down" width="280"/>
+    </group>
+
+    <heading>While a Weave window is open (any mod)</heading>
+    <checkbox id="block-keys" #model="blockKeys" @change="set('blockKeys', value)" label="Keep the keyboard from the game"
+              tip="Esc then closes the window instead of opening the game menu"/>
+    <checkbox id="block-mouse" #model="blockMouse" @change="set('blockMouse', value)" label="Keep mouse clicks and the wheel from the game"/>
+
+    <heading>Files</heading>
+    <text class="muted" wrap="on">Windows are Weave components (.weave): a template, a script and a style in one file. Copies in Script Extender\Gwynerva_Weave\ui\ win over the built-in ones and are re-read while the game runs: save the file, the window changes.</text>
+    <row>
+      <button id="eject-theme" @click="ejectTheme()" tip="Writes theme.css into that folder, ready to edit">Copy theme.css for editing</button>
+      <button id="demo" @click="openDemo()" tip="A window that shows what Weave can do">Weave demo</button>
+      <button id="rescue" @click="rescue()" tip="Puts every Weave window (the console included) back to its default place and size. Also: !gkrescue or !weaverescue in the Script Extender console.">Bring windows back</button>
+      <button id="defaults" class="quiet" @click="defaults()">Defaults</button>
+    </row>
+    <text id="status" class="ok" wrap="on" #if="status != ''">{{ status }}</text>
+  </window>
+</template>
+
+<script>
+status = ""
+capturing = false
+</script>
+
+<style>
+/* Only what differs from theme.css. */
+heading        { font: +1; }
+#preview       { padding: 8 10; }
+#key-text      { color: var(--accent-strong); }
+#key-change    { background: var(--panel); }
+#status        { font: -1; }
+</style>

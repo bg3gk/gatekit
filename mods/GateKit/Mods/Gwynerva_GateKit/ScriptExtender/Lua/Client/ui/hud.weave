@@ -1,0 +1,18 @@
+<!-- The button on the game's HUD, under the minimap. A window without a frame; Client/Overlay.lua
+     keeps it under the minimap and hides it whenever the game hides the minimap. -->
+<template>
+  <window id="hud" title="GateKit HUD" overlay="false" closeable="false"
+          flags="NoTitleBar NoResize NoMove NoScrollbar NoBackground NoSavedSettings NoFocusOnAppearing NoNav NoCollapse AlwaysAutoResize">
+    <button id="toggle" @click="toggle()" @rightclick="settings()" @hover="hover(true)" @leave="hover(false)"
+            tip="GateKit console. Right click: overlay settings.">GK</button>
+  </window>
+</template>
+
+<style>
+/* A small gold-rimmed pill, like the game's own round buttons. */
+window         { padding: 0; border: 0; font: Small; }
+#toggle        { background: alpha(var(--title), 0.88); color: var(--accent-strong);
+                 border-color: var(--accent); border: 1; rounding: 14; padding: 5 12; }
+#toggle:hover  { background: var(--button-hover); }
+#toggle:active { background: var(--button-active); }
+</style>

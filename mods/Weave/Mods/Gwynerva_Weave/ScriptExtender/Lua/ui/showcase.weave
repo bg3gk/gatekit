@@ -1,0 +1,441 @@
+<!-- Weave's showcase: Weave.Showcase(true) or !weaveshowcase. A dashboard of the character you
+     control, read from the running game once a second: stat cards, an ability chart and a hit-point
+     ring drawn on canvases, item and spell icons from the game's own atlases, badges, progress bars and
+     buttons - one file, no pictures of its own. Copy it with Weave.Eject("showcase.weave"). -->
+<template>
+  <window id="showcase" title="Weave showcase" width="1180" height="884" x="110" y="96"
+          flags="NoTitleBar NoResize NoScrollbar NoScrollWithMouse" class="flex flex-col">
+
+    <!-- Header: a gradient band with the title, the subtitle and status pills -->
+    <group id="hero" class="flex items-center gap-x-5">
+      <canvas id="mark" width="68" height="68" :draw="mark"/>
+      <group class="flex flex-col gap-y-1">
+        <text class="kicker">WEAVE  ·  UI FRAMEWORK FOR BALDUR'S GATE 3 MODS</text>
+        <text class="title">Character overview</text>
+        <text class="subtitle">Read from the running game every second, drawn by one .weave file</text>
+      </group>
+      <group class="flex items-center gap-x-8 ml-auto">
+        <text class="pill live">●  LIVE</text>
+        <text class="pill">{{ fps }} FPS</text>
+      </group>
+    </group>
+
+    <!-- Stat cards -->
+    <group id="stats" class="grid grid-cols-4">
+      <group #for="card in cards" :key="card.label" class="stat flex flex-col gap-y-1">
+        <text class="stat-label">{{ card.label }}</text>
+        <text class="stat-value">{{ card.value }}</text>
+        <text :class="card.tone">{{ card.trend }}</text>
+        <canvas class="absolute top-4 right-4" width="48" height="48" :draw="icon(card.icon, 48)"/>
+      </group>
+    </group>
+
+    <!-- Chart and equipment -->
+    <group id="middle" class="grid grid-cols-[6fr_5fr]">
+      <group class="panel flex flex-col gap-y-2">
+        <group class="flex items-center gap-x-3">
+          <text class="panel-title">Ability scores</text>
+          <text class="pill quiet ml-auto">proficiency +{{ who.proficiency }}</text>
+        </group>
+        <canvas id="chart" width="560" height="244" :draw="chart"/>
+      </group>
+      <group class="panel flex flex-col gap-y-3">
+        <group class="flex items-center gap-x-3">
+          <text class="panel-title">Equipped</text>
+          <text class="pill quiet ml-auto">{{ gear.length }} items</text>
+        </group>
+        <group class="grid grid-cols-2 gap-x-3 gap-y-3">
+          <group #for="item in gear" :key="item.key" class="tile flex items-center gap-x-3">
+            <canvas width="50" height="50" :draw="icon(item.icon, 50)"/>
+            <group class="flex flex-col">
+              <text class="tile-name">{{ item.name }}</text>
+              <text class="tile-note">{{ item.slot }}</text>
+            </group>
+          </group>
+        </group>
+      </group>
+    </group>
+
+    <!-- The character and the spell book -->
+    <group id="lower" class="grid grid-cols-[6fr_5fr]">
+      <group class="panel flex items-center gap-x-6">
+        <canvas width="136" height="136" :draw="ring"/>
+        <group class="flex flex-col gap-y-3 grow">
+          <group class="flex items-center gap-x-7">
+            <text class="panel-title">{{ who.name }}</text>
+            <text #for="tag in tags" :key="tag.text" :class="'pill ' .. tag.kind">{{ tag.text }}</text>
+          </group>
+          <group class="flex items-center gap-x-4">
+            <text class="bar-label">Movement</text>
+            <progress class="bar hp grow" :value="who.moveLeft / math.max(who.move, 1)" :label="string.format('%.1f / %.0f m', who.moveLeft, who.move)"/>
+          </group>
+          <group class="flex items-center gap-x-4">
+            <text class="bar-label">Carrying</text>
+            <progress class="bar load grow" :value="math.min(who.weight / math.max(who.capacity, 1), 1)" :label="who.weight .. ' / ' .. who.capacity .. ' kg'"/>
+          </group>
+        </group>
+      </group>
+      <group class="panel flex flex-col gap-y-3">
+        <group class="flex items-center gap-x-3">
+          <text class="panel-title">Actions and spells</text>
+          <text class="pill quiet ml-auto">{{ spells.length }} known</text>
+        </group>
+        <canvas id="spells" width="470" height="110" :draw="spellStrip"/>
+      </group>
+    </group>
+
+    <!-- Buttons -->
+    <group id="footer" class="flex items-center gap-x-3">
+      <button class="cta" @click="refresh()">Refresh now</button>
+      <button class="ghost" @click="openDemo()">Open the kit demo</button>
+      <button class="ghost" @click="close()">Close</button>
+      <text class="foot ml-auto">template + script + style in one file  ·  flex, grid, canvas, the game's own icons</text>
+    </group>
+  </window>
+</template>
+
+<script>
+-- State. refresh() fills it from the game; the template follows by itself.
+who = { name = "-", race = "", class = "", level = 1, hp = 0, maxHp = 1, ac = 0, proficiency = 2,
+        weight = 0, capacity = 1, xp = 0, abilities = { 10, 10, 10, 10, 10, 10 }, move = 0, moveLeft = 0 }
+cards = {}
+gear = {}
+spells = {}
+tags = {}
+fps = 0
+
+local ABILITIES = { "STR", "DEX", "CON", "INT", "WIS", "CHA" }
+local GOLD, SILVER = "#D9AE62", "#D7D4E0"
+
+local function text(handle)
+    local ok, value = pcall(Ext.Loca.GetTranslatedString, handle)
+    return ok and value or ""
+end
+
+local function try(fn, fallback)
+    local ok, value = pcall(fn)
+    if ok and value ~= nil then return value end
+    return fallback
+end
+
+local function staticName(guid, kind)
+    return try(function() return text(Ext.StaticData.Get(guid, kind).DisplayName.Handle.Handle) end, "")
+end
+
+local function modifier(score) return math.floor((score - 10) / 2) end
+local function signed(n) return (n >= 0 and "+" or "") .. n end
+
+-- The character this client controls.
+local function controlled()
+    for _, kind in ipairs({ "ClientControl", "PartyMember" }) do
+        local list = try(function() return Ext.Entity.GetAllEntitiesWithComponent(kind) end, {})
+        for _, e in ipairs(list) do
+            if try(function() return e.IsCharacter ~= nil end, false) then return e end
+        end
+    end
+end
+
+local SLOTS = { MeleeMainHand = "Main hand", MeleeOffHand = "Off hand", RangedMainHand = "Ranged",
+    Breast = "Armour", Boots = "Boots", Gloves = "Gloves", Helmet = "Helmet", Cloak = "Cloak",
+    Amulet = "Amulet", Ring = "Ring", Ring2 = "Ring", Underwear = "Underwear",
+    VanityBody = "Camp clothes", VanityBoots = "Camp shoes" }
+
+local function equipment(e)
+    local out = {}
+    local inventories = try(function() return e.InventoryOwner.Inventories end, {})
+    for _, inv in ipairs(inventories) do
+        for _, slot in pairs(try(function() return inv.InventoryContainer.Items end, {})) do
+            local item = slot.Item
+            local where = try(function() return tostring(item.Equipable.Slot) end, nil)
+            if where then
+                out[#out + 1] = {
+                    key = try(function() return item.Uuid.EntityUuid end, tostring(#out)),
+                    icon = try(function() return item.Icon.Icon end, ""),
+                    name = try(function() return text(item.DisplayName.NameKey.Handle.Handle) end, "?"),
+                    slot = SLOTS[where] or where,
+                    order = where == "MeleeMainHand" and 0 or where == "Breast" and 1 or 2,
+                }
+            end
+        end
+    end
+    table.sort(out, function(a, b) return a.order < b.order or (a.order == b.order and a.slot < b.slot) end)
+    while #out > 6 do table.remove(out) end
+    return out
+end
+
+-- What the character carries in the main inventory (icons only).
+function carried(e)
+    local out = {}
+    local inventory = try(function() return e.InventoryOwner.PrimaryInventory.InventoryContainer.Items end, {})
+    for _, slot in pairs(inventory) do
+        out[#out + 1] = { icon = try(function() return slot.Item.Icon.Icon end, "") }
+    end
+    return out
+end
+
+local function spellBook(e)
+    local out, seen = {}, {}
+    for _, spell in ipairs(try(function() return e.SpellBook.Spells end, {})) do
+        local id = spell.Id.Prototype
+        local stat = Ext.Stats.Get(id)
+        if stat and stat.Icon ~= "" and not seen[stat.Icon] then
+            seen[stat.Icon] = true
+            out[#out + 1] = { id = id, icon = stat.Icon }
+        end
+    end
+    -- what a player looks for first: spells and class actions before the shared ones
+    table.sort(out, function(a, b)
+        local sa, sb = a.icon:find("^Spell_") and 0 or 1, b.icon:find("^Spell_") and 0 or 1
+        if sa ~= sb then return sa < sb end
+        return a.id < b.id
+    end)
+    return out
+end
+
+local function same(a, b) return Ext.Json.Stringify(a) == Ext.Json.Stringify(b) end
+
+function refresh()
+    local e = controlled()
+    if not e then return end
+    local w = {
+        name = try(function() return text(e.DisplayName.NameKey.Handle.Handle) end, "?"),
+        race = staticName(try(function() return e.Race.Race end, ""), "Race"),
+        class = staticName(try(function() return e.Classes.Classes[1].ClassUUID end, ""), "ClassDescription"),
+        background = staticName(try(function() return e.Background.Background end, ""), "Background"),
+        level = try(function() return e.EocLevel.Level end, 1),
+        hp = try(function() return e.Health.Hp end, 0),
+        maxHp = try(function() return e.Health.MaxHp end, 1),
+        ac = try(function() return e.Resistances.AC end, 0),
+        proficiency = try(function() return e.Stats.ProficiencyBonus end, 2),
+        weight = math.floor(try(function() return e.InventoryWeight.Weight end, 0) / 1000 + 0.5),
+        capacity = math.floor(try(function() return e.EncumbranceStats.EncumberedWeight end, 0) / 1000 + 0.5),
+        xp = try(function() return e.Experience.TotalExperience end, 0),
+        abilities = {},
+    }
+    local scores = try(function() return e.Stats.Abilities end, {})
+    for i = 1, 6 do w.abilities[i] = scores[i + 1] or 10 end
+    local move, left = 0, 0
+    for _, list in pairs(try(function() return e.ActionResources.Resources end, {})) do
+        for _, r in ipairs(list) do
+            if r.MaxAmount > move then move, left = r.MaxAmount, r.Amount end   -- movement is the largest pool
+        end
+    end
+    w.move, w.moveLeft = move, left
+    if not same(w, who) then who = w end
+
+    local newGear = equipment(e)
+    if not same(newGear, gear) then gear = newGear end
+    local newSpells = spellBook(e)
+    if not same(newSpells, spells) then spells = newSpells end
+
+    -- each card shows an icon the game has for it: an item carried or worn, an action known
+    local function iconOf(list, pattern, fallback)
+        for _, entry in ipairs(list) do
+            if entry.icon:find(pattern) then return entry.icon end
+        end
+        return fallback
+    end
+    local dex = modifier(w.abilities[2])
+    local newCards = {
+        { label = "HIT POINTS", value = w.hp .. " / " .. w.maxHp,
+          trend = w.hp >= w.maxHp and "Full health" or ((w.maxHp - w.hp) .. " missing"),
+          tone = w.hp >= w.maxHp and "trend up" or "trend down",
+          icon = iconOf(carried(e), "Potion_Healing", "Item_CONS_Potion_Healing_A") },
+        { label = "ARMOUR CLASS", value = tostring(w.ac), trend = signed(dex) .. " from Dexterity", tone = "trend up",
+          icon = iconOf(newGear, "Armor", newGear[1] and newGear[1].icon or "") },
+        { label = "LEVEL", value = tostring(w.level), trend = w.xp .. " XP  ·  " .. w.class, tone = "trend",
+          icon = iconOf(newSpells, "SneakAttack_Melee", newSpells[1] and newSpells[1].icon or "") },
+        { label = "MOVEMENT", value = string.format("%.0f m", w.move), trend = "Per turn in combat", tone = "trend",
+          icon = iconOf(newSpells, "Action_Dash", "") },
+    }
+    if not same(newCards, cards) then cards = newCards end
+
+    local newTags = {
+        { text = w.race, kind = "violet" }, { text = w.class, kind = "gold" },
+        { text = w.background, kind = "quiet" },
+    }
+    if try(function() return e.Tadpoled ~= nil end, false) then newTags[#newTags + 1] = { text = "Tadpole", kind = "danger" } end
+    if not same(newTags, tags) then tags = newTags end
+end
+
+function close() doc:Close() end
+function openDemo() Weave.Demo(true) end
+
+-- A picture from the game's icon atlas in a rounded frame.
+function icon(name, size)
+    return {
+        { "gradient", 0, 0, size, size, "#1D1825", "#110E16", 90, 10 },
+        { "image", name, 4, 4, size - 4, size - 4 },
+        { "rect", 0, 0, size, size, "#FFFFFF1A", 10, 1 },
+    }
+end
+
+-- Hit points as a ring: an arc is a polyline of short steps.
+computed("ring", function()
+    local cx, cy, r = 68, 68, 56
+    local share = math.max(0, math.min(1, who.hp / math.max(who.maxHp, 1)))
+    local function arc(from, to)
+        local points, steps = {}, math.max(2, math.floor(64 * (to - from)))
+        for i = 0, steps do
+            local a = -math.pi / 2 + 2 * math.pi * (from + (to - from) * i / steps)
+            points[#points + 1] = { cx + r * math.cos(a), cy + r * math.sin(a) }
+        end
+        return points
+    end
+    local cmds = {
+        { "disc", cx, cy, r + 9, "#110E16" },
+        { "polyline", arc(0, 1), "#FFFFFF14", false, 10 },
+    }
+    if share > 0 then cmds[#cmds + 1] = { "polyline", arc(0, share), share > 0.5 and "#2E9A62" or "#B8483F", false, 10 } end
+    local label = who.hp .. "/" .. who.maxHp
+    cmds[#cmds + 1] = { "text", cx - #label * 4, cy - 16, "#F4F0FA", label }
+    cmds[#cmds + 1] = { "text", cx - 8, cy + 6, "#8E8A9A", "HP" }
+    return cmds
+end)
+
+-- The brand mark: a woven diamond of gold and violet.
+computed("mark", function()
+    return {
+        { "gradient", 0, 0, 68, 68, "#6A2DB4", "#2E1158", 135, 16 },
+        { "rect", 0, 0, 68, 68, "#FFFFFF2A", 16, 1 },
+        { "polyline", { { 34, 13 }, { 55, 34 }, { 34, 55 }, { 13, 34 } }, GOLD, true, 3 },
+        { "line", 24, 24, 44, 44, "#F3D9A4", 3 },
+        { "line", 44, 24, 24, 44, "#F3D9A4", 3 },
+        { "disc", 34, 34, 4, GOLD },
+    }
+end)
+
+-- Bars of the six ability scores, a line at the average of 10, modifiers on top.
+computed("chart", function()
+    local W, H, top, bottom, left = 560, 244, 26, 192, 44
+    local cmds = {
+        { "line", left, bottom, W - 10, bottom, "#FFFFFF2E", 1 },
+    }
+    for v = 5, 20, 5 do
+        local y = bottom - (bottom - top) * v / 20
+        cmds[#cmds + 1] = { "line", left, y, W - 10, y, v == 10 and "#D9AE6255" or "#FFFFFF10", 1 }
+        cmds[#cmds + 1] = { "text", 12, y - 8, "#8E8A9A", tostring(v) }
+    end
+    local best = 0
+    for _, s in ipairs(who.abilities) do best = math.max(best, s) end
+    local slot = (W - 10 - left) / 6
+    for i, score in ipairs(who.abilities) do
+        local x1 = left + (i - 1) * slot + slot * 0.24
+        local x2 = left + i * slot - slot * 0.24
+        local y = bottom - (bottom - top) * math.min(score, 20) / 20
+        local hot = score == best
+        cmds[#cmds + 1] = { "gradient", x1, y, x2, bottom, hot and "#B08A50" or "#6E3FB8", hot and "#5E431C" or "#2C1258", 180, 6 }
+        cmds[#cmds + 1] = { "text", (x1 + x2) / 2 - 9, y - 24, hot and GOLD or SILVER, tostring(score) }
+        cmds[#cmds + 1] = { "text", (x1 + x2) / 2 - 14, bottom + 8, "#B9B5C6", ABILITIES[i] }
+        cmds[#cmds + 1] = { "text", (x1 + x2) / 2 - 10, bottom + 28, "#8E8A9A", signed(modifier(score)) }
+    end
+    return cmds
+end)
+
+-- Up to sixteen icons of the spell book in one canvas.
+computed("spellStrip", function()
+    local cmds, size, gap, perRow = {}, 52, 6, 8
+    for i, spell in ipairs(spells) do
+        if i > perRow * 2 then break end
+        local col, row = (i - 1) % perRow, math.floor((i - 1) / perRow)
+        local x, y = col * (size + gap), row * (size + gap - 4)
+        for _, c in ipairs(icon(spell.icon, size)) do
+            local moved = { table.unpack(c) }
+            if c[1] == "image" then
+                moved[3], moved[4], moved[5], moved[6] = c[3] + x, c[4] + y, c[5] + x, c[6] + y
+            else
+                moved[2], moved[3], moved[4], moved[5] = c[2] + x, c[3] + y, c[4] + x, c[5] + y
+            end
+            cmds[#cmds + 1] = moved
+        end
+    end
+    return cmds
+end)
+
+-- Frame rate: counted from the client's ticks, averaged over half a second.
+local count, since, subscription, timer = 0, Ext.Utils.MonotonicTime(), nil, 0
+onMounted(function()
+    refresh()
+    subscription = Ext.Events.Tick:Subscribe(function()
+        count = count + 1
+        local now = Ext.Utils.MonotonicTime()
+        if now - since >= 500 then
+            fps = math.floor(count * 1000 / (now - since) + 0.5)
+            count, since = 0, now
+            timer = timer + 1
+            if timer % 2 == 0 then refresh() end
+        end
+    end)
+end)
+onUnmounted(function()
+    if subscription then Ext.Events.Tick:Unsubscribe(subscription) end
+end)
+</script>
+
+<style>
+/* Colours drawn behind elements and IMGUI's frame colours come out about 1.45 times brighter
+   than written in this set-up, so they are written darker than the brand's own values. */
+/* One spacing for every gap between the blocks of the window, across and down. The chart is
+   narrower than its column (6fr of the window less this gap and the panel's padding), so no
+   panel is pushed into a gap by its contents. */
+:root { --showcase-gap: 16; }
+window#showcase                  { row-gap: var(--showcase-gap); }
+#stats, #middle, #lower          { column-gap: var(--showcase-gap); }
+
+window#showcase {
+  WindowBg: #15121BF6; Border: #FFFFFF14; rounding: 16; border: 1; padding: 22 22;
+  Text: #D7D4E0; FrameBg: #1E1A26; PlotHistogram: #6A2DB4;
+  frame-rounding: 8;
+}
+
+#hero {
+  background: linear-gradient(to right, #34155F, #13101A); rounding: 14;
+  padding: 18 24; outline: 1 #FFFFFF14; box-shadow: 0 6 22 #00000088;
+}
+.kicker   { color: #D9AE62; font-size: 24; }
+.title    { font-family: Quadraat; font-size: 64; color: #F4F0FA; }
+.subtitle { color: #B3ADC2; font-size: 29; }
+
+.pill        { background: #FFFFFF10; color: #D7D4E0; rounding: 12; background-padding: 4 12; font-size: 26; }
+.pill.live   { background: #1E4A3366; color: #8AF0B5; }
+.pill.violet { background: #8C3CEB30; color: #D3B5FF; }
+.pill.gold   { background: #D9AE6228; color: #F0CF8F; }
+.pill.quiet  { background: #FFFFFF0C; color: #A9A4B8; }
+.pill.danger { background: #C2415D33; color: #FF9DB0; }
+
+.stat {
+  height: 132; padding: 16 20; rounding: 12;
+  background: linear-gradient(to bottom, #1B1722, #120F18); outline: 1 #FFFFFF10; box-shadow: 0 4 14 #00000066;
+}
+.stat-label { color: #8E8A9A; font-size: 24; }
+.stat-value { font-family: Quadraat; font-size: 64; color: #F4F0FA; }
+.trend      { color: #8E8A9A; font-size: 26; }
+.trend.up   { color: #7FE0A6; }
+.trend.down { color: #FF8C8C; }
+
+.panel {
+  padding: 18 20; rounding: 12;
+  background: #17141C; outline: 1 #FFFFFF10; box-shadow: 0 4 14 #00000066;
+}
+#middle .panel { height: 316; }
+#lower .panel  { height: 180; }
+.panel-title { font-family: Quadraat; font-size: 36; color: #EDE6D6; }
+
+.tile      { padding: 8 10; rounding: 10; background: #FFFFFF07; }
+.tile-name { color: #E4E0EC; font-size: 27; }
+.tile-note { color: #8E8A9A; font-size: 24; }
+
+.bar-label { color: #A9A4B8; width: 130; font-size: 27; }
+.bar       { height: 26; rounding: 13; FrameBg: #1E1A26; font-size: 25; }
+.bar.hp    { PlotHistogram: #2A7A50; }
+.bar.load  { PlotHistogram: #957642; }
+
+button.cta   { background: linear-gradient(to bottom, #A88A55, #7A5A28); color: #1A1208;
+               rounding: 10; outline: 1 #C9A86A; frame-padding: 24 10; font-size: 28; }
+button.cta:hover { background: #FFFFFF2E; }
+button.ghost { background: #FFFFFF0A; color: #D7D4E0; rounding: 10; outline: 1 #FFFFFF1E; frame-padding: 20 10; font-size: 28; }
+button.ghost:hover { background: #8C3CEB40; }
+.foot        { color: #6F6A7E; font-size: 24; }
+
+@font-face { font-family: Quadraat; src: url(Public/Game/GUI/Assets/Fonts/QuadraatOffcPro/QuadraatOffcPro.ttf); }
+</style>

@@ -1,0 +1,29 @@
+/* Component classes: looks that are more than one property. Read after theme.css, before user.css.
+
+   The utility classes themselves - p-4, gap-2, text-lg, text-muted, bg-red-500/40, rounded-lg,
+   shadow-lg, flex, grid-cols-3, md:hidden, hover:bg-accent ... - are not in a file: they are
+   worked out from their names by Kit/Utilities.lua (the vocabulary of Tailwind 4), so any
+   number and any theme colour works. A rule here can use them too:
+
+     .panel { @apply p-4 rounded-lg bg-panel; }
+*/
+
+/* --- Text: how pale (towards the background) -------------------------------------------- */
+.text-soft    { color: mix(var(--text), var(--panel), 0.25); }
+.text-faint   { color: mix(var(--muted), var(--panel), 0.45); }
+.wrap         { wrap: on; }
+
+/* --- Buttons ---------------------------------------------------------------------------- */
+button.danger        { background: mix(var(--log-error), var(--bg-alt), 0.55); color: var(--text); }
+button.danger:hover  { background: mix(var(--log-error), var(--bg-alt), 0.3); }
+button.danger:active { background: var(--log-error); }
+button.accent        { background: var(--accent); color: var(--bg-alt); }
+button.accent:hover  { background: var(--accent-strong); }
+
+/* --- Panels: a <child> that looks like a card ------------------------------------------- */
+child.card    { background: var(--bg-alt); border: 1; border-color: var(--border); rounding: 6; padding: 8 10; }
+child.sunken  { background: mix(var(--bg-alt), #000000, 0.35); rounding: 4; padding: 6 8; }
+
+/* --- States and effects ----------------------------------------------------------------- */
+.disabled     { opacity: 0.45; }  /* what <button disabled> and :disabled="" add */
+.shadow-glow  { box-shadow: 0 0 14 alpha(var(--accent), 0.55); }
