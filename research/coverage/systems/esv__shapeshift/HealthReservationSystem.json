@@ -1,0 +1,95 @@
+{
+ "system": "esv::shapeshift::HealthReservationSystem",
+ "namespace": "esv::shapeshift",
+ "symbols": {
+  "reads": [
+   "eoc::HealthComponent",
+   "eoc::death::DeathComponent",
+   "eoc::stats::EntityDamagedEventOneFrameComponent",
+   "esv::death::DiedEventOneFrameComponent",
+   "esv::death::DownedEventOneFrameComponent",
+   "esv::shapeshift::StatesChangedEventOneFrameComponent",
+   "esv::shapeshift::StatesComponent"
+  ],
+  "writes": [
+   "esv::shapeshift::HealthReservationComponent"
+  ],
+  "methods": [
+   {
+    "name": "ApplyDamage",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ApplyDeath",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ApplyDowned",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ApplyShapeshift",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "HealthReservationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateReservedHealth",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~HealthReservationSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::shapeshift::HealthReservationComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B55E00",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::shapeshift::HealthReservationComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B55390",
+    "site": "bg3_dx11.exe+0x2B554CB",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::shapeshift::HealthReservationComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B55E00",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::shapeshift::StatesComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B55390",
+    "site": "bg3_dx11.exe+0x2B554B3",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

@@ -1,0 +1,75 @@
+{
+ "system": "ecl::photo_mode::DummyEquipmentVisualSystem",
+ "namespace": "ecl::photo_mode",
+ "symbols": {
+  "reads": [
+   "ecl::dummy::DummyComponent",
+   "ecl::photo_mode::DummyEquipmentSetupOneFrameComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "ecl::photo_mode::DummyEquipmentVisualUpdateSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "DummyEquipmentVisualSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_UpdateEquipmentVisibility",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDummySetupRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateEquipmentVisibility",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DummyEquipmentVisualSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::dummy::DummyComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1AFA8B0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1AFA8B0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

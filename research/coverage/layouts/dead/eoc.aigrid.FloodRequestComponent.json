@@ -11,21 +11,21 @@
       "offset": 0,
       "type": "void*",
       "source": "inferred",
-      "evidence": "Game ProcessNewRequests bg3.exe+0xF2C150 (storage stride 0x20): lVar4 = *(u64*)(req+0); it writes the flood object's +0x54 (uint16 flags), +0x56 (byte 0) and +0x58 (int) and stores lVar4 into the new AiGrid request. Toolkit ProcessNewRequests passes *(req+0) as the AiFlood* argument of AiGrid::RequestFlood. macOS default: zero."
+      "evidence": "Game ProcessNewRequests bg3.exe+0xF2C150 (storage stride 0x20): reads the 8-byte value at +0 of the request as the flood object pointer; it writes the flood object's +0x54 (uint16 flags), +0x56 (byte 0) and +0x58 (int) and stores that pointer into the new AiGrid request. Toolkit ProcessNewRequests passes the 8-byte value at +0 of the request as the AiFlood* argument of AiGrid::RequestFlood. macOS default: zero."
     },
     {
       "name": "Level",
       "offset": 8,
       "type": "FixedString",
       "source": "inferred",
-      "evidence": "Toolkit ProcessNewRequests: LevelManager::GetLevel(levelManager, (FixedString*)(req + 8)) and the assert 'Trying to request a flood on unexisting level '%s''. Game: `*(uint*)(req+8)` hashed and compared as the level-map key. macOS default stores w24 (null FixedString) at +8."
+      "evidence": "Toolkit ProcessNewRequests passes the address +8 of the request as the FixedString argument of LevelManager::GetLevel, and has the assert 'Trying to request a flood on unexisting level '%s''. Game: the 32-bit value at +8 of the request is hashed and compared as the level-map key. macOS default stores a null FixedString at +8."
     },
     {
       "name": "Flags",
       "offset": 12,
       "type": "uint16_t",
       "source": "inferred",
-      "evidence": "Game ProcessNewRequests copies `*(undefined2*)(req+0xC)` to AiFlood+0x54; Toolkit passes req+0xC as `ls::Flags<eoc::EAiFloodFlag,0,33> const&` to AiGrid::RequestFlood, which copies 2 bytes to AiFlood+0x54. Enum eoc::EAiFloodFlag (written as uint16). macOS default strh at +0xC."
+      "evidence": "Game ProcessNewRequests copies the 2-byte value at +0xC of the request to AiFlood+0x54; Toolkit passes the address +0xC of the request as the ls::Flags<eoc::EAiFloodFlag,0,33> const& argument of AiGrid::RequestFlood, which copies 2 bytes to AiFlood+0x54. Enum eoc::EAiFloodFlag (written as uint16). macOS default writes a 16-bit value at +0xC."
     },
     {
       "name": "_PadE",
@@ -39,21 +39,21 @@
       "offset": 16,
       "type": "int32_t",
       "source": "unknown",
-      "evidence": "Game ProcessNewRequests: lVar5 = *(u64*)(req+0x10); stores (int)lVar5 (+0x10) at AiGrid request +0x14. Toolkit: passed as the first int of RequestFlood (to FUN_180e32d60). macOS default 'str d8, [+0x10]' covers +0x10..+0x17."
+      "evidence": "Game ProcessNewRequests: reads the 8-byte value at +0x10 of the request and stores its low 32 bits (the int at +0x10) at AiGrid request +0x14. Toolkit: passed as the first int of RequestFlood (to EoCShared.dll+0xE32D60). macOS default writes one 8-byte store at +0x10 that covers +0x10..+0x17."
     },
     {
       "name": "field_14",
       "offset": 20,
       "type": "int32_t",
       "source": "unknown",
-      "evidence": "Game: uVar1 = *(u32*)(req+0x14) stored at AiGrid request +0x10. Toolkit: second int of RequestFlood."
+      "evidence": "Game: the 32-bit value at +0x14 of the request is stored at AiGrid request +0x10. Toolkit: second int of RequestFlood."
     },
     {
       "name": "field_18",
       "offset": 24,
       "type": "int32_t",
       "source": "unknown",
-      "evidence": "Game: iVar7 = *(int*)(req+0x18), 0x7FFFFFFF clamped to 0x7FFFFFFE, written to AiFlood+0x58 (Toolkit RequestFlood does the same with its last int) - probably a maximum distance/cost of the flood. macOS default str w8 at +0x18."
+      "evidence": "Game: reads the int at +0x18 of the request, clamps 0x7FFFFFFF to 0x7FFFFFFE and writes it to AiFlood+0x58 (Toolkit RequestFlood does the same with its last int) - probably a maximum distance/cost of the flood. macOS default writes a 32-bit value at +0x18."
     },
     {
       "name": "_Pad1C",

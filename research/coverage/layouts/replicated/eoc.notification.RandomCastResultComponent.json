@@ -4,18 +4,18 @@
   "size": 80,
   "fields": [
     {
-      "name": "field_0",
+      "name": "Character",
       "offset": 0,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "write-all serializer bg3.exe+0x9939D0: member 1, raw 16-byte write at +0; macOS default zero"
+      "source": "inferred",
+      "evidence": "Dispatcher bg3.exe+0x2DF53B0 case 0x1F (RandomCastResultNotificationRequest, sent by EoCServer.dll+0x8463B0 for esv::spell_cast::random::ResultEventOneFrameComponent with the event's owner at request +0) checks the owner is a character (FUN_142819D50), takes esv::Status::GetCharacter and stores that character's Guid (FUN_14107E6F0) here."
     },
     {
-      "name": "field_10",
+      "name": "OutcomeValid",
       "offset": 16,
-      "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "write-all serializer bg3.exe+0x9939D0: member 2, raw 1-byte write at +0x10; default 0"
+      "type": "bool",
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x8463B0 sets request +8 = eoc::spell::SpellId::IsValid(event OutcomeSpellId) and copies the SpellId after it; dispatcher case 0x1F stores request +8 here and the SpellId at +0x18 (Spell)."
     },
     {
       "name": "_Pad11",

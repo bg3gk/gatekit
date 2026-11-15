@@ -1,0 +1,196 @@
+{
+ "system": "esv::jump::TrajectoryAnimationStateSystem",
+ "namespace": "esv::jump",
+ "symbols": {
+  "reads": [
+   "eoc::BoostsContainerComponent",
+   "eoc::TagComponent",
+   "eoc::animation::GameplayEventsOneFrameComponent",
+   "eoc::gamestate::SavegameLoadComponent",
+   "eoc::spell_cast::CastTextKeyEventOneFrameComponent",
+   "eoc::spell_cast::JumpStartEventOneFrameComponent",
+   "eoc::spell_cast::StateComponent",
+   "esv::jump::InitJumpRequestOneFrameComponent",
+   "esv::projectile::AttachmentComponent",
+   "ls::DebugComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "eoc::jump::ActivationEventOneFrameComponent",
+   "eoc::jump::AnimationRequestOneFrameComponent",
+   "eoc::jump::InfoComponent",
+   "eoc::jump::StateComponent",
+   "esv::Projectile"
+  ],
+  "methods": [
+   {
+    "name": "ClearRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherTakeoffRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "InitInfoComponent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnJumpTrajectoryFinished",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessInfoComponentCreation",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessJumpActivationRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessJumpFinishEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestFinishJump",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestJumpTakeoff",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "TrajectoryAnimationStateSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateEndPosition",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateInfoComponentState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateJumpAnimationState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~TrajectoryAnimationStateSystem",
+    "address": "bg3_dx11.exe+0x76DB70",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::jump::ActivationEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2DB6D10",
+    "site": "bg3_dx11.exe+0x2DB75C3",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::jump::AnimationRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2DB8510",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::jump::StateComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2DB7E90",
+    "site": "bg3_dx11.exe+0x2DB801D",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::jump::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2DB7E90",
+    "site": "bg3_dx11.exe+0x2DB7FFC",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::jump::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2DB7E90",
+    "site": "bg3_dx11.exe+0x2DB824B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell_cast::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2DB8E60",
+    "site": "bg3_dx11.exe+0x2DB901E",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::jump::InfoComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2DB66D0",
+    "site": "bg3_dx11.exe+0x2DB6934",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::jump::StateComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2DB7E90",
+    "site": "bg3_dx11.exe+0x2DB7FE9",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::jump::StateComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2DB7E90",
+    "site": "bg3_dx11.exe+0x2DB81F9",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::jump::StateComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2DB7E90",
+    "site": "bg3_dx11.exe+0x2DB823B",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

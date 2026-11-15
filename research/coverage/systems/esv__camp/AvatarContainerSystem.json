@@ -1,0 +1,164 @@
+{
+ "system": "esv::camp::AvatarContainerSystem",
+ "namespace": "esv::camp",
+ "symbols": {
+  "reads": [
+   "eoc::character::CharacterComponent",
+   "eoc::gamestate::SavegameLoadComponent",
+   "eoc::inventory::CanBeInComponent",
+   "eoc::user::AvatarComponent",
+   "eoc::user::DismissedComponent",
+   "esv::AvatarContainerTrigger",
+   "esv::CampRegionTrigger",
+   "esv::GameStateReloadStoryComponent",
+   "esv::camp::TriggerChangedEventOneFrameComponent",
+   "esv::camp::TriggerComponent",
+   "ls::DebugComponent",
+   "ls::TransformComponent",
+   "ls::savegame::LoadedEventOneFrameComponent",
+   "ls::trigger::AreaComponent"
+  ],
+  "writes": [
+   "eoc::camp::AvatarContainerComponent",
+   "esv::Item",
+   "esv::camp::AvatarContainerRequestsComponent",
+   "esv::camp::AvatarContainerTriggerComponent"
+  ],
+  "methods": [
+   {
+    "name": "AvatarContainerSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCreateContainer",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDismissAvatarRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessReloadStory",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTriggersChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~AvatarContainerSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "from gatekit symbols system --dll dx11 --full; no per-method address was found in bg3_dx11.exe (null)",
+  "uses": [
+   {
+    "type": "esv::camp::AvatarContainerRequestsComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BEED20",
+    "site": "bg3_dx11.exe+0x2BEF210",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::camp::AvatarContainerTriggerComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BEED20",
+    "site": "bg3_dx11.exe+0x2BEF21D",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::camp::AvatarContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BF0800",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::CampRegionTrigger",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BEF7D0",
+    "site": "bg3_dx11.exe+0x2BEFFA7",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BEF7D0",
+    "site": "bg3_dx11.exe+0x2BEFFCB",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BF0800",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::trigger::AreaComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BEF7D0",
+    "site": "bg3_dx11.exe+0x2BEFFBC",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Runs ProcessReloadStory, then ProcessCreateContainer, which returns a container handle; when that handle is valid it runs ProcessDismissAvatarRequests and ProcessTriggersChanged for it.",
+   "evidence": "EoCServer.dll+0x9FC7B0 named pseudo-code (41 lines), call order and the handle test read.",
+   "check": "not checkable live: the order of calls inside one update leaves nothing to observe"
+  },
+  {
+   "method": "ProcessCreateContainer (first step, helper EoCServer.dll+0x9FA0C0)",
+   "text": "For every entity with eoc::camp::AvatarContainerComponent on which ls::savegame::LoadedEventOneFrameComponent was just added (a savegame finished loading), the query carries esv::camp::AvatarContainerRequestsComponent and esv::camp::AvatarContainerTriggerComponent as optional slots: an empty Requests slot gets AvatarContainerRequestsComponent added, an empty Trigger slot gets AvatarContainerTriggerComponent added. It returns whether it added anything - this upgrades containers from saves that lack the two components.",
+   "evidence": "EoCServer.dll+0x9FA0C0 lines 136-206 read: DAT_182231200 = Added-query (AvatarContainerComponent + LoadedEventOneFrame, optional Requests/Trigger); slot-null tests at lines 149 and 178; add helpers +0x9F4B60 (DAT_1821f4960 = AvatarContainerRequestsComponent) and +0x9F4DD0 (DAT_182231244 = AvatarContainerTriggerComponent). Same in bg3_dx11.exe: +0x2BEE880 (query spec type name at +0x3E08A0), add helpers +0x2BF06A0 and +0x2BF0590, caller +0x2BEED20 called by +0x238E490. Review 2026-11-14 (Opus, systems I): the two slot tests are \"slot pointer is null\" before each add, slot 0 -> +0x9F4B60 (Requests), slot 1 -> +0x9F4DD0 (Trigger); re-read.",
+   "check": "not checkable live: needs a save loaded with a container missing a component (an old save); a recipe starts from the copy's checkpoint"
+  },
+  {
+   "method": "ProcessCreateContainer",
+   "text": "If nothing was upgraded and an existing container is not returned by +0x9F9040, and no entity holds eoc::gamestate::SavegameLoadComponent, it counts the entities with eoc::user::AvatarComponent; with more than one avatar it takes the last AvatarContainerTemplate (asserting when there is none), creates the container item from it, and adds eoc::camp::AvatarContainerComponent, esv::camp::AvatarContainerRequestsComponent and esv::camp::AvatarContainerTriggerComponent to it. Review 2026-11-14 (Opus, systems I): when +0x9F9040 finds a container it is returned and nothing is created; the creation path is entered only when nothing was upgraded and none was found. The run branch's earlier text (bg3_dx11.exe+0x2BEED20 lines 77-271, guards not worked out) is this branch.",
+   "evidence": "EoCServer.dll+0x9FA810 lines 78-262 read: SavegameLoad query DAT_1821f98b8 HasAny at 131-133, DAT_18223124c = query on eoc::user::AvatarComponent, Count > 1 at line 140, template list and the 'no AvatarContainerTemplates' asserts at 199-226, item creation through a virtual call at ~236, adds at 256-258 (helpers +0x9F4970 = DAT_1821f228c = AvatarContainerComponent, +0x9F4810 -> +0x9F4B60 = Requests, +0x9F48C0 -> +0x9F4DD0 = Trigger).",
+   "check": "not checkable live: no recipe yet (lead): needs two or more entities with eoc::user::AvatarComponent in a running game; then {appears: eoc::camp::AvatarContainerComponent}, {appears: esv::camp::AvatarContainerRequestsComponent}, {appears: esv::camp::AvatarContainerTriggerComponent} on one new item on the server"
+  },
+  {
+   "method": "ProcessTriggersChanged",
+   "text": "Places the container in the camp the party is in: for the camp region trigger (must have esv::CampRegionTrigger) it hit-tests esv::AvatarContainerTrigger entities and reports 'There is no AvatarContainerTrigger available within the camp region' when none is inside - by the shape the same as ChestSystem's chest placement.",
+   "evidence": "EoCServer.dll+0x9FB2E0: log strings at 519 and 721, ls::trigger::HitTest at 644; the move itself was not read.",
+   "check": "not checkable live: the move itself was not read; nothing named is added"
+  },
+  {
+   "method": "ProcessDismissAvatarRequests / ProcessReloadStory",
+   "text": "Not read beyond their queries; by the names, the first handles avatars being dismissed (eoc::user::DismissedComponent is in the read list) and the second reacts to a story reload.",
+   "evidence": "EoCServer.dll+0x9FAD70, +0x9FAFB0: only query lines seen. Guess from the names.",
+   "check": "not checkable live: not read; guess from the names"
+  }
+ ],
+ "unknown": [
+  "What +0x9F9040 returns exactly (an existing container found vs. not); the creation branch is read but this early return is not fully understood.",
+  "Why more than one avatar is required (multiplayer, or the avatar count in single player with origin avatars?) - the Count > 1 test was read, its meaning is not known.",
+  "What the AvatarContainer holds (dismissed avatars' items is a guess).",
+  "ProcessDismissAvatarRequests and ProcessReloadStory bodies."
+ ],
+ "sure": "yes: the adds of AvatarContainerRequestsComponent and AvatarContainerTriggerComponent are read with their guards (empty optional slot on a container whose savegame LoadedEvent was just added; or on a newly created container when no savegame load is running and more than one avatar exists); the early-return helper +0x9F9040 is not understood. Review 2026-11-14 (Opus, systems I): held: both guards (null optional slot; SavegameLoad absent and avatar Count > 1) and the five helpers re-read."
+}

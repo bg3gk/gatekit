@@ -7,11 +7,11 @@
   "summary": "One-frame event of esv::camp::EndTheDaySystem (long rest): the camp-supplies selection state changed. Created on a new event entity by bg3.exe+0x2BF73A0 (AllocRaw 0x10) only from esv::camp::EndTheDaySystem::FinalizeEndTheDayState (bg3.exe+0x2BF5FE0, named), which writes a flag and an entity handle. A savegame model game.camp.v0.SuppliesSelectionStateChangedEventOneFrameComponent exists (size 16, alignment 8, member names not known) - same size as the component. Never seen alive. Registry total 16 (server row).",
   "fields": [
     {
-      "name": "field_0",
+      "name": "ChoicePending",
       "offset": 0,
       "type": "bool",
-      "source": "unknown",
-      "evidence": "Creator bg3.exe+0x2BF73A0 writes byte 0 at +0. FinalizeEndTheDayState writes `*puVar9 = 1` when the end-the-day state is 2 and the end-the-day entity is valid (line ~443), and `*puVar9 = 0` in the per-entity loop (line ~716): a selection open/closed flag."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x9CB4C0 esv::camp::EndTheDaySystem::FinalizeEndTheDayState (Toolkit, named) adds the component through FUN_1809c7b70 -> FUN_1809c84a0 (type id DAT_18222f8a4, registered by EoCServer.dll+0xEDC20 with FUN_1809c9e50 = GetTypeName<esv::camp::SuppliesSelectionStateChangedEventOneFrameComponent>, 0x10 bytes) twice: right after logging 'RestType request received, transitioning to ClientChoicePending' (end-the-day state set to 3) it writes +0 = 1; in the loop that logs 'Accepting User choice: (%s)' (eoc::rest::LongRestTypeToString) it writes +0 = 0. The byte is true while the players' long-rest choice is pending and false once a choice is accepted."
     },
     {
       "name": "_Pad1",

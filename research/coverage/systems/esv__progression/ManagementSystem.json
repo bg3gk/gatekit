@@ -1,0 +1,162 @@
+{
+ "system": "esv::progression::ManagementSystem",
+ "namespace": "esv::progression",
+ "symbols": {
+  "reads": [
+   "eoc::BoostsContainerComponent",
+   "eoc::CharacterCreationStatsComponent",
+   "eoc::DataComponent",
+   "eoc::PassiveContainerComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::exp::AvailableLevelComponent",
+   "eoc::exp::ExperienceComponent",
+   "eoc::progression::LevelUpComponent",
+   "esv::GameStateReloadStoryComponent",
+   "esv::GameStateUnloadSessionComponent",
+   "esv::exp::AvailableLevelChangedOneFrameComponent",
+   "esv::progression::LevelUpChangedOneFrameComponent",
+   "ls::DebugComponent"
+  ],
+  "writes": [
+   "eoc::ProgressionContainerComponent",
+   "eoc::progression::AbilityImprovementsComponent",
+   "eoc::progression::FeatComponent",
+   "eoc::progression::MetaComponent",
+   "eoc::progression::PassivesComponent",
+   "eoc::progression::ReplicatedFeatComponent",
+   "eoc::progression::SkillsComponent",
+   "eoc::progression::SpellsComponent",
+   "esv::progression::ChangedContainersComponent"
+  ],
+  "methods": [
+   {
+    "name": "ApplyClassLevelUp",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ApplyRaceLevelUp",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ApplyStatsLevelUps",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ClearProgressions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "InternalReloadProgressions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LoadProgressionsFromLevelComponent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LoadProgressionsFromStats",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ManagementSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ParseProgressions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAddedProgressions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDestroyedProgressions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessProgressionContainerUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ReloadProgressions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SelectFeat",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ManagementSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::progression::ChangedContainersComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B7FFE0",
+    "site": "bg3_dx11.exe+0x2B80223",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::ProgressionContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B7E8E0",
+    "site": "bg3_dx11.exe+0x2B7F1B2",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ProgressionContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B7E8E0",
+    "site": "bg3_dx11.exe+0x2B7F41A",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ProgressionContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B7F550",
+    "site": "bg3_dx11.exe+0x2B7F805",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ProgressionContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B7FB60",
+    "site": "bg3_dx11.exe+0x2B7FBFB",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

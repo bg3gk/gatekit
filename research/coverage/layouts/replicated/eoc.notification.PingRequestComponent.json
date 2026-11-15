@@ -18,18 +18,18 @@
       "evidence": "alignment padding; nothing serialized or initialised here"
     },
     {
-      "name": "field_10",
+      "name": "Target",
       "offset": 16,
       "type": "EntityHandle",
-      "source": "unknown",
-      "evidence": "write-all serializer bg3.exe+0x9183D0: member 2, bg3.exe+0x4017090 (EntityHandle writer) on +0x10; macOS default str q1 [x23,#0x10] with q1 = dup of 0xFFC0000000000000 (null handle)"
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x694810 ecl::ping::PingSystem::ProcessServerPingRequests copies the 0x28-byte component into an eoc::PingRequestData (0x20 bytes): component +0x10 -> data +8, which Script Extender declares as PingRequestData::Target; the same function then highlights the entity at +0x10 (ProvidedMultiEffectObject::SetEntity) when it is valid."
     },
     {
-      "name": "field_18",
+      "name": "Source",
       "offset": 24,
       "type": "EntityHandle",
-      "source": "unknown",
-      "evidence": "write-all serializer bg3.exe+0x9183D0: member 3, bg3.exe+0x4017090 on +0x18; default null handle (same q1 store)"
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x694810 ecl::ping::PingSystem::ProcessServerPingRequests copies component +0x18 -> eoc::PingRequestData +0, which Script Extender declares as PingRequestData::Source (Source, Target, Position, field_1C at 0/8/0x10/0x1C); Position +0 -> data +0x10 agrees with the name already given."
     },
     {
       "name": "field_20",

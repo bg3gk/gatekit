@@ -12,11 +12,11 @@
       "evidence": "serializers bg3.exe+0x9968D0 / 0x996A00 / 0x9965E0 / 0x9967E0: member 1 = raw 16 bytes at +0 (DAT_14627ff80). Live: same Guid values as SpellCastDestroyedComponent (spell cast id)."
     },
     {
-      "name": "field_10",
+      "name": "PhaseFinished",
       "offset": 16,
       "type": "bool",
-      "source": "unknown",
-      "evidence": "serializer member 2 = 1 byte at +0x10. Live 0/1. Read by ecl::movement::DashingSystem (registration bg3.exe+0x726190 queries Accepted + this component + spell_cast::StateComponent)."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x83BF10 section for esv::spell_cast::MovementAndPrecalculationEndEventOneFrameComponent (variant tag 0x29) copies event byte +0 (PhaseFinished) to request +8 and u32 +4 to request +0xC; dispatcher helper bg3.exe+0x2DEE8B0 creates this component (creator bg3.exe+0x2DF3740) and stores request +8 at +0x10 (request +0xC at +0x14)."
     },
     {
       "name": "_Pad11",

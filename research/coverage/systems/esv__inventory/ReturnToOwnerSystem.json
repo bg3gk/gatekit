@@ -1,0 +1,102 @@
+{
+ "system": "esv::inventory::ReturnToOwnerSystem",
+ "namespace": "esv::inventory",
+ "symbols": {
+  "reads": [
+   "eoc::BoostsContainerComponent",
+   "eoc::falling::IsFallingComponent",
+   "eoc::inventory::IsOwnedComponent",
+   "eoc::inventory::MemberComponent",
+   "eoc::ownership::OwneeCurrentComponent",
+   "esv::Character",
+   "esv::Item",
+   "esv::ownership::OwneeHistoryComponent",
+   "esv::projectile::AttachmentComponent"
+  ],
+  "writes": [
+   "esv::inventory::ReturnToOwnerComponent",
+   "esv::inventory::ReturnToOwnerEquipRequestComponent"
+  ],
+  "methods": [
+   {
+    "name": "GenerateEquipRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessReturnToOwner",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessThrownItems",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ReturnToOwnerSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ReturnToOwnerSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "note": "copied by hand from gatekit symbols system --dll dx11 (addresses are bg3_dx11.exe). Methods with null address were listed by the Toolkit but the tool printed no game address for them. System index variable bg3_dx11.exe+0x60D93A8; the game functions using the index are in the Toolkit line of the tool output. The does layer cites EoCServer.dll (Toolkit pseudo-code with real names) wherever bg3_dx11.exe functions were not individually mapped.",
+  "uses": [
+   {
+    "type": "eoc::BoostInfoComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x31DBA00",
+    "site": "bg3_dx11.exe+0x31DBF11",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Per frame it runs ProcessThrownItems, then ProcessReturnToOwner, then GenerateEquipRequests, the last two sharing a frame-local data block that is cleaned up afterwards.",
+   "evidence": "EoCServer.dll+0xF02890 read (the three calls in this order); bg3_dx11.exe+0x23450A0 (608 b) is the function that uses the system index and the unchecked ReturnToOwnerComponent type"
+  },
+  {
+   "method": "ProcessThrownItems",
+   "text": "Looks at items for which something was removed this frame (a removed-tag query; its read types include the projectile attachment, so likely items released from a projectile), builds an attack description with no target health, tests the item's boosts container for an active boost, and under that test adds a component to the item through the command buffer. ReturnToOwnerComponent is the only own component in the write list, so it is the likely one. That this is a thrown weapon returning to its owner is a guess from the type names.",
+   "evidence": "EoCServer.dll+0xF01E00 read in part: AttackDesc and HitDesc built, HasActiveBoost on BoostsContainerComponent, an AddComponent assertion string; the boost tested and the component added are not resolved"
+  },
+  {
+   "method": "ProcessReturnToOwner",
+   "text": "Walks entities holding ReturnToOwnerComponent and, when it is done with one, removes a component from it through the command buffer. IsFalling, ownership history and current ownee are read-only inputs.",
+   "evidence": "EoCServer.dll+0xF019A0 read in part: one RemoveComponentUnchecked; read-only inputs from the WorldView"
+  },
+  {
+   "method": "GenerateEquipRequests",
+   "text": "By its name and by ReturnToOwnerEquipRequestComponent in the write list, it makes equip requests for a returned item. This is a guess from names; the body was only read for structure.",
+   "evidence": "EoCServer.dll+0xF017F0 read in outline"
+  }
+ ],
+ "unknown": [
+  "the condition under which ReturnToOwnerComponent is added (the boost tested, the removal that triggers it)",
+  "how a returning item reaches the owner"
+ ],
+ "sure": "no: the central condition is unresolved"
+}

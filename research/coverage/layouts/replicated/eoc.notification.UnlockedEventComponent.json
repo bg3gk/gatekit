@@ -4,18 +4,18 @@
   "size": 32,
   "fields": [
     {
-      "name": "field_0",
+      "name": "Entity",
       "offset": 0,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "write-all serializer bg3.exe+0x995140: member 1, raw 16-byte write at +0; macOS default stp q0,q0 [x23] = 0"
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x83B4B0 (esv::notification::System lambda over esv::lock::UnlockedEventOneFrameComponent; variant tag 0x2E = UnlockedEventNotificationRequest) puts the event's owner entity (the door/chest LockSystem::FinalizeLockRequests unlocked) at request +0 and the event's Key at +8. Dispatcher bg3.exe+0x2DF53B0 case 0x2E creates this component (creator bg3.exe+0x2DF3460) and stores the Guid of request +0 (FUN_142B8DC50, entity -> uuid) at +0: the entity that was unlocked."
     },
     {
-      "name": "field_10",
+      "name": "Key",
       "offset": 16,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "write-all serializer bg3.exe+0x995140: member 2, raw 16-byte write at +0x10"
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2DF53B0 case 0x2E stores the Guid of request +8 at +0x10; EoCServer.dll+0x83B4B0 filled request +8 from esv::lock::UnlockedEventOneFrameComponent +0 (Key, the key item; null handle when unlocked without one, then the Guid is empty)."
     }
   ],
   "confidence": "high",

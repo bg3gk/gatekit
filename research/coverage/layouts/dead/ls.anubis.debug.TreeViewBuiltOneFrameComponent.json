@@ -16,7 +16,7 @@
           "offset": 0,
           "type": "uint32_t",
           "source": "inferred",
-          "evidence": "Windows TreeView::AddNode bg3.exe+0x38836B0: *node = CONCAT44(end, start) where start = the text size (+0x20) before the node's label is appended."
+          "evidence": "Windows TreeView::AddNode bg3.exe+0x38836B0: stores start and end together as one 8-byte value at +0 of the node (start in the low 32 bits, end in the high), where start = the text size (+0x20) before the node's label is appended."
         },
         {
           "name": "TextEnd",
@@ -30,7 +30,7 @@
           "offset": 8,
           "type": "uint8_t",
           "source": "inferred",
-          "evidence": "bg3.exe+0x38836B0: = kind & 0xF | bool << 4 | bool << 5 (macOS AddNode(..., ETreeNodeKind, bool, bool, int, int, int): the node kind in the low 4 bits and two flags)."
+          "evidence": "bg3.exe+0x38836B0: stores the kind in the low 4 bits, the first bool in bit 4 and the second bool in bit 5 (macOS AddNode(..., ETreeNodeKind, bool, bool, int, int, int): the node kind in the low 4 bits and two flags)."
         },
         {
           "name": "Depth",
@@ -69,7 +69,7 @@
       "offset": 0,
       "type": "uint32_t",
       "source": "inferred",
-      "evidence": "The component is an ls::anubis::debug::TreeView (Windows constructor bg3.exe+0x3883600, called by the builder bg3.exe+0x3865F80 and moved in by the creator bg3.exe+0x383ACA0 (AllocRaw 0x38)): +0 = CONCAT44(end, start) of the tree's name in the text buffer; start = text size before it was appended."
+      "evidence": "The component is an ls::anubis::debug::TreeView (Windows constructor bg3.exe+0x3883600, called by the builder bg3.exe+0x3865F80 and moved in by the creator bg3.exe+0x383ACA0 (AllocRaw 0x38)): +0 holds start (low 32 bits) and end (high 32 bits), written as one 8-byte value, of the tree's name in the text buffer; start = text size before it was appended."
     },
     {
       "name": "NameEnd",

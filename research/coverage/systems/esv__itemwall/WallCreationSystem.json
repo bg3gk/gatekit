@@ -1,0 +1,92 @@
+{
+ "system": "esv::itemwall::WallCreationSystem",
+ "namespace": "esv::itemwall",
+ "symbols": {
+  "reads": [
+   "eoc::AttributeFlagsComponent",
+   "eoc::DataComponent",
+   "eoc::gamestate::UnloadLevelComponent",
+   "eoc::spatial_grid::DataComponent",
+   "esv::Character",
+   "ls::LevelComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "eoc::BoundComponent",
+   "esv::itemwall::CreateComponent",
+   "ls::SavegameComponent"
+  ],
+  "methods": [
+   {
+    "name": "CreateWalls",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FunctorRequestCreateWall",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "WallCreationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~WallCreationSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3379210",
+    "site": "bg3_dx11.exe+0x3379335",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoundComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xF32190",
+    "site": "bg3_dx11.exe+0xF325E1",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoundComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xF32190",
+    "site": "bg3_dx11.exe+0xF326E7",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "FunctorRequestCreateWall",
+   "text": "Only queues. It appends a copy of the incoming eoc::itemwall::CreateWallRequest (0x88 bytes each) to the system's own dynamic array and does nothing else; no component is touched here. That a spell's CreateWall functor calls it is a guess from the name; no caller was read.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, esv::itemwall::WallCreationSystem::FunctorRequestCreateWall at EoCServer.dll+0x1143820, read whole (53 lines): array grow + CreateWallRequest copy-construct"
+  },
+  {
+   "method": "Update / CreateWalls",
+   "text": "Update and CreateWalls have the same body. When the queue is non-empty and a query (ECS query slot, index in a global, contents not resolved) has no matching entity, each queued request becomes a new entity via a deferred EntityCommandBuffer::CreateEntity. That entity gets two components added: ls::SavegameComponent (an empty one-byte component, so the wall is saved) and esv::itemwall::CreateComponent, filled from the request (position/direction values, a FixedString, a SpellId, and a 16-byte tail) plus an embedded CreateWallResult returned by eoc::itemwall::CreateWall (the template-based geometry/entity computation, a separate function). The queue is then destroyed and emptied every call.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, CreateWalls EoCServer.dll+0x11432A0 and Update +0x1143CE0; the two adds are EoCServer.dll+0x2DAC40 and EoCServer.dll+0x1142C10; both end in ecs::ComponentFrameStorageAllocRaw, i.e. ADD, not remove. Types resolved through their type-index globals: the global at EoCServer.dll+0x226A3C0 -> init EoCServer.dll+0x1BC110 -> GetTypeName 'esv::itemwall::CreateComponent'; the global at EoCServer.dll+0x21F78D4 -> init EoCServer.dll+0x2D1E0 -> EoCServer.dll+0x2DD220 -> GetTypeName 'ls::SavegameComponent'. Review 2026-11-14 (strong model): add helpers re-read (AllocRaw 200 bytes for CreateComponent, 1 byte for SavegameComponent, both ADD) and the guard re-read in CreateWalls: QueryIterator::HasAny on the query at EoCServer.dll+0x221F928 is false and the queue array is non-null"
+  }
+ ],
+ "unknown": [
+  "Which query the guard 'no entity matches' tests (index global at EoCServer.dll+0x221F928); a guess from the view's reads is eoc::gamestate::UnloadLevelComponent (skip while a level unloads), but that is a guess, not read.",
+  "BoundComponent is in the writes list but this system adds no BoundComponent itself; eoc::itemwall::CreateWall (not read) may touch it through the helper view.",
+  "What CreateWall does with the template (how many wall segments, their positions): not read."
+ ],
+ "sure": "yes"
+}

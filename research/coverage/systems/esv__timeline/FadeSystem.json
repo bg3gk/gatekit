@@ -1,0 +1,120 @@
+{
+ "system": "esv::timeline::FadeSystem",
+ "namespace": "esv::timeline",
+ "symbols": {
+  "reads": [
+   "esv::screen_fade::ScreenFadeToFinishedOneFrameComponent",
+   "esv::timeline::DeferredEndingStateComponent"
+  ],
+  "writes": [
+   "esv::timeline::ClearScreenFadeRequestOneFrameComponent",
+   "esv::timeline::FadeInTimeoutSingletonComponent",
+   "esv::timeline::FadedInUsersComponent",
+   "esv::timeline::PlayerFadeInEventOneFrameComponent",
+   "esv::timeline::ScreenFadeToRequestOneFrameComponent",
+   "esv::timeline::TimelineFadeClearRequestOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "CleanOneFrameComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FadeSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_OsirisRequestFadeOut",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessClearScreenFades",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessFinishedFadeIns",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStartedFadeIns",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "c_TimelineFadeClearTimeout",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "c_TimelineFadeInFinishedTimeout",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "c_TimeoutClearScreenDuration",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~FadeSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::timeline::ClearScreenFadeRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D11570",
+    "site": "bg3_dx11.exe+0x2D11CBA",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::timeline::FadedInUsersComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D10880",
+    "site": "bg3_dx11.exe+0x2D10BF6",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::timeline::PlayerFadeInEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D10CA0",
+    "site": "bg3_dx11.exe+0x2D11450",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::timeline::ScreenFadeToRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D10880",
+    "site": "bg3_dx11.exe+0x2D10A79",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

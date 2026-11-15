@@ -1,0 +1,118 @@
+{
+ "system": "esv::stats::proficiency::IntrinsicProficiencySystem",
+ "namespace": "esv::stats::proficiency",
+ "symbols": {
+  "reads": [
+   "eoc::BoostConditionComponent",
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent",
+   "eoc::status::CauseComponent",
+   "eoc::summon::IsSummonComponent",
+   "esv::boost::ChangedEventOneFrameComponent",
+   "ls::DebugComponent",
+   "ls::uuid::Component",
+   "ls::uuid::ToHandleMappingComponent"
+  ],
+  "writes": [
+   "eoc::stats::proficiency::IntrinsicallyProficientWielderComponent",
+   "esv::stats::proficiency::IntrinsicWielderChangesComponent"
+  ],
+  "methods": [
+   {
+    "name": "IntrinsicProficiencySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateIntrinsicProficiencies",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~IntrinsicProficiencySystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::stats::proficiency::IntrinsicallyProficientWielderComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EF8430",
+    "site": "bg3_dx11.exe+0x2EF87A8",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::stats::proficiency::IntrinsicWielderChangesComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EF8430",
+    "site": "bg3_dx11.exe+0x2EF87B7",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostInfoComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EF8030",
+    "site": "bg3_dx11.exe+0x2EF81AA",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostInfoComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EF8030",
+    "site": "bg3_dx11.exe+0x2EF8375",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::status::CauseComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EF8030",
+    "site": "bg3_dx11.exe+0x2EF81DC",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EF8030",
+    "site": "bg3_dx11.exe+0x2EF8213",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EF8030",
+    "site": "bg3_dx11.exe+0x2EF83BA",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2EF8030",
+    "site": "bg3_dx11.exe+0x2EF81FF",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2EF8030",
+    "site": "bg3_dx11.exe+0x2EF83A6",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

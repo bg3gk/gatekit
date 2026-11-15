@@ -1,0 +1,51 @@
+{
+ "system": "gui::lariannet::AuthorisationSystem",
+ "namespace": "gui::lariannet",
+ "symbols": {
+  "reads": [
+   "ecl::lariannet::TrackingSingletonComponent",
+   "gui::registration::VMGlobalDataSingletonComponent"
+  ],
+  "writes": [
+   "gui::lariannet::PendingLoggedInComponent"
+  ],
+  "methods": [
+   {
+    "name": "AuthorisationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LoggedOff",
+    "address": "bg3_dx11.exe+0x12E0F70",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "LoggedOn",
+    "address": "bg3_dx11.exe+0x12E0DB0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~AuthorisationSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "gui::lariannet::PendingLoggedInComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x12E0640",
+    "site": "bg3_dx11.exe+0x12E0839",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

@@ -1,0 +1,76 @@
+{
+ "system": "ecl::dummy::StoreClothSystem",
+ "namespace": "ecl::dummy",
+ "symbols": {
+  "reads": [
+   "ecl::dummy::DummyComponent",
+   "ls::VisualComponent"
+  ],
+  "writes": [
+   "ecl::dummy::StoredClothComponent"
+  ],
+  "methods": [
+   {
+    "name": "ClearDummyCloths",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StoreClothSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StoreDummyCloths",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~StoreClothSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::dummy::StoredClothComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A0C8A0",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::VisualComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1A0C8A0",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "StoreDummyCloths",
+   "text": "When the byte at +0x708 of an object the system holds is non-zero, for every entity whose ecl::dummy::DummyComponent was added this frame it adds ecl::dummy::StoredClothComponent (helper = AddComponent<ecl::dummy::StoredClothComponent>) whatever the visual, and then, if the entity has a Visual, stores for each mesh carrying a cloth vertex buffer a duplicate of that buffer in the component, keyed by the mesh's resource. So StoredCloth appears on every new photo-mode dummy while the flag is set; cloth only decides what is stored in it.",
+   "evidence": "EoCClient.dll ecl::dummy::StoreClothSystem::StoreDummyCloths @0xB19A70: guard on the +0x708 byte, Added Alive DummyComponent loop, add helper EoCClient.dll+0xB18150 (its type index global's GetTypeName<ecl::dummy::StoredClothComponent>) called before the GetConstVisual test, rf::DataLoader::InvokeDuplicateVertexBuffer per cloth mesh. Review 14 Nov: the add does not depend on cloth meshes."
+  },
+  {
+   "method": "ClearDummyCloths",
+   "text": "When a dummy is removed it releases the stored vertex buffers (RemoveVertexBuffer) of its cloth.",
+   "evidence": "EoCClient.dll ClearDummyCloths: Removed All query then rf::DataLoader::RemoveVertexBuffer; component removal itself not read"
+  }
+ ],
+ "unknown": [
+  "What the +0x708 flag is (possibly a graphics or cloth-simulation setting; a guess from nothing)",
+  "A dummy whose Visual is missing when DummyComponent is added gets an empty StoredCloth (read); what that does to its cloth later was not checked"
+ ],
+ "sure": "no: the flag guarding StoreDummyCloths (a byte at +0x708 of an object held by the system) was not identified"
+}

@@ -1,0 +1,192 @@
+{
+ "system": "esv::inventory::EquipmentSystem",
+ "namespace": "esv::inventory",
+ "symbols": {
+  "reads": [
+   "eoc::ActionResourceBlockBoostComponent",
+   "eoc::ActionResourceConsumeMultiplierBoostComponent",
+   "eoc::ArmorComponent",
+   "eoc::BoostConditionComponent",
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent",
+   "eoc::CanBeLootedComponent",
+   "eoc::DataComponent",
+   "eoc::DisabledEquipmentComponent",
+   "eoc::DualWieldingComponent",
+   "eoc::EquipableComponent",
+   "eoc::GameObjectVisualComponent",
+   "eoc::InvisibilityComponent",
+   "eoc::PlayerComponent",
+   "eoc::StatsComponent",
+   "eoc::TurnBasedComponent",
+   "eoc::WeaponComponent",
+   "eoc::character::CharacterComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::ftb::ParticipantComponent",
+   "eoc::ftb::RespectComponent",
+   "eoc::inventory::CanBeInComponent",
+   "eoc::inventory::CannotBeTakenOutComponent",
+   "eoc::inventory::ContainerComponent",
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::IsLockedComponent",
+   "eoc::inventory::IsOwnedComponent",
+   "eoc::inventory::MemberComponent",
+   "eoc::inventory::OwnerComponent",
+   "eoc::inventory::StackComponent",
+   "eoc::inventory::StackMemberComponent",
+   "eoc::inventory::WeightComponent",
+   "eoc::party::MemberComponent",
+   "eoc::shapeshift::ReplicatedChangesComponent",
+   "eoc::spell::BookComponent",
+   "eoc::status::LoseControlComponent",
+   "eoc::user::ReservedForComponent",
+   "esv::Character",
+   "esv::character_creation::EquipmentSetRequestComponent",
+   "esv::disarm::ForceUnequipRequestComponent",
+   "esv::dualWielding::UnequipRequestComponent",
+   "esv::inventory::InventoriesCreatedSingletonComponent",
+   "esv::inventory::InvisibilityDisruptingEventsOneFrameComponent",
+   "esv::inventory::ReturnToOwnerEquipRequestComponent",
+   "esv::inventory::SummonRequestSingletonComponent",
+   "esv::shapeshift::StatesChangedEventOneFrameComponent",
+   "esv::shapeshift::StatesComponent",
+   "ls::AnimationSetComponent",
+   "ls::DebugComponent",
+   "ls::LevelComponent"
+  ],
+  "writes": [
+   "eoc::ActionResourcesComponent",
+   "esv::Item",
+   "esv::disarm::WeaponDisarmedEventOneFrameComponent",
+   "esv::inventory::DeferredEquipmentRequestsOneFrameComponent",
+   "esv::inventory::DeferredEquipmentSetRequestOneFrameComponent",
+   "esv::inventory::EquipmentInteractionRequestsComponent",
+   "esv::inventory::IsLoadedFromEquipmentSetComponent",
+   "esv::inventory::ShapeshiftAddedEquipmentComponent",
+   "esv::inventory::ShapeshiftEquipmentHistoryComponent",
+   "esv::inventory::ShapeshiftUnequippedEquipmentComponent",
+   "esv::inventory::WeaponSetChangeRequestOneFrameComponent",
+   "esv::item::EquippedEventOneFrameComponent",
+   "esv::item::UnequippedEventOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "ApplyEquipmentSets",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CreateEquipmentInteractionRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "EquipmentSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherShapeshiftEquipmentRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestEquip",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestEquipmentSet",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestUnequip",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessEquipmentSetRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessInvisibilityEventRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResolveEquipmentRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SendEquipEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "TryEquip",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "TryUnequip",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~EquipmentSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "copied by hand from gatekit symbols system --dll dx11 (addresses are bg3_dx11.exe). Methods with null address were listed by the Toolkit but the tool printed no game address for them. System index variable bg3_dx11.exe+0x60516D8; the game functions using the index are in the Toolkit line of the tool output. The does layer cites EoCServer.dll (Toolkit pseudo-code with real names) wherever bg3_dx11.exe functions were not individually mapped.",
+  "uses": [],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Five steps run in order each frame: GatherShapeshiftEquipmentRequests, ProcessEquipmentSetRequests, ResolveEquipmentRequests, ProcessInvisibilityEventRequests, CreateEquipmentInteractionRequests.",
+   "evidence": "EoCServer.dll+0xFF51A0 read (the five calls)"
+  },
+  {
+   "method": "GatherShapeshiftEquipmentRequests",
+   "text": "Adds ShapeshiftEquipmentHistoryComponent to an entity on one path near the start (the guarding condition was not settled). Later, in a loop, two independent tests (not two branches of one choice) each compare a stored entity handle with the current one; on a match the first removes ShapeshiftAddedEquipmentComponent and the second removes ShapeshiftUnequippedEquipmentComponent from that entity. This method removes the two tags; it does not create them. What the compared handles stand for in game terms was not worked out.",
+   "evidence": "bg3_dx11.exe+0x34F7B00 (3475 b, matched to the method at pseudo-code 0.19) read around the two tag type indexes: both go to the same command-buffer helper bg3_dx11.exe+0x400D0A0, which stores only the type index; the one add in the function goes through ComponentFrameStorageAllocRaw with the ShapeshiftEquipmentHistory type. The named counterpart EoCServer.dll+0xFED910 has, at the same two tests, two RemoveComponentUnchecked calls, and one AddComponent earlier. Reviewer, 14 Nov 2026: the first version said these were adds."
+  },
+  {
+   "method": "ProcessInvisibilityEventRequests",
+   "text": "Guess from the name only, not read: handles invisibility-disrupting events. InvisibilityDisruptingEventsOneFrameComponent is in the system's read list, not its write list, so this method likely consumes it rather than raising it.",
+   "evidence": "name and component list only; query constructors for the component at bg3_dx11.exe+0x2E0BC70 and 0x34FF4F0 are not the creator"
+  },
+  {
+   "method": "ProcessEquipmentSetRequests, ResolveEquipmentRequests, CreateEquipmentInteractionRequests",
+   "text": "By name only: turn equipment-set requests into per-slot equip requests, resolve them, then create inventory interaction requests. Not read.",
+   "evidence": "names only"
+  }
+ ],
+ "unknown": [
+  "who creates ShapeshiftAddedEquipmentComponent and ShapeshiftUnequippedEquipmentComponent (not GatherShapeshiftEquipmentRequests, which removes them)",
+  "the condition guarding the ShapeshiftEquipmentHistoryComponent add",
+  "who creates InvisibilityDisruptingEventsOneFrameComponent and on what",
+  "bg3_dx11 addresses of the other four steps"
+ ],
+ "sure": "no: one step read, and in it only the add and the two removes, not what their conditions mean"
+}

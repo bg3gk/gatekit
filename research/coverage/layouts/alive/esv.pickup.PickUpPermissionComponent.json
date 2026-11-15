@@ -10,7 +10,7 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "game",
-      "evidence": "*puVar11 = esv::pickup::PickUpRequestComponent+8 (Target). Live 0x19F6D = request's +8. Game name: member 0 (m_EntityToPickUp) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): model EntityId +0 -> component +0.",
+      "evidence": "Written from esv::pickup::PickUpRequestComponent+8 (Target). Live 0x19F6D = request's +8. Game name: member 0 (m_EntityToPickUp) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): model EntityId +0 -> component +0.",
       "legacy": "Target"
     },
     {
@@ -18,7 +18,7 @@
       "offset": 8,
       "type": "EntityHandle",
       "source": "game",
-      "evidence": "puVar11[1] = PickUpRequestComponent+0. Live 0x13727. Game name: member 1 (m_TargetInventory) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): model EntityId +8 -> component +8.",
+      "evidence": "The second qword is written from PickUpRequestComponent+0. Live 0x13727. Game name: member 1 (m_TargetInventory) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): model EntityId +8 -> component +8.",
       "legacy": "field_8"
     },
     {
@@ -26,7 +26,7 @@
       "offset": 16,
       "type": "Guid",
       "source": "game",
-      "evidence": "puVar11[2..3] = first 16 bytes of eoc::pickup::PickUpRequestComponent (stride 0x18; SE Data.h field_0 Guid). Live random 16 bytes. Game name: member 2 (m_PickUpRequestID) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): 16 bytes at model +0x10 -> component +0x10.",
+      "evidence": "The third and fourth qwords are written from the first 16 bytes of eoc::pickup::PickUpRequestComponent (stride 0x18; SE Data.h field_0 Guid). Live random 16 bytes. Game name: member 2 (m_PickUpRequestID) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): 16 bytes at model +0x10 -> component +0x10.",
       "legacy": "RequestGuid"
     },
     {
@@ -34,7 +34,7 @@
       "offset": 32,
       "type": "int32_t",
       "source": "game",
-      "evidence": "*(int*)(puVar11+4) = global counter DAT_18221449c, post-incremented - a unique permission request id (compared with esv::pickup ScriptPermissionResponse.RequestId). Live 256. Game name: member 3 (m_ScriptRequestId) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): int32 model +0x20 -> component +0x20.",
+      "evidence": "The 32-bit integer at +0x20 is written from the global counter at EoCServer.dll+0x221449C, post-incremented - a unique permission request id (compared with esv::pickup ScriptPermissionResponse.RequestId). Live 256. Game name: member 3 (m_ScriptRequestId) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): int32 model +0x20 -> component +0x20.",
       "legacy": "RequestId"
     },
     {

@@ -1,0 +1,199 @@
+{
+ "system": "esv::ready_check::OverseerSystem",
+ "namespace": "esv::ready_check",
+ "symbols": {
+  "reads": [
+   "eoc::PlayerComponent",
+   "eoc::character::CharacterComponent",
+   "eoc::dialog::StateComponent",
+   "eoc::party::ViewComponent",
+   "eoc::ready_check::BlockedComponent",
+   "eoc::user::ReservedForComponent",
+   "esv::GameStateUnloadSessionComponent",
+   "esv::camp::ReadyCheckRequestOneFrameComponent",
+   "esv::combat::FleeRequestComponent",
+   "esv::combat::JoinEventOneFrameComponent"
+  ],
+  "writes": [
+   "eoc::ready_check::ResultEventOneFrameComponent",
+   "eoc::ready_check::StateComponent",
+   "eoc::ready_check::UserComponent",
+   "ls::DebugComponent",
+   "ls::IsGlobalComponent",
+   "ls::SavegameComponent"
+  ],
+  "methods": [
+   {
+    "name": "FilterBeginRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherRequest",
+    "address": "bg3_dx11.exe+0x2C2F630",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "OnPlayerConnected",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnPlayerDisconnected",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnUserResponded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OverseerSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessConnectionChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessResultEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUserModification",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestBegin",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestCancel",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestCancel",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateComponents",
+    "address": "bg3_dx11.exe+0x2C30EF0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "~OverseerSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::ready_check::ResultEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2C32330",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ready_check::UserComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2C2EE60",
+    "site": "bg3_dx11.exe+0x2C2EF4B",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::IsGlobalComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2C30A30",
+    "site": "bg3_dx11.exe+0x2C30B7A",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2C30A30",
+    "site": "bg3_dx11.exe+0x2C30B59",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::dialog::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C30EF0",
+    "site": "bg3_dx11.exe+0x2C312AD",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ready_check::UserComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C30EF0",
+    "site": "bg3_dx11.exe+0x2C31186",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ready_check::UserComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C30EF0",
+    "site": "bg3_dx11.exe+0x2C3157B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::user::ReservedForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C30A30",
+    "site": "bg3_dx11.exe+0x2C30AE7",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::user::ReservedForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C30A30",
+    "site": "bg3_dx11.exe+0x2C30CDB",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ready_check::BlockedComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2C30EF0",
+    "site": "bg3_dx11.exe+0x2C311D9",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::combat::JoinEventOneFrameComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2C30EF0",
+    "site": "bg3_dx11.exe+0x2C311F8",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

@@ -11,21 +11,21 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x1BF6D20 (AllocRaw 0x10) writes 0xFFC0000000000000 (null handle) at +0. bg3.exe+0x1BF6060 writes `*p = *param_2` (an entity handle passed in by the status visual code). Which entity (visual owner vs. status) is not established."
+      "evidence": "Creator bg3.exe+0x1BF6D20 (AllocRaw 0x10) writes 0xFFC0000000000000 (null handle) at +0. bg3.exe+0x1BF6060 writes the entity handle its second argument points to at +0 (an entity handle passed in by the status visual code). Which entity (visual owner vs. status) is not established."
     },
     {
       "name": "Opacity",
       "offset": 8,
       "type": "float",
       "source": "inferred",
-      "evidence": "Creator writes dword 0 at +8. bg3.exe+0x1BF6060 writes the float at +0x30 of the status visual (only when >= 1/256). FadeSystem update bg3.exe+0x1A55070: `v = *(float*)(p+8) - GameTime.DeltaTime(+8) * *(float*)(p+0xC); if (v > 0.00390625) { *(float*)(p+8) = v; apply } else remove`."
+      "evidence": "Creator writes dword 0 at +8. bg3.exe+0x1BF6060 writes the float at +0x30 of the status visual (only when >= 1/256). FadeSystem update bg3.exe+0x1A55070 subtracts GameTime.DeltaTime (at +8 of the game time) times the float at +0xC from the float at +8; if the result is above 0.00390625 (1/256) it stores it back at +8 and applies it, otherwise it removes the component."
     },
     {
       "name": "FadeSpeed",
       "offset": 12,
       "type": "float",
       "source": "inferred",
-      "evidence": "Creator writes 0x3F800000 (1.0f) at +0xC. bg3.exe+0x1BF6060 writes `1.0 / *(float*)(settings + 0x4C)` (1 / fade duration); the update multiplies DeltaTime by it."
+      "evidence": "Creator writes 0x3F800000 (1.0f) at +0xC. bg3.exe+0x1BF6060 writes 1.0 divided by the float at +0x4C of the settings (1 / fade duration); the update multiplies DeltaTime by it."
     }
   ],
   "confidence": "high",

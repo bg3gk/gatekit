@@ -1,0 +1,134 @@
+{
+ "system": "esv::screen_fade::ScreenFadeSystem",
+ "namespace": "esv::screen_fade",
+ "symbols": {
+  "reads": [
+   "esv::timeline::ClearScreenFadeRequestOneFrameComponent",
+   "esv::timeline::ScreenFadeToRequestOneFrameComponent"
+  ],
+  "writes": [
+   "eoc::screen_fade::ScreenFadeFromServerComponent",
+   "esv::screen_fade::ClearScreenFadeFinishedOneFrameComponent",
+   "esv::screen_fade::ScreenFadeIdToFadeNameComponent",
+   "esv::screen_fade::ScreenFadeTimerComponent",
+   "esv::screen_fade::ScreenFadeToFinishedOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "ClearDataContainsFadeId",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FinalizeComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ClearAllScreenFadesRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ClearScreenFadeFinishedRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ClearScreenFadeRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ScreenFadeToFinishedRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ScreenFadeToRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessClearScreenFadeFinishedRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessClearScreenFadeRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessScreenFadeToFinishedRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessScreenFadeToRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ScreenFadeSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ScreenFadeSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::screen_fade::ScreenFadeFromServerComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EED380",
+    "site": "bg3_dx11.exe+0x2EED682",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::screen_fade::ClearScreenFadeFinishedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EED380",
+    "site": "bg3_dx11.exe+0x2EEE29C",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::screen_fade::ScreenFadeIdToFadeNameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EED380",
+    "site": "bg3_dx11.exe+0x2EED6F6",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::screen_fade::ScreenFadeToFinishedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EED380",
+    "site": "bg3_dx11.exe+0x2EEDC31",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

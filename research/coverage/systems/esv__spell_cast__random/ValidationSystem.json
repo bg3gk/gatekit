@@ -1,0 +1,135 @@
+{
+ "system": "esv::spell_cast::random::ValidationSystem",
+ "namespace": "esv::spell_cast::random",
+ "symbols": {
+  "reads": [
+   "eoc::BodyTypeComponent",
+   "eoc::CanTriggerRandomCastsComponent",
+   "eoc::ClassesComponent",
+   "eoc::LevelComponent",
+   "eoc::PlayerComponent",
+   "eoc::RaceComponent",
+   "eoc::SyncedTimelineControlComponent",
+   "eoc::attitude::AttitudesToPlayersComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::combat::StateComponent",
+   "eoc::identity::StateComponent",
+   "eoc::party::MemberComponent",
+   "eoc::party::ViewComponent",
+   "eoc::projectile::SourceInfoComponent",
+   "eoc::relation::FactionComponent",
+   "eoc::relation::RelationComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::status::ContainerComponent",
+   "eoc::summon::ContainerComponent",
+   "esv::Character",
+   "esv::ServerTimelineActorDataComponent",
+   "esv::status::StatusComponent"
+  ],
+  "writes": [
+   "esv::spell_cast::random::IsServerControlledComponent",
+   "esv::spell_cast::random::RequestComponent",
+   "esv::spell_cast::random::ResultEventOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "CanExecuteRandomCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CreateRandomCastRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DetermineRandomCastOutcome",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetRandomCastRollStream",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestRandomCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnAnimationReceivedGameplayEvent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRandomCastRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateServerControl",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ValidateRandomCastRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ValidationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ValidationSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; the Toolkit's own methods without an address were not found in the game binary and are listed with address null; the per-frame update address is not printed for bg3_dx11.exe by this command, it was found by reading the factory in pseudo-code). Parsed by script from the command output, not retyped.",
+  "uses": [],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "ProcessRandomCastRequests (probable)",
+   "text": "Works through entities that carry esv::spell_cast::random::RequestComponent, which holds a queue of request records and a timer. Entities in a list handed over from the validation step are skipped. The timer is set to 2.0 for entities in one set the system holds, zeroed for entities in another, and otherwise counted down by a frame value while above zero. When it is at or below zero, a decision helper is called on the first request; if it accepts, a result is built, a one-frame random::ResultEventOneFrameComponent is created through a helper, and the first request is taken off the queue; the RequestComponent is removed only when the queue is then empty.",
+   "evidence": "bg3_dx11.exe factory 0x2371BD0 stores entry 0x239B2F0 -> 0x2E913D0 -> 0x2E92B60, which the decompiler hint matches to ProcessRandomCastRequests at low confidence (0.22); the timer is the float at +0x10 of the per-entity 0x18-byte component record, requests are 0x80-byte entries, the decrement uses the float at offset 8 of an argument, the decision helper is 0x2E93420, the event helper 0x2E94490. Read as pseudo-code."
+  },
+  {
+   "method": "ValidateRandomCastRequests (probable)",
+   "text": "Walks entities that carry a RequestComponent and runs a validity check (0x2E90E20) on each; when the check fails the RequestComponent is removed and the entity is put on a list that the processing step then skips.",
+   "evidence": "bg3_dx11.exe+0x2E919E0, called from 0x2E913D0 before 0x2E92B60, matched to ValidateRandomCastRequests by the decompiler hint (0.27); the remove call uses the RequestComponent type id. Pairing 0x2E90E20 with CanExecuteRandomCast is a guess from call position and the Toolkit signature (EoCServer.dll+0x5E12F0)."
+  },
+  {
+   "method": "UpdateServerControl",
+   "text": "Asserts that the request queue is not empty, giving as the reason that server control is updated before requests are processed; it issues add and remove component commands through the entity command buffer. The body was not otherwise read.",
+   "evidence": "EoCServer.dll+0x5E8560 (Toolkit editor build, named); only the assertion and the AddComponent/RemoveComponent command calls were seen."
+  }
+ ],
+ "unknown": [
+  "Which bg3_dx11.exe functions are these methods: the tools find none of them in the game; the two dx11 functions above are matched only by low-confidence decompiler hints.",
+  "What causes a request to be created (CreateRandomCastRequests, EoCServer.dll+0x5E1860, not read): which animation event or timeline starts it. Its inputs include CanTriggerRandomCastsComponent and timeline control, which suggests timeline-driven random casts, but that is a guess from the names.",
+  "What the two entity sets held by the system are (one sets the timer to 2.0, one zeroes it); that either is the server-controlled set is not shown.",
+  "How the outcome is chosen (DetermineRandomCastOutcome, GetRandomCastRollStream).",
+  "Where esv::spell_cast::random::IsServerControlledComponent is added and removed; UpdateServerControl issues add and remove commands, for which component was not read."
+ ],
+ "sure": "no: two dx11 functions read but tied to their method names only by hint; the rest not read"
+}

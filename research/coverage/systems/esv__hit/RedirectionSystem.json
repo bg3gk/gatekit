@@ -1,0 +1,147 @@
+{
+ "system": "esv::hit::RedirectionSystem",
+ "namespace": "esv::hit",
+ "symbols": {
+  "reads": [
+   "eoc::BoostConditionComponent",
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent",
+   "eoc::HealthComponent",
+   "eoc::RedirectDamageBoostComponent",
+   "eoc::stats::EntityDamagedEventOneFrameComponent",
+   "eoc::status::CauseComponent",
+   "esv::Character",
+   "esv::Item",
+   "esv::boost::ChangedEventOneFrameComponent",
+   "esv::status::OwnershipComponent",
+   "ls::uuid::ToHandleMappingComponent"
+  ],
+  "writes": [
+   "esv::hit::RedirectionTrackingComponent"
+  ],
+  "methods": [
+   {
+    "name": "FinalizeTrackingRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessEntityDestruction",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessExecutionRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTrackingRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RedirectionSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~RedirectionSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::hit::RedirectionTrackingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EE5AC0",
+    "site": "bg3_dx11.exe+0x2EE5FAF",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostsContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EE5AC0",
+    "site": "bg3_dx11.exe+0x2EE5B6E",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::status::CauseComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EE5AC0",
+    "site": "bg3_dx11.exe+0x2EE5DE4",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::hit::RedirectionTrackingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EE5AC0",
+    "site": "bg3_dx11.exe+0x2EE5F7B",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::hit::RedirectionTrackingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EE6200",
+    "site": "bg3_dx11.exe+0x2EE6361",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Each tick runs four steps in order on a per-tick set of frame data: ProcessTrackingRequests, ProcessEntityDestruction, FinalizeTrackingRequests, ProcessExecutionRequests.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, RedirectionSystem::Update at EoCServer.dll+0x3B2070, the four calls read in order"
+  },
+  {
+   "method": "ProcessTrackingRequests",
+   "text": "Walks entities whose boosts container was just added/changed (an 'added' query), and for each boost entry of the redirect-damage kind (a type byte test) whose cause entity is alive, records that entity into the frame's set. It creates and removes nothing.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, RedirectionSystem::ProcessTrackingRequests at +0x3B0EF0, read whole after stripping asserts; the identity of the boost kind is only a byte comparison, name not confirmed"
+  },
+  {
+   "method": "ProcessEntityDestruction",
+   "text": "Walks entities that already have the tracking component and, for each tracked handle that matches an entity in a destroyed/unloaded list, inserts the owner into the frame set so its tracking is re-evaluated. No component is added or removed here.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, RedirectionSystem::ProcessEntityDestruction at +0x3B0590, loop over entity list read; what the 'list at this+0x70' is was not resolved"
+  },
+  {
+   "method": "FinalizeTrackingRequests",
+   "text": "For every entity collected in the frame set that is alive, collects the sources of its RedirectDamage boosts (through the boosts container and GetBoostCauseOrSource, keeping only alive sources). If the list ends up empty and the entity has the tracking component, it removes esv::hit::RedirectionTrackingComponent from it (deferred remove). Otherwise it gets or adds RedirectionTrackingComponent (a 0x10-byte component) and refills its list with the sources, so the component lives exactly while something is redirecting damage to or from the entity.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, RedirectionSystem::FinalizeTrackingRequests at +0x3AFD00. Add: FUN_1803ac770 (+0x3AC770) ends in ComponentFrameStorageAllocRaw with DAT_182201cbc; remove: ecs::EntityCommandBuffer::RemoveComponentUnchecked with the same DAT_182201cbc & 0x7fff; DAT_182201cbc -> init FUN_180050380 -> GetTypeName 'esv::hit::RedirectionTrackingComponent'. Condition for remove: new source count 0 and the component present (read); condition for add: count non-zero. Review 2026-11-14 (strong model): guards re-read: nothing when count 0 and no component, remove when count 0 and component present, refill when both, add (FUN_1803ac770, AllocRaw 0x10) when count non-zero and no component. A runner lit esv::hit::RedirectionTrackingComponent by Warding Bond on 2026-11-14, which agrees"
+  },
+  {
+   "method": "ProcessExecutionRequests",
+   "text": "For entities that took damage this frame (EntityDamagedEventOneFrameComponent) and are tracked, it builds, for each linked redirect target that is alive, a new hit description whose damage is the damage taken (or one damage type of it) times the boost's factor, rounded down and at least 1, and submits it through an interface held by the system, so the linked entity takes the redirected share.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, RedirectionSystem::ProcessExecutionRequests at +0x3B0890, lines around HitDesc::AddDamage, floorf, DamageList::GetDamageOfType read; the interface call is a virtual call at slot +8 of an object at this+0x80, whose class was not identified"
+  }
+ ],
+ "unknown": [
+  "Which boost type byte ('l') in ProcessTrackingRequests is RedirectDamage: inferred from the view's RedirectDamageBoostComponent, not proven.",
+  "What the list in ProcessEntityDestruction is (destroyed entities, by position in the code) and the exact meaning of its 0x70 offset.",
+  "Which object receives the new hit in ProcessExecutionRequests (HitSystem request? a legacy hit manager?).",
+  "The wiki (Warding Bond: damage the warded creature takes is shared with the caster) agrees with this reading, but that is context, not evidence."
+ ],
+ "sure": "no: the add and the remove of RedirectionTrackingComponent are read with their conditions (non-empty vs empty source list), but the surrounding collection steps and the hit target are only partly resolved"
+}

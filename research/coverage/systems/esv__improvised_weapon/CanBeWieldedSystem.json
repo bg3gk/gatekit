@@ -1,0 +1,69 @@
+{
+ "system": "esv::improvised_weapon::CanBeWieldedSystem",
+ "namespace": "esv::improvised_weapon",
+ "symbols": {
+  "reads": [],
+  "writes": [
+   "eoc::improvised_weapon::CanBeWieldedComponent"
+  ],
+  "methods": [
+   {
+    "name": "CanBeWieldedSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestSetCanBeImprovisedWeapon",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CanBeWieldedSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "factory": "bg3.exe+0x2373AA0",
+  "constructor": "inlined in factory",
+  "update_per_survey": "bg3.exe+0x2EB0E40",
+  "note": "from gatekit symbols system --dll dx11 --full; no per-method address was found in bg3_dx11.exe for these methods (null); factory/constructor/update come from survey.csv, which prints them as bg3.exe+RVA, the same offsets the dx11 symbols users list shows",
+  "uses": [
+   {
+    "type": "eoc::improvised_weapon::CanBeWieldedComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2EB10C0",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "RequestSetCanBeImprovisedWeapon",
+   "text": "Called by outside code (the entity-conversion helpers for items and characters call it, found by a text search of the pseudo-code) to queue an (entity, yes/no) request; it only stores the request in two parallel lists on the system.",
+   "evidence": "EoCServer.dll+0x367420 read; callers listed by gatekit decomp grep: esv::EntityConversionHelpers::AddItem and AddCharacter."
+  },
+  {
+   "method": "ProcessChanges",
+   "text": "For each queued entity that is still alive: if the request says no and the entity has eoc::improvised_weapon::CanBeWieldedComponent, the component is removed; if the request says yes and the entity lacks it, a helper adds it. The type was resolved from the helper functions' type-index global.",
+   "evidence": "EoCServer.dll+0x366E50 read: alive check, has-component helper EoCServer.dll+0x3666C0 and add helper EoCServer.dll+0x366480 both resolve to CanBeWieldedComponent, RemoveComponentUnchecked uses the same type index. The yes branch (add) was inferred from the helper, the guard read is 'not has component'."
+  }
+ ],
+ "unknown": [
+  "Which conversion rule decides yes or no at AddItem and AddCharacter was not read, so what exactly makes an item an improvised weapon is unknown.",
+  "Update's own body was not read; that it calls ProcessChanges is a guess from the method list."
+ ],
+ "sure": "no: the guard and the add/remove were read, but the source of the yes/no value was not"
+}

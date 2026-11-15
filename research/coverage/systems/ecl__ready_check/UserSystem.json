@@ -1,0 +1,44 @@
+{
+ "system": "ecl::ready_check::UserSystem",
+ "namespace": "ecl::ready_check",
+ "symbols": {
+  "reads": [],
+  "writes": [],
+  "methods": [],
+  "uses": [
+   {
+    "type": "ecl::ready_check::HideMessageBoxRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x78B360",
+    "site": "bg3_dx11.exe+0x78B3AF",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::ready_check::ShowMessageBoxRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x78B360",
+    "site": "bg3_dx11.exe+0x78B40D",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::dialog::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x78AA00",
+    "site": "bg3_dx11.exe+0x78AB07",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ready_check::UserComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x78AA00",
+    "site": "bg3_dx11.exe+0x78AA5B",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

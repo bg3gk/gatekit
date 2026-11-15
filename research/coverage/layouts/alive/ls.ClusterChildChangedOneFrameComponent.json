@@ -10,19 +10,19 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "GameEngine.dll+0x137D70 lines 341-344: event = FUN_18012a9d0(view, child); event[0] = *ClusterChild (the previous cluster entity) just before ClusterChild is overwritten with the new one. Game creator bg3.exe+0x3E5FA40 allocates 0x10 bytes and writes the null handle. Live entity handles."
+      "evidence": "GameEngine.dll+0x137D70 lines 341-344: gets the event through GameEngine.dll+0x12A9D0 (with the view and the child) and writes the current ClusterChild value (the previous cluster entity) at +0 of the event just before ClusterChild is overwritten with the new one. Game creator bg3.exe+0x3E5FA40 allocates 0x10 bytes and writes the null handle. Live entity handles."
     },
     {
       "name": "NewCluster",
       "offset": 8,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "same lines: event[1] = lVar12 = the cluster the child is moved to (also written into ClusterChildComponent). Game default null handle. Live entity handles."
+      "evidence": "same lines: writes at +8 of the event the cluster the child is moved to (also written into ClusterChildComponent). Game default null handle. Live entity handles."
     }
   ],
   "confidence": "medium",
   "open_questions": [
-    "FUN_18012a9d0 was taken to be the add/get of this component from the surrounding view (not opened)."
+    "GameEngine.dll+0x12A9D0 was taken to be the add/get of this component from the surrounding view (not opened)."
   ],
   "minutes": 7,
   "functions_read": 4,

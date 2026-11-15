@@ -77,7 +77,7 @@
           "offset": 0,
           "type": "Guid",
           "source": "inferred",
-          "evidence": "Equals Script Extender's ActionOriginator (ExposedTypes.h). Creator copies the 16-byte global DAT_14625AAD0 (null Guid) to +0x48."
+          "evidence": "Equals Script Extender's ActionOriginator (ExposedTypes.h). Creator copies the 16-byte global at bg3.exe+0x625AAD0 (null Guid) to +0x48."
         },
         {
           "name": "PassiveId",
@@ -123,21 +123,21 @@
       "offset": 0,
       "type": "SpellCastRandomResultSpellId",
       "source": "game",
-      "evidence": "savegame model ls::model::game::spell::v1::ResultEventOneFrameComponent, member 1 (symbols.py savemodel). Windows: creator bg3.exe+0x2E94210 initialises a SpellId at +0..+0x38; bg3.exe+0x2E928E0 fills it with FUN_140C607B0(comp, spell) and sets +0x30 to the outcome spell name."
+      "evidence": "savegame model ls::model::game::spell::v1::ResultEventOneFrameComponent, member 1 (symbols.py savemodel). Windows: creator bg3.exe+0x2E94210 initialises a SpellId at +0..+0x38; bg3.exe+0x2E928E0 fills it by calling bg3.exe+0xC607B0 with the component and the spell, and sets +0x30 to the outcome spell name."
     },
     {
       "name": "RollResult",
       "offset": 56,
       "type": "int32_t",
       "source": "game",
-      "evidence": "savegame model member 2. bg3.exe+0x2E928E0: *(int*)(comp + 0x38) = *(int*)(RequestData + 0x78); creator writes 4-byte 0."
+      "evidence": "savegame model member 2. bg3.exe+0x2E928E0 copies the 32-bit integer at RequestData +0x78 to +0x38 of the component; creator writes 4-byte 0."
     },
     {
       "name": "RandomCastDC",
       "offset": 60,
       "type": "uint8_t",
       "source": "game",
-      "evidence": "savegame model member 3. bg3.exe+0x2E928E0: *(byte*)(comp + 0x3C) = *(byte*)(RequestData + 0x10); creator writes byte 0."
+      "evidence": "savegame model member 3. bg3.exe+0x2E928E0 copies the byte at RequestData +0x10 to +0x3C of the component; creator writes byte 0."
     },
     {
       "name": "_Pad3D",
@@ -151,7 +151,7 @@
       "offset": 64,
       "type": "int32_t",
       "source": "game",
-      "evidence": "savegame model member 4. bg3.exe+0x2E928E0: *(int*)(comp + 0x40) = *(int*)(RequestData + 0x50); creator writes 0xFFFFFFFF."
+      "evidence": "savegame model member 4. bg3.exe+0x2E928E0 copies the 32-bit integer at RequestData +0x50 to +0x40 of the component; creator writes 0xFFFFFFFF."
     },
     {
       "name": "_Pad44",
@@ -165,7 +165,7 @@
       "offset": 72,
       "type": "SpellCastRandomResultActionOriginator",
       "source": "game",
-      "evidence": "savegame model member 5. bg3.exe+0x2E928E0: FUN_142ADA320(comp + 0x48, RequestData + 0x58); creator initialises +0x48..+0x68 as an ActionOriginator. Ends at 0x68 = registry size."
+      "evidence": "savegame model member 5. bg3.exe+0x2E928E0 calls bg3.exe+0x2ADA320 to copy RequestData +0x58 into +0x48 of the component; creator initialises +0x48..+0x68 as an ActionOriginator. Ends at 0x68 = registry size."
     }
   ],
   "confidence": "high",

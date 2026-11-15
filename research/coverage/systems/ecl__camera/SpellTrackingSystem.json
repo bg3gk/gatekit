@@ -1,0 +1,94 @@
+{
+ "system": "ecl::camera::SpellTrackingSystem",
+ "namespace": "ecl::camera",
+ "symbols": {
+  "reads": [
+   "ecl::GameCameraBehavior",
+   "ecl::camera::CombatTargetRequestsComponent"
+  ],
+  "writes": [
+   "ecl::camera::SpellTrackingComponent"
+  ],
+  "methods": [
+   {
+    "name": "SpellTrackingSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~SpellTrackingSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::camera::SpellTrackingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1E3D420",
+    "site": "bg3_dx11.exe+0x1E3D637",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update: starts tracking",
+   "text": "For cameras holding ecl::camera::CombatTargetRequestsComponent and ecl::GameCameraBehavior but not ecl::camera::SpellTrackingComponent, when the byte at GameCameraBehavior+0x144 is 0 and the kind of the camera's latest target request (an ecl::CameraTargetRequest list in CombatTargetRequestsComponent; an empty list counts as kind 13) is 2, 3 or 4, the system adds the SpellTrackingComponent tag to the camera.",
+   "evidence": "EoCClient.dll+0xFF4CF0 ecl::camera::SpellTrackingSystem::Update: Persistent/Alive query on spec DAT_181a47114 (TL<CombatTargetRequests, GameCameraBehavior>, absent TL<SpellTracking>), the byte at stride 600 +0x144 == 0, the helper EoCClient.dll+0xFF4BA0 (returns 13 when the DynamicArray<ecl::CameraTargetRequest> is empty, else reads an entry), the test (kind - 2) < 3, the adder FUN_180ff3e10 whose type-index global DAT_181a43ad0 resolves to ecl::camera::SpellTrackingComponent.",
+   "check": {
+    "when": "camera_spell_tracking_cast",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::camera::SpellTrackingComponent",
+       "side": "client",
+       "within": 15
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "camera_spell_tracking_cast (PROPOSED): GustavX:WLD_Main_A; wait Running; the controlled character casts a projectile spell at a visible target (e.g. server Osi.UseSpell(host, 'Projectile_FireBolt', target)); sleep 3. That spell casts make target requests of kind 2-4 is a guess from the system's name; the kinds were not mapped to their meaning.",
+   "review": "Review 2026-11-14 (Opus): holds: byte +0x144 == 0, the kind helper EoCClient.dll+0xFF4BA0 returning 13 on an empty list, (kind - 2) < 3, and the adder FUN_180ff3e10 on DAT_181a43ad0 (-> ecl::camera::SpellTrackingComponent); the remove pass's (kind - 2) < 4 || +0x12 and +0x144 tests also as written."
+  },
+  {
+   "method": "Update: stops tracking",
+   "text": "For cameras holding the tag, the system removes it when GameCameraBehavior+0x144 is set, or when the latest request's kind is outside 2..5 and the byte at GameCameraBehavior+0x12 is 0.",
+   "evidence": "EoCClient.dll+0xFF4CF0: spec DAT_181a47118 (CombatTargetRequests, SpellTracking, GameCameraBehavior required), the same kind helper, the flag set false when (kind - 2) < 4 or byte +0x12 != 0 (read with braces), the removal when +0x144 != 0 or the flag is true: RemoveComponentUnchecked(DAT_181a43ad0).",
+   "check": {
+    "when": "camera_spell_tracking_cast",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::camera::SpellTrackingComponent",
+       "side": "client",
+       "as": "E",
+       "within": 15
+      }
+     },
+     {
+      "gone": {
+       "component": "ecl::camera::SpellTrackingComponent",
+       "side": "client",
+       "on": "E",
+       "within": 15
+      }
+     }
+    ]
+   },
+   "review": "Review 2026-11-14 (Opus): the earlier 'not checkable live: gone is judged against the holders before the recipe' misread the verb: gone also passes for an entity that came to hold the type inside the recipe and then stopped (cli.md 3.6, Prelude.lua); so the claim is given appears-as-E plus gone-on-E. That the cast's target requests end within the recipe is not known; a fail here may be a short recipe, not a wrong claim."
+  }
+ ],
+ "unknown": [
+  "What the target-request kinds 2..5 and 13 are (ecl::CameraTargetRequest's kind enumeration not looked up), and what the GameCameraBehavior bytes +0x12 and +0x144 mean (GameCameraBehavior has no layout).",
+  "Which entry of the request list the helper reads (it was read only to the empty-list return)."
+ ],
+ "sure": "yes for the add and the remove and their guards as offsets and kinds (types resolved); no for what the kinds and bytes mean in play"
+}

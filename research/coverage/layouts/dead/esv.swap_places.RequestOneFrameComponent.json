@@ -11,39 +11,43 @@
       "size": 48,
       "fields": [
         {
-          "name": "Entity1",
+          "name": "Source",
           "offset": 0,
           "type": "EntityHandle",
           "source": "inferred",
-          "evidence": "bg3.exe+0x2E9E370 line 354: element+0 = first handle of the queued SwapPlacesRequest (first EntityHandle argument of LEGACY_RequestSwapPlaces); its transform is read by FUN_140e5a590."
+          "evidence": "Toolkit EoCServer.dll+0x5D7C70 ProcessSwapPlacesRequests: element +0 = first handle of the queued request; the assert text calls it the 'source' entity ('...but %s entity doesn't have a TransformComponent', 'source' when the first handle fails, 'target' otherwise).",
+          "legacy": "Entity1"
         },
         {
-          "name": "Entity2",
+          "name": "Target",
           "offset": 8,
           "type": "EntityHandle",
           "source": "inferred",
-          "evidence": "line 355: element+8 = second handle of the request (second argument of LEGACY_RequestSwapPlaces)."
+          "evidence": "EoCServer.dll+0x5D7C70 ProcessSwapPlacesRequests: element +8 = second handle of the request, called the 'target' entity by the same asserts.",
+          "legacy": "Entity2"
         },
         {
-          "name": "field_10",
+          "name": "Effect",
           "offset": 16,
           "type": "FixedString",
-          "source": "unknown",
-          "evidence": "line 356: copied FixedString (FixedString argument of LEGACY_RequestSwapPlaces); array clear bg3.exe+0x22E5C30 DecRefs +0x10 with stride 0x30."
+          "source": "inferred",
+          "evidence": "Toolkit EoCServer.dll+0xCFA8A0 esv::EffectManager::ProcessSwapPlacesRequests: element +0x10 is ToChar'ed, split at ':' (SplitStringFast, up to 2 parts) and each part played with PlayAndForgetEffect / CreateEffect at element +0x14 and +0x20. It comes from the SwapPlaces stats functor's first argument (EoCServer.dll+0x162CA70 case 8 passes functor +0x48 to LEGACY_RequestSwapPlaces; Script Extender calls it SwapPlacesFunctor::Animation); game data: SwapPlaces(VFX_Spells_Cast_Sorcerer_WildMagic_Swap_PositionEffect_01:...)."
         },
         {
-          "name": "Entity1Position",
+          "name": "SourcePosition",
           "offset": 20,
           "type": "glm::vec3",
           "source": "inferred",
-          "evidence": "lines 357-358: +0x14 (8 bytes) and +0x1C (float) = Translate of Entity1's transform (FUN_140e5a590 result +0x10/+0x18) or the position already assigned to it earlier in the same frame (local hash map of 12-byte values)."
+          "evidence": "EoCServer.dll+0x5D7C70: element +0x14..+0x1F = the source entity's Translate (TransformComponent +0x10/+0x18, or the position assigned to it earlier in the frame); EffectManager::ProcessSwapPlacesRequests (EoCServer.dll+0xCFA8A0) plays the effect there.",
+          "legacy": "Entity1Position"
         },
         {
-          "name": "Entity2Position",
+          "name": "TargetPosition",
           "offset": 32,
           "type": "glm::vec3",
           "source": "inferred",
-          "evidence": "lines 359-360: +0x20 (8 bytes) and +0x28 (float) = Entity2's position, same source."
+          "evidence": "EoCServer.dll+0x5D7C70: element +0x20..+0x2B = the target entity's position, same source; EffectManager::ProcessSwapPlacesRequests plays the effect there too.",
+          "legacy": "Entity2Position"
         },
         {
           "name": "_Pad44",

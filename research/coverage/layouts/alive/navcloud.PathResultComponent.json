@@ -14,7 +14,7 @@
           "offset": 0,
           "type": "uint32_t",
           "source": "unknown",
-          "evidence": "macOS ProcessSearches appends NodePath elements with stride 16: an 8-byte value (local_238) at +0"
+          "evidence": "macOS ProcessSearches appends NodePath elements with stride 16: an 8-byte value (a local variable of the function) at +0"
         },
         {
           "name": "field_4",
@@ -28,14 +28,14 @@
           "offset": 8,
           "type": "float",
           "source": "unknown",
-          "evidence": "macOS: element[2] = (float)value"
+          "evidence": "macOS: writes a value converted to float as the element's third 4-byte slot"
         },
         {
           "name": "field_C",
           "offset": 12,
           "type": "uint32_t",
           "source": "unknown",
-          "evidence": "macOS: element[3] = 0"
+          "evidence": "macOS: writes 0 as the element's fourth 4-byte slot"
         }
       ]
     }
@@ -53,7 +53,7 @@
       "offset": 16,
       "type": "uint32_t",
       "source": "inferred",
-      "evidence": "macOS ProcessSearches writes 0x10 when the start tile is invalid, 0x20 when the goal tile is invalid, clears bit 0 (uVar14 & 0xfffffffe) when the search ends, and tests (flags & 0x7E); creator zeroes it. Live 1 (searching / done) or 0x10"
+      "evidence": "macOS ProcessSearches writes 0x10 when the start tile is invalid, 0x20 when the goal tile is invalid, clears bit 0 (masks the flags with 0xfffffffe) when the search ends, and tests (flags & 0x7E); creator zeroes it. Live 1 (searching / done) or 0x10"
     },
     {
       "name": "_Pad14",

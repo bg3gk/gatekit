@@ -8,7 +8,7 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "The component is stored behind a pointer (8 bytes inline): creator bg3.exe+0x1A2C8C0 allocates 0x148 bytes and writes the null handle constant DAT_146174970 at +0. bg3.exe+0x1A2BB60 (attaches a thrown object to the thrower's visual) writes local_d8 here - the entity resolved by bg3.exe+0x1A29580 for the thrown object, whose ls::Visual is attached with ls::Visual::AddAttachment to the visual of the component's owner (the thrower)."
+      "evidence": "The component is stored behind a pointer (8 bytes inline): creator bg3.exe+0x1A2C8C0 allocates 0x148 bytes and writes the null handle constant (the global at bg3.exe+0x6174970) at +0. bg3.exe+0x1A2BB60 (attaches a thrown object to the thrower's visual) writes a local entity handle here - the entity resolved by bg3.exe+0x1A29580 for the thrown object, whose ls::Visual is attached with ls::Visual::AddAttachment to the visual of the component's owner (the thrower)."
     },
     {
       "name": "Effect",
@@ -22,14 +22,14 @@
       "offset": 312,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "Creator: null handle constant at +0x138. bg3.exe+0x1A2BB60 writes param_5 here - the thrown item or character (the function reads its ecl::Item / ecl::Character template bounds to centre the attachment). bg3.exe+0x1A2A790 checks this handle with IsEntityAlive for every component."
+      "evidence": "Creator: null handle constant at +0x138. bg3.exe+0x1A2BB60 writes its fifth argument here - the thrown item or character (the function reads its ecl::Item / ecl::Character template bounds to centre the attachment). bg3.exe+0x1A2A790 checks this handle with IsEntityAlive for every component."
     },
     {
-      "name": "field_140",
+      "name": "IsEquippedWeapon",
       "offset": 320,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "Creator: 0. bg3.exe+0x1A2BB60 copies the byte at +8 of the owner's eoc::thrown::AttachComponent (bg3.exe+0xAF8730) when it has one; that component is not declared in Script Extender, the meaning of the byte is unknown."
+      "source": "inferred",
+      "evidence": "bg3.exe+0x1A2BB60 copies the byte at +8 of the owner's eoc::thrown::AttachComponent, which esv::thrown::AttachmentSystem::ProcessAttachmentRequests (EoCServer.dll+0x3DDB60) sets to 'attached entity has a WeaponComponent and sits in an Equipment inventory (inventory type 1)'."
     },
     {
       "name": "_Pad141",

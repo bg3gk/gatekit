@@ -10,18 +10,18 @@
       "size": 8,
       "fields": [
         {
-          "name": "field_0",
+          "name": "SwitchGroup",
           "offset": 0,
           "type": "FixedString",
-          "source": "unknown",
-          "evidence": "Element of DynamicArray<ecl::sound::SoundSwitchUpdate> (macOS name); FUN_180dfc0a0 (Toolkit) copies elements of 8 bytes (allocation (n, 8, 4)) through FixedString ops."
+          "source": "inferred",
+          "evidence": "Toolkit EoCClient.dll+0xDFC710 ecl::sound::PointAndClickSoundSystem::ConfigureSoundSwitches appends pairs (FixedString +0, FixedString +4) whose first member is always one constant per pair (the combat-state group, the approval group) and whose second is chosen by condition; EoCClient.dll+0xDFCC50 matches +0 against those group constants and +4 against their values: a Wwise switch group and its state."
         },
         {
-          "name": "field_4",
+          "name": "SwitchState",
           "offset": 4,
           "type": "FixedString",
-          "source": "unknown",
-          "evidence": "Second 4-byte half of SoundSwitchUpdate; assumed FixedString (switch group / state pair) - not verified."
+          "source": "inferred",
+          "evidence": "Second FixedString of the pair built in ConfigureSoundSwitches (EoCClient.dll+0xDFC710): the value chosen for the group at +0 (combat / sneaking / normal; negative / neutral / positive / romantic from the approval rating type), matched by EoCClient.dll+0xDFCC50."
         }
       ]
     }
@@ -42,11 +42,11 @@
       "evidence": "alignment (live garbage)"
     },
     {
-      "name": "field_8",
+      "name": "ReactionName",
       "offset": 8,
       "type": "STDString",
-      "source": "unknown",
-      "evidence": "ls::STDString::operator= from ReactionToPlay +0x10; reset to \"\". Live: heap pointer, size 0x1D/0x26, capacity 0x1F/0x2F (an event/sound name)."
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xDFF7F0 ecl::sound::PointAndClickSoundSystem::UpdateSoundRequestComponents copies ReactionToPlay +0x10 here (STDString::operator=); ConfigureSoundEvent (EoCClient.dll+0xDFC5F0) fills ReactionToPlay +0x10 from EoCClient.dll+0xDFCFF0, which builds 'BGClickReaction' + '_Action' or '_ReptAction' + '_Attack', '_HealTarget', '_MoveTo' ... from the action. Live strings of 0x1D/0x26 characters."
     },
     {
       "name": "field_20",
@@ -91,25 +91,25 @@
       "evidence": "Optional value: DynamicArray<ecl::sound::SoundSwitchUpdate> copied by FUN_180dfc0a0 and destroyed by FUN_180dfee40. Live: heap pointer, capacity 1, size 0/1."
     },
     {
-      "name": "field_40",
+      "name": "ActionType",
       "offset": 64,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "Reset to 0x14 (2-byte store 0x0014 at +0x40) or set by FUN_180dfcc50 from the reaction type; probably an EPointAndClickActionType/ReactionType enum. Live 6/0xA/0x14."
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xD3BAE0 ecl::GameAnalyticsSystem::RecordPointAndClickSoundEvent (called from ProcessPointAndClickEvents with this component, stride 0x48) passes byte +0x40 to ecl::sound::ConvertToString(EPointAndClickActionType); UpdateSoundRequestComponents sets it from ReactionToPlay +8 through EoCClient.dll+0xDFCC50 and resets it to 0x14."
     },
     {
-      "name": "field_41",
+      "name": "State",
       "offset": 65,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "Zeroed with +0x40; live 0/2."
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xD3BAE0 RecordPointAndClickSoundEvent records byte +0x41 under the analytics key 'state' as 0 normal, 1 combat, 2 sneaking; EoCClient.dll+0xDFCC50 sets it from the state of the switch group ConfigureSoundSwitches sets to its combat value when the character is a combat participant and to its sneak value when sneaking."
     },
     {
-      "name": "field_42",
+      "name": "Approval",
       "offset": 66,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "Reset to 0. Live 0."
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xD3BAE0 RecordPointAndClickSoundEvent records byte +0x42 under the analytics key 'approval' as 1 negative, 2 neutral, 3 positive, 4 romantic; EoCClient.dll+0xDFCC50 sets it from the approval switch that ConfigureSoundSwitches (EoCClient.dll+0xDFC710) picks from eoc::approval::GetApprovalRatingType when CanSetApprovalSwitches holds."
     },
     {
       "name": "_Pad43",

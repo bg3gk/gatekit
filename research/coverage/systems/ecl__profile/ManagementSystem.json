@@ -1,0 +1,102 @@
+{
+ "system": "ecl::profile::ManagementSystem",
+ "namespace": "ecl::profile",
+ "symbols": {
+  "reads": [
+   "ecl::notification::AcceptedComponent",
+   "ecl::notification::SeenComponent",
+   "ecl::profile::AddedShownTutorialsOneFrameComponent",
+   "ecl::profile::ClearedShownTutorialsOneFrameComponent",
+   "ecl::profile::DishonourOneFrameComponent",
+   "ecl::tutorial::ResetProfileOneFrameComponent",
+   "eoc::GameOverComponent",
+   "eoc::notification::ProfileShownTutorialsUpdateNotificationComponent",
+   "eoc::notification::ProfileUpdateNotificationComponent"
+  ],
+  "writes": [],
+  "methods": [
+   {
+    "name": "DestroyOneFrameComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ClearTutorialsShownRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ReconTutorialEntryShownRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_TutorialEntryShownRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ManagementSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessClearRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessGameOverEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUpdateRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUpdateShownTutorialsRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ManagementSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::profile::AddedShownTutorialsOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AB5730",
+    "site": "bg3_dx11.exe+0x1AB5ADE",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::profile::ClearedShownTutorialsOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AB5C20",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::profile::DishonourOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AB5F80",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

@@ -10,21 +10,21 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "bg3.exe+0x34FF800: *(u64*)(comp+0) = *param_3 (record+0). Live: 22 different handles, none equal to the host 0x7C3 -> the equipped item (each spawned goblin gets a fresh longsword)."
+      "evidence": "bg3.exe+0x34FF800 writes at component +0 the 8-byte value its third argument points to (record+0). Live: 22 different handles, none equal to the host 0x7C3 -> the equipped item (each spawned goblin gets a fresh longsword)."
     },
     {
       "name": "Character",
       "offset": 8,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "bg3.exe+0x34FF800: *(u64*)(comp+8) = *param_4 (record+8). Live: includes the host character handle 0x7C3 (the equipment situation equips on the host) -> the character equipping the item."
+      "evidence": "bg3.exe+0x34FF800 writes at component +8 the 8-byte value its fourth argument points to (record+8). Live: includes the host character handle 0x7C3 (the equipment situation equips on the host) -> the character equipping the item."
     },
     {
       "name": "Slot",
       "offset": 16,
       "type": "ItemSlot",
       "source": "inferred",
-      "evidence": "bg3.exe+0x34FF800: *(u8*)(comp+0x10) = *param_5 (record+0x10). Toolkit esv::DualWieldingSystem::Update passes the byte at +8 of its own event copy to eoc::equipment::IsHandSlot / EvaluateOnItemEquipped(slot). Live values 3 and 5 = MeleeMainHand / RangedMainHand. ItemSlot is uint8_t (Enumerations/Stats.inl)."
+      "evidence": "bg3.exe+0x34FF800 writes at component +0x10 the byte its fifth argument points to (record+0x10). Toolkit esv::DualWieldingSystem::Update passes the byte at +8 of its own event copy to eoc::equipment::IsHandSlot / EvaluateOnItemEquipped(slot). Live values 3 and 5 = MeleeMainHand / RangedMainHand. ItemSlot is uint8_t (Enumerations/Stats.inl)."
     },
     {
       "name": "_Pad11",

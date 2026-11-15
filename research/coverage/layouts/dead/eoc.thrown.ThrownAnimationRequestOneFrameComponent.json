@@ -7,18 +7,18 @@
   "summary": "One-frame request to play the in-flight animation of a thrown object, carrying the same float and byte as eoc::thrown::IsThrownComponent +0/+4. Written on the server by esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (bg3.exe+0x2AFA000) from esv::thrown::EntityThrownRequestOneFrameComponent +0xC/+0x10, and on the client by the per-frame update of ecl::thrown::ThrowAnimationSystem (bg3.exe+0x1A25B70) from a 16-byte component (IsThrownComponent). Never seen alive. Registry total 8 on both rows.",
   "fields": [
     {
-      "name": "field_0",
+      "name": "Duration",
       "offset": 0,
       "type": "float",
-      "source": "unknown",
-      "evidence": "Creator bg3.exe+0x1A27DE0 (AllocRaw 8): `*(uint32*)p = 0`. Server bg3.exe+0x2AFA000 line 396: `*p = *(uint32*)(req + 0xC)` where req is the 0x28-stride throw request; the same value is compared `ABS(x) > FLT_EPSILON` and used as a divisor of pi (line 186/295) - a float. Client bg3.exe+0x1A25B70: `*p = *(uint32*)(src + 0)` from a 0x10-stride component (eoc::thrown::IsThrownComponent, whose +0 is that float)."
+      "source": "inferred",
+      "evidence": "Server: ProcessThrownRequests (EoCServer.dll+0x3D3D50 line 589, add helper 0x3CF6D0 = this 8-byte type) copies esv::thrown::EntityThrownRequestOneFrameComponent +0xC (eoc::PathMover::SampleDuration of the throw path, InitializeProjectileThrown EoCServer.dll+0x7F2D80); client bg3.exe+0x1A25B70 copies eoc::thrown::IsThrownComponent +0, the same value."
     },
     {
-      "name": "field_4",
+      "name": "SpellAnimationType",
       "offset": 4,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "Creator writes byte 0 at +4. Server copies the request byte at +0x10, client the byte at +4 of the 16-byte component (IsThrownComponent.field_4, live value 3 there)."
+      "source": "inferred",
+      "evidence": "Server: ProcessThrownRequests (EoCServer.dll+0x3D3D50 line 590) copies the request byte +0x10 = eoc::SpellPrototype +0x19 (Script Extender's SpellPrototype.SpellAnimationType, written by InitializeProjectileThrown EoCServer.dll+0x7F2D80); client copies IsThrownComponent +4."
     },
     {
       "name": "_Pad5",

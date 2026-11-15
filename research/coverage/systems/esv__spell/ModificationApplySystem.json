@@ -1,0 +1,164 @@
+{
+ "system": "esv::spell::ModificationApplySystem",
+ "namespace": "esv::spell",
+ "symbols": {
+  "reads": [
+   "eoc::BoostConditionComponent",
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent",
+   "eoc::ClassesComponent",
+   "eoc::LevelComponent",
+   "eoc::StatsComponent",
+   "eoc::UnlockSpellVariantBoostComponent",
+   "eoc::inventory::ContainerComponent",
+   "eoc::inventory::OwnerComponent",
+   "eoc::spell::BookComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::spell_cast::StateComponent",
+   "esv::Character",
+   "esv::boost::ChangedEventOneFrameComponent",
+   "esv::spell::SpellPreparedEventOneFrameComponent",
+   "esv::spell::SpellUnpreparedEventOneFrameComponent",
+   "ls::DebugComponent"
+  ],
+  "writes": [
+   "eoc::spell::ModificationContainerComponent",
+   "esv::spell::ModificationsChangedEventOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "CleanupOneFrameEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetEntitiesToUpdate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ModificationApplySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessModificationsFromBoosts",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ModificationApplySystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::spell::ModificationContainerComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E25850",
+    "site": "bg3_dx11.exe+0x2E258EC",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::spell::ModificationsChangedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E25850",
+    "site": "bg3_dx11.exe+0x2E26100",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostInfoComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E242C0",
+    "site": "bg3_dx11.exe+0x2E2487D",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::UnlockSpellVariantBoostComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E242C0",
+    "site": "bg3_dx11.exe+0x2E2488F",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::inventory::ContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E242C0",
+    "site": "bg3_dx11.exe+0x2E24658",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::inventory::OwnerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E242C0",
+    "site": "bg3_dx11.exe+0x2E24623",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::BookComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E242C0",
+    "site": "bg3_dx11.exe+0x2E24687",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::ModificationContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E25850",
+    "site": "bg3_dx11.exe+0x2E259A1",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::ModificationContainerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E25850",
+    "site": "bg3_dx11.exe+0x2E25987",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Runs four steps per tick in this order: CleanupOneFrameEvents, GetEntitiesToUpdate, ProcessModificationsFromBoosts, UpdateComponents. What each step does is read from its name only (the first and last are described below from their bodies; GetEntitiesToUpdate and ProcessModificationsFromBoosts were not read).",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, ModificationApplySystem::Update at +0x6EDA90 (389 lines): the four calls at lines 129, 130, 222, 379 of the dump"
+  },
+  {
+   "method": "CleanupOneFrameEvents",
+   "text": "Destroys every entity matched by one query (the one-frame events of the previous tick, by the pattern) through the deferred buffer.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, +0x6EB090, single DestroyEntity loop; the query's contents not resolved, 'one-frame events' is an inference from the method name"
+  },
+  {
+   "method": "UpdateComponents",
+   "text": "Applies the computed frame data. For each entity in the 'to add' list it adds eoc::spell::ModificationContainerComponent (0x40 bytes) and fills it from the computed value; for each entity in the 'to remove' list it removes ModificationContainerComponent; and for each entity in the 'changed' list it creates a new entity carrying esv::spell::ModificationsChangedEventOneFrameComponent (8 bytes, naming the changed entity).",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, ModificationApplySystem::UpdateComponents at +0x6EE230 (609 lines). Add: EoCServer.dll+0x6E6510 (AllocRaw 0x40, type index in the global at EoCServer.dll+0x2216AA4); Remove: RemoveComponentUnchecked with that global's value masked to its low 15 bits (0x7fff); the global at EoCServer.dll+0x2216AA4 -> init +0x9A940 -> 'eoc::spell::ModificationContainerComponent'. Event: CreateEntity then EoCServer.dll+0x6E6780 (8 bytes, the global at EoCServer.dll+0x2218F6C -> init +0xA0DF0 -> 'esv::spell::ModificationsChangedEventOneFrameComponent'); the three lists sit at frame-data offsets 0xe0, 0xb0 and 0x80"
+  }
+ ],
+ "unknown": [
+  "What makes an entity land in the add, remove and changed lists: GetEntitiesToUpdate and ProcessModificationsFromBoosts (the view names UnlockSpellVariantBoost, SpellPrepared/Unprepared events, boosts changed, class and level) were not read.",
+  "Whether the 'changed' list is exactly the entities whose container content actually differs; not read.",
+  "CleanupOneFrameEvents' query contents."
+ ],
+ "sure": "no: the add, remove and event creation are read with their types, but the conditions that fill the lists were not read"
+}

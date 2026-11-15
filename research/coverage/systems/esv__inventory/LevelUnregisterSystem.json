@@ -1,0 +1,104 @@
+{
+ "system": "esv::inventory::LevelUnregisterSystem",
+ "namespace": "esv::inventory",
+ "symbols": {
+  "reads": [
+   "eoc::GameObjectVisualComponent",
+   "eoc::inventory::MemberComponent",
+   "eoc::through::ShootThroughTypeComponent",
+   "eoc::use::SocketComponent",
+   "esv::ActivationGroupContainerComponent",
+   "ls::DebugComponent",
+   "ls::LevelComponent",
+   "ls::TransformComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "eoc::BoundComponent",
+   "esv::AIHintAreaTrigger",
+   "esv::AiGridAreaTrigger",
+   "esv::AtmosphereTrigger",
+   "esv::AvatarContainerTrigger",
+   "esv::BlockBronzeTimelinePlacementTrigger",
+   "esv::CampChestTrigger",
+   "esv::CampRegionTrigger",
+   "esv::Character",
+   "esv::ChasmRegionTrigger",
+   "esv::ChasmSeederTrigger",
+   "esv::CrimeAreaTrigger",
+   "esv::CrimeRegionTrigger",
+   "esv::CrowdCharacterTrigger",
+   "esv::EocAreaTrigger",
+   "esv::EocPointTrigger",
+   "esv::EventTrigger",
+   "esv::ExplorationTrigger",
+   "esv::FloorTrigger",
+   "esv::Item",
+   "esv::LightingTrigger",
+   "esv::MusicVolumeTrigger",
+   "esv::PortalTrigger",
+   "esv::Projectile",
+   "esv::RegionTrigger",
+   "esv::RoomTrigger",
+   "esv::SoundVolumeTrigger",
+   "esv::StartTrigger",
+   "esv::StatsAreaTrigger",
+   "esv::TeleportTrigger",
+   "esv::TimelineSceneTrigger",
+   "ls::PhysicsComponent"
+  ],
+  "methods": [
+   {
+    "name": "LevelUnregisterSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAddedMembers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~LevelUnregisterSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "note": "copied by hand from gatekit symbols system --dll dx11 (addresses are bg3_dx11.exe). Methods with null address were listed by the Toolkit but the tool printed no game address for them. System index variable bg3_dx11.exe+0x60D9788; the game functions using the index are in the Toolkit line of the tool output. The does layer cites EoCServer.dll (Toolkit pseudo-code with real names) wherever bg3_dx11.exe functions were not individually mapped.",
+  "uses": [
+   {
+    "type": "eoc::inventory::IsOwnedComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x30C18B0",
+    "site": "bg3_dx11.exe+0x30C1BD8",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ActiveComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x307D170",
+    "site": "bg3_dx11.exe+0x307D1CD",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Calls ProcessAddedMembers; a guess from the name: it unregisters members that went into an inventory from the level.",
+   "evidence": "EoCServer.dll+0xF816D0, 2 lines"
+  }
+ ],
+ "unknown": [
+  "details"
+ ],
+ "sure": "no"
+}

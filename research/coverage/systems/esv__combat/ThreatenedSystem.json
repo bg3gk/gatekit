@@ -1,0 +1,130 @@
+{
+ "system": "esv::combat::ThreatenedSystem",
+ "namespace": "esv::combat",
+ "symbols": {
+  "reads": [
+   "eoc::BodyTypeComponent",
+   "eoc::BoundComponent",
+   "eoc::InvisibilityComponent",
+   "eoc::RaceComponent",
+   "eoc::attitude::AttitudesToPlayersComponent",
+   "eoc::bounds::SizeChangedEventOneFrameComponent",
+   "eoc::combat::IsInCombatComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::combat::StateComponent",
+   "eoc::combat::ThreatRangeComponent",
+   "eoc::death::DeathComponent",
+   "eoc::identity::StateComponent",
+   "eoc::party::MemberComponent",
+   "eoc::relation::FactionComponent",
+   "eoc::relation::RelationComponent",
+   "eoc::spatial_grid::DataComponent",
+   "eoc::status::IncapacitatedComponent",
+   "esv::Character",
+   "esv::combat::LeftEventOneFrameComponent",
+   "esv::combat::ThreatRangeChangedEventOneFrameComponent",
+   "esv::relation::BaseFactionChangedEventOneFrameComponent",
+   "esv::relation::RelationChangedEventOneFrameComponent",
+   "esv::relation::SummonedFactionSetEventOneFrameComponent",
+   "esv::relation::TemporaryHostileRelationCreatedEventOneFrameComponent",
+   "esv::relation::TemporaryHostileRelationRemovedEventOneFrameComponent",
+   "ls::TransformComponent",
+   "ls::TranslateChangedOneFrameComponent"
+  ],
+  "writes": [
+   "eoc::combat::IsThreatenedComponent"
+  ],
+  "methods": [
+   {
+    "name": "FindCombatsToProcess",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessThreatenChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ThreatenedSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ThreatenedSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; the Toolkit's own methods without an address were not found in the game binary and are listed with address null; the per-frame update address is not printed for bg3_dx11.exe by this command, it was found by reading the factory in pseudo-code). Parsed by script from the command output, not retyped.",
+  "uses": [
+   {
+    "type": "eoc::combat::IsThreatenedComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x324D550",
+    "site": "bg3_dx11.exe+0x324D852",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::ParticipantComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x324AD10",
+    "site": "bg3_dx11.exe+0x324B2A1",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x324CD40",
+    "site": "bg3_dx11.exe+0x324D4F0",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::IsThreatenedComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x324D550",
+    "site": "bg3_dx11.exe+0x324DC4D",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update (FindCombatsToProcess, UpdateComponents)",
+   "text": "Decides which entities carry eoc::combat::IsThreatenedComponent. The update calls a first function (0x324AD10) that fills a collection, and only when that collection is not empty calls the other two: 0x324CD40 builds a map from entity to a list of threateners, and 0x324D550 writes the component. That last one first removes the component from every entity of its own query (dropping them from the map too), then walks the map: an entity with no threateners loses the component if it has it, and an entity with threateners gets a new 16-byte component when it has none. Matching the functions to FindCombatsToProcess and UpdateComponents is from call order and names.",
+   "evidence": "bg3_dx11.exe factory 0x234CF80 (entry 0x238F570) -> 0x324AD10, then under a count test 0x324CD40 and 0x324D550 (adds and removes IsThreatenedComponent, 16-byte component). Read as pseudo-code."
+  }
+ ],
+ "unknown": [
+  "What the first function collects (combats, by the method name) and which change it reacts to.",
+  "The rule for 'threatens' (distance against the threat range, visibility, hostility); 0x324CD40 calls 0x324DDB0 and 0x324E0A0, which were not read.",
+  "Which entities the query in 0x324D550 yields, whose component is removed before the map is walked.",
+  "What the 16 bytes of IsThreatenedComponent hold, and whether an existing component is updated in place (a path through 0x324EDE0 and 0x324ECF0 was seen, not read)."
+ ],
+ "sure": "no: the conditional calls and the component creation and removal are read; the threat rule is not"
+}

@@ -11,7 +11,7 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x3509D80 (AllocRaw 8) writes 0xffc0000000000000 (null EntityHandle); writer bg3.exe+0x3507FA0 line 411-412: `puVar15 = FUN_143509d80(param_2,&summon); *puVar15 = *puVar18;` where puVar18 is the 16-byte PlaceInInventory request (stride 0x10; its +8/+9 bools are tested nearby), i.e. its Owner."
+      "evidence": "Creator bg3.exe+0x3509D80 (AllocRaw 8) writes 0xffc0000000000000 (null EntityHandle); writer bg3.exe+0x3507FA0 line 411-412: adds the component through bg3.exe+0x3509D80 (with its own second argument and the summon) and copies into it the first 8 bytes of the 16-byte PlaceInInventory request it is processing (stride 0x10; its +8/+9 bools are tested nearby), i.e. its Owner."
     }
   ],
   "confidence": "high",

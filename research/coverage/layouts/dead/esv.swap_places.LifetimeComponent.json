@@ -11,14 +11,14 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "bg3.exe+0x2E9F3F0: AllocRaw(0x10), *puVar5 = *param_2, the same handle that is the key of the component's entity map (FUN_14077e0c0(.., &entity)) - the entity the component is added to (created by FUN_14401aff0 in bg3.exe+0x2E9E370). macOS default constructor stores a 16-byte constant at +0 then 4.0f at +8 (null handle default, hint only)."
+      "evidence": "bg3.exe+0x2E9F3F0: AllocRaw(0x10), then copies to +0 the value its second argument points to, the same handle that is the key of the component's entity map (bg3.exe+0x77E0C0, called with the entity) - the entity the component is added to (created by bg3.exe+0x401AFF0 in bg3.exe+0x2E9E370). macOS default constructor stores a 16-byte constant at +0 then 4.0f at +8 (null handle default, hint only)."
     },
     {
       "name": "Lifetime",
       "offset": 8,
       "type": "float",
       "source": "inferred",
-      "evidence": "bg3.exe+0x2E9F3F0 writes 0x40800000 (4.0f); bg3.exe+0x2E9F130 line 141: *(float*)(c+8) -= *(float*)(GameTime+8); if <= 0 the entity is destroyed (Toolkit CleanupSwapPlacesRequests the same)."
+      "evidence": "bg3.exe+0x2E9F3F0 writes 0x40800000 (4.0f); bg3.exe+0x2E9F130 line 141 subtracts the float at +8 of the game time from the float at +8 of the component; when the result is 0 or less the entity is destroyed (Toolkit CleanupSwapPlacesRequests the same)."
     },
     {
       "name": "_Pad12",

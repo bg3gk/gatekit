@@ -73,14 +73,14 @@
           "offset": 0,
           "type": "int32_t",
           "source": "inferred",
-          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Equals SE AttackDesc (Hit.h). bg3.exe+0x31CD550 copies param_5[0] to component +0x1B8."
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). Equals SE AttackDesc (Hit.h). bg3.exe+0x31CD550 copies the first element of its fifth argument to component +0x1B8."
         },
         {
           "name": "TotalHealDone",
           "offset": 4,
           "type": "int32_t",
           "source": "inferred",
-          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE AttackDesc.TotalHealDone; copied from param_5[1] to +0x1BC."
+          "evidence": "Copied from the confirmed layout layouts/alive/eoc.stats.EntityDamagedEventOneFrameComponent.json (same SE struct, Hit.h; checked there on live samples). SE AttackDesc.TotalHealDone; copied from the second element of the fifth argument to +0x1BC."
         },
         {
           "name": "InitialHPPercentage",
@@ -449,7 +449,7 @@
           "offset": 440,
           "type": "GlobalThothResultAttackDesc",
           "source": "inferred",
-          "evidence": "Existing Script Extender struct (Hit.h, 0x20 bytes: two ints, two bytes, Array at +0x10). bg3.exe+0x1A5A100 reads 8 bytes at +0x1B8 and a 16-bit value at +0x1C0, copies the array at +0x1C8 with FUN_140f11b90 (whole struct copy FUN_141058830); destructor bg3.exe+0x18856E0 frees the array at +0x1C0 relative to the HitDesc. HitDesc followed by AttackDesc is the same pair as in Script Extender's HitResult / SpellFunctorResult. Redeclared as GlobalThothResultAttackDesc (copied from the same confirmed layout)."
+          "evidence": "Existing Script Extender struct (Hit.h, 0x20 bytes: two ints, two bytes, Array at +0x10). bg3.exe+0x1A5A100 reads 8 bytes at +0x1B8 and a 16-bit value at +0x1C0, copies the array at +0x1C8 with bg3.exe+0xF11B90 (whole struct copy bg3.exe+0x1058830); destructor bg3.exe+0x18856E0 frees the array at +0x1C0 relative to the HitDesc. HitDesc followed by AttackDesc is the same pair as in Script Extender's HitResult / SpellFunctorResult. Redeclared as GlobalThothResultAttackDesc (copied from the same confirmed layout)."
         },
         {
           "name": "field_1D8",
@@ -484,21 +484,21 @@
           "offset": 520,
           "type": "uint64_t",
           "source": "unknown",
-          "evidence": "Copied as 8 bytes in the assignment path of bg3.exe+0x1A5A100 (piVar20[0x82]); meaning not established."
+          "evidence": "Copied as 8 bytes in the assignment path of bg3.exe+0x1A5A100 (the 8 bytes at +0x208 of the request); meaning not established."
         },
         {
           "name": "field_210",
           "offset": 528,
           "type": "uint64_t",
           "source": "unknown",
-          "evidence": "Copied as 8 bytes in the same assignment (piVar20[0x84]); meaning not established."
+          "evidence": "Copied as 8 bytes in the same assignment (the 8 bytes at +0x210 of the request); meaning not established."
         },
         {
           "name": "field_218",
           "offset": 536,
           "type": "FixedString",
           "source": "inferred",
-          "evidence": "bg3.exe+0x1A5A100 IncRefs it and stores it into a FixedString slot of the context; assigned with the FixedString assignment FUN_14412e0f0; destructor bg3.exe+0x18856E0 DecRefs +0x210 relative to the HitDesc."
+          "evidence": "bg3.exe+0x1A5A100 IncRefs it and stores it into a FixedString slot of the context; assigned with the FixedString assignment bg3.exe+0x412E0F0; destructor bg3.exe+0x18856E0 DecRefs +0x210 relative to the HitDesc."
         },
         {
           "name": "_Pad21C",
@@ -540,7 +540,7 @@
           "offset": 560,
           "type": "uint64_t",
           "source": "unknown",
-          "evidence": "Copied as 8 bytes in the assignment path of bg3.exe+0x1A5A100 (piVar20[0x8C])."
+          "evidence": "Copied as 8 bytes in the assignment path of bg3.exe+0x1A5A100 (the 8 bytes at +0x230 of the request)."
         }
       ]
     }
@@ -551,14 +551,14 @@
       "offset": 0,
       "type": "Guid",
       "source": "inferred",
-      "evidence": "bg3.exe+0x1A5A100 first resets it to the null Guid constant (DAT_14625aad0) and, when the Thoth evaluation FUN_140f01150 returns true, copies the Guid of the evaluated entry (entry = {int32 request index, Guid}, stride 0x18; the same Guid is the key looked up in GlobalThothComponent +0x40)."
+      "evidence": "bg3.exe+0x1A5A100 first resets it to the null Guid constant (the global at bg3.exe+0x625AAD0) and, when the Thoth evaluation bg3.exe+0xF01150 returns true, copies the Guid of the evaluated entry (entry = {int32 request index, Guid}, stride 0x18; the same Guid is the key looked up in GlobalThothComponent +0x40)."
     },
     {
       "name": "Request",
       "offset": 16,
       "type": "std::optional<GlobalThothResultRequest>",
       "source": "inferred",
-      "evidence": "Engaged byte at +0x248: constructor bg3.exe+0x1A5C0B0 zeroes the block and writes 0 to +0x248; destructor bg3.exe+0x1888E40 destroys the payload (FUN_1418856e0 on +0x18) and clears +0x248; bg3.exe+0x1A5A100 does 'if (byte +0x248) {destroy; clear}' on reset and 'if (!byte +0x248) copy-construct (FUN_141889760) and set it, else assign member by member' on a match. Payload 0x238 bytes = stride of the request array."
+      "evidence": "Engaged byte at +0x248: constructor bg3.exe+0x1A5C0B0 zeroes the block and writes 0 to +0x248; destructor bg3.exe+0x1888E40 destroys the payload (bg3.exe+0x18856E0 on +0x18) and clears +0x248; bg3.exe+0x1A5A100 does 'if (byte +0x248) {destroy; clear}' on reset and 'if (!byte +0x248) copy-construct (bg3.exe+0x1889760) and set it, else assign member by member' on a match. Payload 0x238 bytes = stride of the request array."
     }
   ],
   "confidence": "high",

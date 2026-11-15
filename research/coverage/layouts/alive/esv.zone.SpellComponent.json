@@ -167,11 +167,11 @@
   ],
   "fields": [
     {
-      "name": "field_0",
+      "name": "SpellCast",
       "offset": 0,
       "type": "EntityHandle",
-      "source": "unknown",
-      "evidence": "EoCServer.dll+0x114C5E0: *SpellComponent = CreationParams +8 (written only when valid; the caster/source). Live entity handles equal to FinishedEvent +8. macOS default writes the null handle at +0 (hint)."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x114C5E0 esv::zone::CreationSystem::ProcessCreateRequests copies CreateRequestOneFrameComponent +8 here when valid; that value is the spell cast entity (see CreateRequestOneFrameComponent.SpellCast: macOS bg3_macos_x64+0x641B5D0 passes the entity holding eoc::spell_cast::StateComponent)."
     },
     {
       "name": "Target",
@@ -181,11 +181,11 @@
       "evidence": "EoCServer.dll+0x114C5E0: eoc::spell_cast::InitialTarget::operator=(SpellComponent+8, CreationParams+0x80). Live layout matches (vtable, target handle, TargetingType 1 at +0x38)."
     },
     {
-      "name": "field_78",
+      "name": "TextKey",
       "offset": 120,
       "type": "FixedString",
-      "source": "unknown",
-      "evidence": "FixedString::operator=(SpellComponent+0x78, CreationParams+0x180). Live 0."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x114C5E0 esv::zone::CreationSystem::ProcessCreateRequests: FixedString::operator=(SpellComponent+0x78, request+0x180), and request +0x180 is the TextKey the surface manager hands to esv::ZoneAction::SetSpellID (EoCServer.dll+0x6AD110, stored at the Toolkit accessor TextKey +0x5D8)."
     },
     {
       "name": "field_7C",

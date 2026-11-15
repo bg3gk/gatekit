@@ -1,0 +1,88 @@
+{
+ "system": "ecl::photo_mode::RequestSystem",
+ "namespace": "ecl::photo_mode",
+ "symbols": {
+  "reads": [
+   "eoc::character_creation::SessionCommonComponent",
+   "eoc::multiplayer::HostComponent",
+   "eoc::multiplayer::UserComponent",
+   "eoc::notification::EnterPhotoModeFailedNotificationComponent",
+   "eoc::photo_mode::SessionComponent"
+  ],
+  "writes": [
+   "ecl::photo_mode::RequestedSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "LEGACY_EnterPhotoMode",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ExitPhotoMode",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "NotifyAndClearRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~RequestSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Per frame calls ProcessRequests, then always calls NotifyAndClearRequests with the flag ProcessRequests set.",
+   "evidence": "EoCClient.dll ecl::photo_mode::RequestSystem::Update @0x57AE00"
+  },
+  {
+   "method": "ProcessRequests",
+   "text": "Moves the queued per-player request map (player id -> 0 enter / 1 exit) out of the system, which empties it, and frees it at the end. Producer (macOS named code): TogglePhotoModeCommand acts only on a boxed bool parameter - true stores 0 (enter), false stores 1 (exit, through LEGACY_ExitPhotoMode); TogglePhotoModeOnCommand always passes true; when the local player view model's photo-mode-allowed byte is 0 neither stores anything and a notice is shown instead. ProcessRequests acts only when the master user's peer is the local peer. If an EnterPhotoModeFailed notification is added or alive (two query slots, specs not resolved) it forces the master user's entry to 1, so a failed enter becomes an exit. For the master user's entry only it logs 'Photo mode Enter/Exit requested by player' and calls the injected RequestSystemHelper, whose SendActivationRequest sends PhotoModeActivationMessage(player, request type) to the server; when that entry is 0 (an ENTER) it sets the out flag for NotifyAndClearRequests.",
+   "evidence": "EoCClient.dll ProcessRequests @0x57A400 read in full (the log picks 'Enter' when the byte is 0; the out flag is set when the byte is 0); RequestSystemHelper::SendActivationRequest @0x57AAA0 -> UIProtocol::SendPhotoModeActivationMessage; bg3_macos_x64 gui::DCWidget::OnTogglePhotoModeCommand @0x2934DF0 (Boxed<bool> type test), (anonymous)::TogglePhotoModeRequest @0x2937C80 (true -> byte 0), RequestSystem::LEGACY_ExitPhotoMode @0x36D62C0 (byte 1). Review 14 Nov: the out flag was first written as set on an exit; it is set on an enter."
+  },
+  {
+   "method": "NotifyAndClearRequests",
+   "text": "Runs its body when an EnterPhotoModeFailedNotification was added this frame or an enter request was sent: it takes the RequestedSingletonComponent, raises its bit in a per-frame mask (most likely its change mark; not resolved), and writes its byte: 1 when an enter was sent and no failure notification was added, else 0. So the byte reads as 'an enter request is outstanding'; that reading rests on these writes only.",
+   "evidence": "EoCClient.dll NotifyAndClearRequests @0x57A1E0 read in full"
+  }
+ ],
+ "unknown": [
+  "Who reads RequestedSingletonComponent's byte, and whether the raised bit is its change mark",
+  "The non-host path: on a peer that is not the master user's, the map is emptied here without sending; whether something else sends those requests was not read",
+  "Whether GK.Command hands a Lua boolean to Noesis as a Boxed<bool> - not checked; the game ignores any other parameter type"
+ ],
+ "sure": "no: the failed-notification query specs and the reader of the singleton byte were not resolved"
+}

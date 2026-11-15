@@ -1,0 +1,52 @@
+{
+ "system": "esv::PerItemSpellCooldownSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::spell_cast::FinishedEventOneFrameComponent",
+   "eoc::spell_cast::StateComponent",
+   "esv::PerItemSpellSourceComponent",
+   "esv::rest::RestFinishedEventOneFrameComponent",
+   "esv::rest::ShortRestResultEventOneFrameComponent"
+  ],
+  "writes": [
+   "esv::PerItemSpellCooldownComponent"
+  ],
+  "methods": [
+   {
+    "name": "PerItemSpellCooldownSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~PerItemSpellCooldownSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::PerItemSpellCooldownComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x35AFCC0",
+    "site": "bg3_dx11.exe+0x35AFD31",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::PerItemSpellSourceComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35AF270",
+    "site": "bg3_dx11.exe+0x35AF3A4",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

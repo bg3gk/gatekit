@@ -17,11 +17,11 @@
           "evidence": "ls::ugc::ModItemDependenciesInfoID: Windows bg3.exe+0x3BE4540 compares ids as '(*a == *b) && ((char)a[1] == (char)b[1])' (a qword and the byte at +8) and hashes them as '*id % bucket count'; keys/elements have a 16-byte stride. macOS ModDependencyCachedRequestSystemHelper::RequestItemDependencies(unsigned long long, bool): the 64-bit mod item id."
         },
         {
-          "name": "field_8",
+          "name": "Recursive",
           "offset": 8,
           "type": "bool",
-          "source": "unknown",
-          "evidence": "The byte compared at +8 (Windows bg3.exe+0x3BE4540): the bool argument of RequestItemDependencies(unsigned long long, bool) on macOS; meaning not established."
+          "source": "inferred",
+          "evidence": "macOS modio::UGCManager::RequestItemDependencies (bg3_macos_x64+0x6794AF0) calls http::GetDependenciesRequestData(id, 0, bool) with its bool argument, and bg3_dx11.exe+0x38C0B30 (modio::http::GetDependenciesRequestData) writes it as '&recursive=true/false'. The ModItemDependenciesInfoID byte at +8 is that bool (ModDependencyCachedRequestSystemHelper::RequestItemDependencies(u64, bool) takes the key's members in order; compared with the id by bg3.exe+0x3BE4540)."
         },
         {
           "name": "_Pad9",

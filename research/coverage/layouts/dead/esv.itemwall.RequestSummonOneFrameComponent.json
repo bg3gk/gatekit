@@ -76,7 +76,7 @@
           "offset": 0,
           "type": "float",
           "source": "inferred",
-          "evidence": "Same shape as eoc::summon::LifetimeComponent's std::variant<uint8_t, float> (Components/Data.h). WallSystem bg3.exe+0x3379B60 lines 556-562: `t = vtbl+0x20(...); v = t > 0 ? CONCAT44(1, t) : 0`; stored as one qword at +0x78."
+          "evidence": "Same shape as eoc::summon::LifetimeComponent's std::variant<uint8_t, float> (Components/Data.h). WallSystem bg3.exe+0x3379B60 lines 556-562: takes the value returned by virtual slot +0x20; when it is greater than 0 the value goes in the low 4 bytes and 1 in the high 4 bytes, otherwise the whole is 0; stored as one qword at +0x78."
         },
         {
           "name": "Index",
@@ -102,7 +102,7 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "game",
-      "evidence": "Savegame model member 0 (m_Owner). Load bg3.exe+0x25B3480 line 197: qword +0 = resolved entity. WallSystem line 598: req[0] = CreateComponent.Owner."
+      "evidence": "Savegame model member 0 (m_Owner). Load bg3.exe+0x25B3480 line 197: qword +0 = resolved entity. WallSystem line 598 writes CreateComponent.Owner as the request's first 8-byte value (+0)."
     },
     {
       "name": "Template",
@@ -144,7 +144,7 @@
       "offset": 48,
       "type": "ItemwallRequestSummonSpellId",
       "source": "game",
-      "evidence": "Model member 5 (m_SpellUsed). Load: FixedString +0x30, qwords +0x38..+0x58, FixedString +0x60. WallSystem line 601: FUN_1407a2480(req+0x30, CreateComponent+0x30) (SpellId copy), Prototype +0x60 = CreateComponent+0x60."
+      "evidence": "Model member 5 (m_SpellUsed). Load: FixedString +0x30, qwords +0x38..+0x58, FixedString +0x60. WallSystem line 601: bg3.exe+0x7A2480 called with req+0x30 and CreateComponent+0x30 (SpellId copy), Prototype +0x60 = CreateComponent+0x60."
     },
     {
       "name": "SpellCastUuid",
@@ -158,7 +158,7 @@
       "offset": 120,
       "type": "ItemwallRequestSummonLifetime",
       "source": "game",
-      "evidence": "Model member 7 (m_Lifetime, ls::model::game::summons::v1::Lifetime). Load: qword +0x78. WallSystem line 599: req[0xF] = the (float, index) qword."
+      "evidence": "Model member 7 (m_Lifetime, ls::model::game::summons::v1::Lifetime). Load: qword +0x78. WallSystem line 599 writes the (float, index) qword as the request's sixteenth 8-byte value (+0x78)."
     },
     {
       "name": "Status",

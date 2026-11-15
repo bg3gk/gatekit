@@ -1,0 +1,74 @@
+{
+ "system": "ecl::dummy::IsCopyingFullPoseSystem",
+ "namespace": "ecl::dummy",
+ "symbols": {
+  "reads": [
+   "ecl::dummy::AnimationStateComponent",
+   "ecl::dummy::DummyComponent",
+   "ecl::equipment::VisualsVisibilityStateComponent",
+   "ls::VisualChangedEventOneFrameComponent",
+   "ls::VisualComponent"
+  ],
+  "writes": [
+   "ecl::dummy::IsCopyingFullPoseComponent"
+  ],
+  "methods": [
+   {
+    "name": "IsCopyingFullPoseSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStartCopyingChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStopCopyingChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~IsCopyingFullPoseSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::dummy::IsCopyingFullPoseComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x19FCBF0",
+    "site": "bg3_dx11.exe+0x19FD72C",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::equipment::VisualsVisibilityStateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x19FCA80",
+    "site": "bg3_dx11.exe+0x19FCACD",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "ProcessStartCopyingChanges",
+   "text": "Collects dummy entities (AnimationStateComponent + DummyComponent + Visual) that do NOT yet carry IsCopyingFullPoseComponent and that either just had their Visual changed, had their AnimationState modified, or had their equipment VisualsVisibilityState added or modified (four query slots). Each candidate goes through an unread predicate; the survivors are then given IsCopyingFullPoseComponent through the deferred command buffer (the only component the system writes). So the marker appears on a dummy after its visual or animation state changes, i.e. around the time it is posed or re-equipped in photo mode.",
+   "evidence": "EoCClient.dll ecl::dummy::IsCopyingFullPoseSystem::ProcessStartCopyingChanges: four query specs resolved through their init globals (DAT_181a249ac, ac+4, +8, +c: Added/Modified Alive, 'without' list = IsCopyingFullPoseComponent); collecting helper FUN_180b265f0; AddComponent-guarded helper FUN_180b23e10 at the end; review 14 Nov: FUN_180b23e10 confirmed as AddComponent<ecl::dummy::IsCopyingFullPoseComponent>"
+  }
+ ],
+ "unknown": [
+  "The predicate FUN_180b265f0 that filters candidates",
+  "ProcessStopCopyingChanges (the removal side) not read"
+ ],
+ "sure": "no: the per-entity predicate (FUN_180b265f0) that decides which candidates get the marker was not read"
+}

@@ -1,0 +1,95 @@
+{
+ "system": "esv::sight::IgnoreSurfacesSystem",
+ "namespace": "esv::sight",
+ "symbols": {
+  "reads": [
+   "eoc::BoostConditionComponent",
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent",
+   "eoc::IgnoreSurfaceCoverBoostComponent",
+   "esv::boost::ChangedEventOneFrameComponent"
+  ],
+  "writes": [
+   "eoc::sight::IgnoreSurfacesComponent",
+   "esv::sight::IgnoreSurfacesChangedEventOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "GatherIgnoreSurfacesDataFromBoosts",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "IgnoreSurfacesSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessIgnoreSurfacesComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~IgnoreSurfacesSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::sight::IgnoreSurfacesComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2C479E0",
+    "site": "bg3_dx11.exe+0x2C47C6B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::sight::IgnoreSurfacesChangedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2C479E0",
+    "site": "bg3_dx11.exe+0x2C47D54",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::BoostsContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C47570",
+    "site": "bg3_dx11.exe+0x2C47746",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::IgnoreSurfaceCoverBoostComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C47570",
+    "site": "bg3_dx11.exe+0x2C4785D",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::sight::IgnoreSurfacesComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C479E0",
+    "site": "bg3_dx11.exe+0x2C47A9E",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::sight::IgnoreSurfacesComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2C479E0",
+    "site": "bg3_dx11.exe+0x2C47A46",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

@@ -1,0 +1,162 @@
+{
+ "system": "ecl::tutorial::ResetSystem",
+ "namespace": "ecl::tutorial",
+ "symbols": {
+  "reads": [
+   "ecl::notification::AcceptedComponent",
+   "ecl::notification::SeenComponent",
+   "ecl::splitscreen::PlayersSingletonComponent",
+   "eoc::notification::ResetTutorialsMessageRequestNotificationComponent"
+  ],
+  "writes": [
+   "ecl::tutorial::FinishResetResetTutorialsProcessOneFrameComponent",
+   "ecl::tutorial::ResetProfileOneFrameComponent",
+   "ecl::tutorial::ShowResetMessageRequestOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "ResetSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ResetSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::tutorial::FinishResetResetTutorialsProcessOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1ABDCA0",
+    "site": "bg3_dx11.exe+0x1ABE869",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::tutorial::ResetProfileOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1ABDCA0",
+    "site": "bg3_dx11.exe+0x1ABE507",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::tutorial::ShowResetMessageRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1ABDCA0",
+    "site": "bg3_dx11.exe+0x1ABE80A",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update: clean-up of last frame's requests",
+   "text": "At the top of each update the system destroys every entity on which ecl::tutorial::FinishResetResetTutorialsProcessOneFrameComponent was added, and further down every entity on which ecl::tutorial::ResetProfileOneFrameComponent or ecl::tutorial::ShowResetMessageRequestOneFrameComponent was added. The destroys go through the deferred command buffer, so they remove the carrier entities this system created on the previous pass; the components never outlive a frame.",
+   "evidence": "EoCClient.dll+0x63BD50 ecl::tutorial::ResetSystem::Update: first Added/Alive query on spec DAT_181a04ae8 (resolved through its init to GetTypeName: FinishResetResetTutorialsProcessOneFrameComponent, Added) with DestroyEntity per entity; third Added/Alive query on spec DAT_181a04b0c (ResetProfileOneFrame, ShowResetMessageRequestOneFrame) with DestroyEntity per entity, issued after the creates of this pass in the same deferred buffer.",
+   "check": {
+    "when": "tutorial_reset_accept",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::tutorial::FinishResetResetTutorialsProcessOneFrameComponent",
+       "side": "client",
+       "as": "E",
+       "within": 20
+      }
+     },
+     {
+      "gone": {
+       "component": "ecl::tutorial::FinishResetResetTutorialsProcessOneFrameComponent",
+       "side": "client",
+       "on": "E",
+       "within": 20
+      }
+     }
+    ]
+   },
+   "review": "Review 2026-11-14 (Opus): the earlier 'not checkable live: gone is judged against the holders before the recipe' misread the verb: gone also passes for an entity that came to hold the type inside the recipe and then stopped (cli.md 3.6, Prelude.lua); so the claim is given appears-as-E plus gone-on-E. The finish marker is used because it is created whether or not a profile had tutorials shown."
+  },
+  {
+   "method": "Update: accepted Reset Tutorials notification",
+   "text": "The system walks the notification entities that hold eoc::notification::ResetTutorialsMessageRequestNotificationComponent and ecl::notification::AcceptedComponent (ecl::notification::SeenComponent is in the query's second type list; its role was not settled). For a notification whose UserId's low half is 1, whose high half matches the default user id's high half, and that resolves to a non-empty profile GUID, it reads ecl::splitscreen::PlayersSingletonComponent; if the singleton is there, for Player1 (when its id is non-zero) and for Player2 (when its id is non-zero and the notification's byte field_4 is 0) it marks that a reset was processed and looks the player's profile up. If that profile has any tutorial entry shown (net::PlayerProfile::HasAnyTutorialEntryShown): with field_4 = 0 the profile GUID is collected for a profile reset; with field_4 non-zero the player's id is collected for a reset message.",
+   "evidence": "EoCClient.dll+0x63BD50 ecl::tutorial::ResetSystem::Update: Persistent/Alive query on spec DAT_181a04aec (TL<ResetTutorialsMessageRequestNotification, Accepted>, TL<Seen>); the test (short)UserId == 1, PlayerManager::GetDefaultUserId / GetPlayerProfileGUID, the -1 test on the GUID, FUN_18063b240 (only user of the WorldView string, reads the splitscreen singleton), the reads at Player1+4 and Player2+4 (0x1c), the profile lookup through the manager's virtual slot 0x100, HasAnyTutorialEntryShown, and the branch on the byte at notification+4 between two collecting calls (FUN_1805a1de0 for the GUID set, FUN_18054ed60 for the player-id set).",
+   "check": "not checkable live: these are decisions inside one frame; what they leave is the three creations below, checked there.",
+   "review": "Review 2026-11-14 (Opus): added the high-half comparison with PlayerManager::GetDefaultUserId (EoCClient.dll+0x63BD50, right after the (short)UserId == 1 test); the walk, the Player2-only-when-field_4-is-0 guard and the branch on the byte at notification+4 hold as read."
+  },
+  {
+   "method": "Update: creates the profile reset requests",
+   "text": "After the walk, for every collected profile GUID the system creates a new entity and adds ecl::tutorial::ResetProfileOneFrameComponent holding that GUID (ProfileGuid). So the component appears, on the client, in the frame after the player accepts a Reset Tutorials notification whose field_4 is 0 while the local profile has seen at least one tutorial.",
+   "evidence": "EoCClient.dll+0x63BD50 ecl::tutorial::ResetSystem::Update: loop over the GUID array, CreateEntity and the adder FUN_180639990 whose type-index global DAT_1819da8e0 resolves to ecl::tutorial::ResetProfileOneFrameComponent; the FixedString assigned into the returned slot.",
+   "check": {
+    "when": "tutorial_reset_accept",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::tutorial::ResetProfileOneFrameComponent",
+       "side": "client",
+       "within": 20
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "tutorial_reset_accept (PROPOSED, not written): start a NEW game (not a load) on a profile that has already seen tutorials (any profile used by earlier runs), so the 'Welcome back! ... you can Reset Tutorials' notification is shown; click its Reset Tutorials button (accepting the notification gives it ecl::notification::AcceptedComponent); wait 2 s. That the notification is the one carrying ResetTutorialsMessageRequestNotificationComponent is a guess from the game text h6fa04b19g93a0g424ag8cd2g5a1e961affde, not read in code.",
+   "review": "Review 2026-11-14 (Opus): holds: the adder's type-index global resolves through its init function to GetTypeName of the type named (FUN_18020b190 / FUN_18020cc60 / FUN_180203940), and the guards are as written."
+  },
+  {
+   "method": "Update: creates the reset message requests",
+   "text": "For every collected player id the system creates an entity with ecl::tutorial::ShowResetMessageRequestOneFrameComponent holding that id (PlayerId). This happens instead of the profile reset when the accepted notification's field_4 is non-zero (and only for Player1, since Player2 is considered only when field_4 is 0).",
+   "evidence": "EoCClient.dll+0x63BD50 ecl::tutorial::ResetSystem::Update: loop over the uint16 array, CreateEntity and the adder FUN_180639ba0 whose type-index global DAT_1819da8e8 resolves to ecl::tutorial::ShowResetMessageRequestOneFrameComponent; the 16-bit id stored into the returned slot.",
+   "check": {
+    "when": "tutorial_reset_message_accept",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::tutorial::ShowResetMessageRequestOneFrameComponent",
+       "side": "client",
+       "within": 20
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "tutorial_reset_message_accept (PROPOSED, trigger unknown): needs a Reset Tutorials notification whose byte field_4 is non-zero, accepted. Which server path sends that variant was not read (the server writers are in EoCServer.dll, e.g. +0x82C5C0, not opened).",
+   "review": "Review 2026-11-14 (Opus): holds: the adder's type-index global resolves through its init function to GetTypeName of the type named (FUN_18020b190 / FUN_18020cc60 / FUN_180203940), and the guards are as written."
+  },
+  {
+   "method": "Update: creates the finish marker",
+   "text": "If at least one local player was processed for an accepted notification (Player1 with a non-zero id, or Player2 under field_4 = 0), the system creates one more entity with the tag ecl::tutorial::FinishResetResetTutorialsProcessOneFrameComponent, whether or not any profile actually had tutorials shown.",
+   "evidence": "EoCClient.dll+0x63BD50 ecl::tutorial::ResetSystem::Update: the flag set in both player branches, tested after the creation loops; CreateEntity and the adder FUN_180639790 whose type-index global DAT_1819da8d8 resolves to ecl::tutorial::FinishResetResetTutorialsProcessOneFrameComponent.",
+   "check": {
+    "when": "tutorial_reset_accept",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::tutorial::FinishResetResetTutorialsProcessOneFrameComponent",
+       "side": "client",
+       "within": 20
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "tutorial_reset_accept (PROPOSED), as above.",
+   "review": "Review 2026-11-14 (Opus): holds: the adder's type-index global resolves through its init function to GetTypeName of the type named (FUN_18020b190 / FUN_18020cc60 / FUN_180203940), and the guards are as written."
+  }
+ ],
+ "unknown": [
+  "The role of ecl::notification::SeenComponent in the notification query (second type list) is not read here; in ecl::tutorial::CameraSystem the second list holds the component about to be added, i.e. an absent-list, so Seen is probably excluded (the notification not yet marked seen) - by analogy, not read.",
+  "What the notification's byte field_4 means (0: reset the profile; non-zero: show a reset message) - the meaning is not read, only the branch.",
+  "Which server system sends eoc::notification::ResetTutorialsMessageRequestNotificationComponent and when (EoCServer.dll writers around +0x82C5C0..+0x844B60 not opened); that it is the 'Welcome back' new-game message is a guess from the game text.",
+  "Whether the options menu's Reset Tutorials goes through this notification at all was not read.",
+  "Who consumes ResetProfileOneFrame / ShowResetMessageRequestOneFrame / FinishReset... (readers at bg3.exe+0x1AB8A70, +0x1AC0570, +0x1ABFBD0 by symbols users) was not read."
+ ],
+ "sure": "yes for the three creations and the two destroy passes (adders resolved to their types, guards read); no for the trigger in play (the notification's origin and field_4's meaning are not read)"
+}

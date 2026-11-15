@@ -1,0 +1,191 @@
+{
+ "system": "esv::GravitySystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "esv::SetGravityActiveRequestOneFrameComponent",
+   "ls::TimeFactorComponent",
+   "ls::TransformComponent",
+   "ls::TranslateChangedOneFrameComponent",
+   "ls::game::PauseComponent"
+  ],
+  "writes": [
+   "eoc::GravityActiveComponent",
+   "eoc::GravityDisabledComponent",
+   "eoc::GravityDisabledUntilMovedComponent",
+   "esv::GravityActiveTimeoutComponent",
+   "esv::GravityInstigatorComponent",
+   "esv::Item"
+  ],
+  "methods": [
+   {
+    "name": "GatherSetGravityActiveComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GravitySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessGravityActiveTimeouts",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessGravityInstigatorEntityDestroys",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessGravityInstigatorTagChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessMovedEntities",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSetGravityActiveRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSetGravityTypeRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestSetGravityActive",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestSetGravityType",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestTagInstigator",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestUntagInstigator",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "s_GravityDurationSeconds",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~GravitySystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::GravityActiveComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EBDE50",
+    "site": "bg3_dx11.exe+0x2EBDF30",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::GravityActiveComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EBDE50",
+    "site": "bg3_dx11.exe+0x2EBDFE0",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::GravityDisabledUntilMovedComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EBD6A0",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::GravityActiveTimeoutComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EBDE50",
+    "site": "bg3_dx11.exe+0x2EBDFBF",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EBD6A0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::GravityActiveComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2EBDE50",
+    "site": "bg3_dx11.exe+0x2EBDF1C",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::GravityDisabledComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2EBD6A0",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::GravityDisabledUntilMovedComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2EBD6A0",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::GravityInstigatorComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2EBEBD0",
+    "site": "bg3_dx11.exe+0x2EBF39C",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::GravityInstigatorComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2EBEBD0",
+    "site": "bg3_dx11.exe+0x2EBF6F1",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

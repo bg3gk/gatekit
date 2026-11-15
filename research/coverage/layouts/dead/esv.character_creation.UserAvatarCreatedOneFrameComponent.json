@@ -11,21 +11,21 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "game",
-      "evidence": "Creator bg3.exe+0x3796550 (AllocRaw 0x18) writes 0xffc0000000000000 at +0; writer bg3.exe+0x37913D0 line 132 `*puVar8 = uVar13` (a character handle). OnUserAvatarCreated passes HUB::Get(+0) as the 2nd Osiris parameter = _Avatar of the game's Osiris event UserAvatarCreated."
+      "evidence": "Creator bg3.exe+0x3796550 (AllocRaw 0x18) writes 0xffc0000000000000 at +0; writer bg3.exe+0x37913D0 line 132 stores a character handle at +0. OnUserAvatarCreated passes HUB::Get(+0) as the 2nd Osiris parameter = _Avatar of the game's Osiris event UserAvatarCreated."
     },
     {
       "name": "Daisy",
       "offset": 8,
       "type": "EntityHandle",
       "source": "game",
-      "evidence": "Creator writes 0xffc0000000000000 at +8; writer line 133 `puVar8[1] = uVar12` (from bg3.exe+0x3791C80, a second character). OnUserAvatarCreated passes HUB::Get(+8) as the 3rd parameter = _Daisy of the Osiris event."
+      "evidence": "Creator writes 0xffc0000000000000 at +8; writer line 133 stores another character handle at +8 (from bg3.exe+0x3791C80, a second character). OnUserAvatarCreated passes HUB::Get(+8) as the 3rd parameter = _Daisy of the Osiris event."
     },
     {
       "name": "UserID",
       "offset": 16,
       "type": "UserId",
       "source": "game",
-      "evidence": "Creator writes DAT_14617ceac (default UserID) at +0x10; writer line 131 `*(undefined4 *)(puVar8 + 2) = *puVar6`. OnUserAvatarCreated passes the dword at +0x10 as the 1st parameter = _UserID of the Osiris event."
+      "evidence": "Creator writes the global at bg3.exe+0x617CEAC (default UserID) at +0x10; writer line 131 copies a 4-byte value (the user id) to +0x10. OnUserAvatarCreated passes the dword at +0x10 as the 1st parameter = _UserID of the Osiris event."
     },
     {
       "name": "_Pad14",

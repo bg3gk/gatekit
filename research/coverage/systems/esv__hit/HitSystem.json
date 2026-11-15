@@ -1,0 +1,188 @@
+{
+ "system": "esv::hit::HitSystem",
+ "namespace": "esv::hit",
+ "symbols": {
+  "reads": [
+   "eoc::ActiveComponent",
+   "eoc::AttributeFlagsComponent",
+   "eoc::BodyTypeComponent",
+   "eoc::BoostConditionComponent",
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent",
+   "eoc::DataComponent",
+   "eoc::DisabledEquipmentComponent",
+   "eoc::DownedStatusBoostComponent",
+   "eoc::GravityActiveComponent",
+   "eoc::HealthComponent",
+   "eoc::MovementComponent",
+   "eoc::OffStageComponent",
+   "eoc::RaceComponent",
+   "eoc::ResistancesComponent",
+   "eoc::StatsComponent",
+   "eoc::WeaponComponent",
+   "eoc::attitude::AttitudesToPlayersComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::death::DeathComponent",
+   "eoc::death::DownedComponent",
+   "eoc::identity::StateComponent",
+   "eoc::inventory::ContainerComponent",
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::OwnerComponent",
+   "eoc::party::MemberComponent",
+   "eoc::relation::FactionComponent",
+   "eoc::relation::RelationComponent",
+   "eoc::spell_cast::CacheComponent",
+   "eoc::spell_cast::CanBeTargetedComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::spell_cast::SpellRollAbortEventOneFrameComponent",
+   "eoc::spell_cast::StateComponent",
+   "eoc::spell_cast::TargetHitEventOneFrameComponent",
+   "eoc::spell_cast::TargetReactionEventOneFrameComponent",
+   "eoc::status::IncapacitatedComponent",
+   "esv::Item",
+   "esv::death::DelayedDeathComponent",
+   "esv::spell_cast::StateComponent",
+   "esv::stats::SavingThrowRolledEventOneFrameComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "eoc::hit::AttackerComponent",
+   "eoc::hit::LifetimeComponent",
+   "eoc::hit::MetaComponent",
+   "eoc::hit::ReactionComponent",
+   "eoc::hit::TargetComponent",
+   "eoc::hit::ThrownObjectComponent",
+   "eoc::hit::WeaponComponent",
+   "esv::Character",
+   "esv::death::ModifyDelayDeathRequestOneFrameComponent",
+   "esv::hit::HitAnimationRequestOneFrameComponent",
+   "esv::hit::HitNotificationRequestOneFrameComponent",
+   "esv::hit::HitResultEventOneFrameComponent",
+   "esv::hit::OnHitJoinCombatRequestOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "CleanupOneFrameComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CleanupReactionComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "HitSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestHitEvent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnAnimationReceivedGameplayEvent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnEntityHit",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnEntityReaction",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnLevelUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessHit",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessHitAnimationRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessHitRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessReactionRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResolveHitAnimationRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~HitSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "ProcessHit",
+   "text": "Takes one finished hit (an action originator plus a hit description with its damage) and, once a validity check on the target passes, creates a new entity carrying esv::hit::HitResultEventOneFrameComponent (0x1f0 bytes) holding the originator, the hit description, and a few flags derived from the hit; the event lives one frame. A second creation of the same event happens on another path of the same function (an early branch that handles a different target kind), with its flag byte forced to 0.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, HitSystem::ProcessHit at +0x3CA500 (413 lines, CreateEntity at lines 300 and 396, searched and read in windows). The add helper FUN_1803c0550 -> FUN_1803c0c20 (+0x3C0C20) ends in AllocRaw 0x1f0 with _DAT_182202bcc -> init +0x552A0 -> 'esv::hit::HitResultEventOneFrameComponent'. One text in the function says items cannot dodge attacks, which is a design note in the code, not a behaviour I traced"
+  },
+  {
+   "method": "ProcessHitRequests",
+   "text": "For each queued hit request it walks the damage entries of the hit description. On paths whose conditions were read only partly (damage entries; a spell-prototype flag bit when there are none) it creates a new entity carrying esv::hit::HitNotificationRequestOneFrameComponent (0x48 bytes), which feeds HitNotificationSystem. On the hit's entity it adds the hit data components eoc::hit::TargetComponent (0xb8 bytes), eoc::hit::AttackerComponent, eoc::hit::WeaponComponent and eoc::hit::ThrownObjectComponent, copied from the request; which branch adds which (for instance whether ThrownObject needs a thrown object in the hit) was not read, so the conditions are unknown.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, HitSystem::ProcessHitRequests at +0x3CB050 (624 lines). Adds: FUN_1803c0490 -> FUN_1803c0a00 (+0x3C0A00, 0x48, DAT_182202438 -> +0x53D40 'esv::hit::HitNotificationRequestOneFrameComponent'); FUN_1803c1750 (0xb8, DAT_1821fee58 -> 'eoc::hit::TargetComponent'); FUN_1803c0600 (8 bytes, DAT_1821fee50 -> 'eoc::hit::AttackerComponent'); FUN_1803c1c40 (8, DAT_1821fee54 -> 'eoc::hit::WeaponComponent'); FUN_1803c1a40 (8, DAT_182202b84 -> 'eoc::hit::ThrownObjectComponent'); all end in AllocRaw (adds). The trigger for each add (which branch) was read only partly"
+  },
+  {
+   "method": "ProcessHitAnimationRequests",
+   "text": "For entities with hit-animation work it adds esv::hit::HitAnimationRequestOneFrameComponent (a 0x10-byte component holding a small list) to the entity and fills it.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, HitSystem::ProcessHitAnimationRequests at +0x3CADC0 (159 lines): FUN_1803c0800 (AllocRaw 0x10, _DAT_182202c14 -> 'esv::hit::HitAnimationRequestOneFrameComponent'). Which entities and when was not traced"
+  },
+  {
+   "method": "CleanupReactionComponents",
+   "text": "Removes eoc::hit::ReactionComponent (RemoveComponentUnchecked) from an entity once the reaction bookkeeping for it has nothing left (a count field equals zero).",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, HitSystem::CleanupReactionComponents at +0x3C8DA0: RemoveComponentUnchecked(DAT_182202b18 & 0x7fff) guarded by a field at offset 0x2c being 0; DAT_182202b18 -> +0x555F0 -> 'eoc::hit::ReactionComponent'"
+  },
+  {
+   "method": "CleanupOneFrameComponents",
+   "text": "Destroys, with the deferred buffer, every entity matched by two queries (the one-frame hit event entities, by the pattern), so they last one frame.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, HitSystem::CleanupOneFrameComponents at +0x3C89E0: two DestroyEntity loops. The queries' contents were not resolved, so the claim that they hold the one-frame entities is an inference from the method name and the pattern"
+  }
+ ],
+ "unknown": [
+  "Where eoc::hit::LifetimeComponent and eoc::hit::MetaComponent are added; no add of them was found in the methods read (ProcessReactionRequests, ResolveHitAnimationRequests, Update and OnEntityHit/OnEntityReaction were not read).",
+  "Where eoc::hit::ReactionComponent is added, and what condition ProcessReactionRequests applies.",
+  "The conditions of each add in ProcessHitRequests and which hits (spell, weapon, thrown) reach each branch.",
+  "esv::Character is in the writes list; no write to it was read.",
+  "ModifyDelayDeathRequestOneFrame and OnHitJoinCombatRequestOneFrame: the adder helpers (OnHitJoinCombatRequestOneFrame = DAT_182202ba4, 0x30 bytes) were identified but their call sites were not located."
+ ],
+ "sure": "no: five of the methods are located and their components typed, but about half of the written components have no call site found and most conditions are unread"
+}

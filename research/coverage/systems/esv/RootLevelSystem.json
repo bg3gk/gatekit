@@ -1,0 +1,140 @@
+{
+ "system": "esv::RootLevelSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::ServerRootLevelLoadedComponent",
+   "ls::LevelPrepareUnloadBusyComponent",
+   "ls::LevelPrepareUnloadEventComponent",
+   "ls::LevelUnloadBusyComponent",
+   "ls::LevelUnloadEventComponent",
+   "ls::level::CacheLoadComponent",
+   "ls::level::LevelInstanceLoadingComponent"
+  ],
+  "writes": [
+   "esv::GameStateLoadLevelComponent",
+   "esv::GameStateUnloadLevelComponent",
+   "esv::level::InstancesLoadedComponent"
+  ],
+  "methods": [
+   {
+    "name": "CreateLevel",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DoLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DoUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LoadLevel",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnConnected",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnDisconnected",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Preload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PrepareUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RemoveGlobalsFromLevel",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RootLevelSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SetLevelStartingDialog",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StartUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "WaitForPreload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~RootLevelSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::ServerRootLevelStartDialogComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B4F060",
+    "site": "bg3_dx11.exe+0x2B4F30A",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::LevelPrepareUnloadEventComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B500B0",
+    "site": "bg3_dx11.exe+0x2B5080A",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::LevelUnloadEventComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B500B0",
+    "site": "bg3_dx11.exe+0x2B5095E",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::LevelUnloadedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B500B0",
+    "site": "bg3_dx11.exe+0x2B50ACC",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ServerRootLevelStartDialogComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2B4F060",
+    "site": "bg3_dx11.exe+0x2B4F2D4",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

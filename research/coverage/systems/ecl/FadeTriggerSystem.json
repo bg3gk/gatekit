@@ -1,0 +1,152 @@
+{
+ "system": "ecl::FadeTriggerSystem",
+ "namespace": "ecl",
+ "symbols": {
+  "reads": [
+   "ecl::Item",
+   "ecl::Scenery",
+   "ls::Construction",
+   "ls::ConstructionFilling",
+   "ls::ConstructionTile",
+   "ls::LevelComponent",
+   "ls::LevelInstanceLoadedOneFrameComponent",
+   "ls::LocalBoundComponent",
+   "ls::SceneAttachComponent",
+   "ls::TerrainObject",
+   "ls::TransformComponent",
+   "ls::trigger::AreaComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "ecl::FadeTrigger",
+   "ls::FadeChildrenAddedOneFrameComponent",
+   "ls::FadeChildrenRemovedOneFrameComponent",
+   "ls::FadeableObstructionComponent",
+   "ls::VisualComponent"
+  ],
+  "methods": [
+   {
+    "name": "AddFadeChildren",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ApplyFadeChildrenChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "EvaluateFadeTrigger",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FadeTriggerSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetObjectsInsideTrigger",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetVisualWorldCenterConstructionFilling",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetVisualWorldCenterConstructionTile",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetVisualWorldCenterItem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetVisualWorldCenterScenery",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetVisualWorldCenterTerrain",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "InitFadeTriggersForLevelInstance",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnLevelInstanceLoaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAddedFadeableObstructionComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRemovedFadeTriggers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RemoveFadeChildren",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~FadeTriggerSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ls::FadeChildrenAddedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x18C5770",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::Construction",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x18C5A60",
+    "site": "bg3_dx11.exe+0x18C6875",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::FadeableObstructionComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x18C5A60",
+    "site": "bg3_dx11.exe+0x18C688C",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

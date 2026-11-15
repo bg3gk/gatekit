@@ -1,0 +1,215 @@
+{
+ "system": "ecl::MusicManager",
+ "namespace": "ecl",
+ "symbols": {
+  "reads": [
+   "ecl::Character",
+   "ecl::character_creation::SessionStateComponent",
+   "eoc::ServerRootLevelLoadedComponent",
+   "eoc::combat::DelayedFanfareComponent",
+   "eoc::combat::IsInCombatComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::death::DeathComponent",
+   "eoc::party::MemberComponent",
+   "eoc::party::ViewComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "ecl::sound::MusicRequestsSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "ActivateMusicPlayerState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ActivateState",
+    "address": "bg3_dx11.exe+0x1C93530",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ActivePlayerChanged",
+    "address": "bg3_dx11.exe+0x1C93770",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "AddMusicLayerStartRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "AddMusicLayerStopRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CanStopCombatMusic",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ConvertMusicLayerToContext",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Initialize",
+    "address": "bg3_dx11.exe+0x5D68B0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "MusicManager",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "NotifyCharacterStateChange",
+    "address": "bg3_dx11.exe+0x1C93830",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "OnCharacterAssigned",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnEntityJoinCombat",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnEntityLeftCombat",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnGameStateChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PlayOriginSong",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PostMusicEvent",
+    "address": "bg3_dx11.exe+0x1C93C50",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "PostMusicEvent3D",
+    "address": "bg3_dx11.exe+0x1C93B00",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "PostMusicEventForCharacter",
+    "address": "bg3_dx11.exe+0x1C939A0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "PreUpdate",
+    "address": "bg3_dx11.exe+0x730650",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ProcessCharacterAssignedRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessMusicEventRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Reactivate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Reset",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Resume",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StartLayer",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StartMainMenuMusic",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StopAllMusicSounds",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StopLayer",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StopMainMenuMusic",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~MusicManager",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::Character",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1C935C0",
+    "site": "bg3_dx11.exe+0x1C93729",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::ParticipantComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1C949E0",
+    "site": "bg3_dx11.exe+0x1C94B4F",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::DelayedFanfareComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1C949E0",
+    "site": "bg3_dx11.exe+0x1C94B9E",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

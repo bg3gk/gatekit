@@ -4,11 +4,11 @@
   "size": 72,
   "fields": [
     {
-      "name": "field_0",
+      "name": "DialogId",
       "offset": 0,
       "type": "int32_t",
-      "source": "unknown",
-      "evidence": "Windows replication writer bg3.exe+0x9A3090: 4 raw bytes at the FieldMeta offset global DAT_14627FED0 (0: the next member is at +8); Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) writes 0 (not the UserId 'unassigned' default)."
+      "source": "inferred",
+      "evidence": "Server: EoCServer.dll+0x846050 (esv::notification::System query lambda over esv::dialog::FailedPrivateDialogJoinAttemptOneFrameComponent, stride 0x28) copies the whole one-frame (u32 +0, Guid +8, Guid +0x18) into a notification request with variant tag 0xF; tag 15 of ls::Variant<esv::notification::System::...> is FailedPrivateDialogJoinAttemptNotification (variant type list in the lambda's IndexedStorage name). Client: the notification dispatcher bg3.exe+0x2DF53B0 case 0xF calls this component's creator bg3.exe+0x2DF14F0 and stores request +0 (u32) here. The one-frame's +0 is DialogId (key of PrivacySystem's map, first argument of ecl::LSDialogsProtocol::SendFailedJoinDialog)."
     },
     {
       "name": "_Pad4",
@@ -18,32 +18,32 @@
       "evidence": "padding (the Guid at +8 is 8-aligned in the game's layout; nothing written)"
     },
     {
-      "name": "field_8",
+      "name": "Listener",
       "offset": 8,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "Windows replication writer bg3.exe+0x9A3090: 16 raw bytes at +8; Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) zeroes +8..+0x17."
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2DF53B0 case 0xF copies request +8..+0x17 here; the request is the esv::dialog::FailedPrivateDialogJoinAttemptOneFrameComponent copied whole by EoCServer.dll+0x846050, whose +8 is Listener (second argument of SendFailedJoinDialog, the character that tried to join)."
     },
     {
-      "name": "field_18",
+      "name": "ListenerName",
       "offset": 24,
       "type": "TranslatedString",
       "source": "inferred",
-      "evidence": "Windows replication writer bg3.exe+0x9A3090: 2-byte Version at +0x1C, then the FixedString Handle at +0x18; Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) stores ls::TranslatedStringRepository::s_HandleUnknown at +0x18, 0 at +0x1C and constructs the ArgumentString at +0x20; Windows destructor bg3.exe+0xA53660 calls TranslatedString::~TranslatedString on +0x38 and +0x18. SE TranslatedString (16 bytes, 4-aligned)."
+      "evidence": "bg3.exe+0x2DF53B0 case 0xF maps the Guid at request +8 to an entity (FUN_141013470) and calls bg3.exe+0x41FD1C0, which reads that entity's eoc::DisplayNameComponent (bg3.exe+0xB22830 uses TypeIndex<eoc::DisplayNameComponent>) and returns a TranslatedString; both handles of it are stored at +0x18/+0x20: the display name of the Listener."
     },
     {
-      "name": "field_28",
+      "name": "Speaker",
       "offset": 40,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "Windows replication writer bg3.exe+0x9A3090: 16 raw bytes at +0x28; Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) zeroes +0x28..+0x37."
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2DF53B0 case 0xF copies request +0x18..+0x27 to +0x28; request = esv::dialog::FailedPrivateDialogJoinAttemptOneFrameComponent (copied whole by EoCServer.dll+0x846050), whose +0x18 is Speaker (third argument of SendFailedJoinDialog)."
     },
     {
-      "name": "field_38",
+      "name": "SpeakerName",
       "offset": 56,
       "type": "TranslatedString",
       "source": "inferred",
-      "evidence": "Windows replication writer bg3.exe+0x9A3090: 2-byte Version at +0x3C, FixedString Handle at +0x38; Windows creator bg3.exe+0xFC0E40 (ComponentFrameStorageAllocRaw 0x48, called by bg3.exe+0x2DF14F0) stores s_HandleUnknown at +0x38, 0 at +0x3C and constructs the ArgumentString at +0x40; Windows destructor bg3.exe+0xA53660 calls TranslatedString::~TranslatedString on +0x38 and +0x18."
+      "evidence": "bg3.exe+0x2DF53B0 case 0xF maps the Guid at request +0x18 to an entity and stores the TranslatedString from bg3.exe+0x41FD1C0 (the entity's eoc::DisplayNameComponent) at +0x38/+0x40: the display name of the Speaker."
     }
   ],
   "confidence": "high",

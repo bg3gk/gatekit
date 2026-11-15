@@ -1,0 +1,125 @@
+{
+ "system": "ecl::crowds::SoundStationSystem",
+ "namespace": "ecl::crowds",
+ "symbols": {
+  "reads": [
+   "ecl::SoundVolumeTrigger",
+   "ecl::crowds::SoundClusterComponent",
+   "ecl::crowds::SoundMemberComponent",
+   "ecl::crowds::SoundStateComponent",
+   "ecl::crowds::SoundVolumeComponent",
+   "ecl::sound::AmbienceMixStateComponent",
+   "ls::LevelComponent",
+   "ls::SoundActivatedComponent",
+   "ls::SoundComponent",
+   "ls::TransformComponent",
+   "ls::TranslateChangedOneFrameComponent"
+  ],
+  "writes": [
+   "ecl::crowds::SoundStationComponent",
+   "ecl::crowds::SoundStationRequestsSingletonComponent",
+   "ecl::crowds::SoundStationStateSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "FinalizeStations",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSoundActivatedStations",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStationaryClusters",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SoundStationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~SoundStationSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::crowds::SoundStationComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1F3A5D0",
+    "site": "bg3_dx11.exe+0x1F3A715",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::LevelComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1F3A5D0",
+    "site": "bg3_dx11.exe+0x1F3A74A",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::SoundVolumeTrigger",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1F396A0",
+    "site": "bg3_dx11.exe+0x1F39CD9",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::crowds::SoundStationComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1F3A100",
+    "site": "bg3_dx11.exe+0x1F3A3C3",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::LevelComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1F3A100",
+    "site": "bg3_dx11.exe+0x1F3A4DF",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::SoundComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1F3A100",
+    "site": "bg3_dx11.exe+0x1F3A4F6",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::crowds::SoundVolumeComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1F396A0",
+    "site": "bg3_dx11.exe+0x1F39CC9",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

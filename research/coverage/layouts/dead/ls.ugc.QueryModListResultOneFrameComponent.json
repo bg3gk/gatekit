@@ -15,28 +15,28 @@
           "offset": 0,
           "type": "uint64_t",
           "source": "inferred",
-          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; first member is the 64-bit mod id (SE's UGCModDependency.DependencyHandle); macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): JSON 'mod_id'"
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: copies the first 8 bytes as one value, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; first member is the 64-bit mod id (SE's UGCModDependency.DependencyHandle); macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): JSON 'mod_id'"
         },
         {
           "name": "Name",
           "offset": 8,
           "type": "STDString",
           "source": "inferred",
-          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; SE's UGCModDependency has only DependencyName here - this build has three strings; macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): this argument is 'name'"
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: copies the first 8 bytes as one value, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; SE's UGCModDependency has only DependencyName here - this build has three strings; macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): this argument is 'name'"
         },
         {
           "name": "ThumbnailSmall",
           "offset": 32,
           "type": "STDString",
           "source": "inferred",
-          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): this argument is 'logo'.'thumb_320x180' via GetImageURL"
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: copies the first 8 bytes as one value, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): this argument is 'logo'.'thumb_320x180' via GetImageURL"
         },
         {
           "name": "ThumbnailLarge",
           "offset": 56,
           "type": "STDString",
           "source": "inferred",
-          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: `*dst = *src` 8 bytes, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): this argument is 'logo'.'thumb_1280x720' via GetImageURL"
+          "evidence": "bg3.exe+0x38BADA0 (array copier, element 0x50: copies the first 8 bytes as one value, then STDStrings at +8, +0x20, +0x38); destructor array bg3.exe+0x38BB690 also strides 0x50; macOS modio::UGCManager::QueryDependenciesCallback builds each net::UGCModDependency with AppendEmplace<unsigned long long, char const*, STDString const&, STDString const&>(mod_id, name, 320x180 thumbnail, 1280x720 thumbnail): this argument is 'logo'.'thumb_1280x720' via GetImageURL"
         }
       ]
     },
@@ -118,21 +118,21 @@
           "offset": 152,
           "type": "Array<UgcQueryModListResultDependency>",
           "source": "inferred",
-          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): FUN_1438bada0 copies an array of 0x50-byte elements (u64 + 3 STDStrings) - the same copier as the dependency list of ModDependenciesResult; probably the mod's dependencies; meaning: DynamicArray<net::UGCModDependency> (macOS PublishModInfo::Visit, +0x68) (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): bg3.exe+0x38BADA0 copies an array of 0x50-byte elements (u64 + 3 STDStrings) - the same copier as the dependency list of ModDependenciesResult; probably the mod's dependencies; meaning: DynamicArray<net::UGCModDependency> (macOS PublishModInfo::Visit, +0x68) (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
         },
         {
           "name": "ThumbnailsSmall",
           "offset": 168,
           "type": "Array<STDString>",
           "source": "inferred",
-          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): FUN_143be1000 copies an array of 0x18-byte STDStrings; meaning: 'logo'/'media.images' 'thumb_320x180' URLs (GetImageURL) appended -> macOS +0x78 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): bg3.exe+0x3BE1000 copies an array of 0x18-byte STDStrings; meaning: 'logo'/'media.images' 'thumb_320x180' URLs (GetImageURL) appended -> macOS +0x78 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
         },
         {
           "name": "ThumbnailsLarge",
           "offset": 184,
           "type": "Array<STDString>",
           "source": "inferred",
-          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): FUN_143be1000 copies an array of 0x18-byte STDStrings; meaning: 'logo'/'media.images' 'thumb_1280x720' URLs appended -> macOS +0x88 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): bg3.exe+0x3BE1000 copies an array of 0x18-byte STDStrings; meaning: 'logo'/'media.images' 'thumb_1280x720' URLs appended -> macOS +0x88 (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
         },
         {
           "name": "Tags",
@@ -146,7 +146,7 @@
           "offset": 216,
           "type": "HashSet<uint8_t>",
           "source": "inferred",
-          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): bucket table +0xD8 (int32 buckets, count +0xE0, FUN_1405c3e10 + memmove count<<2), next ids +0xE8 (FUN_140cbb290), keys +0xF8 copied byte by byte - a HashSet of 1-byte keys (an enum, e.g. platforms); meaning: HashTable<net::EUGCPlatform> (macOS PublishModInfo::Visit; file 'platforms') -> macOS +0xA8; key is the 1-byte enum net::EUGCPlatform (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
+          "evidence": "bg3.exe+0x3BDF700 (copy of net::PublishModInfo, 0x140 bytes: stride 0x140 in bg3.exe+0x38BAF30 / 0x38BB8A0): bucket table +0xD8 (int32 buckets, count +0xE0, bg3.exe+0x5C3E10 + a memmove of count times 4 bytes), next ids +0xE8 (bg3.exe+0xCBB290), keys +0xF8 copied byte by byte - a HashSet of 1-byte keys (an enum, e.g. platforms); meaning: HashTable<net::EUGCPlatform> (macOS PublishModInfo::Visit; file 'platforms') -> macOS +0xA8; key is the 1-byte enum net::EUGCPlatform (macOS (anonymous)::ParseModInfoFromModioJSON / ParseFileFromModioJSON fill net::PublishModInfo; the macOS members come in the same order as the Windows ones of bg3.exe+0x3BDF700 (macOS STDString 16 bytes, Windows 24), so the JSON key gives the meaning)"
         },
         {
           "name": "DateAdded",
@@ -234,7 +234,7 @@
       "offset": 0,
       "type": "Array<UgcQueryModListResultPublishModInfo>",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x3BE2040 (AllocRaw 0x18) zeroes +0/+8; bg3.exe+0x3BDEEE0 copies the request's DynamicArray<net::PublishModInfo> into +0 with FUN_1438baf30 (element 0x140)."
+      "evidence": "Creator bg3.exe+0x3BE2040 (AllocRaw 0x18) zeroes +0/+8; bg3.exe+0x3BDEEE0 copies the request's DynamicArray<net::PublishModInfo> into +0 with bg3.exe+0x38BAF30 (element 0x140)."
     },
     {
       "name": "field_10",

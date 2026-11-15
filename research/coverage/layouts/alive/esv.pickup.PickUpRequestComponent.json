@@ -10,7 +10,7 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "game",
-      "evidence": "HandleValidatedPickUpRequests: *plVar6 = plVar10[-1] = ValidatedPickUpRequest+8 (second ID argument of LEGACY_RequestPickUp). Copied to BeingPickedUpComponent+8 and PickUpPermissionComponent+8. Live 0x13727 / 0x0200001E. Game name: member 0 (m_TargetInventory) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): model EntityId +0 -> component +0.",
+      "evidence": "HandleValidatedPickUpRequests writes component +0 from ValidatedPickUpRequest+8 (second ID argument of LEGACY_RequestPickUp). Copied to BeingPickedUpComponent+8 and PickUpPermissionComponent+8. Live 0x13727 / 0x0200001E. Game name: member 0 (m_TargetInventory) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): model EntityId +0 -> component +0.",
       "legacy": "field_0"
     },
     {
@@ -18,7 +18,7 @@
       "offset": 8,
       "type": "EntityHandle",
       "source": "game",
-      "evidence": "plVar6[1] = ValidatedPickUpRequest+0x10; the same function adds esv::pickup::OriginalPickUpTargetComponent to that entity and reads its ls::TransformComponent into +0x20. Live 0x19F6D / 0x0200001C (also PickUpPermissionComponent+0). Game name: member 1 (m_EntityToPickUp) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): model EntityId +8 -> component +8.",
+      "evidence": "Component +8 is written from ValidatedPickUpRequest+0x10; the same function adds esv::pickup::OriginalPickUpTargetComponent to that entity and reads its ls::TransformComponent into +0x20. Live 0x19F6D / 0x0200001C (also PickUpPermissionComponent+0). Game name: member 1 (m_EntityToPickUp) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): model EntityId +8 -> component +8.",
       "legacy": "Target"
     },
     {
@@ -26,7 +26,7 @@
       "offset": 16,
       "type": "int32_t",
       "source": "game",
-      "evidence": "plVar6[2] = ValidatedPickUpRequest+0x18 (ls::Optional<int> argument: value). Live 0. Game name: member 2 (m_AmountToPickUp) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): int32 model +0x10 -> component +0x10 when model +0x34 is set.",
+      "evidence": "Component +0x10 is written from ValidatedPickUpRequest+0x18 (ls::Optional<int> argument: value). Live 0. Game name: member 2 (m_AmountToPickUp) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): int32 model +0x10 -> component +0x10 when model +0x34 is set.",
       "legacy": "Amount"
     },
     {
@@ -49,7 +49,7 @@
       "offset": 24,
       "type": "int16_t",
       "source": "game",
-      "evidence": "*(int*)(plVar6+3) = ValidatedPickUpRequest+0x30 (ls::Optional<short> argument, value). Live 0. Game name: member 3 (m_HotbarSlot) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): 16-bit model +0x14 -> component +0x18 when model +0x35 is set.",
+      "evidence": "Component +0x18 is written as a 4-byte value from ValidatedPickUpRequest+0x30 (ls::Optional<short> argument, value). Live 0. Game name: member 3 (m_HotbarSlot) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): 16-bit model +0x14 -> component +0x18 when model +0x35 is set.",
       "legacy": "field_18"
     },
     {
@@ -95,7 +95,7 @@
       "offset": 32,
       "type": "glm::quat",
       "source": "game",
-      "evidence": "plVar6[4..5] = first 16 bytes of the Target's ls::TransformComponent (rotation quaternion). Live (0, 0.5509, 0, 0.8346) - a unit quaternion. Game name: member 5 (m_OrigRotation) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): quat model +0x18 (transformed) -> component +0x20.",
+      "evidence": "Component +0x20..+0x2F receives the first 16 bytes of the Target's ls::TransformComponent (rotation quaternion). Live (0, 0.5509, 0, 0.8346) - a unit quaternion. Game name: member 5 (m_OrigRotation) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): quat model +0x18 (transformed) -> component +0x20.",
       "legacy": "TargetRotation"
     },
     {
@@ -103,7 +103,7 @@
       "offset": 48,
       "type": "glm::vec3",
       "source": "game",
-      "evidence": "plVar6[6] and +0x38 = next 12 bytes of the transform (translation). Live (-525.5, 28.8, 465.3). Game name: member 6 (m_OrigTranslation) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): vec3 model +0x28 (transformed) -> component +0x30.",
+      "evidence": "Component +0x30 (8 bytes) and +0x38 (4 bytes) receive the next 12 bytes of the transform (translation). Live (-525.5, 28.8, 465.3). Game name: member 6 (m_OrigTranslation) of savegame model ls::model::game::pickup::v0::PickUpRequestComponent; matched by the Windows loader bg3.exe+0x258B030 -> bg3.exe+0x2781040 (model to component): vec3 model +0x28 (transformed) -> component +0x30.",
       "legacy": "TargetPosition"
     },
     {

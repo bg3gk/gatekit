@@ -1,0 +1,122 @@
+{
+ "system": "ls::AnimationSetSystem",
+ "namespace": "ls",
+ "symbols": {
+  "reads": [
+   "ls::VisualComponent",
+   "ls::animation::AnimationSetUpdateRequestComponent",
+   "ls::animation::DynamicAnimationTagsComponent",
+   "ls::animation::LoadAnimationSetGameplayRequestOneFrameComponent",
+   "ls::animation::LoadAnimationSetRequestOneFrameComponent",
+   "ls::animation::RemoveAnimationSetsGameplayRequestOneFrameComponent",
+   "ls::animation::RemoveAnimationSetsRequestOneFrameComponent",
+   "ls::animation::TemplateAnimationSetOverrideComponent"
+  ],
+  "writes": [
+   "ls::AnimationSetComponent",
+   "ls::animation::AnimationWaterfallComponent"
+  ],
+  "methods": [
+   {
+    "name": "AnimationSetSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CollectLoadAnimationSetsRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CollectRemoveAnimationSetRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DisconnectReplication",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Initialize",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LoadAnimationWaterfallFromVisual",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnVisualLoaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnVisualUnloaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RegisterReplication",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateAnimationSetComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateAnimationWaterfallComponents",
+    "address": "bg3_dx11.exe+0x3C00EB0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "~AnimationSetSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ls::AnimationSetComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3C010F0",
+    "site": "bg3_dx11.exe+0x3C01686",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::animation::AnimationWaterfallComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3C010F0",
+    "site": "bg3_dx11.exe+0x3C01694",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::animation::DynamicAnimationTagsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3C010F0",
+    "site": "bg3_dx11.exe+0x3C017CF",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::animation::TemplateAnimationSetOverrideComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3C010F0",
+    "site": "bg3_dx11.exe+0x3C016BE",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

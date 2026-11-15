@@ -23,11 +23,11 @@
           "evidence": "SendMuffleEvent writes 0 (MixStateSystem::PostMixEvent writes 3 to the same member of ls::PostSoundEventRequest). Possibly SoundEventType - not confirmed."
         },
         {
-          "name": "field_8",
+          "name": "ObjectType",
           "offset": 8,
           "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "SendMuffleEvent writes 2."
+          "source": "inferred",
+          "evidence": "Toolkit EoCClient.dll+0xDBE200 ecl::sound::InterfaceSystem::ProcessPostHUDEventRequests hands each element of the three PostHUD request singletons (MixState, TimelineSave, UIPanel; stride 0xC) to EoCClient.dll+0xD4E0A0, which appends it to ls::GameplayGlobalSoundRequestsSingletonComponent copying FixedString +0, uint +4 and byte +8 one for one; byte +8 there is GameplayGlobalSoundRequest::ObjectType, which GameEngine.dll+0x89B3A0 ls::GameplaySoundInterfaceSystem::ProcessPostSoundEventRequests maps 0..3 to ERoutedSoundEventType and otherwise asserts EGlobalSoundObjectType not supported. Value 2 at every writer."
         },
         {
           "name": "_Pad9",

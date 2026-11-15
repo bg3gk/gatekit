@@ -16,11 +16,11 @@
           "evidence": "esv::crowds::SpawnSystem::ProcessSpawnRequests (EoCServer.dll+0xD72F60) fills the event with SpawnRequest+4..+0x14; esv::crowds::SpawnSystem::CreateCrowdProxy (EoCServer.dll+0xD711C0) passes SpawnRequest+4 as the transform position of the new proxy and copies +4/+0xC into esv::crowds::SpawnComponent+0x10..+0x1C."
         },
         {
-          "name": "field_c",
+          "name": "SpawnYaw",
           "offset": 12,
           "type": "float",
-          "source": "unknown",
-          "evidence": "SpawnRequest+0x10, copied to SpawnComponent+0x1C (EoCServer.dll+0xD711C0); probably a rotation/yaw, not established."
+          "source": "inferred",
+          "evidence": "esv::crowds::SpawnSystem::RequestCrowdProxy(FixedString, Vector3f const&, float, Vector2f const&, FixedString) (EoCServer.dll+0xD74830) stores the float argument at SpawnRequest +0x10; ProcessSpawnRequests (EoCServer.dll+0xD72F60) copies request +4..+0x14 into the event (Position, then this float), and CreateCrowdProxy (EoCServer.dll+0xD711C0) stores request +0x10 at esv::crowds::SpawnComponent +0x1C, the savegame model member m_SpawnYaw."
         }
       ]
     }

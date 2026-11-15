@@ -1,0 +1,69 @@
+{
+ "system": "esv::ai::swarm::DeactivationSystem",
+ "namespace": "esv::ai::swarm",
+ "symbols": {
+  "reads": [
+   "eoc::TurnBasedComponent",
+   "eoc::death::DeathComponent",
+   "eoc::status::IncapacitatedComponent",
+   "esv::GameStateUnloadLevelComponent",
+   "esv::ai::swarm::CalculatingComponent",
+   "esv::ai::swarm::TurnActionsComponent"
+  ],
+  "writes": [],
+  "methods": [
+   {
+    "name": "DEBUG_RequestRecalculate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DeactivationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DestroyCalculatingEntities",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DeactivationSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::TurnBasedComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3275360",
+    "site": "bg3_dx11.exe+0x3275553",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::status::IncapacitatedComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3275360",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::death::DeathComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x3275360",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

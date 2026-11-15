@@ -4,18 +4,18 @@
   "size": 16,
   "fields": [
     {
-      "name": "field_0",
+      "name": "AttachedEntity",
       "offset": 0,
       "type": "EntityHandle",
-      "source": "unknown",
-      "evidence": "Replication serializer bg3.exe+0x8EDB90 / write-all bg3.exe+0x8EDA90: dirty bit 1 -> bg3.exe+0x4017090 (EntityHandle writer) with *(DAT_146280598 /* zero-filled, so 0 */ + base) = offset 0. Toolkit esv::thrown::AttachmentSystem::ProcessAttachmentRequests copies the request's entity (+0) here when it adds the component; GatherRequests fills that entity from a queried component or an inventory member. Which entity (thrower / attach target) is not established."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x3DD080 esv::thrown::AttachmentSystem::LEGACY_RequestAttachEntity(ID entity, ID attached, bool, bool, FixedString) queues {attached, flags, FixedString} under entity; ProcessAttachmentRequests (EoCServer.dll+0x3DDB60) adds this component on the key entity and writes the queued handle at +0, then checks that handle's eoc::WeaponComponent and parent inventory - the object being attached (held), not the holder."
     },
     {
-      "name": "field_8",
+      "name": "IsEquippedWeapon",
       "offset": 8,
       "type": "bool",
-      "source": "unknown",
-      "evidence": "Serializer: dirty bit 2 -> ScratchBuffer::Write(base + 8, 1 byte). ProcessAttachmentRequests sets it to (eoc::inventory::GetInventoryType(parent inventory of the entity) == 1). The client's ecl::thrown::DummyAttachmentComponent creator copies this byte (see layouts/equipment)."
+      "source": "inferred",
+      "evidence": "ProcessAttachmentRequests (EoCServer.dll+0x3DDB60) writes +8 = (attached entity has eoc::WeaponComponent, has-check FUN_1803d8b40) && eoc::inventory::GetInventoryType(GetParentInventory(attached)) == 1, and inventory type 1 is Equipment (Script Extender's InventoryType enum: Main 0, Equipment 1). ecl::thrown::DummyAttachmentComponent +0x140 copies it."
     },
     {
       "name": "field_9",

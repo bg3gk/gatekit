@@ -1,0 +1,65 @@
+{
+ "system": "esv::spell::ScriptedExplosionSystem",
+ "namespace": "esv::spell",
+ "symbols": {
+  "reads": [],
+  "writes": [
+   "eoc::spell::ScriptedExplosionComponent"
+  ],
+  "methods": [
+   {
+    "name": "AnubisSetScriptedExplosion",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ScriptedExplosionSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateScriptedExplosions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ScriptedExplosionSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::spell::ScriptedExplosionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x337DF30",
+    "site": "bg3_dx11.exe+0x337DFD5",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "AnubisSetScriptedExplosion",
+   "text": "Only queues: appends (entity, explosion name FixedString) to the system's own pending array, which the next Update turns into a component change. A null name is how a clear is requested.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, ScriptedExplosionSystem::AnubisSetScriptedExplosion at +0x122BFB0 (95 lines): array append, no component call"
+  },
+  {
+   "method": "UpdateScriptedExplosions",
+   "text": "For every queued (entity, name) whose entity is still alive: if the name is null (the FixedString null index -1) and the entity has eoc::spell::ScriptedExplosionComponent, the component is removed with a deferred RemoveComponent. If the name is set and the entity has no such component yet, ScriptedExplosionComponent (a 4-byte component holding one FixedString) is ADDED and then set to the name; if it already exists its value is overwritten. The entity is marked dirty for replication in both cases. The queue is cleared afterwards.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, ScriptedExplosionSystem::UpdateScriptedExplosions at +0x122C650 (266 lines). Add: FUN_18122b520 (+0x122B520) ends in ComponentFrameStorageAllocRaw size 4 with DAT_18226e5f4; remove: RemoveComponentUnchecked(DAT_18226e5f4 & 0x7fff); DAT_18226e5f4 -> init +0x1C6730 -> 'eoc::spell::ScriptedExplosionComponent'. Guards read: name index == -1 for remove, 'no existing component' for add. Review 2026-11-14 (strong model): remove (line ~118) guarded by name index -1 and the component present; add (FUN_18122b520, AllocRaw 4) guarded by name set and no component; type via FUN_18122bb50 GetTypeName<eoc::spell::ScriptedExplosionComponent>. 'sure: yes' stands"
+  }
+ ],
+ "unknown": [
+  "Who calls AnubisSetScriptedExplosion (the name says an Osiris/script call, which is a guess from the name; no caller was read).",
+  "What the component's value does after it is set (read elsewhere)."
+ ],
+ "sure": "yes"
+}

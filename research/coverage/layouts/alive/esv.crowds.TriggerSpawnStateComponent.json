@@ -10,28 +10,28 @@
       "offset": 0,
       "type": "float",
       "source": "inferred",
-      "evidence": "EoCServer.dll+0xD73760 ProcessTriggers: if (*(float*)(state+4) < *(float*)(state+0)) the trigger keeps waiting, otherwise it spawns; i.e. +0 is the time to wait before the next spawn (re-rolled with ls::Random). macOS Save copies 8 bytes (+0..+8) to the v2 model. Live floats 0 .. 24.6"
+      "evidence": "EoCServer.dll+0xD73760 ProcessTriggers: while the float at state+4 is less than the float at state+0 the trigger keeps waiting, otherwise it spawns; i.e. +0 is the time to wait before the next spawn (re-rolled with ls::Random). macOS Save copies 8 bytes (+0..+8) to the v2 model. Live floats 0 .. 24.6"
     },
     {
       "name": "ElapsedTime",
       "offset": 4,
       "type": "float",
       "source": "inferred",
-      "evidence": "ProcessTriggers: *(float*)(state+4) = deltaTime + *(float*)(state+4) when no blocking query matches; compared with +0. Live floats 0 .. 2910"
+      "evidence": "ProcessTriggers: adds the frame's delta time to the float at state+4 when no blocking query matches; compared with +0. Live floats 0 .. 2910"
     },
     {
       "name": "SpawnedCount",
       "offset": 8,
       "type": "uint16_t",
       "source": "inferred",
-      "evidence": "SpawnCharacters EoCServer.dll+0xD74A30: *(ushort*)(state+8) + newCount <= trigger max (CrowdCharacterTrigger +0x7C scaled by crowd quality); ProcessTriggers compares the trigger's max with *(ushort*)(state+8). macOS Save copies a 2-byte value from +8. Live 0"
+      "evidence": "SpawnCharacters EoCServer.dll+0xD74A30: checks that the unsigned 16-bit count at state+8 plus the new count stays at or below the trigger max (CrowdCharacterTrigger +0x7C scaled by crowd quality); ProcessTriggers compares the trigger's max with the unsigned 16-bit value at state+8. macOS Save copies a 2-byte value from +8. Live 0"
     },
     {
       "name": "PlayersNearby",
       "offset": 10,
       "type": "bool",
       "source": "inferred",
-      "evidence": "ProcessTriggers: *(bool*)(state+10) = distance-to-players test (fVar27 < fVar30) and spawning is skipped while it is set; written from FUN_180d72950(players, transform). macOS Save copies one byte from +0xA. Live 0"
+      "evidence": "ProcessTriggers: stores in the bool at state+10 the result of a distance-to-players test (one computed float compared as less than another) and spawning is skipped while it is set; written from EoCServer.dll+0xD72950 (called with the players and the transform). macOS Save copies one byte from +0xA. Live 0"
     },
     {
       "name": "_Pad0B",

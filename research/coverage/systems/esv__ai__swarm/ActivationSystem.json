@@ -1,0 +1,143 @@
+{
+ "system": "esv::ai::swarm::ActivationSystem",
+ "namespace": "esv::ai::swarm",
+ "symbols": {
+  "reads": [
+   "eoc::TurnBasedComponent",
+   "eoc::ai::swarm::MemberComponent",
+   "esv::ai::swarm::GroupsComponent"
+  ],
+  "writes": [
+   "eoc::ai::swarm::ActiveComponent",
+   "esv::ai::swarm::CalculatingComponent",
+   "esv::ai::swarm::IsCalculatingComponent",
+   "esv::ai::swarm::OnStartCalculatingOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "ActivationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetSwarmGroupToActivate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "HasActionsToDo",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "HasActionsToDo",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "IsCalculating",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessIsCalculating",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestStartCalculating",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestStopCalculating",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateActive",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ActivationSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::ai::swarm::IsCalculatingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x32555A0",
+    "site": "bg3_dx11.exe+0x325579A",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::ai::swarm::OnStartCalculatingOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x32555A0",
+    "site": "bg3_dx11.exe+0x325576A",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::ai::swarm::MemberComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x32555A0",
+    "site": "bg3_dx11.exe+0x32557B5",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ai::swarm::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x32555A0",
+    "site": "bg3_dx11.exe+0x325575B",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::ai::swarm::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x32555A0",
+    "site": "bg3_dx11.exe+0x3255853",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::ai::swarm::IsCalculatingComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x32555A0",
+    "site": "bg3_dx11.exe+0x3255775",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::ai::swarm::IsCalculatingComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x32555A0",
+    "site": "bg3_dx11.exe+0x3255862",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

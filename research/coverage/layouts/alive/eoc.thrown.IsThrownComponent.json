@@ -6,18 +6,18 @@
   "summary": "Replicated marker of an object in flight after a throw, written by esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (bg3.exe+0x2AFA000) from a 0x28-byte throw request. Born live in shove-throw with RotationParametersComponent, drop components and the client thrown components.",
   "fields": [
     {
-      "name": "field_0",
+      "name": "Duration",
       "offset": 0,
       "type": "float",
-      "source": "unknown",
-      "evidence": "Serializer bg3.exe+0x8EE450: 4 bytes at +0 (DAT_1462805a0 base); bg3.exe+0x2AFA000 copies the request's float at +0xC (only when it is non-zero). Live 0.33 .. 1.31."
+      "source": "inferred",
+      "evidence": "esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (EoCServer.dll+0x3D3D50, line 321) copies esv::thrown::EntityThrownRequestOneFrameComponent +0xC here, which InitializeProjectileThrown fills with eoc::PathMover::SampleDuration of the projectile path (flight time). Live 0.33 .. 1.31."
     },
     {
-      "name": "field_4",
+      "name": "SpellAnimationType",
       "offset": 4,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "Serializer: 1 byte at +4; bg3.exe+0x2AFA000 copies the request's byte at +0x10. Live 3; upper bytes garbage."
+      "source": "inferred",
+      "evidence": "ProcessThrownRequests (EoCServer.dll+0x3D3D50, line 322) copies the request byte +0x10, which InitializeProjectileThrown (EoCServer.dll+0x7F2D80) takes from eoc::SpellPrototype +0x19 = Script Extender's SpellPrototype.SpellAnimationType. Live 3."
     },
     {
       "name": "_Pad5",
@@ -27,11 +27,11 @@
       "evidence": "live garbage"
     },
     {
-      "name": "field_8",
+      "name": "Caster",
       "offset": 8,
       "type": "EntityHandle",
-      "source": "unknown",
-      "evidence": "Serializer writes an EntityHandle (FUN_144017090) from +8; creator bg3.exe+0x2AFBE90 writes the null handle; copied from the request's +0x18. Live entity handles (the thrower?)."
+      "source": "inferred",
+      "evidence": "ProcessThrownRequests (EoCServer.dll+0x3D3D50, line 323) copies the request handle +0x18, which InitializeProjectileThrown (EoCServer.dll+0x7F2D80) takes from InitializationInfo +0x70 = Script Extender's esv::projectile::InitializationData.Caster."
     }
   ],
   "confidence": "medium",

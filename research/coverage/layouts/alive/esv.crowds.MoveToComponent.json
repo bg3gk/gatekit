@@ -27,11 +27,11 @@
       "evidence": "Update copies request+0xC here; arrival when squared distance <= radius^2; increased by 0.05 when the character is stuck for 30 frames; live 0.5..3.3"
     },
     {
-      "name": "field_1c",
+      "name": "BehaviourStateId",
       "offset": 28,
       "type": "uint32_t",
-      "source": "unknown",
-      "evidence": "Update zeroes it when a request arrives and when stuck; compared with an id at +0x10 of another object (a path/request id); live 0..0x3E1"
+      "source": "inferred",
+      "evidence": "CharacterMovementSystem::Update (EoCServer.dll+0xD8C530) passes &component+0x1C as the 'unsigned int *' of esv::BehaviourMachine::SetState(EBehaviourLayer, BehaviourState*, unsigned int*, bool) when it sets the BSMove state, tests it with BehaviourMachine::VerifyState(layer 0, id) each frame, and when the order ends clears the layer only if the current state's id (+0x10) equals it; zeroed on a new request and when stuck."
     },
     {
       "name": "StuckFrames",
@@ -41,11 +41,11 @@
       "evidence": "Update increments the byte at +0x20 while the position is unchanged and resets it at 30 (0x1E) or when the character moves; live 0"
     },
     {
-      "name": "field_21",
+      "name": "MovementSpeed",
       "offset": 33,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "Update copies the request's byte at +0x10 here (a movement kind/speed enum?); live 1..4"
+      "source": "inferred",
+      "evidence": "esv::crowds::CharacterMovementSystem::Update (EoCServer.dll+0xD8C530) copies MoveToComponent byte +0x21 into a fresh eoc::PathSettings (constructor EoCShared.dll+0x3324E0: +4 = 2, +8 = 0) at +4 with the variant index +8 set to 0 - the uint8_t alternative of PathSettings' Speed (Script Extender: std::variant<uint8_t, float> Speed) - before putting the BSMove behaviour state on the character. Live 1..4 here; same default 2 as esv::crowds::SpawnComponent::PathMovementSpeed (game name), and the patrol request's MovementSpeed is switched on 1..4 with the assert 'Invalid m_PathMovementSpeed enum %d'."
     },
     {
       "name": "_Pad22",

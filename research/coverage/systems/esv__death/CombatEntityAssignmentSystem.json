@@ -1,0 +1,86 @@
+{
+ "system": "esv::death::CombatEntityAssignmentSystem",
+ "namespace": "esv::death",
+ "symbols": {
+  "reads": [
+   "eoc::ClientControlComponent",
+   "eoc::PlayerComponent",
+   "eoc::TurnBasedComponent",
+   "eoc::TurnOrderComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::user::ReservedForComponent",
+   "esv::death::DeadEntitiesSingletonComponent"
+  ],
+  "writes": [
+   "esv::death::AssignEntityToUserRequestOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "CombatEntityAssignmentSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CombatEntityAssignmentSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::death::AssignEntityToUserRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BA6BC0",
+    "site": "bg3_dx11.exe+0x2BA72B6",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::TurnBasedComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BA6BC0",
+    "site": "bg3_dx11.exe+0x2BA6F8E",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::TurnOrderComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BA6BC0",
+    "site": "bg3_dx11.exe+0x2BA6EDD",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::TurnOrderComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BA6BC0",
+    "site": "bg3_dx11.exe+0x2BA706D",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::user::ReservedForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BA6BC0",
+    "site": "bg3_dx11.exe+0x2BA6F75",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::user::ReservedForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BA6BC0",
+    "site": "bg3_dx11.exe+0x2BA7105",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

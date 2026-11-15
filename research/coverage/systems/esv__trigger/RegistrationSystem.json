@@ -1,0 +1,138 @@
+{
+ "system": "esv::trigger::RegistrationSystem",
+ "namespace": "esv::trigger",
+ "symbols": {
+  "reads": [
+   "eoc::gamestate::PausedComponent",
+   "eoc::gamestate::RunningComponent",
+   "eoc::gamestate::SyncingComponent",
+   "esv::EventTrigger",
+   "esv::GameStateSaveComponent",
+   "ls::DebugComponent",
+   "ls::SavegameComponent",
+   "ls::uuid::ToHandleMappingComponent"
+  ],
+  "writes": [
+   "esv::trigger::RegisteredForComponent",
+   "esv::trigger::RegistrationSettingsComponent",
+   "esv::trigger::UpdatedRegisteredForComponent",
+   "esv::trigger::UpdatedRegisteredForItemsComponent"
+  ],
+  "methods": [
+   {
+    "name": "LEGACY_SetEventTriggerCharactersOnly",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RegistrationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestRegisterForTrigger",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestRegisterTriggerForItems",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestUnregisterForTrigger",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestUnregisterTriggerForItems",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateCharacterRegistrations",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateForItemsRegistrations",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateSingletonEntities",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~RegistrationSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D163A0",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::trigger::RegisteredForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D16920",
+    "site": "bg3_dx11.exe+0x2D169A8",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::trigger::RegisteredForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D16920",
+    "site": "bg3_dx11.exe+0x2D16A48",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::trigger::RegistrationSettingsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D16F50",
+    "site": "bg3_dx11.exe+0x2D1704A",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::trigger::RegistrationSettingsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D16F50",
+    "site": "bg3_dx11.exe+0x2D17168",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::EventTrigger",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2D16F50",
+    "site": "bg3_dx11.exe+0x2D17061",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::EventTrigger",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2D16F50",
+    "site": "bg3_dx11.exe+0x2D1717F",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

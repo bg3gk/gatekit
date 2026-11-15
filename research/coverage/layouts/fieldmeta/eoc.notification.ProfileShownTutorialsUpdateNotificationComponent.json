@@ -4,11 +4,11 @@
   "size": 56,
   "fields": [
     {
-      "name": "field_0",
+      "name": "ProfileGuid",
       "offset": 0,
       "type": "FixedString",
-      "source": "unknown",
-      "evidence": "Serializer bg3.exe+0x99F950 calls ecs::sync::Serialize(FixedString) on +0; macOS default ctor stores -1 at +0 (null FixedString). Not named by a FieldMeta symbol (profile id?)."
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x5CA000 ecl::profile::ManagementSystem::ProcessUpdateShownTutorialsRequests groups the components by the FixedString at +0 (HashMap keyed by it, the HashSet at +8 merged into the value) and passes each key to the profile manager's vfunc +0x100 to get the net::PlayerProfile it calls AddTutorialEntriesShown on, then vfunc +0x108 (save). ecl::tutorial::ResetSystem::Update (EoCClient.dll+0x63BD50) calls the same vfunc +0x100 with PlayerManager::GetPlayerProfileGUID(playerId): the key is the player profile's GUID."
     },
     {
       "name": "_Pad4",

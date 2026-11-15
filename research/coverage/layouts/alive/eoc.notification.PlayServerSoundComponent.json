@@ -20,18 +20,18 @@
       "evidence": "Serializer member 2: ecs::sync::Serialize(FixedString*) at +0x10; RouteCharacterServerRequests passes it to character::SoundSystem::PlaySound / PlayerManager::PlaySoundForLocalPlayer."
     },
     {
-      "name": "field_14",
+      "name": "SoundObjectType",
       "offset": 20,
       "type": "uint32_t",
-      "source": "unknown",
-      "evidence": "Serializer member 3: 4 bytes at +0x14. Live 0..2."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x845C60 (lambda over esv::sound::PlayServerSoundRequestOneFrameComponent, variant tag 0x1C = PlayServerSoundNotificationRequest) copies the request whole (Entity, Event, u32 +0xC, bytes +0x10/+0x11); dispatcher helper bg3.exe+0x2DEE710 stores request +0xC here, and on the same value chooses whose Guid goes to +0: 0 -> the character's, 1 -> the item's (esv::Item::GetUUID), 2/3 -> empty. Request +0xC is the one-frame's SoundObjectType (PlayHUDRequest writes 2)."
     },
     {
-      "name": "field_18",
+      "name": "FromResource",
       "offset": 24,
       "type": "bool",
-      "source": "unknown",
-      "evidence": "Serializer member 4: 1 byte at +0x18; when set, RouteCharacterServerRequests resolves the sound through the current sound bank (type 9) and may play it as an external SFX instead."
+      "source": "inferred",
+      "evidence": "bg3.exe+0x2DEE710 stores byte +0x10 of the PlayServerSoundNotificationRequest here, which EoCServer.dll+0x845C60 copied from esv::sound::PlayServerSoundRequestOneFrameComponent +0x10 - the byte esv::ServerSoundSystem::Request*SoundFromResource (EoCServer.dll+0x4CAA70 / +0x4CA860) set to 1 and RequestPlaySound / RequestPlayHUDSound set to 0. Client side: when set, RouteCharacterServerRequests resolves the sound through the current sound bank (type 9)."
     },
     {
       "name": "LocalPlayerOnly",
@@ -49,9 +49,6 @@
     }
   ],
   "confidence": "medium",
-  "open_questions": [
-    "Meaning of field_14 and field_18."
-  ],
   "minutes": 6,
   "functions_read": 3,
   "oneFrame": false,

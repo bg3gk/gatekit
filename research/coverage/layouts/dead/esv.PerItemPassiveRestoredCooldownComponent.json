@@ -15,14 +15,14 @@
           "offset": 0,
           "type": "EntityHandle",
           "source": "inferred",
-          "evidence": "Model-to-component conversion bg3.exe+0x2774010: each element gets `*(uint64*)e = 0xFFC0000000000000` (null handle) and then `*e = FUN_144018730(..., modelEntry[0])` - an EntityHandle resolved from the saved EntityId. Name inferred."
+          "evidence": "Model-to-component conversion bg3.exe+0x2774010: each element first gets the 64-bit null handle 0xFFC0000000000000 at +0 and then the result of bg3.exe+0x4018730 called with the model entry's first member - an EntityHandle resolved from the saved EntityId. Name inferred."
         },
         {
           "name": "Passive",
           "offset": 8,
           "type": "FixedString",
           "source": "inferred",
-          "evidence": "Same function: `*(int*)(e + 8) = 0xFFFFFFFF` then CreateFromString(model string) stored at +8; element clear bg3.exe+0x6DB850 DecRefs +8 with stride 0x10. Name inferred from the component name."
+          "evidence": "Same function: writes 0xFFFFFFFF as a 32-bit integer at +8 of the element, then CreateFromString(model string) stored at +8; element clear bg3.exe+0x6DB850 DecRefs +8 with stride 0x10. Name inferred from the component name."
         },
         {
           "name": "_PadC",
@@ -40,7 +40,7 @@
       "offset": 0,
       "type": "Array<PerItemPassiveRestoredCooldownCooldown>",
       "source": "inferred",
-      "evidence": "Storage set-up bg3.exe+0x27057E0: size 0x10, destructor bg3.exe+0x22D4810 -> FUN_1406DB850(p, 0) (stride 0x10, FixedString at +8). Savegame loader bg3.exe+0x2602AB0 builds the array with bg3.exe+0x2774010 and stores it with AllocRaw(0x10): `*p = buffer; *(int*)(p+8) = capacity; *(int*)(p+0xC) = size`."
+      "evidence": "Storage set-up bg3.exe+0x27057E0: size 0x10, destructor bg3.exe+0x22D4810 -> bg3.exe+0x6DB850 called with the component and 0 (stride 0x10, FixedString at +8). Savegame loader bg3.exe+0x2602AB0 builds the array with bg3.exe+0x2774010 and stores it with AllocRaw(0x10): the buffer pointer at +0, the capacity as a 32-bit integer at +8 and the size as a 32-bit integer at +0xC."
     }
   ],
   "confidence": "high",

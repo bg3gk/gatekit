@@ -23,11 +23,11 @@
           "evidence": "FindTargets copies 2 bytes into +8 (a flag pair of the candidate)."
         },
         {
-          "name": "field_9",
+          "name": "IsPreferred",
           "offset": 9,
-          "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "Second byte of that pair."
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Toolkit EoCServer.dll+0x16AC5C0 esv::ai::swarm::FindTargetsSystem::FindTargets builds each candidate with byte +2 = (the target's TagComponent has the tag DAT_182287450, or FindTargetsSystemHelper vtable slot 3 = esv::ai::swarm::FindTargetsSystemHelper::IsPreferredTarget, EoCServer.dll+0x16ADCF0, holds); EoCServer.dll+0x16ADC80 computes the same for the other list. The candidate's bytes +1/+2 are copied as one ushort into Target +8/+9."
         },
         {
           "name": "_PadA",

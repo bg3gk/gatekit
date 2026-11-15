@@ -10,32 +10,32 @@
       "size": 56,
       "fields": [
         {
-          "name": "field_0",
+          "name": "Tags",
           "offset": 0,
           "type": "Array<STDString>",
-          "source": "unknown",
-          "evidence": "ModItemListInfoID dtor bg3.exe+0x11FCB50: array at +0 cleared by bg3.exe+0x5C3E80 (stride 0x18, string reset) then freed"
+          "source": "inferred",
+          "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It appends '&tags=' then each STDString of the array at +0, joined by ',' (strings at bg3_dx11.exe+0x588169C / +0x5516730)."
         },
         {
-          "name": "field_10",
+          "name": "Page",
           "offset": 16,
           "type": "uint32_t",
-          "source": "unknown",
-          "evidence": "moved as 4 bytes by bg3.exe+0x11FC8C0"
+          "source": "inferred",
+          "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It GetModsRequestData formats '&_offset=' from the u32 at +0x10 multiplied by 0x18 and '&_limit=' with 0x18: the page index of 24 mods."
         },
         {
-          "name": "field_14",
+          "name": "SortType",
           "offset": 20,
           "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "moved as 1 byte"
+          "source": "inferred",
+          "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It switches on the byte at +0x14: 0 '&_sort=downloads', 1 '-downloads', 2 'rating', 3 '-rating', 4 '-date_added', 5 '-date_updated', 6 'name', 7 'submitted_by', 8 '-popular', 9 'subscribers'."
         },
         {
-          "name": "field_15",
+          "name": "SearchType",
           "offset": 21,
           "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "moved as 1 byte"
+          "source": "inferred",
+          "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It byte +0x15 picks the search filter written before the text at +0x18: 1 '&name-lk=*', 2 '&submitted_by-lk=*'; no filter otherwise."
         },
         {
           "name": "_Pad16",
@@ -45,25 +45,25 @@
           "evidence": "padding"
         },
         {
-          "name": "field_18",
+          "name": "SearchText",
           "offset": 24,
           "type": "STDString",
-          "source": "unknown",
-          "evidence": "MSVC std::string (capacity at +0x2C reset to 0xF by the dtor)"
+          "source": "inferred",
+          "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It the STDString at +0x18 (length +0x28) is appended after the name-lk / submitted_by-lk filter when it is not empty."
         },
         {
-          "name": "field_30",
+          "name": "IncludeMature",
           "offset": 48,
-          "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "moved as 1 byte"
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It adds '&maturity_option=0' when the byte at +0x30 is 0."
         },
         {
-          "name": "field_31",
+          "name": "IncludeExternalDependencies",
           "offset": 49,
-          "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "moved as 1 byte"
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It adds '&tags-not-in=External+Dependency' when the byte at +0x31 is 0."
         },
         {
           "name": "_Pad32",

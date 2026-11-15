@@ -39,11 +39,11 @@
           "evidence": "padding"
         },
         {
-          "name": "field_18",
+          "name": "RecursiveDependencies",
           "offset": 24,
           "type": "bool",
-          "source": "unknown",
-          "evidence": "bg3.exe+0x12705B0 compares the byte at +0x18 (not hashed); the bool argument of RequestItemInfo by order."
+          "source": "inferred",
+          "evidence": "macOS modio::UGCManager::QueryMod (bg3_macos_x64+0x67995A0, called by RequestItemInfo(Guid, EUGCRequestType, u64, Optional<STDString>, bool, EHardwareType)) stores the bool argument at request +0xF4, and ProcessQueryItemResult (bg3_macos_x64+0x67A0130) passes that byte as the third argument of http::GetDependenciesRequestData(u64, u32, bool), which bg3_dx11.exe+0x38C0B30 writes as '&recursive=true/false'. The ModItemInfoID byte at +0x18 is that bool argument (ModInfoCachedRequestSystemHelper::RequestItemInfo(u64, Optional<Version>, bool, EHardwareType) takes the key's members in order; compared, not hashed): whether the dependencies fetched with the item info are resolved recursively."
         },
         {
           "name": "_Pad19",

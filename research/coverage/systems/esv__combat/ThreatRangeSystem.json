@@ -1,0 +1,182 @@
+{
+ "system": "esv::combat::ThreatRangeSystem",
+ "namespace": "esv::combat",
+ "symbols": {
+  "reads": [
+   "eoc::BoostsContainerComponent",
+   "eoc::BoundComponent",
+   "eoc::ClassesComponent",
+   "eoc::DataComponent",
+   "eoc::DifficultyCheckComponent",
+   "eoc::DisabledEquipmentComponent",
+   "eoc::LevelComponent",
+   "eoc::StatsComponent",
+   "eoc::TagComponent",
+   "eoc::WeaponComponent",
+   "eoc::WeaponSetChangedEventOneFrameComponent",
+   "eoc::WeaponSetComponent",
+   "eoc::bounds::SizeChangedEventOneFrameComponent",
+   "eoc::combat::IsInCombatComponent",
+   "eoc::inventory::ContainerComponent",
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::OwnerComponent",
+   "eoc::spell::AttackSpellOverrideComponent",
+   "eoc::spell::BookComponent",
+   "eoc::spell::ContainerComponent",
+   "eoc::spell::ModificationContainerComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::stats::proficiency::IntrinsicallyProficientWielderComponent",
+   "eoc::stats::proficiency::ProficiencyComponent",
+   "eoc::stats::proficiency::ProficiencyGroupComponent",
+   "esv::Character",
+   "esv::item::EquippedEventOneFrameComponent",
+   "esv::item::UnequippedEventOneFrameComponent",
+   "esv::spell::ModificationsChangedEventOneFrameComponent",
+   "esv::spell::SpellPreparedEventOneFrameComponent",
+   "esv::spell::SpellUnpreparedEventOneFrameComponent",
+   "esv::stats::proficiency::IntrinsicWielderChangesComponent",
+   "ls::TransformComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "eoc::combat::ThreatRangeComponent",
+   "esv::combat::ThreatRangeChangedEventOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "ThreatRangeSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateThreatRange",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ThreatRangeSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; the Toolkit's own methods without an address were not found in the game binary and are listed with address null; the per-frame update address is not printed for bg3_dx11.exe by this command, it was found by reading the factory in pseudo-code). Parsed by script from the command output, not retyped.",
+  "uses": [
+   {
+    "type": "esv::combat::ThreatRangeChangedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3242F30",
+    "site": "bg3_dx11.exe+0x324507F",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::BoostsContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFCF790",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoundComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFCF790",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::DataComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFCF790",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::TagComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFCF790",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::WeaponComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFCF790",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::ThreatRangeComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3242F30",
+    "site": "bg3_dx11.exe+0x324586F",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::ThreatRangeComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3242F30",
+    "site": "bg3_dx11.exe+0x32458D4",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::ContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFCF790",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::stats::proficiency::IntrinsicallyProficientWielderComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFCF790",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::stats::proficiency::ProficiencyGroupComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFCF790",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::ContainerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0xFCF790",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update / UpdateThreatRange",
+   "text": "Recomputes threat ranges and writes eoc::combat::ThreatRangeComponent, which is three floats. Several modified-kind query loops (seven query walks in the update) gather entities; for each, a spell id is built and looked up through a manager the system holds, and a range of three floats is worked out. If the entity had no ThreatRangeComponent one is created with those floats; if it had one, each float that differs is updated and a helper raises ThreatRangeChangedEventOneFrameComponent. Entities for which the computation does not complete are listed, and the component is removed from listed entities at the end.",
+   "evidence": "bg3_dx11.exe factory 0x234CBF0 -> entry 0x238F470 -> update 0x3242F30 (1295 lines); create path allocates 12 bytes for ThreatRangeComponent; event helper 0x3245D60 allocates ThreatRangeChangedEventOneFrame; final loop removes ThreatRangeComponent. Read as pseudo-code."
+  }
+ ],
+ "unknown": [
+  "Which components the query loops watch; they are not named in the pseudo-code (the method signature lists boosts, size, weapon set, stats, level, tags and similar).",
+  "Which weapon or spell the range is derived from; the code builds a spell id and looks it up but it was not followed.",
+  "The meaning of the three floats; they are not named in what was read.",
+  "The exact conditions in which no range is produced, and whether the end-of-update removal also skips entities that lack the component."
+ ],
+ "sure": "no: create, update, event and remove paths are read; the formula is not"
+}

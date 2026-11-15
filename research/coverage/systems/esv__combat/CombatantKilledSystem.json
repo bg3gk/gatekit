@@ -1,0 +1,142 @@
+{
+ "system": "esv::combat::CombatantKilledSystem",
+ "namespace": "esv::combat",
+ "symbols": {
+  "reads": [
+   "eoc::BodyTypeComponent",
+   "eoc::PlayerComponent",
+   "eoc::RaceComponent",
+   "eoc::attitude::AttitudesToPlayersComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::combat::StateComponent",
+   "eoc::death::DeathComponent",
+   "eoc::identity::StateComponent",
+   "eoc::party::MemberComponent",
+   "eoc::relation::FactionComponent",
+   "eoc::relation::RelationComponent"
+  ],
+  "writes": [
+   "esv::combat::CombatantKilledEventOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "CombatantKilledSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDeaths",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CombatantKilledSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; the Toolkit's own methods without an address were not found in the game binary and are listed with address null; the per-frame update address is not printed for bg3_dx11.exe by this command, it was found by reading the factory in pseudo-code). Parsed by script from the command output, not retyped.",
+  "uses": [
+   {
+    "type": "esv::combat::CombatantKilledEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3232240",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::combat::ParticipantComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3232240",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3232240",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1133160",
+    "site": "bg3_dx11.exe+0x11331FC",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1133160",
+    "site": "bg3_dx11.exe+0x1133239",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::relation::FactionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1133160",
+    "site": "bg3_dx11.exe+0x11331EC",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::relation::FactionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1133160",
+    "site": "bg3_dx11.exe+0x1133229",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::relation::FactionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C25690",
+    "site": "bg3_dx11.exe+0x2C2575B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::relation::FactionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3232240",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::PlayerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x3232240",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update (ProcessDeaths)",
+   "text": "Walks the entities of one query and may create a one-frame CombatantKilledEventOneFrameComponent for each. Per entity it reads a second entity from one of the query's components; if that entity is alive it calls eoc::relation::GetRelation on the two (with the faction data the system holds) and goes on only when the result is zero, otherwise no event is made; if it is not alive it goes on only when an optional component of the query is present. It then resolves a combat-like group entity, and creates the event only when that entity is valid. The event stores the queried entity, the second entity, a flag for the optional component, a flag from a helper call on the second entity, and a flag set when some other member of the resolved group gives a zero relation result.",
+   "evidence": "bg3_dx11.exe factory 0x234C300 -> entry 0x238F380 -> update 0x3232240; the event is allocated by helper 0x3232820 (one-frame type id of CombatantKilledEvent), fields stored at offsets 0, 8, 0x10, 0x11, 0x12. Read as pseudo-code."
+  }
+ ],
+ "unknown": [
+  "Which of the two stored entities is the dead one and which the killer: the signature lists the death component, but the component each entity is read from was not identified.",
+  "What a zero result of GetRelation means (hostile, allied, or other), and so when the event is suppressed.",
+  "What the helper on the second entity (bg3_dx11.exe+0xA923B0) tests, and what the optional component is.",
+  "The group entity is resolved through bg3_dx11.exe+0xB1DDA0 and its members walked; that it is the combat is a guess from shape."
+ ],
+ "sure": "no: the conditional event creation is read; which entity is which and what the flags mean are not"
+}

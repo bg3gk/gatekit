@@ -1,0 +1,45 @@
+{
+ "system": "esv::camera::SpellWaitSystem",
+ "namespace": "esv::camera",
+ "symbols": {
+  "reads": [
+   "eoc::spell_cast::StateComponent"
+  ],
+  "writes": [
+   "eoc::camera::SpellWaitComponent"
+  ],
+  "methods": [
+   {
+    "name": "LEGACY_RequestSpellWait",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SpellWaitSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~SpellWaitSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::camera::SpellWaitComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D76790",
+    "site": "bg3_dx11.exe+0x2D7697E",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

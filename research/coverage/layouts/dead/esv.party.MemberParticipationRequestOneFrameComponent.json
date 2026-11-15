@@ -11,7 +11,7 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "Windows: bg3.exe+0x2BBB200 (called from the per-frame update of esv::party::PartySystem bg3.exe+0x2BB7AD0) iterates the component's query with stride 0x10 and reads `uVar4 = *puVar15` (8 bytes at +0) and `bVar23 = *(byte*)(puVar15 + 1)` (+8), then appends them to its legacy queue as {byte at +0, handle at +8}; the handle is later checked as an entity (>>0x36 < 0x41, != null) and inserted into a HashSet with FUN_140721030. macOS default constructor agrees."
+      "evidence": "Windows: bg3.exe+0x2BBB200 (called from the per-frame update of esv::party::PartySystem bg3.exe+0x2BB7AD0) iterates the component's query with stride 0x10 and reads the 8 bytes at +0 and the byte at +8 of each element, then appends them to its legacy queue as {byte at +0, handle at +8}; the handle is later checked as an entity (>>0x36 < 0x41, != null) and inserted into a HashSet with bg3.exe+0x721030. macOS default constructor agrees."
     },
     {
       "name": "ToAdd",

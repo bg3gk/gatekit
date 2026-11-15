@@ -4,18 +4,18 @@
   "size": 48,
   "fields": [
     {
-      "name": "field_0",
+      "name": "SpellCastGuid",
       "offset": 0,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "Windows replication writer bg3.exe+0x999480 (slot 2 of bg3.exe+0x551A700) writes 16 raw bytes at the FieldMeta offset global DAT_14627FF50 (0: the next member is at +0x10). No FieldMeta name."
+      "source": "inferred",
+      "evidence": "Dispatcher bg3.exe+0x2DF53B0 case 0x26 (SpellCastConfirmNotificationRequest) creates this component (bg3.exe+0x2DF3A10) and copies the 16 bytes at +0xA0 of the entity's eoc::spell_cast::StateComponent here, as case 0x28 does for SpellCastFailedComponent.SpellCastGuid; then request +8 (12 bytes) at +0x10 and the InitialTarget array at +0x20."
     },
     {
-      "name": "field_10",
+      "name": "CastPosition",
       "offset": 16,
       "type": "glm::vec3",
-      "source": "unknown",
-      "evidence": "Windows replication writer bg3.exe+0x999480 (slot 2 of bg3.exe+0x551A700) writes 12 raw bytes at +0x10."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x83BF10 section for eoc::spell_cast::PreviewEndEventOneFrameComponent + StateComponent (variant tag 0x26) puts at request +8 the StateComponent's optional cast position when it is set (Toolkit offset +0x60, flag +0x6C; Script Extender's CastPosition) and else eoc::spell_cast::GetCasterPosition; dispatcher case 0x26 copies those 12 bytes to +0x10."
     },
     {
       "name": "_Pad1C",

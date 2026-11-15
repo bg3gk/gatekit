@@ -12,11 +12,11 @@
       "legacy": "field_0"
     },
     {
-      "name": "field_10",
+      "name": "Success",
       "offset": 16,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "write-all serializer bg3.exe+0x99E3F0: member 2, raw 1-byte write at +0x10 | names pass 2: Server: notification byte +8. Client bg3.exe+0x18A7E20 calls its listeners with event kind '(byte == 0) + 10' (10 when set, 11 when 0) - most likely success / failure of the skill check, direction not proven."
+      "source": "inferred",
+      "evidence": "macOS ecl::GameStateRunning::Update (bg3_macos_x64+0x35833C0) walks the added SkillCheckNotificationComponents and calls every ecl::UIFeedbackManager listener with feedback type (byte +0x10 == 0) | 10; the Noesis registration of ecl::EFeedbackType (Noesis::TypeEnumCreator<ecl::EFeedbackType>::Fill, bg3_macos_x64+0x297E8B0) names 10 SavingThrowSuccess and 11 SavingThrowFail, so a set byte shows the success message. The Windows consumer bg3.exe+0x18A7E20 computes the same (byte == 0) + 10."
     },
     {
       "name": "field_11",
@@ -33,11 +33,11 @@
       "evidence": "alignment padding; nothing serialized or initialised here"
     },
     {
-      "name": "field_18",
+      "name": "StatsExpression",
       "offset": 24,
       "type": "STDString",
-      "source": "unknown",
-      "evidence": "write-all serializer bg3.exe+0x99E3F0: member 4 is bg3.exe+0x4016480 (24-byte STDString writer) on +0x18; macOS default zeroes +0x18..0x28 (str xzr [x23,#0x20] + q0) and calls 0x106536d10 (string init) | names pass 2: Server: STDString from notification +0x10; client copies it into the listener payload."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x844E70 (lambda over esv::stats::SkillCheckEventOneFrameComponent, stride 400; variant tag 0x24 = SkillCheckNotificationRequest) copies event +0 (Target), +0x159 (Success), +0x158 and the STDString at +0x160 (StatsExpression in Script Extender's Events.h) into the request; dispatcher bg3.exe+0x2DF53B0 case 0x24 constructs this STDString from request +0x10, which is that string."
     }
   ],
   "confidence": "high",

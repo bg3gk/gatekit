@@ -1,0 +1,117 @@
+{
+ "system": "esv::dialog::PrivacySystem",
+ "namespace": "esv::dialog",
+ "symbols": {
+  "reads": [
+   "esv::GameStateLoadSessionComponent",
+   "esv::SessionUnloadOneFrameComponent",
+   "ls::IsGlobalComponent",
+   "ls::SavegameComponent"
+  ],
+  "writes": [
+   "eoc::dialog::DialoguePrivacySingletonComponent",
+   "eoc::dialog::NoPrivateDialogsSingletonComponent",
+   "esv::dialog::FailedPrivateDialogJoinAttemptOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "GetSingletonEntity",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ClearDialog",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_GameSettingChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_NotifyFailedAttempt",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_UpdateDialogPrivacy",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PrivacySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDialogUpdates",
+    "address": "bg3_dx11.exe+0x2E1BA90",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ProcessFailedJoinAttempts",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSettingUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~PrivacySystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::dialog::DialoguePrivacySingletonComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E1B4B0",
+    "site": "bg3_dx11.exe+0x2E1B6B6",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::dialog::NoPrivateDialogsSingletonComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E1B4B0",
+    "site": "bg3_dx11.exe+0x2E1B6DA",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::dialog::FailedPrivateDialogJoinAttemptOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E1C2A0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::dialog::DialoguePrivacySingletonComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E1BA90",
+    "site": "bg3_dx11.exe+0x2E1BC15",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::dialog::NoPrivateDialogsSingletonComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E1BF20",
+    "site": "bg3_dx11.exe+0x2E1C08E",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

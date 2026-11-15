@@ -17,25 +17,25 @@
       "size": 24,
       "fields": [
         {
-          "name": "field_0",
+          "name": "ResultEntity",
           "offset": 0,
           "type": "Guid",
-          "source": "unknown",
-          "evidence": "bg3.exe+0xB94770 writes 16 bytes at +0"
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x846780 (notification lambda, variant tag 7 = CombineResultCreatedNotificationRequest) walks esv::combine::ResultOneFrameComponent's records (Array at +0x20, stride 0x18) and copies record +0 (16 bytes) and +0x10 (2 bytes) after the owner's Guid; dispatcher bg3.exe+0x2DF53B0 case 7 inserts {request +0x10..+0x21} into this component's set (creator bg3.exe+0x2DF2B40). Record +0 is CombineResultRecord.ResultEntity (savegame model m_ResultEntities)."
         },
         {
-          "name": "field_10",
+          "name": "BaseNotFound",
           "offset": 16,
-          "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "bg3.exe+0xB94770 writes 1 byte at +0x10"
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Copied from esv::combine::ResultOneFrameComponent record +0x10 by EoCServer.dll+0x846780 and bg3.exe+0x2DF53B0 case 7; that byte is CombineResultRecord.BaseNotFound (savegame model member m_BaseNotFounds, stored as a bool by bg3.exe+0x2606770)."
         },
         {
-          "name": "field_11",
+          "name": "IngredientNotFound",
           "offset": 17,
-          "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "bg3.exe+0xB94770 writes 1 byte at +0x11"
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "Copied from esv::combine::ResultOneFrameComponent record +0x11 by EoCServer.dll+0x846780 and bg3.exe+0x2DF53B0 case 7; that byte is CombineResultRecord.IngredientNotFound (savegame model member m_IngredientNotFounds, stored as a bool by bg3.exe+0x2606770)."
         },
         {
           "name": "_Pad12",

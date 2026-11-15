@@ -22,7 +22,7 @@
       "offset": 8,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "Constructor writes the null handle constant DAT_146174970; bg3.exe+0x20547D0 copies the request's first 8 bytes (entity resolved from the key's Target Guid by FUN_143cbb2f0); bg3.exe+0x2054C00 resolves the look-at position from this entity. Probe: a live entity in one instance, null handle in the others."
+      "evidence": "Constructor writes the null handle constant (the global at bg3.exe+0x6174970); bg3.exe+0x20547D0 copies the request's first 8 bytes (entity resolved from the key's Target Guid by bg3.exe+0x3CBB2F0); bg3.exe+0x2054C00 resolves the look-at position from this entity. Probe: a live entity in one instance, null handle in the others."
     },
     {
       "name": "TargetId",
@@ -162,7 +162,7 @@
       "offset": 88,
       "type": "glm::vec3",
       "source": "inferred",
-      "evidence": "bg3.exe+0x20542C0 calls bg3.exe+0x2054C00(&Target, &Bone, &this[0x58]), which writes the world position of the target (bone / bounds / transform translate); the result is then used to compute the turn angle. Probe: a world position (46.2, 17.0, -422.9)."
+      "evidence": "bg3.exe+0x20542C0 calls bg3.exe+0x2054C00 with the addresses of Target, of Bone and of the component's member at +0x58, which writes the world position of the target (bone / bounds / transform translate); the result is then used to compute the turn angle. Probe: a world position (46.2, 17.0, -422.9)."
     },
     {
       "name": "TurnState",

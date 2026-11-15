@@ -10,28 +10,28 @@
       "offset": 0,
       "type": "FixedString",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x33D03A0 (AllocRaw 0x10, destructor FUN_140698fe0) stores the global FixedString DAT_1461aabd0 with IncRef; writer bg3.exe+0x33CD8D0 assigns the FixedString at (resource + 0x48) of a resource looked up with type 7 (FUN_14412e090). Toolkit: passed as the effect name to esv::EffectManager::PlayAndForgetEffect and printed in the fade-out error."
+      "evidence": "Creator bg3.exe+0x33D03A0 (AllocRaw 0x10, destructor bg3.exe+0x698FE0) stores the global FixedString at bg3.exe+0x61AABD0 with IncRef; writer bg3.exe+0x33CD8D0 assigns the FixedString at +0x48 of a resource looked up with type 7 (bg3.exe+0x412E090). Toolkit: passed as the effect name to esv::EffectManager::PlayAndForgetEffect and printed in the fade-out error."
     },
     {
       "name": "Delay",
       "offset": 4,
       "type": "float",
       "source": "inferred",
-      "evidence": "Creator zeroes dword +4; writer copies the 4-byte value at param_3+0x40. Toolkit HandleWaitingForFadeOut: `*(float*)(c+4) -= GameTime.DeltaTime` while > 0; the effect is played when it reaches 0."
+      "evidence": "Creator zeroes dword +4; writer copies the 4-byte value at +0x40 of its third argument. Toolkit HandleWaitingForFadeOut subtracts the frame's delta time from the float at +4 while it is > 0; the effect is played when it reaches 0."
     },
     {
       "name": "Duration",
       "offset": 8,
       "type": "float",
       "source": "inferred",
-      "evidence": "Creator zeroes dword +8. Toolkit: set to *(float*)(effect + 0x20) after the effect is played, then decremented by the delta time; destruction proceeds when <= 0."
+      "evidence": "Creator zeroes dword +8. Toolkit: set to the float at +0x20 of the effect after the effect is played, then decremented by the delta time; destruction proceeds when <= 0."
     },
     {
       "name": "EffectStarted",
       "offset": 12,
       "type": "bool",
       "source": "inferred",
-      "evidence": "Creator zeroes dword +0xC then byte +0xC. Toolkit: tested `c[0xC] == 0` and set to 1 once the fade-out effect has been played."
+      "evidence": "Creator zeroes dword +0xC then byte +0xC. Toolkit: the byte at +0xC is tested for zero and set to 1 once the fade-out effect has been played."
     },
     {
       "name": "_PadD",

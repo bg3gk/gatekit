@@ -1,0 +1,64 @@
+{
+ "system": "esv::inventory::UnloadSystem",
+ "namespace": "esv::inventory",
+ "symbols": {
+  "reads": [
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::IsOwnedComponent",
+   "eoc::inventory::OwnerComponent",
+   "esv::GameStateUnloadSessionComponent"
+  ],
+  "writes": [],
+  "methods": [
+   {
+    "name": "DestroyUnloadedInventories",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUnloadSession",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UnloadSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~UnloadSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "copied by hand from gatekit symbols system --dll dx11 (addresses are bg3_dx11.exe). Methods with null address were listed by the Toolkit but the tool printed no game address for them. System index variable bg3_dx11.exe+0x60D978C; the game functions using the index are in the Toolkit line of the tool output. The does layer cites EoCServer.dll (Toolkit pseudo-code with real names) wherever bg3_dx11.exe functions were not individually mapped.",
+  "uses": [],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Reads GameStateUnloadSessionComponent, runs ProcessUnloadSession, then destroys through the deferred command buffer every entity in a list it gathered. That these are the inventories of the unloading session is from the names (ProcessUnloadSession, DestroyUnloadedInventories); which entities the list holds was not read.",
+   "evidence": "EoCServer.dll+0xF0BAB0 read: ProcessUnloadSession call, then a DestroyEntity loop"
+  }
+ ],
+ "unknown": [
+  "which inventories survive"
+ ],
+ "sure": "no"
+}

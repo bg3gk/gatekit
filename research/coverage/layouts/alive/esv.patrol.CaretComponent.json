@@ -13,25 +13,25 @@
       "evidence": "Registration bg3.exe+0x26FF170 sets destructor bg3.exe+0x698FE0 = FixedString release at +0; macOS default ctor writes -1 (null) in the low dword of +0. Live: 46 distinct FixedString indices. Probably the spline (template) id; the name is a guess. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) fills it with a FixedString created from the model's leading Guid (formatted %08x-%04hx-...): the spline's id. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
     },
     {
-      "name": "field_4",
+      "name": "Reversed",
       "offset": 4,
       "type": "bool",
-      "source": "unknown",
-      "evidence": "macOS default 0; GotoNextSplinePoint (macOS bg3_macos_x64+0x56C4680) reads byte +4 to choose the direction of travel (hint). Live 0. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x10); default 0. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0xA49380 esv::patrol::CaretSystem::Setup(..., esv::patrol::InitData const&, bool) writes caret +4 = InitData +4 and passes it as the direction bool of ls::SplineTemplate::GetClosestLocationInDirection. InitData +4 is the 'reversed' argument of the Anubis function StartCaretPatrol: macOS bg3_macos_x64+0x30F6900 reads the bool argument named 'reversed' and hands it to ls::anubis::game::DoPatrolImpl (bg3_macos_x64+0x3337CD0), which stores it at InitData +4. GotoNextSplinePoint reads +4 to choose the direction of travel."
     },
     {
-      "name": "field_5",
+      "name": "PathMovementSpeed",
       "offset": 5,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "macOS default 2. Live 1..3. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) copies byte model+0x12; default 2 (half-word 0x200 at +4). The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0xA49380 esv::patrol::CaretSystem::Setup writes caret +5 = InitData +5 (and only updates +5 when the rest of the setup is unchanged). InitData +5 is the eoc::EPathMovementSpeed argument named 'pathMovementSpeed' of the Anubis function StartCaretPatrol (bg3_macos_x64+0x30F6900 -> DoPatrolImpl bg3_macos_x64+0x3337CD0, stored at InitData +5). Live 1..3, macOS default 2."
     },
     {
-      "name": "field_6",
+      "name": "ReverseIfBlocked",
       "offset": 6,
       "type": "bool",
-      "source": "unknown",
-      "evidence": "macOS default 1. Live 0/1. Converter bg3.exe+0x277FF60 (model ls::model::game::patrol::v1::CaretComponent, 72 bytes -> runtime 0x54) writes bool(model+0x11); default 1. The save loader bg3.exe+0x2591640 copies the runtime struct into the 0x54-byte component member by member with this width."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0xA49380 esv::patrol::CaretSystem::Setup writes caret +6 = InitData +6. InitData +6 is the bool argument named 'reverseIfBlocked' of the Anubis function StartCaretPatrol (bg3_macos_x64+0x30F6900; default 1 when the argument is left out), ANDed by DoPatrolImpl (bg3_macos_x64+0x3337CD0) with a flag of the spline. macOS default 1."
     },
     {
       "name": "field_7",

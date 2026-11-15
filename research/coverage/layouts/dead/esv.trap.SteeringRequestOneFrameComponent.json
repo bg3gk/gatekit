@@ -18,14 +18,14 @@
       "offset": 8,
       "type": "uint32_t",
       "source": "unknown",
-      "evidence": "Writer stores 0 (puVar16[2]); third dword of the variant storage."
+      "evidence": "Writer stores 0 as a 32-bit value at +8; third dword of the variant storage."
     },
     {
       "name": "TargetType",
       "offset": 12,
       "type": "uint8_t",
       "source": "inferred",
-      "evidence": "Writer stores dword 1 at +0xC (puVar16[3]) - variant index 1 = entity, as in the lock twin."
+      "evidence": "Writer stores dword 1 at +0xC (the fourth dword) - variant index 1 = entity, as in the lock twin."
     },
     {
       "name": "_PadD",
@@ -53,14 +53,14 @@
       "offset": 24,
       "type": "Guid",
       "source": "inferred",
-      "evidence": "Creator zeroes +0x18/+0x20; writer lines 306-313 store a new Guid (FUN_144130D80) and copy it into DisarmingStateComponent.SteeringTransactionId (lines 315-317); bg3.exe+0x2CF6EF0 compares the steering state's Guid with it."
+      "evidence": "Creator zeroes +0x18/+0x20; writer lines 306-313 store a new Guid (bg3.exe+0x4130D80) and copy it into DisarmingStateComponent.SteeringTransactionId (lines 315-317); bg3.exe+0x2CF6EF0 compares the steering state's Guid with it."
     },
     {
       "name": "Lifetime",
       "offset": 40,
       "type": "float",
       "source": "inferred",
-      "evidence": "Creator writes 0x4B18967F (9999999.0); writer sets 1.0 (puVar16[10] = 0x3F800000). Same as the lock twin (copied into esv::steering::LifetimeComponent)."
+      "evidence": "Creator writes 0x4B18967F (9999999.0); writer sets 1.0 (writes 0x3F800000 as a 32-bit value at +0x28). Same as the lock twin (copied into esv::steering::LifetimeComponent)."
     },
     {
       "name": "_Pad2C",

@@ -137,32 +137,32 @@
       "equals": "ls::anubis::savegame::Reader (macOS name): the Writer of ls::anubis::savegame::StateComponent (0x88 bytes) plus a plain array at +0x78; the TypeArrays move to +0x88",
       "fields": [
         {
-          "name": "field_0",
+          "name": "Registry",
           "offset": 0,
           "type": "void*",
-          "source": "unknown",
-          "evidence": "bg3.exe+0x3828430 (Reader move) copies it first as one qword; same as Writer +0."
+          "source": "inferred",
+          "evidence": "Reader +0. ls::anubis::savegame::Writer::Writer(Registry&) (AnubisFramework.dll+0x105AF0) stores '*(Registry**)this = param_1' before constructing the Header at +8; macOS Reader::Reader(Writer&&) (bg3_macos_x64+0x6740F00) copies Writer +0 to Reader +0 first."
         },
         {
-          "name": "field_8",
+          "name": "Scalars",
           "offset": 8,
           "type": "AnubisSavegameReloadingRawArray",
-          "source": "unknown",
-          "evidence": "Reader +8 = ls::anubis::savegame::model::Header (macOS Reader::~Reader calls model::Header::~Header(this+8); Windows Reader destructor bg3.exe+0x3828600 ends with the Header destructor bg3.exe+0x3828670 on +8, the same one ls::anubis::savegame::StateComponent's Writer uses); Header +0: plain array (Header destructor frees it with bg3.exe+0x5946C0, no element destructor)."
+          "source": "inferred",
+          "evidence": "Reader +8 is model::Header (macOS Reader::Reader(Writer&&) moves Writer +8..+0x78 member for member); this is Header +0. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
         },
         {
-          "name": "field_18",
+          "name": "Tables",
           "offset": 24,
           "type": "AnubisSavegameReloadingRawArray",
-          "source": "unknown",
-          "evidence": "Header +0x10: plain array (bg3.exe+0x3828670 frees it with bg3.exe+0x5946C0)."
+          "source": "inferred",
+          "evidence": "Reader +8 is model::Header (macOS Reader::Reader(Writer&&) moves Writer +8..+0x78 member for member); this is Header +0x10. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
         },
         {
-          "name": "field_28",
+          "name": "TableEntries",
           "offset": 40,
           "type": "AnubisSavegameReloadingRawArray",
-          "source": "unknown",
-          "evidence": "Header +0x20: plain array (bg3.exe+0x3828670 frees it with bg3.exe+0x5946C0)."
+          "source": "inferred",
+          "evidence": "Reader +8 is model::Header (macOS Reader::Reader(Writer&&) moves Writer +8..+0x78 member for member); this is Header +0x20. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
         },
         {
           "name": "Variables",

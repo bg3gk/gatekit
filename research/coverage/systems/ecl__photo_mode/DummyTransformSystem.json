@@ -1,0 +1,78 @@
+{
+ "system": "ecl::photo_mode::DummyTransformSystem",
+ "namespace": "ecl::photo_mode",
+ "symbols": {
+  "reads": [
+   "ecl::dummy::DummyComponent",
+   "ecl::dummy::OriginalTransformComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "ecl::photo_mode::DummyTransformUpdateSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "DummyTransformSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_OffsetTransform",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateTransform",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DummyTransformSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::dummy::DummyComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1AFD620",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::dummy::OriginalTransformComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1AFD620",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1AFD620",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

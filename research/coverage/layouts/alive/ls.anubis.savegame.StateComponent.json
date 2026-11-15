@@ -103,74 +103,74 @@
   ],
   "fields": [
     {
-      "name": "field_0",
+      "name": "Registry",
       "offset": 0,
       "type": "void*",
-      "source": "unknown",
-      "evidence": "ls::anubis::savegame::Writer +0 (the component is a Writer moved into the ECS: macOS EntityCommandBuffer::AddComponentUnchecked<StateComponent, Writer>(Writer&&)); creator bg3.exe+0x383A360 copies it first as a plain 8-byte value; macOS ~Writer does not free it. Live: the same heap pointer in all 48 instances (a shared registry/context object)."
+      "source": "inferred",
+      "evidence": "The component is a Writer (macOS AddComponentUnchecked<StateComponent, Writer>); ls::anubis::savegame::Writer::Writer(Registry&) (AnubisFramework.dll+0x105AF0) stores '*(Registry**)this = param_1' before constructing the Header at +8; macOS Reader::Reader(Writer&&) (bg3_macos_x64+0x6740F00) copies Writer +0 to Reader +0 first."
     },
     {
-      "name": "field_8",
+      "name": "Scalars",
       "offset": 8,
       "type": "void*",
-      "source": "unknown",
-      "evidence": "Writer +8 = ls::anubis::savegame::model::Header (macOS ~Writer calls model::Header::~Header(this+8)); Header +0: plain array (macOS ~Header frees it without element destructor; Windows bg3.exe+0x5946C0) - buffer pointer; element size not established (plain free, no element destructor), so written by its raw parts."
+      "source": "inferred",
+      "evidence": "Writer +8 is model::Header; this is Header +0. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
     },
     {
-      "name": "field_8Capacity",
+      "name": "ScalarsCapacity",
       "offset": 16,
       "type": "uint32_t",
       "source": "inferred",
-      "evidence": "capacity of the same array (moved as uint32 by bg3.exe+0x38284F0)."
+      "evidence": "capacity of the Header +0 array (Scalars); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
     },
     {
-      "name": "field_8Size",
+      "name": "ScalarsSize",
       "offset": 20,
       "type": "uint32_t",
       "source": "inferred",
-      "evidence": "size of the same array."
+      "evidence": "size of the Header +0 array (Scalars); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
     },
     {
-      "name": "field_18",
+      "name": "Tables",
       "offset": 24,
       "type": "void*",
-      "source": "unknown",
-      "evidence": "Header +0x10: plain array (macOS ~Header, Windows bg3.exe+0x5946C0) - buffer pointer; element size not established (plain free, no element destructor), so written by its raw parts."
+      "source": "inferred",
+      "evidence": "Writer +8 is model::Header; this is Header +0x10. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
     },
     {
-      "name": "field_18Capacity",
+      "name": "TablesCapacity",
       "offset": 32,
       "type": "uint32_t",
       "source": "inferred",
-      "evidence": "capacity of the same array (moved as uint32 by bg3.exe+0x38284F0)."
+      "evidence": "capacity of the Header +0x10 array (Tables); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
     },
     {
-      "name": "field_18Size",
+      "name": "TablesSize",
       "offset": 36,
       "type": "uint32_t",
       "source": "inferred",
-      "evidence": "size of the same array."
+      "evidence": "size of the Header +0x10 array (Tables); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
     },
     {
-      "name": "field_28",
+      "name": "TableEntries",
       "offset": 40,
       "type": "void*",
-      "source": "unknown",
-      "evidence": "Header +0x20: plain array (macOS ~Header, Windows bg3.exe+0x5946C0) - buffer pointer; element size not established (plain free, no element destructor), so written by its raw parts."
+      "source": "inferred",
+      "evidence": "Writer +8 is model::Header; this is Header +0x20. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
     },
     {
-      "name": "field_28Capacity",
+      "name": "TableEntriesCapacity",
       "offset": 48,
       "type": "uint32_t",
       "source": "inferred",
-      "evidence": "capacity of the same array (moved as uint32 by bg3.exe+0x38284F0)."
+      "evidence": "capacity of the Header +0x20 array (TableEntries); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
     },
     {
-      "name": "field_28Size",
+      "name": "TableEntriesSize",
       "offset": 52,
       "type": "uint32_t",
       "source": "inferred",
-      "evidence": "size of the same array."
+      "evidence": "size of the Header +0x20 array (TableEntries); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
     },
     {
       "name": "Variables",

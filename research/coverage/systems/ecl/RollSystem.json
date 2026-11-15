@@ -1,0 +1,147 @@
+{
+ "system": "ecl::RollSystem",
+ "namespace": "ecl",
+ "symbols": {
+  "reads": [
+   "ecl::Character",
+   "eoc::RequestedRollComponent",
+   "eoc::active_roll::InProgressComponent",
+   "eoc::active_roll::ModifiersComponent",
+   "eoc::sneak::RollsContainerComponent",
+   "eoc::user::ReservedForComponent"
+  ],
+  "writes": [
+   "ecl::roll::ActiveRollEventsSingletonComponent",
+   "ecl::roll::PassiveRollSuccessOneFrameEventComponent"
+  ],
+  "methods": [
+   {
+    "name": "CancelActiveRoll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FindChangedReservedUserDuringActiveRoll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FinishActiveRoll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnActiveRollModifiersComponentAdded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnRollComponentAdded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnRollComponentRemoving",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessActiveRollEventsSingleton",
+    "address": "bg3_dx11.exe+0x19D5DA0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ProcessRollOneFrameEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestActiveRollReroll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestModifierSelectionChange",
+    "address": "bg3_dx11.exe+0x19D5980",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "RequestRestart",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RollSystem",
+    "address": "bg3_dx11.exe+0x19D3C50",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ServerRequestedActiveRollState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ServerRequestedCancelPassiveRoll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StartActiveRoll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StopActiveRoll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": "bg3_dx11.exe+0x19D3FA0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "SystemUnload",
+    "address": "bg3_dx11.exe+0x19D46D0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~RollSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::roll::PassiveRollSuccessOneFrameEventComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x19D6150",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::Character",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x19D53C0",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::RequestedRollComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x19D53C0",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

@@ -1,0 +1,81 @@
+{
+ "system": "ecl::dummy::VFXManagementSystem",
+ "namespace": "ecl::dummy",
+ "symbols": {
+  "reads": [
+   "ecl::EquipmentVisualsComponent",
+   "ecl::EquipmentVisualsVFXTargetComponent",
+   "ecl::dummy::CharacterVFXInitializationComponent",
+   "ecl::dummy::DummyComponent",
+   "ecl::dummy::HasDummyComponent",
+   "ecl::dummy::LoadedComponent",
+   "ecl::dummy::SpellVFXInitializationComponent",
+   "ecl::dummy::StatusVFXInitializationComponent"
+  ],
+  "writes": [
+   "ecl::dummy::MultiEffectCreateRequestOneFrameComponent",
+   "ecl::dummy::VFXEntitiesComponent"
+  ],
+  "methods": [
+   {
+    "name": "ManageEffectEntities",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDummyDestruction",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDummyLoaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessEquipmentVisualAdded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessEquipmentVisualRemoved",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "VFXManagementSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~VFXManagementSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::dummy::MultiEffectCreateRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A14150",
+    "site": "bg3_dx11.exe+0x1A148F0",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::dummy::VFXEntitiesComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A14150",
+    "site": "bg3_dx11.exe+0x1A14857",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

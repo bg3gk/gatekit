@@ -83,14 +83,14 @@
           "offset": 16,
           "type": "std::array<uint64_t, 25>",
           "source": "unknown",
-          "evidence": "std::variant storage, 200 bytes: bg3.exe FUN_1422e29e0 destroys element+0x10 with FUN_1422d5900 when the index byte (element+0x10+200) is 3 (MemberDropData, which holds an optional FixedString). Not decodable without a variant type."
+          "evidence": "std::variant storage, 200 bytes: bg3.exe+0x22E29E0 destroys element+0x10 with bg3.exe+0x22D5900 when the index byte (element+0x10+200) is 3 (MemberDropData, which holds an optional FixedString). Not decodable without a variant type."
         },
         {
           "name": "ActionType",
           "offset": 216,
           "type": "uint8_t",
           "source": "inferred",
-          "evidence": "Variant index at element+0xD8 (checked against 3 by the element destructor; GroupSystem tests element[0xd8] == 0 for MemberAddData)."
+          "evidence": "Variant index at element+0xD8 (checked against 3 by the element destructor; GroupSystem tests the byte at element+0xD8 for 0 for MemberAddData)."
         },
         {
           "name": "_Pad217",
@@ -128,28 +128,28 @@
       "offset": 0,
       "type": "Array<InvInteractionRequestsWithGroupContainerRequest>",
       "source": "inferred",
-      "evidence": "bg3.exe creator 0x34D20E0 is identical to InteractionRequestsComponent's and shares its destructor FUN_1422cf8a0. GroupSystem::ProcessInventoryRequests copies +0 and +0x10 with FUN_180fd58b0 (IndexedStorage<ContainerInteractionRequestData>, alloc 0x10). Name from SE InteractionRequestSystem::ContainerInteractions."
+      "evidence": "bg3.exe creator 0x34D20E0 is identical to InteractionRequestsComponent's and shares its destructor bg3.exe+0x22CF8A0. GroupSystem::ProcessInventoryRequests copies +0 and +0x10 with EoCServer.dll+0xFD58B0 (IndexedStorage<ContainerInteractionRequestData>, alloc 0x10). Name from SE InteractionRequestSystem::ContainerInteractions."
     },
     {
       "name": "field_10",
       "offset": 16,
       "type": "Array<InvInteractionRequestsWithGroupContainerRequest>",
       "source": "unknown",
-      "evidence": "Second ContainerInteractionRequestData array: same copy function FUN_180fd58b0 as +0. Role (e.g. deferred vs. immediate) not established."
+      "evidence": "Second ContainerInteractionRequestData array: same copy function EoCServer.dll+0xFD58B0 as +0. Role (e.g. deferred vs. immediate) not established."
     },
     {
       "name": "MemberInteractions",
       "offset": 32,
       "type": "Array<InvInteractionRequestsWithGroupMemberRequest>",
       "source": "inferred",
-      "evidence": "GroupSystem::ProcessInventoryRequests iterates source+0x20 (pointer ppuVar33[4], count +0x2C, stride 0xE0) as MemberInteractionRequestData; destructor uses the 0xE0 variant-element clear."
+      "evidence": "GroupSystem::ProcessInventoryRequests iterates source+0x20 (the pointer read from source+0x20, count +0x2C, stride 0xE0) as MemberInteractionRequestData; destructor uses the 0xE0 variant-element clear."
     },
     {
       "name": "field_30",
       "offset": 48,
       "type": "Array<InvInteractionRequestsWithGroupMemberRequest>",
       "source": "unknown",
-      "evidence": "Second MemberInteractionRequestData array: GroupSystem copies source+0x30 to target+0x30 element by element (AllocateInternal(n, 0xe0, 8), FUN_180f26a60). Role not established."
+      "evidence": "Second MemberInteractionRequestData array: GroupSystem copies source+0x30 to target+0x30 element by element (AllocateInternal(n, 0xe0, 8), EoCServer.dll+0xF26A60). Role not established."
     },
     {
       "name": "NotifyInteractions",

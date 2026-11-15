@@ -1,0 +1,99 @@
+{
+ "system": "esv::combat::SurprisedSystem",
+ "namespace": "esv::combat",
+ "symbols": {
+  "reads": [
+   "eoc::ActiveComponent",
+   "eoc::BodyTypeComponent",
+   "eoc::RaceComponent",
+   "eoc::attitude::AttitudesToPlayersComponent",
+   "eoc::combat::IsInCombatComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::combat::StateComponent",
+   "eoc::identity::StateComponent",
+   "eoc::party::CompositionComponent",
+   "eoc::party::MemberComponent",
+   "eoc::relation::FactionComponent",
+   "eoc::relation::RelationComponent",
+   "eoc::status::ContainerComponent",
+   "esv::combat::CombatGroupMappingComponent",
+   "esv::combat::JoinEventOneFrameComponent",
+   "esv::combat::SurprisedStealthRequestOneFrameComponent",
+   "esv::status::ActiveComponent"
+  ],
+  "writes": [
+   "esv::combat::SurprisedJoinRequestOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "IsAnyAlliedCombatGroupMemberSurprised",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "IsAnyPartyMemberSurprised",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SurpriseAlliesOfStealthAttackTargets",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SurpriseEntitiesJoiningCombat",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SurprisedSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~SurprisedSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; the Toolkit's own methods without an address were not found in the game binary and are listed with address null; the per-frame update address is not printed for bg3_dx11.exe by this command, it was found by reading the factory in pseudo-code). Parsed by script from the command output, not retyped.",
+  "uses": [
+   {
+    "type": "eoc::combat::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x322D830",
+    "site": "bg3_dx11.exe+0x322DA31",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x322DB00",
+    "site": "bg3_dx11.exe+0x322DD2D",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Fills a set of entities through two collector functions and then gives each member a one-frame SurprisedJoinRequestOneFrameComponent. A shared test (0x322D580) returns true when the entity has a SurprisedStealthRequestOneFrameComponent, otherwise falls through to a further lookup. The first collector, per entity of its query that fails the test, adds the entity when a member of a related group passes the test, or when 0x322DE70 (which asks the system's ISurprisedSystemHelper) says yes. The second, per entity of its query, walks the members of a resolved group and adds each member for which the helper says yes and the shared test is false.",
+   "evidence": "bg3_dx11.exe factory 0x234BE10 -> entry 0x238F2E0 -> update 0x322D6C0, which calls 0x322DB00 and 0x322D830 (collectors) and then adds SurprisedJoinRequestOneFrameComponent per set member; shared test 0x322D580; helper call through the object at system+0x20 (the constructor takes a UniquePtr<ISurprisedSystemHelper>) in 0x322D830 and 0x322DE70. Read as pseudo-code."
+  }
+ ],
+ "unknown": [
+  "Which component lists the two collectors' queries have, so which entities are considered; matching them to SurpriseEntitiesJoiningCombat and SurpriseAlliesOfStealthAttackTargets is a guess from shape.",
+  "Which groups are walked (0x26E64B0 in the first collector, 0xB1DDA0 in the second; party and combat are guesses suggested by IsAnyPartyMemberSurprised and IsAnyAlliedCombatGroupMemberSurprised).",
+  "What the helper's virtual call decides, and what the shared test's fall-through lookup returns.",
+  "Whether a surprised entity receives anything besides the join request here; later systems consume it."
+ ],
+ "sure": "no: the creation of the one-frame request and the shape of both collectors are read; their queries and the helper's decision are not"
+}

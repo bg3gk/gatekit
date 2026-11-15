@@ -1,0 +1,94 @@
+{
+ "system": "ecl::sound::SpellInstrumentSoundSystem",
+ "namespace": "ecl::sound",
+ "symbols": {
+  "reads": [
+   "ecl::spell_cast::SoundImpactEventOneFrameComponent",
+   "ecl::spell_cast::StateComponent",
+   "eoc::ClassesComponent",
+   "eoc::DataComponent",
+   "eoc::DisabledEquipmentComponent",
+   "eoc::EquipableComponent",
+   "eoc::StatsComponent",
+   "eoc::WeaponComponent",
+   "eoc::WeaponSetComponent",
+   "eoc::inventory::ContainerComponent",
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::OwnerComponent",
+   "eoc::spell_cast::AnimationRequestOneFrameComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::spell_cast::PrepareStartEventOneFrameComponent",
+   "eoc::stats::MusicalInstrumentComponent",
+   "eoc::unsheath::StateComponent",
+   "ls::SoundActivatedComponent"
+  ],
+  "writes": [
+   "ecl::sound::LoopInstrumentSpellSoundRequestOneFrameComponent",
+   "ecl::sound::StartInstrumentSpellSoundRequestOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "GatherRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSpellRequest",
+    "address": "bg3_dx11.exe+0x1A835F0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ProcessSpellRequests",
+    "address": "bg3_dx11.exe+0x1A833F0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "SendRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SpellInstrumentSoundSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~SpellInstrumentSoundSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::sound::LoopInstrumentSpellSoundRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A83900",
+    "site": "bg3_dx11.exe+0x1A839BF",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::sound::StartInstrumentSpellSoundRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A83900",
+    "site": "bg3_dx11.exe+0x1A83937",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::spell_cast::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1A82E80",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

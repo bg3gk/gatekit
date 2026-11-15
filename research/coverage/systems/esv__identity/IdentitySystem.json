@@ -1,0 +1,134 @@
+{
+ "system": "esv::identity::IdentitySystem",
+ "namespace": "esv::identity",
+ "symbols": {
+  "reads": [
+   "eoc::BodyTypeComponent",
+   "eoc::CharacterCreationStatsComponent",
+   "esv::character_creation::UpdatesComponent",
+   "esv::shapeshift::StatesChangedEventOneFrameComponent",
+   "esv::shapeshift::StatesComponent"
+  ],
+  "writes": [
+   "eoc::identity::IdentityComponent",
+   "eoc::identity::OriginalIdentityComponent",
+   "esv::identity::IdentityChangedOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "FinalizeComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "IdentitySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ReConRemoveIdentity",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ReConSetIdentity",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCharacterCreationUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSetIdentityRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessShapeshiftUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateDefinitiveIdentity",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateOriginalIdentity",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~IdentitySystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::identity::IdentityComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B5DA40",
+    "site": "bg3_dx11.exe+0x2B5DACE",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::identity::IdentityComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B5DA40",
+    "site": "bg3_dx11.exe+0x2B5DBE2",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::identity::IdentityChangedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B5CE70",
+    "site": "bg3_dx11.exe+0x2B5CF35",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::CharacterCreationStatsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B5D6D0",
+    "site": "bg3_dx11.exe+0x2B5D971",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::identity::IdentityComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B5DA40",
+    "site": "bg3_dx11.exe+0x2B5DA9F",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::identity::OriginalIdentityComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B5D6D0",
+    "site": "bg3_dx11.exe+0x2B5D747",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::shapeshift::StatesComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B5DA40",
+    "site": "bg3_dx11.exe+0x2B5DB65",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

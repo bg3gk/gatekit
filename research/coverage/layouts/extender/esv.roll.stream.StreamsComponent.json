@@ -1,0 +1,47 @@
+{
+  "component": "esv::roll::stream::StreamsComponent",
+  "ext_name": "ServerRollStreams",
+  "size": 40,
+  "oneFrame": false,
+  "fields": [
+    {
+      "name": "Streams",
+      "offset": 0,
+      "type": "Array<Stream>",
+      "source": "inferred",
+      "evidence": "The roll streams, 0x78 bytes each: SystemUpdate<esv::roll::stream::SaveSystem> (bg3_dx11.exe+0x23993CC) copies the roll manager's array (manager+0x8) into +0x0 element by element with the stream copy at bg3_dx11.exe+0x105DB40 when the manager has changes; a hardware watch (GK.Memory.Watch) on the first element's +0x70 hit inside that copy, and the value read there by GK.Memory.Read equals the Lua Streams[1].State.NumRolls."
+    },
+    {
+      "name": "LastStreamId",
+      "offset": 16,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "SaveStreams (+0x342D9D0) copies the roll manager's +0x18 here; that field watched over the first dialogue check went 1->2 at +0x309FD9E in CreateStream as the second stream (Dialog, id 2) was made; GK.Rolls.Streams().saved.frame read 1 with one stream. Script Extender calls it LastFrame",
+      "legacy": "LastFrame"
+    },
+    {
+      "name": "BaseSeed",
+      "offset": 24,
+      "type": "uint64_t",
+      "source": "inferred",
+      "evidence": "Written when the component is made, by bg3_dx11.exe+0x342D9D0 (called from SystemUpdate<esv::roll::stream::SaveSystem>): the C runtime's _time64(NULL) stored at +0x18. Read live: GK.Memory.Read(ComponentAddress+0x18,'uint64') equals the Lua BaseSeed and the Unix time of the load in seconds; two loads' values differ by the seconds between them (tests/rolls/save/load.lua)."
+    },
+    {
+      "name": "RollModeType",
+      "offset": 32,
+      "type": "RollModeType",
+      "source": "extender",
+      "evidence": "Script Extender declares esv::roll::stream::StreamsComponent::RollModeType at +0x20 (BG3Extender/GameDefinitions/Components/Roll.h:340): its author's name and type; the offset is computed from the declared types. Not checked against the game's code. RollModeType is an enumeration of the extender's."
+    },
+    {
+      "name": "CustomRollExpectedValue",
+      "offset": 33,
+      "type": "uint8_t",
+      "source": "extender",
+      "evidence": "Script Extender declares esv::roll::stream::StreamsComponent::CustomRollExpectedValue at +0x21 (BG3Extender/GameDefinitions/Components/Roll.h:340): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+    }
+  ],
+  "status": "declared",
+  "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Roll.h:340, kind component), by gatekit symbols se-layouts on 2026-11-14",
+  "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `extender` - the extender's name for the field at that offset, which nobody has checked against the game's code. A name is raised from `extender` only with evidence from the code, by `gatekit names set`."
+}

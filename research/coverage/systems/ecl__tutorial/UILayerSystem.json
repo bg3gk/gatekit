@@ -1,0 +1,92 @@
+{
+ "system": "ecl::tutorial::UILayerSystem",
+ "namespace": "ecl::tutorial",
+ "symbols": {
+  "reads": [],
+  "writes": [
+   "ecl::tutorial::UILayerChangedOneFrameComponent",
+   "ecl::tutorial::UILayerComponent"
+  ],
+  "methods": [
+   {
+    "name": "LEGACY_Request",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UILayerSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~UILayerSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::tutorial::UILayerChangedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1ABD0A0",
+    "site": "bg3_dx11.exe+0x1ABD564",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::tutorial::UILayerComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1ABD0A0",
+    "site": "bg3_dx11.exe+0x1ABD398",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "LEGACY_Request",
+   "text": "Queues a request: a 16-bit key and an ecl::tutorial::UILayerRequest (a list of entries carrying two FixedStrings and a flag). The callers are UI code: in the macOS build gui::DCWidget::OnTutorialLayerCommand and gui::TutorialManager::OnStateActivated / OnStateDeactivated; on Windows three NoesisGameUI.dll functions.",
+   "evidence": "EoCClient.dll+0x638AB0 ecl::tutorial::UILayerSystem::LEGACY_Request (signature short, UILayerRequest const &); callers by gatekit decomp grep: bg3_macos_x64+0x2933EC0, +0x2BC27D0, +0x2BC2A50; NoesisGameUI.dll+0x1DA2A0, +0x1DA390, +0x7791E0.",
+   "check": "not checkable live: queuing leaves nothing in the ECS; what it leads to is checked on Update."
+  },
+  {
+   "method": "Update",
+   "text": "When requests are queued, for each one the system looks for an entity whose ecl::tutorial::UILayerComponent's first field (Layer, int16) equals the request's key. If none is found it creates an entity, adds UILayerComponent and stores the key in it. It then appends to the component's Entries every entry of the request whose flag byte is 0 (the two FixedStrings), rebuilds the component's FixedString set (field_18) from the Entries, and adds ecl::tutorial::UILayerChangedOneFrameComponent to that entity. The queue is cleared after the loop.",
+   "evidence": "EoCClient.dll+0x638E00 ecl::tutorial::UILayerSystem::Update: the test of the request count at this+0x3C, the Persistent/Alive walk comparing the int16 at stride 0x48 with the request's short, the invalid-handle branch with CreateEntity and the adder FUN_180637850 (type-index global DAT_1819da8f8 = ecl::tutorial::UILayerComponent), the loop over 12-byte entries (FixedStrings at 0 and 4) skipping those with the byte at 8 set, the set cleared and refilled from the array, the adder FUN_180637660 (DAT_1819da8f0 = ecl::tutorial::UILayerChangedOneFrameComponent), and the clear at the end.",
+   "check": {
+    "when": "tutorial_ui_layer_open_panel",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::tutorial::UILayerChangedOneFrameComponent",
+       "side": "client",
+       "within": 10
+      }
+     },
+     {
+      "appears": {
+       "component": "ecl::tutorial::UILayerComponent",
+       "side": "client",
+       "within": 10
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "tutorial_ui_layer_open_panel (PROPOSED): GustavX:WLD_Main_A; wait Running; open a UI panel that changes the tutorial manager's state (inventory, key i), sleep 1, close it (Escape), sleep 1. Which UI states call LEGACY_Request was not read; the second expectation is only new if no UILayerComponent exists for that key at the start."
+  }
+ ],
+ "unknown": [
+  "Whether the request's 16-bit key is a player id or a layer id (the layout calls the field Layer; not read in the callers).",
+  "What the entry flag skipped by Update means, and what the two FixedStrings of an entry are.",
+  "Whether anything removes UILayerComponent or empties its Entries apart from this rebuild (no remove seen here).",
+  "Which player actions reach OnTutorialLayerCommand / OnStateActivated."
+ ],
+ "sure": "yes for the create, the add of UILayerComponent and of UILayerChangedOneFrameComponent and their conditions; no for what the key and entries mean"
+}

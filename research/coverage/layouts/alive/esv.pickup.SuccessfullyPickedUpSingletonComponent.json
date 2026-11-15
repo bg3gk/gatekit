@@ -39,13 +39,13 @@
       "offset": 0,
       "type": "HashMap<EntityHandle, Array<PickedUpTransferFinished>>",
       "source": "inferred",
-      "evidence": "EoCServer.dll+0xD46D70 PickUpExecutionFinishedSystem::ProcessSuccessfullyFinishedMoves builds a 64-byte local map (8 zeroed qwords), FUN_1809a3c30(map, &componentEntity) ensures a value per 8-byte key (the first qword of the item's moving-finished component, an entity) and appends ls::IndexedStorage<esv::inventory_transfer::TransferFinishedDescription> (stride 0x10) elements to that value array; if the map is non-empty it is merged into the singleton (FUN_180d45470(singleton, map)). Live (idle): all zero."
+      "evidence": "EoCServer.dll+0xD46D70 PickUpExecutionFinishedSystem::ProcessSuccessfullyFinishedMoves builds a 64-byte local map (8 zeroed qwords), EoCServer.dll+0x9A3C30 (called with the map and the component's entity) ensures a value per 8-byte key (the first qword of the item's moving-finished component, an entity) and appends ls::IndexedStorage<esv::inventory_transfer::TransferFinishedDescription> (stride 0x10) elements to that value array; if the map is non-empty it is merged into the singleton (EoCServer.dll+0xD45470, called with the singleton and the map). Live (idle): all zero."
     }
   ],
   "confidence": "medium",
   "open_questions": [
     "The key entity: taken from +0 of the item's esv::character/item EntityMovingFinishedEventOneFrameComponent - probably the picker or the target inventory.",
-    "FUN_180d45470 (merge into the singleton) not read: the singleton is assumed to have the same HashMap type as the local map."
+    "EoCServer.dll+0xD45470 (merge into the singleton) not read: the singleton is assumed to have the same HashMap type as the local map."
   ],
   "minutes": 7,
   "functions_read": 2,

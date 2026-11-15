@@ -1,0 +1,76 @@
+{
+ "system": "esv::party::UserSnapshotSystem",
+ "namespace": "esv::party",
+ "symbols": {
+  "reads": [
+   "eoc::party::FollowerComponent",
+   "eoc::party::ViewComponent",
+   "eoc::summon::IsSummonComponent",
+   "ls::DebugComponent"
+  ],
+  "writes": [
+   "esv::party::UserSnapshotComponent"
+  ],
+  "methods": [
+   {
+    "name": "ProcessPartyUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UserSnapshotSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~UserSnapshotSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "note": "from gatekit symbols system --dll dx11 --full; '-' addresses (null) mean the method was not found in bg3_dx11.exe; the component lists come from the method parameter types, not from the code.",
+  "uses": [
+   {
+    "type": "esv::party::UserSnapshotComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BD8320",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::FollowerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BD7F60",
+    "site": "bg3_dx11.exe+0x2BD8179",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::summon::IsSummonComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BD7F60",
+    "site": "bg3_dx11.exe+0x2BD8166",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "ProcessPartyUpdates",
+   "text": "For every party view it creates or updates a UserSnapshot component ('Creating Snapshot for party' or 'Updating Snapshot for party') listing, per user, the group info and the number of entities ('adding group info for User ... NumEntities'). Followers and summons are skipped by the follower and summon reads. ProcessPlayerReconnecting in PartySystem later uses this snapshot to regroup a reconnected player's characters.",
+   "evidence": "EoCServer.dll named pseudo-code, ProcessPartyUpdates and Update (both 466 lines, Update inlines it): the four log strings and the AddComponent were seen; the exact skip conditions were not read. Review (Opus, 14 Nov): the add in the 'Creating Snapshot' loop (EoCServer.dll+0xA96200, a persistent query) goes through helper +0xA94E80, an AllocRaw add of DAT_182236214 = UserSnapshotComponent; the update loop is a modified-tag query. Which component the persistent query filters on was not resolved."
+  }
+ ],
+ "unknown": [
+  "Exact fields of the snapshot and when it is refreshed (every view change vs. each frame)."
+ ],
+ "sure": "no: the add line and its type were read in review, the condition (which parties the creating query matches) was not"
+}

@@ -1,0 +1,306 @@
+{
+ "system": "esv::crowds::SpawnSystem",
+ "namespace": "esv::crowds",
+ "symbols": {
+  "reads": [
+   "eoc::ActiveComponent",
+   "eoc::combat::IsInCombatComponent",
+   "eoc::crowds::ProxyTransformComponent",
+   "eoc::gamestate::RunningComponent",
+   "eoc::gamestate::SavegameLoadComponent",
+   "eoc::party::ViewComponent",
+   "esv::crowds::DespawnWithoutCharacterComponent",
+   "esv::crowds::FleeingCombatComponent",
+   "esv::patrol::SplinesComponent",
+   "ls::LevelInstanceComponent",
+   "ls::TimeFactorComponent",
+   "ls::game::PauseComponent",
+   "ls::savegame::LoadedComponent",
+   "ls::trigger::AreaComponent",
+   "ls::uuid::ToHandleMappingComponent"
+  ],
+  "writes": [
+   "eoc::crowds::AppearanceComponent",
+   "eoc::crowds::CharacterComponent",
+   "eoc::crowds::IsFadingComponent",
+   "eoc::crowds::ProxyComponent",
+   "eoc::crowds::ProxyDynamicAnimationSetComponent",
+   "esv::Character",
+   "esv::CrowdCharacterTrigger",
+   "esv::crowds::DeactivateCharacterComponent",
+   "esv::crowds::DisableCharacterSpawningComponent",
+   "esv::crowds::DynamicAnimationSetComponent",
+   "esv::crowds::FadeComponent",
+   "esv::crowds::SpawnComponent",
+   "esv::crowds::SpawnEventsSingletonComponent",
+   "esv::crowds::TriggerSpawnStateComponent",
+   "ls::LevelComponent",
+   "ls::SavegameComponent",
+   "ls::TransformComponent"
+  ],
+  "methods": [
+   {
+    "name": "CreateCrowdCharacter",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CreateCrowdProxy",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DestroyEntities",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetCrowdsQualityScaling",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetScaledMaxCharacters",
+    "address": "bg3_dx11.exe+0x353D060",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "LEGACY_CrowdTriggerDespawnRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_SetTriggerSpawningEnable",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnLevelUnloaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRemovedTriggers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSpawnRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTriggerDespawnRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTriggerSpawningEnableRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTriggers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestCrowdProxy",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SpawnCharacters",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SpawnSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateActivations",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateFade",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ValidateTrigger",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ValidateTriggers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~SpawnSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::crowds::AppearanceComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3539510",
+    "site": "bg3_dx11.exe+0x3539CC0",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::crowds::IsFadingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x353B360",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::Character",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x353C510",
+    "site": "bg3_dx11.exe+0x353CDE3",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::CrowdCharacterTrigger",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3535EF0",
+    "site": "bg3_dx11.exe+0x3536341",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::crowds::TriggerSpawnStateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35384E0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "ProcessTriggers (from Update, each frame while crowds are enabled and the game runs)",
+   "text": "For every crowd character trigger it keeps a per-trigger spawn state (esv::crowds::TriggerSpawnStateComponent): ElapsedTime grows by the frame time unless a query the code tests is non-empty (not resolved). A trigger takes part only when two of its own fields allow it (a flag byte and a non-empty spawn list) and it is not in the system's set of triggers with spawning switched off. When ElapsedTime reaches SpawnInterval and SpawnedCount is below the trigger's maximum (scaled by crowd quality unless a trigger flag forbids it), it draws a new SpawnInterval at random between two trigger values, resets ElapsedTime to 0, and takes the nearest player distance to the trigger: PlayersNearby becomes 'a player is within an inner radius', and if a player is within an outer radius but none within the inner one, it calls SpawnCharacters. So crowds appear near the party but not right beside it.",
+   "evidence": "EoCServer.dll+0xD73760 esv::crowds::SpawnSystem::ProcessTriggers (named code): the per-element add of the frame time to offset 4 of the 12-byte state, the compare of offset 4 with offset 0, the count at offset 8 against the scaled trigger maximum, the random draw between trigger offsets 0x84 and 0x88 written to offset 0 with offset 4 zeroed, the minimum squared distance over the player positions, the byte at offset 10 set from the inner radius test and the SpawnCharacters call under the outer radius test. The matched game function bg3_dx11.exe+0x35384E0 (decomp matches, score 0.20) reads the same trigger offsets 0x84/0x88. Field names from layouts/alive/esv.crowds.TriggerSpawnStateComponent.json.",
+   "check": {
+    "when": "crowds_trigger_tick",
+    "expect": [
+     {
+      "changes": {
+       "component": "esv::crowds::TriggerSpawnStateComponent",
+       "field": "ElapsedTime",
+       "side": "server",
+       "within": 3
+      }
+     },
+     {
+      "changes": {
+       "component": "esv::crowds::TriggerSpawnStateComponent",
+       "field": "SpawnInterval",
+       "side": "server",
+       "within": 30
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "crowds_trigger_tick (PROPOSED, not written): in the Act 3 Lower City, the party standing in a street where crowd NPCs walk (no dialog, no combat); sleep 30 s. Nothing is forced; the watch sees every trigger's state.",
+   "check_note": "SpawnInterval only changes when an interval elapses with the trigger below its maximum; a full trigger keeps its value, so the second expectation can fail honestly in a saturated street."
+  },
+  {
+   "method": "SpawnCharacters + ProcessSpawnRequests + CreateCrowdProxy",
+   "text": "SpawnCharacters picks how many to spawn: a random count between two trigger values, cut to what the trigger's (scaled) maximum still allows; if any, it places them on a grid of candidate cells around the trigger and queues one spawn request per placed character. ProcessSpawnRequests then turns queued requests into proxies while the number of entities holding esv::crowds::SpawnComponent stays under a global cap (no cap when the global is negative), records a spawn event per proxy in esv::crowds::SpawnEventsSingletonComponent, and empties the queue. CreateCrowdProxy creates a new entity - a proxy, not yet a character - and gives it ls::LevelComponent, ls::SavegameComponent, esv::crowds::SpawnComponent (spawn position, yaw, the trigger's handle in CrowdCharacterTrigger), eoc::crowds::AppearanceComponent (template id, random colour presets) and, when the trigger lists any, eoc::crowds::ProxyDynamicAnimationSetComponent picked by weight; when a trigger flag byte is set it also adds esv::crowds::DisableCharacterSpawningComponent. It adds 1 to the trigger's SpawnedCount.",
+   "evidence": "EoCServer.dll+0xD74A30 SpawnSystem::SpawnCharacters (random count between trigger offsets 0x7e/0x80, cap from offset 0x7c times GetCrowdsQualityScaling); EoCServer.dll+0xD72F60 ProcessSpawnRequests (count of query DAT_18224d22c resolved through the type index to Spec<SpawnComponent>, the cap global, the CreateCrowdProxy call, the SpawnEvent stored, the request count zeroed); EoCServer.dll+0xD711C0 CreateCrowdProxy: EntityCommandBuffer::CreateEntity, then adds through helpers resolved by type index (hf.sh): 0xD12010 LevelComponent, 0x2DAC40 SavegameComponent, 0xD65170 SpawnComponent, 0xD63DD0 AppearanceComponent, 0xD64F70 ProxyDynamicAnimationSetComponent, 0xD645B0 DisableCharacterSpawningComponent (under the trigger byte at 0x7a), and the 16-bit add of 1 at offset 8 of TriggerSpawnStateComponent (getter 0xD66470). Matched game function for ProcessSpawnRequests: bg3_dx11.exe+0x3539240.",
+   "check": {
+    "when": "crowds_spawn_on_arrival",
+    "expect": [
+     {
+      "appears": {
+       "component": "esv::crowds::SpawnComponent",
+       "side": "server",
+       "as": "P",
+       "within": 30
+      }
+     },
+     {
+      "appears": {
+       "component": "eoc::crowds::AppearanceComponent",
+       "side": "server",
+       "within": 30
+      }
+     },
+     {
+      "changes": {
+       "component": "esv::crowds::TriggerSpawnStateComponent",
+       "field": "SpawnedCount",
+       "side": "server",
+       "within": 30
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "crowds_spawn_on_arrival (PROPOSED, not written): Act 3 Lower City; find a crowd trigger (an entity holding esv::crowds::TriggerSpawnStateComponent) whose SpawnedCount is low; teleport the host 25-40 m from that trigger's transform (outside the inner radius, inside the outer one - the radii are engine globals not read here, so try two distances); sleep 30 s."
+  },
+  {
+   "method": "UpdateActivations: a proxy becomes a character",
+   "text": "For every proxy (AppearanceComponent, ProxyTransformComponent, SpawnComponent, LevelComponent, and not yet eoc::crowds::ProxyComponent) that holds neither esv::crowds::DespawnWithoutCharacterComponent nor esv::crowds::DisableCharacterSpawningComponent, it tests whether a player stands within the activation radius of the proxy's ProxyTransform position. If so it calls CreateCrowdCharacter: a real esv::Character from the appearance's template in the proxy's level, which receives eoc::crowds::AppearanceComponent (a copy). The proxy then gets eoc::crowds::ProxyComponent holding the character's handle, the character gets eoc::crowds::CharacterComponent holding the proxy's handle and two names from the appearance, its transform is set from the proxy's, and if the proxy had a ProxyDynamicAnimationSetComponent the character gets esv::crowds::DynamicAnimationSetComponent with the same value.",
+   "evidence": "EoCServer.dll+0xD75CE0 SpawnSystem::UpdateActivations: query DAT_18224d274 resolved (rt.sh) to Spec<Appearance, ProxyTransform, Spawn, Level | ProxyComponent in the second list | optional ProxyDynamicAnimationSet, DespawnWithoutCharacter, DisableCharacterSpawning>; optional slots 1 and 2 tested empty; distance test against the player positions with a radius global squared; the CreateCrowdCharacter call; adds 0xD64D70 eoc::crowds::ProxyComponent on the proxy (value: the character's handle), 0xD64180 eoc::crowds::CharacterComponent on the character (value: the proxy's handle), 0xD647A0 esv::crowds::DynamicAnimationSetComponent on the character under optional slot 0. EoCServer.dll+0xD71100 CreateCrowdCharacter: template lookup and CreateCharacter through the helper's virtual table, then 0xD63FB0 adds eoc::crowds::AppearanceComponent (resolved by type index) through the deferred command buffer.",
+   "check": {
+    "when": "crowds_proxy_activates",
+    "expect": [
+     {
+      "appears": {
+       "component": "eoc::crowds::CharacterComponent",
+       "side": "server",
+       "as": "C",
+       "within": 30
+      }
+     },
+     {
+      "appears": {
+       "component": "eoc::crowds::ProxyComponent",
+       "side": "server",
+       "within": 30
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "crowds_proxy_activates (PROPOSED, not written): Act 3 Lower City; pick an entity holding esv::crowds::SpawnComponent but not eoc::crowds::ProxyComponent (a proxy away from the party); teleport the host onto its eoc::crowds::ProxyTransformComponent Position; sleep 5 s."
+  }
+ ],
+ "unknown": [
+  "The values of the radii and caps (globals near EoCServer.dll+0x21EAA3C..0x21EAA54) were not read; which is the inner, outer and activation radius is from how they are used, not from names.",
+  "The trigger bytes at 0x79 and 0x7a and the lists counted at 0xBC/0xEC of esv::CrowdCharacterTrigger are unnamed; that 0x7a means 'proxies only, no characters' is a guess from what it switches (no quality scaling, DisableCharacterSpawningComponent added).",
+  "The query whose non-emptiness stops ElapsedTime from growing (DAT_1822059b0) was not resolved; pause or dialog is a guess.",
+  "Whether the second list of the activation query (ProxyComponent) is 'without' was taken from the list position and from the add of ProxyComponent right after; not read in the query code.",
+  "ProcessRemovedTriggers, ProcessTriggerDespawnRequests, ProcessTriggerSpawningEnableRequests, ValidateTriggers, UpdateFade and DestroyEntities were not read: what removes proxies and characters again (FadeComponent, DeactivateCharacterComponent, IsFadingComponent) is not described here.",
+  "The game-side counterparts were matched by pseudo-code (bg3_dx11.exe+0x35384E0, +0x3539240) and only spot-checked; the readings rest on EoCServer.dll's named code."
+ ],
+ "sure": "no: the creates and their guards were read in EoCServer.dll (named code, helpers resolved by type index), not line by line in bg3_dx11.exe; the despawn side was not read"
+}

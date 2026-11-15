@@ -4,11 +4,11 @@
   "size": 16,
   "fields": [
     {
-      "name": "field_0",
+      "name": "SpellCastGuid",
       "offset": 0,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "write-all serializer bg3.exe+0x998A00: single raw 16-byte write at +0; macOS default stp xzr,xzr [x23]"
+      "source": "inferred",
+      "evidence": "Dispatcher bg3.exe+0x2DF53B0 case 0x25 (SpellCastAbortNotificationRequest, sent by EoCServer.dll+0x83BF10 for eoc::spell_cast::SpellRollAbortEventOneFrameComponent) looks up the entity's eoc::spell_cast::StateComponent (bg3.exe+0xB06C20) and copies its 16 bytes at +0xA0 here - the same bytes cases 0x26 and 0x28 put at +0 of SpellCastConfirmComponent / SpellCastFailedComponent (SpellCastGuid)."
     }
   ],
   "confidence": "high",

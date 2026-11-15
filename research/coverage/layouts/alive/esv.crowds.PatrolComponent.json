@@ -64,11 +64,11 @@
       "legacy": "field_2A"
     },
     {
-      "name": "field_2B",
+      "name": "ReverseAtEnd",
       "offset": 43,
       "type": "bool",
-      "source": "unknown",
-      "evidence": "bg3.exe+0x2774600 stores (model +0x3B != 0) at +0x2B; default 1 (the 0x0100FFFF store at +0x28). Tested before flipping +0x2A (ping-pong/loop flag?). Live 1. Set from patrol request byte +5."
+      "source": "inferred",
+      "evidence": "bg3.exe+0x3560EA0 (esv::crowds::PatrolSystem update) steps to the next spline node with bg3.exe+0x2F5BD40(spline, node, direction +0x2A); when the stepper reports it wrapped past the end and byte +0x2B is set, it flips +0x2A (direction) and steps again - so with it set the patrol turns back at the end of the spline instead of wrapping round. Loader bg3.exe+0x2774600 stores (model +0x3B != 0); default 1."
     },
     {
       "name": "MovementSpeed",

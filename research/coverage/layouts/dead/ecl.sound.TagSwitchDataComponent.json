@@ -22,7 +22,7 @@
           "offset": 4,
           "type": "FixedString",
           "source": "inferred",
-          "evidence": "bg3.exe+0x1F2F630 stores the FixedString at +0x34 of the same record into element+4 (IncRef), then passes both to FUN_141f2fd20 (sets the switch)."
+          "evidence": "bg3.exe+0x1F2F630 stores the FixedString at +0x34 of the same record into element+4 (IncRef), then passes both to bg3.exe+0x1F2FD20 (sets the switch)."
         }
       ]
     }
@@ -33,7 +33,7 @@
       "offset": 0,
       "type": "Array<TagSwitchDataComponentSwitch>",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x1F30210 (AllocRaw 0x10) zeroes pointer + capacity + size. Destructor bg3.exe+0x69E8F0 calls bg3.exe+0x5C8AF0(p,0) (shrink: destroys elements with stride 8 via FUN_1405c3690 - two FixedStrings) and frees the buffer. Writer bg3.exe+0x1F2F630 (PointAndClick/tag sound code) grows it (capacity +8, size +0xC) and fills elements of 8 bytes; it removes the component when no switch was added."
+      "evidence": "Creator bg3.exe+0x1F30210 (AllocRaw 0x10) zeroes pointer + capacity + size. Destructor bg3.exe+0x69E8F0 calls bg3.exe+0x5C8AF0(p,0) (shrink: destroys elements with stride 8 via bg3.exe+0x5C3690 - two FixedStrings) and frees the buffer. Writer bg3.exe+0x1F2F630 (PointAndClick/tag sound code) grows it (capacity +8, size +0xC) and fills elements of 8 bytes; it removes the component when no switch was added."
     }
   ],
   "confidence": "high",

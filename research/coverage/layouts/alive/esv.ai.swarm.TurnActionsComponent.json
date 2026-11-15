@@ -325,11 +325,11 @@
       "evidence": "Live varying values."
     },
     {
-      "name": "field_148",
+      "name": "MovementPoints",
       "offset": 328,
       "type": "double",
-      "source": "unknown",
-      "evidence": "Live 18.0 / -1.0 (like MovementPoints)."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x16CC2A0 (the swarm action calculation) creates TurnActions and copies the 8 bytes at TurnActionsCalculationComponent +0xB8 (MovementPoints, the game's m_MovementPoints of ReplicatedDebugCalculation) to +0x148, next to DashSpell, CastPosition, ReachablePosition and Path from the same calculation. esv::ai::swarm::ActionSequencerSystem::GetNextState (EoCServer.dll+0x16D6100) compares GetMovementResource() < *(double*)(+0x148) to decide whether to cast the DashSpell at +8. Live 18.0 / -1.0, as in the calculation."
     },
     {
       "name": "CastPosition",

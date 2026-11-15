@@ -1,0 +1,130 @@
+{
+ "system": "ecl::sound::PerformanceSystem",
+ "namespace": "ecl::sound",
+ "symbols": {
+  "reads": [
+   "eoc::sound::PerformanceZoneComponent",
+   "ls::SoundActivatedComponent",
+   "ls::SoundActivationChangesSingletonComponent",
+   "ls::SoundCameraComponent",
+   "ls::SoundListenerComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "ecl::sound::ChangePerformanceInfoRequestOneFrameComponent",
+   "ecl::sound::PerformanceZoneCreatedEventOneFrameComponent",
+   "ecl::sound::PerformanceZoneDestroyedEventOneFrameComponent",
+   "ecl::sound::PerformanceZonesState",
+   "ecl::sound::UpdatePerformanceDistanceRequestOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "GatherRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PerformanceSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~PerformanceSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::sound::ChangePerformanceInfoRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A7F720",
+    "site": "bg3_dx11.exe+0x1A7F7C4",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::sound::PerformanceZoneCreatedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A7F720",
+    "site": "bg3_dx11.exe+0x1A7F883",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::sound::PerformanceZoneDestroyedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A7F720",
+    "site": "bg3_dx11.exe+0x1A7F90A",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::sound::PerformanceZonesState",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A7F720",
+    "site": "bg3_dx11.exe+0x1A7FBC2",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::sound::UpdatePerformanceDistanceRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A7F720",
+    "site": "bg3_dx11.exe+0x1A7F830",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::sound::PerformanceZoneComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1A7E850",
+    "site": "bg3_dx11.exe+0x1A7EDE9",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::sound::PerformanceZoneComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1A7DB70",
+    "site": "bg3_dx11.exe+0x1A7E550",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::sound::PerformanceZoneComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1A7E850",
+    "site": "bg3_dx11.exe+0x1A7EDD6",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

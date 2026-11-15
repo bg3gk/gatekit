@@ -4,11 +4,11 @@
   "size": 16,
   "fields": [
     {
-      "name": "field_0",
+      "name": "Character",
       "offset": 0,
       "type": "EntityHandle",
-      "source": "unknown",
-      "evidence": "Creator bg3.exe+0x2DF1640 (size 0x10): null handle at +0, byte 0x16 at +8. The server notification system bg3.exe+0x2DF53B0 (message kind 0x30) copies the first qword of the message here. The client side of replication bg3.exe+0x8FB2A0 builds the default {null handle, 0x16} and reads the handle through the entity serializer. Which entity it is (the disarmed weapon or its owner) was not established."
+      "source": "inferred",
+      "evidence": "macOS gui::CapabilitiesSystem::Update (bg3_macos_x64+0x2622ED0) walks the accepted WeaponDisarmedNotificationComponents (stride 0x10) and, when Slot (+8) is 3, looks the handle at +0 up in VMGameData's character collection (FindItemInCollection<gui::VMCharacter> by VMGameObject entity) and sets capability modifier 0xB on that VMCharacter: the handle is the character whose weapon was knocked away, not the weapon."
     },
     {
       "name": "Slot",

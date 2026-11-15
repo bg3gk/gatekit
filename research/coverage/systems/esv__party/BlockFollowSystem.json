@@ -1,0 +1,91 @@
+{
+ "system": "esv::party::BlockFollowSystem",
+ "namespace": "esv::party",
+ "symbols": {
+  "reads": [
+   "eoc::party::MemberComponent",
+   "eoc::summon::IsSummonComponent",
+   "ls::DebugComponent"
+  ],
+  "writes": [
+   "eoc::party::BlockFollowComponent"
+  ],
+  "methods": [
+   {
+    "name": "BlockFollowSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_BlockFollowRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~BlockFollowSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "from gatekit symbols system --dll dx11 --full; '-' addresses (null) mean the method was not found in bg3_dx11.exe; the component lists come from the method parameter types, not from the code.",
+  "uses": [
+   {
+    "type": "eoc::party::BlockFollowComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BD6920",
+    "site": "bg3_dx11.exe+0x2BD6DDA",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BD6920",
+    "site": "bg3_dx11.exe+0x2BD69B7",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::summon::IsSummonComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BD6920",
+    "site": "bg3_dx11.exe+0x2BD69CA",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "LEGACY_BlockFollowRequest",
+   "text": "Called from story code with an entity and a yes/no. It queues the request; the next Update ('Moving LEGACY BlockFollow requests') moves it into the processing list.",
+   "evidence": "EoCServer.dll named pseudo-code; only the method signature (entity handle, bool) and the log string 'Moving LEGACY BlockFollow requests' in Update/ProcessRequests were seen."
+  },
+  {
+   "method": "ProcessRequests",
+   "text": "When moving the story requests ('evaluating: entity shouldBlock') it drops requests for entities that fail a summon test ('not a summons, ignoring'). For each remaining request, and for each entity that lost its party MemberComponent ('MemberComp removed, request remove BlockFollow'), it checks whether the entity has eoc::party::BlockFollowComponent: shouldBlock false and the component present removes it ('removing BlockFollow'); shouldBlock true and the component absent adds it ('adding BlockFollow').",
+   "evidence": "Review (Opus, 14 Nov): EoCServer.dll+0xAD82C0 searched and read around the branches: HasComponent on DAT_182234134 (BlockFollowComponent) decides; RemoveComponentUnchecked of that type in one branch, helper +0xAD70B0 (AllocRaw of the same type) in the other. That the test at +0xAD76C0 is the summon check is from its log message."
+  },
+  {
+   "method": "Update",
+   "text": "Runs ProcessRequests each frame (same strings appear in the Update listing, which holds the inlined body).",
+   "evidence": "EoCServer.dll named pseudo-code of Update, 712 lines with the same log strings."
+  }
+ ],
+ "unknown": [
+  "What the summon test at EoCServer.dll+0xAD76C0 checks exactly.",
+  "What BlockFollowComponent does to the follower (not this system's business)."
+ ],
+ "sure": "yes: the add and remove lines of BlockFollowComponent and the has-component / shouldBlock test guarding them were read in review"
+}

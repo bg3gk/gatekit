@@ -17,21 +17,21 @@
       "offset": 4,
       "type": "float",
       "source": "inferred",
-      "evidence": "bg3.exe+0x1A45990: `if (*(char*)(c+0xB)) { t = *(float*)(c+4) - dt; *(float*)(c+4) = t; if (t <= 0) { *(c+0xB) = 0; ...fade request view 1 } }`. Creator writes 0. Live 0..2.54."
+      "evidence": "bg3.exe+0x1A45990: when the byte at +0xB is set, subtracts the frame time from the float at +4 and stores it back; when the result is <= 0 it clears the byte at +0xB and queues the fade request of view 1. Creator writes 0. Live 0..2.54."
     },
     {
       "name": "Visible0",
       "offset": 8,
       "type": "bool",
       "source": "inferred",
-      "evidence": "bg3.exe+0x1A45990 copies `(*(char*)(c+8) != 0)` into the first word of the fade request of view 0 (FadeView TargetValue side). Creator bg3.exe+0x1A4CC40 writes 1 (32-bit store of 1 over +8..+B). Live 0/1."
+      "evidence": "bg3.exe+0x1A45990 copies whether the byte at +8 is non-zero into the first word of the fade request of view 0 (FadeView TargetValue side). Creator bg3.exe+0x1A4CC40 writes 1 (32-bit store of 1 over +8..+B). Live 0/1."
     },
     {
       "name": "Visible1",
       "offset": 9,
       "type": "bool",
       "source": "inferred",
-      "evidence": "bg3.exe+0x1A45990 copies `(*(char*)(c+9) != 0)` into the fade request of view 1 (call with view index 1). Live 0/1."
+      "evidence": "bg3.exe+0x1A45990 copies whether the byte at +9 is non-zero into the fade request of view 1 (call with view index 1). Live 0/1."
     },
     {
       "name": "Fading0",

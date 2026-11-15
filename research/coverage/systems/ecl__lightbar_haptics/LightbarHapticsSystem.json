@@ -1,0 +1,85 @@
+{
+ "system": "ecl::lightbar_haptics::LightbarHapticsSystem",
+ "namespace": "ecl::lightbar_haptics",
+ "symbols": {
+  "reads": [
+   "ecl::character::AssignedComponent",
+   "ecl::spell_cast::StateComponent",
+   "eoc::gamestate::PrepareRunningComponent",
+   "eoc::gamestate::RunningComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::status::ContainerComponent",
+   "eoc::user::ReservedForComponent"
+  ],
+  "writes": [
+   "ecl::lightbar_haptics::LightbarColorComponent",
+   "ecl::lightbar_haptics::LightbarSoundFallbackComponent"
+  ],
+  "methods": [
+   {
+    "name": "CalculateBrightness",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CalculateColor",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CalculateEntityColor",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CalculateSpell",
+    "address": "bg3_dx11.exe+0x1AC5150",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "CalculateStatus",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FinalizeComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LightbarHapticsSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~LightbarHapticsSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::lightbar_haptics::LightbarColorComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AC6740",
+    "site": "bg3_dx11.exe+0x1AC69DA",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::lightbar_haptics::LightbarSoundFallbackComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AC6740",
+    "site": "bg3_dx11.exe+0x1AC6A12",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

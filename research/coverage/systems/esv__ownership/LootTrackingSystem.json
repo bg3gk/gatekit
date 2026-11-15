@@ -1,0 +1,64 @@
+{
+ "system": "esv::ownership::LootTrackingSystem",
+ "namespace": "esv::ownership",
+ "symbols": {
+  "reads": [
+   "eoc::CanBeLootedComponent",
+   "eoc::LootComponent",
+   "eoc::ServerRootLevelLoadedComponent",
+   "eoc::death::DeathComponent",
+   "eoc::gamestate::SavegameLoadComponent",
+   "eoc::ownership::OwneeCurrentComponent",
+   "esv::ownership::IsCurrentOwnerComponent"
+  ],
+  "writes": [
+   "eoc::ownership::OwnedAsLootComponent"
+  ],
+  "methods": [
+   {
+    "name": "LootTrackingSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessComponentChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~LootTrackingSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::ownership::OwnedAsLootComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2ECEA00",
+    "site": "bg3_dx11.exe+0x2ECEB8C",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::ownership::OwnedAsLootComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2ECEA00",
+    "site": "bg3_dx11.exe+0x2ECECA6",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

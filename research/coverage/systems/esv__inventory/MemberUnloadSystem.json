@@ -1,0 +1,73 @@
+{
+ "system": "esv::inventory::MemberUnloadSystem",
+ "namespace": "esv::inventory",
+ "symbols": {
+  "reads": [
+   "esv::inventory::FailedAddsUnloadRequestComponent",
+   "esv::inventory::MemberUnloadRequestComponent",
+   "ls::DebugComponent"
+  ],
+  "writes": [],
+  "methods": [
+   {
+    "name": "MemberUnloadSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessMemberUnloadRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~MemberUnloadSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "note": "copied by hand from gatekit symbols system --dll dx11 (addresses are bg3_dx11.exe). Methods with null address were listed by the Toolkit but the tool printed no game address for them. System index variable bg3_dx11.exe+0x60D9790; the game functions using the index are in the Toolkit line of the tool output. The does layer cites EoCServer.dll (Toolkit pseudo-code with real names) wherever bg3_dx11.exe functions were not individually mapped.",
+  "uses": [
+   {
+    "type": "eoc::inventory::OwnerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3085C00",
+    "site": "bg3_dx11.exe+0x3085E76",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::Character",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3085C00",
+    "site": "bg3_dx11.exe+0x3085CC8",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::Item",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3085C00",
+    "site": "bg3_dx11.exe+0x3085C75",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Calls ProcessMemberUnloadRequests. Log strings say it destroys an entity that could not be added to an inventory or placed in a valid level.",
+   "evidence": "EoCServer.dll+0xF59900 log strings read"
+  }
+ ],
+ "unknown": [
+  "which requests trigger it"
+ ],
+ "sure": "no"
+}

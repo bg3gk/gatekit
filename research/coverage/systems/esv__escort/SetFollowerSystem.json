@@ -1,0 +1,64 @@
+{
+ "system": "esv::escort::SetFollowerSystem",
+ "namespace": "esv::escort",
+ "symbols": {
+  "reads": [
+   "esv::escort::GroupsSingletonComponent",
+   "esv::escort::LeaderChangesSingletonComponent",
+   "esv::escort::LeaderComponent",
+   "esv::escort::MemberChangedOneFrameComponent"
+  ],
+  "writes": [
+   "esv::escort::FollowerComponent"
+  ],
+  "methods": [
+   {
+    "name": "SetFollowerSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SetFollowers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~SetFollowerSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::escort::FollowerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C04680",
+    "site": "bg3_dx11.exe+0x2C04E02",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::escort::LeaderComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2C03BB0",
+    "site": "bg3_dx11.exe+0x2C03C7B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::escort::FollowerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2C04680",
+    "site": "bg3_dx11.exe+0x2C04F1D",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

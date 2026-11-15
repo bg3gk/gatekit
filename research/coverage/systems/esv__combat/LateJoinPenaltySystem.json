@@ -1,0 +1,49 @@
+{
+ "system": "esv::combat::LateJoinPenaltySystem",
+ "namespace": "esv::combat",
+ "symbols": {
+  "reads": [
+   "eoc::IsInTurnBasedModeComponent",
+   "eoc::ftb::ParticipantComponent",
+   "esv::TurnEndedEventOneFrameComponent",
+   "esv::ftb::RoundEndedEventOneFrameComponent",
+   "esv::summon::LateJoinPenaltyOneFrameComponent"
+  ],
+  "writes": [
+   "esv::combat::LateJoinPenaltyComponent"
+  ],
+  "methods": [
+   {
+    "name": "LateJoinPenaltySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~LateJoinPenaltySystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; the Toolkit's own methods without an address were not found in the game binary and are listed with address null; the per-frame update address is not printed for bg3_dx11.exe by this command, it was found by reading the factory in pseudo-code). Parsed by script from the command output, not retyped.",
+  "uses": [],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Gives entities a LateJoinPenaltyComponent holding a float and later takes it away. A first query adds the component to the entities it yields with the value 6.0; a second sets the value back to 6.0 on entities it yields; a third subtracts a float read from offset 8 of an Update argument from the value and lists the entities whose value fell below zero. Two further query loops add more entities to the same list, skipping ones already in it, and at the end the component is removed from every listed entity.",
+   "evidence": "bg3_dx11.exe factory 0x234C100 (entry 0x238F330) -> update 0x322EDC0; add with 0x40c00000 (6.0f) in the first loop, 6.0 stored again in the second, subtract and below-zero test in the third, the remove of LateJoinPenaltyComponent after the last two loops. Read as pseudo-code."
+  }
+ ],
+ "unknown": [
+  "What any of the five queries selects. The method signature lists esv::summon::LateJoinPenaltyOneFrameComponent, ftb participants, turn-based mode and round/turn-ended events, so a summon joining late is a likely trigger, but no query was matched to a component.",
+  "Whether the subtracted value is seconds or something else; the argument at offset 8 is assumed to be the game-time delta and not checked.",
+  "Which entities the last two loops add to the removal list (possibly those whose turn or round ended), so when the penalty ends other than by the countdown."
+ ],
+ "sure": "no: add at 6.0, reset, countdown and removal are read; triggers, unit and the other removal reasons are not"
+}

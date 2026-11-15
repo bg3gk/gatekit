@@ -1,0 +1,139 @@
+{
+ "system": "esv::IsDroppedOnDeathSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::character::CharacterComponent",
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::IsOwnedComponent",
+   "eoc::inventory::MemberComponent",
+   "eoc::item::ItemComponent",
+   "eoc::templates::OriginalTemplateComponent",
+   "esv::inventory::MemberAddedEventOneFrameComponent",
+   "esv::inventory::MemberRemovedEventOneFrameComponent",
+   "esv::item::TemplateChangedEventOneFrameComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "eoc::inventory::DropOnDeathBlockedComponent",
+   "esv::InventoryPropertyIsDroppedOnDeathComponent",
+   "esv::ScriptPropertyIsDroppedOnDeathComponent"
+  ],
+  "methods": [
+   {
+    "name": "IsDroppedOnDeathSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestReevaluateValueFromEditor",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestResetOsirisParameter",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestSetInventoryParameter",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestSetOsirisParameter",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessInventorySetParameterRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessResetScriptParamsRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessScriptSetParameterRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateIsDroppedOnDeathComponent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~IsDroppedOnDeathSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::ScriptPropertyIsDroppedOnDeathComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2CDE2E0",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::templates::OriginalTemplateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2CDE5E0",
+    "site": "bg3_dx11.exe+0x2CDEF64",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::templates::OriginalTemplateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2CDE5E0",
+    "site": "bg3_dx11.exe+0x2CDF094",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::InventoryPropertyIsDroppedOnDeathComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2CDF270",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::ScriptPropertyIsDroppedOnDeathComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2CDE2E0",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2CDF270",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::InventoryPropertyIsDroppedOnDeathComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2CDF270",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

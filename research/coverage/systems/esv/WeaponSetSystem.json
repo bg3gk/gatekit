@@ -1,0 +1,138 @@
+{
+ "system": "esv::WeaponSetSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::DisabledEquipmentComponent",
+   "eoc::StatsComponent",
+   "eoc::WeaponComponent",
+   "eoc::gamestate::SavegameLoadComponent",
+   "eoc::inventory::ContainerComponent",
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::OwnerComponent",
+   "esv::inventory::WeaponSetChangeRequestOneFrameComponent",
+   "esv::item::EquippedEventOneFrameComponent",
+   "esv::item::UnequippedEventOneFrameComponent",
+   "esv::spell_cast::WeaponSetChangeRequestOneFrameComponent"
+  ],
+  "writes": [
+   "eoc::WeaponSetChangedEventOneFrameComponent",
+   "eoc::WeaponSetComponent"
+  ],
+  "methods": [
+   {
+    "name": "ProcessRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SetWeaponSet",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ToggleWeaponSet",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "WeaponSetSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~WeaponSetSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::WeaponSetChangedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B89930",
+    "site": "bg3_dx11.exe+0x2B8A498",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::WeaponComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B89930",
+    "site": "bg3_dx11.exe+0x2B89FBB",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::WeaponComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B89930",
+    "site": "bg3_dx11.exe+0x2B89FE3",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::WeaponComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B89930",
+    "site": "bg3_dx11.exe+0x2B8A13B",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::WeaponComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B89930",
+    "site": "bg3_dx11.exe+0x2B8A163",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::WeaponSetComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B89930",
+    "site": "bg3_dx11.exe+0x2B8A2C1",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::WeaponSetComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B89930",
+    "site": "bg3_dx11.exe+0x2B8A3C3",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::inventory::ContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1104E20",
+    "site": "bg3_dx11.exe+0x1104F97",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::DisabledEquipmentComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1104E20",
+    "site": "bg3_dx11.exe+0x1105021",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::WeaponSetComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2B89930",
+    "site": "bg3_dx11.exe+0x2B8A2A5",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

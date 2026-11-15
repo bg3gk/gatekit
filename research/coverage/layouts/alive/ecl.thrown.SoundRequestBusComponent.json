@@ -13,7 +13,7 @@
           "offset": 0,
           "type": "EntityHandle",
           "source": "inferred",
-          "evidence": "ecl::thrown::SoundSystem::ProcessThrownObjectsLanding / ProcessThrowerStart (EoCClient.dll+0xD5CA10 / +0xD5C650) build the request on the stack with the entity handle first and push it with FUN_180d5bb70 (bus+0)."
+          "evidence": "ecl::thrown::SoundSystem::ProcessThrownObjectsLanding / ProcessThrowerStart (EoCClient.dll+0xD5CA10 / +0xD5C650) build the request on the stack with the entity handle first and push it with EoCClient.dll+0xD5BB70 (bus+0)."
         },
         {
           "name": "Sound",
@@ -27,7 +27,7 @@
           "offset": 12,
           "type": "uint8_t",
           "source": "inferred",
-          "evidence": "Byte after the FixedString set to 1 or 3 (CONCAT14(3, ...)); ls::ESoundObjectIndex, uint8_t as in SE AllSpark.h."
+          "evidence": "Byte after the FixedString set to 1 or 3 (the 3 is stored in the same write as the 4 bytes before it); ls::ESoundObjectIndex, uint8_t as in SE AllSpark.h."
         },
         {
           "name": "_Pad13",
@@ -47,7 +47,7 @@
           "offset": 0,
           "type": "EntityHandle",
           "source": "inferred",
-          "evidence": "Pushed with FUN_180d5bc50(bus+0x10, request) in ProcessThrownObjectsLanding/Start; entity handle first."
+          "evidence": "Pushed with EoCClient.dll+0xD5BC50 (on bus+0x10, with the request) in ProcessThrownObjectsLanding/Start; entity handle first."
         },
         {
           "name": "Sound",
@@ -61,7 +61,7 @@
           "offset": 12,
           "type": "int32_t",
           "source": "unknown",
-          "evidence": "4 bytes copied from an int of the thrown sound data (*piVar16 / *piVar22, which ProcessThrownObjectsStart also compares with 2 - probably the thrown sound object type)."
+          "evidence": "4 bytes copied from an int of the thrown sound data (an int read through a pointer into that data in each of the two functions, which ProcessThrownObjectsStart also compares with 2 - probably the thrown sound object type)."
         }
       ]
     },
@@ -115,7 +115,7 @@
           "offset": 0,
           "type": "EntityHandle",
           "source": "inferred",
-          "evidence": "ProcessThrowerStart builds {entity, FixedString group, FixedString switch, byte} and pushes with FUN_180d5ba80(bus+0x30, ...); stride 0x18 (IndexedStorage<ecl::thrown::CharacterSetSwitchRequest>)."
+          "evidence": "ProcessThrowerStart builds {entity, FixedString group, FixedString switch, byte} and pushes with EoCClient.dll+0xD5BA80 (on bus+0x30); stride 0x18 (IndexedStorage<ecl::thrown::CharacterSetSwitchRequest>)."
         },
         {
           "name": "SwitchGroup",
@@ -156,7 +156,7 @@
           "offset": 0,
           "type": "EntityHandle",
           "source": "inferred",
-          "evidence": "ProcessThrownObjectsStart (EoCClient.dll+0xD5D070): elem = *(bus+0x40) + i*0x10; elem[0] = entity."
+          "evidence": "ProcessThrownObjectsStart (EoCClient.dll+0xD5D070): each element sits at the buffer pointer stored at bus+0x40 plus its index times 0x10, and the entity is written at +0 of the element."
         },
         {
           "name": "SwitchGroup",

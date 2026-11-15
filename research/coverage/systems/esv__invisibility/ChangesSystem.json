@@ -1,0 +1,115 @@
+{
+ "system": "esv::invisibility::ChangesSystem",
+ "namespace": "esv::invisibility",
+ "symbols": {
+  "reads": [
+   "eoc::BoostsContainerComponent",
+   "eoc::OffStageComponent",
+   "eoc::improvised_weapon::WieldedComponent",
+   "esv::TurnStartedEventOneFrameComponent",
+   "esv::boost::ChangedEventsSingletonComponent",
+   "esv::improvised_weapon::SetVisibilityOneFrameComponent",
+   "esv::item::animation::StateChangedEventOneFrameComponent",
+   "esv::item::animation::StateComponent",
+   "esv::thrown::EntityThrownRequestOneFrameComponent",
+   "esv::timeline::TimelineActorVisibilityOneFrameComponent",
+   "ls::DebugComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "eoc::InvisibilityComponent"
+  ],
+  "methods": [
+   {
+    "name": "ChangesSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessBoostChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessImprovisedWeapons",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessItemAnimationStateChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessOffstageChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStartTurnTicks",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTimelineChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessVisibilityChangeRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestInvisibilityChange",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ChangesSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::BoostsContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E061C0",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::InvisibilityComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E06480",
+    "site": "bg3_dx11.exe+0x2E066D0",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E06480",
+    "site": "bg3_dx11.exe+0x2E06535",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::InvisibilityComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E06480",
+    "site": "bg3_dx11.exe+0x2E06567",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

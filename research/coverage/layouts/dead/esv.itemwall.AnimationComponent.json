@@ -39,7 +39,7 @@
       "offset": 0,
       "type": "float",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x337AD40 (AllocRaw 0x48) writes dword 0. WallSystem line 787: `*(float*)(c) = dt + *(float*)(c)` (stride 0x48), and line 571 compares it with each animation step's time."
+      "evidence": "Creator bg3.exe+0x337AD40 (AllocRaw 0x48) writes dword 0. WallSystem line 787 adds the frame's delta time to the float at +0 (stride 0x48), and line 571 compares it with each animation step's time."
     },
     {
       "name": "_Pad4",
@@ -53,14 +53,14 @@
       "offset": 8,
       "type": "Array<ItemwallAnimationItemAnimation>",
       "source": "inferred",
-      "evidence": "Creator zeroes qwords +8/+0x10 and dword +0x14 (Array shape). WallSystem line 356: GetItemAnimations(..., (DynamicArray<eoc::itemwall::ItemAnimation>*)(c + 8)); line 769: component removed when *(int*)(c+0x14) == 0; lines 568-574 pop elements from the back (count at +0x14, data at +8, stride 0x10)."
+      "evidence": "Creator zeroes qwords +8/+0x10 and dword +0x14 (Array shape). WallSystem line 356 passes +8 of the component to GetItemAnimations as its output DynamicArray<eoc::itemwall::ItemAnimation>; line 769: component removed when the 32-bit count at +0x14 is 0; lines 568-574 pop elements from the back (count at +0x14, data at +8, stride 0x10)."
     },
     {
       "name": "PushedEntities",
       "offset": 24,
       "type": "HashSet<EntityHandle>",
       "source": "inferred",
-      "evidence": "Creator zeroes +0x18..+0x47 in the HashSet pattern (dword +0x34 and +0x44 counts). WallSystem line 685: FUN_140721030(c + 0x18, ..., entity) (8-byte key set insert, bg3.exe+0x721030); a ForcePushRequestOneFrameComponent is created only when the entity was newly inserted - the set of entities already pushed."
+      "evidence": "Creator zeroes +0x18..+0x47 in the HashSet pattern (dword +0x34 and +0x44 counts). WallSystem line 685 passes the component's +0x18 and the entity to bg3.exe+0x721030 (8-byte key set insert); a ForcePushRequestOneFrameComponent is created only when the entity was newly inserted - the set of entities already pushed."
     }
   ],
   "confidence": "high",

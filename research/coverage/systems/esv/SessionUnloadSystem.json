@@ -1,0 +1,78 @@
+{
+ "system": "esv::SessionUnloadSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::MemberComponent",
+   "esv::NetComponent",
+   "esv::spell_cast::StateComponent",
+   "ls::DebugComponent",
+   "ls::LevelComponent"
+  ],
+  "writes": [
+   "esv::GameStateUnloadSessionComponent"
+  ],
+  "methods": [
+   {
+    "name": "CheckAndFixLeaks",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Prepare",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SessionUnloadSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UnloadPart1",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UnloadPart2",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UnloadPart3",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~SessionUnloadSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::SessionUnloadOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B215F0",
+    "site": "bg3_dx11.exe+0x2B21888",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::anubis::FrameworkUnloadRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B215F0",
+    "site": "bg3_dx11.exe+0x2B218CD",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

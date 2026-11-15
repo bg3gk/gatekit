@@ -17,7 +17,7 @@
       "offset": 8,
       "type": "glm::vec3",
       "source": "inferred",
-      "evidence": "Writer bg3.exe+0x3473C80 copies 8 + 4 bytes from +0x10/+0x18 of a component of the item (FUN_140e5a590: a translation); OnInventoryInteraction takes +8 (8 bytes) and +0x10 (4 bytes) as the default _X/_Y/_Z of CharacterStoleItem (replaced by the container's bound centre when there is one). Adder zeroes +8 and the dword +0x10."
+      "evidence": "Writer bg3.exe+0x3473C80 copies 8 + 4 bytes from +0x10/+0x18 of a component of the item (fetched by bg3.exe+0xE5A590: a translation); OnInventoryInteraction takes +8 (8 bytes) and +0x10 (4 bytes) as the default _X/_Y/_Z of CharacterStoleItem (replaced by the container's bound centre when there is one). Adder zeroes +8 and the dword +0x10."
     },
     {
       "name": "_Pad14",
@@ -38,7 +38,7 @@
       "offset": 48,
       "type": "Guid",
       "source": "inferred",
-      "evidence": "Writer copies 4 dwords from the item's uuid component (FUN_14107e6f0) to +0x30..+0x3F; ThrowCharacterStoleItem passes (Guid*)(+0x30) as the _Item parameter."
+      "evidence": "Writer copies 4 dwords from the item's uuid component (fetched by bg3.exe+0x107E6F0) to +0x30..+0x3F; ThrowCharacterStoleItem passes the Guid at +0x30 as the _Item parameter."
     },
     {
       "name": "RootTemplateName",
@@ -52,7 +52,7 @@
       "offset": 88,
       "type": "FixedString",
       "source": "inferred",
-      "evidence": "Writer: FixedString assign (FUN_14412e090) from root template +0x10 (its id); adder sets 0xFFFFFFFF; ThrowCharacterStoleItem uses it as the GUID part of _ItemRootTemplate."
+      "evidence": "Writer: FixedString assign (bg3.exe+0x412E090) from root template +0x10 (its id); adder sets 0xFFFFFFFF; ThrowCharacterStoleItem uses it as the GUID part of _ItemRootTemplate."
     },
     {
       "name": "Amount",
@@ -66,7 +66,7 @@
       "offset": 96,
       "type": "int32_t",
       "source": "game",
-      "evidence": "Osiris CharacterStoleItem _GoldValue (SetParamValue(+0x60, INTEGER, 9)); writer stores the result of FUN_144211d80(world, item, amount, ...) - the value of the stolen amount; adder default 0."
+      "evidence": "Osiris CharacterStoleItem _GoldValue (SetParamValue(+0x60, INTEGER, 9)); writer stores the result of bg3.exe+0x4211D80 (called with the world, the item, the amount and more) - the value of the stolen amount; adder default 0."
     },
     {
       "name": "_Pad64",

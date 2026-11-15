@@ -1,0 +1,162 @@
+{
+ "system": "ecl::tutorial::CameraSystem",
+ "namespace": "ecl::tutorial",
+ "symbols": {
+  "reads": [
+   "ecl::EocCameraBehavior",
+   "ecl::GameCameraBehavior",
+   "eoc::PlayerComponent"
+  ],
+  "writes": [
+   "ecl::tutorial::CameraAtLeashLimitComponent",
+   "ecl::tutorial::CameraMovingComponent",
+   "ecl::tutorial::CameraRotatingComponent",
+   "ecl::tutorial::CameraTrackingComponent"
+  ],
+  "methods": [
+   {
+    "name": "CameraSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CameraSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::tutorial::CameraAtLeashLimitComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AB8500",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::tutorial::CameraMovingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AB8500",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::tutorial::CameraRotatingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AB8500",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::tutorial::CameraTrackingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AB8500",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::PlayerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1AB8500",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update: camera moving",
+   "text": "For camera entities whose ecl::GameCameraBehavior was modified this frame and that hold ecl::EocCameraBehavior but not yet ecl::tutorial::CameraMovingComponent, the system adds the CameraMovingComponent tag when the byte at GameCameraBehavior+0x1F0 is non-zero, and reports tutorial event 6 to its camera client wrapper (ecl::tutorial::ICameraGameClientWrapper, virtual slot 8) with EocCameraBehavior.field_38. A later pass removes the tag from holders whose GameCameraBehavior was modified with that byte back at zero.",
+   "evidence": "EoCClient.dll+0x640570 ecl::tutorial::CameraSystem::Update: Modified/Alive query on spec DAT_181a04f4c (TL<EocCameraBehavior, GameCameraBehavior>, TL<CameraMovingComponent> as the absent list, Modified on GameCameraBehavior), the test of the byte at stride 600 +0x1F0, the adder FUN_18063cab0 whose type-index global DAT_1819da8c0 resolves to ecl::tutorial::CameraMovingComponent, the wrapper call with the 8 bytes at the 64-byte component's +0x38 and 6; the remove pass on spec DAT_181a04fb0 with the byte == 0 and RemoveComponentUnchecked on DAT_1819da8c0.",
+   "check": {
+    "when": "camera_move_key_w",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::tutorial::CameraMovingComponent",
+       "side": "client",
+       "within": 10
+      }
+     }
+    ]
+   },
+   "check_note": "the removal on the byte returning to zero is not in the check: gone compares with before the recipe, when the tag is absent.",
+   "review": "Review 2026-11-14 (Opus): holds: the four adders use DAT_1819da8b8/8c0/8c8/8d0, whose inits resolve to CameraAtLeashLimit / CameraMoving / CameraRotating / CameraTracking; the add passes test bytes +0x1F2 / +0x1F0 / +0x1F1 != 0 and FUN_18063e2f0 on +0x1E8, the remove passes the same == 0 / false, with RemoveComponentUnchecked on the same globals."
+  },
+  {
+   "method": "Update: camera rotating",
+   "text": "The same pair of passes for ecl::tutorial::CameraRotatingComponent on the byte at GameCameraBehavior+0x1F1: added (with tutorial event 7 to the wrapper) when the byte is set on a modified camera that lacks it, removed when the byte is zero on a modified camera that holds it.",
+   "evidence": "EoCClient.dll+0x640570 ecl::tutorial::CameraSystem::Update: spec DAT_181a04f6c (absent list TL<CameraRotatingComponent>), byte +0x1F1 != 0, adder FUN_18063cca0 with type-index global DAT_1819da8c8 = ecl::tutorial::CameraRotatingComponent, wrapper call with 7; remove pass on spec DAT_181a04fb4 with byte +0x1F1 == 0, RemoveComponentUnchecked on DAT_1819da8c8.",
+   "check": {
+    "when": "camera_rotate_key_q_hold",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::tutorial::CameraRotatingComponent",
+       "side": "client",
+       "within": 10
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "camera_rotate_key_q_hold (PROPOSED, needs a hold step): GustavX:WLD_Main_A; wait Running; hold Q about 1 s (a runner lit it live by Ext.Input.InjectKeyDown, per camera_move_key_w's header); sleep 1.",
+   "review": "Review 2026-11-14 (Opus): holds: the four adders use DAT_1819da8b8/8c0/8c8/8d0, whose inits resolve to CameraAtLeashLimit / CameraMoving / CameraRotating / CameraTracking; the add passes test bytes +0x1F2 / +0x1F0 / +0x1F1 != 0 and FUN_18063e2f0 on +0x1E8, the remove passes the same == 0 / false, with RemoveComponentUnchecked on the same globals."
+  },
+  {
+   "method": "Update: camera at leash limit",
+   "text": "The same pair for ecl::tutorial::CameraAtLeashLimitComponent on the byte at GameCameraBehavior+0x1F2, with tutorial event 8: added when the camera has been pushed to the limit of how far it may stray (the players' reading of the byte; the code shows only the byte), removed when the byte is back at zero.",
+   "evidence": "EoCClient.dll+0x640570 ecl::tutorial::CameraSystem::Update: spec DAT_181a04f2c (absent list TL<CameraAtLeashLimitComponent>), byte +0x1F2 != 0, adder FUN_18063c8c0 with type-index global DAT_1819da8b8 = ecl::tutorial::CameraAtLeashLimitComponent, wrapper call with 8; remove pass on spec DAT_181a04fac (CameraAtLeashLimitComponent required) with byte +0x1F2 == 0, RemoveComponentUnchecked on DAT_1819da8b8.",
+   "check": {
+    "when": "camera_leash_key_d_hold",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::tutorial::CameraAtLeashLimitComponent",
+       "side": "client",
+       "within": 20
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "camera_leash_key_d_hold (PROPOSED, needs a hold step): GustavX:WLD_Main_A; wait Running; hold D about 10 s so the free camera runs to its leash; sleep 1.",
+   "review": "Review 2026-11-14 (Opus): holds: the four adders use DAT_1819da8b8/8c0/8c8/8d0, whose inits resolve to CameraAtLeashLimit / CameraMoving / CameraRotating / CameraTracking; the add passes test bytes +0x1F2 / +0x1F0 / +0x1F1 != 0 and FUN_18063e2f0 on +0x1E8, the remove passes the same == 0 / false, with RemoveComponentUnchecked on the same globals."
+  },
+  {
+   "method": "Update: camera tracking a player",
+   "text": "For a modified camera lacking ecl::tutorial::CameraTrackingComponent, the system tests whether the entity handle stored at GameCameraBehavior+0x1E8 has eoc::PlayerComponent; if so it adds CameraTrackingComponent and reports tutorial event 10. A later pass removes the tag from a modified camera whose handle no longer has PlayerComponent.",
+   "evidence": "EoCClient.dll+0x640570 ecl::tutorial::CameraSystem::Update: spec DAT_181a04f8c (absent list TL<CameraTrackingComponent>), FUN_18063e2f0 (a HasComponent on the handle with the type-index global DAT_1819f8498 = eoc::PlayerComponent) on stride 600 +0x1E8, adder FUN_18063ce90 with DAT_1819da8d0 = ecl::tutorial::CameraTrackingComponent, wrapper call with 10; remove pass on spec DAT_181a04fb8 with the test false, RemoveComponentUnchecked on DAT_1819da8d0.",
+   "check": {
+    "when": "camera_track_player",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::tutorial::CameraTrackingComponent",
+       "side": "client",
+       "within": 10,
+       "as": "E"
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "camera_track_player (PROPOSED): GustavX:WLD_Main_A from the checkpoint; wait Running; move the camera off (tap W), then re-centre it on the controlled character (the centre-camera key, Home by default - unverified); sleep 1. Whether the tag is already held at the checkpoint (then appears passes trivially, or not at all if 'appears' wants a new holder) was not looked at.",
+   "review": "Review 2026-11-14 (Opus): holds: the four adders use DAT_1819da8b8/8c0/8c8/8d0, whose inits resolve to CameraAtLeashLimit / CameraMoving / CameraRotating / CameraTracking; the add passes test bytes +0x1F2 / +0x1F0 / +0x1F1 != 0 and FUN_18063e2f0 on +0x1E8, the remove passes the same == 0 / false, with RemoveComponentUnchecked on the same globals. 'as': 'E' added so the check fails, rather than passing trivially, when the camera already tracks the player at the checkpoint (appears also passes on a holder from the start)."
+  }
+ ],
+ "unknown": [
+  "What the three GameCameraBehavior bytes at +0x1F0/+0x1F1/+0x1F2 and the handle at +0x1E8 are named (GameCameraBehavior has no layout in research/coverage/layouts); moving / rotating / at-leash are the tag names, not read meanings of the bytes.",
+  "What the wrapper does with the event numbers 6, 7, 8, 10 and with EocCameraBehavior.field_38 (presumably a tutorial event for the entity there - a guess).",
+  "Why camera_move_key_w's header says 'with tutorials on': no tutorial-setting test was seen in this update; it may gate the system's registration or the wrapper."
+ ],
+ "sure": "yes for the four adds and four removes with their byte/PlayerComponent guards (adders and removes resolved to their types); no for what the bytes mean"
+}

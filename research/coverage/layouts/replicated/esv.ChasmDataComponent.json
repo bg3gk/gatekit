@@ -8,28 +8,28 @@
       "offset": 0,
       "type": "std::optional<glm::vec3>",
       "source": "inferred",
-      "evidence": "16-byte block copied whole as four dwords by bg3.exe+0x2D605A0 (~ esv::ChasmSystem::UpdateNewChasmEntities: component stride 0x30, 'local_3b8 = *puVar17 .. puVar17[3]') and passed beside a second block of the same shape that the code builds as {translate of ls::TransformComponent (12 bytes), byte +0xC = 1} - an optional position with its has-value byte at +0xC. Live samples (9, bg3_dx11): when byte +0xC is 1, +0/+4/+8 are ordinary floats (268.75, 42.8, 10.25 ...); when it is 0 the 12 bytes hold stale data (heap-like values) - the disengaged storage. Byte +0xD (0/1/2) is padding of the optional. The source of the request, Toolkit esv::ChasmSystem::LEGACY_EntityEnteredChasm, takes an ls::Optional<Vector3f>. Name inferred."
+      "evidence": "16-byte block copied whole as four dwords by bg3.exe+0x2D605A0 (~ esv::ChasmSystem::UpdateNewChasmEntities: component stride 0x30, the four dwords +0..+0xC copied into a stack copy) and passed beside a second block of the same shape that the code builds as {translate of ls::TransformComponent (12 bytes), byte +0xC = 1} - an optional position with its has-value byte at +0xC. Live samples (9, bg3_dx11): when byte +0xC is 1, +0/+4/+8 are ordinary floats (268.75, 42.8, 10.25 ...); when it is 0 the 12 bytes hold stale data (heap-like values) - the disengaged storage. Byte +0xD (0/1/2) is padding of the optional. The source of the request, Toolkit esv::ChasmSystem::LEGACY_EntityEnteredChasm, takes an ls::Optional<Vector3f>. Name inferred."
     },
     {
       "name": "Cause",
       "offset": 16,
       "type": "EntityHandle",
       "source": "game",
-      "evidence": "bg3.exe+0x2D605A0 passes puVar17 + 4 (+0x10) as an entity to the event listeners and to bg3.exe+0x3090370; Toolkit UpdateNewChasmEntities passes &+0x10 as the second entity of StoryGameEventManager::ThrowEnteredChasm, whose Osiris event is EnteredChasm(_Object, _Cause, _Chasm, _fallbackPos...): the name is the Osiris parameter. Live: entity handles or the null handle 0xFFC0000000000000."
+      "evidence": "bg3.exe+0x2D605A0 passes the address of component +0x10 as an entity to the event listeners and to bg3.exe+0x3090370; Toolkit UpdateNewChasmEntities passes &+0x10 as the second entity of StoryGameEventManager::ThrowEnteredChasm, whose Osiris event is EnteredChasm(_Object, _Cause, _Chasm, _fallbackPos...): the name is the Osiris parameter. Live: entity handles or the null handle 0xFFC0000000000000."
     },
     {
       "name": "Chasm",
       "offset": 24,
       "type": "Guid",
       "source": "game",
-      "evidence": "bg3.exe+0x2D605A0 passes puVar17 + 6 (+0x18) as a Guid to bg3.exe+0x3009350 (fallback position in the chasm area; Toolkit: only user of 'Chasm trigger with GUID %s is not found') and converts it to an entity (bg3.exe+0x1013470) for the event; ProcessSavegameLoaded bg3.exe+0x2D5DD90 reads the four dwords +0x18..+0x24 of a 0x30-stride component and tests them for zero. Converted to the _Chasm entity of the Osiris event EnteredChasm. Live: random-looking 16 bytes."
+      "evidence": "bg3.exe+0x2D605A0 passes the address of component +0x18 as a Guid to bg3.exe+0x3009350 (fallback position in the chasm area; Toolkit: only user of 'Chasm trigger with GUID %s is not found') and converts it to an entity (bg3.exe+0x1013470) for the event; ProcessSavegameLoaded bg3.exe+0x2D5DD90 reads the four dwords +0x18..+0x24 of a 0x30-stride component and tests them for zero. Converted to the _Chasm entity of the Osiris event EnteredChasm. Live: random-looking 16 bytes."
     },
     {
       "name": "FallbackTimer",
       "offset": 40,
       "type": "int32_t",
       "source": "inferred",
-      "evidence": "bg3.exe+0x2D605A0: 'if (puVar17[10] == -1) { ... puVar17[10] = 10; }' (+0x28). Toolkit esv::ChasmSystem::UpdateStoryFallbackTimer decrements it while > 0 and calls LEGACY_EnterChasmHandled at 0. Live: always 0xFFFFFFFF."
+      "evidence": "bg3.exe+0x2D605A0: when the 32-bit value at +0x28 is -1 it (among other work) sets it to 10. Toolkit esv::ChasmSystem::UpdateStoryFallbackTimer decrements it while > 0 and calls LEGACY_EnterChasmHandled at 0. Live: always 0xFFFFFFFF."
     },
     {
       "name": "StoryActionId",

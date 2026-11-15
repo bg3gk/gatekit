@@ -10,14 +10,14 @@
       "offset": 0,
       "type": "std::array<HashMap<EntityHandle, TimelineFadeRequest>, 2>",
       "source": "inferred",
-      "evidence": "Same component type as ecl::TimelineFadeRequestsSingletonComponent (Coverage.h, sizeof 224): every fade-request singleton is registered with the same destructor FUN_140697cd0 (12 registrations bg3.exe+0x6867A0..0x689400) and created with the same constructor helpers FUN_1418c2f60 (2 maps of 0x40) / FUN_1418c2fe0 (2 sets of 0x30) after zeroing 0xE0 bytes (seen in bg3.exe+0x1CB0DE0 for CharacterOutOfSight). The macOS build reads all of them in one template ecl::FadeResolveSystem::ProcessFadeRequests<BasicGOVisual..., CharacterAttachToScene..., CharacterCreation..., CharacterOutOfSight..., Crowd..., Invisibility..., ...>. One map per render view (View0/View1). The value type is named ecl::StartFadeRequest by the macOS build (ls::HashMap<ls::ID<EntityHandleTraits>, ecl::StartFadeRequest>::EnsureUniversal at macOS 0x102EAABA0, next to the Crowd query registration); 16-byte value, same as SE's TimelineFadeRequest. Live: all zero (empty containers)."
+      "evidence": "Same component type as ecl::TimelineFadeRequestsSingletonComponent (Coverage.h, sizeof 224): every fade-request singleton is registered with the same destructor bg3.exe+0x697CD0 (12 registrations bg3.exe+0x6867A0..0x689400) and created with the same constructor helpers bg3.exe+0x18C2F60 (2 maps of 0x40) / bg3.exe+0x18C2FE0 (2 sets of 0x30) after zeroing 0xE0 bytes (seen in bg3.exe+0x1CB0DE0 for CharacterOutOfSight). The macOS build reads all of them in one template ecl::FadeResolveSystem::ProcessFadeRequests<BasicGOVisual..., CharacterAttachToScene..., CharacterCreation..., CharacterOutOfSight..., Crowd..., Invisibility..., ...>. One map per render view (View0/View1). The value type is named ecl::StartFadeRequest by the macOS build (ls::HashMap<ls::ID<EntityHandleTraits>, ecl::StartFadeRequest>::EnsureUniversal at macOS 0x102EAABA0, next to the Crowd query registration); 16-byte value, same as SE's TimelineFadeRequest. Live: all zero (empty containers)."
     },
     {
       "name": "RemoveFadeRequests",
       "offset": 128,
       "type": "std::array<HashSet<EntityHandle>, 2>",
       "source": "inferred",
-      "evidence": "Zeroed 0x80..0xE0 then FUN_1418c2fe0 in bg3.exe+0x1CB0DE0; same as the Timeline singleton (name taken from there, not confirmed). Live: empty."
+      "evidence": "Zeroed 0x80..0xE0 then bg3.exe+0x18C2FE0 in bg3.exe+0x1CB0DE0; same as the Timeline singleton (name taken from there, not confirmed). Live: empty."
     }
   ],
   "confidence": "high",

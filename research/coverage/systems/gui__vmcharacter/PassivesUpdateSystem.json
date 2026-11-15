@@ -1,0 +1,60 @@
+{
+ "system": "gui::vmcharacter::PassivesUpdateSystem",
+ "namespace": "gui::vmcharacter",
+ "symbols": {
+  "reads": [
+   "eoc::PassiveComponent",
+   "eoc::PassiveContainerComponent",
+   "eoc::party::MemberComponent",
+   "eoc::progression::MetaComponent",
+   "gui::registration::VMCharacterDataSingletonComponent",
+   "gui::registration::VMItemDataSingletonComponent",
+   "gui::registration::VMPassiveDataSingletonComponent",
+   "gui::registration::VMPassiveRegisteredSingletonComponent",
+   "gui::registration::VMPassiveUnregisteredOneFrameComponent",
+   "gui::vmcharacter::VMCharacterActivatedSingletonComponent"
+  ],
+  "writes": [],
+  "methods": [
+   {
+    "name": "PassivesUpdateSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPassivesUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~PassivesUpdateSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::PassiveComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x12CCBB0",
+    "site": "bg3_dx11.exe+0x12CD6CF",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::progression::MetaComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x12CCBB0",
+    "site": "bg3_dx11.exe+0x12CD17D",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

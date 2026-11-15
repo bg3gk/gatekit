@@ -1,0 +1,154 @@
+{
+ "system": "esv::hit::HitProxySystem",
+ "namespace": "esv::hit",
+ "symbols": {
+  "reads": [
+   "ls::DebugComponent",
+   "ls::uuid::ToHandleMappingComponent"
+  ],
+  "writes": [
+   "eoc::hit::ProxyComponent",
+   "eoc::hit::ProxyOwnerComponent",
+   "esv::hit::AttachProxyAfterInitRequestComponent"
+  ],
+  "methods": [
+   {
+    "name": "FlushComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "HitProxySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAttachAfterInitRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAttachRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDetachAllRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDetachRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestAttachHitProxy",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestAttachHitProxyAfterInit",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestDetachAllHitProxies",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestDetachHitProxy",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ValidateFrameData",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~HitProxySystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::hit::AttachProxyAfterInitRequestComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B35C90",
+    "site": "bg3_dx11.exe+0x2B35EEE",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::hit::ProxyComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B36840",
+    "site": "bg3_dx11.exe+0x2B36909",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::hit::ProxyOwnerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B36250",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::hit::ProxyComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2B35C90",
+    "site": "bg3_dx11.exe+0x2B35E68",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::hit::ProxyComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2B36840",
+    "site": "bg3_dx11.exe+0x2B36A9B",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "RequestAttachHitProxyAfterInit",
+   "text": "Only queues: appends (entity, guid, name) to the system's own request array, and logs an assert if the same entity is queued twice in one frame. No component is touched.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, HitProxySystem::RequestAttachHitProxyAfterInit at +0x3BFA20, read whole (42 lines)"
+  },
+  {
+   "method": "ProcessAttachAfterInitRequests",
+   "text": "Two passes. First, for each queued after-init request: if the entity already has esv::hit::AttachProxyAfterInitRequestComponent it is skipped; otherwise, if an unnamed helper (FUN_1803bbf20, not read) says no, the guid is resolved to an entity handle through the uuid mapping; when that resolves, the attach is requested immediately through RequestAttachHitProxy, and when it does not resolve, AttachProxyAfterInitRequestComponent (0x18 bytes: guid plus name) is added to the entity by a deferred AddComponent so the request survives until later. Second, for every entity that currently has the component (the query is a spec naming it), the stored guid is resolved again; once it resolves the request is made and the component is removed from the entity.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, HitProxySystem::ProcessAttachAfterInitRequests at +0x3BE210 (397 lines, read in windows). Add: FUN_1803ba5e0 (+0x3BA5E0) ends in ComponentFrameStorageAllocRaw with size 0x18 and DAT_1822025bc; remove: RemoveComponentUnchecked(DAT_1822025bc & 0x7fff). DAT_1822025bc -> init FUN_1800546D0 area (+0x546D0, +0x3BB220) -> GetTypeName 'esv::hit::AttachProxyAfterInitRequestComponent'. The second-pass condition (resolved guid) is read in outline; the exact test that picks 'resolved' was not followed to its end"
+  },
+  {
+   "method": "ProcessAttachRequests / ProcessDetachRequests / ProcessDetachAllRequests",
+   "text": "These only update the system's frame bookkeeping (maps from proxy entity to its owners and from owner to proxies, and dirty lists) from the queued requests; none of them adds or removes a component.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, +0x3BE9E0, +0x3BEE40, +0x3BEC90: no AddComponent/RemoveComponent in the bodies, only map and array helper calls"
+  },
+  {
+   "method": "FlushComponents",
+   "text": "Applies the bookkeeping to the world with the entity command buffer. It adds eoc::hit::ProxyComponent and eoc::hit::ProxyOwnerComponent and removes them (RemoveComponentUnchecked); the conditions were read only in outline, so 'added when a proxy gains its first owner, removed when the list empties' is a guess from the bookkeeping, not read. It also marks replication-dirty fields.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, HitProxySystem::FlushComponents at +0x3BD610 (522 lines). Adds FUN_1803ba800 (+0x3BA800, DAT_1822025c0, 0x10 bytes) and FUN_1803baa20 (+0x3BAA20, DAT_1822025c4, 0x10 bytes), both ending in AllocRaw; removes with RemoveComponentUnchecked on DAT_1822025c0 and DAT_1822025c4. DAT_1822025c0 -> init FUN_180054780 -> FUN_1803bbdc0 -> GetTypeName 'eoc::hit::ProxyComponent'; DAT_1822025c4 -> init FUN_1800548e0 -> FUN_1803bbe70 -> GetTypeName 'eoc::hit::ProxyOwnerComponent'. Which of the two adds is for the proxy and which for the owner follows from this mapping; the exact trigger (first owner vs every change) was not read closely"
+  }
+ ],
+ "unknown": [
+  "The helper FUN_1803bbf20 and what it decides in ProcessAttachAfterInitRequests.",
+  "Who calls RequestAttachHitProxyAfterInit (the hint says: a proxy whose owner is not yet initialised, e.g. at load/spawn); not read in this system.",
+  "FlushComponents' exact conditions for add versus remove were read only in outline.",
+  "Update and ValidateFrameData (frame-data reset and checks) were not read in detail."
+ ],
+ "sure": "no: the add/remove of AttachProxyAfterInitRequestComponent, ProxyComponent and ProxyOwnerComponent are located and typed, but their guarding conditions are only read in outline"
+}

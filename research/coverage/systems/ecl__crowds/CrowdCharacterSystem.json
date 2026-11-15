@@ -1,0 +1,140 @@
+{
+ "system": "ecl::crowds::CrowdCharacterSystem",
+ "namespace": "ecl::crowds",
+ "symbols": {
+  "reads": [
+   "ecl::Character",
+   "eoc::crowds::AppearanceComponent",
+   "eoc::crowds::BehaviourComponent",
+   "eoc::crowds::CharacterComponent",
+   "eoc::crowds::CustomAnimationComponent",
+   "eoc::crowds::DeadReckoningComponent",
+   "eoc::crowds::IsFadingComponent",
+   "eoc::crowds::ProxyComponent",
+   "eoc::crowds::ProxyDynamicAnimationSetComponent",
+   "eoc::gamestate::RunningComponent",
+   "ls::AnimationUpdateComponent",
+   "ls::LevelComponent",
+   "ls::TimeFactorComponent",
+   "ls::game::PauseComponent"
+  ],
+  "writes": [
+   "ecl::crowds::ProxyComponent",
+   "ecl::crowds::RenderFrameVisibilityRequestsComponent",
+   "ecl::crowds::TransformRequestsComponent",
+   "ls::AnimationBlueprintComponent",
+   "ls::EffectComponent",
+   "ls::FogVolumeComponent",
+   "ls::LightComponent",
+   "ls::LightProbeComponent",
+   "ls::SceneAttachComponent",
+   "ls::TransformComponent",
+   "ls::VisualComponent"
+  ],
+  "methods": [
+   {
+    "name": "ApplyEyeColor",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ApplyMaterialPreset",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ApplySkinColor",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CrowdCharacterSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAddAndRemoves",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessChangeRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateDeadReckoning",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateProxies",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CrowdCharacterSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::crowds::ProxyComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A867C0",
+    "site": "bg3_dx11.exe+0x1A86BE9",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A867C0",
+    "site": "bg3_dx11.exe+0x1A86AE7",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::crowds::ProxyComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1A867C0",
+    "site": "bg3_dx11.exe+0x1A87196",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::crowds::ProxyComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1A87BC0",
+    "site": "bg3_dx11.exe+0x1A87CFF",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::crowds::ProxyComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1A87BC0",
+    "site": "bg3_dx11.exe+0x1A87DB9",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

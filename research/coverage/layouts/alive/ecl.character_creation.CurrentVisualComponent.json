@@ -146,18 +146,18 @@
       "evidence": "macOS FillTargetVisualComponent writes its Guid parameter 7 here; live (TargetVisual +0x80) = Elf race 6c038dcb-... (Races.lsx), same value as LoadedRaceVisualChangedComponent"
     },
     {
-      "name": "field_98",
+      "name": "Classes",
       "offset": 152,
       "type": "Array<Guid>",
       "source": "inferred",
-      "evidence": "FillTargetVisualComponent fills it from Span<Guid> parameter 5 (DynamicArray<ls::Guid>, stride 0x10). Live 1 entry"
+      "evidence": "Same member as TargetVisualComponent.Classes (+0x90), shifted by the 8 bytes CurrentVisual has at +0x10 (identical default-store sequence of the Windows creators bg3.exe+0x201B8E0 / 0x201BE90): filled by macOS SubsystemHelper::FillTargetVisualComponent from its first Span<Guid> argument (parameter 5), which DummySubsystem::UpdateDummyVisual takes from the DummyDefinitionComponent class list (Script Extender's CharacterCreation.h). Live 1 entry."
     },
     {
-      "name": "field_A8",
+      "name": "Subclasses",
       "offset": 168,
       "type": "Array<Guid>",
       "source": "inferred",
-      "evidence": "FillTargetVisualComponent fills it from Span<Guid> parameter 6. Live 1 entry"
+      "evidence": "Same member as TargetVisualComponent.Subclasses (+0xA0), shifted by 8 (identical default-store sequence of the Windows creators bg3.exe+0x201B8E0 / 0x201BE90): filled by macOS FillTargetVisualComponent from its second Span<Guid> argument (parameter 6), which UpdateDummyVisual takes from DummyDefinitionComponent +0xB8 (Script Extender names it the subclass list). Live 1 entry."
     },
     {
       "name": "Origin",
@@ -171,14 +171,14 @@
       "offset": 200,
       "type": "uint8_t",
       "source": "inferred",
-      "evidence": "FillTargetVisualComponent: param_1[0xc0] = *EBodyType (ls::EBodyType, 1 byte); creator 16-bit zero store with the next byte"
+      "evidence": "FillTargetVisualComponent: stores the body type (ls::EBodyType, 1 byte) at +0xC0 of the object passed as its first argument; creator 16-bit zero store with the next byte"
     },
     {
       "name": "BodyShape",
       "offset": 201,
       "type": "uint8_t",
       "source": "inferred",
-      "evidence": "param_1[0xc1] = *EBodyShape (ls::EBodyShape, 1 byte)"
+      "evidence": "stores the body shape (ls::EBodyShape, 1 byte) at +0xC1 of the same object"
     },
     {
       "name": "field_CA",

@@ -1,0 +1,87 @@
+{
+ "system": "esv::status::DispelSystem",
+ "namespace": "esv::status",
+ "symbols": {
+  "reads": [
+   "eoc::spell_cast::DataCacheSingletonComponent",
+   "esv::Character",
+   "esv::Item"
+  ],
+  "writes": [
+   "esv::status::DispelDestroyOneFrameComponent",
+   "esv::status::DispelRollCheckOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "DispelSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestDestroyStatusBySpellLevel",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestDestroyStatusBySpellLevel",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStatusDestructionRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DispelSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; methods without an address were not found in the game binary and are listed with address null). Parsed by script from the command output, not retyped.",
+  "uses": [
+   {
+    "type": "esv::status::DispelDestroyOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2C89BF0",
+    "site": "bg3_dx11.exe+0x2C89D86",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::status::DispelRollCheckOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2C89BF0",
+    "site": "bg3_dx11.exe+0x2C89E01",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update / ProcessStatusDestructionRequests",
+   "text": "Works through the queue of dispel requests that LEGACY_RequestDestroyStatusBySpellLevel filled (each names a target, a status or status group, a level byte, a flag byte and two handles). For every status on the target that matches, it compares the request's level byte with the status's own level byte. If the request's level is not lower (the else branch of the comparison), it adds esv::status::DispelDestroyOneFrameComponent to that status entity, carrying the two handles from the request. If the request's level is lower, the request's flag byte is not 7 and its second handle is valid, the status is collected and afterwards gets esv::status::DispelRollCheckOneFrameComponent, carrying a byte read as the status's level plus ten, the request's flag byte and the two handles. If the request's level is lower and either that flag byte is 7 or the handle is invalid, nothing is added. (Review 2026-11-14 (Opus): the flag-byte-equals-7 test, which also blocks the roll check, was missing; read at EoCServer.dll+0x988AB0, the test sets the roll-check switch before the status loop. What value 7 means is not known.)",
+   "evidence": "EoCServer.dll (Toolkit build, named) esv::status::DispelSystem::ProcessStatusDestructionRequests +0x988AB0 (354 lines, read the loop and both add sites). Adders EoCServer.dll+0x987C40 and +0x987E40 call SetupComponentFrameStorage with type indexes DAT_18222AD64 and DAT_18222B6C4, which their initialisers name DispelDestroyOneFrameComponent and DispelRollCheckOneFrameComponent. Update itself has the same body. The meaning 'status level' for the compared bytes, the 'plus ten' being a difficulty value and the handle being a valid-source test are my readings of the control flow, not confirmed. dx11: the per-frame update is reached through the factory update bg3_dx11.exe+0x2C89970 (from the bg3_dx11 user listing), the pseudo-code read is the EoCServer.dll build."
+  },
+  {
+   "method": "LEGACY_RequestDestroyStatusBySpellLevel",
+   "text": "Public entry that queues one dispel request, in two overloads: one takes a status name, the other a status group. It is called from a function in EoCServer.dll at +0x1640000 that has no name in the database; that caller looks like the one that runs a status-removing effect, but this was not confirmed.",
+   "evidence": "EoCServer.dll+0x9888A0 and +0x9889C0 (names only, bodies not read); caller found by pseudo-code search at EoCServer.dll+0x1640000 (unnamed)."
+  }
+ ],
+ "unknown": [
+  "The unnamed caller at EoCServer.dll+0x1640000 and so which spell data entry produces the request.",
+  "Who reads DispelDestroyOneFrame and DispelRollCheckOneFrame afterwards (consumers outside this system: the users listing shows registration code and unnamed functions).",
+  "The byte layout of the request record beyond the fields read.",
+  "Equivalent bg3_dx11 address of ProcessStatusDestructionRequests: not located.",
+  "Review 2026-11-14 (Opus): what the request's flag byte (offset +0x21 of the request record) means, and why the value 7 suppresses the roll check."
+ ],
+ "sure": "no: the two adds and their branch were read, but what the compared bytes mean and the caller are not confirmed"
+}

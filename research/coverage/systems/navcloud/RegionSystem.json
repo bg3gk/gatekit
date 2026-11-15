@@ -1,0 +1,121 @@
+{
+ "system": "navcloud::RegionSystem",
+ "namespace": "navcloud",
+ "symbols": {
+  "reads": [
+   "ls::TransformComponent",
+   "navcloud::AgentChangedOneFrameComponent",
+   "navcloud::AgentComponent",
+   "navcloud::LevelLoadedOneFrameComponent",
+   "navcloud::ObstacleChangedOneFrameComponent",
+   "navcloud::ObstacleComponent",
+   "navcloud::generate::IsWaitingForGenerateComponent"
+  ],
+  "writes": [
+   "navcloud::MemoryLoadedOneFrameComponent",
+   "navcloud::ObstacleMetaDataComponent",
+   "navcloud::RegionDataComponent",
+   "navcloud::RegionLoadedOneFrameComponent",
+   "navcloud::RegionLoadingComponent",
+   "navcloud::RegionsUnloadedOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "ProcessAgents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessLoadingRegions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessMemoryData",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessObstacles",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RegionSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~RegionSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "navcloud::MemoryLoadedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3924BA0",
+    "site": "bg3_dx11.exe+0x39255CF",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "navcloud::RegionLoadedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3925BB0",
+    "site": "bg3_dx11.exe+0x39261B5",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "navcloud::RegionLoadingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3927BD0",
+    "site": "bg3_dx11.exe+0x3927D43",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "navcloud::RegionsUnloadedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3927BD0",
+    "site": "bg3_dx11.exe+0x3927FB5",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "navcloud::RegionLoadingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3925BB0",
+    "site": "bg3_dx11.exe+0x3925D65",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "navcloud::RegionLoadingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3925BB0",
+    "site": "bg3_dx11.exe+0x3926237",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

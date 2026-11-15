@@ -1,0 +1,120 @@
+{
+ "system": "esv::DeadReckoningSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::gamestate::RunningComponent",
+   "esv::Character"
+  ],
+  "writes": [
+   "eoc::DeadReckoningSyncComponent"
+  ],
+  "methods": [
+   {
+    "name": "DeadReckoningSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnActivated",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnDeactivated",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestSync",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DeadReckoningSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::DeadReckoningSyncComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B4DD00",
+    "site": "bg3_dx11.exe+0x2B4E1B3",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::DeadReckoningSyncComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B4DD00",
+    "site": "bg3_dx11.exe+0x2B4E1D1",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell_cast::IsCastingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35E8F20",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell_cast::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35E8F20",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::Character",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B4DD00",
+    "site": "bg3_dx11.exe+0x2B4E155",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::Character",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35E8F20",
+    "site": "bg3_dx11.exe+0x35E8FA6",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::DeadReckoningSyncComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2B4DD00",
+    "site": "bg3_dx11.exe+0x2B4E177",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::spell_cast::StateComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x35E8F20",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::combat::JoiningComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x35E8F20",
+    "site": "bg3_dx11.exe+0x35E8FF7",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

@@ -1,0 +1,137 @@
+{
+ "system": "ecl::sound::MixStateSystem",
+ "namespace": "ecl::sound",
+ "symbols": {
+  "reads": [
+   "ecl::player_management::EventsSingletonComponent",
+   "ecl::player_management::PlayerIdToPlayerInputIndexMappingSingletonComponent",
+   "ecl::spell_cast::StateComponent",
+   "eoc::ClientControlComponent",
+   "eoc::combat::IsInCombatComponent",
+   "eoc::spell_cast::AnimationRequestOneFrameComponent",
+   "eoc::spell_cast::FinishedEventOneFrameComponent",
+   "eoc::spell_cast::PrepareStartEventOneFrameComponent",
+   "eoc::user::ReservedForComponent",
+   "ls::SkeletonSoundObjectsComponent",
+   "ls::SoundListenerComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "ecl::sound::MixStateComponent",
+   "ecl::sound::MixStatePostHUDEventRequestsSingletonComponent",
+   "ecl::sound::MixStateRTPCRequestsSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "FinalizeMixState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_NotifyCharacterAssigned",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "MixStateSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PostMixEvent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPlayerActivityStateChanges",
+    "address": "bg3_dx11.exe+0x1DE1B70",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ProcessPlayerEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSingletonRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSpellPrepares",
+    "address": "bg3_dx11.exe+0x1DE12A0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ResetMixRTPC",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SetMixRTPC",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateListenerDistance",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~MixStateSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::user::ReservedForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1DE12A0",
+    "site": "bg3_dx11.exe+0x1DE145E",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::user::ReservedForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1DE12A0",
+    "site": "bg3_dx11.exe+0x1DE174B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::user::ReservedForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1DE12A0",
+    "site": "bg3_dx11.exe+0x1DE199A",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::IsInCombatComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1DE1B70",
+    "site": "bg3_dx11.exe+0x1DE21DF",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

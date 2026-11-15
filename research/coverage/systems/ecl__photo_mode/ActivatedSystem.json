@@ -1,0 +1,57 @@
+{
+ "system": "ecl::photo_mode::ActivatedSystem",
+ "namespace": "ecl::photo_mode",
+ "symbols": {
+  "reads": [
+   "ls::photo_mode::DoFComponent",
+   "ls::photo_mode::FoVComponent"
+  ],
+  "writes": [
+   "ls::photo_mode::ActivatedComponent"
+  ],
+  "methods": [
+   {
+    "name": "ActivatedSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPhotoModeSessions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ActivatedSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "ls::photo_mode::ActivatedComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1AECDB0",
+    "site": "bg3_dx11.exe+0x1AED022",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Keeps one singleton marker entity for 'photo mode is active'. When an entity got both the DoF and FoV photo-mode components this frame (Added query with two add-ands) and no ls::photo_mode::ActivatedComponent is alive (Persistent query empty), it creates a new entity through the deferred command buffer and adds ActivatedComponent to it (the helper is AddComponent<ls::photo_mode::ActivatedComponent>: it sets up frame storage for that type index and returns it). Only in a frame with no such add, when the removed-DoF/FoV queries have any hit, it looks up the Activated singleton and destroys its entity when found. ProcessPhotoModeSessions uses the same query slots.",
+   "evidence": "EoCClient.dll ecl::photo_mode::ActivatedSystem::Update @0x5A0820 read in full; add helper EoCClient.dll+0x59F110 (its type index global is set up with GetTypeName<ls::photo_mode::ActivatedComponent>); Added query registered at +0x59FC70; DestroyEntity on the Removed branch. Review 14 Nov: 'and none is left alive' removed - the removal branch tests the Removed queries only."
+  }
+ ],
+ "unknown": [
+  "The Removed query slots were not resolved past their use; the singleton found-flag was read as 'destroy only when found' (same pattern as RequestSystem's GetSingleton)"
+ ],
+ "sure": "yes"
+}

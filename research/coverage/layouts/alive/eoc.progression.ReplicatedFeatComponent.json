@@ -1,0 +1,34 @@
+{
+  "component": "eoc::progression::ReplicatedFeatComponent",
+  "ext_name": "ProgressionReplicatedFeat",
+  "size": 24,
+  "oneFrame": false,
+  "seen": true,
+  "fields": [
+    {
+      "name": "Feat",
+      "offset": 0,
+      "type": "Guid",
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xE78640 ecl::feat::SoundSystem::ProcessFeatComponent passes the component's +0 Guid to eoc::feat::SoundStateManager::GetByFeatUUID - the UUID of the Feat resource (and reads the bool at +0x10, IsMuted, to choose between two sound states). Script Extender's name, now backed by the code."
+    },
+    {
+      "name": "IsMuted",
+      "offset": 16,
+      "type": "bool",
+      "source": "game",
+      "evidence": "Windows type name ls::FieldMeta<bool eoc::progression::ReplicatedFeatComponent::*,16> (EoCClient.dll+0x13DFFB0 and the replication field-change storage strings): a bool at +0x10, the class's only replicated field; macOS FieldMeta name m_IsMuted (gatekit symbols replication). Script Extender declares it uint8_t field_10."
+    },
+    {
+      "name": "field_14",
+      "offset": 20,
+      "type": "int32_t",
+      "source": "unknown",
+      "evidence": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Progression.h:61): its author's name and type; the offset is computed from the declared types; the computed offset equals the one in its earlier name. The game's own name is not known."
+    }
+  ],
+  "status": "declared",
+  "size_check": "Size 0x18 equals the registry's (client 24, server 24; coverage.json, game v4.76.31.656).",
+  "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Progression.h:61, kind component), by gatekit symbols se-layouts on 2026-11-14",
+  "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `unknown` because no rung of section 7 is that - not game (no FieldMeta or macOS name behind it), not toolkit, not inferred (ours, with evidence in the record). A name is raised from `unknown` only with evidence, by `gatekit names set`."
+}

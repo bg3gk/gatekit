@@ -1,0 +1,56 @@
+{
+ "system": "esv::combat::CanStartCombatSystem",
+ "namespace": "esv::combat",
+ "symbols": {
+  "reads": [
+   "eoc::character::CharacterComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::item::ItemComponent"
+  ],
+  "writes": [
+   "esv::combat::CanStartCombatComponent"
+  ],
+  "methods": [
+   {
+    "name": "CanStartCombatSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CanStartCombatSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; the Toolkit's own methods without an address were not found in the game binary and are listed with address null; the per-frame update address is not printed for bg3_dx11.exe by this command, it was found by reading the factory in pseudo-code). Parsed by script from the command output, not retyped.",
+  "uses": [
+   {
+    "type": "esv::combat::CanStartCombatComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3229EB0",
+    "site": "bg3_dx11.exe+0x3229F16",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Adds and removes esv::combat::CanStartCombatComponent. The update runs three functions over one scratch map from entity to a number: the first two walk queries and put 0 or 1 against entities, the third adds the component (one byte, zeroed) to the entities marked 0 and removes it from those marked 1. The queries the first two walk are of the modified kind (QueryTypeModifiedTag), so they look at entities whose watched components changed; which components they watch was not identified.",
+   "evidence": "bg3_dx11.exe factory 0x234BC20 (stores entry 0x238F290) -> update 0x3229EB0 -> 0x3228D30 and 0x3229520 (write 0 or 1 into the map), 0x3229D10 (adds CanStartCombatComponent on 0, removes it on 1). Read as pseudo-code."
+  }
+ ],
+ "unknown": [
+  "What decides 0 versus 1 for an entity. The marking functions test storage-state bits of queries whose component lists were not named in the pseudo-code, so the 0/1 is not tied to a gameplay condition.",
+  "Which components the modified queries watch; the method signature lists character, combat participant and item, but the queries were not matched to them.",
+  "What having the component means for combat; only that 0 adds it and 1 removes it is read."
+ ],
+ "sure": "no: the mark-then-add/remove structure is read from the code; the condition behind the marks is not understood"
+}

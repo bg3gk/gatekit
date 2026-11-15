@@ -1,0 +1,93 @@
+{
+ "system": "esv::TimeSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::spell_cast::StateComponent",
+   "esv::ftb::TimeFactorRequestsSingletonComponent",
+   "esv::ftb::TimeFactorResetRequestsSingletonComponent",
+   "esv::interrupt::TimeFactorRequestsComponent",
+   "esv::spell_cast::MovementAndPrecalculationEndEventOneFrameComponent"
+  ],
+  "writes": [
+   "ls::TimeFactorComponent"
+  ],
+  "methods": [
+   {
+    "name": "LEGACY_ResetTimeFactorRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTimeFactorComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTimeFactorRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResetTimeFactorForAll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SetTimeFactor",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "TimeSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~TimeSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ls::TimeFactorComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x41AFBA0",
+    "site": "bg3_dx11.exe+0x41AFCFE",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TimeFactorComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x41AFBA0",
+    "site": "bg3_dx11.exe+0x41AFD22",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TimeFactorComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x41AFBA0",
+    "site": "bg3_dx11.exe+0x41AFCEF",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::TimeFactorComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x41AFBA0",
+    "site": "bg3_dx11.exe+0x41AFE31",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

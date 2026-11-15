@@ -1,0 +1,178 @@
+{
+ "system": "esv::ConstellationSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::ActiveComponent",
+   "eoc::ServerRootLevelLoadedComponent",
+   "esv::ConstellationChildComponent",
+   "esv::constellation::ChildrenListChangedOneFrameComponent",
+   "ls::DebugComponent",
+   "ls::LevelComponent",
+   "ls::LevelInstanceComponent",
+   "ls::LevelInstanceStateComponent",
+   "ls::TransformComponent",
+   "ls::anubis::ConfigComponent",
+   "ls::uuid::ToHandleMappingComponent"
+  ],
+  "writes": [
+   "esv::ConstellationComponent",
+   "esv::ConstellationHelperComponent"
+  ],
+  "methods": [
+   {
+    "name": "ConstellationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_LoadFromSavegame",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_OnScriptCmdInitConstellation",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_SaveToSavegame",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnGameStateChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessActivations",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessChildrenListChangedEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessComponentRemovals",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessLevelLoadedEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessNewConstellationHelpers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessNewConstellations",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SendActivationEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ConstellationSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::ConstellationChildComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D55B00",
+    "site": "bg3_dx11.exe+0x2D55F79",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::anubis::ConstellationActivatedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D55B00",
+    "site": "bg3_dx11.exe+0x2D55FBA",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::ConstellationChildComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D57EE0",
+    "site": "bg3_dx11.exe+0x2D58122",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::ConstellationChildComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D57EE0",
+    "site": "bg3_dx11.exe+0x2D5832C",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::ConstellationChildComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D57EE0",
+    "site": "bg3_dx11.exe+0x2D5866C",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::ConstellationComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D56C20",
+    "site": "bg3_dx11.exe+0x2D57099",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::LevelInstanceComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D576D0",
+    "site": "bg3_dx11.exe+0x2D57A13",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::LevelInstanceComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D576D0",
+    "site": "bg3_dx11.exe+0x2D57E69",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::anubis::ConfigComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D57EE0",
+    "site": "bg3_dx11.exe+0x2D582B8",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::anubis::ConfigComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D57EE0",
+    "site": "bg3_dx11.exe+0x2D5837B",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

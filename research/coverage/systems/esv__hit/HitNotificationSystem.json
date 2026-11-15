@@ -1,0 +1,64 @@
+{
+ "system": "esv::hit::HitNotificationSystem",
+ "namespace": "esv::hit",
+ "symbols": {
+  "reads": [
+   "eoc::death::DeathComponent",
+   "esv::death::DelayedDeathComponent",
+   "esv::hit::HitNotificationRequestOneFrameComponent"
+  ],
+  "writes": [
+   "esv::hit::HitNotificationEventOneFrameComponent",
+   "esv::hit::UnresolvedHitNotificationComponent"
+  ],
+  "methods": [
+   {
+    "name": "HitNotificationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~HitNotificationSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::hit::HitNotificationEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2DE2E50",
+    "site": "bg3_dx11.exe+0x2DE3BFB",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::hit::HitNotificationEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2DE2E50",
+    "site": "bg3_dx11.exe+0x2DE3D10",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Collects this frame's HitNotificationRequestOneFrame entities and any entities still carrying UnresolvedHitNotificationComponent into a per-target table of pending notifications (0x40 bytes each). For each target it consults whether the target is dead (DeathComponent) or dying later (DelayedDeathComponent). On one side of a condition that was not resolved (see unknown) it creates a NEW entity per notification carrying esv::hit::HitNotificationEventOneFrameComponent (0x50 bytes) with a boolean set differently in the three creating loops (0 in one, 1 in the other two); on the other side it adds esv::hit::UnresolvedHitNotificationComponent (0x10 bytes, a list of pending notifications) to the target entity. UnresolvedHitNotificationComponent is also removed (RemoveComponentUnchecked) on a path whose condition was not resolved; 'once the pending list is settled' is an inference from its place. Finally one query's entities (the request one-frame entities, by the pattern) are destroyed.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, HitNotificationSystem::Update at +0x3B8B70 (1200 lines, searched for Deferred/Create/Remove/Destroy and read in windows). Event add: FUN_1803b5540 (+0x3B5540, 4 call sites), ends in AllocRaw 0x50 with DAT_182202404 -> inits +0x53C90/+0x3B5AD0 -> 'esv::hit::HitNotificationEventOneFrameComponent'. Unresolved add: FUN_1803b5700 (+0x3B5700), SetupComponentFrameStorage 0x10 with DAT_1822023dc -> inits +0x53DF0/+0x3B6220 -> 'esv::hit::UnresolvedHitNotificationComponent'; one call site at the end of Update, applied over a list of entities. Remove: RemoveComponentUnchecked(DAT_1822023dc & 0x7fff). DestroyEntity at the last query. The queries are Spec<TypeList<...>> objects whose type lists name the request and the unresolved components"
+  }
+ ],
+ "unknown": [
+  "The exact condition that decides 'settled' versus 'unresolved' (what DeathComponent and DelayedDeathComponent are tested for, and the meaning of the 0/1 boolean in the three event-creating loops).",
+  "What reads HitNotificationEventOneFrameComponent (outside this system).",
+  "Whether the final DestroyEntity query is the request entities or something else; inferred, the query's type list is truncated in the symbol text I read."
+ ],
+ "sure": "no: the three components are located with their add/remove sites, but the deciding conditions and the final destroy target were not resolved"
+}

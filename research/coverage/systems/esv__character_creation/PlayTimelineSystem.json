@@ -1,0 +1,107 @@
+{
+ "system": "esv::character_creation::PlayTimelineSystem",
+ "namespace": "esv::character_creation",
+ "symbols": {
+  "reads": [
+   "eoc::SyncedTimelineControlComponent",
+   "eoc::character_creation::definition::CreationComponent",
+   "ls::DebugComponent",
+   "ls::uuid::ToHandleMappingComponent"
+  ],
+  "writes": [
+   "esv::Character",
+   "esv::Item",
+   "esv::character_creation::OriginIntroAssignmentsSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "ClearIntroAssignments",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetIntroAssignments",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestPlayOriginTimeline",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PlayTimelineSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPlayRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTimelineEnding",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~PlayTimelineSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::character_creation::OriginIntroAssignmentsSingletonComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3172B40",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Runs ClearIntroAssignments; only when that did not clear, gets (or creates) the intro-assignments singleton with GetIntroAssignments and, when it has one, runs ProcessPlayRequests and ProcessTimelineEnding with it.",
+   "evidence": "EoCServer.dll+0x1577360 named pseudo-code, lines 20-32 read whole.",
+   "check": "not checkable live: the order of calls or a dialog started from log strings; nothing named is left on an entity"
+  },
+  {
+   "method": "ClearIntroAssignments",
+   "text": "When no entity holds eoc::character_creation::definition::CreationComponent (no character-creation session is open), destroys every entity with esv::character_creation::OriginIntroAssignmentsSingletonComponent ('Destroying AssignmentsSingleton') and returns true; otherwise returns false.",
+   "evidence": "EoCServer.dll+0x15748C0 lines 79-200 read: DAT_1821fa160 = query on definition::CreationComponent (HasAny), DAT_1822802ec = query on the singleton, DestroyEntity at 186.",
+   "check": "not checkable live: needs leaving character creation; no replayable recipe covers it yet (lead: {gone: esv::character_creation::OriginIntroAssignmentsSingletonComponent} once creation ends)"
+  },
+  {
+   "method": "GetIntroAssignments",
+   "text": "Returns the existing singleton if there is one. Otherwise, if any CreationComponent has the byte at offset 0x10 of its 0x18-byte element set, returns nothing; else it logs 'Creating AssignmentsSingleton', creates an entity and adds esv::character_creation::OriginIntroAssignmentsSingletonComponent, then fills it from the origin-intro table, mapping each origin's dummy UUID to its entity ('evaluating originUUID'; a missing mapping is reported as 'CC Intro movies will NOT work'). Review 2026-11-14 (Opus, systems I): GetIntroAssignments does not itself require a CreationComponent (with none the byte loop is empty and it would create); Update reaches it only when ClearIntroAssignments found one.",
+   "evidence": "EoCServer.dll+0x1574D50 named pseudo-code, lines 80-284 read: lookup helper +0x15740D0 and early return of the found singleton, the byte test at 211-213, CreateEntity at 256, add helper +0x15739D0 (ComponentFrameStorageAllocRaw of DAT_182280314 = OriginIntroAssignmentsSingletonComponent); table loop from its log strings at 332-421.",
+   "check": "not checkable live: no replayable recipe yet (lead): open character creation from the main menu (a new game); then {appears: esv::character_creation::OriginIntroAssignmentsSingletonComponent} on the server; cc_body_type_visual_changed is not replayable"
+  },
+  {
+   "method": "LEGACY_RequestPlayOriginTimeline / ProcessPlayRequests",
+   "text": "A request (user, origin UUID) is queued ('LEGACY PlayRequest'); ProcessPlayRequests evaluates each: a user already attached to another timeline is refused, the origin data and an available speaker are looked up, and the origin's IntroDialogUUID must be filled in ('missing IntroDialogUUID'); then the intro is started and the dialog instance is associated with the speaker in the singleton.",
+   "evidence": "EoCServer.dll+0x1575870 and +0x1575B00: log strings at 66 and 85-349; the start call itself was not read.",
+   "check": "not checkable live: the order of calls or a dialog started from log strings; nothing named is left on an entity"
+  },
+  {
+   "method": "ProcessTimelineEnding",
+   "text": "When an intro timeline has finished, looks up its dialog instance id in the singleton and removes the association with its speaker.",
+   "evidence": "EoCServer.dll+0x15764D0 log strings at 166-245.",
+   "check": "not checkable live: the order of calls or a dialog started from log strings; nothing named is left on an entity"
+  }
+ ],
+ "unknown": [
+  "What the byte at +0x10 of CreationComponent means (it blocks creating the singleton).",
+  "How the intro dialog is started in ProcessPlayRequests, and what the system writes on esv::Character / esv::Item (both in the symbols' write list)."
+ ],
+ "sure": "yes: the creation of OriginIntroAssignmentsSingletonComponent and its guard (no singleton, CreationComponent present, none with byte +0x10 set) and its destruction (no CreationComponent) were read; the play path is from log strings. Review 2026-11-14 (Opus, systems I): held: the create (CreateEntity, +0x15739D0 AllocRaw of DAT_182280314) under the byte test, and the destroy under no CreationComponent, re-read."
+}

@@ -1,0 +1,238 @@
+{
+ "system": "esv::spell_cast::CastRequestSystem",
+ "namespace": "esv::spell_cast",
+ "symbols": {
+  "reads": [
+   "eoc::item::ShouldDestroyOnSpellCastComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "esv::active_roll::StartSpellRequestOneFrameComponent",
+   "esv::spell_cast::StateComponent",
+   "esv::spell_cast::random::StartSpellCastRequestOneFrameComponent",
+   "ls::DebugComponent"
+  ],
+  "writes": [
+   "esv::spell_cast::CastRequestsComponent",
+   "esv::spell_cast::PendingRequestsComponent"
+  ],
+  "methods": [
+   {
+    "name": "ActiveRollNodeRequestStartSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "AnubisRequestCancelSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "AnubisRequestStartSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CastRequestSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CharacterRequestCancelCurrentSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ClearRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CollectSpellCastCancelRequests",
+    "address": "bg3_dx11.exe+0x3370C80",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "CollectSpellCastConfirmRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CollectSpellCastRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CollectSpellCastStartActiveRollRequests",
+    "address": "bg3_dx11.exe+0x3370020",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "CollectSpellCastStartRandomCastRequests",
+    "address": "bg3_dx11.exe+0x33702E0",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "CollectSpellCastStartRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CollectSpellCastUpdatePreviewRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CollectUnfilteredRequests",
+    "address": "bg3_dx11.exe+0x336FA90",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "CommandProtocolRequestStartSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GameplayControllerRequestCancelCurrentSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GameplayControllerRequestCancelSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ItemActionRequestStartSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "JumpRequestStartSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "NetworkRequestCancelSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "NetworkRequestConfirmSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "NetworkRequestStartSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "NetworkRequestStartSpellCastPreview",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "NetworkRequestUpdateSpellCastPreview",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnCharacterAssigned",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OsirisRequestCancelSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OsirisRequestStartSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PlanActionsRequestStartSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ReactionRequestCancelCurrentSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ReactionRequestCancelSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ReactionRequestStartSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "TeleportRequestCancelCurrentSpellCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CastRequestSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; the Toolkit's own methods without an address were not found in the game binary and are listed with address null; the per-frame update address is not printed for bg3_dx11.exe by this command, it was found by reading the factory in pseudo-code). Parsed by script from the command output, not retyped.",
+  "uses": [
+   {
+    "type": "eoc::spell_cast::IsCastingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3371030",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::spell_cast::StateComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x3371030",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "SystemLoad",
+   "text": "When the system loads it creates one new entity and adds two components to it, esv::spell_cast::CastRequestsComponent and esv::spell_cast::PendingRequestsComponent, so that both exist exactly once in the world as singletons. Nothing is conditional.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, CastRequestSystem::SystemLoad at +0x1197AE0, read whole (62 lines). Adds: FUN_18118e330 (+0x118E330, AllocRaw, DAT_18226c02c -> init +0x1C0450 -> 'esv::spell_cast::CastRequestsComponent') and FUN_18118e590 (+0x118E590, AllocRaw, DAT_18226c030 -> init +0x1C0500 -> 'esv::spell_cast::PendingRequestsComponent')"
+  },
+  {
+   "method": "Update",
+   "text": "Fetches the two singletons (and logs 'No singleton found' if one is missing), then in order collects requests from its many sources into one list: unfiltered ones (which in turn collect active-roll and random-cast start requests), start requests, cancel requests, confirm requests and preview-update requests. It then clears the singleton's request lists and refills CastRequestsComponent (start, cancel, confirm, preview kinds, by element sizes 0xd0, 0x28, 0xb0 ...) from the collected list, and finally calls ClearRequests so the intake queues (Osiris, script, network, reaction, item, jump, command protocol, plan, gameplay controller, teleport and character sources) are empty again for the next tick. It adds and removes no component itself.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, CastRequestSystem::Update at +0x1198090 (286 lines): GetSingleton for both types via FUN_181190600 / FUN_181190920 (each prints the type name in the missing-singleton message), calls to CollectUnfilteredRequests, CollectSpellCastStartRequests, CollectSpellCastCancelRequests, CollectSpellCastConfirmRequests, CollectSpellCastUpdatePreviewRequests, then the array refills; ClearRequests at +0x11925F0 (31 lines) clears twenty intake arrays. The mapping of the intake arrays to sources is from comments in the decompiler output that follow the Script Extender layout, so it is a layout label, not something I proved from behaviour"
+  }
+ ],
+ "unknown": [
+  "What PendingRequestsComponent holds exactly and how it is consumed (the Update body copies into it at offset +0x10 and +0x20/+0x30 areas; not followed).",
+  "Which of the Request* intake methods are called by which part of the game (names only: Osiris, Anubis, network, reaction, item action, jump, teleport, plan actions).",
+  "The conditions inside the Collect* methods that filter requests (e.g. whether the caster is already casting, as the view includes IsCastingComponent)."
+ ],
+ "sure": "no: SystemLoad creation read in full; Update read structurally only"
+}

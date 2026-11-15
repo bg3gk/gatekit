@@ -1,0 +1,104 @@
+{
+ "system": "ecl::ping::PingSystem",
+ "namespace": "ecl::ping",
+ "symbols": {
+  "reads": [
+   "ecl::EocCameraBehavior",
+   "ecl::camera::IsInSelectorModeComponent",
+   "ecl::notification::AcceptedComponent",
+   "ecl::notification::SeenComponent",
+   "eoc::gamestate::RunningComponent",
+   "eoc::notification::DestinationComponent",
+   "eoc::notification::PingRequestComponent"
+  ],
+  "writes": [
+   "ecl::ping::HighlightTargetSingletonComponent",
+   "ecl::ping::MultiEffectCreateRequestOneFrameComponent",
+   "ecl::ping::MultiEffectDestroyRequestOneFrameComponent",
+   "ecl::ping::PlaySingletonComponent",
+   "ecl::ping::TargetingSingletonComponent",
+   "ls::GameplayVFXSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "LEGACY_RequestCancelTarget",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestPing",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestStartTarget",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PingSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessClientPingRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessHighlightEffects",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessServerPingRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTargetingRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~PingSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::ping::MultiEffectCreateRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x18A1BF0",
+    "site": "bg3_dx11.exe+0x18A2597",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::ping::MultiEffectDestroyRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x18A1040",
+    "site": "bg3_dx11.exe+0x18A117A",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

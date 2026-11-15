@@ -18,7 +18,7 @@
       "offset": 1,
       "type": "bool",
       "source": "unknown",
-      "evidence": "Same writer sets value byte 1 to 1 when the entry is created for an entity checked for esv::sight::ViewshedParticipantComponent (FUN_1440103b0 with its type index) and copies it as a separate byte (dst[1] = src[1]). Live always 0."
+      "evidence": "Same writer sets value byte 1 to 1 when the entry is created for an entity checked for esv::sight::ViewshedParticipantComponent (bg3.exe+0x40103B0 with its type index) and copies it as a separate byte (byte 1 of the source value to byte 1 of the destination). Live always 0."
     },
     {
       "name": "_Pad2",
@@ -32,7 +32,7 @@
       "offset": 8,
       "type": "HashSet<EntityHandle>",
       "source": "inferred",
-      "evidence": "Creator zeroes a HashSet at +8..+0x38 (bucket ptr/count, NextIds +0x18, Keys +0x28 with size +0x34); destructor LAB_1406b4cb0. Writer bg3.exe+0x2E5D940 copies the local value's set with the HashSet copy bg3.exe+0x5DF700 and fills it with bg3.exe+0x721030 (find/insert comparing 8-byte keys at Keys + i*8) using the entity of each 0x20-byte change entry whose flag byte +8 is 0 (added; flag 1 = removed goes elsewhere). Live: up to 0x1D keys."
+      "evidence": "Creator zeroes a HashSet at +8..+0x38 (bucket ptr/count, NextIds +0x18, Keys +0x28 with size +0x34); destructor is the code at bg3.exe+0x6B4CB0. Writer bg3.exe+0x2E5D940 copies the local value's set with the HashSet copy bg3.exe+0x5DF700 and fills it with bg3.exe+0x721030 (find/insert comparing 8-byte keys at Keys + i*8) using the entity of each 0x20-byte change entry whose flag byte +8 is 0 (added; flag 1 = removed goes elsewhere). Live: up to 0x1D keys."
     }
   ],
   "confidence": "high",

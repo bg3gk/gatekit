@@ -10,7 +10,7 @@
       "offset": 0,
       "type": "uint64_t",
       "source": "inferred",
-      "evidence": "ProcessPlatformPauseReasons: *(ulonglong*)(x) = *(ulonglong*)(x) | 1 and *puVar22 | 2, and tests (byte & 1) / (byte >> 1 & 1) on the 8-byte-stride component storage. macOS default ctor zeroes one qword. Live 1."
+      "evidence": "ProcessPlatformPauseReasons: sets bit 0 (ORs 1 into the 64-bit value) and, elsewhere, bit 1 (ORs 2), and tests bit 0 / bit 1 of the low byte on the 8-byte-stride component storage. macOS default ctor zeroes one qword. Live 1."
     }
   ],
   "confidence": "medium",

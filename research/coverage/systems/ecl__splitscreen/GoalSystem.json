@@ -1,0 +1,105 @@
+{
+ "system": "ecl::splitscreen::GoalSystem",
+ "namespace": "ecl::splitscreen",
+ "symbols": {
+  "reads": [
+   "ecl::ActiveTurnComponent",
+   "ecl::multiplayer::DropInApprovedPlayersSingletonComponent",
+   "ecl::splitscreen::FullscreenTurnActiveComponent",
+   "ecl::splitscreen::HeightSplitReasonsSingletonComponent",
+   "ecl::splitscreen::PlayersSingletonComponent",
+   "ecl::splitscreen::RequestsSingletonComponent",
+   "ecl::splitscreen::SplitReasonsSingletonComponent",
+   "eoc::IsInTurnBasedModeComponent",
+   "eoc::TimelineActorDataComponent",
+   "eoc::character_creation::definition::CreationComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::ftb::ParticipantComponent",
+   "eoc::photo_mode::SessionComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::user::ReservedForComponent"
+  ],
+  "writes": [
+   "ecl::splitscreen::GoalSingletonComponent",
+   "ecl::splitscreen::MergedFocusSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "GoalSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~GoalSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::ActiveTurnComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1B2F100",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::TimelineActorDataComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1B2F100",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::ParticipantComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1B2F100",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ftb::ParticipantComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1B2F100",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::IsInTurnBasedModeComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1B2F100",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::spell_cast::IsCastingComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1B2F100",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

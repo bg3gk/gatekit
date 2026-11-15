@@ -23,11 +23,11 @@
           "evidence": "Copied to PatrolComponent+0x2A (EoCServer.dll+0xD86770, copy helper EoCServer.dll+0xD855F0), which is passed as the bool argument of ls::SplineTemplate::GetClosestLocationInDirection (direction flag). Windows: copied by bg3.exe+0x3563590; the merged request byte +4 becomes PatrolComponent +0x2A and is passed to the spline node search bg3.exe+0x3C91470."
         },
         {
-          "name": "field_5",
+          "name": "ReverseAtEnd",
           "offset": 5,
           "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "Copied to PatrolComponent+0x2B (EoCServer.dll+0xD86770); not otherwise read there. Windows: copied by bg3.exe+0x3563590; becomes PatrolComponent +0x2B."
+          "source": "inferred",
+          "evidence": "Copied to esv::crowds::PatrolComponent +0x2B (EoCServer.dll+0xD86770; Windows bg3.exe+0x3563590). bg3.exe+0x3560EA0 (esv::crowds::PatrolSystem update) steps to the next spline node with bg3.exe+0x2F5BD40(spline, node, direction +0x2A); when the stepper reports it wrapped past the end and byte +0x2B is set, it flips +0x2A (direction) and steps again - so with it set the patrol turns back at the end of the spline instead of wrapping round. Loader bg3.exe+0x2774600 stores (model +0x3B != 0); default 1."
         },
         {
           "name": "MovementSpeed",

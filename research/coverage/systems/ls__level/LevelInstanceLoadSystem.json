@@ -1,0 +1,104 @@
+{
+ "system": "ls::level::LevelInstanceLoadSystem",
+ "namespace": "ls::level",
+ "symbols": {
+  "reads": [
+   "ls::LevelComponent",
+   "ls::LevelInstanceLoadComponent",
+   "ls::TransformComponent",
+   "ls::anubis::LoadCompleteOneFrameComponent",
+   "ls::level::CacheLoadComponent",
+   "ls::level::LevelInstanceLoadStateComponent"
+  ],
+  "writes": [
+   "ls::LevelInstanceComponent",
+   "ls::LevelInstanceStateComponent",
+   "ls::level::LevelInstanceLoadingComponent"
+  ],
+  "methods": [
+   {
+    "name": "FinishLoading",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "InstantiateLevel",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LevelInstanceLoadSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LoadLocalTemplateManager",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessLoadCompletion",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StartLoadingLevelData",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~LevelInstanceLoadSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ls::LevelInstanceLoadedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3C1C880",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::level::LevelInstanceBackgroundLoadingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3C1C880",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::level::LevelInstanceLoadStateComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3C1C880",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::level::LevelInstanceLoadingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3C1C880",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::LevelInstanceStateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3C1C880",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

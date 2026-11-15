@@ -1,0 +1,110 @@
+{
+ "system": "esv::itemwall::WallSystem",
+ "namespace": "esv::itemwall",
+ "symbols": {
+  "reads": [
+   "esv::concentration::OnConcentrationClearedEventOneFrameComponent",
+   "esv::itemwall::CreateComponent"
+  ],
+  "writes": [
+   "esv::itemwall::AnimationComponent",
+   "esv::itemwall::CreateSurfaceCapsuleOneFrameComponent",
+   "esv::itemwall::ForcePushRequestOneFrameComponent",
+   "esv::itemwall::RequestSummonOneFrameComponent",
+   "ls::SavegameComponent"
+  ],
+  "methods": [
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateAnimation",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "WallSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~WallSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::itemwall::AnimationComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3379CD0",
+    "site": "bg3_dx11.exe+0x337A165",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::itemwall::CreateSurfaceCapsuleOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3379CD0",
+    "site": "bg3_dx11.exe+0x337A263",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::itemwall::ForcePushRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3379CD0",
+    "site": "bg3_dx11.exe+0x337ABEC",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::itemwall::RequestSummonOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3379CD0",
+    "site": "bg3_dx11.exe+0x337A9FF",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3379CD0",
+    "site": "bg3_dx11.exe+0x337A240",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3379CD0",
+    "site": "bg3_dx11.exe+0x337A9DD",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "UpdateAnimation (Update)",
+   "text": "Runs every tick over the walls. (1) Two queries (contents not resolved) have every matching entity destroyed each tick, which is the pattern of clearing one-frame request entities. (2) A wall entity that has CreateComponent but no AnimationComponent yet gets an esv::itemwall::AnimationComponent added, but only when the concentration-cleared lookup (FUN_181140a80) does not find the wall: its timer plus the wall template's ItemAnimation steps (fetched through the helper from the ItemWall template named in CreateComponent via GetItemAnimations over the ItemSpawn array). (3) If a helper call (vtable slot +0x28, labelled GetSurface by the author; that it tests a non-zero surface type is not read) returns true, a new entity is created carrying esv::itemwall::CreateSurfaceCapsuleOneFrameComponent, filled from the wall's CreateComponent plus the spell's surface radius, lifetime and status, for the surface manager to lay a surface.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, EoCServer.dll+0x1141300 (WallSystem::UpdateAnimation, 1220 lines, searched and read in 30-line windows). Adds: FUN_18113e630 (+0x113E630) -> DAT_18226a3b4 -> inits FUN_1801bc060/+0x113F060 -> 'esv::itemwall::AnimationComponent'; FUN_18113e8b0 (+0x113E8B0) -> DAT_182218a34 -> 'esv::itemwall::CreateSurfaceCapsuleOneFrameComponent'. Both end in ComponentFrameStorageAllocRaw. The surface condition is the vtable slot +0x28 of WallSystemHelper = GetSurface (vtable at EoCServer.dll+0x1AC1730). Review 2026-11-14 (strong model): the AnimationComponent add at about line 552 sits inside 'FUN_181140a80 returned 0'; the capsule goes on a fresh CreateEntity (line 605), guarded by the bool from slot +0x28"
+  },
+  {
+   "method": "UpdateAnimation (timer and item steps)",
+   "text": "Each tick the animation timer of every wall that has both CreateComponent and AnimationComponent advances by the frame's delta time. If the animation step list is empty, or a wall's key is found in the set built from esv::concentration::OnConcentrationClearedEventOneFrameComponent (helper FUN_181140a80), the wall entity is destroyed. Otherwise the steps whose time has passed are popped one by one. For each popped step, every ItemSpawn of the wall whose id equals the step's id causes a fresh entity with esv::itemwall::RequestSummonOneFrameComponent (the item spawn: name, position, rotation, spell id, wall lifetime from the helper and status), which is what asks the summon system to spawn one wall segment item. Also, for entities listed in the wall's creation result whose step mask matches the popped step, an esv::itemwall::ForcePushRequestOneFrameComponent (the wall's source plus spell id plus a vector copied from the list) is added to that existing entity if it is alive.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, EoCServer.dll+0x1141300, tail section: FUN_18113ed80 (+0x113ED80) -> DAT_18221fa68 -> inits FUN_1800B8720/+0x7B9E40 -> 'esv::itemwall::RequestSummonOneFrameComponent' (0x88 bytes); FUN_18113eb20 (+0x113EB20) -> _DAT_18221794c -> inits +0x9D620/+0x6A4D80 -> 'esv::itemwall::ForcePushRequestOneFrameComponent' (0x60 bytes); all end in AllocRaw. DestroyEntity of the wall at the jump label before the second pass. The mapping from the concentration-cleared set to the wall is only inferred from the view and from the destroy branch, the helper body was not read to the end"
+  }
+ ],
+ "unknown": [
+  "What the two cleanup queries match (query indices DAT_182218894 and DAT_18221f92c, not types); 'clearing one-frame entities' is inferred from the pattern, not proven.",
+  "Exactly how FUN_181140a80 finds a wall in the concentration-cleared set (what key from CreateComponent it uses).",
+  "Who the entities in the creation result's second list are (those receiving ForcePushRequest) and what the 8-byte step mask stands for.",
+  "The SavegameComponent is in the writes list; no add of it was found in UpdateAnimation.",
+  "What reads the one-frame components afterwards is outside this system (hints name SurfaceManager::ProcessItemWallRequests and SpawnSystem::CreateSummon from the symbol names only)."
+ ],
+ "sure": "no: the animation/destroy/add logic is read, but the cleanup queries, the concentration lookup and the force-push target list were not resolved"
+}

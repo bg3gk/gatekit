@@ -8,7 +8,7 @@
       "offset": 0,
       "type": "Guid",
       "source": "inferred",
-      "evidence": "bg3.exe+0x34FD8F0 (executes an unequip request) creates the component (storage bg3.exe+0x2701A60, size 0x10, zeroed) on the unequipped item when the 16 bytes at param_12 are non-zero and copies them into it; param_12 is the ShapeshiftState Guid of the UnequipRequest (Script Extender: esv::inventory::UnequipRequest.ShapeshiftState). bg3.exe+0x34F7990 compares both qwords with an entry of esv::inventory::ShapeshiftEquipmentHistoryComponent.History (Array<Guid>) and removes the component on a match (the item is then equipped back). Same shape as esv::inventory::ShapeshiftAddedEquipmentComponent."
+      "evidence": "bg3.exe+0x34FD8F0 (executes an unequip request) creates the component (storage bg3.exe+0x2701A60, size 0x10, zeroed) on the unequipped item when the 16 bytes its twelfth argument points to are non-zero and copies them into it; that argument is the ShapeshiftState Guid of the UnequipRequest (Script Extender: esv::inventory::UnequipRequest.ShapeshiftState). bg3.exe+0x34F7990 compares both qwords with an entry of esv::inventory::ShapeshiftEquipmentHistoryComponent.History (Array<Guid>) and removes the component on a match (the item is then equipped back). Same shape as esv::inventory::ShapeshiftAddedEquipmentComponent."
     }
   ],
   "confidence": "high",

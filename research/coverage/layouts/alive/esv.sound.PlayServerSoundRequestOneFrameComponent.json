@@ -27,18 +27,18 @@
       "evidence": "PlayRequest writer stores the 0..3 result of a virtual call on the system's sound helper (rejects 2 and >=4); PlayHUDRequest writer stores constant 2. Live: 0..2. Enum name not established (an ESoundObjectType-like value, 4 bytes)."
     },
     {
-      "name": "field_10",
+      "name": "FromResource",
       "offset": 16,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "Both writers copy the request byte at +0xC here (the bool of RequestPlaySound / RequestPlayHUDSound). Live: 0/1."
+      "source": "inferred",
+      "evidence": "esv::ServerSoundSystem queues PlayRequest {Entity +0, FixedString +8, u8 +0xC, u8 +0xD} (variant tag 0) and PlayHUDRequest {Entity, FixedString, u8 +0xC} (tag 1). The exported request functions differ only in that byte: RequestPlaySound (EoCServer.dll+0x4CA960) and RequestPlayHUDSound (+0x4CA760) write 0 at +0xC, RequestPlaySoundFromResource (+0x4CAA70) and RequestPlayHUDSoundFromResource (+0x4CA860) write 1. Both component writers copy request +0xC here; EoCServer.dll+0x845C60 carries it into PlayServerSoundNotificationRequest +0x10 and bg3.exe+0x2DEE710 stores it at eoc::notification::PlayServerSoundComponent +0x18, which makes the client resolve the sound through the sound bank."
     },
     {
-      "name": "field_11",
+      "name": "LocalPlayerOnly",
       "offset": 17,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "PlayRequest writer copies request byte +0xD (when it is set, object type 1 is rejected); PlayHUDRequest writer stores 1."
+      "source": "inferred",
+      "evidence": "esv::ServerSoundSystem queues PlayRequest {Entity +0, FixedString +8, u8 +0xC, u8 +0xD} (variant tag 0) and PlayHUDRequest {Entity, FixedString, u8 +0xC} (tag 1). This byte is RequestPlaySound's bool (EoCServer.dll+0x4CA960 stores param_3 at request +0xD; the PlayHUDRequest writer stores 1). EoCServer.dll+0x845C60 copies component +0x11 into the notification request +0x11, and bg3.exe+0x2DEE710 stores it at eoc::notification::PlayServerSoundComponent +0x19 (LocalPlayerOnly: the client plays it through PlayerManager::PlaySoundForLocalPlayer); the same function branches on it to pick the receiving peers."
     },
     {
       "name": "_Pad12",
@@ -50,7 +50,7 @@
   ],
   "confidence": "medium",
   "open_questions": [
-    "Meanings of the two bytes at +0x10/+0x11 and the enum behind +0xC."
+    "The enum behind +0xC (SoundObjectType)."
   ],
   "minutes": 9,
   "functions_read": 5,

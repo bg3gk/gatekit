@@ -1,0 +1,84 @@
+{
+ "system": "esv::trigger::MusicVolumeSystem",
+ "namespace": "esv::trigger",
+ "symbols": {
+  "reads": [
+   "esv::Character",
+   "esv::GameStateLoadLevelComponent",
+   "esv::MusicVolumeTrigger",
+   "ls::LevelUnloadEventComponent",
+   "ls::trigger::AreaComponent",
+   "ls::trigger::ContainerComponent",
+   "ls::trigger::IsInsideOfComponent",
+   "ls::trigger::UpdatedContainerComponent",
+   "ls::uuid::ToHandleMappingComponent"
+  ],
+  "writes": [
+   "esv::ActiveMusicVolumeComponent",
+   "esv::MusicVolumeTriggerStateComponent"
+  ],
+  "methods": [
+   {
+    "name": "MusicVolumeSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCharacterUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessResetStateRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTriggerEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTriggerUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RedetermineActiveVolumesOnLoading",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestResetState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResetActiveVolumesOnUnloading",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~MusicVolumeSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::MusicVolumeTriggerStateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2D3A0E0",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

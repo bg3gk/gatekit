@@ -1,0 +1,787 @@
+{
+ "system": "esv::party::PartySystem",
+ "namespace": "esv::party",
+ "symbols": {
+  "reads": [
+   "eoc::camp::PresenceComponent",
+   "eoc::death::StateComponent",
+   "eoc::gamestate::SavegameLoadComponent",
+   "eoc::inventory::MemberComponent",
+   "eoc::summon::ContainerComponent",
+   "eoc::summon::IsSummonComponent",
+   "eoc::user::AvatarComponent",
+   "esv::Character",
+   "esv::character::ReconnectedPlayersOneFrameComponent",
+   "esv::character::ReevaluatePartyRequestOneFrameComponent",
+   "esv::party::UserSnapshotComponent",
+   "esv::recruit::RecruitedByComponent",
+   "esv::replication::ReplicationDependencyOwnerComponent",
+   "esv::summon::IsUnsummoningComponent",
+   "ls::DebugComponent",
+   "ls::IsGlobalComponent",
+   "ls::LevelComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "eoc::party::CompositionComponent",
+   "eoc::party::FollowerComponent",
+   "eoc::party::MemberComponent",
+   "eoc::party::ViewComponent",
+   "esv::party::AttachedToGroupEventOneFrameComponent",
+   "esv::party::DetachedFromGroupEventOneFrameComponent",
+   "esv::party::EntityChangedPartyEventOneFrameComponent",
+   "esv::party::MemberParticipationRequestOneFrameComponent",
+   "esv::party::NewPartyOneFrameComponent",
+   "esv::party::PartyMergedEventOneFrameComponent",
+   "esv::party::PartySplitEventOneFrameComponent",
+   "esv::party::PendingDestructionOneFrameComponent",
+   "esv::party::PostReloadStoryUpdateEventOneFrameComponent",
+   "esv::party::RecipesUnlockedEventOneFrameComponent",
+   "esv::party::UpdatePartyFollowersRequestOneFrameComponent",
+   "esv::party::ViewUpdatedEventOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "AddToGroup",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CanAddToGroup",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CleanupEmptyGroups",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CleanupEmptyParties",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CleanupOrphanedEntities",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CleanupPartyFollowers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ClearLegacyRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CreateGroup",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CreateGroupChangeEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CreateParty",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FinalizeEntityTransfers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FindGroupToJoin",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FindPartyForEntity",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Initialize",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_CreateGroupFromMembers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_MemberParticipationUpdate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_PartyFollowerRequest",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_PostReloadStorySetup",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ReevaluateParty",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_TransferMember",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_TransferUser",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "MoveAttachedFollowers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "MoveAttachedSummons",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnGameStateChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnSessionLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnSessionUnloadStarting",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PartySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCreatedParties",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessMemberParticipationRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPartyFollowers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPlayerReconnecting",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPostReloadStoryUpdateRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessReevaluatePartyRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRemoveOneFrameComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSavegameLoaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSavegameWhileLoading",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSummonsToRemove",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTransferGroupRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUnloadAll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUpdatePartyViews",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUserTransferRequests",
+    "address": "bg3_dx11.exe+0x2BC2B00",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "RemoveFromGroup",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResolveDestroyedEntities",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResolveGroupUserId",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResolveNewGroups",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResolveNewParties",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResolveRemoveRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ResolveUserTransfers",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SendEntityChangedPartyEvent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SendPartyMergedEvent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SendPartySplitEvent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "TransferMember",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateMemberData",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~PartySystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "from gatekit symbols system --dll dx11 --full; '-' addresses (null) mean the method was not found in bg3_dx11.exe; the component lists come from the method parameter types, not from the code.",
+  "uses": [
+   {
+    "type": "eoc::party::FollowerComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BB7CA0",
+    "site": "bg3_dx11.exe+0x2BB7FE2",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::party::PartyMergedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BBFEF0",
+    "site": "bg3_dx11.exe+0x2BC0445",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::party::PartySplitEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BBFEF0",
+    "site": "bg3_dx11.exe+0x2BC0574",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::party::PostReloadStoryUpdateEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BC3770",
+    "site": "bg3_dx11.exe+0x2BC3943",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::party::UpdatePartyFollowersRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BC12F0",
+    "site": "bg3_dx11.exe+0x2BC1E3F",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::party::ViewUpdatedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2BC12F0",
+    "site": "bg3_dx11.exe+0x2BC1F2C",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBD4D0",
+    "site": "bg3_dx11.exe+0x2BBD8E7",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBEBB0",
+    "site": "bg3_dx11.exe+0x2BBEE9B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBEBB0",
+    "site": "bg3_dx11.exe+0x2BBF973",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBFC40",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BC0960",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BC12F0",
+    "site": "bg3_dx11.exe+0x2BC189F",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::FollowerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBB3D0",
+    "site": "bg3_dx11.exe+0x2BBBC99",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::FollowerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BC0960",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xF38CE0",
+    "site": "bg3_dx11.exe+0xF38E45",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBEBB0",
+    "site": "bg3_dx11.exe+0x2BBECC6",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBEBB0",
+    "site": "bg3_dx11.exe+0x2BBEF0B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBEBB0",
+    "site": "bg3_dx11.exe+0x2BBF9C5",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BC0960",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::ViewComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BC12F0",
+    "site": "bg3_dx11.exe+0x2BC18BF",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::summon::ContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBB3D0",
+    "site": "bg3_dx11.exe+0x2BBBE7A",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::summon::ContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BC3290",
+    "site": "bg3_dx11.exe+0x2BC35AE",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::summon::IsSummonComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBB3D0",
+    "site": "bg3_dx11.exe+0x2BBBB4B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::party::UserSnapshotComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2BBCE30",
+    "site": "bg3_dx11.exe+0x2BBD055",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBA0E0",
+    "site": "bg3_dx11.exe+0x2BBADCB",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBEBB0",
+    "site": "bg3_dx11.exe+0x2BBF95E",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BC12F0",
+    "site": "bg3_dx11.exe+0x2BC188C",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::party::CompositionComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BC2450",
+    "site": "bg3_dx11.exe+0x2BC272E",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::party::FollowerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBB3D0",
+    "site": "bg3_dx11.exe+0x2BBBC85",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::FollowerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BC2450",
+    "site": "bg3_dx11.exe+0x2BC2541",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0xF38CE0",
+    "site": "bg3_dx11.exe+0xF38E36",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBCE30",
+    "site": "bg3_dx11.exe+0x2BBD20F",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBEBB0",
+    "site": "bg3_dx11.exe+0x2BBF9B5",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BC0960",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BC2450",
+    "site": "bg3_dx11.exe+0x2BC2520",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::party::ViewComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBCE30",
+    "site": "bg3_dx11.exe+0x2BBD02E",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::party::ViewComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBD4D0",
+    "site": "bg3_dx11.exe+0x2BBD589",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::party::ViewComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBD4D0",
+    "site": "bg3_dx11.exe+0x2BBD7A1",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::summon::ContainerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBB3D0",
+    "site": "bg3_dx11.exe+0x2BBBE4A",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::summon::ContainerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBB3D0",
+    "site": "bg3_dx11.exe+0x2BBBE66",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::summon::ContainerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BC3290",
+    "site": "bg3_dx11.exe+0x2BC359A",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::summon::IsSummonComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBB3D0",
+    "site": "bg3_dx11.exe+0x2BBBB37",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::summon::IsSummonComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBD4D0",
+    "site": "bg3_dx11.exe+0x2BBD9DD",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::summon::IsSummonComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBFEF0",
+    "site": "bg3_dx11.exe+0x2BC0116",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::party::UserSnapshotComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BBCE30",
+    "site": "bg3_dx11.exe+0x2BBD041",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::replication::ReplicationDependencyOwnerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2BC12F0",
+    "site": "bg3_dx11.exe+0x2BC1B16",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Per-frame driver. If a savegame-loading query has any entity it only runs ProcessSavegameWhileLoading. Otherwise it first drops last frame's one-frame entities and checks for a full unload; if none, it runs a long fixed pipeline over one shared frame structure: read requests (savegame loaded, created parties, reconnecting players, reevaluate, group transfer, member participation, user transfer, followers, summons to remove, post-reload story), then resolve them (removals, user transfers, new parties, destroyed entities, new groups, group user id, entity transfers), then clean up (orphans, followers, empty groups, empty parties) and finally refresh the party views.",
+   "evidence": "EoCServer.dll named pseudo-code, Update: the call order was read straight from the method body."
+  },
+  {
+   "method": "ResolveNewParties",
+   "text": "Takes the new members and users collected earlier this frame. For a user that has a new member and no party it logs 'creating new party for user' and calls CreateParty, then removes those entities from the transfer list. At the end it walks a list of (party, target) pairs from the frame data: when the target handle is valid it calls SendPartyMergedEvent, otherwise SendPartySplitEvent with a party taken from a map built in this call. What fills that pair list was not read, so it is not known that a split or merge needs a party to be created in the same frame.",
+   "evidence": "EoCServer.dll named pseudo-code, ResolveNewParties at EoCServer.dll+0xABF730: the CreateParty call, the log strings and the handle test before SendPartyMergedEvent / SendPartySplitEvent were read; the pair list comes from the frame structure (+0x60/+0x70). Review (Opus, 14 Nov): the handle test is a plain valid-handle check, not a test that the party exists."
+  },
+  {
+   "method": "CreateParty",
+   "text": "Makes a new party entity through the deferred command buffer and adds, unconditionally, eoc::party::CompositionComponent, ls::DebugComponent, eoc::party::ViewComponent, ls::IsGlobalComponent and esv::party::NewPartyOneFrameComponent (logs 'new party'). So every created party carries NewPartyOneFrame on itself in the frame it is created; ResolveNewParties is the only caller found.",
+   "evidence": "Review (Opus, 14 Nov): EoCServer.dll+0xAA9340: helpers +0xA983D0 (the global at EoCServer.dll+0x2236E9C = CompositionComponent), +0x2DB390 (ls::DebugComponent), +0xA99AC0 (the global at EoCServer.dll+0x21F0348 = ViewComponent), +0x2DB590 (ls::IsGlobalComponent), +0xA98DF0 (the global at EoCServer.dll+0x2236EE4 = NewPartyOneFrameComponent), all ComponentFrameStorageAllocRaw adds; decomp grep 'CreateParty(' finds only ResolveNewParties."
+  },
+  {
+   "method": "ProcessCreatedParties",
+   "text": "Walks entities on which a component was just added (an 'added' query) and logs 'NewParty: party' for each, pushing the party into the frame data for later steps. Its view lists NewPartyOneFrameComponent beside many others, so that is the likely trigger; which exact component the query is on is a guess from the log text.",
+   "evidence": "EoCServer.dll named pseudo-code, ProcessCreatedParties at EoCServer.dll+0xAAEF30: QueryTypeAddedTag iterator, log string 'NewParty: party (%s)'. Which type the query (the global at EoCServer.dll+0x2236EE8) is on was not resolved."
+  },
+  {
+   "method": "SendPartyMergedEvent",
+   "text": "Creates one new entity carrying a single component with the source and target party handles, logging 'SendOnPartyMerged: source party / target party'. Meant for other systems (the party DataSystem has a ProcessPartyMergedEvents method, which probably reads it; not checked).",
+   "evidence": "Review (Opus, 14 Nov): EoCServer.dll+0xAC0A60: CreateEntity, then helper +0xA99060, an AllocRaw add of PartyMergedEventOneFrameComponent (the global at EoCServer.dll+0x2224C0C, 0x10 bytes); unconditional once called."
+  },
+  {
+   "method": "SendPartySplitEvent",
+   "text": "Same shape as the merged event but for a split: one entity with old and new party handles, logging 'SendOnPartySplit: old party / new party'.",
+   "evidence": "Review (Opus, 14 Nov): EoCServer.dll+0xAC0C80: CreateEntity, then helper +0xA99260, an AllocRaw add of PartySplitEventOneFrameComponent (the global at EoCServer.dll+0x2224C10, 0x10 bytes); unconditional once called."
+  },
+  {
+   "method": "SendEntityChangedPartyEvent",
+   "text": "Creates one entity per member that moved, with the entity and its previous and new party, logging 'SendOnEntityChangedParty'.",
+   "evidence": "Review (Opus, 14 Nov): EoCServer.dll+0xAC07F0: CreateEntity, then helper +0xA987E0, an AllocRaw add of EntityChangedPartyEventOneFrameComponent (the global at EoCServer.dll+0x2219A68, 0x18 bytes); the caller found is UpdateMemberData (+0xAC1D50), not read."
+  },
+  {
+   "method": "CleanupEmptyParties",
+   "text": "Marks a party whose member count (a counter at +0x24 of its composition record) is zero by adding PendingDestructionOneFrameComponent to it ('Marking party for destruction'). A second loop over entities that just received that component destroys the party if the count is still zero ('Cleaning up party'); otherwise it logs 'no longer marked for destruction'.",
+   "evidence": "Review (Opus, 14 Nov): EoCServer.dll+0xAA6E40: the zero test on +0x24 guards helper +0xA99460, an AllocRaw add of the type at the global at EoCServer.dll+0x2236E4C = PendingDestructionOneFrameComponent (1 byte); DestroyEntity in the second loop behind the same zero test."
+  },
+  {
+   "method": "LEGACY_MemberParticipationUpdate",
+   "text": "Called from story code to add or remove a character from the party. It only logs and queues the request in the system's own list (this+0xb0); ProcessMemberParticipationRequests reads that list on the next Update. It does not create MemberParticipationRequestOneFrameComponent.",
+   "evidence": "EoCServer.dll named pseudo-code, LEGACY_MemberParticipationUpdate at EoCServer.dll+0xAAD470: log string and one list append; callers +0xAC33D0, +0xAC4BC0 not read."
+  },
+  {
+   "method": "ProcessMemberParticipationRequests",
+   "text": "Handles two kinds of request, logged as 'LEGACY MemberParticipation request' and 'OF Comp MemberParticipation request'; the second is the one-frame component form. It drops requests for dead entities, cancels an add and a remove of the same entity in one frame, ignores a follower or summon whose leader is being transferred, and sends an entity with no party to be created as a brand new member ('no party found. brand new member').",
+   "evidence": "EoCServer.dll named pseudo-code, ProcessMemberParticipationRequests: only the log strings and the structure of the opposite-request test were read; no writer of the one-frame component was found anywhere in the code looked at."
+  },
+  {
+   "method": "ProcessPostReloadStoryUpdateRequests",
+   "text": "Runs only while the system holds the entity-to-position map stored by LEGACY_PostReloadStorySetup (a non-zero count at this+0x16c). When the party is ready it logs 'party is ready, sending event to other systems' and creates one entity carrying PostReloadStoryUpdateEventOneFrameComponent. The readiness test itself was not read closely.",
+   "evidence": "Review (Opus, 14 Nov): EoCServer.dll+0xAB3630: the count test at this+0x16c, the log string, CreateEntity and helper +0xA99650, an AllocRaw add of the global at EoCServer.dll+0x2234F5C = PostReloadStoryUpdateEventOneFrameComponent. LEGACY_PostReloadStorySetup at +0xAAD880 stores a map into this+0x140; its caller is a wrapper at +0xAC4AC0 whose own caller was not found."
+  },
+  {
+   "method": "ProcessPlayerReconnecting",
+   "text": "For users who reconnected it looks up their saved snapshot (UserSnapshot) and creates a grouping request for their characters; logs 'Reconnected player(s) for party', skips dead entities and ones without a member component.",
+   "evidence": "EoCServer.dll named pseudo-code, ProcessPlayerReconnecting: log strings only."
+  },
+  {
+   "method": "ProcessReevaluatePartyRequests",
+   "text": "Handles requests, from the character system (a one-frame request component) and from story code, to re-check which members belong in a party; it also reevaluates every party once after a save loads. It skips summons, entities with no user, and ones of reconnecting players.",
+   "evidence": "EoCServer.dll named pseudo-code, ProcessReevaluatePartyRequests: log strings only."
+  },
+  {
+   "method": "ProcessSavegameLoaded",
+   "text": "After a save loads it finds members with no valid party or group and either transfers them to a party or marks them for removal; also marks entities that were being unsummoned.",
+   "evidence": "EoCServer.dll named pseudo-code, ProcessSavegameLoaded: log strings only."
+  },
+  {
+   "method": "CleanupOrphanedEntities",
+   "text": "Removes party components from members whose party entity is dead.",
+   "evidence": "EoCServer.dll named pseudo-code, CleanupOrphanedEntities: log string 'Found member with dead party, removing Party components'."
+  },
+  {
+   "method": "ProcessUpdatePartyViews",
+   "text": "Rebuilds the replicated party view for parties whose members changed or gained or lost a replication component; entities that are not replicated are left out of the view.",
+   "evidence": "EoCServer.dll named pseudo-code, ProcessUpdatePartyViews: log strings only."
+  }
+ ],
+ "unknown": [
+  "What fills the frame lists that ResolveNewParties reads (new members, users, the merge/split pair list) and which gameplay actions put entries there.",
+  "Who calls LEGACY_PostReloadStorySetup beyond the wrapper at EoCServer.dll+0xAC4AC0: that it is a savegame load is a guess from the name.",
+  "Who writes MemberParticipationRequestOneFrameComponent: nothing found.",
+  "The bodies of most Resolve*, Process*Transfer*, group (AddToGroup, CanAddToGroup, FindGroupToJoin) and follower methods were read through their log strings only."
+ ],
+ "sure": "no: the creating lines and guards of NewParty, PendingDestruction, PostReloadStoryUpdateEvent, Merged, Split and EntityChangedParty were read and the types resolved in review; what feeds them (the frame lists) and most other bodies are from log strings"
+}

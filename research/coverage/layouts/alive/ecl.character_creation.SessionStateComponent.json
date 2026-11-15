@@ -26,11 +26,11 @@
       "evidence": "padding (live 0xFFFF garbage)"
     },
     {
-      "name": "field_C",
+      "name": "Flags",
       "offset": 12,
       "type": "uint32_t",
-      "source": "unknown",
-      "evidence": "Creator writes 0 (8-byte store +0xC..+0x13). Live 0."
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x11BE6E0 ecl::character_creation::SessionView::IsLocked returns bit 1 of the uint32 at +0xC of the component SessionView keeps at +8 - the one whose +8 int16 GetOwnerPlayerId (0x11BB5A0) returns, i.e. this component's PlayerId. A bit set; other bits not read. Creator writes 0, live 0."
     },
     {
       "name": "field_10",

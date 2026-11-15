@@ -1,0 +1,100 @@
+{
+ "system": "esv::item::UseSystem",
+ "namespace": "esv::item",
+ "symbols": {
+  "reads": [
+   "eoc::gamestate::SavegameLoadComponent",
+   "eoc::item::ItemComponent",
+   "esv::item::ObjectInteractionSingletonComponent"
+  ],
+  "writes": [
+   "esv::item::InUseComponent",
+   "esv::item::UseEventsOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "GatherUsageRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_UseFinished",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_UseStarted",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SendEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UseSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~UseSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::item::UseEventsOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x33DA040",
+    "site": "bg3_dx11.exe+0x33DA28C",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::item::InUseComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x33D9380",
+    "site": "bg3_dx11.exe+0x33D94D8",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::item::InUseComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x33D9380",
+    "site": "bg3_dx11.exe+0x33D9823",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::item::ItemComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x33D9380",
+    "site": "bg3_dx11.exe+0x33D9422",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::item::ItemComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x33D9380",
+    "site": "bg3_dx11.exe+0x33D974B",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

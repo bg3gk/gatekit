@@ -73,18 +73,25 @@
       "size": 392,
       "fields": [
         {
-          "name": "field_0",
+          "name": "TargetIndex",
           "offset": 0,
-          "type": "uint64_t",
-          "source": "unknown",
-          "evidence": "not destroyed, not read here."
+          "type": "int32_t",
+          "source": "inferred",
+          "evidence": "Toolkit EoCServer.dll+0x16BBC80 esv::ai::swarm::DebugSystem::FindEntitiesInfo walks this array (stride 0x188) and copies the dword at entry +0 into eoc::ai::swarm::ReplicatedDebugCalculation +0, m_TargetIndex in the macOS FieldMeta."
         },
         {
-          "name": "field_8",
+          "name": "_Pad4",
+          "offset": 4,
+          "type": "uint8_t[4]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
+        },
+        {
+          "name": "Target",
           "offset": 8,
-          "type": "uint64_t",
-          "source": "unknown",
-          "evidence": "not destroyed, not read here."
+          "type": "EntityHandle",
+          "source": "inferred",
+          "evidence": "Toolkit EoCServer.dll+0x16BBC80 FindEntitiesInfo tests entry +8 as an entity handle (index below 0x61 << 54, not the null handle), resolves it to the entity's uuid and stores that in ReplicatedDebugCalculation +8, m_TargetGuid in the macOS FieldMeta."
         },
         {
           "name": "Spell",
@@ -101,11 +108,18 @@
           "evidence": "Destructor: esv::ai::swarm::TurnActionsCalculation::~TurnActionsCalculation(entry + 0x48) (named). Equals the TurnActionsCalculation object that esv::ai::swarm::TurnActionsCalculationComponent holds at +8 (component 320 bytes - 8 = 312 = 0x138; 0x48 + 0x138 = 0x180). Kept as bytes: the object's members are described on that component's layout (Coverage.h, ServerAiSwarmTurnActionsCalculation)."
         },
         {
-          "name": "field_180",
+          "name": "State",
           "offset": 384,
-          "type": "uint64_t",
-          "source": "unknown",
-          "evidence": "tail to the stride 0x188; not destroyed."
+          "type": "uint8_t",
+          "source": "inferred",
+          "evidence": "Toolkit EoCServer.dll+0x16BBC80 FindEntitiesInfo copies the byte at entry +0x180 into ReplicatedDebugCalculation +0x50, m_State (uint8) in the macOS FieldMeta."
+        },
+        {
+          "name": "_Pad181",
+          "offset": 385,
+          "type": "uint8_t[7]",
+          "source": "inferred",
+          "evidence": "compiler padding / bytes nobody reads"
         }
       ]
     }

@@ -11,28 +11,28 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "EoCClient.dll+0xDCC2F0 (event add, ComponentFrameStorageAllocRaw 0x18) writes *param_3 at +0; the caller CheckSoundTriggersToUpdateSoundVolumes (EoCClient.dll+0xDD0760) passes local_200 = SoundCameraComponent.SoundVolume read before it is overwritten. Live: entity handles / null."
+      "evidence": "EoCClient.dll+0xDCC2F0 (event add, ComponentFrameStorageAllocRaw 0x18) writes the value its third argument points to at +0; the caller CheckSoundTriggersToUpdateSoundVolumes (EoCClient.dll+0xDD0760) passes a stack copy of SoundCameraComponent.SoundVolume read before it is overwritten. Live: entity handles / null."
     },
     {
       "name": "NewSoundVolume",
       "offset": 8,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "Same add: +8 = *param_4 = the SoundCameraComponent after its +0 was set to the new trigger's entity."
+      "evidence": "Same add: +8 = the value its fourth argument points to = the SoundCameraComponent after its +0 was set to the new trigger's entity."
     },
     {
       "name": "PlayerId",
       "offset": 16,
       "type": "int16_t",
       "source": "inferred",
-      "evidence": "Same add: *(short*)(+0x10) = *param_5, the short player id the check runs for (stored also in SoundCameraComponent +0x34). Live: 1."
+      "evidence": "Same add: writes the 16-bit value its fifth argument points to at +0x10, the short player id the check runs for (stored also in SoundCameraComponent +0x34). Live: 1."
     },
     {
       "name": "field_12",
       "offset": 18,
       "type": "uint8_t",
       "source": "unknown",
-      "evidence": "Same add: byte +0x12 = *param_6 (a bool argument of the check, probably the 'notify/force' flag). Live: 0."
+      "evidence": "Same add: byte +0x12 = the byte its sixth argument points to (a bool argument of the check, probably the 'notify/force' flag). Live: 0."
     },
     {
       "name": "_Pad13",

@@ -1,0 +1,147 @@
+{
+ "system": "ecl::camera::IsInSelectorWhileInactiveSystem",
+ "namespace": "ecl::camera",
+ "symbols": {
+  "reads": [
+   "ecl::ActiveTurnComponent",
+   "ecl::EocCameraBehavior",
+   "ecl::character::AssignedComponent",
+   "ecl::splitscreen::FullscreenTurnActiveComponent",
+   "ecl::splitscreen::GoalSingletonComponent",
+   "eoc::IsInTurnBasedModeComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::ftb::ParticipantComponent"
+  ],
+  "writes": [
+   "ecl::camera::IsInSelectorWhileInactiveComponent"
+  ],
+  "methods": [
+   {
+    "name": "GatherActiveTurnExited",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherInvalidedSelectors",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherLegacyRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherSplitscreenFullscreenTurnExited",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "IsInSelectorWhileInactiveSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_DisableSelector",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ToggleSelector",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~IsInSelectorWhileInactiveSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::camera::IsInSelectorWhileInactiveComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1E29AA0",
+    "site": "bg3_dx11.exe+0x1E29B4C",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "LEGACY_ToggleSelector / LEGACY_DisableSelector",
+   "text": "Each queues a player id: Toggle into one set, Disable into another. Both are called from ecl::PickingHelper::OnInputEvent: Toggle on the path of input event 0x122 when a global core flag (gCore+0x58) is set and the picking helper has a character; Disable on other paths of the same handler (one of them input event 0x123).",
+   "evidence": "EoCClient.dll+0x101F100 LEGACY_ToggleSelector and +0x101F0E0 LEGACY_DisableSelector (a set insert at this+0x18 / this+0x48); caller EoCClient.dll+0xF5B190 ecl::PickingHelper::OnInputEvent (the event-id tests against 0x122 and 0x123, the gCore_exref[0x58] test before the Toggle call).",
+   "check": "not checkable live: queuing leaves nothing in the ECS; the outcome is checked on Update."
+  },
+  {
+   "method": "Update (GatherLegacyRequests, then the adds)",
+   "text": "For each player queued by Toggle the system takes the player's camera entity: if the camera does not hold ecl::camera::IsInSelectorWhileInactiveComponent and a test on the player passes, the camera is put on the add list; otherwise (it already holds the tag, or the test fails) on the remove list - a toggle. For each player queued by Disable, a camera holding the tag goes on the remove list. Update then adds IsInSelectorWhileInactiveComponent to every camera on the add list and removes it from every camera on the remove list, and empties both queues. The test walks the characters with ecl::ActiveTurnComponent, ecl::character::AssignedComponent, eoc::combat::ParticipantComponent, eoc::ftb::ParticipantComponent and eoc::IsInTurnBasedModeComponent and compares their assigned player with the queued one; its full outcome was not followed.",
+   "evidence": "EoCClient.dll+0x101F630 IsInSelectorWhileInactiveSystem::Update calling the four Gather functions then the adder FUN_18101bc90 (type-index global DAT_181a20940, init EoCClient.dll+0x118AB0 -> GetTypeName ecl::camera::IsInSelectorWhileInactiveComponent) over the add list and RemoveComponentUnchecked(DAT_181a20940) over the remove list, then the clears of this+0x18 and this+0x48; GatherLegacyRequests EoCClient.dll+0x101E700 (PlayerManager::GetPlayerCamera, the has-tag test FUN_18101c790, the test FUN_18101e980 with spec DAT_181a47b9c = TL<ActiveTurn, character::Assigned, combat::Participant, ftb::Participant, IsInTurnBasedMode>).",
+   "check": {
+    "when": "camera_selector_while_inactive_toggle",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::camera::IsInSelectorWhileInactiveComponent",
+       "side": "client",
+       "within": 10
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "camera_selector_while_inactive_toggle (PROPOSED): a level with a fight; start combat (turn-based); while it is NOT the controlled player's character's turn (an enemy's turn), press the input bound to input event 0x122 (the gamepad selector toggle - which key/button was not looked up; probably needs controller mode, as gCore+0x58 is tested); sleep 1."
+  },
+  {
+   "method": "GatherInvalidedSelectors / GatherActiveTurnExited / GatherSplitscreenFullscreenTurnExited",
+   "text": "Three more ways onto the remove list: every camera holding the tag whose player no longer passes the test above; cameras of players whose assigned character just lost ecl::ActiveTurnComponent; and, when ecl::splitscreen::FullscreenTurnActiveComponent was removed anywhere, every camera holding the tag.",
+   "evidence": "EoCClient.dll+0x101E560 GatherInvalidedSelectors (spec DAT_181a47ba4 = EocCameraBehavior + IsInSelectorWhileInactiveComponent, FUN_18101e980 == false -> remove list); +0x101E010 GatherActiveTurnExited (Removed query, spec DAT_181a47ba8 = character::Assigned with ActiveTurnComponent removed); +0x101E800 GatherSplitscreenFullscreenTurnExited (HasAny on spec DAT_181a47bac = FullscreenTurnActiveComponent Removed, then every holder of spec DAT_181a47ba4 onto the remove list).",
+   "check": {
+    "when": "camera_selector_while_inactive_toggle_turn_comes",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::camera::IsInSelectorWhileInactiveComponent",
+       "side": "client",
+       "as": "E",
+       "within": 60
+      }
+     },
+     {
+      "gone": {
+       "component": "ecl::camera::IsInSelectorWhileInactiveComponent",
+       "side": "client",
+       "on": "E",
+       "within": 60
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "camera_selector_while_inactive_toggle_turn_comes (PROPOSED): as camera_selector_while_inactive_toggle, then wait until the controlled character's turn starts; which of the three gather paths removes the tag is not told apart by this check.",
+   "review": "Review 2026-11-14 (Opus): the earlier 'not checkable live: gone is judged against the holders before the recipe' misread the verb: gone also passes for an entity that came to hold the type inside the recipe and then stopped (cli.md 3.6, Prelude.lua); so the claim is given appears-as-E plus gone-on-E. Not re-read against the code (not in the sample)."
+  }
+ ],
+ "unknown": [
+  "The exact outcome of the per-player test FUN_18101e980 (EoCClient.dll+0x101E980): which of the walked components must be present or absent, and the splitscreen singleton it reads; so which turn state lets the toggle add the tag is not settled ('while inactive' suggests: not the player's own active turn - a guess from the name).",
+  "Which key or button is input event 0x122, and what gCore+0x58 is.",
+  "GatherActiveTurnExited's body after the Removed query (176 lines) was read only for its specs."
+ ],
+ "sure": "yes for the add and remove, the toggle/disable routing and the three invalidation sources; no for the turn condition inside the test"
+}

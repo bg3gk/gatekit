@@ -1,0 +1,172 @@
+{
+ "system": "esv::ai::swarm::ActionSequencerSystem",
+ "namespace": "esv::ai::swarm",
+ "symbols": {
+  "reads": [
+   "eoc::ActionResourceBlockBoostComponent",
+   "eoc::ActionResourceConsumeMultiplierBoostComponent",
+   "eoc::ActionResourcesComponent",
+   "eoc::BodyTypeComponent",
+   "eoc::BoostConditionComponent",
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent",
+   "eoc::CanDoActionsComponent",
+   "eoc::CanMoveComponent",
+   "eoc::CanSenseComponent",
+   "eoc::CannotHarmCauseEntityBoostComponent",
+   "eoc::ClassesComponent",
+   "eoc::DataComponent",
+   "eoc::DetachedComponent",
+   "eoc::DifficultyCheckComponent",
+   "eoc::DualWieldingComponent",
+   "eoc::HealthComponent",
+   "eoc::InvisibilityComponent",
+   "eoc::LevelComponent",
+   "eoc::ObjectSizeComponent",
+   "eoc::OffStageComponent",
+   "eoc::PlayerComponent",
+   "eoc::RaceComponent",
+   "eoc::StatsComponent",
+   "eoc::StealthComponent",
+   "eoc::TagComponent",
+   "eoc::WeaponComponent",
+   "eoc::WeaponSetComponent",
+   "eoc::attitude::AttitudesToPlayersComponent",
+   "eoc::character::CharacterComponent",
+   "eoc::death::DeathComponent",
+   "eoc::hit::ProxyComponent",
+   "eoc::identity::StateComponent",
+   "eoc::inventory::ContainerComponent",
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::MemberComponent",
+   "eoc::inventory::OwnerComponent",
+   "eoc::item::ItemComponent",
+   "eoc::item_template::CanMoveComponent",
+   "eoc::item_template::DestroyedComponent",
+   "eoc::item_template::InteractionDisabledComponent",
+   "eoc::item_template::LadderComponent",
+   "eoc::party::MemberComponent",
+   "eoc::relation::FactionComponent",
+   "eoc::relation::RelationComponent",
+   "eoc::repose::StateComponent",
+   "eoc::sight::BaseComponent",
+   "eoc::sight::DataComponent",
+   "eoc::sight::IgnoreSurfacesComponent",
+   "eoc::spell::BookComponent",
+   "eoc::spell::ContainerComponent",
+   "eoc::spell::ModificationContainerComponent",
+   "eoc::spell_cast::CacheComponent",
+   "eoc::spell_cast::CanBeTargetedComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::spell_cast::StateComponent",
+   "eoc::stats::proficiency::IntrinsicallyProficientWielderComponent",
+   "eoc::stats::proficiency::ProficiencyComponent",
+   "eoc::stats::proficiency::ProficiencyGroupComponent",
+   "eoc::status::ContainerComponent",
+   "eoc::status::LoseControlComponent",
+   "eoc::user::ReservedForComponent",
+   "esv::Character",
+   "esv::ai::swarm::AttackOrderComponent",
+   "esv::ai::swarm::CalculatingComponent",
+   "esv::ai::swarm::RequestActionOneFrameComponent",
+   "esv::ai::swarm::TurnActionsComponent",
+   "esv::spell_cast::CacheComponent",
+   "ls::AnimationSetComponent",
+   "ls::DebugComponent",
+   "ls::LevelComponent",
+   "ls::PhysicsComponent",
+   "ls::TransformComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "eoc::BoundComponent",
+   "esv::Item",
+   "esv::ai::swarm::NextActionComponent"
+  ],
+  "methods": [
+   {
+    "name": "ActionSequencerSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CanMove",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetMovementResource",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetNextState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "HasResources",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "HasResourcesAndCanCast",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ActionSequencerSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::ai::swarm::NextActionComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x326CA40",
+    "site": "bg3_dx11.exe+0x326CF67",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::ai::swarm::NextActionComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x326CA40",
+    "site": "bg3_dx11.exe+0x326D222",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::StealthComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x326D440",
+    "site": "bg3_dx11.exe+0x326D6CE",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::ai::swarm::TurnActionsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x326CA40",
+    "site": "bg3_dx11.exe+0x326CDEA",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::death::DeathComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x326D440",
+    "site": "bg3_dx11.exe+0x326D766",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

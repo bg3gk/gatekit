@@ -1,0 +1,126 @@
+{
+ "system": "esv::crowds::DetourSystem",
+ "namespace": "esv::crowds",
+ "symbols": {
+  "reads": [
+   "eoc::crowds::ProxyComponent",
+   "eoc::crowds::ProxyTransformComponent",
+   "eoc::gamestate::RunningComponent",
+   "esv::CrowdCharacterTrigger",
+   "esv::crowds::AnimationComponent",
+   "esv::crowds::DespawnWithoutCharacterComponent",
+   "esv::crowds::DetourCacheComponent",
+   "esv::crowds::PatrolComponent",
+   "esv::crowds::SpawnComponent",
+   "esv::patrol::SplinesComponent",
+   "ls::SplineComponent",
+   "ls::TimeFactorComponent",
+   "ls::TransformComponent",
+   "ls::game::PauseComponent"
+  ],
+  "writes": [
+   "esv::crowds::DetourComponent",
+   "esv::crowds::DetourIdlingComponent",
+   "esv::crowds::DetourMoveToRequestsSingletonComponent",
+   "esv::crowds::DetourPatrolRequestsSingletonComponent",
+   "esv::crowds::DetourStopMoveToRequestsSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "DetourSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FindNextMainSplineTarget",
+    "address": "bg3_dx11.exe+0x3557B10",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "GetSplineInfo",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetSplineTemplate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStarts",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStops",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateIdling",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateMoving",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DetourSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::CrowdCharacterTrigger",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3556350",
+    "site": "bg3_dx11.exe+0x35568FF",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::crowds::DetourCacheComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3555EA0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::crowds::DetourIdlingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3556E70",
+    "site": "bg3_dx11.exe+0x3557A4C",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::crowds::DetourIdlingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3556E70",
+    "site": "bg3_dx11.exe+0x3557AB4",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

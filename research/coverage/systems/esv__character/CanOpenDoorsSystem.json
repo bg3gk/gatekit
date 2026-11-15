@@ -1,0 +1,233 @@
+{
+ "system": "esv::character::CanOpenDoorsSystem",
+ "namespace": "esv::character",
+ "symbols": {
+  "reads": [],
+  "writes": [
+   "esv::character::CanOpenDoorsOverrideComponent"
+  ],
+  "methods": [
+   {
+    "name": "CanOpenDoorsSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ClearCanOpenDoorsOverride",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_SetCanOpenDoorsOverride",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CanOpenDoorsSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::character::CanOpenDoorsOverrideComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3530160",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::character::CanOpenDoorsOverrideComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x3530160",
+    "site": null,
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update (ProcessRequests): set",
+   "text": "Each frame the system walks its pending requests, one per entity, each an optional boolean (a value byte and a has-value byte). For a request with a value: if the entity has no esv::character::CanOpenDoorsOverrideComponent it adds one, otherwise it takes the existing one; either way it stores the request's value in the component's byte (CanOpenDoors). The request list is emptied at the end of the update. The requests come from Osiris SetCanOpenDoorsOverride(character, value) (the call's name; the link through LEGACY_SetCanOpenDoorsOverride rests on the layout's EoCServer.dll reading, not on bg3_dx11.exe).",
+   "evidence": "bg3_dx11.exe+0x3530160 (the per-frame update of esv::character::CanOpenDoorsSystem, by gatekit decomp systems and symbols users): the loop over the request entries (stride 2 bytes for the optional), the has-component test bg3_dx11.exe+0x268D980, the add through the frame-storage allocator with the component's type id, the get bg3_dx11.exe+0x3530380, the byte stored, and the clearing of the list after the loop.",
+   "check": {
+    "when": "world_can_open_doors_override_set",
+    "expect": [
+     {
+      "appears": {
+       "component": "esv::character::CanOpenDoorsOverrideComponent",
+       "side": "server",
+       "within": 10
+      }
+     },
+     {
+      "equals": {
+       "component": "esv::character::CanOpenDoorsOverrideComponent",
+       "field": "CanOpenDoors",
+       "value": true,
+       "side": "server",
+       "within": 2
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "world_can_open_doors_override_set (PROPOSED, not written): GustavX:WLD_Main_A from the checkpoint; server Osi.SetCanOpenDoorsOverride(Osi.GetHostCharacter(), 1); sleep 1. Done live by a runner at 07:20 (lit the component, byte read 0x01), never recorded.",
+   "check_note": "the four verbs express it fully.",
+   "verdict": {
+    "passed": 1,
+    "failed": 1,
+    "last": "passed",
+    "cases": [
+     {
+      "date": "2026-11-14 09:09",
+      "instance": "world",
+      "game": "v4.76.31.656",
+      "gatekit": "0.1.0+4e451f207d5486834380ea47b3f3b391603276f7",
+      "ok": false,
+      "recipe": "ok",
+      "expect": [
+       {
+        "verb": "appears",
+        "ok": true,
+        "detail": "entity 144115256795417219 came to hold it in 68 ticks",
+        "entity": "144115256795417219"
+       },
+       {
+        "verb": "equals",
+        "ok": false,
+        "detail": "CanOpenDoors read {144115256795417219 = {}} ([string \"?\"]:27: attempt to call a nil value (field 'Field'); [string \"?\"]:27: attempt to call a nil value (field 'Field'); [string \"?\"]:27: attempt to call a nil value (field 'Field'))",
+        "entity": null
+       }
+      ]
+     },
+     {
+      "date": "2026-11-14 09:17",
+      "instance": "world",
+      "game": "v4.76.31.656",
+      "gatekit": "0.1.0+0557c4e214d2d819ddec836dffecb70e7fc354f4",
+      "ok": true,
+      "recipe": "ok",
+      "expect": [
+       {
+        "verb": "appears",
+        "ok": true,
+        "detail": "entity 144115235320648120 came to hold it in 63 ticks",
+        "entity": "144115235320648120"
+       },
+       {
+        "verb": "equals",
+        "ok": true,
+        "detail": "CanOpenDoors = true on entity 144115235320648120",
+        "entity": "144115235320648120"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "method": "Update (ProcessRequests): overwrite",
+   "text": "A value request on an entity that already holds the component overwrites its byte without adding anything: setting false after true leaves the component in place with CanOpenDoors = false.",
+   "evidence": "bg3_dx11.exe+0x3530160 (the per-frame update of esv::character::CanOpenDoorsSystem, by gatekit decomp systems and symbols users): the else-branch of the has-component test, the get bg3_dx11.exe+0x3530380 and the same store.",
+   "check": {
+    "when": "world_can_open_doors_override_reset",
+    "expect": [
+     {
+      "appears": {
+       "component": "esv::character::CanOpenDoorsOverrideComponent",
+       "side": "server",
+       "within": 10
+      }
+     },
+     {
+      "equals": {
+       "component": "esv::character::CanOpenDoorsOverrideComponent",
+       "field": "CanOpenDoors",
+       "value": false,
+       "side": "server",
+       "within": 2
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "world_can_open_doors_override_reset (PROPOSED): as _set, then Osi.SetCanOpenDoorsOverride(host, 0); sleep 1.",
+   "check_note": "expressed as equals false at the end; changes would be the natural verb but it compares with before the recipe's first step, when no holder exists, so a new holder alone passes it and it says nothing about the overwrite. equals false passes only if the component holds false at the end; it does not prove that the holder was the same one (an entity uuid would, see entity).",
+   "verdict": {
+    "passed": 1,
+    "failed": 1,
+    "last": "passed",
+    "cases": [
+     {
+      "date": "2026-11-14 09:10",
+      "instance": "world",
+      "game": "v4.76.31.656",
+      "gatekit": "0.1.0+4e451f207d5486834380ea47b3f3b391603276f7",
+      "ok": false,
+      "recipe": "ok",
+      "expect": [
+       {
+        "verb": "appears",
+        "ok": true,
+        "detail": "entity 144115256795361699 came to hold it in 99 ticks",
+        "entity": "144115256795361699"
+       },
+       {
+        "verb": "equals",
+        "ok": false,
+        "detail": "CanOpenDoors read {144115256795361699 = {}} ([string \"?\"]:27: attempt to call a nil value (field 'Field'); [string \"?\"]:27: attempt to call a nil value (field 'Field'); [string \"?\"]:27: attempt to call a nil value (field 'Field'))",
+        "entity": null
+       }
+      ]
+     },
+     {
+      "date": "2026-11-14 09:18",
+      "instance": "world",
+      "game": "v4.76.31.656",
+      "gatekit": "0.1.0+0557c4e214d2d819ddec836dffecb70e7fc354f4",
+      "ok": true,
+      "recipe": "ok",
+      "expect": [
+       {
+        "verb": "appears",
+        "ok": true,
+        "detail": "entity 144115265385298544 came to hold it in 104 ticks",
+        "entity": "144115265385298544"
+       },
+       {
+        "verb": "equals",
+        "ok": true,
+        "detail": "CanOpenDoors = false on entity 144115265385298544",
+        "entity": "144115265385298544"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "method": "Update (ProcessRequests): clear",
+   "text": "For a request without a value, if the entity holds the component the system removes it; if not, nothing happens. Such requests come from Osiris ClearCanOpenDoorsOverride(character) (same caveat on the link as above).",
+   "evidence": "bg3_dx11.exe+0x3530160 (the per-frame update of esv::character::CanOpenDoorsSystem, by gatekit decomp systems and symbols users): the has-value byte tested at the top of the loop, then the has-component test and the call bg3_dx11.exe+0x400D0A0 (read as the remove: it takes the type id and the entity on the path where the component is held and no value is given; not opened) with the component's type id and the entity.",
+   "check": "not checkable live with the verbs as built: gone is judged against the holders counted before the recipe's first step, and the override exists only after a Set inside the recipe, so gone says 'it was not there before either'; it would be {gone: esv::character::CanOpenDoorsOverrideComponent} in a proposed world_can_open_doors_override_clear (Set, sleep 1, Clear, sleep 1) if the check could begin after a step, or from a checkpoint that already holds the override. Done live at 07:20: Clear removed it."
+  }
+ ],
+ "unknown": [
+  "LEGACY_SetCanOpenDoorsOverride and LEGACY_ClearCanOpenDoorsOverride were not read in bg3_dx11.exe; that the Osiris calls fill the request list is from the layout's evidence (EoCServer.dll) and the runner's live result.",
+  "Who reads CanOpenDoorsOverrideComponent to decide whether a character may open doors (eleven other users in gatekit symbols users): not read.",
+  "Whether two requests for one entity in one frame are possible (the list is keyed per entity) was not looked at."
+ ],
+ "sure": "yes for add/overwrite/remove and their conditions (read in bg3_dx11.exe+0x3530160); no for the link to the Osiris calls, which is not read in this binary"
+}

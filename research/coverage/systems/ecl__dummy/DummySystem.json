@@ -1,0 +1,126 @@
+{
+ "system": "ecl::dummy::DummySystem",
+ "namespace": "ecl::dummy",
+ "symbols": {
+  "reads": [
+   "eoc::ServerRootLevelLoadedComponent",
+   "eoc::character::CharacterComponent",
+   "eoc::multiplayer::UserComponent",
+   "eoc::photo_mode::DummyComponent",
+   "eoc::photo_mode::SessionComponent",
+   "ls::LevelComponent"
+  ],
+  "writes": [
+   "ecl::dummy::DummiesCreatedSingletonComponent",
+   "ecl::dummy::DummyComponent",
+   "ecl::dummy::HasDummyComponent"
+  ],
+  "methods": [
+   {
+    "name": "CreateDummies",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DeleteDummies",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DummySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestCreateDummy",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestDeleteDummy",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DummySystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::dummy::DummyComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A038E0",
+    "site": "bg3_dx11.exe+0x1A04267",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::dummy::HasDummyComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1A038E0",
+    "site": "bg3_dx11.exe+0x1A0428A",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::dummy::DummyComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1A04530",
+    "site": "bg3_dx11.exe+0x1A04AA6",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::dummy::DummyComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1A04530",
+    "site": "bg3_dx11.exe+0x1A04AE8",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::dummy::DummyComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1A04530",
+    "site": "bg3_dx11.exe+0x1A04B7F",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Runs CreateDummies and then DeleteDummies each frame.",
+   "evidence": "EoCClient.dll ecl::dummy::DummySystem::Update @0xB18120"
+  },
+  {
+   "method": "CreateDummies",
+   "text": "Client-side builder of photo-mode character dummies. It looks at eoc::photo_mode::DummyComponent entities added this frame (the server's replicated request for a dummy), skips a source entity that a live ecl::dummy::DummyComponent already refers to, filters on the current multiplayer user and photo-mode session (UserComponent + eoc::photo_mode::SessionComponent query), then for each collected candidate creates a new entity through the deferred command buffer, adds ecl::dummy::DummyComponent to the new entity (holding the source entity) and ecl::dummy::HasDummyComponent to the source entity (holding the new one). It also keeps a DummiesCreatedSingleton record.",
+   "evidence": "EoCClient.dll ecl::dummy::DummySystem::CreateDummies (read through filtered queries): Added eoc::photo_mode::DummyComponent; Persistent Alive ecl::dummy::DummyComponent duplicate test; Persistent Alive UserComponent+SessionComponent; CreateEntity then two AddComponent-guarded helper calls; query specs resolved via their init globals; review 14 Nov: helpers resolved - FUN_180b137c0 = AddComponent<ecl::dummy::DummyComponent>, FUN_180b139c0 = AddComponent<ecl::dummy::HasDummyComponent> (their type index globals' GetTypeName), and the count comparison before the creation loop is its bound over the collected candidates"
+  }
+ ],
+ "unknown": [
+  "DeleteDummies not read",
+  "The user/session filter between the added query and the collected list was read through filtered queries only"
+ ],
+ "sure": "no: DeleteDummies and the user/session filter not read line by line"
+}

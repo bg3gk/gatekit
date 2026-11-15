@@ -98,25 +98,25 @@
       "evidence": "Toolkit accessors Get/SetStatusMachine (ecl::StatusMachine*) at +0x50 (Toolkit offset); ctor writes 0; live heap pointer in all samples."
     },
     {
-      "name": "field_58",
+      "name": "LadderData",
       "offset": 88,
-      "type": "uint64_t",
-      "source": "unknown",
-      "evidence": "Ctor writes 0; live always 0 (possibly a pointer that is set only for some items)."
+      "type": "void*",
+      "source": "toolkit",
+      "evidence": "Toolkit accessors ecl::Item::HasLadderData (EoCClient.dll+0x1C6590: return *(this+0x58) != 0) and GetLadderData (EoCClient.dll+0x111C6D0: returns the eoc::LadderData* at +0x58, building it with UpdateLadderData when absent); the game constructor writes 0. Earlier reading: Ctor writes 0; live always 0 (possibly a pointer that is set only for some items)."
     },
     {
-      "name": "field_60",
+      "name": "InUseByCharacter",
       "offset": 96,
       "type": "EntityHandle",
-      "source": "inferred",
-      "evidence": "Ctor writes 0xffc0000000000000 (null EntityHandle); live always null."
+      "source": "toolkit",
+      "evidence": "Toolkit accessors ecl::Item::GetInUseByCharacter (EoCClient.dll+0x1C6230: returns the ID<EntityHandleTraits> at +0x60) and SetInUseByCharacter (EoCClient.dll+0x1120DE0: *(this+0x60) = the handle argument); the game constructor writes the null handle. Earlier reading: Ctor writes 0xffc0000000000000 (null EntityHandle); live always null."
     },
     {
-      "name": "field_68",
+      "name": "HotRefCount",
       "offset": 104,
-      "type": "uint16_t",
-      "source": "unknown",
-      "evidence": "Ctor 16-bit store of 0; live 0."
+      "type": "int16_t",
+      "source": "inferred",
+      "evidence": "int16 reference count of update requests: ecl::Item::SetInUseByCharacter (EoCClient.dll+0x1120DE0) increments it and calls ItemManager::RequestUpdate when it was 0; ReleaseUpdate (EoCClient.dll+0x11206A0) asserts \"Item HOT refcount is already zero!\" when it is < 1; NeedsUpdate (EoCClient.dll+0x111ED80) returns 0 < it. Earlier reading: Ctor 16-bit store of 0; live 0."
     },
     {
       "name": "field_6A",

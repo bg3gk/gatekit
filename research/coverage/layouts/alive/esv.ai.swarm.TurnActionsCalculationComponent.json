@@ -69,11 +69,11 @@
   ],
   "fields": [
     {
-      "name": "field_0",
+      "name": "UpdateIndex",
       "offset": 0,
       "type": "int32_t",
-      "source": "unknown",
-      "evidence": "Live 0..2. The esv::ai::swarm::TurnActionsCalculation object starts at +8 (copy ctor EoCServer.dll+0xBC0E70 and game dtor bg3.exe+0x30B9EA0 offsets + 8 match the live sample)."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x16BBC80 esv::ai::swarm::DebugSystem::FindEntitiesInfo copies the 4 bytes at +0 of this component into eoc::ai::swarm::DebugTurnActionsComponent +0x10 and marks replication bit 1 - that member is the game's m_UpdateIndex (macOS FieldMeta, serialization position 2). Live 0..2."
     },
     {
       "name": "_Pad4",
@@ -83,11 +83,12 @@
       "evidence": "compiler padding / bytes nobody reads"
     },
     {
-      "name": "TargetIndex",
+      "name": "CalculationState",
       "offset": 8,
       "type": "int32_t",
       "source": "inferred",
-      "evidence": "TurnActionsCalculation +0 (int); name from the replicated debug copy eoc::ai::swarm::ReplicatedDebugCalculation m_TargetIndex (macOS FieldMeta), mapped by order. Live 3..0xC."
+      "evidence": "Toolkit EoCServer.dll+0x16BBC80 FindEntitiesInfo copies the first dword of the TurnActionsCalculation held in a debug entry (entry +0x48, which is this component's +8: CastPosition follows at entry +0x4C = component +0xC) into ReplicatedDebugCalculation +0x54, m_CalculationState in the macOS FieldMeta; TargetIndex comes from the entry's own +0, outside the calculation. EoCServer.dll+0x16CC2A0 sets this dword to 2, 1 or 0xF when it is 0. Was TargetIndex by member order.",
+      "legacy": "TargetIndex"
     },
     {
       "name": "CastPosition",
@@ -307,18 +308,18 @@
       "evidence": "compiler padding / bytes nobody reads"
     },
     {
-      "name": "field_100",
+      "name": "ReachablePosition",
       "offset": 256,
       "type": "glm::vec3",
-      "source": "unknown",
-      "evidence": "Calc +0xF8 (16 bytes). Live world coordinates with flag 1 in 16 of 48 samples."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x16CC2A0 (swarm action calculation) creates TurnActionsComponent and copies the 16 bytes at +0x100 (vec3 + flag) into TurnActions +0x160, which FindEntitiesInfo (EoCServer.dll+0x16BBC80) copies to DebugTurnActions.ReachablePosition. The same FindEntitiesInfo copies the slot right after PathDistanceXZ into ReplicatedDebugCalculation.m_ReachablePosition (+0x138, macOS FieldMeta). Live world coordinates with flag 1 in 16 of 48 samples."
     },
     {
-      "name": "field_100_set",
+      "name": "HasReachablePosition",
       "offset": 268,
       "type": "bool",
-      "source": "unknown",
-      "evidence": "ls::Optional flag of field_100"
+      "source": "inferred",
+      "evidence": "ls::Optional flag of ReachablePosition (+0x100); copied with it into TurnActions +0x16C at EoCServer.dll+0x16CC2A0."
     },
     {
       "name": "_Pad10D",
@@ -356,18 +357,18 @@
       "evidence": "Calc +0x118: copy ctor allocates count * 0xC (IndexedStorage<Vector3f>); m_PathPoints by order. Live heap, capacity 4..0x40."
     },
     {
-      "name": "ReachablePosition",
+      "name": "field_130",
       "offset": 304,
       "type": "glm::vec3",
-      "source": "inferred",
-      "evidence": "Calc +0x128 (16 bytes, last member); m_ReachablePosition by order. Live zero."
+      "source": "unknown",
+      "evidence": "Was ReachablePosition by member order; the code contradicts that (see +0x100). Toolkit EoCServer.dll+0x16CC2A0 saves the 16 bytes at +0x130 before resetting the calculation (memset of +0x8..+0x140) and writes them back after, so the value survives a recalculation. No reader of it found; ReplicatedDebugCalculation has no member for it."
     },
     {
-      "name": "HasReachablePosition",
+      "name": "field_130_set",
       "offset": 316,
       "type": "bool",
-      "source": "inferred",
-      "evidence": "ls::Optional flag of ReachablePosition"
+      "source": "unknown",
+      "evidence": "Optional flag of field_130 (byte after the vec3; cleared in the default value at EoCServer.dll+0x16CC2A0)."
     },
     {
       "name": "_Pad13D",

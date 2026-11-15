@@ -1,0 +1,155 @@
+{
+ "system": "esv::steering::StateSystem",
+ "namespace": "esv::steering",
+ "symbols": {
+  "reads": [
+   "eoc::MovementComponent",
+   "esv::drop::DropEntityExecutionComponent",
+   "esv::placement::SteeringAbortRequestOneFrameComponent",
+   "esv::placement::SteeringRequestOneFrameComponent",
+   "ls::TimeFactorComponent",
+   "ls::TransformComponent",
+   "ls::game::PauseComponent"
+  ],
+  "writes": [
+   "eoc::SteeringComponent",
+   "eoc::steering::SyncComponent",
+   "esv::Character",
+   "esv::lock::SteeringRequestOneFrameComponent",
+   "esv::steering::ChangedOneFrameComponent",
+   "esv::steering::LifetimeComponent",
+   "esv::steering::StateComponent",
+   "esv::trap::SteeringRequestOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "LEGACY_RequestAbort",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestBegin",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessBeginRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessLifetime",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSteering",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "StateSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "WasAborted",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~StateSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::steering::SyncComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B47890",
+    "site": "bg3_dx11.exe+0x2B47D4A",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::steering::ChangedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B462F0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::steering::LifetimeComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B46E70",
+    "site": "bg3_dx11.exe+0x2B4713B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::steering::StateComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B47890",
+    "site": "bg3_dx11.exe+0x2B47C1F",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::MovementComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B47890",
+    "site": "bg3_dx11.exe+0x2B484A1",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::steering::LifetimeComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B46E70",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B47890",
+    "site": "bg3_dx11.exe+0x2B48434",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::MovementComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2B47890",
+    "site": "bg3_dx11.exe+0x2B48491",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::steering::LifetimeComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2B46E70",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2B47890",
+    "site": "bg3_dx11.exe+0x2B480F6",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

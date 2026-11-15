@@ -1,0 +1,63 @@
+{
+ "system": "esv::crowds::DeadReckoningSystem",
+ "namespace": "esv::crowds",
+ "symbols": {
+  "reads": [
+   "eoc::MovementComponent",
+   "eoc::crowds::CharacterComponent",
+   "eoc::crowds::ProxyComponent",
+   "eoc::crowds::ProxyTransformComponent",
+   "eoc::gamestate::RunningComponent",
+   "esv::crowds::DetourComponent",
+   "esv::crowds::DetourIdlingComponent",
+   "esv::crowds::PatrolComponent"
+  ],
+  "writes": [
+   "eoc::crowds::DeadReckoningComponent"
+  ],
+  "methods": [
+   {
+    "name": "DeadReckoningSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DeadReckoningSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::crowds::DeadReckoningComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x354FD00",
+    "site": "bg3_dx11.exe+0x354FFD4",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::MovementComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x354FD00",
+    "site": "bg3_dx11.exe+0x3550F2C",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::crowds::DeadReckoningComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3551E40",
+    "site": "bg3_dx11.exe+0x3551FE1",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

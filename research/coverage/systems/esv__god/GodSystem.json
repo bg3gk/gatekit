@@ -1,0 +1,64 @@
+{
+ "system": "esv::god::GodSystem",
+ "namespace": "esv::god",
+ "symbols": {
+  "reads": [
+   "esv::character_creation::GodComponent"
+  ],
+  "writes": [
+   "eoc::god::GodComponent",
+   "eoc::god::TagComponent"
+  ],
+  "methods": [
+   {
+    "name": "GodSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ClearOverride",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_SetOverride",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdatedGod",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~GodSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::character_creation::GodComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2F42750",
+    "site": "bg3_dx11.exe+0x2F43051",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::character_creation::GodComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2F42750",
+    "site": "bg3_dx11.exe+0x2F434D0",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

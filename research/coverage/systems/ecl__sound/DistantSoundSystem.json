@@ -1,0 +1,188 @@
+{
+ "system": "ecl::sound::DistantSoundSystem",
+ "namespace": "ecl::sound",
+ "symbols": {
+  "reads": [
+   "eoc::sound::DistantSoundInfoComponent",
+   "eoc::sound::DistantSoundStateComponent",
+   "ls::LevelComponent",
+   "ls::LevelRootComponent",
+   "ls::SoundActivatedComponent",
+   "ls::SoundComponent",
+   "ls::TransformComponent",
+   "ls::uuid::Component",
+   "ls::uuid::ToHandleMappingComponent"
+  ],
+  "writes": [
+   "ecl::sound::DistantSoundEntityMapComponent",
+   "ecl::sound::DistantSoundPostEventRequestSingletonComponent",
+   "ecl::sound::DistantSoundRequestBusComponent",
+   "ecl::sound::DistantSoundSetSoundSwitchRequestSingletonComponent",
+   "ecl::sound::DistantSoundSetupRequestOneFrameComponent",
+   "ecl::sound::DistantSoundStateTrackerComponent"
+  ],
+  "methods": [
+   {
+    "name": "DistantSoundSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetMapComponent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetPostEventRequestSingleton",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetRequestBus",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetSoundSwitchSingleton",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDistantSoundInfoAdded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDistantSoundStateEntityChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDistantSoundStatePosition",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSetupRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSoundsActivated",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DistantSoundSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::sound::DistantSoundSetupRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1DD1D50",
+    "site": "bg3_dx11.exe+0x1DD1FC6",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::sound::DistantSoundStateTrackerComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1DD29F0",
+    "site": "bg3_dx11.exe+0x1DD33B1",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::LevelComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1DD29F0",
+    "site": "bg3_dx11.exe+0x1DD3326",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1DD29F0",
+    "site": "bg3_dx11.exe+0x1DD3071",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::sound::DistantSoundStateTrackerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1DD3CA0",
+    "site": "bg3_dx11.exe+0x1DD3F0A",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::sound::DistantSoundStateTrackerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1DD4000",
+    "site": "bg3_dx11.exe+0x1DD46AD",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::sound::DistantSoundStateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1DD3CA0",
+    "site": "bg3_dx11.exe+0x1DD3EFC",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::sound::DistantSoundStateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1DD4000",
+    "site": "bg3_dx11.exe+0x1DD469F",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::sound::DistantSoundInfoComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1DD3420",
+    "site": "bg3_dx11.exe+0x1DD3B98",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::SoundComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1DD3420",
+    "site": "bg3_dx11.exe+0x1DD37EE",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::SoundComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x1DD3420",
+    "site": "bg3_dx11.exe+0x1DD3A20",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

@@ -1,0 +1,95 @@
+{
+ "system": "esv::PerItemSpellSourceCacheSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::GameObjectVisualComponent",
+   "eoc::UnlockSpellBoostComponent",
+   "eoc::inventory::MemberComponent",
+   "eoc::inventory::TopOwnerComponent",
+   "eoc::item::ItemComponent",
+   "esv::boost::ChangedEventOneFrameComponent",
+   "esv::inventory::MemberAddedEventOneFrameComponent",
+   "esv::inventory::MemberRemovedEventOneFrameComponent"
+  ],
+  "writes": [
+   "esv::PerItemSpellSourceComponent"
+  ],
+  "methods": [
+   {
+    "name": "PerItemSpellSourceCacheSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~PerItemSpellSourceCacheSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::PerItemSpellSourceComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x35B12C0",
+    "site": "bg3_dx11.exe+0x35B13C1",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::UnlockSpellBoostComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35B0890",
+    "site": "bg3_dx11.exe+0x35B0AAC",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::inventory::TopOwnerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35B0C00",
+    "site": "bg3_dx11.exe+0x35B0E68",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::inventory::TopOwnerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35B0F80",
+    "site": "bg3_dx11.exe+0x35B1170",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::PerItemSpellSourceComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35B0890",
+    "site": "bg3_dx11.exe+0x35B09E4",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::PerItemSpellSourceComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35B0F80",
+    "site": "bg3_dx11.exe+0x35B118E",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::PerItemSpellSourceComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35B12C0",
+    "site": "bg3_dx11.exe+0x35B1366",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

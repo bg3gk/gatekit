@@ -11,7 +11,7 @@
       "offset": 0,
       "type": "uint16_t",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0xF2DD60 (AllocRaw 2) stores `*(undefined2*)p = *param_3`. Game ProcessNewRequests bg3.exe+0xF2C150 calls it as FUN_140f2dd60(.., &entity, local_258) with local_258 the handle filled by the AiGrid request allocator FUN_140e56070. Toolkit ProcessNewRequests: `AiGrid::RequestFlood(...)` returns ls::TypeWrapSimple<unsigned short, eoc::AiFloodRequest::HandleClassname> into local_274, then adds this component with it (FUN_180e46310). macOS default strh (2 bytes)."
+      "evidence": "Creator bg3.exe+0xF2DD60 (AllocRaw 2) stores at +0 the 2-byte value its third argument points to. Game ProcessNewRequests bg3.exe+0xF2C150 calls it with the entity and a local handle filled by the AiGrid request allocator bg3.exe+0xE56070. Toolkit ProcessNewRequests: `AiGrid::RequestFlood(...)` returns ls::TypeWrapSimple<unsigned short, eoc::AiFloodRequest::HandleClassname> into a local variable, then adds this component with it (EoCShared.dll+0xE46310). macOS default strh (2 bytes)."
     }
   ],
   "confidence": "high",

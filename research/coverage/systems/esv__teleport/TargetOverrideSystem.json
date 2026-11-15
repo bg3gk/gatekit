@@ -1,0 +1,143 @@
+{
+ "system": "esv::teleport::TargetOverrideSystem",
+ "namespace": "esv::teleport",
+ "symbols": {
+  "reads": [
+   "esv::GameStateReloadStoryComponent"
+  ],
+  "writes": [
+   "esv::teleport::HasTargetOverrideComponent",
+   "esv::teleport::IsTargetOverrideComponent",
+   "esv::teleport::TargetOverrideChangedOneFrameComponent",
+   "esv::teleport::TargetOverrideRefCountsSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "ProcessDestroyedTeleportSources",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDestroyedTeleportTargetOverrides",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPortalsToRecheck",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessReloadStory",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRemovedOverrideReferences",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessTeleportTargetOverrideRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestSetTeleportTargetOverride",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "TargetOverrideSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~TargetOverrideSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "from gatekit symbols system --dll dx11 --full; '-' addresses (null) mean the method was not found in bg3_dx11.exe; the component lists come from the method parameter types, not from the code.",
+  "uses": [
+   {
+    "type": "esv::teleport::IsTargetOverrideComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B391A0",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::teleport::TargetOverrideChangedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2B385C0",
+    "site": "bg3_dx11.exe+0x2B38776",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::teleport::HasTargetOverrideComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2B391A0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "RequestSetTeleportTargetOverride",
+   "text": "Called from outside with two entities: a teleport source (a portal or similar) and the entity it should lead to instead. It rejects an unassigned source with 'Trying to set teleport target override for an unassigned entity' and otherwise appends the pair to a pending list in the system.",
+   "evidence": "EoCServer.dll named pseudo-code, RequestSetTeleportTargetOverride (76 lines): the log string and a list append."
+  },
+  {
+   "method": "ProcessTeleportTargetOverrideRequests",
+   "text": "Handles the pending pairs for a live source. If the target is invalid or dead and the source has a current override, it lowers that override's reference count, removes HasTargetOverrideComponent from the source and raises a changed flag. Otherwise it raises the target's reference count, adds IsTargetOverrideComponent to the target when it was not yet counted, and adds HasTargetOverrideComponent (8 bytes, the target handle) to the source.",
+   "evidence": "Review (Opus, 14 Nov): EoCServer.dll+0xBABE80: the IsEntityAlive tests guard RemoveComponentUnchecked of the global at EoCServer.dll+0x21F03B8 = HasTargetOverrideComponent; helper +0xBA85A0 (AllocRaw of the global at EoCServer.dll+0x223E5A8 = IsTargetOverrideComponent) behind the not-yet-counted flag; helper +0xBA83A0 (AllocRaw of HasTargetOverrideComponent)."
+  },
+  {
+   "method": "ProcessDestroyedTeleportTargetOverrides",
+   "text": "When an entity marked as an override target is destroyed, it checks the reference-count table and logs an error if the target is not in the table or its count is zero ('Portal target override got destroyed while it was no longer in the ref count table').",
+   "evidence": "EoCServer.dll named pseudo-code, log string only."
+  },
+  {
+   "method": "ProcessDestroyedTeleportSources",
+   "text": "Cleans up when a source with an override is destroyed; the details were not read.",
+   "evidence": "EoCServer.dll named pseudo-code, ProcessDestroyedTeleportSources at EoCServer.dll+0xBAAC60: signature and one log label only."
+  },
+  {
+   "method": "ProcessReloadStory",
+   "text": "After a story reload (GameStateReloadStoryComponent exists) it rebuilds the override reference counts and flags; read only by its inputs (ReloadStory component), not its body.",
+   "evidence": "EoCServer.dll named pseudo-code, ProcessReloadStory (150 lines): not read beyond the signature."
+  },
+  {
+   "method": "ProcessPortalsToRecheck",
+   "text": "Adds TargetOverrideChangedOneFrameComponent to every entity in the set of portals to recheck it is given; no other condition. Where that set is filled was not read.",
+   "evidence": "Review (Opus, 14 Nov): EoCServer.dll+0xBAB740: a loop over the hash set, helper +0xBA8790, an AllocRaw add of the global at EoCServer.dll+0x223E61C = TargetOverrideChangedOneFrameComponent."
+  }
+ ],
+ "unknown": [
+  "Which gameplay object calls RequestSetTeleportTargetOverride (a story call to override a portal's destination is the guess).",
+  "Which portals land in the recheck set, and who reads TargetOverrideChangedOneFrame.",
+  "Bodies of ProcessDestroyedTeleportSources, ProcessReloadStory, ProcessRemovedOverrideReferences."
+ ],
+ "sure": "no: the request handler's adds and removes and their guards were read and typed in review; what calls it and the reload/destroy handlers are not read"
+}

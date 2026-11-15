@@ -1,0 +1,147 @@
+{
+ "system": "esv::ai::swarm::FindTargetsSystem",
+ "namespace": "esv::ai::swarm",
+ "symbols": {
+  "reads": [
+   "eoc::BodyTypeComponent",
+   "eoc::BoostsContainerComponent",
+   "eoc::HealthComponent",
+   "eoc::RaceComponent",
+   "eoc::StealthComponent",
+   "eoc::TagComponent",
+   "eoc::TurnOrderComponent",
+   "eoc::attitude::AttitudesToPlayersComponent",
+   "eoc::combat::IsInCombatComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::hit::ProxyComponent",
+   "eoc::hit::ProxyOwnerComponent",
+   "eoc::identity::StateComponent",
+   "eoc::party::MemberComponent",
+   "eoc::relation::FactionComponent",
+   "eoc::relation::RelationComponent",
+   "eoc::spell::AiConditionsComponent",
+   "eoc::status::IncapacitatedComponent",
+   "eoc::status::TauntedComponent",
+   "esv::Character",
+   "esv::ai::combat::InterestedInItemsComponent",
+   "esv::ai::swarm::CalculatingComponent",
+   "esv::ai::swarm::SpellsComponent",
+   "ls::DebugComponent",
+   "ls::TransformComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "esv::ai::swarm::TargetsComponent"
+  ],
+  "methods": [
+   {
+    "name": "FindTargets",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "FindTargetsSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetAttackSpellDetails",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~FindTargetsSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::ai::swarm::TargetsComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x325E940",
+    "site": "bg3_dx11.exe+0x325EC26",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::TagComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x325F380",
+    "site": "bg3_dx11.exe+0x325FE12",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::combat::ParticipantComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x325F380",
+    "site": "bg3_dx11.exe+0x325F455",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::AiConditionsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x325E940",
+    "site": "bg3_dx11.exe+0x325EC8D",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::AiConditionsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3260250",
+    "site": "bg3_dx11.exe+0x32602D5",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::status::TauntedComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x325F380",
+    "site": "bg3_dx11.exe+0x325F54B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::ai::combat::InterestedInItemsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x325F380",
+    "site": "bg3_dx11.exe+0x325FB69",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::DebugComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x325F380",
+    "site": "bg3_dx11.exe+0x325FC3B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x325F380",
+    "site": "bg3_dx11.exe+0x325F425",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x325F380",
+    "site": "bg3_dx11.exe+0x325FDC5",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

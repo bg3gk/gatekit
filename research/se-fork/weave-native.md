@@ -1,15 +1,16 @@
 # Weave's native element engine: a proposal for the Script Extender fork
 
 Status: **proposal, nothing is built.** It describes what GateKit's build of Script Extender
-([se-fork.md](se-fork.md), the v34 base) would have to provide so that Weave ([weave.md](weave.md)) can stop
-drawing with IMGUI's widgets. Working name of the Lua module: `Ext.UI2`.
+([README.md](README.md), the v34 base) would have to provide so that Weave
+([mods/Weave](../../mods/Weave/README.md)) can stop drawing with IMGUI's widgets. Working name of
+the Lua module: `Ext.UI2`.
 
 ## Why
 
 Weave already does the styling, the layout and the reactivity itself. What still comes from
 IMGUI's widgets is what limits it:
 
-| Limit today | Cause |
+| Limit | Cause |
 | --- | --- |
 | Layout is a frame late and placed with `AbsolutePosition` | Lua reads `LastRect` after the frame was drawn |
 | No mixed text in a line (a bold word, a link, an icon inside a paragraph) | an IMGUI text widget is one run |
@@ -39,7 +40,7 @@ Ext.UI2  ----- command buffer ----->         4. input    (hit test -> events)
 ```
 
 Commands from Lua are queued and applied at the start of the next frame, as IMGUI object
-changes are today; nothing in Lua ever waits for the render thread.
+changes are; nothing in Lua ever waits for the render thread.
 
 ### Nodes
 
@@ -50,7 +51,7 @@ changes are today; nothing in Lua ever waits for the render thread.
 | `text` | runs of text, each with its own colour / font / size / link flag; wrapped by the engine to the width it is given |
 | `image` | a texture (a game resource, an atlas icon, a file) with a fit mode |
 | `input` | a line or an area of editable text: IMGUI's `InputText` placed in the node's rectangle |
-| `canvas` | the retained command list that exists today |
+| `canvas` | the retained command list that exists already |
 
 Form controls beyond `input` (checkbox, slider, combo, table) are not node kinds: Weave builds
 them from boxes and text, as a web page does, and ships them as components. Until those
@@ -94,15 +95,14 @@ Ext.UI2.Measure(text, font, size, width) -> w, h                        -- synch
 
 1. apply the queued commands; mark what they touched dirty;
 2. layout of dirty subtrees: measure text, then flex / grid. The reference is
-   `stand/bridge/.../Client/Kit/Layout.lua` - about 150 lines of pure functions over numbers,
-   already tested in the game; the engine's version adds margin, padding, percent, min / max,
+   Weave's `Client/Layout.lua` - pure functions over numbers, tested in the game; the engine's version adds margin, padding, percent, min / max,
    shrink and absolute positioning;
 3. advance transitions;
 4. paint back to front by `z`, pushing a clip rectangle per clipping node and transforming
    the vertices of a transformed subtree after they were emitted;
 5. hit test front to back through the inverse transforms; update hovered / pressed; queue
    events; tell the game's input layer whether the overlay took the mouse and the keyboard
-   (today's blocking rules of the overlay settings).
+   (the blocking rules of the overlay settings).
 
 ### What will not be there without extra render passes
 
@@ -111,20 +111,20 @@ axis-aligned rectangle), sharp text under scale / rotation.
 
 ## On Weave's side
 
-`Client/Kit/BackendImgui.lua` holds everything that touches an IMGUI object behind
-`GK.Weave.Backend`; its header lists the functions a backend provides. A second file,
-`BackendNative.lua`, implements the same list over `Ext.UI2` and is chosen when
+Weave's `Client/BackendImgui.lua` holds everything that touches an IMGUI object behind
+`Weave.Backend`; its header is the contract a backend provides. A second file,
+`BackendNative.lua`, implements the same contract over `Ext.UI2` and is chosen when
 `Ext.UI2` exists. Templates, scripts and styles do not change; what changes for authors is
-that weave.md's "Not there yet" list goes away.
+that the limits above go away.
 
 ## Order of work in the fork (each step useful by itself)
 
 1. `root`, `box`, `text` (one run), colours, padding, block layout, clipping, click / hover
    events - enough for a static panel; scenario: build, read `Rect`, click by injected mouse.
 2. flex and grid, percent, min / max; hover / pressed style sets; transitions.
-3. text runs and wrapping, `Measure`; `image`; gradients and shadows (reuse of patch 7).
+3. text runs and wrapping, `Measure`; `image`; gradients and shadows (reusing the fork's IMGUI decorations).
 4. `input` over `InputText`; scroll containers with scrollbars; drag handle and resize of roots.
 5. `transform`, `z`; drag and drop.
 
-Depends on: textures from files under Vulkan too (DX11 has them, patch 11). Fonts of any size
-without atlas rebuilds are there since the move to the v34 base (ImGui 1.93, `FontSize`).
+Depends on: textures from files under Vulkan too (DX11 has them). Fonts of any size without
+atlas rebuilds come with the v34 base (ImGui 1.93, `FontSize`).

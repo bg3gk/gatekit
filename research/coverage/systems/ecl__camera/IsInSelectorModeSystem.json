@@ -1,0 +1,128 @@
+{
+ "system": "ecl::camera::IsInSelectorModeSystem",
+ "namespace": "ecl::camera",
+ "symbols": {
+  "reads": [
+   "ecl::ActiveTurnComponent",
+   "ecl::Character",
+   "ecl::EocCameraBehavior",
+   "ecl::GameCameraBehavior",
+   "ecl::camera::IsInSelectorWhileInactiveComponent",
+   "ecl::camera::PlatformTargetComponent",
+   "ecl::character::AssignedComponent",
+   "ecl::ping::IsInSelectorWhileInactiveComponent",
+   "ecl::spell_cast::StateComponent",
+   "ecl::splitscreen::FullscreenTurnActiveComponent",
+   "ecl::splitscreen::GoalSingletonComponent",
+   "ecl::splitscreen::ViewSingletonComponent",
+   "eoc::IsInTurnBasedModeComponent",
+   "eoc::PlayerComponent",
+   "eoc::TurnBasedComponent",
+   "eoc::combat::ParticipantComponent",
+   "eoc::ftb::ParticipantComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::unsheath::StateComponent",
+   "ls::DebugComponent"
+  ],
+  "writes": [
+   "ecl::camera::IsInSelectorModeComponent",
+   "ecl::camera::SelectorModeComponent"
+  ],
+  "methods": [
+   {
+    "name": "IsInSelectorModeSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~IsInSelectorModeSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::camera::IsInSelectorModeComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1E27740",
+    "site": "bg3_dx11.exe+0x1E27BCF",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "ecl::camera::SelectorModeComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1E27740",
+    "site": "bg3_dx11.exe+0x1E27945",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update: gives every camera a selector-mode holder",
+   "text": "Every entity with ecl::EocCameraBehavior that lacks ecl::camera::SelectorModeComponent gets one, unconditionally.",
+   "evidence": "EoCClient.dll+0x1020CF0 ecl::camera::IsInSelectorModeSystem::Update: first Persistent/Alive query on spec DAT_181a47d44 (TL<EocCameraBehavior>, absent TL<SelectorModeComponent>), the adder FUN_18101fba0 whose type-index global DAT_181a0b630 resolves to ecl::camera::SelectorModeComponent, no test between the iterator and the add.",
+   "check": "not checkable live: it happens when a camera entity is created, before any recipe step; the component is already held at a checkpoint."
+  },
+  {
+   "method": "Update: enters selector mode",
+   "text": "For each camera holding EocCameraBehavior and SelectorModeComponent but not ecl::camera::IsInSelectorModeComponent, the system takes the local player's entity and asks its helper (ecl::camera::SelectorModeSystemHelpers::IsInSelectorMode); if the answer is yes it adds the IsInSelectorModeComponent tag. The helper answers no unless the player's ecl::InputController is in controller mode (bit 0 of its flags at +0x48, the gamepad layout), and then tests further components on the player's camera (not followed).",
+   "evidence": "EoCClient.dll+0x1020CF0 ecl::camera::IsInSelectorModeSystem::Update: spec DAT_181a47d48 (TL<EocCameraBehavior, SelectorModeComponent>, absent TL<IsInSelectorModeComponent>), PlayerManager::GetLocalPlayerEntity, the helper's virtual slot 8, the add FUN_18101f9b0 whose type-index global DAT_181a07ea8 resolves (init EoCClient.dll+0xCBB30 -> FUN_180690db0 -> GetTypeName) to ecl::camera::IsInSelectorModeComponent; the helper EoCClient.dll+0x1020C90 calling ecl::InputController::IsInSelectorMode EoCClient.dll+0xA7C150, whose first test returns false when bit 0 at +0x48 is clear.",
+   "check": {
+    "when": "camera_selector_mode_gamepad",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::camera::IsInSelectorModeComponent",
+       "side": "client",
+       "within": 10
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "camera_selector_mode_gamepad (PROPOSED): GustavX:WLD_Main_A; wait Running; switch the input to controller mode (a gamepad, or the game's controller UI setting - how a recipe can do this is open); enter the gamepad selector/cursor; sleep 1.",
+   "review": "Review 2026-11-14 (Opus): holds: the add FUN_18101f9b0 on DAT_181a07ea8 (-> IsInSelectorModeComponent) only when the helper's slot 8 answers non-zero; the remove on the same global when it answers zero; FUN_18101fba0 on DAT_181a0b630 (-> SelectorModeComponent) with no test."
+  },
+  {
+   "method": "Update: leaves selector mode",
+   "text": "For each camera holding IsInSelectorModeComponent, when the helper answers no for the local player the system removes the tag.",
+   "evidence": "EoCClient.dll+0x1020CF0 ecl::camera::IsInSelectorModeSystem::Update: spec DAT_181a47d4c (EocCameraBehavior, SelectorModeComponent, IsInSelectorModeComponent required), the helper's slot 8 == false, RemoveComponentUnchecked with DAT_181a07ea8 (IsInSelectorModeComponent).",
+   "check": {
+    "when": "camera_selector_mode_gamepad_and_back",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::camera::IsInSelectorModeComponent",
+       "side": "client",
+       "as": "E",
+       "within": 10
+      }
+     },
+     {
+      "gone": {
+       "component": "ecl::camera::IsInSelectorModeComponent",
+       "side": "client",
+       "on": "E",
+       "within": 10
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "camera_selector_mode_gamepad_and_back (PROPOSED): as camera_selector_mode_gamepad, then leave the gamepad selector (or switch the input back to keyboard and mouse); sleep 1.",
+   "review": "Review 2026-11-14 (Opus): the earlier 'not checkable live: gone is judged against the holders before the recipe' misread the verb: gone also passes for an entity that came to hold the type inside the recipe and then stopped (cli.md 3.6, Prelude.lua); so the claim is given appears-as-E plus gone-on-E."
+  }
+ ],
+ "unknown": [
+  "The helper's tests after the controller-mode bit were followed only to their first two: it returns false when the player's camera holds ecl::camera::PlatformTargetComponent (type-index global DAT_181a2093c, init EoCClient.dll+0x118BF0), and next tests ecl::camera::IsInSelectorWhileInactiveComponent (DAT_181a20940) on it; the rest (a singleton, and the turn-based / casting / unsheath / splitscreen reads in symbols) was not followed.",
+  "What the debug-category branch logs (ls::dbg) was not read; it does not change the adds."
+ ],
+ "sure": "yes for the three adds/removes and their guards in Update (types resolved); no for the full condition inside InputController::IsInSelectorMode beyond controller mode"
+}

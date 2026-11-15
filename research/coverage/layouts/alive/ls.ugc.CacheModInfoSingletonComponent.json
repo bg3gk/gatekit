@@ -17,18 +17,18 @@
           "evidence": "ls::ugc::ModItemInfoID +0: macOS HashTable<ModItemInfoID>::Ensure (bg3_macos_x64+0x260BA40) hashes and compares this qword first; Windows default (bg3.exe+0x3BE8230) 0. Named by analogy with ModItemDependenciesInfoID's 64-bit item id."
         },
         {
-          "name": "field_8",
+          "name": "Version",
           "offset": 8,
           "type": "uint64_t",
-          "source": "unknown",
-          "evidence": "Value of an optional 64-bit member: Ensure compares it (and mixes it into the hash) only when the flag at +0x10 is set on both sides; Windows default 0 (8-byte store)."
+          "source": "inferred",
+          "evidence": "Same ls::ugc::ModItemInfoID as UgcCacheRequestAvailableModModItemInfoId (0x20 bytes, same hash/compare: macOS HashTable<ModItemInfoID>::Ensure): +8 is the value of an optional hashed and compared only when the flag at +0x10 is set - the Optional<Version> argument of ModInfoCachedRequestSystemHelper::RequestItemInfo(u64, Optional<Version>, bool, EHardwareType)."
         },
         {
-          "name": "field_8HasValue",
+          "name": "HasVersion",
           "offset": 16,
           "type": "bool",
           "source": "inferred",
-          "evidence": "The flag of the optional at +8 (Ensure: 'if flag == 0, value hashed as 0'; compared as bool); Windows default 0 (8-byte zero store at +0x10)."
+          "evidence": "Same ls::ugc::ModItemInfoID as UgcCacheRequestAvailableModModItemInfoId (0x20 bytes, same hash/compare: macOS HashTable<ModItemInfoID>::Ensure): +0x10 is the has-value flag of the optional Version at +8."
         },
         {
           "name": "_Pad11",
@@ -38,11 +38,11 @@
           "evidence": "padding"
         },
         {
-          "name": "field_18",
+          "name": "RecursiveDependencies",
           "offset": 24,
-          "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "Compared as one byte by Ensure; Windows default byte 0 at +0x18."
+          "type": "bool",
+          "source": "inferred",
+          "evidence": "macOS modio::UGCManager::QueryMod (bg3_macos_x64+0x67995A0, called by RequestItemInfo(Guid, EUGCRequestType, u64, Optional<STDString>, bool, EHardwareType)) stores the bool argument at request +0xF4, and ProcessQueryItemResult (bg3_macos_x64+0x67A0130) passes that byte as the third argument of http::GetDependenciesRequestData(u64, u32, bool), which bg3_dx11.exe+0x38C0B30 writes as '&recursive=true/false'. The ModItemInfoID byte at +0x18 is that bool argument (ModInfoCachedRequestSystemHelper::RequestItemInfo(u64, Optional<Version>, bool, EHardwareType) takes the key's members in order; compared, not hashed): whether the dependencies fetched with the item info are resolved recursively."
         },
         {
           "name": "_Pad19",
@@ -52,11 +52,11 @@
           "evidence": "padding"
         },
         {
-          "name": "field_1C",
+          "name": "HardwareType",
           "offset": 28,
           "type": "int32_t",
-          "source": "unknown",
-          "evidence": "Compared and hashed as a 4-byte int by Ensure; Windows default 0xFFFFFFFF (-1) at +0x1C."
+          "source": "inferred",
+          "evidence": "Same ls::ugc::ModItemInfoID as UgcCacheRequestAvailableModModItemInfoId (0x20 bytes, same hash/compare: macOS HashTable<ModItemInfoID>::Ensure): +0x1C is hashed and compared as an int, default -1: the EHardwareType argument of RequestItemInfo (macOS modio QueryMod maps it to a platform name, 0xFFFFFFFF -> 10)."
         }
       ]
     }

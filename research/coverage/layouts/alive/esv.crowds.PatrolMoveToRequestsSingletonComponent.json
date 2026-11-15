@@ -16,25 +16,25 @@
           "evidence": "esv::crowds::CharacterMovementSystem::Update (EoCServer.dll+0xD8C530) copies value+0 (8 bytes) and value+8 (4 bytes) into esv::crowds::MoveToComponent+0 / +8 (a position; the component then gets the proxy transform)."
         },
         {
-          "name": "field_c",
+          "name": "Radius",
           "offset": 12,
           "type": "float",
-          "source": "unknown",
-          "evidence": "Copied as a 4-byte value to esv::crowds::MoveToComponent+0x18 (EoCServer.dll+0xD8C530); meaning not established (speed-like)."
+          "source": "inferred",
+          "evidence": "Copied as a 4-byte value to esv::crowds::MoveToComponent +0x18 (EoCServer.dll+0xD8C530), the arrival radius: CharacterMovementSystem::Update ends the order when the squared distance to Target <= radius^2 and grows it by 0.05 when the character is stuck for 30 frames."
         },
         {
-          "name": "field_10",
+          "name": "MovementSpeed",
           "offset": 16,
           "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "Copied as one byte to esv::crowds::MoveToComponent+0x21 (EoCServer.dll+0xD8C530); the merge loop copies the whole dword, so bytes 0x11..0x13 are treated as padding."
+          "source": "inferred",
+          "evidence": "Copied as one byte to esv::crowds::MoveToComponent +0x21 (EoCServer.dll+0xD8C530), which becomes the uint8_t Speed of the eoc::PathSettings the move is started with. See MoveToComponent::MovementSpeed."
         },
         {
           "name": "_Pad11",
           "offset": 17,
           "type": "uint8_t[3]",
           "source": "unknown",
-          "evidence": "Padding to the 4-byte alignment of the 20-byte element (allocator call FUN_180d8be90(n, 0x14, 4))."
+          "evidence": "Padding to the 4-byte alignment of the 20-byte element (allocator call EoCServer.dll+0xD8BE90 with count, size 0x14, alignment 4)."
         }
       ]
     }
@@ -45,7 +45,7 @@
       "offset": 0,
       "type": "HashMap<EntityHandle, CrowdsPatrolMoveToRequest>",
       "source": "inferred",
-      "evidence": "Container: bg3.exe creator (AddSingleton) allocates 0x40 bytes and zeroes them; its destructor bg3.exe+0x5C4870 frees the values array at +0x30 without per-element destructors (plain data) and then the key hash set (bg3.exe+0x582AD0) = HashMap with POD values. esv::crowds::CharacterMovementSystem::Update (EoCServer.dll+0xD8C530, WorldView names DetourMoveTo/MoveTo/PatrolMoveTo RequestsSingleton const) iterates keys at +0x20 (count +0x2C, stride 8, hashed as uint64 and looked up as the entity whose MoveToComponent is created/updated) and values at +0x30 with stride 0x14 (scratch allocation FUN_180d8be90(n, 0x14, 4)). Key = crowd character entity. Writer: esv::crowds::PatrolSystem::Update (EoCServer.dll+0xD86770; macOS index: writes PatrolMoveToRequestsSingletonComponent). Live (seen.py, idle): one instance, all bytes zero (empty container)."
+      "evidence": "Container: bg3.exe creator (AddSingleton) allocates 0x40 bytes and zeroes them; its destructor bg3.exe+0x5C4870 frees the values array at +0x30 without per-element destructors (plain data) and then the key hash set (bg3.exe+0x582AD0) = HashMap with POD values. esv::crowds::CharacterMovementSystem::Update (EoCServer.dll+0xD8C530, WorldView names DetourMoveTo/MoveTo/PatrolMoveTo RequestsSingleton const) iterates keys at +0x20 (count +0x2C, stride 8, hashed as uint64 and looked up as the entity whose MoveToComponent is created/updated) and values at +0x30 with stride 0x14 (scratch allocation EoCServer.dll+0xD8BE90 with count, size 0x14, alignment 4). Key = crowd character entity. Writer: esv::crowds::PatrolSystem::Update (EoCServer.dll+0xD86770; macOS index: writes PatrolMoveToRequestsSingletonComponent). Live (seen.py, idle): one instance, all bytes zero (empty container)."
     }
   ],
   "confidence": "medium",

@@ -1,48 +1,44 @@
-# Leads: findings not confirmed yet
+# Leads that are not recipes yet
 
-Things read in code or seen once that still need a confirmation in the running game before
-they may go to docs/curiosities.md or into a layout. Each says what would confirm it.
+Sightings whose steps are not unambiguous enough to be written as a replayable recipe in
+`scenarios/coverage`. Their lines in `findings.jsonl` say `moved_to` this file. Each says what is
+open and what would confirm it. The leads for types never seen alive are `leads.jsonl`
+(`gatekit leads`); suspected layouts of Script Extender's are in
+[../open-items.md](../open-items.md).
 
-## The other unsheath timers
+## `levelup_window`: `eoc::character_creation::LevelUpDefinitionComponent` (TUT_Avernus_C, cheat, sighting)
 
-Read in code, not measured: summoned 3.0 s, coating 2.35, combining 1.5, lock picking 1.5
-(joining and leaving a fight 8.0, resurrection 4.5 and consuming 0.6 are confirmed and on the
-curiosities page). To confirm: capture `esv::unsheath::*Component` while a summon appears, a
-weapon is coated, items are combined, a lock is picked.
+Opening the CharacterLevelUp widget lit ecl/eoc `character_creation::LevelUpDefinitionComponent`,
+`eoc::character_creation::definition::LevelUpComponent`,
+`ecl::character_creation::AccumulatedChangesComponent` and `PlayerCameraChangeDelayComponent`.
+The character stayed level 1, so whether the experience was needed is unknown. The steps were: on
+the server `Osi.AddExplorationExperience(GK.Party()[1].uuid, 5000)`; in the UI
+`GK.Gui.Show("levelup")`. Not replayable as written: the widget appeared seconds late,
+`GK.Gui.IsOpen("levelup")` was false at first, and it appeared only after the GameMenu was closed,
+by a step that is not named. Not separated: the experience grant against the Show call alone. To
+confirm: from a fresh game, watch the type, show the window without experience, then with it,
+closing the GameMenu explicitly. (`progression_feat_level4_window` reaches the level-up window
+by the game's own path.)
 
-## Countercharm instruments
+## `cc_body_type_visual_changed`: `ecl::character_creation::LoadedBodyTypeVisualChangedComponent` (SYS_CC_I, play, sighting)
 
-Six `ARM_Countercharm_Instrument_*` stat entries use the otherwise unused instrument types.
-To confirm whether they are reachable in play: look for templates and treasure tables that
-use them.
+Clicking the body-type radio buttons of the CharacterCreation widget through `GK.Gui.Click`
+(SetBodyTypeAndShape, then EditAppearanceButton -> SetCameraMode) coincided with this one-frame
+component in the client capture; not isolated to one click, and a second round of
+femaleBtn/maleBtn clicks did not show it again. The clicks recorded were
+`GK.Gui.Click(CharacterCreation,raceTab)`, `(CharacterCreation,maleStrongBtn)`,
+`(CharacterCreation,EditAppearanceButton)` - unquoted names, and other buttons than the claim
+names. Not replayable: which click creates it is the open question, and the start (character
+creation from the main menu) is not given. To confirm: in character creation, watch the type on
+the client and click one button at a time.
 
-## Layouts Script Extender already has that may be wrong
+## `photo_mode_enter`: `eoc::photo_mode::SessionComponent` (WLD_Main_A, play, sighting)
 
-- `CombatCameraParams`: the use in `bg3.exe+0x1F21DB0` suggests the last three floats are
-  ObstructionBufferTime, MinChangeCameraTime, MinAngle - a different order from the header.
-- `TLLookAtAutomationConfig::EyeLookAtBone` is declared `uint8_t`; the code copies a
-  FixedString at that offset.
-- `eoc::PickingStateComponent` is declared as a tag; on the server its byte is 255 on all
-  312 characters of the test level.
-To confirm each: read the field through Script Extender and compare with the raw bytes and
-with what the game shows (the raw stage of check.py works on mapped types too).
-
-## One-byte types Script Extender itself may have the wrong way round
-
-From the macOS build's default constructors (`macos_defaults.py`; the method agrees with the
-live game on `eoc::PickingStateComponent`, whose byte is 255 on the server):
-
-- declared as tags, but the constructor stores a byte (so they hold data):
-  `eoc::CanTriggerRandomCastsComponent`, `eoc::PickingStateComponent`,
-  `eoc::item::DestroyingComponent`, `eoc::lock::AnimationStateComponent`,
-  `eoc::rest::LongRestInScriptPhase`, `eoc::rest::ShortRestComponent`,
-  `esv::IsMarkedForDeletionComponent`, `esv::ScriptPropertyCanBePickpocketedComponent`,
-  `esv::ScriptPropertyIsDroppedOnDeathComponent`, `esv::ScriptPropertyIsTradableComponent`;
-- declared with a one-byte field, but the constructor writes nothing (empty structs):
-  `eoc::ActiveComponent`, `eoc::GlobalLongRestDisabledComponent`,
-  `eoc::GlobalShortRestDisabledComponent`, `eoc::StoryShortRestDisabledComponent`,
-  `eoc::interrupt::ConditionallyDisabledComponent`, `eoc::interrupt::PreparedComponent`,
-  `eoc::interrupt::ZoneSourceComponent`, `eoc::photo_mode::DummyShowSplatterComponent`,
-  `esv::surface::LevelLoadedComponent`, `ls::SoundRoomCurrentStateComponent`.
-To confirm each: read the byte on live holders on the server (non-zero settles "data");
-for the second group, see whether the declared field ever differs from zero.
+The f9 key enters photo mode (one SessionComponent, byte +0x0 = 0x01); `photo_mode_f9` replays
+that. `GK.Command("TogglePhotoModeCommand")` returned true and produced no SessionComponent within
+4 s and a re-read, while a Dialogue widget was open (`GK.Blocking()` dialog=true), which may gate
+it. `gui::DCPhotoMode` has TrackCharacter, FieldOfView and Brightness; clicking
+PART_IncreaseRepeatButton moved neither FoVComponent's bytes nor FieldOfView (no property setter
+found); DummyShowSplatter, CameraTracking and DummyEquipmentSetupOneFrame were not lit; ActorSettings
+was empty, so no dummy was listed. To confirm the command path: run it with no dialogue open,
+watching SessionComponent.

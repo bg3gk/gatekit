@@ -11,60 +11,60 @@
       "size": 32,
       "fields": [
         {
-          "name": "field_0",
+          "name": "Boost",
           "offset": 0,
           "type": "EntityHandle",
-          "source": "unknown",
-          "evidence": "bg3.exe+0x2EE5840: local record starts with local_d8 = 0xffc0000000000000 (null handle) at +0. Line 241 stores local_d8 = the entity of the request (local_e8 = *puVar13, line 149)."
+          "source": "inferred",
+          "evidence": "Toolkit EoCServer.dll+0x3AFD00 esv::hit::RedirectionSystem::FinalizeTrackingRequests: iterates the entity's RedirectDamage boosts (BoostsContainerComponent::Get, BoostIteratorSkipUndesiredEntities) and for each kept boost writes into record +0 a local copy of the boost entity handle from that iterator; record stride 0x20."
         },
         {
-          "name": "field_8",
+          "name": "BoostCause",
           "offset": 8,
           "type": "EntityHandle",
-          "source": "unknown",
-          "evidence": "local uStack_d0 (+8): an entity handle, replaced by the owner from esv::status::OwnershipComponent when the source type byte equals 3, then checked alive. Lines 199-214: checked to be a live entity handle (generation compare in the entity table)."
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x3AFD00 FinalizeTrackingRequests: record +8 = eoc::GetBoostCauseOrSource(BoostInfoComponent) of the boost; when the cause type byte (+0x18 of the cause) is 3 it is replaced by the owner from esv::status::OwnershipComponent; the record is kept only if this entity is alive or RedirectToDamageSource is set."
         },
         {
-          "name": "field_10",
+          "name": "DamageType1",
           "offset": 16,
           "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "bg3.exe+0x2EE5840 lines 231-234: the byte at +4 of the source record is stored here when it is neither 0 nor 0x0E; the record dword +0x10 is packed as CONCAT13(c5, c6, c7, c8), i.e. four separate bytes."
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x3AFD00 FinalizeTrackingRequests: byte +4 of eoc::RedirectDamageBoostComponent (Script Extender: DamageType DamageType1) copied here unless 0 (None) or 0x0E (DamageType Sentinel); value of an optional (+0x11 is its has-value flag)."
         },
         {
-          "name": "field_11",
+          "name": "HasDamageType1",
           "offset": 17,
           "type": "bool",
-          "source": "unknown",
-          "evidence": "bg3.exe+0x2EE5840: zeroed (line 173), set to 1 together with field_10 (line 233) - the has-value flag of field_10."
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x3AFD00 FinalizeTrackingRequests: set to 1 in the same store that writes DamageType1 (the two bytes 1 and the damage type stored together), left 0 when the boost's DamageType1 is None or Sentinel - the has-value byte of an optional DamageType."
         },
         {
-          "name": "field_12",
+          "name": "DamageType2",
           "offset": 18,
           "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "bg3.exe+0x2EE5840 lines 236-239: the byte at +5 of the source record when neither 0 nor 0x0E."
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x3AFD00 FinalizeTrackingRequests: byte +5 of eoc::RedirectDamageBoostComponent (Script Extender: DamageType DamageType2) copied here unless 0 or 0x0E; value of an optional (+0x13 is its has-value flag)."
         },
         {
-          "name": "field_13",
+          "name": "HasDamageType2",
           "offset": 19,
           "type": "bool",
-          "source": "unknown",
-          "evidence": "bg3.exe+0x2EE5840: zeroed (line 174), set to 1 together with field_12 - the has-value flag of field_12."
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x3AFD00 FinalizeTrackingRequests: set to 1 together with DamageType2 (the byte 1 stored above three lower bytes in one 4-byte write), 0 when the boost's DamageType2 is None or Sentinel."
         },
         {
-          "name": "field_14",
+          "name": "Amount",
           "offset": 20,
           "type": "uint32_t",
-          "source": "unknown",
-          "evidence": "bg3.exe+0x2EE5840 line 242: `uStack_c4 = *puVar27` - the first 4 bytes of the source record; stored as the record dword +0x14."
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x3AFD00 FinalizeTrackingRequests: record +0x14 = the first int32 of eoc::RedirectDamageBoostComponent (Script Extender: int32_t Amount)."
         },
         {
-          "name": "field_18",
+          "name": "RedirectToDamageSource",
           "offset": 24,
           "type": "bool",
-          "source": "unknown",
-          "evidence": "bg3.exe+0x2EE5840 line 207: low byte of the dword +0x18 = byte +6 of the source record, which the same function tests `!= 0` to decide whether the record is kept (line 229)."
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x3AFD00 FinalizeTrackingRequests: record +0x18 = byte +6 of eoc::RedirectDamageBoostComponent (Script Extender: bool RedirectToDamageSource); the same byte lets the record be kept when the cause entity is dead."
         },
         {
           "name": "_Pad19",
@@ -82,12 +82,12 @@
       "offset": 0,
       "type": "Array<RedirectionTrackingRecord>",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x2EE6530 (AllocRaw 0x10) zeroes +0, +8, +0xC (Array pattern); destructor thunk of bg3.exe+0x5946C0 frees the buffer (trivial elements). bg3.exe+0x2EE5840 lines 326-367 set size +0xC to 0, grow with FUN_1406da440 and copy 32-byte records `(size * 0x20 + *array)`."
+      "evidence": "Creator bg3.exe+0x2EE6530 (AllocRaw 0x10) zeroes +0, +8, +0xC (Array pattern); destructor thunk of bg3.exe+0x5946C0 frees the buffer (trivial elements). bg3.exe+0x2EE5840 lines 326-367 set size +0xC to 0, grow with bg3.exe+0x6DA440 and copy 32-byte records to the buffer pointer plus size times 0x20."
     }
   ],
   "confidence": "high",
   "open_questions": [
-    "Meanings: two entity handles, two optional bytes (value + has flag, value 0 and 0x0E ignored - possibly an enum where 0x0E is 'none'), a 4-byte value and a bool. No names on the Windows side.",
+    "Each record is one RedirectDamage boost of the entity: Toolkit EoCServer.dll+0x3AFD00 FinalizeTrackingRequests copies eoc::RedirectDamageBoostComponent (Amount, DamageType1, DamageType2, RedirectToDamageSource) and the boost's cause. The 0x0E excluded beside 0 is read as DamageType Sentinel; not seen live.",
     "Not seen alive (seen.py has no samples)."
   ],
   "minutes": 9,

@@ -1,0 +1,20 @@
+[
+ {
+  "label": "talk",
+  "wait": 10,
+  "reset": true,
+  "server": "local H = Osi.GetHostCharacter() for _, row in ipairs(GK.Stage.Scout{ kind = \"characters\", radius = 400, limit = 400 }) do if not row.dead and row.onStage and not row.enemy and #GK.Stage.Dialogs(row.uuid) > 0 then SceneSpeaker = row.uuid break end end if not SceneSpeaker then error(\"no character with a dialogue within 400 m\") end GK.Stage.Bring(SceneSpeaker, H) return GK.Cheat.Talk(H, SceneSpeaker)"
+ },
+ {
+  "label": "trade",
+  "wait": 8,
+  "reset": true,
+  "server": "local H = Osi.GetHostCharacter() local t = GK.Stage.Scout{ kind = \"traders\", limit = 5 } local trader for _, row in ipairs(t) do if not row.dead and not row.enemy then trader = row.uuid break end end if not trader then error(\"no trader in the level\") end GK.Stage.Bring(trader, H) SceneTrader = trader return true",
+  "then": [
+   {
+    "server": "return GK.Cheat.Trade(Osi.GetHostCharacter(), SceneTrader)",
+    "wait": 8
+   }
+  ]
+ }
+]

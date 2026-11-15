@@ -11,14 +11,14 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x2CABB80 copies *param_3 (8 bytes) to +0; the caller bg3.exe+0x2CAAFE0 passes an element of its entity list (checked with IsEntityAlive and against 0xFFC0000000000000). Reader: Toolkit esv::PassiveSystem::UpdateFeatMutings (EoCServer.dll+0x1125120) reads the 8 bytes at +0 as an entity and asserts \"Invalid target entity\" when it is the null handle; name from that assert."
+      "evidence": "Creator bg3.exe+0x2CABB80 copies the 8 bytes its third argument points to to +0; the caller bg3.exe+0x2CAAFE0 passes an element of its entity list (checked with IsEntityAlive and against 0xFFC0000000000000). Reader: Toolkit esv::PassiveSystem::UpdateFeatMutings (EoCServer.dll+0x1125120) reads the 8 bytes at +0 as an entity and asserts \"Invalid target entity\" when it is the null handle; name from that assert."
     },
     {
       "name": "ProgressionEntities",
       "offset": 8,
       "type": "Array<EntityHandle>",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x2CABB80 allocates the array (FUN_140F3DC60(+8, src)) and copies 8-byte elements, size at +0x14; destructor bg3.exe+0x6AA2D0 frees +8 after the plain-array clear FUN_1405BD630. Toolkit UpdateFeatMutings walks +8 (count +0x14, stride 8), asserts \"Invalid progression entity\" on a null element and looks each one up as an entity (TryGet, then its progression/feat components); name from that assert."
+      "evidence": "Creator bg3.exe+0x2CABB80 allocates the array (bg3.exe+0xF3DC60 on +8 with the source) and copies 8-byte elements, size at +0x14; destructor bg3.exe+0x6AA2D0 frees +8 after the plain-array clear bg3.exe+0x5BD630. Toolkit UpdateFeatMutings walks +8 (count +0x14, stride 8), asserts \"Invalid progression entity\" on a null element and looks each one up as an entity (TryGet, then its progression/feat components); name from that assert."
     }
   ],
   "confidence": "high",

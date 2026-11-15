@@ -1,0 +1,197 @@
+{
+ "system": "esv::spell::LearningSystem",
+ "namespace": "esv::spell",
+ "symbols": {
+  "reads": [
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent"
+  ],
+  "writes": [
+   "eoc::spell::LearnedSpellsComponent",
+   "esv::spell::SpellsLearnedEventOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "LearnSpell",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LearningSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RemoveLearnedSpells",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateLearnedSpells",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateRemoveLearnedSpells",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateSavantSchools",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~LearningSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::spell::SpellsLearnedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x337C9E0",
+    "site": "bg3_dx11.exe+0x337CD32",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::BoostConditionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x113E210",
+    "site": "bg3_dx11.exe+0x113E2BD",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostConditionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x113E310",
+    "site": "bg3_dx11.exe+0x113E3CB",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostInfoComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x337C190",
+    "site": "bg3_dx11.exe+0x337C63A",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostsContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x337C190",
+    "site": "bg3_dx11.exe+0x337C2F1",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostsContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x337DB80",
+    "site": "bg3_dx11.exe+0x337DD3C",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::SavantBoostComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x337C190",
+    "site": "bg3_dx11.exe+0x337C646",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::spell::LearnedSpellsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x337C190",
+    "site": "bg3_dx11.exe+0x337C413",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::LearnedSpellsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x337C9E0",
+    "site": "bg3_dx11.exe+0x337CAB5",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::LearnedSpellsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x337CF20",
+    "site": "bg3_dx11.exe+0x337CFE7",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::LearnedSpellsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x337DB80",
+    "site": "bg3_dx11.exe+0x337DD27",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell::LearnedSpellsComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x337C9E0",
+    "site": "bg3_dx11.exe+0x337CA8D",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::spell::LearnedSpellsComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x337CF20",
+    "site": "bg3_dx11.exe+0x337CFBC",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "LearnSpell / RemoveLearnedSpells",
+   "text": "Only queue. LearnSpell appends a request (a 16-byte guid, which source granted it, plus a spell-name FixedString) to a per-entity list in the system's own table; RemoveLearnedSpells just records the entity in a removal set. No component is touched at call time.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, LearningSystem::LearnSpell at +0x12207D0 (73 lines, read whole) and RemoveLearnedSpells at +0x1221390 (20 lines)"
+  },
+  {
+   "method": "Update",
+   "text": "Runs three steps in order each tick: UpdateSavantSchools, UpdateRemoveLearnedSpells, UpdateLearnedSpells.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, LearningSystem::Update at +0x1221550, read whole (23 lines)"
+  },
+  {
+   "method": "UpdateLearnedSpells",
+   "text": "For each entity that has queued learn requests, if the entity is alive and already has eoc::spell::LearnedSpellsComponent, each request's spell is checked against the spell prototype manager (it must be a known spell and IsSpellLearnable); each accepted spell is inserted into the component's per-source list (the guid keys the source) and the entity is marked dirty for replication. Spells that were added this tick are gathered in a list; when that list is not empty, esv::spell::SpellsLearnedEventOneFrameComponent (0x10 bytes, holding that list) is ADDED to the entity for one frame. The queue is then cleared. Rejected spells only log a message.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, LearningSystem::UpdateLearnedSpells at +0x1221590 (379 lines, read in windows). Event add: FUN_18121df30 (+0x121DF30) ends in ComponentFrameStorageAllocRaw size 0x10 with _DAT_182224320 -> init (+0xC4850) -> 'esv::spell::SpellsLearnedEventOneFrameComponent'; its call is guarded by the added-count being non-zero. The component access: FUN_18121f260 tests for DAT_1821f039c = 'eoc::spell::LearnedSpellsComponent' (init +0xC960)"
+  }
+ ],
+ "unknown": [
+  "UpdateRemoveLearnedSpells and UpdateSavantSchools were not read; from their names they remove spells and handle wizard savant-school bonuses, but that is a guess from the names and the symbol list (LearnedSpellsComponent is written, no add or remove of it was located).",
+  "Whether LearnedSpellsComponent itself is added to an entity here (UpdateLearnedSpells requires it to exist already).",
+  "What calls LearnSpell (an Osiris call, the scroll 'Learn' UI action, level-up?): not traced.",
+  "The meaning of the guid argument (class or source id) is a guess from how it is stored and printed."
+ ],
+ "sure": "no: the add of SpellsLearnedEventOneFrameComponent and its guard (non-empty added list) are read; the removal paths and the callers are not"
+}

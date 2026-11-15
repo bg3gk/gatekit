@@ -1,0 +1,61 @@
+{
+ "system": "esv::stats::AttributeFlagsSystem",
+ "namespace": "esv::stats",
+ "symbols": {
+  "reads": [
+   "eoc::AttributeBoostComponent",
+   "eoc::BoostConditionComponent",
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent",
+   "esv::BaseDataComponent",
+   "esv::boost::ChangedEventOneFrameComponent",
+   "esv::shapeshift::StatesChangedEventOneFrameComponent",
+   "esv::shapeshift::StatesComponent"
+  ],
+  "writes": [
+   "eoc::AttributeFlagsComponent",
+   "esv::stats::AttributeFlagsChangedEventOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "AttributeFlagsSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateAttributeFlags",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~AttributeFlagsSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::stats::AttributeFlagsChangedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x352D4D0",
+    "site": "bg3_dx11.exe+0x352E110",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::AttributeBoostComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x352D1D0",
+    "site": "bg3_dx11.exe+0x352D3EE",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

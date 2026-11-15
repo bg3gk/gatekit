@@ -1,0 +1,67 @@
+{
+ "system": "esv::interrupt::DecisionSystem",
+ "namespace": "esv::interrupt",
+ "symbols": {
+  "reads": [
+   "eoc::interrupt::ActionStateComponent",
+   "eoc::interrupt::DataComponent"
+  ],
+  "writes": [
+   "eoc::interrupt::DecisionComponent"
+  ],
+  "methods": [
+   {
+    "name": "DecisionSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_DecideInterrupt",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateDecisionComponent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DecisionSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::interrupt::DecisionComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3574450",
+    "site": "bg3_dx11.exe+0x35746EC",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::interrupt::ActionStateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3574450",
+    "site": "bg3_dx11.exe+0x3574AE1",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::interrupt::DecisionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3575650",
+    "site": "bg3_dx11.exe+0x357573A",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

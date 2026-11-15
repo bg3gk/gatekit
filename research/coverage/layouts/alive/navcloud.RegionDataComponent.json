@@ -14,7 +14,7 @@
           "offset": 0,
           "type": "int32_t",
           "source": "inferred",
-          "evidence": "Vector3i<int> key: macOS TryGetTileInfo compares *(int*)(keys + i*0xC + 0/4/8) with the tile position's region coordinates"
+          "evidence": "Vector3i<int> key: macOS TryGetTileInfo compares the three 32-bit integers at +0/+4/+8 of key i (stride 0xC) with the tile position's region coordinates"
         },
         {
           "name": "Y",
@@ -46,7 +46,7 @@
       "offset": 8,
       "type": "uint32_t",
       "source": "inferred",
-      "evidence": "bucket count; macOS TryGetTileInfo takes hash % *(int*)(map+8). Live server: 0x607 (1543 buckets)"
+      "evidence": "bucket count; macOS TryGetTileInfo takes the hash modulo the 32-bit integer at +8 of the map. Live server: 0x607 (1543 buckets)"
     },
     {
       "name": "_Pad0C",
@@ -60,21 +60,21 @@
       "offset": 16,
       "type": "Array<int32_t>",
       "source": "inferred",
-      "evidence": "hash chain: TryGetTileInfo follows *(int*)(*(map+0x10) + i*4). Live: capacity 0x400, size 0"
+      "evidence": "hash chain: TryGetTileInfo follows the chain through the 32-bit entry i of the buffer whose pointer is at +0x10 of the map. Live: capacity 0x400, size 0"
     },
     {
       "name": "Keys",
       "offset": 32,
       "type": "Array<NavcloudRegionDataKey>",
       "source": "inferred",
-      "evidence": "Vector3i<int> keys at *(map+0x20) stride 0xC, count *(int*)(map+0x2C) (macOS TryGetTileInfo; Windows dtor bg3.exe+0x6CFFB0 loops to *(int*)(this+0x2C)). Live: capacity 0x400, size 0"
+      "evidence": "Vector3i<int> keys in the buffer pointed to by +0x20 of the map, stride 0xC, count = the 32-bit integer at +0x2C of the map (macOS TryGetTileInfo; Windows dtor bg3.exe+0x6CFFB0 loops up to the 32-bit count at +0x2C of the object). Live: capacity 0x400, size 0"
     },
     {
       "name": "Values",
       "offset": 48,
       "type": "void*",
       "source": "inferred",
-      "evidence": "navcloud::Region per key, stride 0x58: Windows dtor bg3.exe+0x6CFFB0 destroys *(this+0x30)+i*0x58 (Array at +0x48 freed, map at +0x08 destroyed by bg3.exe+0x5E19C0 whose values are 0x30-byte HashSets); macOS GetComponentDestructor<RegionDataComponent> calls navcloud::Region::~Region with the same stride"
+      "evidence": "navcloud::Region per key, stride 0x58: Windows dtor bg3.exe+0x6CFFB0 destroys element i (stride 0x58) of the buffer pointed to by +0x30 of the object (Array at +0x48 freed, map at +0x08 destroyed by bg3.exe+0x5E19C0 whose values are 0x30-byte HashSets); macOS GetComponentDestructor<RegionDataComponent> calls navcloud::Region::~Region with the same stride"
     },
     {
       "name": "ValuesCapacity",

@@ -1,0 +1,148 @@
+{
+ "system": "esv::BodyTypeSystem",
+ "namespace": "esv",
+ "symbols": {
+  "reads": [
+   "eoc::CharacterCreationStatsComponent",
+   "esv::Character",
+   "esv::character_creation::UpdatesComponent",
+   "esv::shapeshift::StatesComponent"
+  ],
+  "writes": [
+   "eoc::BodyTypeComponent",
+   "eoc::BodyTypeUpdatedNotification"
+  ],
+  "methods": [
+   {
+    "name": "BodyTypeSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CreateNotifications",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCharacterCreationUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCreateRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessShapeshiftUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RemoveNotifications",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestUpdate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~BodyTypeSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::BodyTypeUpdatedNotification",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x33C98C0",
+    "site": "bg3_dx11.exe+0x33C9B87",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::BodyTypeComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x33CA430",
+    "site": "bg3_dx11.exe+0x33CA655",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BodyTypeComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x33CA870",
+    "site": "bg3_dx11.exe+0x33CA8DF",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::CharacterCreationStatsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x33CA430",
+    "site": "bg3_dx11.exe+0x33CA68C",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::Character",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x33CA120",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::Character",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x33CA430",
+    "site": "bg3_dx11.exe+0x33CA636",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::Character",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x33CA870",
+    "site": "bg3_dx11.exe+0x33CA8B9",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::shapeshift::StatesComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x33CA870",
+    "site": "bg3_dx11.exe+0x33CA927",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BodyTypeComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x33CA120",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

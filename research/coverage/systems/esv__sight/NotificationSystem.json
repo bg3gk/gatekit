@@ -1,0 +1,96 @@
+{
+ "system": "esv::sight::NotificationSystem",
+ "namespace": "esv::sight",
+ "symbols": {
+  "reads": [
+   "eoc::BoundComponent",
+   "eoc::DarknessComponent",
+   "eoc::character::CharacterComponent",
+   "eoc::gamestate::SavegameLoadComponent",
+   "eoc::sight::DataComponent",
+   "eoc::sight::EntityViewshedComponent",
+   "eoc::sneak::IsSneakingComponent",
+   "eoc::sneak::RollsContainerComponent",
+   "esv::sight::AggregatedDataComponent",
+   "esv::sight::EntityViewshedContentsChangedEventOneFrameComponent",
+   "esv::sight::ViewshedParticipantComponent",
+   "esv::sight::ViewshedParticipantsAddedEventOneFrameComponent",
+   "ls::LevelComponent",
+   "ls::TransformComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "esv::sight::SightEventsOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "CollectNotificationsFromViewshedAndSneakingChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CreateStorySightEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "NotificationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~NotificationSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::sight::SightEventsOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E8A1D0",
+    "site": "bg3_dx11.exe+0x2E8A5F5",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E89400",
+    "site": "bg3_dx11.exe+0x2E89E42",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::character::CharacterComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E89400",
+    "site": "bg3_dx11.exe+0x2E89E60",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::sneak::IsSneakingComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E89400",
+    "site": "bg3_dx11.exe+0x2E89DED",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::sneak::IsSneakingComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E89400",
+    "site": "bg3_dx11.exe+0x2E89FDA",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

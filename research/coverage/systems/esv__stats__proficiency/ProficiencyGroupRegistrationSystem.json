@@ -1,0 +1,93 @@
+{
+ "system": "esv::stats::proficiency::ProficiencyGroupRegistrationSystem",
+ "namespace": "esv::stats::proficiency",
+ "symbols": {
+  "reads": [],
+  "writes": [
+   "eoc::stats::proficiency::ProficiencyGroupComponent",
+   "esv::stats::proficiency::ProficiencyGroupStatsComponent"
+  ],
+  "methods": [
+   {
+    "name": "GatherStatsLoadRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RegisterDefinitionAppliedItem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RegisterReloadedItem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RegisterTransformedItem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_ReloadProficiencies",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProficiencyGroupRegistrationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateProficiencyGroups",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ProficiencyGroupRegistrationSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::stats::proficiency::ProficiencyGroupComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EF67C0",
+    "site": "bg3_dx11.exe+0x2EF6959",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::stats::proficiency::ProficiencyGroupStatsComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EF67C0",
+    "site": "bg3_dx11.exe+0x2EF6A5A",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::stats::proficiency::ProficiencyGroupComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EF67C0",
+    "site": "bg3_dx11.exe+0x2EF692A",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::stats::proficiency::ProficiencyGroupStatsComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EF67C0",
+    "site": "bg3_dx11.exe+0x2EF6A47",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

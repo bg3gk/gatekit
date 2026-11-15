@@ -14,25 +14,25 @@
       "evidence": "Creator bg3.exe+0x1AF5D10 (AllocRaw 0x10) writes 0xFFFFFFFF and registers the FixedString destructor bg3.exe+0x698FE0. Toolkit EoCClient.dll+0x593DC0 (ColorGradingSystem::UpdateColorGrading) compares +0 as an int and assigns it with ls::FixedString::operator=; macOS DCPhotoMode::OnColorGradingChanged takes it from the selected UI entry (+0x60 of the object at DCPhotoMode+0x988)."
     },
     {
-      "name": "field_4",
+      "name": "Contrast",
       "offset": 4,
       "type": "float",
-      "source": "unknown",
-      "evidence": "UpdateColorGrading compares and copies +4 as a float; DCPhotoMode::OnColorGradingChanged fills it from a DCPhotoMode property (+0xB10 on macOS); creator writes 0."
+      "source": "inferred",
+      "evidence": "macOS gui::DCPhotoMode::OnColorGradingChanged (bg3_macos_x64+0x28AF530) copies DCPhotoMode+0xB10 into the ColorGrading request at +0x14 (request +0x10 FixedString Id, then +0x14/+0x18/+0x1C in component order); gui::DCPhotoMode::DCPhotoMode registers Noesis symbol 'Contrast' right after that value (value at +0xB10, AddString(\"Contrast\") stored at +0xB10+4, the pattern 'DOFStrength'/'DOFDistance' follows for the DoF fields). Name is the photo-mode UI property, not a member name."
     },
     {
-      "name": "field_8",
+      "name": "Saturation",
       "offset": 8,
       "type": "float",
-      "source": "unknown",
-      "evidence": "same, from DCPhotoMode +0xB28 (macOS); creator writes 0."
+      "source": "inferred",
+      "evidence": "macOS gui::DCPhotoMode::OnColorGradingChanged (bg3_macos_x64+0x28AF530) copies DCPhotoMode+0xB28 into the ColorGrading request at +0x18 (request +0x10 FixedString Id, then +0x14/+0x18/+0x1C in component order); gui::DCPhotoMode::DCPhotoMode registers Noesis symbol 'Saturation' right after that value (value at +0xB28, AddString(\"Saturation\") stored at +0xB28+4, the pattern 'DOFStrength'/'DOFDistance' follows for the DoF fields). Name is the photo-mode UI property, not a member name."
     },
     {
-      "name": "field_c",
+      "name": "Highlights",
       "offset": 12,
       "type": "float",
-      "source": "unknown",
-      "evidence": "same, from DCPhotoMode +0xB40 (macOS); creator writes 0."
+      "source": "inferred",
+      "evidence": "macOS gui::DCPhotoMode::OnColorGradingChanged (bg3_macos_x64+0x28AF530) copies DCPhotoMode+0xB40 into the ColorGrading request at +0x1C (request +0x10 FixedString Id, then +0x14/+0x18/+0x1C in component order); gui::DCPhotoMode::DCPhotoMode registers Noesis symbol 'Highlights' right after that value (value at +0xB40, AddString(\"Highlights\") stored at +0xB40+4, the pattern 'DOFStrength'/'DOFDistance' follows for the DoF fields). Name is the photo-mode UI property, not a member name."
     }
   ],
   "confidence": "high",

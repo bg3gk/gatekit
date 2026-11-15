@@ -5,9 +5,9 @@ Lua than it showed. Most of what is in it is not ours to keep: it is a set of im
 [Norbyte's work](https://github.com/Norbyte/bg3se), and it belongs back in his repository if he
 wants it.
 
-This page is how that is done, so it is done the same way every time. The one change prepared so
-far is [`sound-settings.md`](sound-settings.md): its description, its commit message, and where
-the branch is. Nothing has been pushed.
+This page is how that is done, so it is done the same way every time. The change prepared
+is [`sound-settings.md`](sound-settings.md): its description, its commit message, and where the
+branch is. Nothing of it is pushed.
 
 ## The order
 
@@ -66,22 +66,21 @@ Whatever he answers becomes this file's rules, replacing anything here that disa
   what the line already says, never apologises, and never mentions GateKit.
 - **A description made of evidence.** What the structure is, how it was established, what it was
   checked against, in a running game or in the binary. Not assertion.
-- **The honest unknowns, written down.** "I could not determine what the third float is" costs
+- **The unknowns, written down.** "I could not determine what the third float is" costs
   nothing. A confident wrong claim costs the next person's trust in everything else we send.
 
 ## Whose name is on it
 
 A pull request has exactly one author on GitHub; two accounts cannot open one together. So:
 
-- **The first one comes from [@Gwynerva](https://github.com/Gwynerva)** — a person arriving as a
-  person.
+- **The first one comes from the owner's own account** — a person arriving as a person.
 - **The ones after it come from the bot**, once there is a working relationship and nobody is
   guessing who we are.
 - **Either way the commits credit both**, with the usual `Co-Authored-By: GateKit Thrall`, which
   is the one place GitHub does allow two names.
 
 That AI agents did much of the work is said plainly in the first pull request, once, without
-ceremony — the same honesty the README gives. What must not happen is a maintainer discovering it
+ceremony, as plainly as GateKit's README says it. What must not happen is a maintainer discovering it
 later and feeling handled.
 
 ## When

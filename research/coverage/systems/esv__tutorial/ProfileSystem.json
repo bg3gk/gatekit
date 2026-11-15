@@ -1,0 +1,112 @@
+{
+ "system": "esv::tutorial::ProfileSystem",
+ "namespace": "esv::tutorial",
+ "symbols": {
+  "reads": [
+   "eoc::gamestate::RunningComponent",
+   "eoc::gamestate::SavegameLoadComponent",
+   "eoc::user::ReservedForComponent"
+  ],
+  "writes": [
+   "esv::tutorial::ProfileEventDataComponent"
+  ],
+  "methods": [
+   {
+    "name": "LEGACY_RequestProfileEvent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestResetEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnPlayerConnected",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnSessionUnloaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessConnections",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProfileSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ProfileSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::tutorial::ProfileEventDataComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3423E90",
+    "site": "bg3_dx11.exe+0x34246A0",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::IsGlobalComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3423E90",
+    "site": "bg3_dx11.exe+0x342465C",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3423E90",
+    "site": "bg3_dx11.exe+0x342467E",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::user::ReservedForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3424810",
+    "site": "bg3_dx11.exe+0x3424A87",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::tutorial::ProfileEventDataComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3423E90",
+    "site": "bg3_dx11.exe+0x34245EF",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::tutorial::ProfileEventDataComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x3424810",
+    "site": "bg3_dx11.exe+0x3424B8C",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

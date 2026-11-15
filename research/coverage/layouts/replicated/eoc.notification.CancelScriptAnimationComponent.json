@@ -4,11 +4,11 @@
   "size": 24,
   "fields": [
     {
-      "name": "field_0",
+      "name": "Entity",
       "offset": 0,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "serializer bg3.exe+0x99D840 member 1: 16-byte scratch write at +0; macOS default zero."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x83A0F0 (lambda over esv::script::AnimationCancelRequestOneFrameComponent, variant tag 3 = CancelItemAnimationNotificationRequest) puts the Guid of the entity carrying the request (FUN_180367E90) at request +0 and the one-frame's byte at +0x10; dispatcher bg3.exe+0x2DF53B0 case 3 copies both into this component (creator bg3.exe+0x2DF1AC0): the entity whose script animation is cancelled."
     },
     {
       "name": "field_10",

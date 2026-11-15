@@ -1,0 +1,105 @@
+{
+ "system": "ecl::spell::ImpactSoundSystem",
+ "namespace": "ecl::spell",
+ "symbols": {
+  "reads": [
+   "ecl::player_management::PlayerIdToPlayerInputIndexMappingSingletonComponent",
+   "ecl::spell_cast::SoundImpactEventOneFrameComponent",
+   "eoc::ClassesComponent",
+   "eoc::StatsComponent",
+   "eoc::repose::StateComponent",
+   "eoc::user::ReservedForComponent",
+   "ls::LevelComponent",
+   "ls::PhysicsComponent",
+   "ls::SoundActivatedComponent",
+   "ls::SoundListenerComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "ecl::sound::SpellImpactRequestBusComponent",
+   "ecl::sound::SpellImpactStateComponent"
+  ],
+  "methods": [
+   {
+    "name": "FinalizeState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetListenerPositions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ImpactSoundSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCurrentSpellImpacts",
+    "address": "bg3_dx11.exe+0x1DDAD60",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ProcessNewSpellImpacts",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ImpactSoundSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::sound::SpellImpactStateComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1DDB310",
+    "site": "bg3_dx11.exe+0x1DDBAA5",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::TransformComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1DDB310",
+    "site": "bg3_dx11.exe+0x1DDBA15",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::sound::SpellImpactStateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1DDB310",
+    "site": "bg3_dx11.exe+0x1DDBCF7",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::user::ReservedForComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1DDB310",
+    "site": "bg3_dx11.exe+0x1DDB6EE",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

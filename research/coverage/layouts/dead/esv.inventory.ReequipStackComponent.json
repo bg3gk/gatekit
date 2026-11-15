@@ -15,7 +15,7 @@
           "offset": 0,
           "type": "uint8_t",
           "source": "inferred",
-          "evidence": "Game bg3.exe+0x35087A0 line 435 `if (*local_3b8 != 0x16)` (0x16 = no slot) and passes the byte as the slot to eoc::equipment::GetEquipmentEntityInSlot; Toolkit EoCServer.dll+0xF2AB60 line ~538 the same. Equipment slot enum, 1 byte."
+          "evidence": "Game bg3.exe+0x35087A0 line 435 tests whether the byte at +0 of the entry is not 0x16 (0x16 = no slot) and passes the byte as the slot to eoc::equipment::GetEquipmentEntityInSlot; Toolkit EoCServer.dll+0xF2AB60 line ~538 the same. Equipment slot enum, 1 byte."
         },
         {
           "name": "_Pad1",
@@ -29,14 +29,14 @@
           "offset": 8,
           "type": "EntityHandle",
           "source": "inferred",
-          "evidence": "game line 436 `local_3d0 = pbVar16 + -0x20` (entry +8) is looked up as an entity and its owner compared with the stack's entity; the entry is filled from the 0x38-byte ReequipStackUpdate (lines 576-586, qword copies to +0/+8)."
+          "evidence": "game line 436 takes entry +8 (addressed 0x20 bytes before its loop cursor) and it is looked up as an entity and its owner compared with the stack's entity; the entry is filled from the 0x38-byte ReequipStackUpdate (lines 576-586, qword copies to +0/+8)."
         },
         {
           "name": "Slot2",
           "offset": 16,
           "type": "uint8_t",
           "source": "inferred",
-          "evidence": "game line 448 `if (local_3b8[0x10] != 0x16)` - a second slot, same 0x16 = none."
+          "evidence": "game line 448 tests whether the byte at +0x10 of the entry is not 0x16 - a second slot, same 0x16 = none."
         },
         {
           "name": "_Pad11",
@@ -50,14 +50,14 @@
           "offset": 24,
           "type": "EntityHandle",
           "source": "inferred",
-          "evidence": "game line 449 `local_3d0 = local_3b8 + 0x18` - the second entity, looked up like +8."
+          "evidence": "game line 449 takes entry +0x18 - the second entity, looked up like +8."
         },
         {
           "name": "Processed",
           "offset": 32,
           "type": "bool",
           "source": "inferred",
-          "evidence": "game line 431 `pbVar16[-8] = 1` (entry +0x20) for every entry visited; Toolkit removes entries whose `*(char *)(entry + 0x20) != 0` (line ~798) with the DynamicArray<esv::inventory::UnequippedEntry> remover."
+          "evidence": "game line 431 writes 1 to the byte at entry +0x20 for every entry visited; Toolkit removes entries whose byte at +0x20 is non-zero (line ~798) with the DynamicArray<esv::inventory::UnequippedEntry> remover."
         },
         {
           "name": "_Pad21",
@@ -75,7 +75,7 @@
       "offset": 0,
       "type": "HashMap<EntityHandle, Array<ReequipStackUnequippedEntry>>",
       "source": "inferred",
-      "evidence": "Storage registration bg3.exe+0x2702560: size 0x40, destructor bg3.exe+0x591CF0 (frees the value array at +0x30, then the 48-byte HashSet of keys via bg3.exe+0x582AD0). Game bg3.exe+0x35087A0 walks it as a HashMap: keys at +0x20 with count at +0x2C, values at +0x30 with stride 0x10 (`lVar15 * 0x10 + plVar21[6]`), each value an Array of 0x28-byte entries. Key and value types from the macOS template name ls::HashMap<ls::ID<ecs::EntityHandleTraits>, ls::DynamicArray<esv::inventory::UnequippedEntry>>."
+      "evidence": "Storage registration bg3.exe+0x2702560: size 0x40, destructor bg3.exe+0x591CF0 (frees the value array at +0x30, then the 48-byte HashSet of keys via bg3.exe+0x582AD0). Game bg3.exe+0x35087A0 walks it as a HashMap: keys at +0x20 with count at +0x2C, values at +0x30 with stride 0x10 (the key index times 0x10 added to the values pointer), each value an Array of 0x28-byte entries. Key and value types from the macOS template name ls::HashMap<ls::ID<ecs::EntityHandleTraits>, ls::DynamicArray<esv::inventory::UnequippedEntry>>."
     }
   ],
   "confidence": "high",

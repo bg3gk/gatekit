@@ -1,0 +1,118 @@
+{
+ "system": "esv::unsheath::CombatSystem",
+ "namespace": "esv::unsheath",
+ "symbols": {
+  "reads": [
+   "eoc::animation::GameplayEventsOneFrameComponent",
+   "esv::combat::JoinEventOneFrameComponent",
+   "esv::combat::LeftEventOneFrameComponent",
+   "esv::unsheath::DefaultChangedOneFrameComponent",
+   "ls::TimeFactorComponent",
+   "ls::game::PauseComponent"
+  ],
+  "writes": [
+   "esv::unsheath::CombatJoiningComponent",
+   "esv::unsheath::CombatLeavingComponent"
+  ],
+  "methods": [
+   {
+    "name": "CombatSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CombatSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::unsheath::CombatJoiningComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3A8A",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::unsheath::CombatLeavingComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3B35",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::combat::LeftEventOneFrameComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3A94",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::combat::LeftEventOneFrameComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3B8B",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::unsheath::CombatJoiningComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3BA3",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::unsheath::CombatLeavingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3D01",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::unsheath::DefaultChangedOneFrameComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3CE2",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::combat::JoinEventOneFrameComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3A67",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::combat::JoinEventOneFrameComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3CCA",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::unsheath::CombatJoiningComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x32E2F50",
+    "site": "bg3_dx11.exe+0x32E3A77",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

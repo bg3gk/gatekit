@@ -1,0 +1,181 @@
+{
+ "system": "esv::spell_cast::DataCacheSystem",
+ "namespace": "esv::spell_cast",
+ "symbols": {
+  "reads": [
+   "eoc::spell_cast::CacheComponent",
+   "eoc::spell_cast::FinishedEventOneFrameComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::spell_cast::StateComponent",
+   "eoc::summon::IsSummonComponent",
+   "esv::GameStateLoadSessionComponent",
+   "esv::GameStateUnloadSessionComponent",
+   "esv::spell_cast::StateComponent",
+   "esv::status::ApplyEventOneFrameComponent",
+   "esv::status::RemoveEventOneFrameComponent",
+   "esv::surface::CreatedEventOneFrameComponent",
+   "esv::surface::RemovedEventOneFrameComponent",
+   "ls::savegame::LoadedComponent"
+  ],
+  "writes": [
+   "eoc::spell_cast::DataCacheSingletonComponent",
+   "ls::IsGlobalComponent",
+   "ls::SavegameComponent"
+  ],
+  "methods": [
+   {
+    "name": "DataCacheSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherCreateRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherDelayedRemovalRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherDestroyRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherExternalReferencesRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetOrCreateSingleton",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LoadedSession",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UnloadSession",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateComponent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DataCacheSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "note": "copied from `gatekit symbols system <name> --dll dx11 --full` (addresses are bg3_dx11.exe; the Toolkit's own methods without an address were not found in the game binary and are listed with address null; the per-frame update address is not printed for bg3_dx11.exe by this command, it was found by reading the factory in pseudo-code). Parsed by script from the command output, not retyped.",
+  "uses": [
+   {
+    "type": "eoc::spell_cast::DataCacheSingletonComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x356FAE0",
+    "site": "bg3_dx11.exe+0x356FC3E",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::IsGlobalComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x356FAE0",
+    "site": "bg3_dx11.exe+0x356FC86",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x356FAE0",
+    "site": "bg3_dx11.exe+0x356FC64",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell_cast::IsCastingComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35706C0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell_cast::StateComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35706C0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell_cast::IsCastingComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x35706C0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::spell_cast::StateComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x35706C0",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "GetOrCreateSingleton",
+   "text": "Looks for the existing DataCacheSingleton; when there is none, it creates one new entity and adds three components to it through the deferred buffer: eoc::spell_cast::DataCacheSingletonComponent (0x40 bytes), ls::SavegameComponent (so the cache is saved) and ls::IsGlobalComponent (a 1-byte marker making it a global). When one exists it returns it and flags it dirty for replication.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, DataCacheSystem::GetOrCreateSingleton at +0x11480F0 (125 lines, read whole after filtering asserts). Adds: FUN_181143d00 (+0x1143D00, DAT_18222ad14 -> init +0xDC150 -> 'eoc::spell_cast::DataCacheSingletonComponent', frame storage 0x40); FUN_1802dac40 (+0x2DAC40, the same ls::SavegameComponent helper resolved in the itemwall work, AllocRaw); FUN_1802db590 (+0x2DB590, AllocRaw size 1, DAT_1821f78f4 -> init +0x2D4A0 -> 'ls::IsGlobalComponent'). The condition is the helper FUN_181145ce0 returning an empty result"
+  },
+  {
+   "method": "Update",
+   "text": "Runs a chain: LoadedSession, GatherCreateRequests, GatherDestroyRequests, GatherExternalReferencesRequests, GatherDelayedRemovalRequests, UpdateComponent, UnloadSession, all sharing one Requests object; the gather steps read status apply/remove events and cache create/destroy needs into it, and UpdateComponent applies them to the singleton's cache.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, DataCacheSystem::Update at +0x11495B0 (54 lines, the seven calls read in order). The bodies of the Gather* methods and UpdateComponent were not read, so what they decide is inferred from their names and the view (status ApplyEvent/RemoveEvent one-frame components); treat as a guess from names"
+  },
+  {
+   "method": "UnloadSession",
+   "text": "At the end of a session unload it destroys, with the deferred buffer, every entity matched by a query that carries the singleton component (by the view and the method name), i.e. the cache singleton goes with the session.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, DataCacheSystem::UnloadSession at +0x1149430 (115 lines): DestroyEntity loop at about line 104; the guard before it and the query contents were not resolved"
+  }
+ ],
+ "unknown": [
+  "What the cache holds and what the singleton's data are used for (the type name says spell-cast data cache; the Gather* bodies were not read).",
+  "When GetOrCreateSingleton is called (from SystemLoad, LoadedSession or Update) and the condition of UnloadSession's destroy.",
+  "SystemLoad (+0x1149180) only registers component signals; its body was not read beyond the registration check."
+ ],
+ "sure": "no: the three-component creation of the singleton is read with its condition, the rest of the system's work is not"
+}

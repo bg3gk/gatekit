@@ -3,7 +3,7 @@
   "ext_name": "ServerZoneCreateRequest",
   "size": 392,
   "seen": true,
-  "summary": "Server one-frame request to create a spell zone (cone/line area of a spell; seen alive when a Mud Mephit cast a spell, born together with esv::zone::SpellComponent and FinishedEventOneFrameComponent). It is one esv::zone::CreationParams (0x188 bytes): esv::zone::CreationSystem::ProcessCreateRequests (EoCServer.dll+0x114C5E0) walks CreationParams with stride 0x188, creates the zone entity, fills esv::zone::SpellComponent from it and copies the whole CreationParams with the assignment FUN_18114c290 (EoCServer.dll+0x114C290), which gives every member's offset and width. The builder FUN_18164dc50 (EoCServer.dll+0x164DC50) names the member types (SpellId, InitialTarget, eoc::SpellZoneInfo, optional arrays of AiTilePos / EntityHandle / HitDesc). Game defaults from creator bg3.exe+0x3377AF0.",
+  "summary": "Server one-frame request to create a spell zone (cone/line area of a spell; seen alive when a Mud Mephit cast a spell, born together with esv::zone::SpellComponent and FinishedEventOneFrameComponent). It is one esv::zone::CreationParams (0x188 bytes): esv::zone::CreationSystem::ProcessCreateRequests (EoCServer.dll+0x114C5E0) walks CreationParams with stride 0x188, creates the zone entity, fills esv::zone::SpellComponent from it and copies the whole CreationParams with the assignment EoCServer.dll+0x114C290, which gives every member's offset and width. The builder EoCServer.dll+0x164DC50 names the member types (SpellId, InitialTarget, eoc::SpellZoneInfo, optional arrays of AiTilePos / EntityHandle / HitDesc). Game defaults from creator bg3.exe+0x3377AF0.",
   "structs": [
     {
       "name": "ZoneCreateRequestSpellId",
@@ -138,7 +138,7 @@
           "offset": 0,
           "type": "void*",
           "source": "inferred",
-          "evidence": "game creator bg3.exe+0x3377AF0 writes &PTR_FUN_1454db080 at component +0x80; equals SE eoc::spell_cast::InitialTarget (0x70 bytes, Toolkit local 'InitialTarget local_378 [112]')"
+          "evidence": "game creator bg3.exe+0x3377AF0 writes a pointer to the virtual table at bg3.exe+0x54DB080 at component +0x80; equals SE eoc::spell_cast::InitialTarget (0x70 bytes, a 112-byte InitialTarget local variable in the Toolkit)"
         },
         {
           "name": "Target",
@@ -262,7 +262,7 @@
           "offset": 16,
           "type": "bool",
           "source": "inferred",
-          "evidence": "engaged flag tested at +0x10 by FUN_18114c290"
+          "evidence": "engaged flag tested at +0x10 by EoCServer.dll+0x114C290"
         },
         {
           "name": "_Pad11",
@@ -344,11 +344,11 @@
   ],
   "fields": [
     {
-      "name": "field_0",
+      "name": "StoryActionId",
       "offset": 0,
       "type": "int32_t",
-      "source": "unknown",
-      "evidence": "FUN_18114c290 copies a dword; builder FUN_18164dc50 stores param_2; game default -1. Live 0x2E / 0x126."
+      "source": "inferred",
+      "evidence": "macOS esv::functor::StatsFunctorCreateZone::Execute (bg3_macos_x64+0x64CB660), whose demangled signature is (StoryActionID, EntityHandle, Guid, HitDesc, AttackDesc, Vector3f, Vector3f, EntityHandle, SpellId, EAbility, InitialTarget, ESurfaceType, SpellZoneInfo&&, uint, float, float, AiTilePos[]*, EntityHandle[]*, HitDesc[]*, bool, bool, FixedString, int, bool), fills a local esv::zone::CreationParams (0x188 bytes, copy-constructed into the request array). It stores the first argument, ls::TypeWrap<unsigned int, eoc::TStoryActionIDClassname>, at CreationParams +0 (the first slot of the local copy). The Windows builder EoCServer.dll+0x164DC50 likewise stores its second parameter here, and its parameter order matches the macOS signature at every other field: Guid +0x10 = its 4th parameter, Vector3f +0x28/+0x34 = its 7th/8th, EntityHandle +0x20 = its 9th. Game default -1. Live 0x2E / 0x126."
     },
     {
       "name": "_Pad4",
@@ -358,53 +358,53 @@
       "evidence": "not copied by the assignment; live 0xFFFFFFFF garbage"
     },
     {
-      "name": "field_8",
+      "name": "SpellCast",
       "offset": 8,
       "type": "EntityHandle",
-      "source": "unknown",
-      "evidence": "game default null handle; ProcessCreateRequests copies it to esv::zone::SpellComponent +0 only when valid (the caster/source). Live entity handles."
+      "source": "inferred",
+      "evidence": "macOS esv::functor::StatsFunctorCreateZone::Execute (bg3_macos_x64+0x64CB660) takes this EntityHandle as its second argument. Its spell-cast caller bg3_macos_x64+0x641B5D0 passes the entity at +8 of its 5th parameter, the entity it reads eoc::spell_cast::StateComponent and esv::spell_cast::StateComponent from (and whose state's SpellCastGuid it passes as the Guid stored at +0x10): the spell cast entity. esv::functor::ExecuteStatsFunctors (bg3_macos_x64+0x64E1ED0) passes Unassigned, so a zone made by a functor has none. ProcessCreateRequests copies it to esv::zone::SpellComponent +0 only when valid."
     },
     {
-      "name": "field_10",
+      "name": "SpellCastUuid",
       "offset": 16,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "builder: ls::Guid default-constructed then copied from param_4 (16 bytes). Live random 128-bit values (a cast Guid?)."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests copies request +0x10..+0x1F (16 bytes) to the new ZoneAction +0x40, which is SurfaceAction::SpellCastUuid in Script Extender's layout (esv::SurfaceAction +0x40). Toolkit 4.69 build; the request is 0x188 bytes there as in the game."
     },
     {
-      "name": "field_20",
+      "name": "Owner",
       "offset": 32,
       "type": "EntityHandle",
-      "source": "unknown",
-      "evidence": "builder copies *param_9; game default null handle. Live entity handles."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x80 = request +0x20 (EntityHandle); +0x80 is CreateSurfaceActionBase::Owner in Script Extender's layout. Toolkit 4.69 build."
     },
     {
-      "name": "field_28",
+      "name": "ActionPosition",
       "offset": 40,
       "type": "glm::vec3",
-      "source": "unknown",
-      "evidence": "copied as 8+4 bytes; builder from param_7. Live (48.75, 17, 209.5) - a world position (equal to +0x118)."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x8C..+0x97 = request +0x28 (8+4 bytes); +0x8C is CreateSurfaceActionBase::Position in Script Extender's layout. Live samples are world positions. Toolkit 4.69 build. Prefixed Action because the layout already calls the SpellZoneInfo position at +0x118 Position (the two are equal in live samples)."
     },
     {
-      "name": "field_34",
+      "name": "ActionTarget",
       "offset": 52,
       "type": "glm::vec3",
-      "source": "unknown",
-      "evidence": "copied as 8+4 bytes; builder from param_8. Live (51.25, 17.21, 204.8) - a second position (target/end point?)."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x5DC..+0x5E7 = request +0x34 (vec3). In the Toolkit's ZoneAction the accessor TextKey is at +0x5D8 and Script Extender's ZoneAction declares glm::vec3 Target right after TextKey, so +0x5DC is ZoneAction::Target. Live a second world position near Position. Prefixed Action because the layout already calls the InitialTarget at +0x80 Target."
     },
     {
       "name": "SpellId",
       "offset": 64,
       "type": "ZoneCreateRequestSpellId",
       "source": "inferred",
-      "evidence": "FUN_18114c290: eoc::spell::SpellId::operator= at +0x40 (0x38 bytes, equals SE SpellId)"
+      "evidence": "EoCServer.dll+0x114C290: eoc::spell::SpellId::operator= at +0x40 (0x38 bytes, equals SE SpellId)"
     },
     {
-      "name": "field_78",
+      "name": "Ability",
       "offset": 120,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "byte copy; builder from *param_11; game default 0. Live 2 / 4."
+      "source": "inferred",
+      "evidence": "macOS esv::functor::StatsFunctorCreateZone::Execute (bg3_macos_x64+0x64CB660), whose demangled signature is (StoryActionID, EntityHandle, Guid, HitDesc, AttackDesc, Vector3f, Vector3f, EntityHandle, SpellId, EAbility, InitialTarget, ESurfaceType, SpellZoneInfo&&, uint, float, float, AiTilePos[]*, EntityHandle[]*, HitDesc[]*, bool, bool, FixedString, int, bool), fills a local esv::zone::CreationParams (0x188 bytes, copy-constructed into the request array). The EAbility const& argument is stored as one byte at CreationParams +0x78 (the byte read through its 13th parameter). Windows builder: byte read through its 11th parameter, the 10th argument in the same order. Live 2 / 4 (EAbility values)."
     },
     {
       "name": "_Pad79",
@@ -418,14 +418,14 @@
       "offset": 128,
       "type": "ZoneCreateRequestInitialTarget",
       "source": "inferred",
-      "evidence": "FUN_18114c290: eoc::spell_cast::InitialTarget::operator= at +0x80 (equals SE InitialTarget); copied to esv::zone::SpellComponent +8"
+      "evidence": "EoCServer.dll+0x114C290: eoc::spell_cast::InitialTarget::operator= at +0x80 (equals SE InitialTarget); copied to esv::zone::SpellComponent +8"
     },
     {
       "name": "field_F0",
       "offset": 240,
       "type": "int32_t",
       "source": "unknown",
-      "evidence": "dword copy; builder param_24; copied to SpellComponent +0x7C; game default 0. Live 0."
+      "evidence": "dword copy; the builder's 24th parameter; copied to SpellComponent +0x7C; game default 0. Live 0."
     },
     {
       "name": "Shape",
@@ -457,25 +457,25 @@
       "evidence": "SpellZoneInfo member; live 1.614 / 1.663"
     },
     {
-      "name": "field_100",
+      "name": "Range",
       "offset": 256,
       "type": "float",
-      "source": "unknown",
-      "evidence": "SpellZoneInfo member; live 5.2 / 5.249"
+      "source": "inferred",
+      "evidence": "SpellZoneInfo (starts at +0xF4) +0xC. macOS eoc::spell_cast::InitializeZoneInfoForSpellCast (bg3_macos_x64+0x22D79B0) stores eoc::spell::Ranges +8 here, after capping it by the stats global RangeBoostedGlobalCap. eoc::spell::GetSpellRanges(RangeContext) (bg3_macos_x64+0x22FB8C0) fills Ranges +8 from SpellPrototype::GetSpellRange(strRange) / GetTargetRadius / strAreaRadius / strExplodeRadius, by targeting type, plus a context offset. Live 5.2 for a 5 m spell (with +0xF8 = 0.2)."
     },
     {
-      "name": "field_104",
+      "name": "CeilingRange",
       "offset": 260,
       "type": "float",
-      "source": "unknown",
-      "evidence": "SpellZoneInfo member; live 5"
+      "source": "inferred",
+      "evidence": "SpellZoneInfo +0x10 = eoc::spell::Ranges +0xC (InitializeZoneInfoForSpellCast, bg3_macos_x64+0x22D79B0). GetSpellRanges (bg3_macos_x64+0x22FB8C0) writes Ranges +0xC = SpellPrototype::GetSpellRange(strTargetCeiling) when the spell's TargetCeiling stat is set, else the base range. Live 5."
     },
     {
-      "name": "field_108",
+      "name": "FloorRange",
       "offset": 264,
       "type": "float",
-      "source": "unknown",
-      "evidence": "SpellZoneInfo member; live 5 (range?)"
+      "source": "inferred",
+      "evidence": "SpellZoneInfo +0x14 = eoc::spell::Ranges +0x10 (InitializeZoneInfoForSpellCast, bg3_macos_x64+0x22D79B0). GetSpellRanges (bg3_macos_x64+0x22FB8C0) writes Ranges +0x10 = SpellPrototype::GetSpellRange(strTargetFloor) when the spell's TargetFloor stat is set, else the base range. Live 5."
     },
     {
       "name": "AngleOrBase",
@@ -494,18 +494,18 @@
       "legacy": "field_110"
     },
     {
-      "name": "field_114",
+      "name": "Height",
       "offset": 276,
       "type": "float",
-      "source": "unknown",
-      "evidence": "SpellZoneInfo member; live 1.4 / 2"
+      "source": "inferred",
+      "evidence": "SpellZoneInfo +0x20. macOS InitializeZoneInfoForSpellCast (bg3_macos_x64+0x22D79B0) calls eoc::spell::GetVerticalBounds(bound, position, &bottom, &top) and stores top - bottom here: the zone's vertical extent. Live 1.4 / 2, the size of a character's bounds."
     },
     {
-      "name": "field_118",
+      "name": "Position",
       "offset": 280,
       "type": "glm::vec3",
-      "source": "unknown",
-      "evidence": "SpellZoneInfo member; live equal to +0x28 (a world position)"
+      "source": "inferred",
+      "evidence": "SpellZoneInfo +0x24..+0x2F. macOS InitializeZoneInfoForSpellCast (bg3_macos_x64+0x22D79B0) copies its Vector3f const& argument (the cast position, also passed to GetVerticalBounds) here. Live it equals the world position at +0x28."
     },
     {
       "name": "ZoneFlags",
@@ -523,11 +523,11 @@
       "evidence": "padding (live 0)"
     },
     {
-      "name": "field_128",
+      "name": "SurfaceType",
       "offset": 296,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "byte; builder from *param_13; game default 0xFF. Live 0x15 / 0x4B (a surface type from eoc::GetSurfaceTypeFromStats?)."
+      "source": "inferred",
+      "evidence": "macOS esv::functor::StatsFunctorCreateZone::Execute (bg3_macos_x64+0x64CB660), whose demangled signature is (StoryActionID, EntityHandle, Guid, HitDesc, AttackDesc, Vector3f, Vector3f, EntityHandle, SpellId, EAbility, InitialTarget, ESurfaceType, SpellZoneInfo&&, uint, float, float, AiTilePos[]*, EntityHandle[]*, HitDesc[]*, bool, bool, FixedString, int, bool), fills a local esv::zone::CreationParams (0x188 bytes, copy-constructed into the request array). The eoc::ESurfaceType const& argument is stored as one byte at CreationParams +0x128 (the byte read through its 15th parameter), right after the SpellZoneInfo copy at +0xF4. Windows builder: read through its 13th parameter, the 12th argument. Game default 0xFF. Live 0x15 / 0x4B."
     },
     {
       "name": "_Pad129",
@@ -537,25 +537,25 @@
       "evidence": "live 0xFF garbage"
     },
     {
-      "name": "field_12C",
+      "name": "GrowStep",
       "offset": 300,
       "type": "int32_t",
-      "source": "unknown",
-      "evidence": "builder param_15; game default 10. Live 5."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x620 = request +0x12C (int32); the Toolkit exports the accessor esv::ZoneAction set GrowStep at +0x620 (symbols fields esv::ZoneAction). Game default 10."
     },
     {
-      "name": "field_130",
+      "name": "GrowTimer",
       "offset": 304,
       "type": "float",
-      "source": "unknown",
-      "evidence": "builder param_16; game default 1.0. Live 0.01."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x61C = request +0x130 (float); the Toolkit exports the accessor esv::ZoneAction set GrowTimer at +0x61C (symbols fields esv::ZoneAction). Game default 1.0."
     },
     {
-      "name": "field_134",
+      "name": "Duration",
       "offset": 308,
       "type": "float",
-      "source": "unknown",
-      "evidence": "builder param_17; game default 0. Live 0 / 18."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x88 = request +0x134 (float); +0x88 is CreateSurfaceActionBase::Duration in Script Extender's layout. Game default 0; live 0 and 18."
     },
     {
       "name": "Tiles",
@@ -579,32 +579,32 @@
       "evidence": "optional<Array<eoc::HitDesc>>, flag at +0x178. Live empty."
     },
     {
-      "name": "field_180",
+      "name": "TextKey",
       "offset": 384,
       "type": "FixedString",
-      "source": "unknown",
-      "evidence": "FixedString::operator=; builder from param_23; copied to SpellComponent +0x78; game default null. Live 0."
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests passes request +0x180 as the FixedString argument of esv::ZoneAction::SetSpellID (EoCServer.dll+0x6AD110), which stores it at ZoneAction +0x5D8 = the Toolkit accessor TextKey, and looks the spell properties up by it (LEGACY_GetSpellProperties(prototype, TextKey))."
     },
     {
-      "name": "field_184",
+      "name": "IsFromItem",
       "offset": 388,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "builder param_21; game default 0"
+      "source": "inferred",
+      "evidence": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests passes byte +0x184 as the first bool of esv::ZoneAction::SetSpellID (EoCServer.dll+0x6AD110), which writes it to bit 0 of ZoneAction +0x670 = the Toolkit accessor 'get IsFromItem' (bit 0, mask 0x1)."
     },
     {
-      "name": "field_185",
+      "name": "IgnoreSpellRolls",
       "offset": 389,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "builder param_22; game default 0; live 0/1"
+      "source": "inferred",
+      "evidence": "Windows builder EoCServer.dll+0x164DC50 stores its 21st and 22nd parameters as the bytes +0x184 and +0x185 (the two bytes stored together in one 2-byte write). In the macOS spell-cast caller bg3_macos_x64+0x641B5D0 the matching two bools of StatsFunctorCreateZone::Execute are 'the state's Source entity is valid' (+0x184, IsFromItem) and (eoc::spell_cast::StateComponent CastOptions & 4) >> 2; 4 is SpellCastOptions::IgnoreSpellRolls. ProcessZoneRequests passes +0x185 as the second bool of esv::ZoneAction::SetSpellID (bit 3 of ZoneAction +0x670)."
     },
     {
       "name": "field_186",
       "offset": 390,
       "type": "uint8_t",
       "source": "unknown",
-      "evidence": "builder param_25; game default 0"
+      "evidence": "the builder's 25th parameter; game default 0"
     },
     {
       "name": "_Pad187",
@@ -618,7 +618,7 @@
   "open_questions": [
     "Names of the scalar members and of eoc::SpellZoneInfo's members (its split into floats is from live values only).",
     "Element size of the HitDesc array in the game build (Toolkit 0x1B0).",
-    "SpellZoneInfo floats +0xF8..+0x108, +0x114 and the vec3 +0x118: written by esv::zone::CreationSystem / SpellZoneInfo::ComputeZoneCells (origin, target, range); reading the Toolkit callers of FUN_18164dc50 (the builder) with their argument sources would name them."
+    "SpellZoneInfo floats +0xF8..+0x108, +0x114 and the vec3 +0x118: written by esv::zone::CreationSystem / SpellZoneInfo::ComputeZoneCells (origin, target, range); reading the Toolkit callers of EoCServer.dll+0x164DC50 (the builder) with their argument sources would name them."
   ],
   "minutes": 18,
   "functions_read": 7,

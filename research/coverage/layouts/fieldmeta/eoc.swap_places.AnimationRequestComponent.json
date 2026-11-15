@@ -24,32 +24,32 @@
       "size": 24,
       "fields": [
         {
-          "name": "field_0",
+          "name": "Source",
           "offset": 0,
           "type": "EntityHandle",
-          "source": "unknown",
-          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes an entity at the FieldMeta offset global DAT_14627A028 (never assigned, so 0)"
+          "source": "inferred",
+          "evidence": "Toolkit EoCServer.dll+0x5D7C70 ProcessSwapPlacesRequests: the animation element is built as {request +0 (source handle), request +8 (target handle), the two bools at request +0x14}; esv::animation::GameplaySystem::ProcessSwapPlacesAnimationRequests (EoCServer.dll+0x1517940) triggers EoCGE::PositionSwap(true, +0x10, +0x11) on element +0."
         },
         {
-          "name": "field_8",
+          "name": "Target",
           "offset": 8,
           "type": "EntityHandle",
-          "source": "unknown",
-          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes an entity at +8"
+          "source": "inferred",
+          "evidence": "EoCServer.dll+0x5D7C70: element +8 = the request's target handle; EoCServer.dll+0x1517940 triggers EoCGE::PositionSwap(false, +0x10, +0x11) on element +8."
         },
         {
           "name": "field_10",
           "offset": 16,
           "type": "bool",
           "source": "unknown",
-          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes 1 byte at +0x10"
+          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes 1 byte at +0x10. Toolkit EoCServer.dll+0x5D7C70 copies it from request +0x14 = the second argument of the SwapPlaces stats functor (functor +0x4C; Script Extender SwapPlacesFunctor::Arg1); EoCServer.dll+0x1517940 passes it to the animation gameplay event EoCGE::PositionSwap(isSource, +0x10, +0x11), whose parameter names are not in the binaries."
         },
         {
           "name": "field_11",
           "offset": 17,
           "type": "bool",
           "source": "unknown",
-          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes 1 byte at +0x11"
+          "evidence": "Windows array writer bg3.exe+0xA7FD00 writes 1 byte at +0x11. Toolkit EoCServer.dll+0x5D7C70 copies it from request +0x15 = the third argument of the SwapPlaces functor (functor +0x4D; Script Extender Arg2); passed to EoCGE::PositionSwap like +0x10."
         },
         {
           "name": "_Pad12",

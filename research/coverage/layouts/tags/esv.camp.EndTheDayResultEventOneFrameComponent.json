@@ -6,11 +6,11 @@
   "size": 1,
   "fields": [
     {
-      "name": "field_0",
+      "name": "Result",
       "offset": 0,
       "type": "uint8_t",
-      "source": "unknown",
-      "evidence": "One byte of data: ecs::ComponentOps<T>::DefaultConstructComponents of the macOS build (address 103B18928) stores it (strb wzr, [x23]; default zero). What the byte means is not established."
+      "source": "inferred",
+      "evidence": "EoCServer.dll+0x9CB4C0 esv::camp::EndTheDaySystem::FinalizeEndTheDayState (Toolkit, named): a local byte starts 0 and is set to 1, 2, 3, 4 or 6 on the function's branches; when it is nonzero the function logs 'Creating Result event: result (%s)' (a switch over the byte picks the text) and adds the component through EoCServer.dll+0x9C7E10, whose type id (the global at EoCServer.dll+0x222F834) is registered by EoCServer.dll+0xEDA10 with EoCServer.dll+0x9C9A30 = GetTypeName<esv::camp::EndTheDayResultEventOneFrameComponent>, then *component = the byte. The byte is the end-the-day result code (values 1-6 seen in the code; the enumeration's name and labels are not in the record)."
     }
   ],
   "status": "confirmed",

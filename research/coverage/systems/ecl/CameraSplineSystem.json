@@ -1,0 +1,250 @@
+{
+ "system": "ecl::CameraSplineSystem",
+ "namespace": "ecl",
+ "symbols": {
+  "reads": [
+   "eoc::BoundComponent",
+   "eoc::gamestate::RunningComponent",
+   "ls::SplineComponent"
+  ],
+  "writes": [
+   "ecl::camera_spline::ClearScreenFadeRequestManualOneFrameComponent",
+   "ecl::camera_spline::ScreenFadeToRequestManualOneFrameComponent",
+   "ls::CameraComponent"
+  ],
+  "methods": [
+   {
+    "name": "Activate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ActivateInternal",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ActivateSlow",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CameraSplineSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Deactivate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DeactivateAll",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DeactivateInternal",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DeactivateSlow",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DirectorModeUpdate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DisableDirectorMode",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "EnableDirectorMode",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Finish",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GetSplines",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "HasActive",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Initialize",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnGameStateChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnPlayerDestroying",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Place",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PostUpdate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessScreenFade",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Setup",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CameraSplineSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "ecl::camera_spline::ClearScreenFadeRequestManualOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1C9B340",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::camera_spline::ScreenFadeToRequestManualOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1C9B340",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ecl::GameCameraBehavior",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1C9A810",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::CameraComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1C99540",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::CameraComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1C9A810",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "When the game state is Running or MainMenu (or Idling/Paused while an engine flag at gEngine+0x40 is set), the system places every active camera spline for this frame's time, then finishes and drops every active spline whose ended byte (+0x48 of its 0x50-byte record) is set. Inside the same gate it then runs ProcessScreenFade; outside those game states nothing of this runs.",
+   "evidence": "EoCClient.dll+0xFF3CD0 ecl::CameraSplineSystem::Update: HasAny on the spec at EoCClient.dll+0x1A05FD0 (eoc::gamestate::Idling / Paused in the any-of list) together with gEngine+0x40, HasAny on the spec at EoCClient.dll+0x19F91B0 (MainMenu / Running), the loop over this+0x68 calling Place, the second loop testing byte +0x48 and calling Finish and the removal EoCClient.dll+0xFF3600, then ProcessScreenFade, all inside the gate (read with its braces).",
+   "check": "not checkable live: placing a spline moves a camera inside the frame; no named field of ls::CameraComponent was tied to it here."
+  },
+  {
+   "method": "Finish",
+   "text": "Finishing an active spline does nothing at all unless the spline's byte +0x49 is set. With it set, it ends a splitscreen spline request if one was started, and - only while no loading screen is visible - restores the player's HUD, reopens the dialog UI if the player's character carries character flag 0x40, and, when the spline's fade time (+0x44) is above zero, queues a screen-fade request for that player in a map keyed by player id, with both of its flags set (fade-to and clear) and the fade time; it then puts the previous camera target back. DeactivateSlow (by spline name) marks a spline ended and finishes it at once.",
+   "evidence": "EoCClient.dll+0xFF11D0 (ecl::CameraSplineSystem::Finish, by gatekit decomp grep): the test of byte +0x49, the splitscreen::RequestSystem::SplineStartSplitRequest branch, LoadingScreenManager::IsVisible, UIManager::SetPlayerHudVisible, Character::IsFlag(0x40) -> ShowDialogUI, the float +0x44 compared with 1.19e-7, the map insert EoCClient.dll+0xFEF590 on this+0x28 storing 0x0101 and the float; EoCClient.dll+0xFF0C20 DeactivateSlow setting +0x48 and calling Finish.",
+   "check": "not checkable live: the queued request lives in the system's own map, not in a component; its outcome is the next claim.",
+   "review": "Review 2026-11-14 (Opus): corrected: byte +0x49 guards the whole of Finish (its if opens at the top and closes at the end of the function), not only the fade; the fade-time test sits inside the 'loading screen not visible' block, so no fade is queued while a loading screen shows."
+  },
+  {
+   "method": "ProcessScreenFade: creates the fade requests",
+   "text": "If fade requests are queued, the system takes the carrier entity of last frame's requests or creates a new one, and for each queued player: with the fade-to flag it adds ecl::camera_spline::ScreenFadeToRequestManualOneFrameComponent (when not yet there) and puts into its Requests map, under the player id, a fresh creation record with a newly generated Guid; with the clear flag it adds ecl::camera_spline::ClearScreenFadeRequestManualOneFrameComponent (when not yet there) and appends to its Requests a record with a Guid. The queue is emptied afterwards. Both types are read by ecl::screen_fade::ScreenFadeSystem (ProcessScreenFadeToRequests, ProcessClearScreenFadeRequests). So both appear, client side, the frame a camera spline started with a fade time (Osiris StartCameraSpline's FadeTime) is finished, if the spline's byte +0x49 is set and no loading screen is visible.",
+   "evidence": "EoCClient.dll+0xFF2C40 ecl::CameraSplineSystem::ProcessScreenFade: EoCClient.dll+0xFEF720 (only user of the WorldView over the two request types) fetching the existing carrier, the count test at this+0x54, CreateEntity, the loop over the 2-byte keys at this+0x48 with values at this+0x58, the first flag -> adder EoCClient.dll+0xFEE830 (type-index global at EoCClient.dll+0x19DA0F4 = ecl::camera_spline::ScreenFadeToRequestManualOneFrameComponent) and the map insert with ls::Guid::Generate, the second flag -> adder EoCClient.dll+0xFEE640 (the global at EoCClient.dll+0x19DA0EC =ecl::camera_spline::ClearScreenFadeRequestManualOneFrameComponent) and the array append; the readers by gatekit decomp grep.",
+   "check": {
+    "when": "camera_spline_fade_finish",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::camera_spline::ScreenFadeToRequestManualOneFrameComponent",
+       "side": "client",
+       "within": 30
+      }
+     },
+     {
+      "appears": {
+       "component": "ecl::camera_spline::ClearScreenFadeRequestManualOneFrameComponent",
+       "side": "client",
+       "within": 30
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "camera_spline_fade_finish (PROPOSED): GustavX:WLD_Main_A from the checkpoint; server: find a spline of the level (an entity with ls::SplineComponent, its GUID), then Osi.StartCameraSpline(spline, Osi.GetHostCharacter(), 1.0, 1, 0, 0); sleep 3; Osi.StopCameraSpline(spline, Osi.GetHostCharacter()); sleep 2. Untested: that FadeTime lands in +0x44, that StopCameraSpline reaches Finish, and what sets byte +0x49.",
+   "review": "Review 2026-11-14 (Opus): holds: EoCClient.dll+0xFEE830 uses the global at EoCClient.dll+0x19DA0F4 (init EoCClient.dll+0x2C070 -> GetTypeName<ScreenFadeToRequestManualOneFrameComponent>), EoCClient.dll+0xFEE640 uses the global at EoCClient.dll+0x19DA0EC (init EoCClient.dll+0x105C0 ->GetTypeName<ClearScreenFadeRequestManualOneFrameComponent>); the two flag bytes and the create when no carrier exists are as written. Condition added from Finish: no loading screen visible."
+  },
+  {
+   "method": "ProcessScreenFade: destroys the carrier",
+   "text": "When no fade request is queued and a carrier entity from an earlier frame exists, the system destroys it - so the two request types last one frame.",
+   "evidence": "EoCClient.dll+0xFF2C40 ecl::CameraSplineSystem::ProcessScreenFade: the count at this+0x54 == 0 with an existing carrier handle -> DestroyEntity.",
+   "check": {
+    "when": "camera_spline_fade_finish",
+    "expect": [
+     {
+      "appears": {
+       "component": "ecl::camera_spline::ScreenFadeToRequestManualOneFrameComponent",
+       "side": "client",
+       "as": "E",
+       "within": 30
+      }
+     },
+     {
+      "gone": {
+       "component": "ecl::camera_spline::ScreenFadeToRequestManualOneFrameComponent",
+       "side": "client",
+       "on": "E",
+       "within": 30
+      }
+     }
+    ]
+   },
+   "review": "Review 2026-11-14 (Opus): the earlier 'not checkable live: gone is judged against the holders before the recipe' misread the verb: gone also passes for an entity that came to hold the type inside the recipe and then stopped (cli.md 3.6, Prelude.lua); so the claim is given appears-as-E plus gone-on-E."
+  }
+ ],
+ "unknown": [
+  "What sets an active spline's byte +0x49 - it gates the whole of Finish (HUD, dialog UI, fade, camera target), so it reads like 'this spline took over the player's camera' rather than a fade flag - and +0x44 (read as the fade time); neither offset is written in ActivateInternal, Place, Setup, PostUpdate or DeactivateInternal as grepped (review 2026-11-14).",
+  "How StopCameraSpline / the server reach Deactivate/DeactivateSlow or the ended byte on the client (the server's esv::CameraSplineSystem was not read).",
+  "What gEngine+0x40 is (it lets splines play while the game is idling or paused)."
+ ],
+ "sure": "yes for the creation of both fade request types and the carrier's destruction (adders resolved); no for the play path to Finish with a fade (the +0x49/+0x44 origins are not read)"
+}

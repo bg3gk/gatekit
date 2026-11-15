@@ -1,0 +1,25 @@
+{
+  "component": "eoc::MaximumRollResultBoostComponent",
+  "ext_name": "MaximumRollResultBoost",
+  "size": 2,
+  "oneFrame": false,
+  "fields": [
+    {
+      "name": "RollType",
+      "offset": 0,
+      "type": "stats::RollType",
+      "source": "extender",
+      "evidence": "Script Extender declares eoc::MaximumRollResultBoostComponent::RollType at +0x0 (BG3Extender/GameDefinitions/Components/Boosts.h:509): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+    },
+    {
+      "name": "Result",
+      "offset": 1,
+      "type": "int8_t",
+      "source": "inferred",
+      "evidence": "Memory instrument, live: the host's attack pinned at 19 (GK.Rolls.Pin, the boosts MinimumRollResult(Attack,19);MaximumRollResult(Attack,19)); GK.Memory.Field(boost entity, eoc::MaximumRollResultBoostComponent, Result) = +0x1, read 19; GK.Memory.Freeze of both Results at 2, then a fair melee attack at a goblin of armour class 13: a plain miss (Dodge|Miss, not a critical miss), where 19 hit. Code: bg3_dx11.exe+0x105AD10 compares RollType (+0x0) with the roll's type and clamps the drawn die to Result. (research/proof-of-concept/reports/attacks.md, the d20)"
+    }
+  ],
+  "status": "declared",
+  "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Boosts.h:509, kind boost), by gatekit symbols se-layouts on 2026-11-14",
+  "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `extender` - the extender's name for the field at that offset, which nobody has checked against the game's code. A name is raised from `extender` only with evidence from the code, by `gatekit names set`."
+}

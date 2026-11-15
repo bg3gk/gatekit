@@ -1,0 +1,106 @@
+{
+ "system": "esv::trade::CanTradeSystem",
+ "namespace": "esv::trade",
+ "symbols": {
+  "reads": [
+   "eoc::PlayerComponent",
+   "esv::GameStateReloadStoryComponent",
+   "esv::SessionUnloadOneFrameComponent"
+  ],
+  "writes": [
+   "eoc::trade::CanTradeComponent",
+   "esv::trade::CanTradeSetComponent",
+   "esv::trade::LegacyCanTradeRequestsSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "CanTradeSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestEntityConversionSetCanTrade",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCanTradeComponentChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCanTradeSetComponentChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessClearEntityConversionsRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessLegacyCanTradeRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessNewEntitiyConversionsRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~CanTradeSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::trade::CanTradeSetComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3511720",
+    "site": "bg3_dx11.exe+0x3511852",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::trade::LegacyCanTradeProcessedComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3511720",
+    "site": "bg3_dx11.exe+0x351183A",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::trade::CanTradeComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35123A0",
+    "site": "bg3_dx11.exe+0x35129CB",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::trade::CanTradeComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x35123A0",
+    "site": "bg3_dx11.exe+0x3512A0A",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::PlayerComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x35123A0",
+    "site": "bg3_dx11.exe+0x35128C7",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

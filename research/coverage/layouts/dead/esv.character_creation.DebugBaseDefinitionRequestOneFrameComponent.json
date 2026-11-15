@@ -39,7 +39,7 @@
       "offset": 176,
       "type": "uint8_t[216]",
       "source": "inferred",
-      "evidence": "Equals SE character_creation::Appearance (CharacterDefinition.Visual); destructor calls FUN_1406cf220 on comp + 0xB0. Size 0xD8 follows from the next members' offsets (Abilities must end where LevelUpData begins at 0x1A8)."
+      "evidence": "Equals SE character_creation::Appearance (CharacterDefinition.Visual); destructor calls bg3.exe+0x6CF220 on comp + 0xB0. Size 0xD8 follows from the next members' offsets (Abilities must end where LevelUpData begins at 0x1A8)."
     },
     {
       "name": "Abilities",
@@ -60,14 +60,14 @@
       "offset": 424,
       "type": "uint8_t[224]",
       "source": "inferred",
-      "evidence": "Equals SE LevelUpData (Progression.h: Class, SubClass, Feat, AccessorySet Guids, Abilities[7], LevelUpUpgrades, Array<SpellMetaId> Spells; 0xE0). Creator bg3.exe+0x2DC29C0 writes the null Guid (DAT_14625aad0) at +0x1A8, +0x1B8, +0x1C8, +0x1D8, zeroes +0x1E8..+0x203 (abilities), seven Array patterns at +0x208..+0x277 (LevelUpUpgrades; destructor bg3.exe+0x5F18C0(comp + 0x208)) and the Array at +0x278 (destructor bg3.exe+0x67D5E0(comp + 0x278), SpellMetaId stride 0x30)."
+      "evidence": "Equals SE LevelUpData (Progression.h: Class, SubClass, Feat, AccessorySet Guids, Abilities[7], LevelUpUpgrades, Array<SpellMetaId> Spells; 0xE0). Creator bg3.exe+0x2DC29C0 writes the null Guid (the global at bg3.exe+0x625AAD0) at +0x1A8, +0x1B8, +0x1C8, +0x1D8, zeroes +0x1E8..+0x203 (abilities), seven Array patterns at +0x208..+0x277 (LevelUpUpgrades; destructor bg3.exe+0x5F18C0(comp + 0x208)) and the Array at +0x278 (destructor bg3.exe+0x67D5E0(comp + 0x278), SpellMetaId stride 0x30)."
     },
     {
       "name": "Position",
       "offset": 648,
       "type": "glm::vec3",
       "source": "inferred",
-      "evidence": "Creator zeroes the qword at +0x288 and the dword at +0x290; consumer bg3.exe+0x378F960: `esv::Character::SetTranslate(character, (Vector3f *)(comp + 0x288), false, false, true)`."
+      "evidence": "Creator zeroes the qword at +0x288 and the dword at +0x290; consumer bg3.exe+0x378F960 passes comp + 0x288 as the position vector to esv::Character::SetTranslate (with the flags false, false, true)."
     },
     {
       "name": "_Pad294",

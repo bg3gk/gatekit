@@ -1,0 +1,63 @@
+{
+ "system": "esv::dialog::AutoListenSystem",
+ "namespace": "esv::dialog",
+ "symbols": {
+  "reads": [
+   "eoc::ClientControlComponent",
+   "eoc::character::CharacterComponent",
+   "eoc::character::TradingComponent",
+   "eoc::character_creation::SessionCommonComponent",
+   "eoc::combat::IsInCombatComponent",
+   "eoc::dialog::DialoguePrivacySingletonComponent",
+   "eoc::dialog::IsListeningSingletonComponent",
+   "eoc::dialog::NoPrivateDialogsSingletonComponent",
+   "eoc::dialog::StateComponent",
+   "eoc::gamestate::RunningComponent",
+   "eoc::multiplayer::UserComponent",
+   "eoc::party::MemberComponent",
+   "eoc::summon::IsSummonComponent",
+   "eoc::tag::TraderComponent",
+   "eoc::user::ReservedForComponent",
+   "esv::dialog::DialogStartedEventsSingletonComponent",
+   "esv::multiplayer::UserLoadedLevelComponent",
+   "esv::multiplayer::UserSettingsComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "esv::dialog::AutoListenRequestsSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "AutoListenSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "DispatchAutolistenRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~AutoListenSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::dialog::AutoListenRequestsSingletonComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E16530",
+    "site": null,
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

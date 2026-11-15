@@ -23,11 +23,11 @@
           "evidence": "Copied as a 4-byte value to esv::crowds::MoveToComponent+0x18 (EoCServer.dll+0xD8C530); meaning not established (speed-like). Windows: bg3.exe+0x3565F80 stores value+0xC into MoveToComponent+0x18, which the confirmed MoveTo layout names Radius (arrival when squared distance <= radius^2)."
         },
         {
-          "name": "field_10",
+          "name": "MovementSpeed",
           "offset": 16,
           "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "Copied as one byte to esv::crowds::MoveToComponent+0x21 (EoCServer.dll+0xD8C530); the merge loop copies the whole dword, so bytes 0x11..0x13 are treated as padding. Windows: bg3.exe+0x3565F80 stores the byte value+0x10 into MoveToComponent+0x21 (field_21 there, live 1..4)."
+          "source": "inferred",
+          "evidence": "Copied as one byte to esv::crowds::MoveToComponent +0x21 (EoCServer.dll+0xD8C530), which becomes the uint8_t Speed of the eoc::PathSettings the move is started with. See MoveToComponent::MovementSpeed."
         },
         {
           "name": "_Pad11",

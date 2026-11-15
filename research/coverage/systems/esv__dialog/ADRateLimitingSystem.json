@@ -1,0 +1,150 @@
+{
+ "system": "esv::dialog::ADRateLimitingSystem",
+ "namespace": "esv::dialog",
+ "symbols": {
+  "reads": [
+   "esv::Character",
+   "esv::Item"
+  ],
+  "writes": [
+   "esv::dialog::ADRateLimitingDataComponent",
+   "esv::dialog::ADRateLimitingHistoryComponent",
+   "ls::IsGlobalComponent",
+   "ls::SavegameComponent"
+  ],
+  "methods": [
+   {
+    "name": "ADRateLimitingSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnDialogEnded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnDialogLoadFailed",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnDialogStartFailed",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnDialogStarted",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnLevelLoaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnSessionLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnSessionLoaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnSessionUnloadStarting",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessADLimitingDataUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCheckDialogStateRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessClearADHistory",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessForceCompleteRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStartRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestCheckDialogState",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestRateLimitingDialog",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestRateLimitingDialogForceComplete",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RequestRemoveHistoryEntry",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateADHistory",
+    "address": "bg3_dx11.exe+0x2E14C50",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "~ADRateLimitingSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::dialog::ADRateLimitingHistoryComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E13C80",
+    "site": "bg3_dx11.exe+0x2E13F9D",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::IsGlobalComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E13C80",
+    "site": "bg3_dx11.exe+0x2E13F7A",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E13C80",
+    "site": "bg3_dx11.exe+0x2E13F57",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

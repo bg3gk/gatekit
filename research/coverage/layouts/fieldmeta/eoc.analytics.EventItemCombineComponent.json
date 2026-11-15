@@ -11,25 +11,26 @@
       "evidence": "replication writer bg3.exe+0x9F3CF0 writes it with the entity writer FUN_144017090 at the FieldMeta offset global DAT_14627FB98 (= 0); bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes 0xFFC0000000000000 (null handle) at +0. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: element +0, the entity whose GameObjectTemplate is looked up for +0xC."
     },
     {
-      "name": "field_8",
+      "name": "ItemName",
       "offset": 8,
       "type": "FixedString",
-      "source": "unknown",
-      "evidence": "replication writer bg3.exe+0x9F3CF0 serializes a FixedString at +8; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes -1 (null). Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: set from +4 of another component of the element's entity (FUN_180280410, not identified)."
+      "source": "game",
+      "evidence": "EoCClient.dll+0xD39D30 ecl::GameAnalyticsSystem::RecordItemCombine (the component is its last argument, mangled AEBUEventItemCombineComponent@analytics@eoc@@): FixedString::ToChar(+8) is written under the analytics key \"item_name\". Earlier reading: replication writer bg3.exe+0x9F3CF0 serializes a FixedString at +8; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes -1 (null). Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: set from +4 of another component of the element's entity (FUN_180280410, not identified)."
     },
     {
-      "name": "TemplateName",
+      "name": "StatsName",
       "offset": 12,
       "type": "FixedString",
-      "source": "inferred",
-      "evidence": "replication writer bg3.exe+0x9F3CF0 serializes a FixedString at +0xC; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes -1. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: FixedString::Create of the STDString at GameObjectTemplate+0x28 (template Name) of the element's entity."
+      "source": "game",
+      "evidence": "EoCClient.dll+0xD39D30 ecl::GameAnalyticsSystem::RecordItemCombine (the component is its last argument, mangled AEBUEventItemCombineComponent@analytics@eoc@@): FixedString::ToChar(+0xC) is written under the key \"stats_name\" (the same key the sibling EventItemUseComponent carries at +0xC as StatsName). Replaces the inferred TemplateName. Earlier reading: replication writer bg3.exe+0x9F3CF0 serializes a FixedString at +0xC; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes -1. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: FixedString::Create of the STDString at GameObjectTemplate+0x28 (template Name) of the element's entity.",
+      "legacy": "TemplateName"
     },
     {
-      "name": "field_10",
+      "name": "RecipeName",
       "offset": 16,
       "type": "FixedString",
-      "source": "unknown",
-      "evidence": "replication writer bg3.exe+0x9F3CF0 serializes a FixedString at +0x10; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes -1. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: copied from the element's FixedString at +0x10."
+      "source": "game",
+      "evidence": "EoCClient.dll+0xD39D30 ecl::GameAnalyticsSystem::RecordItemCombine (the component is its last argument, mangled AEBUEventItemCombineComponent@analytics@eoc@@): FixedString::ToChar(+0x10) is written under the key \"recipe_name\". Earlier reading: replication writer bg3.exe+0x9F3CF0 serializes a FixedString at +0x10; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes -1. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: copied from the element's FixedString at +0x10."
     },
     {
       "name": "_Pad14",
@@ -46,11 +47,11 @@
       "evidence": "Windows type name ls::FieldMeta<class ls::DynamicArray<class ls::FixedString,struct ls::TaggedAllocator<int> > eoc::analytics::EventItemCombineComponent::*,24>; macOS ls::FieldMeta<ls::DynamicArray<ls::FixedString, ls::TaggedAllocator<int> > eoc::analytics::EventItemCombineComponent::*, &eoc::analytics::EventItemCombineComponent::m_IngredientsNames> Windows side: replication writer bg3.exe+0x9F3CF0 calls the Array<FixedString> writer FUN_140A82550 on +0x18; the creator zeroes +0x18..+0x27. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: element array at +8 (4-byte FixedString elements)."
     },
     {
-      "name": "field_28",
+      "name": "IsSuccess",
       "offset": 40,
       "type": "bool",
-      "source": "unknown",
-      "evidence": "replication writer bg3.exe+0x9F3CF0 writes 1 raw byte at +0x28; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes 0 there. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: copied from the element byte at +0x14."
+      "source": "game",
+      "evidence": "EoCClient.dll+0xD39D30 ecl::GameAnalyticsSystem::RecordItemCombine (the component is its last argument, mangled AEBUEventItemCombineComponent@analytics@eoc@@): the byte at +0x28 is written with the bool writer under the key \"is_success\". Earlier reading: replication writer bg3.exe+0x9F3CF0 writes 1 raw byte at +0x28; bg3.exe+0x3180CE0 (creator, ComponentFrameStorageAllocRaw 0x30) writes 0 there. Toolkit esv::GameAnalyticsSystem::ProcessCombineResults (EoCServer.dll+0x1345990) fills it from the 40-byte elements of esv::combine::AnalyticsCombineResultsSingletonComponent: copied from the element byte at +0x14."
     },
     {
       "name": "_Pad29",

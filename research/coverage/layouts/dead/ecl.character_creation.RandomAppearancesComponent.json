@@ -30,18 +30,18 @@
       "evidence": "Creator bg3.exe+0x201D380 copies the 16-byte global DAT_14625AAD0 (a Guid that bg3.exe+0x2027B00 tests for all-zero, i.e. the null Guid) to +0..+0x10."
     },
     {
-      "name": "field_10",
+      "name": "LatestIndex",
       "offset": 16,
       "type": "int32_t",
-      "source": "unknown",
-      "evidence": "Creator and bg3.exe+0x2027B00 write -1 to the 8 bytes +0x10..+0x18 (macOS InitializeRandomAppearancesComponent too). Probably the current random index; width not established."
+      "source": "inferred",
+      "evidence": "Same ring as RandomCharactersComponent, for appearances (Appearances at +0x18, size +0x24). EoCClient.dll DefinitionView::GetRandomAppearanceIndex (0x11BC4F0) shows (comp[+0x14] - comp[+0x10] - 1 + count) % count, and GetNextRandomAppearanceIndex (FUN_1811cc120) returns -1 when +0x14 equals +0x10: the slot of the most recently generated appearance. Creators write -1."
     },
     {
-      "name": "field_14",
+      "name": "CurrentIndex",
       "offset": 20,
       "type": "int32_t",
-      "source": "unknown",
-      "evidence": "second half of the 8-byte -1 store."
+      "source": "inferred",
+      "evidence": "EoCClient.dll FUN_1811cc120 (GetNextRandomAppearanceIndex) starts from +0x14 and steps (mod the size at +0x24) to the next eoc::character_creation::Appearance slot; GetRandomAppearanceIndex (0x11BC4F0) shows its position relative to +0x10. The slot the shown random appearance is taken from."
     },
     {
       "name": "Appearances",

@@ -1,0 +1,96 @@
+{
+ "system": "esv::invisibility::RevealingSystem",
+ "namespace": "esv::invisibility",
+ "symbols": {
+  "reads": [
+   "eoc::InvisibilityComponent",
+   "eoc::character::CharacterComponent",
+   "eoc::inventory::TopOwnerComponent",
+   "eoc::party::MemberComponent",
+   "esv::improvised_weapon::SetPositionOneFrameComponent",
+   "esv::inventory::InteractionRequestsComponent",
+   "esv::inventory::InvisibilityDisruptingEventsOneFrameComponent",
+   "esv::inventory::MemberDroppedEventOneFrameComponent",
+   "esv::pickup::BeingPickedUpComponent"
+  ],
+  "writes": [
+   "eoc::invisibility::RevealingEventsOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "GatherDropEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherEquipmentEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherImprovisedWeaponEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherInventoryEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherLegacyRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherPickUpCharacterEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestRevealByItemUsed",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRevealRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RevealingSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~RevealingSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::invisibility::RevealingEventsOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E0B490",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::InvisibilityComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E0B490",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

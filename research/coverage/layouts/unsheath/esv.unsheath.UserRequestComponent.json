@@ -8,7 +8,7 @@
       "offset": 0,
       "type": "int32_t",
       "source": "inferred",
-      "evidence": "NOT the float timer of the rest of the family. Creator bg3.exe+0x32F92E0: ComponentFrameStorageAllocRaw(storage, 4) and *(int*)p = 1 (storage registered with element size 4). bg3.exe+0x32F8B60 (per-frame update of esv::unsheath::UserRequestSystem): for every entity in the system's request array it does *(int*)FUN_1432f95a0(...) += 1 when the component exists, else creates it (=1); a second loop over the component storage (int stride 4) does -= 1 once per pass, after adding esv::unsheath::UserRequestFailedOneFrameComponent (bg3.exe+0x32F9180) when field +0x10 of a 0x20-byte companion component is not 1; a third loop removes the component when the int at stride 4 is 0. A counter of user sheathe/unsheathe requests still being processed."
+      "evidence": "NOT the float timer of the rest of the family. Creator bg3.exe+0x32F92E0: ComponentFrameStorageAllocRaw(storage, 4) and writes 1 as a 32-bit integer at +0 (storage registered with element size 4). bg3.exe+0x32F8B60 (per-frame update of esv::unsheath::UserRequestSystem): for every entity in the system's request array it adds 1 to the 32-bit integer returned by bg3.exe+0x32F95A0 (the component) when the component exists, else creates it (=1); a second loop over the component storage (int stride 4) subtracts 1 once per pass, after adding esv::unsheath::UserRequestFailedOneFrameComponent (bg3.exe+0x32F9180) when field +0x10 of a 0x20-byte companion component is not 1; a third loop removes the component when the int at stride 4 is 0. A counter of user sheathe/unsheathe requests still being processed."
     }
   ],
   "confidence": "high",

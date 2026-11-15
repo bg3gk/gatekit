@@ -35,11 +35,12 @@
       "evidence": "Toolkit FinalizeState writes +0x144/+0x14C = impact position + direction * (distance + offset) and copies it into the path's TargetPosition (+0x6C); ProcessCurrentSpellImpacts rewrites +0x144/+0x14C when the listener moves. Creator zeroes it."
     },
     {
-      "name": "DistanceOffset",
+      "name": "DistancePastListener",
       "offset": 336,
       "type": "float",
       "source": "inferred",
-      "evidence": "Creator writes dword 0 at +0x150. Toolkit FinalizeState stores a float from a settings object (+0x24) here and adds it to the listener distance; ProcessCurrentSpellImpacts adds `*(float*)(p+0x150)` to the distance again."
+      "evidence": "Toolkit EoCClient.dll+0xD67B00 FinalizeState stores the rule's float +0x24 here and adds it to the listener distance; +0x24 is SoundSpellTrajectoryRule::DistancePastListener in Script Extender's resource layout (eoc::sound::SpellTrajectoryRules: RuleName +0x18, CurveUuid +0x1C, SoundEvent +0x20). ProcessCurrentSpellImpacts adds it again when it moves the sound. Was DistanceOffset, a name of ours.",
+      "legacy": "DistanceOffset"
     },
     {
       "name": "_Pad154",
@@ -56,18 +57,18 @@
       "evidence": "Creator writes 0xFFFFFFFF at +0x158 (OriginatorPrototype), 0x17 at +0x160 (SourceType Sentinel), zeroes 0x168..0x187 (Source, ProgressionSource) and 0xFFFFFFFF at +0x188 (Prototype). Destructor calls eoc::spell::SpellId::~SpellId(p+0x158); Toolkit FinalizeState does SpellId::operator=(p+0x158, request spell). Equals SE eoc::spell::SpellId (0x38)."
     },
     {
-      "name": "field_190",
+      "name": "CurveUuid",
       "offset": 400,
       "type": "FixedString",
-      "source": "unknown",
-      "evidence": "Creator writes 0xFFFFFFFF to the qword at +0x190 (two FixedStrings); destructor DecRefs +0x190. Toolkit FinalizeState assigns a FixedString (local_1e0) here, the same one it puts into the path Settings' MappedVelocity variant (Mapping) - probably the velocity mapping / sound name."
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xD67B00 ecl::spell::ImpactSoundSystem::FinalizeState looks the impact's rule up with eoc::sound::SpellTrajectoryRules::GetByRuleName and assigns rule +0x1C here (FixedString::operator=, state +400); Script Extender's resource SoundSpellTrajectoryRule (engine class eoc::sound::SpellTrajectoryRules: VMT, ResourceUUID, then RuleName +0x18, CurveUuid +0x1C, SoundEvent +0x20, DistancePastListener +0x24) declares +0x1C as CurveUuid. The same value goes into the path settings' velocity mapping."
     },
     {
-      "name": "field_194",
+      "name": "SoundEvent",
       "offset": 404,
       "type": "FixedString",
-      "source": "unknown",
-      "evidence": "Destructor DecRefs +0x194. Toolkit FinalizeState assigns another FixedString (local_248) here; a later loop copies +0x194 into an ecl::sound::SpellImpactRequestBusComponent::SpellImpactSoundRequest (entity + FixedString, stride 0x10) - probably the sound event to post."
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0xD67B00 FinalizeState assigns the rule's +0x20 here, SoundSpellTrajectoryRule::SoundEvent in Script Extender's resource layout (see CurveUuid); a later loop of the same function copies +0x194 into the Event of an ecl::sound::SpellImpactRequestBusComponent sound request."
     },
     {
       "name": "Entity",

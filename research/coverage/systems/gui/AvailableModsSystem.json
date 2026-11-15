@@ -1,0 +1,141 @@
+{
+ "system": "gui::AvailableModsSystem",
+ "namespace": "gui",
+ "symbols": {
+  "reads": [
+   "ecl::mod::ModStateChangeSingletonComponent",
+   "ecl::mod::ValidationSingletonComponent",
+   "eoc::gamestate::MainMenuComponent",
+   "gui::registration::VMGlobalDataSingletonComponent",
+   "ls::ugc::QueryModInfoResultOneFrameComponent",
+   "ls::ugc::UGCRequestResultOneFrameComponent",
+   "ls::ugc::UserAuthResultOneFrameComponent",
+   "ls::ugc::UserDataComponent",
+   "ls::ugc::UserInfoResultOneFrameComponent"
+  ],
+  "writes": [
+   "gui::mod::AvailableModsUpdatedOneFrameComponent"
+  ],
+  "methods": [
+   {
+    "name": "AvailableModsSystem",
+    "address": "bg3_dx11.exe+0x126B510",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "CleanupOneFrameComponent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ClearAvailableMods",
+    "address": "bg3_dx11.exe+0x126B940",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "LEGACY_RequestModStateUpdate",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_SetBrushManager",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnAvailableModsChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnEnabledModStateChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnNetworkTextureBrushWithUriCreated",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAuthRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAvailableMods",
+    "address": "bg3_dx11.exe+0x126BA90",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "ProcessEnabledStates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessItemInfo",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessModWarnings",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessNetworkTextureUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessStateUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSubscriptionUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": "bg3_dx11.exe+0x126B720",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "SystemUnload",
+    "address": "bg3_dx11.exe+0x126B940",
+    "binary": "bg3_dx11.exe"
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~AvailableModsSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "gui::mod::AvailableModsUpdatedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x126BA90",
+    "site": "bg3_dx11.exe+0x126C0E6",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "ls::ugc::CacheRequestAvailableModOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x126BA90",
+    "site": "bg3_dx11.exe+0x126C043",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

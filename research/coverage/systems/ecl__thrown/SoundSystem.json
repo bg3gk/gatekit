@@ -1,0 +1,98 @@
+{
+ "system": "ecl::thrown::SoundSystem",
+ "namespace": "ecl::thrown",
+ "symbols": {
+  "reads": [
+   "ecl::Character",
+   "ecl::Item",
+   "ecl::spell_cast::StateComponent",
+   "eoc::WeaponComponent",
+   "eoc::spell_cast::CastEventOneFrameComponent",
+   "eoc::thrown::IsThrownComponent",
+   "eoc::thrown::RotationParametersComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "ecl::thrown::SoundRequestBusComponent",
+   "ecl::thrown::ThrowerSoundEventOneFrameComponent",
+   "ecl::thrown::ThrownSoundComponent"
+  ],
+  "methods": [
+   {
+    "name": "ClearRequestBus",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "InitializeThrower",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestThrownPickupSound",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessThrowerStart",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessThrownObjectsLanding",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessThrownObjectsStart",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SoundSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~SoundSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "factory": "bg3.exe+0x7426E0",
+  "constructor": "inlined in factory",
+  "update_per_survey": "bg3.exe+0x1E9D500",
+  "note": "from gatekit symbols system --dll dx11 --full; no per-method address was found in bg3_dx11.exe for these methods (null); factory/constructor/update come from survey.csv, which prints them as bg3.exe+RVA, the same offsets the dx11 symbols users list shows",
+  "uses": [
+   {
+    "type": "ecl::thrown::ThrownSoundComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1E9CE10",
+    "site": "bg3_dx11.exe+0x1E9D013",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [],
+ "unknown": [
+  "The client system was not read: the client pseudo-code (EoCClient.dll) was not examined in this session. Which client component it creates (CarriedPrepareAnimationRequest, PrepareAnimationRequest, ThrowerSoundEvent) is unknown. The symbols layer has no component lists for the two systems whose methods are not exported."
+ ],
+ "sure": "no: not described, left unknown"
+}

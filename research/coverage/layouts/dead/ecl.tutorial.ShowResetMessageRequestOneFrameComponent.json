@@ -7,11 +7,11 @@
   "summary": "One-frame request on the client to show the 'tutorials were reset' message, carrying one 16-bit value (most likely the player id the message is for; the server-side notification eoc::notification::ResetTutorialsMessageRequestNotificationComponent carries a UserId). Created by bg3.exe+0x1ABEFB0 next to ecl::tutorial::ResetProfileOneFrameComponent; read by bg3.exe+0x74F5D0 / bg3.exe+0x7510E0 (system registrations). Never seen alive. Registry total 2 (client row).",
   "fields": [
     {
-      "name": "field_0",
+      "name": "PlayerId",
       "offset": 0,
       "type": "uint16_t",
-      "source": "unknown",
-      "evidence": "Creator bg3.exe+0x1ABFD30 (AllocRaw 2) stores uint16 0. bg3.exe+0x1ABEFB0 (lines ~383-395) creates one component per element of a collected uint16 array (stride 2) and writes `*(undefined2*)p = element`. Probably a player id (short ids of this kind are player ids in ecl::ftb / ecl::party one-frame events) - not established."
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x63BD50 ecl::tutorial::ResetSystem::Update (Toolkit, named): when the server's ResetTutorialsMessageRequestNotification bool at +4 is set, it collects the splitscreen player's short id (*(short*)(players+4) / +0x1C, the same value passed to PlayerManager::GetPlayerProfileGUID(short)) with FUN_18054ed60 into local_268; then one entity per element gets the component through the add helper FUN_180639ba0 (type id _DAT_1819da8e8, after ResetProfile 8e0 in the WorldView order) and *(uint16*)component = element. The value is the 16-bit player id the message is shown for."
     }
   ],
   "confidence": "high",

@@ -23,11 +23,11 @@
           "evidence": "PostMixEvent writes 3, UIPrioritySystem::SendMuffleEvent writes 0; copied as 4 bytes by EoCClient.dll+0xD4E0A0. Possibly SoundEventType (3 = HUD) - not confirmed."
         },
         {
-          "name": "field_8",
+          "name": "ObjectType",
           "offset": 8,
           "type": "uint8_t",
-          "source": "unknown",
-          "evidence": "PostMixEvent and SendMuffleEvent write 2; copied as one byte by EoCClient.dll+0xD4E0A0."
+          "source": "inferred",
+          "evidence": "Toolkit EoCClient.dll+0xDBE200 ecl::sound::InterfaceSystem::ProcessPostHUDEventRequests hands each element of the three PostHUD request singletons (MixState, TimelineSave, UIPanel; stride 0xC) to EoCClient.dll+0xD4E0A0, which appends it to ls::GameplayGlobalSoundRequestsSingletonComponent copying FixedString +0, uint +4 and byte +8 one for one; byte +8 there is GameplayGlobalSoundRequest::ObjectType, which GameEngine.dll+0x89B3A0 ls::GameplaySoundInterfaceSystem::ProcessPostSoundEventRequests maps 0..3 to ERoutedSoundEventType and otherwise asserts EGlobalSoundObjectType not supported. Value 2 at every writer."
         },
         {
           "name": "_Pad9",
@@ -45,7 +45,7 @@
       "offset": 0,
       "type": "Array<MixStatePostSoundEventRequest>",
       "source": "inferred",
-      "evidence": "MixStateSystem::ProcessSingletonRequests (EoCClient.dll+0xDA6680) clears the singleton's IndexedStorage<ls::PostSoundEventRequest> (FUN_180d48a60) and moves FrameData+0x60 into it; InterfaceSystem::ProcessPostHUDEventRequests (EoCClient.dll+0xDBE200) walks it with stride 0xC and forwards each element to GameplayGlobalSoundRequestsSingletonComponent."
+      "evidence": "MixStateSystem::ProcessSingletonRequests (EoCClient.dll+0xDA6680) clears the singleton's IndexedStorage<ls::PostSoundEventRequest> (EoCClient.dll+0xD48A60) and moves FrameData+0x60 into it; InterfaceSystem::ProcessPostHUDEventRequests (EoCClient.dll+0xDBE200) walks it with stride 0xC and forwards each element to GameplayGlobalSoundRequestsSingletonComponent."
     }
   ],
   "confidence": "high",

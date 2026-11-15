@@ -15,7 +15,7 @@
           "offset": 0,
           "type": "void*",
           "source": "inferred",
-          "evidence": "Creator bg3.exe+0x1897900 stores PTR_FUN_1454db0b8 (outer target) / PTR_FUN_1454db080 (initial target) here: a class with a virtual table, the Script Extender spell_cast::BaseTarget (SpellCastShared.h): VMT, EntityHandle Target, optional<EntityHandle> TargetProxy, optional<vec3> Position."
+          "evidence": "Creator bg3.exe+0x1897900 stores the virtual table at bg3.exe+0x54DB0B8 (outer target) / the virtual table at bg3.exe+0x54DB080 (initial target) here: a class with a virtual table, the Script Extender spell_cast::BaseTarget (SpellCastShared.h): VMT, EntityHandle Target, optional<EntityHandle> TargetProxy, optional<vec3> Position."
         },
         {
           "name": "Target",
@@ -77,7 +77,7 @@
           "offset": 0,
           "type": "ImpactEventBaseTarget",
           "source": "inferred",
-          "evidence": "SE spell_cast::InitialTarget derives from BaseTarget; second vtable PTR_FUN_1454db080 at the start of this part in the constructor."
+          "evidence": "SE spell_cast::InitialTarget derives from BaseTarget; second vtable (the virtual table at bg3.exe+0x54DB080) at the start of this part in the constructor."
         },
         {
           "name": "TargetingType",
@@ -125,7 +125,7 @@
           "offset": 0,
           "type": "ImpactEventBaseTarget",
           "source": "inferred",
-          "evidence": "SE spell_cast::IntermediateTarget : BaseTarget (vtable PTR_FUN_1454db0b8)."
+          "evidence": "SE spell_cast::IntermediateTarget : BaseTarget (the virtual table at bg3.exe+0x54DB0B8)."
         },
         {
           "name": "InitialTarget",
@@ -157,7 +157,7 @@
       "offset": 0,
       "type": "ImpactEventIntermediateTarget",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x1897900 allocates 0xA8, memsets, then constructs the target in place: +0 vtable PTR_FUN_1454db0b8, +8 null handle, bytes +0x18/+0x2C zero, +0x30 vtable PTR_FUN_1454db080, +0x38 null handle, bytes +0x48/+0x5C/+0x60/+0x98/+0xA0 zero - the field pattern of SE spell_cast::IntermediateTarget (same vtables as the target inside ecl::projectile::SpellComponent at +0x10). Live: 48 instances; vtables in the executable, handles and world positions where expected."
+      "evidence": "Creator bg3.exe+0x1897900 allocates 0xA8, memsets, then constructs the target in place: +0 the virtual table at bg3.exe+0x54DB0B8, +8 null handle, bytes +0x18/+0x2C zero, +0x30 the virtual table at bg3.exe+0x54DB080, +0x38 null handle, bytes +0x48/+0x5C/+0x60/+0x98/+0xA0 zero - the field pattern of SE spell_cast::IntermediateTarget (same vtables as the target inside ecl::projectile::SpellComponent at +0x10). Live: 48 instances; vtables in the executable, handles and world positions where expected."
     }
   ],
   "confidence": "high",

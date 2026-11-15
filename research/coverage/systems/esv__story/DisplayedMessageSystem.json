@@ -1,0 +1,114 @@
+{
+ "system": "esv::story::DisplayedMessageSystem",
+ "namespace": "esv::story",
+ "symbols": {
+  "reads": [
+   "eoc::gamestate::SavegameLoadComponent",
+   "esv::GameStateUnloadSessionComponent"
+  ],
+  "writes": [
+   "eoc::story::CounterComponent",
+   "eoc::story::DisplayedMessageComponent",
+   "ls::DebugComponent",
+   "ls::IsGlobalComponent",
+   "ls::SavegameComponent"
+  ],
+  "methods": [
+   {
+    "name": "DisplayedMessageSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_DisplayMessage",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_DisplayMessage",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RemoveMessage",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_UpdateMessageCounter",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCounterRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCounterUpdates",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessSavegameLoaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUnloadSession",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DisplayedMessageSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::story::CounterComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D02590",
+    "site": "bg3_dx11.exe+0x2D0260B",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::IsGlobalComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D02820",
+    "site": null,
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::IsGlobalComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D02C90",
+    "site": "bg3_dx11.exe+0x2D031D0",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2D02C90",
+    "site": "bg3_dx11.exe+0x2D031F2",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

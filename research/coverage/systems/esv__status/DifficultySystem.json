@@ -1,0 +1,82 @@
+{
+ "system": "esv::status::DifficultySystem",
+ "namespace": "esv::status",
+ "symbols": {
+  "reads": [
+   "eoc::character::CharacterComponent",
+   "eoc::ruleset::RulesetComponent",
+   "eoc::ruleset::RulesetModifiersComponent",
+   "eoc::ruleset::RulesetModifiersUpdatedOneFrameComponent",
+   "eoc::templates::OriginalTemplateComponent",
+   "esv::shapeshift::StatesChangedEventOneFrameComponent",
+   "esv::shapeshift::StatesComponent",
+   "esv::templates::TemplateChangedOneFrameComponent",
+   "ls::savegame::LoadedComponent"
+  ],
+  "writes": [
+   "esv::status::DifficultyChangeSingletonComponent",
+   "esv::status::DifficultyModifiersComponent"
+  ],
+  "methods": [
+   {
+    "name": "DifficultySystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDifficultyChange",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SendUsersModifactions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateCharacterModifactions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~DifficultySystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::status::DifficultyModifiersComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2F32350",
+    "site": "bg3_dx11.exe+0x2F3360E",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::status::DifficultyModifiersComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2F32350",
+    "site": "bg3_dx11.exe+0x2F3321D",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

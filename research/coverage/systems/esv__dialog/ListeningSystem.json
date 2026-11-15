@@ -1,0 +1,73 @@
+{
+ "system": "esv::dialog::ListeningSystem",
+ "namespace": "esv::dialog",
+ "symbols": {
+  "reads": [
+   "eoc::gamestate::RunningComponent",
+   "esv::SessionUnloadOneFrameComponent",
+   "ls::uuid::Component"
+  ],
+  "writes": [
+   "eoc::dialog::IsListeningSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "LEGACY_OnEntityStartsListening",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_OnEntityStopsListening",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ListeningSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ListeningSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::dialog::IsListeningSingletonComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E19880",
+    "site": "bg3_dx11.exe+0x2E199FE",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E19BE0",
+    "site": "bg3_dx11.exe+0x2E1A018",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::uuid::Component",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E19BE0",
+    "site": "bg3_dx11.exe+0x2E1A107",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

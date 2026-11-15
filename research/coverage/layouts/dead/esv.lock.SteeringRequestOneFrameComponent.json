@@ -11,21 +11,21 @@
       "offset": 0,
       "type": "EntityHandle",
       "source": "inferred",
-      "evidence": "Creator bg3.exe+0x2E2CA60 (AllocRaw 0x30) zeroes +0..+0xC. Writer bg3.exe+0x2E2AB60 lines 181-188: dwords +0/+4 = the target entity handle (the lock item). Toolkit ProcessBeginRequests: when byte +0xC == 1 it checks *(qword)(req+0) as an entity (type < 0x61, not null); with index 0 (eoc::steering::ToDirection) the same bytes hold a direction vec3 (placement request)."
+      "evidence": "Creator bg3.exe+0x2E2CA60 (AllocRaw 0x30) zeroes +0..+0xC. Writer bg3.exe+0x2E2AB60 lines 181-188: dwords +0/+4 = the target entity handle (the lock item). Toolkit ProcessBeginRequests: when byte +0xC == 1 it checks the 8-byte value at +0 of the request as an entity (type < 0x61, not null); with index 0 (eoc::steering::ToDirection) the same bytes hold a direction vec3 (placement request)."
     },
     {
       "name": "field_8",
       "offset": 8,
       "type": "uint32_t",
       "source": "unknown",
-      "evidence": "Third dword of the variant storage (z of a ToDirection vector); writer stores 0 (puVar15[2] = 0)."
+      "evidence": "Third dword of the variant storage (z of a ToDirection vector); writer stores the dword 0 at +8."
     },
     {
       "name": "TargetType",
       "offset": 12,
       "type": "uint8_t",
       "source": "inferred",
-      "evidence": "Variant index: writer stores dword 1 at +0xC (puVar15[3] = 1); Toolkit FUN_1809bc060 / ProcessBeginRequests test `*(char*)(req+0xC) == 1` (entity) vs 0 (eoc::steering::ToDirection)."
+      "evidence": "Variant index: writer stores dword 1 at +0xC; Toolkit EoCServer.dll+0x9BC060 / ProcessBeginRequests test whether the byte at +0xC of the request is 1 (entity) vs 0 (eoc::steering::ToDirection)."
     },
     {
       "name": "_PadD",
@@ -53,14 +53,14 @@
       "offset": 24,
       "type": "Guid",
       "source": "inferred",
-      "evidence": "Creator zeroes qwords +0x18/+0x20; writer lines 198-205 store two FUN_144130d80 results (Guid generation) at +0x18/+0x20 and copy them into the lockpicking state. Toolkit: WasAborted(..., (Guid*)(req+0x18)); esv::steering::LifetimeComponent.RequestId receives it."
+      "evidence": "Creator zeroes qwords +0x18/+0x20; writer lines 198-205 store two results of bg3.exe+0x4130D80 (Guid generation) at +0x18/+0x20 and copy them into the lockpicking state. Toolkit: WasAborted(..., (Guid*)(req+0x18)); esv::steering::LifetimeComponent.RequestId receives it."
     },
     {
       "name": "Lifetime",
       "offset": 40,
       "type": "float",
       "source": "inferred",
-      "evidence": "Creator default 0x4B18967F (9999999.0); writer sets 1.0 (puVar15[10] = 0x3f800000). Toolkit copies request+0x28 into esv::steering::LifetimeComponent.Lifetime (layouts/alive), which is counted down."
+      "evidence": "Creator default 0x4B18967F (9999999.0); writer sets 1.0 (0x3F800000 at +0x28). Toolkit copies request+0x28 into esv::steering::LifetimeComponent.Lifetime (layouts/alive), which is counted down."
     },
     {
       "name": "_Pad2C",

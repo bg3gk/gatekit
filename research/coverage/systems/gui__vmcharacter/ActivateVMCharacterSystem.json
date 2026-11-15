@@ -1,0 +1,71 @@
+{
+ "system": "gui::vmcharacter::ActivateVMCharacterSystem",
+ "namespace": "gui::vmcharacter",
+ "symbols": {
+  "reads": [
+   "ecl::Character",
+   "eoc::ActiveComponent",
+   "eoc::camp::PresenceComponent",
+   "eoc::combat::IsInCombatComponent",
+   "eoc::dialog::StateComponent",
+   "eoc::inventory::MemberComponent",
+   "eoc::party::MemberComponent",
+   "gui::registration::VMCharacterDataSingletonComponent",
+   "gui::registration::VMGlobalDataSingletonComponent",
+   "ls::LevelComponent"
+  ],
+  "writes": [
+   "gui::vmcharacter::VMCharacterActivatedSingletonComponent",
+   "gui::vmcharacter::VMCharacterDeactivatedOneFrameComponent",
+   "gui::vmcharacter::VMCharacterDeferredActivationSingletonComponent"
+  ],
+  "methods": [
+   {
+    "name": "ActivateVMCharacterSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCharacterActivation",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessCharacterDeferredActivation",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ActivateVMCharacterSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "uses": [
+   {
+    "type": "gui::vmcharacter::VMCharacterDeactivatedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x12C5F70",
+    "site": "bg3_dx11.exe+0x12C6D7A",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

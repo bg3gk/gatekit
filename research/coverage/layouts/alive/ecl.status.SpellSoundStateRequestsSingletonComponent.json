@@ -20,7 +20,7 @@
           "offset": 8,
           "type": "uint8_t",
           "source": "inferred",
-          "evidence": "Variant index (second qword of the variant): FUN_180d629e0 sets it 0 (= EntityHandle alternative). Width of the index assumed 1 byte; the whole qword is copied."
+          "evidence": "Variant index (second qword of the variant): EoCClient.dll+0xD629E0 sets it 0 (= EntityHandle alternative). Width of the index assumed 1 byte; the whole qword is copied."
         },
         {
           "name": "_Pad9",
@@ -52,7 +52,7 @@
       "offset": 0,
       "type": "Array<SpellSoundStateRequestsSwitchRequest>",
       "source": "inferred",
-      "evidence": "ecl::status::SpellSoundStateSystem::ProcessSpellCastEvent (EoCClient.dll+0xD64540) pushes into the singleton through FUN_180d629e0: grow (size +0xC vs capacity +8), element at *comp + i*0x18 built by ls::GameplaySoundSwitchRequest::GameplaySoundSwitchRequest; bounds assert names ls::IndexedStorage<ls::GameplaySoundSwitchRequest>. Default 16 zero bytes (macOS stp xzr,xzr), live empty."
+      "evidence": "ecl::status::SpellSoundStateSystem::ProcessSpellCastEvent (EoCClient.dll+0xD64540) pushes into the singleton through EoCClient.dll+0xD629E0: grow (size +0xC vs capacity +8), element at the buffer pointer plus index times 0x18 built by ls::GameplaySoundSwitchRequest::GameplaySoundSwitchRequest; bounds assert names ls::IndexedStorage<ls::GameplaySoundSwitchRequest>. Default 16 zero bytes (macOS stp xzr,xzr), live empty."
     }
   ],
   "confidence": "high",

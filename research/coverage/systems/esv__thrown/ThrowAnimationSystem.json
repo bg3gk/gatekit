@@ -1,0 +1,200 @@
+{
+ "system": "esv::thrown::ThrowAnimationSystem",
+ "namespace": "esv::thrown",
+ "symbols": {
+  "reads": [
+   "eoc::character::CharacterComponent",
+   "esv::Character",
+   "esv::Projectile",
+   "esv::thrown::EntityThrownRequestOneFrameComponent",
+   "ls::DebugComponent"
+  ],
+  "writes": [
+   "eoc::thrown::IsThrownComponent",
+   "eoc::thrown::RotationParametersComponent",
+   "eoc::thrown::ThrownAnimationRequestOneFrameComponent",
+   "esv::thrown::LandedOneFrameComponent",
+   "esv::thrown::ThrownParametersComponent",
+   "ls::TransformComponent"
+  ],
+  "methods": [
+   {
+    "name": "GetThrowParamsComponent",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnGameStateChanged",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnThrowTrajectoryFinished",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessApplyRotationParams",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessLanding",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessThrownRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessUpdateEndRotation",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ReloadConditions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ReloadConditions",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ThrowAnimationSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ThrowAnimationSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "factory": "bg3.exe+0x2371D30",
+  "constructor": "inlined in factory",
+  "update_per_survey": "bg3.exe+0x2AF98E0",
+  "note": "from gatekit symbols system --dll dx11 --full; no per-method address was found in bg3_dx11.exe for these methods (null); factory/constructor/update come from survey.csv, which prints them as bg3.exe+RVA, the same offsets the dx11 symbols users list shows",
+  "uses": [
+   {
+    "type": "eoc::thrown::IsThrownComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2AFA1D0",
+    "site": "bg3_dx11.exe+0x2AFA6D7",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::thrown::RotationParametersComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2AFB720",
+    "site": "bg3_dx11.exe+0x2AFB77C",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::thrown::ThrownAnimationRequestOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2AFA1D0",
+    "site": "bg3_dx11.exe+0x2AFAC1E",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::thrown::LandedOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2AFAEA0",
+    "site": null,
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "esv::thrown::ThrownParametersComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2AFB900",
+    "site": "bg3_dx11.exe+0x2AFB9EC",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::IsGlobalComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2AFB900",
+    "site": "bg3_dx11.exe+0x2AFB9C9",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::thrown::RotationParametersComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2AFB720",
+    "site": "bg3_dx11.exe+0x2AFB7FB",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::Projectile",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2AFB250",
+    "site": "bg3_dx11.exe+0x2AFB445",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::thrown::RotationParametersComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2AFB250",
+    "site": "bg3_dx11.exe+0x2AFB595",
+    "depth": 2,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Asserts that ThrownParametersComponent exists, then runs ProcessThrownRequests, ProcessUpdateEndRotation, ProcessApplyRotationParams and ProcessLanding in that order each frame.",
+   "evidence": "EoCServer.dll Update (87 lines) read; the source file named in its assert is ThrowSystem.cpp."
+  },
+  {
+   "method": "ProcessThrownRequests",
+   "text": "Goes through entities that just received esv::thrown::EntityThrownRequestOneFrameComponent (an added-component query; its log text is 'Requested throwing of %s'). For each it adds eoc::thrown::IsThrownComponent when the entity lacks the query's first optional component and a float of the request is non-zero, and adds eoc::thrown::ThrownAnimationRequestOneFrameComponent when the entity has the query's second optional component; both new components receive that float. The tests are on the query's component slots, not on members of the request, and which two components those slots are was not identified (the query reads Character, esv::Character, esv::Projectile and ls::DebugComponent besides the request).",
+   "evidence": "EoCServer.dll ProcessThrownRequests read around two AddComponent calls: helpers FUN_1803cf0f0 -> IsThrownComponent, FUN_1803cf6d0 -> ThrownAnimationRequestOneFrameComponent."
+  },
+  {
+   "method": "ProcessLanding",
+   "text": "For each entity in a list that OnThrowTrajectoryFinished fills, if it is alive adds esv::thrown::LandedOneFrameComponent, and later removes eoc::thrown::IsThrownComponent and eoc::thrown::RotationParametersComponent from it.",
+   "evidence": "EoCServer.dll ProcessLanding (0x3d3680) read: add helper FUN_1803cf2e0 -> LandedOneFrameComponent, RemoveComponentUnchecked on type indexes of IsThrown and RotationParameters; OnThrowTrajectoryFinished (24 lines) only stores a handle."
+  },
+  {
+   "method": "ProcessApplyRotationParams, ProcessUpdateEndRotation",
+   "text": "Handle the rotation of the thrown entity using eoc::thrown::RotationParametersComponent; not read further, a guess from names and one resolved helper.",
+   "evidence": "EoCServer.dll helpers FUN_1803cf4d0 and FUN_1803d05e0 resolved to RotationParametersComponent; bodies not read."
+  }
+ ],
+ "unknown": [
+  "Which optional components of the ProcessThrownRequests query guard the IsThrown and ThrownAnimationRequest adds (corrected in review 14 Nov: they are component slots of the query, not members of the request).",
+  "Everything about rotation and end-rotation.",
+  "SystemLoad and ReloadConditions were not read."
+ ],
+ "sure": "no: the creation of ThrownAnimationRequestOneFrame was found, but its guard is known only as 'the entity has the query's second optional component', which component not identified"
+}

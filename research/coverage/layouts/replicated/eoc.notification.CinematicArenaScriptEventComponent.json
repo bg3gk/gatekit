@@ -4,18 +4,18 @@
   "size": 56,
   "fields": [
     {
-      "name": "field_0",
+      "name": "Source",
       "offset": 0,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "serializer bg3.exe+0x98BCB0 member 1: 16-byte scratch write at +0; macOS default str q0,[x23]."
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x6741A0 ecl::timeline::ArenaDecisionSystem::AddScriptEvents resolves the Guid at +0 to an entity (EoCClient.dll+0x6751A0) and puts it, with its position, in the first entity slot of an arena event of kind 4 (ArenaEventToString: OnScriptEvent). In AddDeathEvents (EoCClient.dll+0x673580) that first slot holds DeathComponent +0 (DeathData::Cause), the second the dying entity: the first slot is the event's source."
     },
     {
-      "name": "field_10",
+      "name": "Target",
       "offset": 16,
       "type": "Guid",
-      "source": "unknown",
-      "evidence": "serializer bg3.exe+0x98BCB0 member 2: 16-byte scratch write at +0x10."
+      "source": "inferred",
+      "evidence": "Toolkit EoCClient.dll+0x6741A0 ecl::timeline::ArenaDecisionSystem::AddScriptEvents resolves the Guid at +0x10 to an entity and puts it, with its position, in the second entity slot of an OnScriptEvent arena event; in AddDeathEvents (EoCClient.dll+0x673580) that slot holds the entity that died while the first holds the death's Cause: the second slot is the event's subject."
     },
     {
       "name": "field_20",

@@ -159,18 +159,18 @@
       "evidence": "macOS FillTargetVisualComponent writes its Guid parameter 7 here; live (TargetVisual +0x80) = Elf race 6c038dcb-... (Races.lsx), same value as LoadedRaceVisualChangedComponent"
     },
     {
-      "name": "field_90",
+      "name": "Classes",
       "offset": 144,
       "type": "Array<Guid>",
       "source": "inferred",
-      "evidence": "FillTargetVisualComponent fills it from Span<Guid> parameter 5 (DynamicArray<ls::Guid>, stride 0x10). Live 1 entry"
+      "evidence": "Filled by macOS SubsystemHelper::FillTargetVisualComponent (bg3_macos_x64+0x3A1E780) from its first Span<Guid> argument (parameter 5). The caller is DummySubsystem::UpdateDummyVisual (bg3_macos_x64+0x3A00CD0): it passes the span of DummyDefinitionComponent +0xA8 (count at +0xB4), with RootTemplate +0x60, Origin +0x70, Race +0x88 and BodyType/BodyShape +0x80/+0x81 alongside. SE's CharacterCreation.h calls DummyDefinitionComponent +0xA8 'Array<Guid> Classes'. The target there is the 0xF0-byte TargetVisualComponent (GetComponentModPairRaw size 0xF0). Live 1 entry."
     },
     {
-      "name": "field_A0",
+      "name": "Subclasses",
       "offset": 160,
       "type": "Array<Guid>",
       "source": "inferred",
-      "evidence": "FillTargetVisualComponent fills it from Span<Guid> parameter 6. Live 1 entry"
+      "evidence": "Filled by macOS FillTargetVisualComponent (bg3_macos_x64+0x3A1E780) from its second Span<Guid> argument (parameter 6). UpdateDummyVisual (bg3_macos_x64+0x3A00CD0) passes DummyDefinitionComponent +0xB8 (count +0xC4) there, which SE's CharacterCreation.h names 'Array<Guid> Subclasses'. Live 1 entry."
     },
     {
       "name": "Origin",
@@ -222,11 +222,11 @@
       "evidence": "padding"
     },
     {
-      "name": "field_C8",
+      "name": "CharacterCreationPose",
       "offset": 200,
       "type": "FixedString",
-      "source": "unknown",
-      "evidence": "Creator writes DAT_146174978 with IncRef; destructor DecRefs +0xC8. FillTargetVisualComponent copies a FixedString of an object found through parameter 5 (object +0xD4). Live 0x27F000C1."
+      "source": "inferred",
+      "evidence": "macOS ecl::character_creation::SubsystemHelper::FillTargetVisualComponent (bg3_macos_x64+0x3A1E780, decompiled): when the class span (parameter 5) has a non-null first Guid, it resolves it through the class manager of eoc::character_creation::Environment (+0x78, virtual +0x30) and copies the FixedString at +0xD4 of the result into +0xC8 (acquire/release pair). +0xD4 of resource::ClassDescription is Script Extender's CharacterCreationPose (gatekit symbols layout ClassDescription: +0x0D4 FixedString CharacterCreationPose). Windows creator bg3.exe+0x201BE90 writes the null FixedString here. Live 0x27F000C1."
     },
     {
       "name": "field_CC",

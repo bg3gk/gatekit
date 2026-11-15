@@ -1,0 +1,71 @@
+{
+ "system": "esv::spell::OnDamageSpellsSystem",
+ "namespace": "esv::spell",
+ "symbols": {
+  "reads": [],
+  "writes": [
+   "esv::spell::OnDamageSpellsComponent"
+  ],
+  "methods": [
+   {
+    "name": "AnubisAddOnDamageSpell",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "AnubisClearOnDamageSpells",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnDamageSpellsSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateOnDamageSpells",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~OnDamageSpellsSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::spell::OnDamageSpellsComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2398780",
+    "site": "bg3_dx11.exe+0x23987C0",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "AnubisAddOnDamageSpell / AnubisClearOnDamageSpells",
+   "text": "Only queue: they append an add or a clear request for an entity (and, for add, a spell) to the system's own pending arrays. The component is not touched at call time.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, OnDamageSpellsSystem::AnubisAddOnDamageSpell +0x122DBB0 and AnubisClearOnDamageSpells +0x122DCE0, both read: array appends through FUN_18122e1f0"
+  },
+  {
+   "method": "UpdateOnDamageSpells",
+   "text": "Processes the two pending lists. For add requests it finds or creates esv::spell::OnDamageSpellsComponent on the entity through a get-or-create helper and puts the spell into its list; for clear requests it empties the list, and under a test that was not resolved (a bit in a set), RemoveComponentUnchecked removes the component (deferred). That the component therefore lives only while an entity has an on-damage spell is an inference: the remove's test and the add path are both unresolved.",
+   "evidence": "EoCServer.dll (Toolkit build) pseudo-code, OnDamageSpellsSystem::UpdateOnDamageSpells at +0x122E420 (291 lines, read around the Remove and the helpers). Remove: RemoveComponentUnchecked(DAT_18226e66c & 0x7fff) at about line 205; DAT_18226e66c -> init +0x1C6890 -> 'esv::spell::OnDamageSpellsComponent'. The add goes through FUN_18122d0e0 (not an AllocRaw in its own body, so I cannot confirm it as ADD, only that it is the get-or-create path using the same type index)"
+  }
+ ],
+ "unknown": [
+  "The exact test that triggers the remove (a bit in a set tested at line ~200).",
+  "Whether the get-or-create helper really adds the component (it uses DAT_18226e66c through a generic immediate path I did not read).",
+  "Who calls the Anubis (script) methods; the mapping to an Osiris/script call is a guess from the names."
+ ],
+ "sure": "no: the remove is read; the add path was not resolved to an AllocRaw"
+}

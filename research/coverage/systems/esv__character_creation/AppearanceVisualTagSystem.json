@@ -1,0 +1,77 @@
+{
+ "system": "esv::character_creation::AppearanceVisualTagSystem",
+ "namespace": "esv::character_creation",
+ "symbols": {
+  "reads": [
+   "eoc::character_creation::AppearanceComponent"
+  ],
+  "writes": [
+   "esv::character_creation::AppearanceVisualTagComponent"
+  ],
+  "methods": [
+   {
+    "name": "AppearanceVisualTagSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherTags",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "RemoveComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdateTags",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~AppearanceVisualTagSystem",
+    "address": "bg3_dx11.exe+0x579D90",
+    "binary": "bg3_dx11.exe"
+   }
+  ],
+  "note": "from gatekit symbols system --dll dx11 --full; no per-method address was found in bg3_dx11.exe (null)",
+  "uses": [
+   {
+    "type": "esv::character_creation::AppearanceVisualTagComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x3173F80",
+    "site": "bg3_dx11.exe+0x3174008",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "esv::character_creation::AppearanceVisualTagComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x3173F80",
+    "site": "bg3_dx11.exe+0x317403E",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "Update",
+   "text": "Calls GatherTags, then UpdateTags, then goes through a list the earlier steps collected (the loop after them was not read through; by the system's own method name RemoveComponents it removes esv::character_creation::AppearanceVisualTagComponent from some entities, which is a guess from the name). GatherTags runs a removed-tag query on eoc::character_creation::AppearanceComponent. UpdateTags, for each collected entity, fetches its AppearanceVisualTagComponent and, when the entity has none, calls a helper that is probably the add (not verified), then fills an array of 16-byte values (GUID-sized) from the gathered data.",
+   "evidence": "EoCServer.dll esv::character_creation::AppearanceVisualTagSystem Update (calls GatherTags, UpdateTags), GatherTags header and its query tag, UpdateTags first 45 lines, RemoveComponents first 45 lines (a loop over an entity list with a HasComponent check), all skimmed not traced."
+  }
+ ],
+ "unknown": [
+  "What the tags are (visual tags from the CharacterCreationAppearanceVisualManager and SharedVisualManager passed to the constructor) and how they are chosen.",
+  "Whether the unnamed helper in UpdateTags adds the component, and the condition under which RemoveComponents removes it.",
+  "Which situations remove AppearanceComponent so the removed-tag query in GatherTags fires."
+ ],
+ "sure": "no: skimmed, helper roles and conditions unverified"
+}

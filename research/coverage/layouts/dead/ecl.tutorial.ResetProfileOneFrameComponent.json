@@ -7,11 +7,11 @@
   "summary": "One-frame request on the client to reset the tutorial state of a profile, carrying one FixedString. Created by the tutorial reset system update bg3.exe+0x1ABEFB0 (which also creates ecl::tutorial::ShowResetMessageRequestOneFrameComponent and handles the server's eoc::notification::ResetTutorialsMessageRequestNotificationComponent); read by gui code via bg3.exe+0x718D50 (registration shared with ecl::profile::ClearedShownTutorialsOneFrameComponent). Never seen alive. Registry total 4 (client row).",
   "fields": [
     {
-      "name": "field_0",
+      "name": "ProfileGuid",
       "offset": 0,
       "type": "FixedString",
-      "source": "unknown",
-      "evidence": "Creator bg3.exe+0x1ABFBD0 (AllocRaw 4) stores 0xFFFFFFFF; destructor bg3.exe+0x698FE0 DecRefs +0 in the global string table. bg3.exe+0x1ABEFB0 (lines ~287-306) creates one component per element of a collected FixedString array (stride 4) and assigns the element with IncRef/DecRef. What the FixedString names (profile / tutorial category) is not established."
+      "source": "inferred",
+      "evidence": "EoCClient.dll+0x63BD50 ecl::tutorial::ResetSystem::Update (Toolkit, named): for each splitscreen player (ecl::splitscreen::PlayersSingletonComponent, short ids at +4 and +0x1C) it takes pFVar13 = PlayerManager::GetPlayerProfileGUID(playerId) and, when the profile HasAnyTutorialEntryShown and the notification's bool at +4 is 0, collects that FixedString (FUN_1805a1de0 into local_238); then one entity per collected element gets the component through the add helper FUN_180639990 (type id _DAT_1819da8e0, between FinishResetResetTutorialsProcess 8d8 and ShowResetMessageRequest 8e8, the WorldView order) and FixedString::operator=(component, element). The value is the player profile's GUID."
     }
   ],
   "confidence": "high",

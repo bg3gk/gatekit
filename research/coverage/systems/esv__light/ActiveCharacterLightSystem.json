@@ -1,0 +1,117 @@
+{
+ "system": "esv::light::ActiveCharacterLightSystem",
+ "namespace": "esv::light",
+ "symbols": {
+  "reads": [
+   "eoc::ActiveCharacterLightBoostComponent",
+   "eoc::BoostConditionComponent",
+   "eoc::BoostInfoComponent",
+   "eoc::BoostsContainerComponent"
+  ],
+  "writes": [
+   "eoc::light::ActiveCharacterLightComponent"
+  ],
+  "methods": [
+   {
+    "name": "ActiveCharacterLightSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemLoad",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SystemUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~ActiveCharacterLightSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "eoc::light::ActiveCharacterLightComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E05320",
+    "site": "bg3_dx11.exe+0x2E05666",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::ActiveCharacterLightBoostComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E05320",
+    "site": "bg3_dx11.exe+0x2E054FD",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostConditionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFE7D00",
+    "site": "bg3_dx11.exe+0xFE7DA8",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostConditionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0xFE7D00",
+    "site": "bg3_dx11.exe+0xFE7DE8",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostConditionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1014070",
+    "site": "bg3_dx11.exe+0x10140FB",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostConditionComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x1014070",
+    "site": "bg3_dx11.exe+0x101413B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::BoostsContainerComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E05320",
+    "site": "bg3_dx11.exe+0x2E053FD",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::light::ActiveCharacterLightComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E05320",
+    "site": "bg3_dx11.exe+0x2E055A1",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::light::ActiveCharacterLightComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E05320",
+    "site": "bg3_dx11.exe+0x2E0557C",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

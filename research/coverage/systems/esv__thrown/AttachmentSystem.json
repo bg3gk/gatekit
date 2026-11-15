@@ -1,0 +1,201 @@
+{
+ "system": "esv::thrown::AttachmentSystem",
+ "namespace": "esv::thrown",
+ "symbols": {
+  "reads": [
+   "eoc::BoundComponent",
+   "eoc::WeaponComponent",
+   "eoc::animation::GameplayEventsOneFrameComponent",
+   "eoc::improvised_weapon::WieldingComponent",
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::MemberComponent",
+   "eoc::spell_cast::FinishedEventOneFrameComponent",
+   "eoc::spell_cast::PreviewEndEventOneFrameComponent",
+   "eoc::spell_cast::StateComponent",
+   "eoc::spell_cast::SyncTargetingComponent",
+   "eoc::spell_cast::TargetsChangedEventOneFrameComponent",
+   "eoc::spell_cast::ThrowPickupPositionChangedEventOneFrameComponent",
+   "esv::Item",
+   "esv::improvised_weapon::PickUpRequestOneFrameComponent",
+   "esv::spell::ThrowDetachmentRequestOneFrameComponent",
+   "esv::thrown::AttachmentRequestOneFrameComponent",
+   "esv::thrown::DetachmentRequestOneFrameComponent",
+   "ls::DebugComponent",
+   "ls::LevelComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "eoc::thrown::AttachComponent",
+   "eoc::thrown::SpellPrepareAnimationRequest"
+  ],
+  "methods": [
+   {
+    "name": "AttachmentSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestAttachEntity",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestDetachEntity",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAnimationRequestComponents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessAttachmentRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessDetachmentRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~AttachmentSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "factory": "bg3.exe+0x2371FD0",
+  "constructor": "inlined in factory",
+  "update_per_survey": "bg3.exe+0x2E97000",
+  "note": "from gatekit symbols system --dll dx11 --full; no per-method address was found in bg3_dx11.exe for these methods (null); factory/constructor/update come from survey.csv, which prints them as bg3.exe+RVA, the same offsets the dx11 symbols users list shows",
+  "uses": [
+   {
+    "type": "eoc::thrown::AttachComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E98E40",
+    "site": "bg3_dx11.exe+0x2E98EF6",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::thrown::SpellPrepareAnimationRequest",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2E97280",
+    "site": "bg3_dx11.exe+0x2E9736F",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::inventory::DataComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E98E40",
+    "site": "bg3_dx11.exe+0x2E98F71",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::LevelComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E973E0",
+    "site": "bg3_dx11.exe+0x2E9877E",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::LevelComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2E973E0",
+    "site": "bg3_dx11.exe+0x2E98C29",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::WeaponComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E98E40",
+    "site": "bg3_dx11.exe+0x2E98F0A",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::inventory::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E973E0",
+    "site": "bg3_dx11.exe+0x2E98761",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::inventory::MemberComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E973E0",
+    "site": "bg3_dx11.exe+0x2E98B77",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::thrown::AttachComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E97280",
+    "site": "bg3_dx11.exe+0x2E97320",
+    "depth": 1,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::thrown::AttachComponent",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E98E40",
+    "site": "bg3_dx11.exe+0x2E98ECD",
+    "depth": 2,
+    "confidence": "medium"
+   },
+   {
+    "type": "eoc::thrown::SpellPrepareAnimationRequest",
+    "kind": "has",
+    "function": "bg3_dx11.exe+0x2E97280",
+    "site": "bg3_dx11.exe+0x2E97360",
+    "depth": 1,
+    "confidence": "medium"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "ProcessAttachmentRequests",
+   "text": "For each entity in the attach list that is alive and has no eoc::thrown::AttachComponent yet, adds AttachComponent holding one 8-byte handle taken from the request, then looks at its eoc::WeaponComponent and its parent inventory. The handle's role (the holder) is a guess from the name.",
+   "evidence": "EoCServer.dll+0x3DDB60 read: IsEntityAlive, has-component FUN_1803d88c0 resolved to AttachComponent, add helper FUN_1803d6650 resolved to AttachComponent, FUN_1803d8b40 resolved to WeaponComponent."
+  },
+  {
+   "method": "ProcessDetachmentRequests",
+   "text": "For each entity in the detach list that is alive and has AttachComponent, removes AttachComponent; if that list's flag byte is set and the entity has no eoc::thrown::SpellPrepareAnimationRequest, adds one.",
+   "evidence": "EoCServer.dll+0x3DDD60 read: RemoveComponentUnchecked on the AttachComponent index; add helper FUN_1803d6870 and guard FUN_1803d8a00 resolved to SpellPrepareAnimationRequest."
+  },
+  {
+   "method": "ProcessAnimationRequestComponents",
+   "text": "Subtracts the frame delta from a float inside SpellPrepareAnimationRequest; when it reaches zero or less the entity is queued and SpellPrepareAnimationRequest is removed. That the float is a countdown of the animation is read from the subtraction only.",
+   "evidence": "EoCServer.dll+0x3DD3B0 read around the float subtraction and RemoveComponentUnchecked (type-index global DAT_182203578, whose init names SpellPrepareAnimationRequest through GetTypeName)."
+  },
+  {
+   "method": "GatherRequests, LEGACY_RequestAttachEntity, LEGACY_RequestDetachEntity",
+   "text": "The two LEGACY methods queue attach and detach for old callers; GatherRequests (1418 lines) builds the lists the Process steps use from those queues and from the request components. Not read in detail: a guess from names.",
+   "evidence": "EoCServer.dll+0x3DD080, 0x3DD1E0, 0x3DACC0: headers and call lists only."
+  }
+ ],
+ "unknown": [
+  "Who creates esv::thrown::AttachmentRequestOneFrameComponent and DetachmentRequestOneFrameComponent: symbols users lists only this system's factory/queries and a registration function, so no adder was found.",
+  "How GatherRequests builds the lists."
+ ],
+ "sure": "no: three Process methods read for adds and removes, GatherRequests and the legacy calls not"
+}

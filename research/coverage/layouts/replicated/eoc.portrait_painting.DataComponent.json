@@ -8,7 +8,7 @@
       "offset": 0,
       "type": "PortraitPaintingScratchBuffer",
       "source": "inferred",
-      "evidence": "Storage set-up bg3.exe+0x26FE370: size 0x58, destructor thunk_FUN_1405F1670 - the ls::ScratchBuffer destructor (frees owned buffers flagged at +0 and +0x18), the same set-up as esv::ShapeshiftCustomIconComponent. Write-all serializer bg3.exe+0x91F4C0 has one member, bg3.exe+0x4015ED0 on +0: Size (+0x50, 4 bytes written), then the bytes at *(+0x38) + *(+0x48). SE's ls::ScratchBuffer (CoreLib/Base/BaseString.h), redeclared flat under a name unique to the component; 'Data' inferred (the painted portrait image)."
+      "evidence": "Storage set-up bg3.exe+0x26FE370: size 0x58, destructor a thunk to bg3.exe+0x5F1670 - the ls::ScratchBuffer destructor (frees owned buffers flagged at +0 and +0x18), the same set-up as esv::ShapeshiftCustomIconComponent. Write-all serializer bg3.exe+0x91F4C0 has one member, bg3.exe+0x4015ED0 on +0: Size (+0x50, 4 bytes written), then the bytes found at the pointer stored at +0x38 plus the value stored at +0x48. SE's ls::ScratchBuffer (CoreLib/Base/BaseString.h), redeclared flat under a name unique to the component; 'Data' inferred (the painted portrait image)."
     }
   ],
   "confidence": "high",
@@ -31,7 +31,7 @@
           "offset": 0,
           "type": "uint8_t",
           "source": "inferred",
-          "evidence": "Destructor bg3.exe+0x5F1670: `if (*p == 1) free(*(p + 8)); *p = 0` - MemBuffer.Meta.Origin (1 = owned). SE ScratchBuffer.Buffer.Meta.Origin."
+          "evidence": "Destructor bg3.exe+0x5F1670: when the byte at +0 is 1 it frees the buffer pointer stored at +8, then writes 0 to +0 - MemBuffer.Meta.Origin (1 = owned). SE ScratchBuffer.Buffer.Meta.Origin."
         },
         {
           "name": "BufferFlags",
@@ -52,7 +52,7 @@
           "offset": 4,
           "type": "uint32_t",
           "source": "inferred",
-          "evidence": "Destructor zeroes `*(uint32*)(p + 4)`. SE MemBufferMeta.Alignment."
+          "evidence": "Destructor writes 0 as a 32-bit value at +4. SE MemBufferMeta.Alignment."
         },
         {
           "name": "BufferData",
@@ -73,7 +73,7 @@
           "offset": 24,
           "type": "uint8_t",
           "source": "inferred",
-          "evidence": "Destructor: `if (p[0x18] == 1) free(...); p[0x18] = 0` - the write stream's MemBufferMeta.Origin. SE ScratchBuffer.Write (MemWriteStream : MemBuffer)."
+          "evidence": "Destructor: when the byte at +0x18 is 1 it frees the buffer, then it writes 0 to that byte - the write stream's MemBufferMeta.Origin. SE ScratchBuffer.Write (MemWriteStream : MemBuffer)."
         },
         {
           "name": "WriteFlags",
@@ -94,7 +94,7 @@
           "offset": 28,
           "type": "uint32_t",
           "source": "inferred",
-          "evidence": "Destructor zeroes `*(uint32*)(p + 0x1C)`."
+          "evidence": "Destructor writes 0 as a 32-bit value at +0x1C."
         },
         {
           "name": "WriteData",
@@ -122,7 +122,7 @@
           "offset": 56,
           "type": "void*",
           "source": "inferred",
-          "evidence": "SE MemReadStream.Buffer. Write-all serializer bg3.exe+0x4015ED0 reads *(qword *)(+0x38) as the data pointer."
+          "evidence": "SE MemReadStream.Buffer. Write-all serializer bg3.exe+0x4015ED0 reads the 8-byte value at +0x38 as the data pointer."
         },
         {
           "name": "ReadSize",
@@ -136,7 +136,7 @@
           "offset": 72,
           "type": "uint64_t",
           "source": "inferred",
-          "evidence": "SE MemReadStream.Offset. bg3.exe+0x4015ED0 adds *(qword *)(+0x48) to the pointer at +0x38."
+          "evidence": "SE MemReadStream.Offset. bg3.exe+0x4015ED0 adds the 8-byte value at +0x48 to the pointer at +0x38."
         },
         {
           "name": "Size",

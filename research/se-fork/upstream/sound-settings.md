@@ -164,29 +164,24 @@ Three files: `GameDefinitions/Misc.h`, `GameDefinitions/PropertyMaps/Stats.inl`,
 `GameDefinitions/Generated/` are not committed upstream either, so they are not in the diff;
 `generate-property-maps.bat` regenerates them.
 
-Authored by `Gwynerva`, with the usual `Co-Authored-By: GateKit Thrall` trailer, as the README
+Authored by the owner, with the usual `Co-Authored-By: GateKit Thrall` trailer, as the README
 of this folder asks: the person opens it, the commit credits both. Nothing in the code itself
 names GateKit.
 
 ## Which branch it goes to, and whether it still applies
 
-**Target `main`.** Checked on 2026-11-13: upstream's `main` is at `43ee0399` ("Add native
-exports"), and this change applies to it cleanly - the three files it touches are untouched
-there since the base. `imgui_v1_93`, the branch the fork is cut from, is still at `2ea16d51` and
-would also take it, but it is a feature branch and the mainline is where a property map belongs.
+**Target `main`.** When last checked, upstream's `main` was at `43ee0399` ("Add native exports")
+and this change applied to it cleanly - the three files it touches were untouched there since the
+base. `imgui_v1_93`, the branch the fork is cut from, would also take it, but it is a feature
+branch and the mainline is where a property map belongs.
 
 Re-check this before sending, with the patch rather than by eye: upstream moves, and a first
 contact that arrives needing a rebase makes more work for the person being asked a favour.
 
 ## Where it is
 
-- `offer/sound-settings`, one commit on `2ea16d51`, in the worktree `se-fork/bg3se-offer-sound`.
-  Not pushed. A pull request has to come from a fork on GitHub, so the fork repository has to
-  exist first — pushing it with this one upstream-shaped branch would be enough, and the README
-  of this folder says when that happens: after GateKit is published, on the owner's word and
-  from his account.
-- The same change is in the fork's own branch, `gatekit-v34` → `sound-v34` at `28aef48a`, built
-  and run; `se-fork/bg3se-v34-sound/x64/Game Release/BG3ScriptExtender.dll` is that build. It was
-  **not** copied over `se-fork/builds/v34`.
-- GateKit's side of it — `GK.Sound.Settings`, the contract and the type stubs — is on the
-  `sound-settings` branch of the toolkit.
+- `offer/sound-settings`, one commit on `2ea16d51`, in the fork's repository. No pull request is
+  open; the README of this folder says when one is: after GateKit is published, on the owner's
+  word and from the owner's account.
+- The same change is on the fork's own branch, `gatekit-v34`, in the build GateKit installs.
+- GateKit's side of it is `GK.Sound.Settings`.

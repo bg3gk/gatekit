@@ -4,11 +4,11 @@
   "size": 48,
   "fields": [
     {
-      "name": "field_0",
+      "name": "UserId",
       "offset": 0,
       "type": "UserId",
-      "source": "unknown",
-      "evidence": "serializer bg3.exe+0x900150 member 1: bg3.exe+0x4016D50 reads a uint32 and writes its low 16 bits after a peer remap of the high 16 bits: net::UserID, SE UserId (4 bytes) at +0 (two global offsets added: a nested struct whose first member it is); macOS default str d8,[x23]."
+      "source": "inferred",
+      "evidence": "macOS ecl::multiplayer::DropInApprovalSystem::Update (bg3_macos_x64+0x346C260) walks the added requests and builds an ecl::multiplayer::ToApproveInfoHost (variant alternative 1 of AttemptsToJoinSingletonComponent) whose +0 is this value; the Toolkit's ProcessDecisions (EoCClient.dll+0x5A9500) treats that +0 as a user id (peer << 16 | user) and queues (short)info for DestroyPlayerRequests. The serializer writes it with the UserId writer bg3.exe+0x4016D50."
     },
     {
       "name": "_Pad4",
@@ -25,11 +25,11 @@
       "evidence": "serializer bg3.exe+0x900150 member 2: 16-byte scratch write at +8."
     },
     {
-      "name": "field_18",
+      "name": "Name",
       "offset": 24,
       "type": "STDString",
-      "source": "unknown",
-      "evidence": "serializer bg3.exe+0x900150 member 3: bg3.exe+0x4016480 writes an int32 length read at +0x10 then the bytes (inline when capacity at +0x14 <= 15): the 24-byte STDString layout; 0x18+24 = 48 = registered size (player name?)."
+      "source": "inferred",
+      "evidence": "macOS ecl::multiplayer::DropInApprovalSystem::Update (bg3_macos_x64+0x346C260) copy-constructs the request's STDString into ToApproveInfoHost +0x10, which the Toolkit's UpdateMessageBoxes (EoCClient.dll+0x5ABC00) passes as the text of the drop-in approval message box: the name of the player asking to join."
     }
   ],
   "confidence": "high",

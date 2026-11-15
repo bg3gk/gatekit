@@ -1,0 +1,145 @@
+{
+ "system": "esv::sound::PerformanceSystem",
+ "namespace": "esv::sound",
+ "symbols": {
+  "reads": [
+   "eoc::DisabledEquipmentComponent",
+   "eoc::PlayerComponent",
+   "eoc::StatsComponent",
+   "eoc::WeaponComponent",
+   "eoc::inventory::ContainerComponent",
+   "eoc::inventory::DataComponent",
+   "eoc::inventory::OwnerComponent",
+   "eoc::spell_cast::IsCastingComponent",
+   "eoc::spell_cast::PrepareStartEventOneFrameComponent",
+   "eoc::spell_cast::StateComponent",
+   "eoc::stats::MusicalInstrumentComponent",
+   "esv::stats::EquipmentSlotChangedEventOneFrameComponent",
+   "esv::status::PerformingComponent",
+   "ls::LevelUnloadEventComponent",
+   "ls::TransformComponent"
+  ],
+  "writes": [
+   "eoc::sound::PerformanceZoneComponent",
+   "esv::sound::PerformerRemovedEventOneFrameComponent",
+   "ls::SavegameComponent"
+  ],
+  "methods": [
+   {
+    "name": "CheckUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "CreateNewZones",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherAbortRequests",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "GatherPerformerChanges",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "LEGACY_RequestAbort",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ModifyExistentZones",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnLevelLoaded",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "OnLevelUnload",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "PerformanceSystem",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPerform",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "ProcessPerformersLeavingPerformance",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "SendEvents",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "TryZoneCreation",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "Update",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "UpdatePerformanceZone",
+    "address": null,
+    "binary": null
+   },
+   {
+    "name": "~PerformanceSystem",
+    "address": null,
+    "binary": null
+   }
+  ],
+  "uses": [
+   {
+    "type": "esv::sound::PerformerRemovedEventOneFrameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EDBA60",
+    "site": "bg3_dx11.exe+0x2EDBB7B",
+    "depth": 1,
+    "confidence": "high"
+   },
+   {
+    "type": "ls::SavegameComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x2EE0F80",
+    "site": "bg3_dx11.exe+0x2EE1209",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::stats::MusicalInstrumentComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EDD410",
+    "site": "bg3_dx11.exe+0x2EDE97B",
+    "depth": 2,
+    "confidence": "high"
+   },
+   {
+    "type": "eoc::stats::MusicalInstrumentComponent",
+    "kind": "get",
+    "function": "bg3_dx11.exe+0x2EDD410",
+    "site": "bg3_dx11.exe+0x2EDEBF9",
+    "depth": 2,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ }
+}

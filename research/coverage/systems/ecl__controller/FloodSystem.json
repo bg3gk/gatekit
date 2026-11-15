@@ -1,0 +1,94 @@
+{
+ "system": "ecl::controller::FloodSystem",
+ "namespace": "ecl::controller",
+ "symbols": {
+  "reads": [],
+  "writes": [],
+  "methods": [],
+  "uses": [
+   {
+    "type": "eoc::controller::FloodComponent",
+    "kind": "add",
+    "function": "bg3_dx11.exe+0x1DA8730",
+    "site": "bg3_dx11.exe+0x1DA891D",
+    "depth": 1,
+    "confidence": "high"
+   }
+  ],
+  "limits": "reads/writes: the component views in the parameters of the system's exported methods. uses: the component operations (add, remove, get, has) its per-frame update performs through the engine's out-of-line helpers, itself or in a function it calls (depth 2), with the call site; kind index: a matched method reads the type's index and the operation is not known. Not listed: operations the compiler inlined, those deeper than depth 2, and what a method that is not the update does (e.g. a SystemLoad) - read its pseudo-code; an empty writes list is not \"writes nothing\"."
+ },
+ "does": [
+  {
+   "method": "SystemUpdate (macOS build): adds the flood holder",
+   "text": "Every entity that has eoc::controller::LocomotionComponent and ls::LevelComponent but no eoc::controller::FloodComponent gets a FloodComponent, unconditionally, initialised empty (Flood pointer and RequestHandle zero, the 4 bytes at +0xC = -1).",
+   "evidence": "bg3_macos_x64+0x1278250 ecs::_private::SystemRegistrationHelper::SystemUpdate<ecl::controller::FloodSystem>: the query Spec<TL<Locomotion, Level>, TL<Flood> (absent)>, the frame-storage emplace with a 0x10-byte allocation (FloodComponent's size) and the three stores. The Windows code (bg3.exe+0x1DA9A90 / +0x1DAA130 by gatekit decomp systems; bg3_dx11.exe counterpart not located) was not read; the type index used by the add (PTR_m_TypeIndex_10905d870) was not resolved to its name, the 16-byte size and the absent-list are the grounds.",
+   "check": {
+    "when": "controller_locomotion_flood",
+    "expect": [
+     {
+      "appears": {
+       "component": "eoc::controller::FloodComponent",
+       "side": "client",
+       "within": 20
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "controller_locomotion_flood (PROPOSED): GustavX:WLD_Main_A; wait Running; make the client hold eoc::controller::LocomotionComponent on an entity that has ls::LevelComponent - what adds LocomotionComponent was not found (it is replicated from the server; esv::PathingSystem and eoc::legacy::PathingSystem only read it; the camera's TargetSystem::ProcessControllerStartedMoving reads it): try direct movement (WASD / gamepad stick) of the controlled character for 2 s; sleep 1. LocomotionComponent is not mapped in coverage.json, so whether it ever exists is not in the record."
+  },
+  {
+   "method": "SystemUpdate (macOS build): removes it",
+   "text": "An entity holding FloodComponent without LocomotionComponent loses FloodComponent. When FloodComponent is removed or its entity is dead, the system releases the entity's flood from the eoc::AiGrid.",
+   "evidence": "bg3_macos_x64+0x1278250: query Spec<TL<Flood>, TL<Locomotion> (absent)> with EntityCommandBuffer::RemoveComponentUnchecked; the Removed/All query on FloodComponent and the Dead query, each followed by eoc::AiGrid::ReleaseFlood.",
+   "check": {
+    "when": "controller_locomotion_flood_and_stop",
+    "expect": [
+     {
+      "appears": {
+       "component": "eoc::controller::FloodComponent",
+       "side": "client",
+       "as": "E",
+       "within": 20
+      }
+     },
+     {
+      "gone": {
+       "component": "eoc::controller::FloodComponent",
+       "side": "client",
+       "on": "E",
+       "within": 20
+      }
+     }
+    ]
+   },
+   "proposed_recipe": "controller_locomotion_flood_and_stop (PROPOSED): as controller_locomotion_flood, then end whatever gave the entity eoc::controller::LocomotionComponent (unknown, see unknown); sleep 2.",
+   "review": "Review 2026-11-14 (Opus): the earlier 'not checkable live: gone is judged against the holders before the recipe' misread the verb: gone also passes for an entity that came to hold the type inside the recipe and then stopped (cli.md 3.6, Prelude.lua); so the claim is given appears-as-E plus gone-on-E. Not re-read against the code (macOS only, sure: no)."
+  },
+  {
+   "method": "SystemUpdate (macOS build): keeps the flood requested",
+   "text": "For entities with FloodComponent, eoc::BoundComponent, eoc::GameObjectVisualComponent, ls::LevelComponent and ls::TransformComponent the system requests a walkable-area flood from the level's AiGrid (eoc::AiGrid::RequestFlood, releasing the previous one first) and keeps the result in the component; the request's parameters include 30000 (meaning not read).",
+   "evidence": "bg3_macos_x64+0x1278250: the query Spec<TL<Flood, Bound, GameObjectVisual, Level, Transform>>, eoc::AiGrid::ReleaseFlood then eoc::AiGrid::RequestFlood(..., 1, 0, 30000).",
+   "check": {
+    "when": "controller_locomotion_flood",
+    "expect": [
+     {
+      "changes": {
+       "component": "eoc::controller::FloodComponent",
+       "field": "RequestHandle",
+       "side": "client",
+       "within": 20
+      }
+     }
+    ]
+   },
+   "check_note": "changes passes on a new holder alone, so it adds nothing over appears unless the holder existed before; kept because a RequestHandle different from 0 would back the field's name.",
+   "proposed_recipe": "controller_locomotion_flood (PROPOSED), as above."
+  }
+ ],
+ "unknown": [
+  "What creates eoc::controller::LocomotionComponent (and so FloodComponent): not found; probably direct (WASD / stick) movement - a guess from the name and from camera::TargetSystem::ProcessControllerStartedMoving.",
+  "The Windows code of this system (bg3.exe+0x1DA9A90 and +0x1DAA130 are the two steps by gatekit decomp systems) was not read; everything here is from the macOS build.",
+  "When exactly the flood is re-requested (every frame, or on a change) - the condition between the query and RequestFlood was not followed."
+ ],
+ "sure": "no: the add/remove are read in the macOS build only and the add's type index is identified by size and query, not by name; what makes LocomotionComponent appear is not known"
+}
