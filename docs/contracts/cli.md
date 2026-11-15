@@ -794,6 +794,7 @@ GateKit's own settings:
 | real profile | `GATEKIT_PROFILE` | `profile` | Windows `%LOCALAPPDATA%\Larian Studios\Baldur's Gate 3`; Linux `<library>/steamapps/compatdata/1086940/pfx/drive_c/users/steamuser/AppData/Local/Larian Studios/Baldur's Gate 3` |
 | instances | `GATEKIT_INSTANCES` | `instances` | `<game's parent>/Baldurs Gate 3 GateKit` (on the game's volume: copies are hard links) |
 | Script Extender | `GATEKIT_SE` | `scriptExtender` | stock; a folder with `BG3ScriptExtender.dll` (or `stock`) |
+| Script Extender's developer mode | `GATEKIT_SE_DEVELOPER_MODE` | - | on; `0` starts the game as a mod's user has it (no developer-only functions of the extender) |
 | packer | `GATEKIT_PACKER` | `packer` | `builtin`: LSLib in this process. `divine` uses LSLib's Divine instead |
 | Divine | `GATEKIT_DIVINE` | `divine` | none; only `GATEKIT_PACKER=divine` needs it |
 | runtime for Divine | `GATEKIT_DOTNET_ROOT` | `dotnetRoot` | none: Divine runs with `DOTNET_ROLL_FORWARD=Major` on the newest installed runtime |

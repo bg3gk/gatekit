@@ -615,7 +615,9 @@ public sealed class GameCopy
         JsonFiles.Edit(Layout.SeSettings, s =>
         {
             s["CreateConsole"] = false;
-            s["DeveloperMode"] = true;
+            // Developer mode, unless the run is to see the extender as a player's game has it
+            // (GATEKIT_SE_DEVELOPER_MODE=0): what a mod's user gets, and what he does not.
+            s["DeveloperMode"] = Environment.GetEnvironmentVariable("GATEKIT_SE_DEVELOPER_MODE") != "0";
             s["LogRuntime"] = true;
             s["EnableLogging"] = storyLog;
             s["LogDirectory"] = Platform.ToGamePath(Layout.SeLogs);
