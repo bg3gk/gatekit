@@ -360,7 +360,8 @@ local function modifiersOf(rolled)
     try(function() for skill, v in pairs(md.SkillBonuses) do add("skill " .. tostring(skill), v) end end)
     try(function() for ability, v in pairs(md.AbilityBoosts) do add("ability " .. tostring(ability), v) end end)
     add("proficiency", try(function() return md.ProficiencyBonus end))
-    add("roll bonus", try(function() return md.RollBonus end))
+    -- md.RollBonus is not a term: it is a sum the game keeps of terms listed here already (the roll
+    -- bonuses of a check; the proficiency and the roll bonuses of an attack). Listed, it counted twice.
     add("high ground", try(function() return md.HighGroundBonus end))
     add("low ground", try(function() return -md.LowGroundPenalty end))
     for _, list in ipairs({ "ResolvedRollBonuses", "FixedRollBonuses" }) do
@@ -776,8 +777,8 @@ end
 
 --- Whether this Script Extender build raises the roll event a rig acts through.
 function Rolls.CanRig()
-    local ok, event = pcall(function() return Ext.Events.Roll end)
-    return ok and event ~= nil
+    -- Ext.Events answers for any name: the event is there when its parameters' type is (GK.Verbs.Has)
+    return GK.Verbs.Has("Events.Roll")
 end
 
 --- Decides one throw at the moment it is made, for the length of the stage scope. `spec` names the

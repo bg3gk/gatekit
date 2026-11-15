@@ -76,8 +76,7 @@ end
 
 --- Whether this Script Extender build throws the roll event the log is written from.
 function Log.Available()
-    local ok, event = pcall(function() return Ext.Events.Roll end)
-    return ok and event ~= nil
+    return GK.Verbs.Has("Events.Roll")
 end
 
 local function uuid(handle)
@@ -196,6 +195,11 @@ local function write(e)
         GK.Rolls.JustRigged = nil
         payload.rigged = { id = rig.id, natural = rig.was.natural, total = rig.was.total }
         payload.total = rig.total
+        -- the extender sets the critical by the game's rule once every listener has returned: a
+        -- natural 1 fails, a natural 20 succeeds (a lowered threshold is not known here)
+        if payload.dieType == "D20" then
+            payload.critical = payload.natural == 1 and "Fail" or payload.natural == 20 and "Success" or "None"
+        end
     end
     payload.text = string.format("%s rolled %s (natural %s) for %s", payload.who or "the game", tostring(payload.total),
         tostring(payload.natural), payload.what or ("an unknown asker " .. tostring(asked)))
@@ -227,7 +231,7 @@ GK.EventLog.Hooks.dice = {
         if GK.Rolls then GK.Rolls.JustRigged = nil end
         -- the lowest priority: heard after every other listener, so the row is what they left
         subscribed = Ext.Events.Roll:Subscribe(function(e) pcall(write, e) end, { Priority = 1 })
-        local ok, event = pcall(function() return Ext.Events.RollAdjusted end)
+        local ok, event = GK.Verbs.Has("Events.RollAdjusted"), Ext.Events.RollAdjusted
         if ok and event then subscribedAdjusted = event:Subscribe(function(e) pcall(adjusted, e) end, { Priority = 1 }) end
     end,
     off = function()

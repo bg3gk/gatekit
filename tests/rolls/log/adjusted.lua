@@ -19,7 +19,7 @@ function run(game)
     local host = uuid(game.server("return Osi.GetHostCharacter()"))
     step("the roll log on", "observation", function()
         check(game.server("return GK.RollLog.Available()"), "this Script Extender build throws the roll event")
-        need(game.server("return (pcall(function() return Ext.Events.RollAdjusted end)) and Ext.Events.RollAdjusted ~= nil"),
+        need(game.server("return GK.Verbs.Has('Events.RollAdjusted')"),
             "this Script Extender build says when a roll is changed after the throw")
         game.server("return GK.EventLog.On('dice', { seconds = 600 })")
     end)
