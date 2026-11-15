@@ -3208,3 +3208,21 @@ function GK.Observe(result, check, within) end
 ---Push(what, fields), Set(key, item, ended), Waiting (key -> item, read-only), State(), Since(seq),
 ---Mark(), Costs(). Observation. Both sides.
 GK.Attention = {}
+
+---The roll log: `dice_thrown` rows of the family `dice`, written from the roll events of GateKit's
+---Script Extender build.
+GK.RollLog = {}
+
+---Whether this Script Extender build throws the roll events the log is written from. Server. Observation.
+---@return boolean
+function GK.RollLog.Available() end
+
+---The named asker an address of an executable belongs to, or nil. Server. Observation.
+---@param module string
+---@param rva integer
+---@return { id: string, what: string, entry: boolean? }?
+function GK.RollLog.Origin(module, rva) end
+
+---The askers known for each executable. Server. Observation.
+---@return table<string, { id: string, what: string, rva: integer, size: integer }[]>
+function GK.RollLog.Origins() end
