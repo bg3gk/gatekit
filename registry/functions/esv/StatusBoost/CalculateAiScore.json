@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::StatusBoost::CalculateAiScore",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Scores for the AI a boost status applied to a target for a number of turns: what the status's boosts are worth to the target.",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:71c77899fef3ecc8",
+      "fp:9e8ae7f48856e3ad",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ],
+    "strings": ["7327ec736603a782", "b63604788ee9a54e"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the AI log line for entering a status with its turn count; calls into the boost scoring of the AI helpers"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on (the segments where an enemy took its turn), 314 times from 2 places, among them the status scorer at +0x37800B0"
+    }
+  ]
+}

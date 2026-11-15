@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::NeedsTargetPositionHelper",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Tells whether a list of stats functors, filtered by a context mask, needs a target position: true when a matching functor carries a position, is of kind 0x10, or (kind 0x0E, a weapon functor) when the functors of the character's main or off-hand weapon need one.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::NeedsTargetPositionHelper",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8d99f5891680858"
+    ]
+  },
+  "evidence": [
+    {"kind": "read", "says": "reads eoc::WeaponComponent of the source and the action's flags"},
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 2 places, mostly CalculateAiScoreStatsFunctors"
+    },
+    {
+      "kind": "read",
+      "says": "iterates the functor list through vtable +0x30/+0x38 with the mask against functor +0x38 (bit 14 excluded); tests +0x30 against -1 and kind byte +0x45; recurses through eoc::WeaponComponent +0x28 of the two weapon slots"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 2 places, mostly CalculateAiScoreStatsFunctors and itself"
+    }
+  ]
+}

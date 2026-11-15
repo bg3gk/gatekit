@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::action_resource::CanUseResourcesCostsNextTurn",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Tells whether a character will be able to pay a list of action-resource costs on its next turn, cost by cost.",
+  "fingerprint": {"calls": ["fp:3c74753dbe89f457", "fp:72b4801e8e903ffc", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "walks the eoc::action_resource::ActionResourceCost array (0x30 bytes each) through CanUseResourceCost and, for a cost that fails now, checks the resource's replenish type"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on (segments 36, 39, 44), 14 times from 1 place in the combat AI request code at +0x3108200"
+    },
+    {
+      "kind": "read",
+      "says": "walks the eoc::action_resource::ActionResourceCost array (0x30 bytes each) through CanUseResourceCost and, for a cost that fails now, looks the resource up in the character's eoc::ActionResourcesComponent"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on (segments 36, 39, 44), 14 times from 1 place, unplaced::StepCombatAiCalculation"
+    }
+  ]
+}

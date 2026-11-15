@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::AddAiScoreWeighted",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Adds one AI score into another with a multiplier: ors the flags and merges the per-entity entries, scaling their values by the weight.",
+  "fingerprint": {"calls": ["fp:92dd4fee11aeea92", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "ors +0 and +4 of the source into the target, grows the target array at +0x20 and walks the 0x28-byte source entries; the float third argument scales"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 47 places"
+    }
+  ]
+}

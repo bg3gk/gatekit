@@ -1,0 +1,48 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::SetUpActiveRollTitle",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Prepares the roll screen of a dialogue roll: resets the gui::VMRoll, fills the title of the check (the ability, or the skill and its ability through eoc::stats::GetSkillAbility) and the character it is for.",
+  "fingerprint": {
+    "calls": [
+      "fp:05d53066a1d11e6e",
+      "fp:0e20b203d1a08526",
+      "fp:0faebb274a2a8b33",
+      "fp:123b79ba6c390bab",
+      "fp:227ef8acdbdc209b",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3a1919ec5e4b0a9a",
+      "fp:49f68faa16aedab5",
+      "fp:4fcdb2e1dc88eca1",
+      "fp:5227b96c8688ff31",
+      "fp:664f036dee73e3f9",
+      "fp:73b6437b8a0b46c5",
+      "fp:74095d1efd9aa634",
+      "fp:8dcabb93a9f3bd3d",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:b2e1c2683d667e92",
+      "fp:b70839e52859db22",
+      "fp:cf4e1691105152f1",
+      "fp:d79cc1228be97cc9",
+      "fp:e4d053ad9455ea7c",
+      "fp:fc4a129790fa1bc4",
+      "import:69725d482f18e3aa",
+      "unplaced::GetAbilityCheckString"
+    ],
+    "strings": ["28e3691106ad6b3c", "57a8abdf370409d4", "85a86fc6afc6be6f", "d797ce0d77fc29ea"],
+    "components": ["ecl::LEDSystem"],
+    "vtables": [{"slot": 5}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "calls gui::VMRoll::ResetData, GetAbilityCheckString and eoc::stats::GetSkillAbility, builds translated argument strings, clears and refills a collection of the view model, and defers property changes"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a dialogue was on (segments 4, 16, 31, 32), 5 times from 1 place in the UI data-context code"
+    }
+  ]
+}

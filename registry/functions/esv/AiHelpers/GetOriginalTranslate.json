@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::GetOriginalTranslate",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Gives the real position of an entity for the AI, the one saved before any hypothetical move, or the entity's current position when none is saved; FLT_MAX when the entity is gone.",
+  "fingerprint": {"calls": ["fp:92dd4fee11aeea92", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "looks the entity up in the saved-position map at +0x308; otherwise the object's position from vtable +0xB8; 0x7F7FFFFF triple on failure"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 5 places, nearly all from +0x312AF90 and +0x3133BE0"
+    }
+  ]
+}

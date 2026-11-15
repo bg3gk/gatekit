@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::GetAverageDamageForCharacter",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Gives the average damage a character deals, as the AI estimates it, memoised per entity in the helper's map at +0x3D0 and computed by the function at +0x3126E30 on first use.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::GetAverageDamageForCharacterNoCache",
+      "fp:123b79ba6c390bab",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "hash lookup by entity in the table at +0x3CC/+0x3D0; on a miss calls +0x3126E30 and inserts the float"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 7 places, most of them (about 16 000 calls each) inside the function at +0x371F520"
+    }
+  ]
+}

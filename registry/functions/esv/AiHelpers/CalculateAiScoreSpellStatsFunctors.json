@@ -1,0 +1,39 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateAiScoreSpellStatsFunctors",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Scores for the AI the stats functors of one spell: clamps the spell's ranges through its eoc::spell::ModificationContainerComponent, scores the functors with CalculateAiScoreStatsFunctors, and scores again with a second functor set when the spell has one, adding both into the result.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::CalculateAiScoreStatsFunctors",
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:7c6f6a52d0f820ca",
+      "fp:91c3d48dff57ab4c",
+      "fp:b64bf67d316ead69",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::AddAiScore",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "creates an AiScore, reads the ModificationContainerComponent of the spell's source, calls CalculateAiScoreStatsFunctors once or twice and merges with weight 1.0"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 16 places in the AI decision code, about 17 800 calls"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the name rests on the order of the Toolkit's names and on the spell modifications it reads; a probe of +0x3116500 with a goblin casting a known spell would tie the call to the spell id",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateAiScoreBoost",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Scores for the AI a boost a status or passive would give, using the average damage of characters it affects.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::GetAverageDamageForCharacter",
+      "fp:123b79ba6c390bab",
+      "fp:175ac60533e9dfb9",
+      "fp:24c801b0780dfd1d",
+      "fp:3630e2c70182794a",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3bba8475365606e0",
+      "fp:3dc70372a826ba29",
+      "fp:44e4041a8c2385d2",
+      "fp:487cb3ad377ac4c8",
+      "fp:5227b96c8688ff31",
+      "fp:6dbec13f747384e3",
+      "fp:72b4801e8e903ffc",
+      "fp:73b6437b8a0b46c5",
+      "fp:77b26de95fac76d5",
+      "fp:7c6f6a52d0f820ca",
+      "fp:8efc2b447ddf1668",
+      "fp:91a85c0a25ceef8d",
+      "fp:91c3d48dff57ab4c",
+      "fp:9c7669e2682f3f3b",
+      "fp:a4616baec98bd920",
+      "fp:a4fcd6458dbd5380",
+      "fp:ce500b9a40ed3d76",
+      "fp:d1045bdeed38dbc1",
+      "fp:d17cd6554897aca4",
+      "fp:d3713deebd9a4a36",
+      "fp:e4d053ad9455ea7c",
+      "fp:f14ab2a553ff0247",
+      "fp:f8733ab4e537d29f",
+      "fp:f8c904b320f1070b",
+      "fp:f8d99f5891680858",
+      "fp:fed9b68e4d0729f7",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ],
+    "strings": [
+      "572ddaf0ce20d59a",
+      "74191136ce76dec0",
+      "c82fac39b57205fb",
+      "dcd7262963eff857",
+      "e87a1b7a76fa157c",
+      "f14b8e47311ddaca"
+    ],
+    "components": ["esv::AiHelpers"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "builds entity hash maps of affected characters and calls GetAverageDamageForCharacter"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, in the function at +0x37800B0"
+    }
+  ]
+}

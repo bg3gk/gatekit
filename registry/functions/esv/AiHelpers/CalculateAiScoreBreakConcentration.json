@@ -1,0 +1,56 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateAiScoreBreakConcentration",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Scores for the AI breaking a caster's concentration: the value of the statuses that end with it.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::CalculateAiScoreStatus",
+      "esv::AiHelpers::CalculateAiScoreSurface",
+      "esv::AiHelpers::PushKnownState",
+      "fp:009530532352a308",
+      "fp:123b79ba6c390bab",
+      "fp:175ac60533e9dfb9",
+      "fp:24c801b0780dfd1d",
+      "fp:2b846b4a88278810",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:85ff8b6f975d2193",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:b64bf67d316ead69",
+      "fp:cb095298fb2af712",
+      "fp:d3713deebd9a4a36",
+      "fp:d649436bbbe7d47a",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::AddAiScore",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ],
+    "strings": [
+      "54bf90cb58409069",
+      "88eb5aca6a5d8e85",
+      "9dc34057b4ac7407",
+      "9ea10bb2d0f18cbc",
+      "bd9753a107d93709",
+      "c18ea0bc21d63ece",
+      "d647d2dec1794a28",
+      "e84b3f147e146367",
+      "f09e92b6229b1184"
+    ],
+    "components": ["esv::AiHelpers"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads eoc::concentration::ConcentrationComponent of the caster, uses PushKnownState to evaluate with the concentration gone"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 2 places, mostly the function at +0x311D640"
+    }
+  ]
+}

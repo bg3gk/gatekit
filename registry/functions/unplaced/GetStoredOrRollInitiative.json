@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::GetStoredOrRollInitiative",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Gives a combatant joining a combat its initiative: takes the value already kept for the entity in the combat's initiative map when there is one, otherwise calls esv::combat::System::NewInitiativeRoll.",
+  "fingerprint": {
+    "calls": [
+      "esv::combat::System::NewInitiativeRoll",
+      "fp:5227b96c8688ff31",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "calls the lookup at +0x3200710 (a hash map from entity to int reached through +0xB8 of the combat), and only when its found-flag is clear calls esv::combat::System::NewInitiativeRoll"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on (segments 19, 27, 36, 40, 42, 44, the same as the lookup it calls), from 1 place inside the per-tick combat function at +0x3206B50"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "whose initiative the map at +0xB8 keeps (a group sharing one roll, or a value set by script); joining a second enemy to a running fight would show whether it is found or rolled",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

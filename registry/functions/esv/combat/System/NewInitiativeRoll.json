@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat::System::NewInitiativeRoll",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Gives a combatant its initiative: returns the value already stored for it in the combat if there is one, otherwise asks the combat helper whether it may roll and rolls with the StatsComponent InitiativeBonus, returning -20 when it may not.",
+  "fingerprint": {
+    "calls": [
+      "fp:5227b96c8688ff31",
+      "fp:6214891036ac8b68",
+      "fp:73b6437b8a0b46c5",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "looks the entity up in the combat's initiative map first; else calls helper vtable +0x20 (eligibility) and +0x18 (the roll, esv::combat::SystemHelper::RollDie) with eoc::StatsComponent InitiativeBonus; 0xFFFFFFEC on refusal"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on (6 of the 14 fight segments), from 2 places, at +0x32041B8 and +0x320A2C9; its callee esv::combat::SystemHelper::RollDie runs in the same fight-start segments"
+    }
+  ]
+}

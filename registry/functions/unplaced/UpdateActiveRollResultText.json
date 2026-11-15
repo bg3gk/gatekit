@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::UpdateActiveRollResultText",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Sets the result line of the roll screen once a dialogue roll resolves: success or failure, of a skill (id below 0x12) or of an ability, from the roll's eoc::active_roll::ModifiersComponent and state.",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:58b4b875fbff37c4",
+      "fp:92dd4fee11aeea92",
+      "fp:b70839e52859db22",
+      "fp:cf4e1691105152f1",
+      "fp:e4d053ad9455ea7c",
+      "import:9c9aac12eb379696",
+      "unplaced::GetFailedAbilityCheckString",
+      "unplaced::GetFailedSkillCheckString",
+      "unplaced::GetSuccessAbilityCheckString",
+      "unplaced::GetSuccessSkillCheckString"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads eoc::active_roll::ModifiersComponent of the roll entity, the success flag at +0x4C of the view model and the skill/ability id at +0xD12, then calls one of GetSuccessSkillCheckString, GetFailedSkillCheckString, GetSuccessAbilityCheckString, GetFailedAbilityCheckString"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a dialogue was on (segments 5, 16, 31, 32), 5 times from 1 place, the per-frame active-roll update at +0x1549B20"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateAiScoreDamageItem",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Scores for the AI a damage functor against an item: whether the item interests the AI, and the score of destroying it or of its item actions.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::CalculateAiScoreDamageItemAction",
+      "esv::AiHelpers::CalculateAiScoreDestroyItem",
+      "esv::AiHelpers::IsItemInteresting",
+      "fp:123b79ba6c390bab",
+      "fp:24c801b0780dfd1d",
+      "fp:2e11dab32a025d84",
+      "fp:3dc70372a826ba29",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:9e24d4c02110e384",
+      "fp:c8384249d433cc07",
+      "fp:d1045bdeed38dbc1",
+      "fp:dd35e7b691114650",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8c904b320f1070b",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::AddAiScore",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ],
+    "strings": ["61544f3840fdfb7f"],
+    "components": ["esv::AiHelpers", "esv::StatsSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads HealthComponent and Transform of the item, calls IsItemInteresting, CalculateAiScoreDestroyItem and CalculateAiScoreDamageItemAction"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, CalculateAiScoreStatsFunctors"
+    }
+  ]
+}

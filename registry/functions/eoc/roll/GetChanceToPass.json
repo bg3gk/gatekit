@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::GetChanceToPass",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Gives the probability that a roll passes, from the roll definition and a distribution of the dice total (a map from total to count), with advantage or disadvantage and the roll's metadata.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "takes RollDefinition, a HashMap<int,int> of totals, a bool and StatsRollMetadata, returns 0 for an empty map and otherwise finds the minimum and maximum totals and sums the passing share"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on (segments 36 to 44), 100 times from 1 place, +0x1156F10, which is reached from a Thoth script environment function at +0x10EA430"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which Thoth function reaches it (a hit-chance condition used by the AI or by the UI); a probe of +0x10EA430 while hovering an attack would tell",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

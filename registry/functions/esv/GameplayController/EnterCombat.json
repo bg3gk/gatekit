@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::GameplayController::EnterCombat",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Puts a character's gameplay controller into combat mode: releases the AI-grid flood the controller holds for its character (slot at +0x48) and sets the in-combat bit 0x200 in its flags.",
+  "fingerprint": {"calls": ["fp:175ac60533e9dfb9", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "clears +0x44, looks up the character's level in the level manager and calls eoc::AiGrid::ReleaseFlood with the handle at +0x48, then ors 0x200 into +0x18"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on (4 of the 14 fight segments, each where a fight began), from 1 place, a listener invoked by an event dispatcher at +0x67C7A0"
+    }
+  ]
+}

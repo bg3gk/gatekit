@@ -1,0 +1,37 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateAiScoreDestroyItem",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Scores for the AI the destruction of an item, including the surface its destruction would leave.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::CalculateAiScoreSurface",
+      "esv::AiHelpers::IsItemInteresting",
+      "fp:123b79ba6c390bab",
+      "fp:24c801b0780dfd1d",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:b64bf67d316ead69",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ],
+    "strings": ["7f91a33de37dc1a5"],
+    "components": ["esv::AiHelpers"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "calls IsItemInteresting, eoc::SurfaceShapes::SimpleFlood and CalculateAiScoreSurface for the item's destruction surface"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, CalculateAiScoreDamageItem"
+    }
+  ]
+}

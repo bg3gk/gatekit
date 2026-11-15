@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::PopOverrideTranslate",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Removes the hypothetical position the AI assumed for an entity, putting a character back where it really is.",
+  "fingerprint": {
+    "calls": [
+      "fp:4ff7aaa3e9443bd6",
+      "fp:92dd4fee11aeea92",
+      "fp:bb9791dc33ef3d89",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": ["esv::Character"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "finds the entity in the override map at +0x31C/+0x320, and for an esv::Character calls +0x35E35E0 to restore it"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 5 places"
+    }
+  ]
+}

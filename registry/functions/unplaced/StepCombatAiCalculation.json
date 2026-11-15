@@ -1,0 +1,65 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::StepCombatAiCalculation",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Runs one step of a character's combat AI calculation: scores its actions and positions (logged as ACTION SCORING and POSITION SCORING), recalculates for a new position, and on a stall makes an autosave and waits for the turn to time out.",
+  "fingerprint": {
+    "calls": [
+      "eoc::action_resource::CanUseResourcesCostsNextTurn",
+      "esv::AiHelpers::CalculateAiScoreStatus",
+      "esv::AiHelpers::CalculatePositionScore",
+      "esv::AiHelpers::GetResourceCostScore",
+      "esv::AiHelpers::PopOverrideTranslate",
+      "esv::AiHelpers::PushKnownState",
+      "fp:08ad53efde9a6c54",
+      "fp:0bfccea2ef8bbad4",
+      "fp:0f5807c142f3f758",
+      "fp:175ac60533e9dfb9",
+      "fp:227aadb92d3cd447",
+      "fp:25775885d1a67594",
+      "fp:329d6b0fc551f22d",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3fc125d72100e4f2",
+      "fp:4c543382a1adebef",
+      "fp:4f78f3ac986e8913",
+      "fp:509b1d78c3b151a8",
+      "fp:5227b96c8688ff31",
+      "fp:53f6563b38e8e377",
+      "fp:55885dd7f6565549",
+      "fp:5a2172de9a0e36c2",
+      "fp:63e0dc0ccce41e2b",
+      "fp:71c77899fef3ecc8",
+      "fp:72b4801e8e903ffc",
+      "fp:761258e787b32efb",
+      "fp:783b10fd49049252",
+      "fp:7c6f6a52d0f820ca",
+      "fp:92dd4fee11aeea92",
+      "fp:a5293b0e948dd6fa",
+      "fp:ad4eb603bc1fed87",
+      "fp:af1788479b5076fd",
+      "fp:b64bf67d316ead69",
+      "fp:c342c579eea14bf2",
+      "fp:d3713deebd9a4a36",
+      "fp:d5e15b9edfa07f04",
+      "fp:d649436bbbe7d47a",
+      "fp:e4d053ad9455ea7c",
+      "fp:ebb1d8a75ae87a7f",
+      "unplaced::AddAiScore",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ],
+    "strings": ["be4836dc67b90f70", "ebb1f9b24b1bc6a3"],
+    "components": ["esv::Character", "esv::Item"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the AI log strings for position scoring, rescoring after a new position or a critical-hit target position, the stall message, and ls::PreciseClock timing"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, in the segments where an enemy took its turn, 308 times from 1 place, UpdateCombatAiRequest"
+    }
+  ]
+}

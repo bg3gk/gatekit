@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::IsItemInteresting",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Tells the AI whether an item matters to a character's decision: the item it is currently considering (flag 1), one in its list of items in play (flag 4), or one in the character's esv::ai::combat::InterestedInItemsComponent (flag 2).",
+  "fingerprint": {"calls": ["fp:5227b96c8688ff31", "fp:91a85c0a25ceef8d"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "three tests selected by the flag bits 1, 4 and 2: the item at +0x2A0, the array at +0x280, and the InterestedInItemsComponent set"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 9 places across the AI scoring helpers"
+    }
+  ]
+}

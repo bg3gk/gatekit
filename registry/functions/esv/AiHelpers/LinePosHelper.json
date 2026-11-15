@@ -1,0 +1,49 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::LinePosHelper",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Scores for the AI positions along a line from a source to a target, through CalculatePositionScore for each and the scorer at +0x371F520.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::CalculatePositionScore",
+      "fp:123b79ba6c390bab",
+      "fp:24c801b0780dfd1d",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:d3713deebd9a4a36",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": ["esv::AiHelpers"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "takes the source, target, a float distance and returns positions; reads ls::TransformComponent"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, the function at +0x37609B0 (about 1 900 calls)"
+    },
+    {
+      "kind": "read",
+      "says": "reads ls::TransformComponent of both ends, calls CalculatePositionScore and +0x371F520 for points it builds along the segment"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, the function at +0x37609B0 (about 1 900 calls)"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "what the float parameters are; a cast of a line spell (Lightning Bolt) by an enemy would show",
+      "about": "reach",
+      "state": "open"
+    },
+    {
+      "ask": "what the line is (a line spell's area, or a path); a goblin casting a line spell in a fight, with a probe on +0x3125FD0, would tell",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

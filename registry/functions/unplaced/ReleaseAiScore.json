@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ReleaseAiScore",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Drops a reference to an AI score and frees it when the count at +0x34 reaches zero.",
+  "fingerprint": {"calls": ["fp:123b79ba6c390bab", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "decrements +0x34; at zero frees the map at +0x20 and the entries at +8 and returns the block to the global allocator"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 199 places, the most of any function that ran only in fights"
+    }
+  ]
+}
