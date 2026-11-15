@@ -98,6 +98,9 @@ attack.
   and of the answer, the side, and the sentence of what it does - the comment in a small window
   on hover, and beside the variant while typing. One source: the types file (or what it is
   generated from) is shipped to the console, never a second description kept by hand.
+- For later, not to be forgotten: a panel in the game, built with Weave, where a player or a
+  developer changes things live - the game's speed as a whole and by situation (own turn, an
+  ally's, an enemy's, exploration, dialogue), and other commands of use to both.
 - **The event log in the in-game console.** The rows of our event log are to be read there as
   they come. To decide: one stream with what Script Extender itself prints, or the console's
   own filters for `GK` (by family and kind, as the registry of event kinds has them).
