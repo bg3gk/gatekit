@@ -52,6 +52,11 @@ local function says(p, want)
     eq(p.stream, want.stream, "the stream")
     eq(p.origin, want.origin, "the asker")
     if want.cause then eq(p.cause, want.cause, "the cause") end
+    -- what the roll is for, as the game holds it at the roll: the parties, the spell, the status
+    if want.source then eq(uuid(p.source), want.source, "the first party: who cast, attacked or caused") end
+    if want.target then eq(uuid(p.target), want.target, "the second party: the target or the bearer") end
+    if want.spell then eq(p.spell, want.spell, "the spell") end
+    if want.status then eq(p.status, want.status, "the status") end
     check(type(p.count) == "number" and p.count >= 1, "the formula names its dice", p)
     eq(#p.dice, (p.dieType == "D20" and 2 or 1) * p.count, "the dice drawn for " .. tostring(p.count) .. " " .. tostring(p.dieType))
 end
@@ -151,7 +156,8 @@ case("status applied", function(game)
     end)
     step("the row", "observation", function()
         local p = thrown(mark, function(p) return uuid(p.who) == host and p.kind == "SavingThrow" end)
-        says(p, { who = host, kind = "SavingThrow", stream = "Generic", origin = "unplaced::RollSavingThrow", cause = "status applied" })
+        says(p, { who = host, kind = "SavingThrow", stream = "Generic", origin = "unplaced::RollSavingThrow", cause = "status applied",
+                  target = host, status = "BIBBERBANG_FUMES" })
     end)
 end)
 
@@ -168,7 +174,8 @@ case("status on its turn", function(game)
     end)
     step("the row", "observation", function()
         local p = thrown(mark, function(p) return uuid(p.who) == other end, 30)
-        says(p, { who = other, kind = "SavingThrow", stream = "Generic", origin = "unplaced::RollSavingThrow", cause = "status event" })
+        says(p, { who = other, kind = "SavingThrow", stream = "Generic", origin = "unplaced::RollSavingThrow", cause = "status event",
+                  target = other, status = "HOLD_PERSON" })
     end)
 end)
 
@@ -181,7 +188,7 @@ case("weapon attack", function(game)
     step("the row", "observation", function()
         local p = thrown(mark, function(p) return uuid(p.who) == host and string.match(p.kind or "", "Attack$") end)
         says(p, { who = host, pattern = "WeaponAttack$", stream = stream_of(game, host, "Spell"),
-                  origin = "unplaced::RollAttackAgainstArmourClass", cause = "spell" })
+                  origin = "unplaced::RollAttackAgainstArmourClass", cause = "spell", source = host, target = goblin })
     end)
 end)
 
@@ -195,10 +202,11 @@ case("spell attack and damage", function(game)
     step("the rows", "observation", function()
         local attack = thrown(mark, function(p) return uuid(p.who) == host and p.kind == "RangedSpellAttack" end)
         says(attack, { who = host, kind = "RangedSpellAttack", stream = stream_of(game, host, "Spell"),
-                       origin = "unplaced::RollSpellAttackAgainstArmourClass", cause = "spell" })
+                       origin = "unplaced::RollSpellAttackAgainstArmourClass", cause = "spell",
+                       source = host, target = goblin, spell = "Projectile_FireBolt" })
         local damage = thrown(mark, function(p) return uuid(p.who) == host and p.kind == "RangedSpellDamage" end)
         says(damage, { who = host, kind = "RangedSpellDamage", stream = stream_of(game, host, "Damage"),
-                       origin = "unplaced::RollDamageExpressionDice" })
+                       origin = "unplaced::RollDamageExpressionDice", source = host, spell = "Projectile_FireBolt" })
     end)
 end)
 
@@ -210,7 +218,8 @@ case("target's save", function(game)
         local p = thrown(mark, function(p) return uuid(p.who) == goblin end)
         -- the target rolls, from the stream of the one who cast
         says(p, { who = goblin, kind = "SavingThrow", stream = stream_of(game, host, "Spell"),
-                  origin = "unplaced::RollSavingThrow", cause = "spell" })
+                  origin = "unplaced::RollSavingThrow", cause = "spell",
+                  source = host, target = goblin, spell = "Target_SacredFlame" })
     end)
 end)
 
@@ -230,7 +239,8 @@ case("three rays", function(game)
         local spell = stream_of(game, host, "Spell")
         for _, p in ipairs(rays) do
             says(p, { who = host, kind = "RangedSpellAttack", stream = spell,
-                      origin = "unplaced::RollSpellAttackAgainstArmourClass", cause = "spell" })
+                      origin = "unplaced::RollSpellAttackAgainstArmourClass", cause = "spell",
+                       source = host, target = goblin, spell = "Projectile_ScorchingRay" })
         end
     end)
 end)
@@ -247,7 +257,7 @@ case("creature's attack", function(game)
     step("the rows", "observation", function()
         local attack = thrown(mark, function(p) return uuid(p.who) == goblin and string.match(p.kind or "", "Attack$") end, 60)
         says(attack, { who = goblin, pattern = "WeaponAttack$", stream = stream_of(game, goblin, "Spell"),
-                       origin = "unplaced::RollAttackAgainstArmourClass", cause = "spell" })
+                       origin = "unplaced::RollAttackAgainstArmourClass", cause = "spell", source = goblin, target = host })
         local damage = thrown(mark, function(p) return uuid(p.who) == goblin and string.match(p.kind or "", "Damage$") end, 30)
         says(damage, { who = goblin, pattern = "WeaponDamage$", stream = stream_of(game, goblin, "Damage"),
                        origin = "unplaced::RollDamageDice" })

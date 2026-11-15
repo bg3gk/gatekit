@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::interrupt::UseInterrupts",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Uses the interrupts decided for one interrupt event: runs each one's functors and, per roll it changes, resolves its roll adjustments (esv::interrupt::ResolveRollAdjustmentsForRoll through 0x3784E00), answering the ApplyResultsRequest the spell cast and interrupt systems apply.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the decompiler's symbol and the Toolkit's esv::interrupt::UseInterrupts; called from esv::interrupt::EventSystem::StartInterruptEvent"
+    },
+    {
+      "kind": "watch",
+      "says": "in the return chain of every ResolveRollAdjustmentsForRoll call seen (CriticalExecution, SetRoll(1), Lucky, Bardic Inspiration)"
+    }
+  ]
+}

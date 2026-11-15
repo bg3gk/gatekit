@@ -140,3 +140,12 @@ priority among the open items are the worker's to choose.
   that what the game does can be followed from the log and tied to the code that comes alive
   with it: the choice an enemy makes, the start and end of a turn, a cast's phases, a status
   applied and its ticks, damage with its terms, a reaction offered and taken.
+
+## Cumulative fight tests (the owner's idea, to try with care)
+
+Several creatures under the test's control are spawned with the same initiative, so they act in
+the same turn, at once: one staged fight then serves several cases, with no clean and no staging
+between them. The gain is time (the roll log's origins test stages a fight for each of five
+cases: 93 s at speed 1). The risk is cases that lean on each other - a case that fails leaves
+the fight in a state the next one did not expect, and a verdict stops meaning one thing. To try
+on one test first (origins), measuring the time won and whether each case can still fail alone.

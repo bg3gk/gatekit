@@ -674,3 +674,41 @@ Probed with the frames still open while the roll event runs.
   placed in this build). Sleep rolls nothing: a fixed budget of hit points by the wiki.
 
 Open: what the rolls of no dice evaluate; the second damage row's part in the hit points lost.
+
+## 18. After the throw: what an interrupt does to a roll
+
+Probed in order of time, the roll event placed between the probes.
+
+- Every change of a roll by an interrupt passes one function,
+  `esv::interrupt::AdjustConditionRoll`: its first argument is the adjustments resolved for the
+  roll, its second the condition roll (the roll's result, its difficulty, the roll's id); it
+  answers whether success flipped and what changed. Seen for the game's own Critical Execution
+  (`SetRoll(20)`: 15/20 became 20/25, a critical), a `SetRoll(1)` (17/22 became 1/6, a critical
+  failure), Lucky's reroll (3/8 became 11/16) and Bardic Inspiration on a save (total 7 became 8,
+  the natural die as it was).
+- The new value is worked out in `esv::interrupt::ResolveRollAdjustmentsForRoll`: a set roll is
+  the fixed value with adjustments and bonus, an adjustment is added, a reroll is a call of the
+  roll manager's `RerollDice` - the first time that function was seen running.
+- The order for one attack: the roll event; in the same tick the interrupt is used and its
+  functors run (Bardic's d6 is thrown here); 0.43 s later, in a later pass of the cast, the
+  change is written; then the combat log's interrupt entry; the damage dice; the hit entry.
+  When the player is asked, the cast waits at the reaction window and nothing is written until
+  the answer.
+- So the roll event always comes before any interrupt, and the roll log's row is what was
+  thrown. A reroll by an interrupt throws no new roll event. Which interrupt did it is not among
+  the function's arguments; the game's own log reads it from a component of the same tick.
+- A reroll that is a boost (Halfling Luck, Great Weapon Fighting) is no interrupt: it happens
+  inside the throw, before the event, and the row's dice show every draw (1, 1, 15, 10).
+- The final truth of an attack or a save is the condition roll of the cast, which becomes the
+  hit's.
+
+Rolls watched for the first time: a creature's spell forcing a save on the player (the
+creature's stream); a concentration check (Generic, the request's context 7; a failure shows in
+the combat log as the status removed); Extra Attack (two casts, an attack roll each); an
+off-hand attack (its own roll type, damage with no ability bonus); a forced outcome of Karmic
+Dice after two misses (the row has no dice at all); damage dice with Karmic Dice on (the dice
+were not the generator's own: one sample). On twelve checks of the Generic stream with Karmic
+Dice on the weighted path never ran.
+
+Not staged: a death saving throw. Every way tried of downing a party member in the test level
+ended the game at once or killed the creature outright; a save with a real companion is needed.

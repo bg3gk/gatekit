@@ -1010,9 +1010,12 @@ game's is touched. Server side. Study: `research/studies/save-kept-data.md`.
 | `GK.Store.Get(name, path, mod)` | observation | a copy of the value at `path` (the whole store without one), or nil. A path is a list of keys (`{ "books", 2, "at" }`) or a dotted text (`"books.2.at"`; a part of digits only is a list index) |
 | `GK.Store.Set(name, path, value, mod)` | cheat | writes `value` at `path` (nil takes the key out; without a path the whole store is replaced and must be a table); tables on the way are made. The whole store is checked first and nothing is written when it cannot be kept: `{ ok = false, error, at }`. `{ ok, name }`. A write is not undone by `GK.Stage.Clean`: a store outlives a scope by its purpose - a test takes out what it put in |
 | `GK.Store.Names()` | observation | the stores of GateKit's own mod that the save holds: `{ { name, version } }` |
+| `GK.Store.Drop(name)` | cheat | takes a store of GateKit's own mod out of the save's variables altogether: `{ ok, dropped }` |
 | `GK.Store.Check(value)` | observation | whether a value can be kept: `{ ok = true }`, or `{ ok = false, error, at }` with the path of the first part that cannot |
 
-What can be kept: nil, booleans, finite numbers, texts, and tables of them nested to 64 levels,
+What can be kept: nil, booleans, finite numbers (kept to the last bit: the save itself would keep a
+fraction as a 32-bit float and a whole number through a double, so the store writes such numbers
+as texts and reads them back), texts, and tables of them nested to 64 levels,
 each either a plain list (keys 1..n) or keyed by texts. Refused, because the extender would lose
 it in silence: a function or a userdata (the whole variable is saved as nothing), a number key in
 a table that is no plain list (it comes back as a text), a table that holds itself.

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::interrupt::ResolveRollAdjustmentsForRoll",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Computes the final value of one roll an interrupt changes: for the roll's Guid takes the event's roll (InterruptEvent variant 2 SpellRoll or 3 ConditionalRoll at +0xA8) and fills RollAdjustments.ResolvedRoll (+0x48): an earlier resolution of the same roll, a FixedAdjustment (SetRoll: the set natural plus BaseAdjustment plus the roll's bonus), UseMaxRoll, BaseAdjustment alone (AdjustRoll), a changed advantage choosing between the two dice already thrown, or RerollConditions rerolled through eoc::roll::stream::RollManager::RerollDice.",
+  "fingerprint": {
+    "calls": [
+      "eoc::roll::stream::RollManager::RerollDice",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the Toolkit's esv::interrupt::ResolveRollAdjustmentsForRoll has the same signature (InterruptEvent, Guid, ResolvedData map, RollManager, RollAdjustments); the only caller of RerollDice"
+    },
+    {
+      "kind": "watch",
+      "says": "called on the interrupt's use before every adjustment seen (twice per used interrupt: in the cast's update the tick of the roll and again in the pass that applies it); under Lucky it called RerollDice once and the roll became natural 11 from 3 with no new roll event"
+    }
+  ]
+}

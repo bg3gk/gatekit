@@ -2,8 +2,8 @@
   "schema": "registry/function/1",
   "id": "eoc::roll::stream::RollManager::RerollDice",
   "state": "described",
-  "rung": "inferred",
-  "does": "Rerolls dice already thrown, by a list of reroll conditions, on a freshly seeded generator of the stream; every new die is drawn from 1 to 20 whatever the faces given.",
+  "rung": "confirmed",
+  "does": "Rerolls dice already thrown, by a list of reroll conditions, on a freshly seeded generator of the stream; every new die is drawn from 1 to 20 whatever the faces given. Called only when an interrupt's SetReroll (Lucky, Indomitable, Second Chance) is resolved; it raises no roll event of its own.",
   "fingerprint": {
     "calls": ["eoc::roll::stream::DrawNumber", "fp:5227b96c8688ff31", "fp:e4d053ad9455ea7c"]
   },
@@ -11,6 +11,14 @@
     {
       "kind": "read",
       "says": "The upper bound of the draw is the constant 20 and the faces argument is not used; its caller is on the path of using an interrupt"
+    },
+    {
+      "kind": "read",
+      "says": "The upper bound of the draw is the constant 20 and the faces argument is not used; its only caller is esv::interrupt::ResolveRollAdjustmentsForRoll"
+    },
+    {
+      "kind": "watch",
+      "says": "one call when the host used Interrupt_Lucky_RollAdditionalDie on an attack of natural 3 (the hit then held natural 11); Ext.Events.Roll did not fire for the new die; zero calls over plain attacks, saves and damage"
     }
   ],
   "questions": [

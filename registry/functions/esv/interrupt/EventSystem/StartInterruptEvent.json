@@ -3,9 +3,10 @@
   "id": "esv::interrupt::EventSystem::StartInterruptEvent",
   "state": "described",
   "rung": "inferred",
-  "does": "Starts an interrupt event for a roll or action that interrupts may answer: gathers the interrupts whose context fits, evaluates them with the roll manager and queues the chosen ones; on the path by which an OnPostRoll interrupt such as SetRoll(N) rewrites a thrown die.",
+  "does": "Starts an interrupt event for a cast's hit or an action that interrupts may answer: gathers the interrupts whose context fits, evaluates them with the roll manager and queues the chosen ones; for a conditional roll event (variant 3 at +0xA8) adds esv::interrupt::ConditionalRollAdjustmentOneFrameComponent. Not on the path of an attack's or a spell save's OnPostRoll interrupt: that is decided in the spell cast's update and applied by esv::interrupt::AdjustConditionRoll.",
   "fingerprint": {
     "calls": [
+      "esv::interrupt::UseInterrupts",
       "fp:123b79ba6c390bab",
       "fp:2e11dab32a025d84",
       "fp:3a47fbcf22fd449c",
@@ -30,11 +31,24 @@
     {
       "kind": "watch",
       "says": "called once or twice over an attack while an OnPostRoll SetRoll(1) interrupt is unlocked on the attacker, once over the same attack with SetRoll(10); the hit then records NaturalRoll 1 while the roll event had seen 19"
+    },
+    {
+      "kind": "read",
+      "says": "takes the interrupt data, decision and action resource components and the roll manager; calls esv::interrupt::UseInterrupts; pseudo-code pairing with the Toolkit name at 0.25"
+    },
+    {
+      "kind": "watch",
+      "says": "called once or twice per hit from 0x357AA61 and 0x357C0B1 just before the damage dice, after the roll's interrupt was applied; not called between an attack's roll event and the SetRoll reaction window, nor at the adjustment"
     }
   ],
   "questions": [
     {
       "ask": "the function that writes the new natural into the roll result is not placed: probe the callees of this function over the same scene",
+      "about": "reach",
+      "state": "open"
+    },
+    {
+      "ask": "Which interrupt contexts it serves (OnPreDamage, OnCastHit, Sneak Attack): probe it with an OnPreDamage interrupt unlocked.",
       "about": "reach",
       "state": "open"
     }

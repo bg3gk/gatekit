@@ -34,7 +34,7 @@ GK.Store = GK.Store or {}
 local Store = GK.Store
 
 --- Each verb's class, for the fair/cheat/observation split: a write goes into the save.
-Store.Class = { Open = "observation", Get = "observation", Names = "observation", Check = "observation", Set = "cheat" }
+Store.Class = { Open = "observation", Get = "observation", Names = "observation", Check = "observation", Set = "cheat", Drop = "cheat" }
 
 local MOD = ModuleUUID          -- the bridge mod's own uuid: a global while the bootstrap runs
 Store.Mod = MOD
@@ -93,6 +93,48 @@ local function copy(value)
     return out
 end
 
+-- The save keeps a number of a table as a 32-bit float (one third comes back as 0.3333333432...,
+-- 1e300 as infinity) and a whole number through a double. So that what is read is what was
+-- written, a number the save would change is kept as a text: "#f:" and the number in hexadecimal
+-- (exact), "#i:" and a whole number beyond 2^53; a text that begins with "#" is kept with "#s:"
+-- before it. Whole numbers within 2^53 stay numbers.
+local EXACT = 2 ^ 53
+local function encode(value)
+    local kind = type(value)
+    if kind == "table" then
+        local out = {}
+        for k, v in pairs(value) do out[k] = encode(v) end
+        return out
+    elseif kind == "number" then
+        if math.type(value) == "integer" then
+            if value > EXACT or value < -EXACT then return "#i:" .. tostring(value) end
+            return value
+        end
+        if value == math.floor(value) and value <= EXACT and value >= -EXACT then return "#f:" .. string.format("%a", value) end
+        return "#f:" .. string.format("%a", value)
+    elseif kind == "string" and value:sub(1, 1) == "#" then
+        return "#s:" .. value
+    end
+    return value
+end
+
+local function decode(value)
+    local kind = type(value)
+    if kind == "table" then
+        local out = {}
+        for k, v in pairs(value) do out[k] = decode(v) end
+        return out
+    elseif kind == "string" and value:sub(1, 1) == "#" then
+        local tag, rest = value:sub(1, 3), value:sub(4)
+        if tag == "#f:" then return tonumber(rest) end
+        if tag == "#i:" then return math.tointeger(tonumber(rest)) or tonumber(rest) end
+        if tag == "#s:" then return rest end
+    elseif kind == "number" and math.type(value) == "float" and value == math.floor(value) and value <= EXACT and value >= -EXACT then
+        return math.tointeger(value) or value      -- a whole number comes back from the save as a float
+    end
+    return value
+end
+
 local function keys(path)
     if path == nil then return {} end
     if type(path) == "table" then return path end
@@ -113,12 +155,15 @@ local function record(mod, name)
     local v = vars(mod)
     if mod == MOD then
         local all = v[OWN]
-        return type(all) == "table" and all[name] or nil
+        local rec = type(all) == "table" and all[name] or nil
+        return type(rec) == "table" and { _v = rec._v, data = decode(rec.data) } or rec
     end
-    return v[name]
+    local rec = v[name]
+    return type(rec) == "table" and { _v = rec._v, data = decode(rec.data) } or rec
 end
 
 local function write(mod, name, rec)
+    if type(rec) == "table" then rec = { _v = rec._v, data = encode(rec.data) } end
     local v = vars(mod)
     if mod == MOD then
         local all = copy(type(v[OWN]) == "table" and v[OWN] or {})
@@ -187,6 +232,14 @@ end
 --- first: { ok = false, error, at } and nothing written when it cannot be kept. { ok, name }.
 function Store.Set(name, path, value, mod)
     if type(name) ~= "string" or name == "" then error("GK.Store.Set(name, path, value): name is a text, got " .. tostring(name), 2) end
+    -- the value alone first: a table that holds itself cannot even be copied
+    local first = Store.Check(value)
+    if not first.ok and first.error:find("holds itself", 1, true) then
+        local prefix = {}
+        for _, key in ipairs(keys(path)) do prefix[#prefix + 1] = tostring(key) end
+        prefix[#prefix + 1] = first.at
+        return { ok = false, error = first.error, at = table.concat(prefix, ".") }
+    end
     local d, o = data(name, mod)
     local path_ = keys(path)
     if #path_ == 0 then
@@ -214,4 +267,15 @@ function Store.Names()
     for name, rec in pairs(type(all) == "table" and all or {}) do out[#out + 1] = { name = name, version = type(rec) == "table" and rec._v or nil } end
     table.sort(out, function(a, b) return a.name < b.name end)
     return out
+end
+
+--- Takes a store of GateKit's own mod out of the save's variables altogether: it is no longer
+--- among Names(), and Get gives its defaults. { ok, dropped } - `dropped` false when there was none.
+function Store.Drop(name)
+    local v = vars(MOD)
+    local all = copy(type(v[OWN]) == "table" and v[OWN] or {})
+    local had = all[name] ~= nil
+    all[name] = nil
+    v[OWN] = all
+    return { ok = true, dropped = had }
 end

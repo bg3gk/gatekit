@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::interrupt::AdjustFunctorConditionRolls",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Applies the resolved roll adjustments to the conditional functors of a spell cast: for each FunctorConditional whose roll Guid has RollAdjustments it calls esv::interrupt::AdjustConditionRoll and flips the functor's condition result when the success changed.",
+  "fingerprint": {"calls": ["esv::interrupt::AdjustConditionRoll", "fp:5227b96c8688ff31"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "pairs with the Toolkit's esv::interrupt::AdjustFunctorConditionRolls (0.45); 0x158-byte elements, Guid at +0x140, result byte at +0x1C"
+    },
+    {
+      "kind": "watch",
+      "says": "called once right after each interrupt adjustment of an attack or a save in a cast (SetRoll, SetReroll, AdjustRoll)"
+    }
+  ]
+}

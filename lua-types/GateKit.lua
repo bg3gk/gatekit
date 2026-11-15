@@ -3293,3 +3293,8 @@ function GK.Store.Names() end
 ---@param value any
 ---@return { ok: boolean, error: string?, at: string? }
 function GK.Store.Check(value) end
+
+---Takes a store of GateKit's own mod out of the save's variables altogether. Server. Cheat.
+---@param name string
+---@return { ok: boolean, dropped: boolean }
+function GK.Store.Drop(name) end

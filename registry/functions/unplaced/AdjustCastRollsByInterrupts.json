@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::AdjustCastRollsByInterrupts",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "The spell cast system's application of interrupts to a cast's rolls: for every target's SpellRollData (0x1B8 each) whose ConditionRolls hold exactly one roll with RollAdjustments (looked up by the roll's Guid at ConditionRoll+0x120) it calls esv::interrupt::AdjustConditionRoll and rewrites the hit flags at +0x34: success flipped (bit 0; attack also 0x100, save 0x6), critical 0x8, advantage 0x2000, disadvantage 0x4000. A SpellRollData of more than one roll ends the pass.",
+  "fingerprint": {
+    "calls": [
+      "esv::interrupt::AdjustConditionRoll",
+      "fp:5227b96c8688ff31",
+      "fp:846a307bbcd75597",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its only caller is a function of the spell cast system's update (0x3357380, from 0x334EFA0); pairs with the Toolkit's FUN_1811d9000 that calls AdjustConditionRoll"
+    },
+    {
+      "kind": "watch",
+      "says": "called once per used interrupt on an attack (CriticalExecution, a SetRoll(1) interrupt, Lucky) and on a Sacred Flame save (Bardic Inspiration), 0.43 s after the roll event, in the same tick as the combat log's Interrupt entry"
+    }
+  ]
+}
