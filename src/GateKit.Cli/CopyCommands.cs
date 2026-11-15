@@ -53,6 +53,7 @@ public static class CopyCommands
         yield return Probe();
         yield return Cover();
         yield return CoverFold();
+        yield return CoverDiff();
         yield return Shot();
         yield return Key();
         yield return Sound();
@@ -348,7 +349,7 @@ public static class CopyCommands
                 GKProbeSlots = {}
                 local failed = {}
                 for i, rva in ipairs({ {{list}} }) do
-                    local slot, why = Ext.Debug.ProbeFunction(Ext.Debug.AddressFromModule("{{module}}", rva), { Record = false })
+                    local slot, why = (Ext.Debug.AddProbe or Ext.Debug.ProbeFunction)(Ext.Debug.AddressFromModule("{{module}}", rva), { Record = false })
                     if slot then GKProbeSlots[i] = slot else failed[#failed + 1] = { i, tostring(why) } end
                 end
                 return failed
@@ -361,14 +362,14 @@ public static class CopyCommands
 
             var read = await s.ExecAsync("server", """
                 local bySlot = {}
-                for _, p in ipairs(Ext.Debug.ListProbes()) do bySlot[p.Slot] = p end
+                for _, p in ipairs((Ext.Debug.GetProbes or Ext.Debug.ListProbes)()) do bySlot[p.Slot] = p end
                 local out = {}
                 for i, slot in pairs(GKProbeSlots or {}) do
                     local p = bySlot[slot]
                     local callers = {}
                     for _, c in ipairs(p and p.Callers or {}) do callers[#callers + 1] = { module = c.Caller.Module, rva = c.Caller.RVA, count = c.Count } end
                     out[#out + 1] = { index = i, hits = p and p.Hits or 0, other = p and p.OtherCallers or 0, callers = callers }
-                    Ext.Debug.ClearProbe(slot)
+                    (Ext.Debug.RemoveProbe or Ext.Debug.ClearProbe)(slot)
                 end
                 GKProbeSlots = nil
                 return out
@@ -499,7 +500,7 @@ public static class CopyCommands
                     local base = Ext.Debug.AddressFromModule("{{module}}", 0)
                     local list = { {{list}} }
                     for i = 1, #list do list[i] = base + list[i] end
-                    return Ext.Debug.CoverStart(list, {{parse.GetValue(hot)}})
+                    return (Ext.Debug.StartCoverage or Ext.Debug.CoverStart)(list, {{parse.GetValue(hot)}})
                     """, TimeSpan.FromSeconds(120));
                 placed += answer?["Placed"]?.GetValue<long>() ?? 0;
                 refused += answer?["Refused"]?.GetValue<long>() ?? 0;
@@ -510,7 +511,7 @@ public static class CopyCommands
 
         var status = new Command("status", "how many functions are counted, were called, were taken off as called too often");
         status.SetAction((parse, _) => Run(parse, async s =>
-            s.Out.WriteLine((await s.ExecAsync("server", "return Ext.Debug.CoverStatus()", TimeSpan.FromSeconds(30)))?.ToJsonString(ResultJson) ?? "null")));
+            s.Out.WriteLine((await s.ExecAsync("server", "return (Ext.Debug.GetCoverageStatus or Ext.Debug.CoverStatus)()", TimeSpan.FromSeconds(30)))?.ToJsonString(ResultJson) ?? "null")));
         command.Subcommands.Add(status);
 
         var file = new Argument<string>("file") { Description = "the file the counts are written to" };
@@ -520,53 +521,144 @@ public static class CopyCommands
         {
             var path = Path.GetFullPath(parse.GetValue(file)!).Replace('\\', '/');
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            var answer = await s.ExecAsync("server", $"return Ext.Debug.CoverSave(\"{path}\", {(parse.GetValue(reset) ? "true" : "false")})", TimeSpan.FromSeconds(120));
+            var answer = await s.ExecAsync("server", $"return (Ext.Debug.SaveCoverage or Ext.Debug.CoverSave)(\"{path}\", {(parse.GetValue(reset) ? "true" : "false")})", TimeSpan.FromSeconds(120));
             s.Out.WriteLine($"{path}: {answer?["Functions"]} functions called, {answer?["Pairs"]} pairs");
         }));
         command.Subcommands.Add(save);
 
         var stop = new Command("stop", "take every counter off; the counts stay for a last `cover save`");
         stop.SetAction((parse, _) => Run(parse, async s =>
-            s.Out.WriteLine($"{(await s.ExecAsync("server", "return Ext.Debug.CoverStop()", TimeSpan.FromSeconds(300)))} counters taken off")));
+            s.Out.WriteLine($"{(await s.ExecAsync("server", "return (Ext.Debug.StopCoverage or Ext.Debug.CoverStop)()", TimeSpan.FromSeconds(300)))} counters taken off")));
         command.Subcommands.Add(stop);
         return command;
     }
 
-    /// <summary>A saved record of coverage read against the registry: what ran, what of it has a
-    /// name, and the unnamed functions that ran the most. Needs no game.</summary>
-    public static Command CoverFold()
+    /// <summary>What saved records of coverage hold, added up: a function taken off as hot keeps its
+    /// count in every later file, so its count is the largest seen, not the sum.</summary>
+    sealed class CoverSet
     {
-        var files = new Argument<string[]>("files") { Description = "files written by `cover save`", Arity = ArgumentArity.OneOrMore };
-        var top = new Option<int>("--top") { Description = "how many of the unnamed functions to list, the most called first", DefaultValueFactory = _ => 30 };
-        var command = new Command("cover-fold", "read saved records of coverage against the registry: how many functions ran, how many of them an id names, and the unnamed ones that ran the most") { files, top };
-        command.SetAction(parse =>
+        public Dictionary<string, long> Calls { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> Hot { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<(string Callee, string Caller), long> Pairs { get; } = new();
+        public long Lost { get; private set; }
+        public int Files { get; private set; }
+
+        /// <summary>Reads the files; <paramref name="where"/> keeps only those whose state file beside
+        /// them (same name, .json) has that key true, or, as "neither", has inCombat and inDialog false.</summary>
+        public static CoverSet Read(IEnumerable<string> files, string? where)
         {
-            var store = GateKit.Symbols.Registry.RegistryStore.Find(null);
-            var calls = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-            var pairs = new Dictionary<(string Callee, string Caller), long>();
-            long lost = 0;
-            foreach (var path in parse.GetValue(files)!)
+            var set = new CoverSet();
+            foreach (var path in files)
+            {
+                if (where is not null)
+                {
+                    var beside = Path.ChangeExtension(path, ".json");
+                    if (!File.Exists(beside)) continue;
+                    var state = JsonNode.Parse(File.ReadAllText(beside));
+                    bool Is(string key) => state?[key]?.GetValue<bool>() ?? false;
+                    var fits = where == "neither" ? !Is("inCombat") && !Is("inDialog") : Is(where);
+                    if (!fits) continue;
+                }
+                set.Files++;
                 foreach (var line in File.ReadLines(path))
                 {
                     var p = line.Split(' ');
-                    if (p[0] == "F" && p.Length >= 4) calls[$"{p[1]}+0x{p[2]}"] = calls.GetValueOrDefault($"{p[1]}+0x{p[2]}") + long.Parse(p[3], CultureInfo.InvariantCulture);
-                    else if (p[0] == "E" && p.Length >= 6) { var k = ($"{p[1]}+0x{p[2]}", $"{p[3]}+0x{p[4]}"); pairs[k] = pairs.GetValueOrDefault(k) + long.Parse(p[5], CultureInfo.InvariantCulture); }
-                    else if (p[0] == "L" && p.Length >= 2) lost += long.Parse(p[1], CultureInfo.InvariantCulture);
+                    if (p[0] == "F" && p.Length >= 5)
+                    {
+                        var key = $"{p[1]}+0x{p[2]}";
+                        var count = long.Parse(p[3], CultureInfo.InvariantCulture);
+                        if (p[4] == "1") { set.Hot.Add(key); set.Calls[key] = Math.Max(set.Calls.GetValueOrDefault(key), count); }
+                        else set.Calls[key] = set.Calls.GetValueOrDefault(key) + count;
+                    }
+                    else if (p[0] == "E" && p.Length >= 6)
+                    {
+                        var k = ($"{p[1]}+0x{p[2]}", $"{p[3]}+0x{p[4]}");
+                        set.Pairs[k] = set.Pairs.GetValueOrDefault(k) + long.Parse(p[5], CultureInfo.InvariantCulture);
+                    }
+                    else if (p[0] == "L" && p.Length >= 2) set.Lost += long.Parse(p[1], CultureInfo.InvariantCulture);
                 }
-            var named = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (store is not null)
-                foreach (var address in calls.Keys)
-                {
-                    var at = address.IndexOf("+0x", StringComparison.Ordinal);
-                    var row = store.At(address[..at], GateKit.Symbols.Registry.RegistryStore.ParseHex(address[(at + 1)..])).Select(a => a.Row).FirstOrDefault(r => string.Create(CultureInfo.InvariantCulture, $"{address[..at]}+0x{r.Rva:X}").Equals(address, StringComparison.OrdinalIgnoreCase));
-                    if (row is not null) named[address] = row.Id;
-                }
-            Console.Out.WriteLine($"{calls.Count} functions ran, {calls.Values.Sum()} calls counted, {pairs.Count} pairs of a function and a calling address, {lost} calls lost by the ring");
-            Console.Out.WriteLine($"{named.Count} of them the registry names; {calls.Count - named.Count} it does not");
-            foreach (var (address, id) in named.OrderByDescending(n => calls[n.Key]).Take(parse.GetValue(top)))
-                Console.Out.WriteLine($"    named    {calls[address],12}  code:{id}");
-            foreach (var (address, count) in calls.Where(c => !named.ContainsKey(c.Key)).OrderByDescending(c => c.Value).Take(parse.GetValue(top)))
-                Console.Out.WriteLine($"    unnamed  {count,12}  {address}  from {pairs.Count(p => p.Key.Callee.Equals(address, StringComparison.OrdinalIgnoreCase))} places");
+            }
+            return set;
+        }
+
+        public int Places(string function) => Pairs.Keys.Count(k => k.Callee.Equals(function, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>The registry's id of each function that begins at one of the addresses.</summary>
+    static Dictionary<string, string> NamedStarts(IEnumerable<string> addresses)
+    {
+        var named = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (GateKit.Symbols.Registry.RegistryStore.Find(null) is not { } store) return named;
+        foreach (var address in addresses)
+        {
+            var at = address.IndexOf("+0x", StringComparison.Ordinal);
+            var rva = GateKit.Symbols.Registry.RegistryStore.ParseHex(address[(at + 1)..]);
+            if (store.At(address[..at], rva).Select(a => a.Row).FirstOrDefault(r => r.Rva == rva) is { } row) named[address] = row.Id;
+        }
+        return named;
+    }
+
+    /// <summary>The lines of a list of functions: the count, the id or the address, and for an
+    /// unnamed one the places it was called from and, when asked, the name the databases give it.</summary>
+    static void PrintFunctions(CoverSet set, IEnumerable<string> functions, Dictionary<string, string> named, int top, bool names)
+    {
+        var listed = functions.OrderByDescending(f => set.Places(f)).ThenByDescending(f => set.Calls.GetValueOrDefault(f)).Take(top).ToList();
+        var other = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        if (names)
+            foreach (var (address, _, _, name) in GateKit.Symbols.Registry.LiveCommands.NameMany(listed.Where(f => !named.ContainsKey(f)),
+                         GateKit.Symbols.Registry.RegistryStore.Find(null), GateKit.Symbols.Registry.LiveLayer.OfHome(), TextWriter.Null))
+                other[address] = name;
+        foreach (var f in listed)
+        {
+            var calls = set.Calls.GetValueOrDefault(f);
+            var count = set.Hot.Contains(f) ? $">{calls}" : calls.ToString(CultureInfo.InvariantCulture);
+            Console.Out.WriteLine(named.TryGetValue(f, out var id)
+                ? $"    {count,10}  from {set.Places(f),4} places  code:{id}"
+                : $"    {count,10}  from {set.Places(f),4} places  {f}{(other.GetValueOrDefault(f) is { } name ? "  " + name : "")}");
+        }
+    }
+
+    /// <summary>A saved record of coverage read against the registry: what ran, what of it has a
+    /// name, and the unnamed functions called from the most places. Needs no game.</summary>
+    public static Command CoverFold()
+    {
+        var files = new Argument<string[]>("files") { Description = "files written by `cover save`", Arity = ArgumentArity.OneOrMore };
+        var top = new Option<int>("--top") { Description = "how many functions of each list to print", DefaultValueFactory = _ => 30 };
+        var where = new Option<string?>("--where") { Description = "only the files whose state file beside them (same name, .json) says so: inCombat, inDialog, or neither" };
+        var names = new Option<bool>("--names") { Description = "beside an unnamed function, the name the databases give it (slower)" };
+        var command = new Command("cover-fold", "read saved records of coverage against the registry: how many functions ran, how many of them an id names, the named ones and the unnamed ones called from the most places") { files, top, where, names };
+        command.SetAction(parse =>
+        {
+            var set = CoverSet.Read(parse.GetValue(files)!, parse.GetValue(where));
+            var named = NamedStarts(set.Calls.Keys);
+            Console.Out.WriteLine($"{set.Files} files: {set.Calls.Count} functions ran ({set.Hot.Count} taken off as hot), {set.Pairs.Count} pairs of a function and a calling address, {set.Lost} calls lost by the ring");
+            Console.Out.WriteLine($"{named.Count} of them the registry names; {set.Calls.Count - named.Count} it does not");
+            Console.Out.WriteLine("named:");
+            PrintFunctions(set, named.Keys, named, parse.GetValue(top), false);
+            Console.Out.WriteLine("unnamed:");
+            PrintFunctions(set, set.Calls.Keys.Where(f => !named.ContainsKey(f)), named, parse.GetValue(top), parse.GetValue(names));
+            return 0;
+        });
+        return command;
+    }
+
+    /// <summary>Differential coverage: the functions that ran in one set of records and in none of
+    /// another - a scene with a mechanic against the same scene without it names the mechanic's code.</summary>
+    public static Command CoverDiff()
+    {
+        var files = new Argument<string[]>("files") { Description = "files written by `cover save`: the scene with the thing", Arity = ArgumentArity.OneOrMore };
+        var against = new Option<string[]>("--against") { Description = "files of the scene without it", Arity = ArgumentArity.OneOrMore, Required = true, AllowMultipleArgumentsPerToken = true };
+        var top = new Option<int>("--top") { Description = "how many functions to print", DefaultValueFactory = _ => 60 };
+        var names = new Option<bool>("--names") { Description = "beside an unnamed function, the name the databases give it (slower)" };
+        var command = new Command("cover-diff", "the functions that ran in the first records and in none of the --against ones, the registry's ids where it names them") { files, against, top, names };
+        command.SetAction(parse =>
+        {
+            var with = CoverSet.Read(parse.GetValue(files)!, null);
+            var without = CoverSet.Read(parse.GetValue(against)!, null);
+            var only = with.Calls.Keys.Where(f => !without.Calls.ContainsKey(f)).ToList();
+            var named = NamedStarts(only);
+            Console.Out.WriteLine($"{with.Calls.Count} functions ran in the first, {without.Calls.Count} in the other; {only.Count} only in the first, {named.Count} of them named by the registry");
+            PrintFunctions(with, only, named, parse.GetValue(top), parse.GetValue(names));
             return 0;
         });
         return command;

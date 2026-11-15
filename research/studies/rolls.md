@@ -534,3 +534,31 @@ game's boosts write theirs, and `once` is taken off at the throw where the roll 
 hand. Deciding one throw is not the pin's work: `SetNext` does it on any build for the next roll
 of a stream, and a verb on the roll events does it exactly where that build runs. Proposed, not
 built: the condition on the pin, `once` at the throw, and the verb on the roll events.
+
+## 12. What the mods do with a roll
+
+Read, never run. The copies are in the home's study mods.
+
+| Mod | What it does to a roll | By what |
+|---|---|---|
+| Loaded Dice (Nexus 10607) | checks at 20, or at 1, by a toggle | a status whose boosts are `IF(RAW_IsSkillCheck(context.Source)):MinimumRollResult(SkillCheck,20);...MaximumRollResult(SkillCheck,20)`, the conditions in a script of the game's condition language; its Lua only gives the passives again when they are lost |
+| Manual Dice Roll (mod.io) | the player types the die he threw at the table | one boost text `MinimumRollResult(X,N);MaximumRollResult(X,N)` for attack, ability, skill, save and damage, put on every party member with `Osi.AddBoosts` and taken off a tenth of a second after `AttackedBy`; it watches `RequestedRoll` only to log, and says itself that it does not see attack rolls there |
+| Damage Preview 2 (Nexus 4137) | shows the hit chance and the damage range beside the cursor | no Lua at all: one interface page bound to values the game's own view model already holds (the damage range with resistances, the list of damage rolls, the total hit chance, the counts of advantage and disadvantage) |
+| Improved Spell and Damage Preview (Nexus 22672) | computes the same preview by itself | a copy of the game's rules in Lua: the condition language, the functors, rerolls and bounds on a die, damage as a whole probability distribution; a request to the server on every change of target, answered when the server's cast exists |
+
+What follows from them:
+
+- Every mod that decides a die uses the boost pair, as the pin does; none reads the roll
+  streams, and none can see or change one throw. A mod that wants "this roll" re-adds and removes
+  boosts on a timer and hopes the roll falls between.
+- A boost's condition in the game's own words is how a mod narrows a rule today (a kind of check,
+  a damage type), which is the condition proposed for the pin.
+- The game computes a preview of an attack on the client for its own interface - the hit chance
+  in the targeting information of the spell task, the damage range with resistances in the
+  view model of the target under the cursor. One mod shows those values; the other recomputes
+  them in Lua and pays for it with a server round trip, the conditions compiled anew at each
+  check and a search of every creature around for interrupts. Neither can ask the game for the
+  answer for a caster, a spell and a target of its choosing: that question has no call.
+- Users of the first report that the text at the cursor lags behind over creatures and that it
+  grows worse as a game goes on; since the mod only shows what the engine gives, the delay is in
+  how the engine refreshes that view model. Not measured.
