@@ -1,0 +1,35 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::spell::CalculateModifiableSpellRollChance",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Returns, as a float 0..1, the chance that a spell's roll conditions pass for the context data's caster and target, after the spell's modifications; the same function serves the client preview and the server AI scorers.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:1613a1d748e711ef",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f136df2e218cacd4",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "same callers as EoCShared+0xFD1700: GetTaskInfo and 14 server AI scorers 0x37466E0-0x3767D90; in an enemy turn it ran 26 times from 0x3752C28 and 0x3756BC8"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    }
+  ]
+}

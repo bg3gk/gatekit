@@ -1,0 +1,48 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::ViewModelProvider::OnUpdateOverheadTarget",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Fills the local player's VMUIData for the aimed creature: clears the damage roll lists, resolves the spell's tooltip damages, creates a stats roll context and applies the target's resistances to each roll's minimum and maximum, setting DamagePreviewWithResistances and the hit chance description from the TargetingInfo it is given.",
+  "fingerprint": {
+    "calls": [
+      "eoc::StatsSystem::LEGACY_CreateStatsRollContext",
+      "eoc::stats::ApplyResistance",
+      "fp:123b79ba6c390bab",
+      "fp:1613a1d748e711ef",
+      "fp:227ef8acdbdc209b",
+      "fp:25775885d1a67594",
+      "fp:2da7c0e68124cba6",
+      "fp:2ecd242562bf96ea",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3c1b457638f3ac4f",
+      "fp:5227b96c8688ff31",
+      "fp:7c1ecae800414597",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:a773832dcc7acad1",
+      "fp:b70839e52859db22",
+      "fp:b87a62c9a9a87876",
+      "fp:ceb33a1829da5b3c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8d99f5891680858",
+      "fp:fb0cfc4bb9d3121e",
+      "fp:fd1c6b74f136fa9c",
+      "gui::statsDescriptionHelper::ResolveStatsTooltipDamages",
+      "import:19360286d0fa965d"
+    ],
+    "strings": ["d071b7913060e201", "f5abdca162d207ae"],
+    "components": ["ecl::StatsSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "same loca handles h6143324b and h5b45ed1d and the same callee sequence as the symbol build's NoesisGameUI+0x2D4880; called through the UI feedback listener list from SetCursor"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    }
+  ]
+}

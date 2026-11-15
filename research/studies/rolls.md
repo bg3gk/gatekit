@@ -562,3 +562,39 @@ What follows from them:
 - Users of the first report that the text at the cursor lags behind over creatures and that it
   grows worse as a game goes on; since the mod only shows what the engine gives, the delay is in
   how the engine refreshes that view model. Not measured.
+
+## 13. The game's own preview of an attack
+
+Read and probed (the host aiming `Target_MainHandAttack` at a goblin for five seconds, the cursor
+still; places are of `bg3_dx11.exe`, the build the registry holds).
+
+- The path, on every frame a spell is aimed: `ecl::InputController::UpdatePreview` ->
+  `ecl::CharacterTask_Spell::UpdatePreview` -> `SetCursor` -> `GetTaskInfo`, which fills the
+  targeting information, -> the listeners of the interface's targeting feedback, one of which is
+  `gui::ViewModelProvider::OnUpdateOverheadTarget`. Each ran once a frame (165-171 times in the
+  five seconds at 30 frames a second) whether the target changed or not;
+  `eoc::stats::ApplyResistance` and `eoc::StatsSystem::LEGACY_CreateStatsRollContext` ran twice
+  a frame.
+- The chance is `eoc::spell::CalculateModifiableSpellRollChance`: the spell's roll conditions, a
+  context naming the caster and the target, the spell's name and the caster's modifications in,
+  a number from 0 to 1 out. The targeting information keeps the chance without advantage and the
+  shown chance held between 1 and 99.
+- The damage is the tooltip's damage rolls resolved
+  (`gui::statsDescriptionHelper::ResolveStatsTooltipDamages`) with the resistance applied to the
+  least and the most of each.
+- It agrees with the dice: the preview said 65% and 4-7 piercing; the roll that followed had a
+  difficulty of 13 and a bonus of 5 (13 faces of 20 hit) and dealt 7.
+- The combat AI asks the same function for its chance (26 times in an enemy's turn, from its
+  scorers) but estimates damage by another one (`unplaced::EstimateSpellDamage`, 154 times in
+  the turn, through the average-damage cache's miss). Neither draws from a roll stream: the
+  Generic stream's count was the same before and after two enemies' turns.
+- So the question "what are the chance and the damage for this caster, this spell, this target"
+  has a function in the game that takes all three as arguments. It is not offered to Lua. A
+  call of it needs the context built as the game builds it; that is the tool a preview mod
+  lacks, and it is not built yet.
+- Why the cursor text lags is not measured. What is known: all of it is computed anew every
+  frame, the conditions evaluated and the collections of the view model rebuilt; that the cost
+  grows with the boosts, statuses and passives the conditions walk is a guess.
+
+Not yet named: the methods of the AI's score object that ran only in an enemy's turn, the
+constructors of the context, and the caller of two Generic rolls of no dice seen in a fight.

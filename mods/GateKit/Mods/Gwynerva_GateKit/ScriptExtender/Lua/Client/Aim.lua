@@ -353,8 +353,8 @@ local function activeTask()
 end
 
 -- What the cursor text shows about the target under the aim, from the player's view model
--- (gui::VMUIData, filled by the engine's gui::ViewModelProvider::OnUpdateOverheadTarget whenever
--- the hovered target changes - the aim written into the picking counts): the hit chance with its
+-- (gui::VMUIData, filled by the engine's gui::ViewModelProvider::OnUpdateOverheadTarget on every
+-- frame a spell is aimed - the aim written into the picking counts): the hit chance with its
 -- advantages and disadvantages (HitChanceDesc) and the damage range after resistances.
 local function locaOf(handle)
     local text = handle and try(Ext.Loca.GetTranslatedString, tostring(handle))

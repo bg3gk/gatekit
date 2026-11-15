@@ -425,7 +425,7 @@ public static class CopyCommands
                 });
             }
 
-            if (parse.GetValue(asJson)) { s.Out.WriteLine(answer.ToJsonString(ResultJson)); return; }
+            if (parse.GetValue(asJson)) { s.Out.WriteLine(GateKit.Json.JsonText.Format(answer)); return; }
             var unknown = new SortedDictionary<string, SortedSet<string>>(StringComparer.Ordinal);
             foreach (var probe in answer)
             {
@@ -511,7 +511,7 @@ public static class CopyCommands
 
         var status = new Command("status", "how many functions are counted, were called, were taken off as called too often");
         status.SetAction((parse, _) => Run(parse, async s =>
-            s.Out.WriteLine((await s.ExecAsync("server", "return (Ext.Debug.GetCoverageStatus or Ext.Debug.CoverStatus)()", TimeSpan.FromSeconds(30)))?.ToJsonString(ResultJson) ?? "null")));
+            s.Out.WriteLine(GateKit.Json.JsonText.Inline(await s.ExecAsync("server", "return (Ext.Debug.GetCoverageStatus or Ext.Debug.CoverStatus)()", TimeSpan.FromSeconds(30)), compact: false))));
         command.Subcommands.Add(status);
 
         var file = new Argument<string>("file") { Description = "the file the counts are written to" };
@@ -554,7 +554,7 @@ public static class CopyCommands
                 {
                     var beside = Path.ChangeExtension(path, ".json");
                     if (!File.Exists(beside)) continue;
-                    var state = JsonNode.Parse(File.ReadAllText(beside));
+                    var state = GateKit.Json.JsonText.Read(beside);
                     bool Is(string key) => state?[key]?.GetValue<bool>() ?? false;
                     var fits = where == "neither" ? !Is("inCombat") && !Is("inDialog") : Is(where);
                     if (!fits) continue;
