@@ -87,6 +87,57 @@ public static class LiveCommands
             root.Subcommands.Add(c);
         }
         {
+            var file = new Argument<string>("file") { Description = "a JSON data file that names registry ids under keys \"id\", at any depth" };
+            var coverage = new Option<string?>("--coverage");
+            var check = new Option<bool>("--check") { Description = "write nothing: exit 1 when the file's places are not what the registry holds" };
+            var c = new Command("places", "write into a data file, under \"places\", where the registry's build tables put every function id the file names: per build and binary { id: [rva, size] } - so that code which meets raw addresses in the game can name them without a hand-written table") { file, coverage, check };
+            c.SetAction(p => invoke(p, s =>
+            {
+                var store = RegistryStore.Find(p.GetValue(coverage)) ?? throw new RegistryException("no registry found");
+                var path = p.GetValue(file)!;
+                var root = GateKit.Json.JsonText.Read(path).AsObject();
+                var ids = new SortedSet<string>(StringComparer.Ordinal);
+                void Walk(JsonNode? node)
+                {
+                    if (node is JsonObject o)
+                        foreach (var (key, value) in o)
+                        {
+                            if (key == "places") continue;
+                            if (key == "id" && GateKit.Json.JsonText.Text(value) is { } id) ids.Add(id);
+                            else Walk(value);
+                        }
+                    else if (node is JsonArray a) foreach (var item in a) Walk(item);
+                }
+                Walk(root);
+                var places = new JsonObject();
+                var missing = new List<string>();
+                foreach (var id in ids)
+                {
+                    var found = store.Places(id);
+                    if (found.Count == 0) missing.Add(id);
+                    foreach (var (build, binary, row) in found.OrderBy(f => f.Build, StringComparer.Ordinal).ThenBy(f => f.Binary, StringComparer.Ordinal))
+                    {
+                        var ofBuild = places[build] as JsonObject ?? (JsonObject)(places[build] = new JsonObject());
+                        var ofBinary = ofBuild[binary] as JsonObject ?? (JsonObject)(ofBuild[binary] = new JsonObject());
+                        ofBinary[id] = new JsonArray(row.Rva, row.Size ?? 0);
+                    }
+                }
+                foreach (var id in missing) s.Out.WriteLine($"no place: {id}");
+                var before = root["places"]?.ToString();
+                if (p.GetValue(check))
+                {
+                    var same = before == places.ToString();
+                    s.Out.WriteLine(same ? $"{path}: its places are the registry's ({ids.Count} ids)" : $"{path}: its places are not the registry's - run `gatekit registry places {path}`");
+                    return same ? 0 : 1;
+                }
+                root["places"] = places;
+                GateKit.Json.JsonText.Write(path, root);
+                s.Out.WriteLine($"{path}: {ids.Count} ids, {missing.Count} with no place");
+                return 0;
+            }));
+            root.Subcommands.Add(c);
+        }
+        {
             var coverage = new Option<string?>("--coverage");
             var c = new Command("clashes", "two different ids claimed for one function and not settled: both kept, the higher rung shown first") { coverage };
             c.SetAction(p => invoke(p, s =>

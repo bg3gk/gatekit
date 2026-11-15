@@ -1559,6 +1559,14 @@ the pair's state, rule, score and margin and whether the bodies are equal, diffe
 compared), then the counts; the target's table and its binary's SHA-256 in `build.json` are written
 unless `--dry-run`. Without stored pairs of the two binaries it exits 1.
 
+`registry places FILE [--check]` writes into a JSON data file where the build tables put every
+function id the file names: every string under a key `id`, at any depth, is looked up, and the
+answer is written under the top-level key `places` as `{ <build>: { <binary>: { <id>: [rva, size] } } }`.
+Code that meets raw addresses in the game (the roll log, with the frames above a roll) names them
+from such a file and holds no table written by hand. An id with no place is printed (`no place:
+<id>`) and left out. `--check` writes nothing and exits 1 when the file's places are not the
+registry's.
+
 `registry questions [scope]` lists every open question of the entries (whose id starts with the
 scope): what is not known of a thing, above all how the game reaches it.
 

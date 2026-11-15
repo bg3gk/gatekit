@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/roll-origins/1",
+  "title": "The functions the roll log names (Server/RollOrigins.json in the bridge mod)",
+  "description": "Who asks the roll manager for a roll (askers) and which system decided a roll was needed (causes), by registry id, with the places the registry's build tables give each id. `places` is written by `gatekit registry places` and never by hand. docs/contracts/lua-api.md 17, GK.RollLog.",
+  "type": "object",
+  "required": ["schema", "askers", "causes", "statusApplied"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "bridge/roll-origins/1"},
+    "about": {"type": "string", "minLength": 1},
+    "askers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "what"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "minLength": 1, "description": "The registry id of the function."},
+          "what": {"type": "string", "minLength": 1, "description": "The roll it asks for, in a few words."},
+          "entry": {"const": true, "description": "One of the roll manager's own entry functions: the asker is the frame above it."}
+        }
+      }
+    },
+    "causes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "cause"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "cause": {"type": "string", "minLength": 1, "description": "The word the roll log's row carries as its cause."}
+        }
+      }
+    },
+    "statusApplied": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "description": "The function above a status's condition when the status is being applied; without it the condition was asked on a later event of the status.",
+      "properties": {"id": {"type": "string", "minLength": 1}}
+    },
+    "places": {
+      "type": "object",
+      "description": "By build, then by executable, then by id: [rva, size in bytes].",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {"type": "integer"}
+          }
+        }
+      }
+    }
+  }
+}

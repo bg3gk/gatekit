@@ -14,35 +14,32 @@ local Log = GK.RollLog
 --- Each verb's class, for the fair/cheat/observation split.
 Log.Class = { Available = "observation", Origin = "observation", Origins = "observation", Causes = "observation", Forget = "observation" }
 
--- The askers: the functions that call the roll manager, by their place in each executable of the
--- build the registry holds (registry/builds/<build>/<binary>). `what` is the roll asked for.
-local ASKERS = {
-    ["bg3_dx11.exe"] = {
-        { 0x106CA40, 2954, "unplaced::RollAttackAgainstArmourClass", "weapon attack" },
-        { 0x106DBA0, 2748, "unplaced::RollSpellAttackAgainstArmourClass", "spell attack" },
-        { 0x106EC20, 2600, "unplaced::RollUnarmedAttackAgainstArmourClass", "unarmed attack" },
-        { 0x10700C0, 2281, "unplaced::RollSavingThrow", "saving throw" },
-        { 0x1075BA0, 1950, "unplaced::RollSkillCheck", "skill check" },
-        { 0x10764A0, 1410, "eoc::stats::AbilityCheck", "ability check" },
-        { 0x1070DE0, 4281, "unplaced::RollDamageDice", "damage" },
-        { 0x1072B10, 1299, "unplaced::RollDodgeAttack", "dodge roll" },
-        { 0xEF8580, 764, "eoc::StatusPrototype::GetHealAmount", "heal" },
-        { 0x1187D40, 446, "unplaced::RollExpressionAgainstDifficulty", "roll of a stats expression" },
-        { 0x1185A70, 540, "unplaced::RollExpressionDice", "dice of a stats expression" },
-        { 0x11934E0, 534, "unplaced::RollDamageExpressionDice", "dice of a damage expression" },
-        { 0x1193940, 145, "unplaced::RollExpressionPlainDice", "dice of a stats expression" },
-        { 0x32019A0, 71, "esv::combat::SystemHelper::RollDie", "initiative" },
-        { 0x339C2C0, 822, "unplaced::RollSpellRecharge", "spell recharge" },
-        { 0x2E936C0, 895, "unplaced::PickRandomCast", "random cast pick" },
-        { 0x2E92110, 1258, "unplaced::RollRandomCast", "random cast check" },
-        { 0x10F08A0, 559, "unplaced::ScriptRoll", "script roll" },
-        { 0x41C4D00, 2248, "unplaced::EstimateSpellDamage", "damage estimate" },
-        -- the roll manager's own entry functions: the asker is a frame further up
-        { 0x105B5E0, 182, "eoc::roll::stream::RollManager::RollDice", "plain dice", true },
-        { 0x105B6A0, 112, "eoc::roll::stream::RollManager::RollDiceAgainstDC", "dice against a difficulty", true },
-        { 0x105BA00, 257, "eoc::roll::stream::RollManager::RollDiceWithBoosts", "dice with boosts", true },
-    },
-}
+-- The askers (the functions that call the roll manager; `what` is the roll asked for) and the
+-- causes are named in Server/RollOrigins.json by registry id; their places in each executable
+-- are written there from the registry's build tables by `gatekit registry places`, never by hand.
+local ORIGINS = "Mods/Gwynerva_GateKit/ScriptExtender/Lua/Server/RollOrigins.json"
+local ASKERS, CAUSES, STATUS_ENTER = {}, {}, {}
+do
+    local ok, data = pcall(function() return Ext.Json.Parse(Ext.IO.LoadFile(ORIGINS, "data")) end)
+    data = ok and type(data) == "table" and data or {}
+    -- the newest build the file holds: the registry keeps one table per build of the game
+    local build
+    for name in pairs(data.places or {}) do if not build or name > build then build = name end end
+    for module, places in pairs(build and data.places[build] or {}) do
+        ASKERS[module], CAUSES[module] = {}, {}
+        for _, a in ipairs(data.askers or {}) do
+            local at = places[a.id]
+            if at then table.insert(ASKERS[module], { at[1], at[2], a.id, a.what, a.entry }) end
+        end
+        for _, c in ipairs(data.causes or {}) do
+            local at = places[c.id]
+            if at then table.insert(CAUSES[module], { at[1], at[2], c.id, c.cause }) end
+        end
+        local enter = data.statusApplied and places[data.statusApplied.id]
+        if enter then STATUS_ENTER[module] = { enter[1], enter[2] } end
+    end
+    Log.Build = build
+end
 
 --- The asker an address belongs to: { id, what, entry }, or nil for an address no named asker
 --- holds. `entry` marks one of the roll manager's own entry functions, whose caller is the asker.
@@ -114,18 +111,6 @@ end
 -- was needed. A cause holds whatever kind of roll it asks for - a status's condition may ask a save
 -- or a check, a spell's roll condition an attack or a save - so it says why, where the asker says
 -- what. The places are the registry's, for the build it holds.
-local CAUSES = {
-    ["bg3_dx11.exe"] = {
-        { 0x2FFC4E0, 618, "unplaced::EvaluateStatusCondition", "status" },
-        { 0xFCDD50, 1795, "unplaced::EvaluateSpellRollCondition", "spell" },
-        { 0x3295250, 793, "unplaced::ThrowActiveRoll", "dialogue throw" },
-        { 0x3297ED0, 842, "esv::RollSystem::ProcessCreateEvents", "request" },
-        { 0x36EBCB0, 3411, "unplaced::DealDamageFunctorAtPosition", "damage at a position" },
-        { 0x32019A0, 71, "esv::combat::SystemHelper::RollDie", "initiative" },
-    },
-}
--- a status's condition asked as the status is applied, or on a later event of it (a tick, a turn)
-local STATUS_ENTER = { ["bg3_dx11.exe"] = { 0x2FF9FC0, 639 } }
 
 --- The causes known for each executable: { [module] = { { id, cause, rva, size } } }.
 function Log.Causes()
