@@ -293,6 +293,23 @@ running for <copy>; nothing was sent`. Side `ui` is the client side with the com
 `"ui": true` (the bridge runs it inside `Ext.UI.Defer`). Every chunk is sent after the prelude
 `local GK = Mods.GateKit.GK` (8.3, point 4).
 
+### 2.8.1 `probe`
+
+`gatekit probe ID... [--do CODE] [--seconds S] [--json]` joins the registry and the running game
+both ways. Each `ID` is a registry id of a function, looked up in the build table of the
+executable the game runs, or a `binary+0xRVA`; each gets a count-only probe
+(`Ext.Debug.ProbeFunction`). `--do` is Lua run on the server once the probes are on - the action
+to watch; the game then runs `--seconds` (default 3), the probes are read and taken off. For each
+function the answer gives its place, how often it was called, and every caller: the registry id
+whose function holds the caller's address with the offset inside it (`code:<id>+0x..`), or
+`unknown` with the address. A function that was called also gets a line `evidence  watch:...`,
+the sentence a `registry note --evidence` takes; the callers the registry does not name are
+listed last, as what to read next. `--json`: `[ { id, address, hits, otherCallers, callers = [
+{ id, offset, address, count } ] } ]`. An id with no place in the running executable -> `ERROR`
+and nothing is probed; a function the extender cannot probe is named on the error stream and the
+rest go on. Needs the Script Extender build with function probes: without it -> `ERROR: this
+Script Extender build has no function probes`.
+
 ### 2.9 `shot`, `key`
 
 - `shot OUT [--width N]`: a picture of the game, taken by the game itself (8.3, point 12), or of

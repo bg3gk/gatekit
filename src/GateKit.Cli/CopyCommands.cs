@@ -50,6 +50,7 @@ public static class CopyCommands
         yield return SaveCommand();
         yield return Simple("destroy", "close this copy's game and delete its clone, profile and records", s => s.Out.WriteLine(s.Destroy()));
         yield return Exec();
+        yield return Probe();
         yield return Shot();
         yield return Key();
         yield return Sound();
@@ -309,6 +310,112 @@ public static class CopyCommands
         {
             var result = await s.ExecAsync(parse.GetValue(side)!, parse.GetValue(code)!, TimeSpan.FromSeconds(parse.GetValue(timeout)));
             s.Out.WriteLine(result is null ? "null" : result.ToJsonString(ResultJson));
+        }));
+        return command;
+    }
+
+    /// <summary>Probes on functions named by registry id, an action, and what was seen named back by
+    /// registry id: the registry and the running game joined both ways.</summary>
+    static Command Probe()
+    {
+        var ids = new Argument<string[]>("ids") { Description = "registry ids of functions (or binary+0xRVA), each gets a count-only probe", Arity = ArgumentArity.OneOrMore };
+        var action = new Option<string?>("--do") { Description = "Lua run on the server once the probes are on: the action to watch (or @file.lua)" };
+        var seconds = new Option<double>("--seconds") { Description = "how long to let the game run after the action before the probes are read", DefaultValueFactory = _ => 3 };
+        var asJson = new Option<bool>("--json") { Description = "the answer as JSON" };
+        var command = new Command("probe", "put count-only probes on functions named by registry id, run an action, and name what called them by registry id; needs the Script Extender build with function probes") { ids, action, seconds, asJson };
+        command.SetAction((parse, _) => Run(parse, async s =>
+        {
+            var store = GateKit.Symbols.Registry.RegistryStore.Find(null) ?? throw new InvalidOperationException("no registry found (run from a checkout that has registry/)");
+            var module = (await s.ExecAsync("server", "local a = Ext.Debug.GetSymbolAddress and Ext.Debug.GetSymbolAddress('ecs__EntityWorld__Update') local m = a and Ext.Debug.ModuleFromAddress(a) return m and m.Module", TimeSpan.FromSeconds(20)))?.GetValue<string>()
+                ?? throw new InvalidOperationException("this Script Extender build has no function probes (Ext.Debug.GetSymbolAddress): start the copy with the build that has them");
+
+            // registry -> game: each id's place in the executable that runs
+            var wanted = new List<(string Name, long Rva)>();
+            foreach (var id in parse.GetValue(ids)!)
+            {
+                var at = id.IndexOf("+0x", StringComparison.OrdinalIgnoreCase);
+                if (at > 0) { wanted.Add((id, long.Parse(id[(at + 3)..], NumberStyles.HexNumber, CultureInfo.InvariantCulture))); continue; }
+                var place = store.Places(id).FirstOrDefault(p => string.Equals(p.Binary, module, StringComparison.OrdinalIgnoreCase));
+                if (place.Row is null) throw new InvalidOperationException($"{id} has no place in {module} in the registry's build tables");
+                wanted.Add((id, place.Row.Rva));
+            }
+
+            var list = string.Join(", ", wanted.Select(w => string.Create(CultureInfo.InvariantCulture, $"{w.Rva}")));
+            var placed = await s.ExecAsync("server", $$"""
+                GKProbeSlots = {}
+                local failed = {}
+                for i, rva in ipairs({ {{list}} }) do
+                    local slot, why = Ext.Debug.ProbeFunction(Ext.Debug.AddressFromModule("{{module}}", rva), { Record = false })
+                    if slot then GKProbeSlots[i] = slot else failed[#failed + 1] = { i, tostring(why) } end
+                end
+                return failed
+                """, TimeSpan.FromSeconds(20));
+            foreach (var failure in placed?.AsArray() ?? [])
+                Console.Error.WriteLine($"not probed: {wanted[failure![0]!.GetValue<int>() - 1].Name}: {failure[1]}");
+
+            if (parse.GetValue(action) is { Length: > 0 } code) await s.ExecAsync("server", code, TimeSpan.FromSeconds(60));
+            await Task.Delay(TimeSpan.FromSeconds(parse.GetValue(seconds)));
+
+            var read = await s.ExecAsync("server", """
+                local bySlot = {}
+                for _, p in ipairs(Ext.Debug.ListProbes()) do bySlot[p.Slot] = p end
+                local out = {}
+                for i, slot in pairs(GKProbeSlots or {}) do
+                    local p = bySlot[slot]
+                    local callers = {}
+                    for _, c in ipairs(p and p.Callers or {}) do callers[#callers + 1] = { module = c.Caller.Module, rva = c.Caller.RVA, count = c.Count } end
+                    out[#out + 1] = { index = i, hits = p and p.Hits or 0, other = p and p.OtherCallers or 0, callers = callers }
+                    Ext.Debug.ClearProbe(slot)
+                end
+                GKProbeSlots = nil
+                return out
+                """, TimeSpan.FromSeconds(20));
+
+            // game -> registry: every caller named by the id whose function holds it
+            var answer = new JsonArray();
+            foreach (var probe in read?.AsArray() ?? [])
+            {
+                var (name, rva) = wanted[probe!["index"]!.GetValue<int>() - 1];
+                var callers = new JsonArray();
+                foreach (var caller in probe["callers"]?.AsArray() ?? [])
+                {
+                    var callerModule = caller!["module"]?.GetValue<string>();
+                    var callerRva = caller["rva"]?.GetValue<long>() ?? 0;
+                    var row = callerModule is null ? null : store.At(callerModule, callerRva).Select(a => a.Row).FirstOrDefault();
+                    callers.Add(new JsonObject
+                    {
+                        ["id"] = row?.Id, ["offset"] = row is null ? null : GateKit.Symbols.Registry.RegistryStore.Hex(callerRva - row.Rva),
+                        ["address"] = string.Create(CultureInfo.InvariantCulture, $"{callerModule ?? "?"}+0x{callerRva:X}"), ["count"] = caller["count"]?.GetValue<long>() ?? 0,
+                    });
+                }
+                answer.Add(new JsonObject
+                {
+                    ["id"] = name, ["address"] = string.Create(CultureInfo.InvariantCulture, $"{module}+0x{rva:X}"),
+                    ["hits"] = probe["hits"]!.GetValue<long>(), ["otherCallers"] = probe["other"]!.GetValue<long>(), ["callers"] = callers,
+                });
+            }
+
+            if (parse.GetValue(asJson)) { s.Out.WriteLine(answer.ToJsonString(ResultJson)); return; }
+            var unknown = new SortedSet<string>(StringComparer.Ordinal);
+            foreach (var probe in answer)
+            {
+                s.Out.WriteLine($"{probe!["id"]}  {probe["address"]}  called {probe["hits"]}");
+                var named = new List<string>();
+                foreach (var caller in probe["callers"]!.AsArray())
+                {
+                    var id = caller!["id"]?.GetValue<string>();
+                    if (id is null) unknown.Add(caller["address"]!.GetValue<string>());
+                    s.Out.WriteLine($"    from {(id is null ? "unknown" : $"code:{id}+{caller["offset"]}")}  {caller["address"]}  x{caller["count"]}");
+                    named.Add($"{caller["count"]} from {(id is null ? caller["address"] : "inside code:" + id)}");
+                }
+                if (probe["hits"]!.GetValue<long>() > 0)
+                    s.Out.WriteLine($"    evidence  watch:A count-only probe on it shows {probe["hits"]} calls: {string.Join(", ", named)}");
+            }
+            if (unknown.Count > 0)
+            {
+                s.Out.WriteLine("callers the registry does not name (gatekit decomp at <address>):");
+                foreach (var address in unknown) s.Out.WriteLine("    " + address);
+            }
         }));
         return command;
     }
