@@ -15,7 +15,7 @@ driven from code — by a person, a test, or an AI agent.
 
 | | |
 |---|---|
-| [**gatekit**](https://github.com/bg3gk/gatekit) | the toolkit: the stand, the in-game bridge, the MCP server, the offline tools |
+| [**gatekit**](https://github.com/bg3gk/gatekit) | the toolkit: game copies of your own, the in-game bridge, tests that run in the game, the MCP server, the offline databases |
 | [**bg3se**](https://github.com/bg3gk/bg3se) | our fork of [Norbyte's Script Extender](https://github.com/Norbyte/bg3se), which everything here stands on |
 | [**map**](https://github.com/bg3gk/map) | prebuilt maps of the game: its own content, the engine's symbols, our component map |
 

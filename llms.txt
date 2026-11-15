@@ -1,36 +1,46 @@
 # GateKit
 
-> Tools for developing Baldur's Gate 3 mods: the game starts by itself, Lua reloads while it runs, and everything in it can be read and driven from code — by a person, a test or an AI agent. Experimental; built mostly by AI agents under human review.
+> A toolkit that drives Baldur's Gate 3 from outside: it starts copies of the game, runs tests inside them, serves them to AI agents over MCP, and builds databases of the game's data and code on the user's own machine. A C# host, a Lua mod inside the game, and a fork of Script Extender.
 
 ## Start here
 
-- [README](README.md): what GateKit is and how to run it.
-- [AGENTS.md](AGENTS.md): what an AI should know about this project before changing it; the map of the repository — architecture, where each thing lives, the rules. For an agent changing GateKit itself.
-- [Getting started](docs/getting-started.md): from nothing to your own mod reloading live in the game.
-- [Driving the game](docs/driving-the-game.md): connecting the MCP server and what its tools do — for an agent using GateKit.
-- [Concepts](docs/concepts.md): how the host, the channel, the in-game mod and the extender fit together.
+- [README](README.md): what GateKit is, requirements, a quick start in a copy of the game.
+- [AGENTS.md](AGENTS.md): for an agent changing GateKit itself: where each thing lives and the rules.
+- [Getting started](docs/getting-started.md): install, doctor, the home, a first copy, a first test, live reload.
+- [Concepts](docs/concepts.md): the host, the channel, the mod, the home, copies, the deck, the event log, venues, the offline databases.
+- [Driving the game](docs/driving-the-game.md): for an agent using GateKit: the MCP server, a fair client, waiting on the event log.
+
+## Writing tests and reading the game
+
+- [Writing tests](docs/writing-tests.md): tests that run in the game: venues, the sandbox, fixtures, casts, the reset ladder, steps, findings.
+- [Offline databases](docs/offline-databases.md): the game index, the symbol and pseudo-code databases, the wiki reader, the memory instrument.
+- [Rules for the API](docs/api-rules.md): universal verbs, events not waits, fair, cheat and observation.
 
 ## Contracts (the exact reference)
 
-- [Bridge protocol](docs/contracts/bridge-protocol.md): the file channel between the host and the game.
-- [CLI](docs/contracts/cli.md): every command of `gatekit`, its settings and the files it touches.
-- [MCP tools](docs/contracts/mcp.md): the tools an agent sees.
-- [Lua API](docs/contracts/lua-api.md): what the in-game mod exposes as `GK.*`.
+- [Bridge protocol](docs/contracts/bridge-protocol.md): the file channel, the event log, attention.
+- [CLI](docs/contracts/cli.md): every command of `gatekit` and its settings.
+- [MCP tools](docs/contracts/mcp.md): every tool an agent sees.
+- [Lua API](docs/contracts/lua-api.md): the `GK.*` API inside the game.
+- [Data format](docs/contracts/data-format.md): GateKit's JSON files and their schemas.
 
-## What we worked out about the game
+## About the game
 
-- [Measured facts](docs/facts.md): numbers measured on the game itself — start-up, memory, what the extender can and cannot do.
-- [Levels](docs/levels.md): every level a test can start in cold, and what you get when it loads.
-- [Rules an agent should know](docs/agent-rules.md): where Baldur's Gate 3 differs from D&D 5e, mechanics only.
-- [Curiosities](docs/curiosities.md): what the game turned out to be doing — cut content, unfinished mechanics, oddities.
+- [Measured facts](docs/facts.md): what was measured about the game, the Toolkit and Script Extender.
+- [The game's rules](docs/game-rules.md): where Baldur's Gate 3 differs from D&D 5e, mechanics only.
+- [Curiosities](docs/curiosities.md): cut content, unfinished mechanics, oddities.
 
-## Designs (planned, not built)
+## Design
 
-- [AI controllers](docs/design/ai-controllers.md): characters played by agents during combat — an AI companion, AI opponents, several minds at once.
+- [The home](docs/design/home.md): the one folder GateKit keeps everything in.
+- [The deck](docs/design/deck.md): one window for every running copy.
+- [What we publish](docs/design/what-we-publish.md): our findings against Larian's content.
+- [What this is for](docs/design/what-this-is-for.md): what the work is aimed at.
+- [The map site](docs/design/map-site.md): searching the map, by people and by machines.
+- [AI controllers](docs/design/ai-controllers.md): characters played by agents in combat.
 
 ## Optional
 
-- [Weave](mods/Weave/README.md): in-game windows written like web pages.
 - [GateKit mod](mods/GateKit/README.md): the bridge that runs inside the game.
-- [Contributing](CONTRIBUTING.md): language, naming and what is never committed.
-- [Research](research/README.md): working material of the people and agents building GateKit — tools, journals and plans, not documentation.
+- [Weave](mods/Weave/README.md): in-game windows written like web pages.
+- [Contributing](CONTRIBUTING.md): language exceptions and the pull request checklist.

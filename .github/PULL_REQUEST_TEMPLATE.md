@@ -8,11 +8,11 @@
 ## How it was checked
 
 - [ ] `dotnet build` and `dotnet test`
-- [ ] the scenarios against a real game (`gatekit --instance <yours> test`), or why not:
+- [ ] the tests in a game copy (`gatekit --instance <yours> test tests`), or why not:
 
 <!--
   If the GateKit bot wrote this, keep the line below; if you did, delete it and sign with your
-  own name or nothing. .github/thrall.md says why.
+  own name or nothing (.github/thrall.md).
 -->
 
 ---

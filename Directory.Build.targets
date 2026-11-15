@@ -1,0 +1,61 @@
+<Project>
+  <!--
+    A build while GateKit runs out of bin.
+
+    Every program started from a build output keeps the assemblies it loaded mapped, and copying
+    over one of them fails with MSB3021/MSB3027 - which reads like a broken build and is a locked
+    file. Run copies (src/GateKit.Platform/RunCopy.cs) keep the long-running servers out of bin,
+    but not everything: the launcher of a relaunched command waits in bin for its copy, and the
+    short commands agents run all day (`decomp grep`, `symbols find`, `names ...`) run in place
+    (D18 of the 2026-11-14 day run: a build with games up failed on bin\GateKit.*.dll).
+
+    Windows refuses to write a mapped file but lets it be renamed, and the process that maps it
+    keeps reading the renamed file. So before the outputs are copied, every file of the output
+    folder that cannot be opened for writing is moved aside as <name>.<ticks>.locked, and the new
+    one is copied into its place; leftovers that nobody holds any more are deleted on the next
+    build. Where files are not locked (Linux, macOS, nothing running) nothing happens.
+  -->
+  <UsingTask TaskName="GateKitMoveLockedOutputs" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Folder ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        if (!Directory.Exists(Folder)) return true;
+        foreach (var old in Directory.EnumerateFiles(Folder, "*.locked", SearchOption.AllDirectories))
+        {
+            try { File.Delete(old); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+        }
+        foreach (var file in Directory.EnumerateFiles(Folder, "*", SearchOption.AllDirectories))
+        {
+            var ext = Path.GetExtension(file).ToLowerInvariant();
+            if (ext != ".dll" && ext != ".exe" && ext != ".pdb") continue;
+            try
+            {
+                using (new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete)) { }
+            }
+            catch (IOException)
+            {
+                var aside = file + "." + DateTime.UtcNow.Ticks + ".locked";
+                try
+                {
+                    File.Move(file, aside);
+                    Log.LogMessage(MessageImportance.High, "in use, moved aside so the build can replace it: " + file);
+                }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
+            catch (UnauthorizedAccessException) { }
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="GateKitMoveLockedOutputs" BeforeTargets="_CopyFilesMarkedCopyLocal;CopyFilesToOutputDirectory"
+          Condition="'$(OS)' == 'Windows_NT' and '$(OutDir)' != ''">
+    <GateKitMoveLockedOutputs Folder="$(OutDir)" />
+  </Target>
+</Project>

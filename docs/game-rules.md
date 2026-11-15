@@ -1,16 +1,17 @@
-# Baldur's Gate 3 rules an agent should know (where the game differs from D&D 5e)
+# The game's rules where they differ from D&D 5e
 
 A player who knows Dungeons & Dragons 5th edition (2014) knows most of BG3. These are the
 differences that change decisions in play - mechanics only, nothing about places, people or the
 story. Summarised in our own words from bg3.wiki's page "D&D 5e rule changes" (community wiki,
-CC BY-NC-SA 4.0); facts checked against the game where GateKit reads them. `the honest-play API
-rules` prints this file, so an agent has it without reaching any website.
+CC BY-NC-SA 4.0); facts checked against the game where GateKit reads them. Where a rule has a
+verb, it is named after "GK:".
 
 ## Turns and actions
 
 - **Initiative** is a d4 plus bonuses, not a d20 Dexterity check. Party members next to each
   other in the turn order **share a turn**: each acts in any order, even interleaved, and the group
-  ends when every member has ended (GK: `combat` lists all open turns; `do endturn all`).
+  ends when every member has ended (GK: `GK.See.Combat` lists the turn order; `GK.Act.EndTurn`
+  for each member).
 - **Jump** is a bonus action that costs 3 m (10 ft) of movement whatever the distance: about 4.5 m
   (15 ft) at Strength 10 or less, +0.9 m per 2 points above. It also crosses gaps and reaches
   ledges walking cannot. **Shove** is a bonus action for everyone; it pushes (off ledges too) but
@@ -37,7 +38,7 @@ rules` prints this file, so an agent has it without reaching any website.
 - Ranges are short: most spells and normal ranged weapons reach 18 m (60 ft); darkvision is 12 m.
 - **Stealth**: creatures notice only what they see (no hearing). Hiding outside every sight cone
   succeeds; inside one, the hider's Stealth is rolled against the watcher's passive Perception
-  (GK: `watchers`, `exposure`).
+  (GK: `GK.See.Watchers`, `GK.See.Exposure`).
 - Spells can target creatures the caster cannot see; Obscured creatures can be attacked up close.
 
 ## Spells
@@ -80,4 +81,4 @@ rules` prints this file, so an agent has it without reaching any website.
 ## Leaving a fight
 
 - A character far enough from every enemy can **flee** the fight: it leaves the fight (and ends its
-  concentration) while the others go on. GK: `combat` says who can flee; `do flee`.
+  concentration) while the others go on. GK: `GK.See.Flee` says whether one can; `GK.Act.Flee`.

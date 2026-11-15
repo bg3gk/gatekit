@@ -25,8 +25,11 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet build --configuration Release
-      # The game itself cannot run here: these are the tests that need no game.
-      - run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=tests.trx"
+      # The game itself cannot run here: these are the unit tests (unit/), which need no game.
+      - run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=unit-tests.trx"
+      # registry/README.md: every entry valid and at its path, every citation resolved, the refusals.
+      - name: registry check
+        run: dotnet src/GateKit.Cli/bin/Release/net10.0/gatekit.dll registry check --notes 0
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -40,7 +43,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install luacheck
         run: sudo apt-get update && sudo apt-get install -y lua5.4 luarocks && sudo luarocks install luacheck
-      - run: luacheck mods scenarios lua-types --codes
+      - run: luacheck mods tests lua-types --codes
 
   texts:
     name: repository rules

@@ -1,33 +1,43 @@
 # Documentation
 
+## Using GateKit
+
 | | |
 |---|---|
-| [getting-started.md](getting-started.md) | from nothing to your own mod reloading live in the game |
-| [concepts.md](concepts.md) | how the host, the channel, the in-game mod and the extender fit together |
-| [driving-the-game.md](driving-the-game.md) | connecting an AI agent and driving the game from outside |
-| [contracts/](contracts/) | the exact reference: the bridge protocol, the CLI, the MCP tools, the Lua API |
-| [design/](design/) | what is planned and why, written before it is built: [AI controllers](design/ai-controllers.md), [coverage runs](design/coverage-runs.md), [the deck](design/deck.md), [the search site](design/map-site.md), [what we publish](design/what-we-publish.md) |
+| [getting-started.md](getting-started.md) | from a clone to a first copy, a first test and live reload |
+| [concepts.md](concepts.md) | the host, the channel, the mod, the home, copies, the event log, venues |
+| [writing-tests.md](writing-tests.md) | tests in the game: venues, fixtures, the reset ladder, steps, findings |
+| [driving-the-game.md](driving-the-game.md) | an AI agent driving a copy through the MCP server |
+| [offline-databases.md](offline-databases.md) | the game index, symbols, pseudo-code, the wiki, the memory instrument |
+| [api-rules.md](api-rules.md) | what every verb, tool and command is held to |
 
-## What we worked out about the game
+## Contracts: the exact reference
 
-Not about GateKit — about Baldur's Gate 3 itself, measured or found while building these tools.
+| | |
+|---|---|
+| [contracts/bridge-protocol.md](contracts/bridge-protocol.md) | the file channel, the event log, attention |
+| [contracts/cli.md](contracts/cli.md) | every command of `gatekit` and its settings |
+| [contracts/mcp.md](contracts/mcp.md) | every tool of the MCP server |
+| [contracts/lua-api.md](contracts/lua-api.md) | the `GK.*` API inside the game |
+| [contracts/data-format.md](contracts/data-format.md) | GateKit's JSON files and their schemas |
+
+## About the game
 
 | | |
 |---|---|
 | [facts.md](facts.md) | what was measured about the game, the Toolkit and Script Extender |
-| [levels.md](levels.md) | the levels a test game can start in |
-| [agent-rules.md](agent-rules.md) | where the game's rules differ from D&D 5e |
-| [curiosities.md](curiosities.md) | findings a player might enjoy, including content that was cut |
+| [game-rules.md](game-rules.md) | where the game's rules differ from D&D 5e |
+| [curiosities.md](curiosities.md) | findings a player might enjoy, cut content included |
 
-## A note on the word "agent"
+## Design
 
-It means three things here, and they have three homes:
+| | |
+|---|---|
+| [design/home.md](design/home.md) | the one folder GateKit keeps everything in |
+| [design/deck.md](design/deck.md) | one window for every running copy |
+| [design/what-we-publish.md](design/what-we-publish.md) | where the line runs between our findings and Larian's content |
+| [design/what-this-is-for.md](design/what-this-is-for.md) | what the work is aimed at |
+| [design/map-site.md](design/map-site.md) | searching the map, by people and by machines |
+| [design/ai-controllers.md](design/ai-controllers.md) | characters played by agents in combat |
 
-- an agent **changing GateKit** → [../AGENTS.md](../AGENTS.md);
-- an agent **using GateKit** to drive the game → [driving-the-game.md](driving-the-game.md);
-- an agent **playing inside the game**, a character or a side in combat →
-  [design/ai-controllers.md](design/ai-controllers.md).
-
-Open work is listed in [../research/TODO.md](../research/TODO.md). Working material that is not
-documentation — journals, half-finished tools, measurements still
-being argued about — lives in [../research/](../research/).
+Working material that is not documentation lives in [../research/](../research/README.md).

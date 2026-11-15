@@ -21,9 +21,9 @@ globals = {
     "ModuleUUID",
     -- the probe's state, kept in globals on purpose: it has to outlive a Lua reload
     "Probe", "ProbeCaptureState", "ProbeSeenState", "_PW",
-    -- a scenario declares what it needs and a `run` function; the runner supplies both, along
-    -- with the small vocabulary a scenario is written in
-    "scenario", "run", "check", "join", "keys", "fmt", "contains",
+    -- a test declares what it needs and a `run` function; the runner supplies both, along
+    -- with the small vocabulary a test is written in
+    "test", "run", "check", "join", "keys", "fmt", "contains",
     "bytes", "count", "endswith", "eq", "has", "lua_list", "lua_string",
     "near", "same", "settled", "sorted", "startswith",
 }

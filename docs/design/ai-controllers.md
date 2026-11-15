@@ -1,10 +1,10 @@
 # AI controllers: who plays which characters
 
-**Status: design, not built.** The bridge protocol already carries what it needs
-(`docs/contracts/bridge-protocol.md`, the question channel); the rest of this page is the plan
-the implementation must follow, and the reason the protocol looks the way it does.
+**Status: design, not built.** The question channel it needs is in the bridge protocol's contract
+(`docs/contracts/bridge-protocol.md`) and implemented on neither side; this page is the plan the
+implementation follows, and the reason the protocol looks the way it does.
 
-Two things people have asked for turn out to be the same feature:
+Two features are one:
 
 1. **An AI companion.** One member of the party is played by an agent instead of by you. It is
    marked in the party list, it plays only in combat, and in a shared initiative it moves after
@@ -40,9 +40,9 @@ GK.Control.Add("foe", { agent = "claude", colour = "crimson", when = "combat",
 GK.Control.Assign("foe", "npcs")
 ```
 
-- **`when`** is `"combat"` for now, and only that. Outside combat an assigned companion belongs to
-  the player again: it walks with the party, talks, loots. Nobody has asked for an agent that
-  wanders the world on its own while you play, and it would be a different, harder thing.
+- **`when`** is `"combat"`, and only that. Outside combat an assigned companion belongs to the
+  player again: it walks with the party, talks, loots. An agent that wanders the world on its own
+  while you play would be a different, harder thing.
 - **`agent`** names a host-side runner, not a model. What a runner is, the host decides
   (`gatekit serve --agent <name>`); the game only knows the name to show. Two controllers may
   share one agent or use different ones, and a question carries the controller's name so the host
@@ -67,7 +67,7 @@ reload. `GK.Control.Release` and a toggle in the overlay take it back.
  the host runs the agent, answers tell_server_<id>.json
         │     result: a list of actions, or { pass = true }
         ▼
- the mod executes them through GK.Act, one at a time, checking each
+ the mod executes them through the fair verbs, one at a time, checking each
         │
         ▼  anything refused, malformed, or past the deadline
  fall back: let the engine play the turn as it always would
@@ -78,9 +78,10 @@ host that stops answering is noticed within three seconds.
 
 **The actions come back as data, not as Lua.** The agent asks for `{"act":"Cast","spell":"...",
 "target":"..."}`; the mod decides whether that character really could do that, and does it
-through `GK.Act` — the same honest, player-equivalent layer the agent-play work already uses.
-An agent cannot teleport, cannot read what the character cannot see, and cannot spend what it
-does not have, whatever it answers. Cheats stay in `GK.Cheat`, which no controller may call.
+through the fair verbs (`GK.Act`, `GK.Gui`), which go the player's path
+([api-rules.md](../api-rules.md), rule 4). An agent cannot teleport, cannot read what the
+character cannot see, and cannot spend what it does not have, whatever it answers. Cheats stay in
+`GK.Cheat`, which no controller may call.
 
 ### Order within a shared initiative
 
@@ -137,7 +138,7 @@ have to change shape.
 
 1. **Who you are** — the character, their class, what they carry, what they can do this turn.
 2. **What you see** — `GK.See`, trimmed to what that character could actually perceive.
-3. **What you may do** — the legal actions with their costs, from `GK.Act`.
+3. **What you may do** — the legal actions with their costs, from the fair verbs.
 4. **How to answer** — the action format, and that anything else is refused.
 5. **The extra prompt** — the `prompt` of the assignment, verbatim, last, so it colours the
    decision without being able to remove the rules above it.
@@ -151,7 +152,7 @@ its own characters.
 |---|---|
 | protocol | the question channel — **in the contract, not yet implemented on either side** |
 | host | `gatekit serve`: answer `turn` questions, run a named agent, a time limit, a log of every decision |
-| mod, server | `GK.Control.*` (several controllers, each with a colour), ownership expansion, turn detection, the shared-initiative rule, executing answers through `GK.Act`, reactions (Ask and Automate), the fallback |
+| mod, server | `GK.Control.*` (several controllers, each with a colour), ownership expansion, turn detection, the shared-initiative rule, executing answers through the fair verbs, reactions (Ask and Automate), the fallback |
 | mod, client | the portrait haze per controller colour, the thinking pulse, the decision line, outlining the turn's targets in the world, a toggle per party member |
 | offline | nothing new |
 

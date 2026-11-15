@@ -10,8 +10,8 @@ repository goes private the same day. If that reaches nobody, GitHub's own
 
 ## What this is
 
-Three maps of the same game, built by [GateKit](https://github.com/bg3gk/gatekit) and published
-here as release assets because they are too large for git and because every modder who wants one
+Two databases of the same game, built by [GateKit](https://github.com/bg3gk/gatekit) and
+published here as release assets because they are too large for git and because every modder who wants one
 would otherwise spend the same minutes building the same file:
 
 | Database | What it holds |
@@ -46,9 +46,9 @@ is published here only under the promise at the top of this page.
 ## How to use it
 
 ```bash
-gatekit data install        # the index, into BG3_INDEX_DB or <local>/index/gameindex.sqlite
-gatekit symbols install     # the symbol database
-gatekit data query search "Astarion"
+gatekit index install       # the index, into <home>/db/index/gameindex.sqlite (or BG3_INDEX_DB)
+gatekit symbols install     # the symbol database, into <home>/db/symbols/symbols.sqlite
+gatekit query search "Astarion"
 ```
 
 `install` reads the release pinned in GateKit's own `index-release.json`, fetches every part,
@@ -56,7 +56,7 @@ checks each one's sha256, joins them, unpacks them and checks the sha256 of the 
 before it puts it anywhere. `--force` replaces a database that is already there; `--from` reads
 the assets from a folder or another URL instead.
 
-**Building it yourself stays a first-class path and needs no download at all:** `gatekit data
+**Building it yourself stays a first-class path and needs no download at all:** `gatekit index
 build` reads your own installation and takes a few minutes. Nothing in GateKit assumes the data
 was fetched. `gatekit doctor` says which database is present and whether it was built here or
 installed.
@@ -72,7 +72,7 @@ installed.
 A database larger than one release asset (GitHub refuses a file over 2 GB) is cut into numbered
 parts — `index.sqlite.zst.001`, `index.sqlite.zst.002`, … — which are one Zstandard stream
 written across several files. Joining the parts in order and decompressing them gives the
-database back; `gatekit data install` does exactly that.
+database back; `gatekit index install` does exactly that.
 
 ## The manifest
 
@@ -90,9 +90,9 @@ database back; `gatekit data install` does exactly that.
       "compression": "zstd",
       "compressedSize": 889000000,
       "parts": [ { "name": "index.sqlite.zst", "size": 889000000, "sha256": "<of this file>" } ],
-      "source": "Baldur's Gate 3 Patch8_HotFix10, localizations: English, read 2026-11-12 14:48:35",
+      "source": "Baldur's Gate 3 <build>, localizations: English, read <time>",
       "schemaVersion": "0f3a…",
-      "created": "2026-11-13T09:00:00Z",
+      "created": "<time>",
       "meta": { "built": "…", "packages": "…", "languages": "…" }
     }
   ]
@@ -120,7 +120,7 @@ sha256sum gameindex.sqlite                 # must match "sha256" of the entry
 Ask the database itself — it carries its own documentation:
 
 ```bash
-gatekit data schema                 # tables and columns of the index, with the meaning of each
+gatekit query schema                # tables and columns of the databases
 gatekit symbols stats               # what the symbol database holds
 sqlite3 gameindex.sqlite .schema    # or read it directly
 ```

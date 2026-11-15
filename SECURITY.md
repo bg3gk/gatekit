@@ -5,7 +5,7 @@ agent hand it. It is a development tool, not a sandbox.
 
 **What to report privately**: anything that could damage a user's machine, their game
 installation or their saves beyond what a development tool is expected to do — for example a
-path that escapes an instance and writes into the installed game, a backup that cannot be
+path that escapes a game copy and writes into the installed game, a backup that cannot be
 restored, a command that executes content fetched from the network, or a way for a mod under
 test to reach outside the game.
 
@@ -16,7 +16,7 @@ report, with no details, and ask for a way to send them.
 Please do not open a public issue with the details first.
 
 **What is not a vulnerability**: that `gatekit exec` runs arbitrary Lua in the game (that is the
-point), that the MCP server lets a connected agent do the same (likewise), or that the stand can
-delete the saves of an instance it owns.
+point), that the MCP server lets a connected agent do the same (likewise), or that
+`gatekit destroy` deletes the saves of the copy it names.
 
-GateKit has no security releases yet; fixes land on `main`.
+Fixes land on `main`; there are no separate security releases.

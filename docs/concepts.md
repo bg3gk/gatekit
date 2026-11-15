@@ -1,113 +1,104 @@
 # How GateKit works
 
-Four pieces, each replaceable, talking through written-down contracts.
+A **host** on your computer (`gatekit`, C#) drives a **mod inside the game** (Lua) through a
+channel of files, in a **copy** of the game of its own. Everything GateKit keeps lives in one
+**home**.
 
 ```
-   you · a scenario · an MCP client · an AI agent
-                      │
-   ┌──────────────────┴───────────────────────────────────┐
-   │  the host:  gatekit                                  │
-   │    Stand     starts the game, instances, backups     │
-   │    Bridge    a queue of Lua commands                 │
-   │    GameData  an index of the game's own files        │
-   │    Symbols   a database built from the Toolkit       │
-   └──────────────────┬───────────────────────────────────┘
-                      │  files in the game's profile
-   ┌──────────────────┴───────────────────────────────────┐
-   │  Baldur's Gate 3                                     │
-   │    Script Extender (GateKit's build)                 │
-   │      the GateKit mod   GK.*  — reads and acts        │
-   │      Weave             windows for any mod           │
-   └──────────────────────────────────────────────────────┘
+   you · a test · an MCP client
+                │
+   the host: gatekit ──── the home: databases, builds, state
+                │  files in the copy's profile
+   Baldur's Gate 3 (a copy), GateKit's Script Extender
+       the GateKit mod: GK.*        Weave: windows
 ```
 
-## The host and the game speak through files
+## The host and the channel
 
-Script Extender gives a mod no sockets: Lua inside the game can read and write files under its
-own folder, and nothing else. So that is the channel. The host appends a command to
-`queue_<side>.jsonl`; the mod polls it six times a second, runs the Lua, and writes the answer
-to a file of its own. Any number of processes may talk to one game at once, which is what lets
-a scenario, a watcher and an agent share a game.
+Script Extender gives a mod's Lua no sockets, only files under its own folder, so files are the
+channel. The host appends commands to a queue in the game's profile; the mod runs each and writes
+its answer to a file of its own. Any number of processes may talk to one game at once. The game
+has two Lua states, each with its own channel: the **server** owns the world (characters, items,
+dialogue), the **client** what is shown (interface, camera); `ui` is the client inside the
+interface's own context. The whole protocol: [contracts/bridge-protocol.md](contracts/bridge-protocol.md).
 
-Files also cross boundaries that sockets do not: from Windows into a Wine prefix, from a
-container into a game. The whole protocol is one page: **[contracts/bridge-protocol.md](contracts/bridge-protocol.md)**.
+## The mod
 
-**Server and client are separate.** The game runs two Lua states — the server owns the world
-(characters, items, dialogue), the client owns what you see (UI, camera, scenes). They have
-separate channels; `exec server` and `exec client` choose one. A third, `ui`, is the client
-inside the UI's own context, needed for anything that touches the game's Noesis interface.
+**The GateKit mod** (`mods/GateKit`) is the channel, the in-game console and the `GK.*` API: the
+party, scenes and dialogues, the engine's components, staging a scene, the game's speed, the
+interface. The API's reference is [contracts/lua-api.md](contracts/lua-api.md).
+**[Weave](../mods/Weave/README.md)** is separate and usable on its own: in-game windows written as
+`.weave` files. Both need **GateKit's build of Script Extender**
+([bg3gk/bg3se](https://github.com/bg3gk/bg3se)), which `gatekit se install` fetches; on the stock
+extender the mods load and the bridge stays silent.
 
-## Instances: a game of your own
+## The home
 
-`--instance <name>` makes a clone of the game folder beside the installed one. Files are hard
-links and folders are junctions (symlinks on Linux), so a clone costs a few hundred megabytes
-rather than 150 GB, but it has its own profile, saves, mod list, Script Extender settings and
-logs. Nothing it does touches your installation or another instance, and several can run at
+One folder holds what GateKit keeps: the databases, the Script Extender builds, the copies'
+state, caches, downloads and backups. It is named by `"home"` in `gatekit.json` (found from the
+working folder upwards, so every checkout under it shares it) or by `GATEKIT_HOME`. A checkout
+keeps nothing of its own. `gatekit doctor` lists every location and where it came from. The
+layout: [design/home.md](design/home.md).
+
+## Copies
+
+A **copy** is a folder beside the installed game, made of hard links and folder links, with a
+profile, saves, mod list, Script Extender settings and logs of its own. In prose it is a copy,
+never a "stand"; the option that names one is `--instance <name>`. The first `up` with a new
+name makes it, `gatekit instances` lists them, `gatekit destroy` deletes one. Nothing a copy does touches the installed game or another copy, and several run at
 once.
 
-Without an instance the stand works on your installed game — and then it is careful: it copies
-your saves, mod list and extender settings away before starting, and puts them back on `down`.
-It kills the game rather than quitting it, so a test can never be saved over your playthrough.
+- **A copy starts bare**: the base game and GateKit's own mods, nothing else unless `up --mods`
+  names it.
+- **The installed game is written only when a command names it**: without `--instance` (or
+  `GATEKIT_INSTANCE`) every command that writes - `up`, `down`, `build`, `link`, `reload`, `watch`,
+  `exec`, `key`, `checkpoint`, `reset`, a change of `sound`, `se install` and `se remove` - refuses
+  in one sentence unless `--installed-game` is given. With it, `up` backs up the player's saves and
+  mod list and `down` puts them back. Commands that only read (`status`, `doctor`, `game verify`,
+  `logs`) need neither.
+- **`gatekit game verify`** holds an install, or a copy, to a source of invariants - Steam's own
+  manifests, or a reference list of a build's files - and lists what is modified, missing or
+  extra. With no source there is no verdict of clean. Every database records the game build it
+  was made from, and `doctor` warns when it differs.
 
-## The deck: every game in one window
+The copies are the one thing outside the home: hard links cannot cross volumes.
 
-Several games at once are useful and were hard to live with: each new one threw its window over
-your work and took the keyboard, and Script Extender opened a console window per copy. Neither
-happens now — a game of the stand's is started without ever taking the foreground, and the
-extender writes what it prints to a log file that `logs` reads.
+## The deck
 
-`gatekit deck` goes further: one window that holds them all, a tile each with its instance name,
-its label and its process id. It finds the games by itself, so a deck opened later adopts the
-games already running, and a game started without one simply keeps its own window.
-`gatekit window list|maximize|grid|label|release` (and the same over MCP) names the copies and
-rearranges them — an agent can hold its run in view while a person moves the rest about.
+`gatekit deck` is one window that holds every running copy, a tile each, so no game window is
+thrown over your work. The design: [design/deck.md](design/deck.md).
 
-None of this changes how a game is read: `shot`, `key`, `exec` and the bridge work on a copy that
-is behind another window, out of view or in no deck at all. That rule is older than the deck and
-the deck does not get to break it. The design is
-**[design/deck.md](design/deck.md)**, the build is [src/GateKit.Deck](../src/GateKit.Deck).
+## The event log and attention
 
-## Starting fast, and going back
+Each side of the game keeps one append-only log of what happened; the host merges both into one
+stream, ordered by the game's clock. The families of rows are data in one registry, which the
+host reads from the running game, and a row the host cannot place is kept and marked, never
+dropped. **Attention** is a view of the same stream: what waits for the player (a dialogue, a roll,
+a fight) and what changed. A caller waits for a row, not for a time.
+[contracts/bridge-protocol.md](contracts/bridge-protocol.md), sections "The event log" and
+"Attention".
 
-`up` starts the executable directly: no Steam, no launcher, no logo video, no menu. With
-`--level` the game boots into a test level in about 40 seconds; with `--save` it loads a named
-save. The bridge's first heartbeat is how the host knows the game is ready.
+## Venues and the reset ladder
 
-Restarting for every test would be slow, so the world can be rewound instead: `checkpoint`
-saves it, `reset` loads that save back and plays the level's opening scene through at twenty
-times speed — about 14 seconds, against a 40-second restart.
+A test runs in a **venue**, preferably the **sandbox**. Between tests the world is made clean
+again by the cheapest reset rung that holds, verified each time: `fixture`, then `venue`, then
+`game`. Each word is defined in [writing-tests.md](writing-tests.md), "Words".
 
-## Hot reload
+## Fair, cheat, observation
 
-`link` points the stand at a mod's Lua, `reload` copies it into the game's loose-file folder and
-restarts both Lua states in place: about a second from a saved file to the new behaviour
-running. `watch` does it whenever a file changes. The bridge's own Lua reloads the same way
-(`bridge-reload`), and survives a `reset`.
+Every verb of the API is **fair** (what a player could do, the player's way), a **cheat** (it sets
+the world directly) or an **observation** (it changes nothing), and its namespace says which. The
+rules: [api-rules.md](api-rules.md).
 
-## What runs inside the game
+## What needs no game
 
-**The GateKit mod** is a development mod: the channel, the in-game console, and the `GK.*` API —
-the party and their equipment, scenes and dialogues, the engine's components, staging a fight,
-the game's speed, and an agent-facing layer that only does what a player could do
-([contracts/lua-api.md](contracts/lua-api.md)).
-
-**[Weave](../mods/Weave)** is separate and useful on its own: a window is a `.weave` file with a
-template, a script and a style, with reactive state and themes, reloaded live. Any mod may
-depend on it; it does not need GateKit.
-
-Both need **GateKit's build of Script Extender** ([bg3gk/bg3se](https://github.com/bg3gk/bg3se)),
-a fork of Norbyte's that exposes far more of the engine's own components, under the game's own
-names. `gatekit se install` fetches it; the stock extender loads the mods but most of the API
-stays silent.
-
-## What needs no game at all
-
-Two databases, built on your machine from your own copy:
-
-- **the game's data** — timelines, dialogues, templates, stats, localization — read straight out
-  of the `.pak` files;
-- **symbols** from the official Toolkit, which ships the engine split into DLLs that export
-  their C++ names, which is as close to source as there legally is.
-
-Neither is in this repository, and neither can be: they are Larian's. The tools that build them
-are ours.
+Databases built on your machine from your own copy of the game: the **game index** (the data in
+the `.pak` files: templates, stats, dialogues, timelines, localization), the **symbol database**
+(the engine's C++ names, from the official Toolkit's DLLs, matched into the game's executables)
+and the **pseudo-code database** (the game decompiled with Ghidra); beside them the **wiki
+reader** and, in a running game, the **memory instrument** (which instruction wrote a field;
+`gatekit decomp at` names its function) and the **entity tracer** (which components changed
+between two steps, each change stamped with the engine's frame and command-buffer flush). None of
+the databases is in this repository,
+because it is derived from Larian's files; the tools that build it are ours.
+[offline-databases.md](offline-databases.md)

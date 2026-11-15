@@ -80,6 +80,12 @@ attack.
   (documents, commands, the record, working notes, the layout of the repository) the lighter way
   is taken, and a rule that costs more in upkeep than it saves is removed. Before a check or a
   rule is added, the question is what it protects and what it costs each time something changes.
+- **The self tests are removed and written anew, like the rest.** `tests/_selftest` holds what
+  checks the toolkit in a live game rather than a rule of the game - the channel, the event log,
+  the stage's clean and verify, the steps' refusals, the memory instrument, the console, the
+  fork's surface. They are a mix of hurried checks of several generations (former scenarios
+  among them) with sleeps of their own. Each is to be either a unit test (where no game is
+  needed), a proper test of the toolkit under the rules of `docs/writing-tests.md`, or dropped.
 - **No numbered sections in the documents - among the first things to do.** The contracts number
   their sections (`cli.md` 2.13.1, `lua-api.md` section 17) and code comments, help texts and
   other documents cite those numbers, so adding or moving one section renumbers many and every

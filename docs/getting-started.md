@@ -1,121 +1,112 @@
 # Getting started
 
-From nothing to your own mod's Lua reloading inside a running game. About fifteen minutes, most
-of it waiting for downloads.
+From a clone of the repository to a test of your own and your mod's Lua reloading in a running
+copy of the game. What you need is listed in the [README](../README.md); every command and option
+is in [contracts/cli.md](contracts/cli.md).
 
-## What you need
-
-- **Baldur's Gate 3**, Patch 8 (4.1.1.x), your own copy. Nothing here ships game data.
-- **[.NET 10](https://dotnet.microsoft.com/download)**.
-- **[Script Extender](https://github.com/Norbyte/bg3se)** installed in the game. GateKit uses its
-  own build of it (below), but the stock one must be installed first.
-
-Nothing else: GateKit packs mods itself, with LSLib built into it, so LSLib's Divine — and the
-older .NET runtime it wants — is no longer needed.
-
-Windows works today. Linux (through Proton) is written but has not yet been run on real
-hardware — if you try it, tell us what broke.
-
-## Set it up
+## Install and check
 
 ```bash
 git clone https://github.com/bg3gk/gatekit
 cd gatekit
-dotnet build
 ./gatekit doctor
 ```
 
-`doctor` prints what it found and what it could not, each with the setting that fixes it. It
-finds the game through Steam by itself; if it cannot, point it:
+`./gatekit` builds the toolkit the first time it runs. `doctor` prints what it found and what it
+did not, each with the setting that fixes it. It finds the game in your Steam library; if it
+cannot, set `BG3_GAME` to the game's folder.
 
-```bash
-export BG3_GAME="C:/Program Files (x86)/Steam/steamapps/common/Baldurs Gate 3"
+## The home
+
+GateKit keeps its databases, builds and state in one folder, the home. Name it in a
+`gatekit.json` in a folder above your checkout, so every checkout below shares it:
+
+```json
+{ "home": "gatekit-home" }
 ```
 
-Anything with a `GATEKIT_` name can also live in a `gatekit.json` beside the repository; see
-[contracts/cli.md](contracts/cli.md).
+A relative path is relative to that file. Without one, the home is a per-user default and
+`doctor` says it is not configured. The layout and every other setting: [design/home.md](design/home.md).
 
-On Windows, run `./gatekit firewall` once as well. Every game copy is a folder of its own, and a
-firewall rule is held against a path, so Windows asks "allow this program on the network?" about
-each copy separately - an elevated window over whatever you were doing. The command prints the one
-line that allows them all; run it in an elevated PowerShell. GateKit never changes a firewall rule
-itself.
-
-Then take GateKit's Script Extender build and pack the mods that go into the game:
+## Script Extender and the firewall
 
 ```bash
 ./gatekit se install
-./gatekit build
 ```
 
-## Start a game
+fetches GateKit's build of Script Extender into the home and makes it the build every copy
+starts with; it writes into no game. On Windows, `gatekit firewall` lists the copies the firewall
+does not yet let listen and prints the one line that allows them; GateKit never changes a firewall
+rule itself ([contracts/cli.md](contracts/cli.md)).
+
+## Your first copy
 
 ```bash
-./gatekit --instance mine up --level GustavX:TUT_Avernus_C
+./gatekit --instance mine up --level GustavX:Basic_Level_A
 ```
 
-`--instance mine` clones the game into a copy of its own — its saves, mod list and settings are
-separate from yours, and you can have several at once. The first clone takes a minute; after
-that the game is playable in about 40 seconds, straight in the level, with no launcher, logo or
-menu.
-
-Ask it something:
+`--instance mine` makes a copy of the game named `mine` on its first use and starts it, bare (the
+base game and GateKit's mods), straight into the sandbox level: no launcher, no logo, no menu.
+What a copy is: [concepts.md](concepts.md#copies). Ask it something:
 
 ```bash
 ./gatekit --instance mine exec server "return GK.Party()"
-./gatekit --instance mine exec server "return GK.Character(Osi.GetHostCharacter()).Stats"
-./gatekit --instance mine shot party.png          # the window may stay behind others
+./gatekit --instance mine shot party.png       # the window may stay behind others
+./gatekit game verify                          # the installed game, file by file
 ```
 
-`server` is the side that owns the world; `client` is what you see. [concepts.md](concepts.md)
-explains why there are two.
+A command that writes never falls back to the installed game: without `--instance` it refuses in
+one sentence, unless the installed game is named with `--installed-game` (then `up` backs up your
+saves and mod list and `down` puts them back). Reading - `status`, `doctor`, `game verify` - needs
+neither.
 
-## Your own mod, reloading live
+`server` is the side that owns the world, `client` what is shown.
 
-Point the stand at your mod and let it watch:
+## Your first test
+
+A test is a Lua file run by the host; it declares where it runs and does its work in named steps,
+each of a class:
+
+```lua
+-- tests/mine/party.lua
+test { level = "GustavX:Basic_Level_A" }
+
+function run(game)
+    local party = step("read the party", "observation", function()
+        return game.server("return GK.Party()")
+    end)
+    check(#party > 0, "the party has a member", party)
+end
+```
 
 ```bash
-./gatekit --instance mine link path/to/MyMod      # the folder holding Mods/<YourMod>/ScriptExtender/Lua
+./gatekit --instance mine test tests -k mine/party
+```
+
+A copy already running in the declared level is used as it is. How to write tests that are worth
+having: [writing-tests.md](writing-tests.md).
+
+## Your mod, reloading live
+
+```bash
+./gatekit --instance mine link path/to/MyMod   # the folder holding Mods/<YourMod>/ScriptExtender/Lua
 ./gatekit --instance mine watch
 ```
 
-Now edit any Lua file in your mod. About a second after you save, the game is running the new
-code — no restart, no reload of the save.
-
-## A test that proves something
-
-Scenarios are Lua files run on your computer, not in the game:
-
-```lua
--- scenarios/shield.lua
-scenario { level = "GustavX:TUT_Avernus_C", mods = { "MyMod" }, clean = true }
-
-local host = game.server("return Osi.GetHostCharacter()")
-game.server(("Osi.TemplateAddTo('%s', '%s', 1)"):format(SHIELD, host))
-assert(game.server(("return GK.Equipped('%s').Shield"):format(host)), "the shield is not equipped")
-```
-
-```bash
-./gatekit --instance mine test            # every scenario, pass or fail
-./gatekit --instance mine run scenarios/shield.lua
-```
-
-Scenarios that need the same start share one game. `clean` rewinds the world to how it was right
-after the start — about 14 seconds, instead of a 40-second restart.
+Edit a Lua file of your mod and save it: the running game restarts its Lua in place with the new
+code, with no restart and no reload of the save. `reload` does it once; `bridge reload` does the
+same for GateKit's own mod.
 
 ## When you are done
 
 ```bash
-./gatekit --instance mine down       # closes the game and puts everything back
-./gatekit --instance mine destroy    # and deletes the clone
+./gatekit --instance mine down       # close the game
+./gatekit --instance mine destroy    # delete the copy
 ```
 
-`down` always restores what it changed, even after a failed run. If a game is left running,
-`gatekit status` will say so.
+## Next
 
-## Where to go next
-
-- **Windows in the game** → [Weave](../mods/Weave/README.md).
-- **Driving it from an AI agent** → [driving-the-game.md](driving-the-game.md).
-- **Every command and setting** → [contracts/cli.md](contracts/cli.md).
-- **What the game exposes to Lua** → [contracts/lua-api.md](contracts/lua-api.md).
+- Driving the game from an AI agent → [driving-the-game.md](driving-the-game.md)
+- The databases of the game's data and code → [offline-databases.md](offline-databases.md)
+- In-game windows → [Weave](../mods/Weave/README.md)
+- The API inside the game → [contracts/lua-api.md](contracts/lua-api.md)
