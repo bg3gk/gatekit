@@ -126,7 +126,7 @@ public sealed record Fingerprint(IReadOnlyList<string> Calls, IReadOnlyList<stri
         return Convert.ToHexStringLower(sha.GetHashAndReset());
     }
 
-    static int ImmediateOperand(in Instruction insn)
+    internal static int ImmediateOperand(in Instruction insn)
     {
         for (var i = 0; i < insn.OpCount; i++)
             if (insn.GetOpKind(i) is OpKind.Immediate8 or OpKind.Immediate16 or OpKind.Immediate32 or OpKind.Immediate64
@@ -277,6 +277,85 @@ public sealed class FingerprintReader(SqliteConnection symbols, SqliteConnection
         }
         else BodyNote = $"no file of {binary} whose SHA-256 is the one the pseudo-code database records for it, so no body hash";
         return new Placement(size, body);
+    }
+
+    /// <summary>One instruction of a signature: its bytes as hex with <c>??</c> for a byte that a
+    /// relocation or another build's layout would change, and its text.</summary>
+    public sealed record SignatureLine(string Bytes, string Text);
+
+    /// <summary>
+    /// The shortest run of whole instructions from a function's start that is found once in the
+    /// executable sections of the binary's file: what a hook written against a byte pattern needs.
+    /// Bytes masked as in <see cref="Fingerprint.BodyHash"/> (RIP-relative displacements, near call
+    /// and jump targets, absolute addresses) are wildcards. <paramref name="found"/> is how many
+    /// places the pattern matches when the limit of bytes was reached (1: unique). Null when the
+    /// binary's file cannot be read.
+    /// </summary>
+    public IReadOnlyList<SignatureLine>? Signature(string binary, long start, int limit, out int found)
+    {
+        found = 0;
+        if (ImageOf(binary) is not { } at) return null;
+        var image = at.Image;
+        var o = image.Offset(start);
+        if (o < 0) return null;
+        var imageEnd = image.ImageBase + image.Sections.Select(s => (ulong)s.Va + s.Size).DefaultIfEmpty(0UL).Max();
+        var take = Math.Min(limit + 16, image.Data.Length - o);
+        var bytes = image.Data.AsSpan(o, take).ToArray();
+        var wild = new bool[bytes.Length];
+        var lines = new List<SignatureLine>();
+        var decoder = Iced.Intel.Decoder.Create(64, new ByteArrayCodeReader(bytes), image.ImageBase + (ulong)start);
+        var formatter = new Iced.Intel.NasmFormatter();
+        var length = 0;
+        List<int>? candidates = null;
+        while (length < limit)
+        {
+            decoder.Decode(out var insn);
+            if (insn.IsInvalid || insn.Length == 0 || length + insn.Length > bytes.Length) break;
+            var co = decoder.GetConstantOffsets(insn);
+            var offset = length;
+            void Mask(int from, int size) { for (var k = from; k < from + size; k++) wild[offset + k] = true; }
+            bool InImage(ulong value) => value >= image.ImageBase && value < imageEnd;
+            if (co.HasDisplacement && (insn.IsIPRelativeMemoryOperand || (co.DisplacementSize >= 4 && InImage(insn.MemoryDisplacement64))))
+                Mask(co.DisplacementOffset, co.DisplacementSize);
+            if (co.HasImmediate)
+            {
+                var near = insn.Op0Kind is OpKind.NearBranch16 or OpKind.NearBranch32 or OpKind.NearBranch64;
+                if (near || (co.ImmediateSize >= 4 && InImage(insn.GetImmediate(Fingerprint.ImmediateOperand(insn))))) Mask(co.ImmediateOffset, co.ImmediateSize);
+            }
+            var text = new Iced.Intel.StringOutput();
+            formatter.Format(insn, text);
+            lines.Add(new SignatureLine(string.Join(' ', Enumerable.Range(offset, insn.Length).Select(k => wild[k] ? "??" : bytes[k].ToString("x2", CultureInfo.InvariantCulture))), text.ToStringAndReset()));
+            length += insn.Length;
+
+            // the places the pattern so far matches: every place at first, then only those still left
+            bool Matches(int place)
+            {
+                if (place + length > image.Data.Length) return false;
+                for (var k = 0; k < length; k++) if (!wild[k] && image.Data[place + k] != bytes[k]) return false;
+                return true;
+            }
+            if (candidates is null)
+            {
+                if (length < 4 || wild[0]) continue;       // too short to be worth a scan of the whole code
+                candidates = [];
+                foreach (var s in image.Sections.Where(s => s.Executable))
+                {
+                    var span = image.Data.AsSpan((int)s.Raw, (int)Math.Min(s.RawSize, (uint)(image.Data.Length - s.Raw)));
+                    var from = 0;
+                    while (from < span.Length)
+                    {
+                        var hit = span[from..].IndexOf(bytes[0]);
+                        if (hit < 0) break;
+                        if (Matches((int)s.Raw + from + hit)) candidates.Add((int)s.Raw + from + hit);
+                        from += hit + 1;
+                    }
+                }
+            }
+            else candidates = [.. candidates.Where(Matches)];
+            found = candidates.Count;
+            if (found <= 1) break;
+        }
+        return lines;
     }
 
     (PeImage Image, string Note)? ImageOf(string binary)

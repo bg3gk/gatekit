@@ -1567,6 +1567,16 @@ from such a file and holds no table written by hand. An id with no place is prin
 <id>`) and left out. `--check` writes nothing and exits 1 when the file's places are not the
 registry's.
 
+`registry signature <id | name | binary+0xRVA> [--limit N]` prints a byte pattern for the start of
+a function, for every binary the registry places the id in (or for the one address given): whole
+instructions from the function's first byte, one a line as hex with its text after `//`, a byte
+that a relocation or another layout would change written `??` (the displacement of a RIP-relative
+operand, the target of a near call or jump, an absolute address), taken as far as is needed for
+the pattern to be found exactly once in the executable sections of the binary's file - at most
+`--limit` bytes (default 48). The first line says `found once, N bytes` or `NOT unique within the
+limit: K places`. It is what a hook or a Script Extender mapping is written from. Exit 1 when a
+binary's file cannot be read or a pattern is not unique.
+
 `registry questions [scope]` lists every open question of the entries (whose id starts with the
 scope): what is not known of a thing, above all how the game reaches it.
 

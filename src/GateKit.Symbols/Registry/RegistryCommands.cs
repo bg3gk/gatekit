@@ -55,6 +55,32 @@ public static class RegistryCommands
             root.Subcommands.Add(c);
         }
         {
+            var target = new Argument<string>("function") { Description = "a registry id, a name, or binary+0xRVA" };
+            var limit = new Option<int>("--limit") { Description = "the most bytes a signature may take (default 48)", DefaultValueFactory = _ => 48 };
+            var coverage = new Option<string?>("--coverage") { Description = "the coverage record beside the registry" };
+            var c = new Command("signature", "a byte pattern for the start of a function - whole instructions, `??` where a relocation or another layout would change a byte - as short as is found once in the binary's code; for every binary the registry places the function in. What a hook or a Script Extender mapping is written from")
+                { target, limit, coverage };
+            c.SetAction(p => Invoke(p, s =>
+            {
+                var given = p.GetValue(target)!;
+                var places = new List<(string Binary, long Start)>();
+                if (RegistryStore.Find(p.GetValue(coverage)) is { } store && store.Lookup(given) is { Count: 1 } entries)
+                    places.AddRange(store.Places(entries[0].Id).Select(x => (x.Binary, x.Row.Rva)));
+                if (places.Count == 0) places.Add(Locate(s, given, p.GetValue(coverage)));
+                var reader = Reader(s, null);
+                var bad = 0;
+                foreach (var (binary, start) in places)
+                {
+                    var lines = reader.Signature(binary, start, p.GetValue(limit), out var found);
+                    s.Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{binary}+0x{start:X}  {(lines is null ? "the binary's file cannot be read" : found == 1 ? $"found once, {lines.Sum(l => (l.Bytes.Length + 1) / 3)} bytes" : $"NOT unique within the limit: {found} places")}"));
+                    if (lines is null || found != 1) bad++;
+                    foreach (var line in lines ?? []) s.Out.WriteLine($"  {line.Bytes,-32} // {line.Text}");
+                }
+                return bad == 0 ? 0 : 1;
+            }));
+            root.Subcommands.Add(c);
+        }
+        {
             var coverage = new Option<string?>("--coverage") { Description = "the coverage record beside the registry" };
             var c = new Command("stamp", "give every function named by evidence the build of the game its address is in and its fingerprint") { coverage };
             c.SetAction(p => Invoke(p, s => StampCommand(s, p.GetValue(coverage))));
