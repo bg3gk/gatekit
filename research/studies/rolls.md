@@ -646,3 +646,31 @@ is not placed yet.
 
 So the roll log says what was thrown, and the game may go on with another number. Until the
 writer is found the row cannot say so: this is the first thing owed to the log.
+
+## 17. What a roll is for, readable at the moment of the roll
+
+Probed with the frames still open while the roll event runs.
+
+- Every roll a stats condition asks passes `unplaced::EvaluateStatsCondition` with the
+  condition's context as its fourth argument (`ls::thoth::shared::ContextData`, by the name the
+  symbol builds give it). In the context: the source at +0x00 (the caster, the attacker, a
+  status's cause), the target at +0x10, a pointer to the hit's description at +0x68 whose +0x150
+  is the spell's name, and at +0xD4 the status's name (none for a spell's roll). Seen open at
+  Sacred Flame's save, Fire Bolt's attack, a creature's weapon attack and Hold Person's repeated
+  save.
+- A spell's roll passes `unplaced::EvaluateSpellRollCondition` first, with the same context as
+  its second argument and the spell's name behind its third.
+- Damage dice, a heal and the rolls of no dice are never inside a condition: they run inside the
+  execution of a stats functor, which the Script Extender already wraps for its own events. At
+  the roll the functor's context gave: for the first damage row of a weapon hit - the attack on a
+  target, the functor list of the spell's success, caster, target and spell; for the second -
+  the attack at a position, the spell's own properties, no target; for a potion's heal - caster
+  and target the drinker, the status `POTION_OF_HEALING`, the functor list of its application.
+- Initiative: `esv::combat::System::NewInitiativeRoll` holds the combatant.
+- So "who, against whom, by which spell or status" is there at the roll for a condition's roll
+  and for a functor's roll alike, from two places the extender can stand at: the condition
+  evaluator and its own functor wrapper. Not yet built into the roll event.
+- Fall damage has no dice: a function of the distance fallen (the symbol builds name it; not
+  placed in this build). Sleep rolls nothing: a fixed budget of hit points by the wiki.
+
+Open: what the rolls of no dice evaluate; the second damage row's part in the hit points lost.
