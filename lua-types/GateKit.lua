@@ -972,6 +972,11 @@ function GK.Memory.Field(entity, component, field) end
 ---@param name string @ a system's engine name
 ---@return integer?
 function GK.Memory.System(name) end
+---Where a value below an object's top level lies and how wide it is ("Streams[2].State.NumRolls"). Observation.
+---@param object any @ a reference to an object of the game
+---@param path string
+---@return { Address: integer, Size: integer, Offset: integer?, ObjectAddress: integer?, Path: string }?, string?
+function GK.Memory.Path(object, path) end
 ---@return integer
 function GK.Memory.Element(bufferAt, index, elementSize, offset) end
 ---The followed watches whose place moved, by the slot each had.

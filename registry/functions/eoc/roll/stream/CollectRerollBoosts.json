@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "eoc::roll::stream::CollectRerollBoosts",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "Collects the roller's reroll boosts that match the roll's type, as pairs of the face at or below which a die is thrown again and whether the new die always stands, sorted by that face.",
   "evidence": [
     {
@@ -12,6 +12,14 @@
     {
       "kind": "watch",
       "says": "A count-only probe on it shows one call for each roll with boosts, from +0x105CDD2"
+    },
+    {
+      "kind": "read",
+      "says": "It walks the roller's boosts of the reroll kind and compares the roll type"
+    },
+    {
+      "kind": "watch",
+      "says": "With the passive Halfling Luck on the roller the roll that follows throws its natural 1 again; without it the same function is called and no die is thrown again"
     },
     {
       "kind": "read",

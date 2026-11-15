@@ -32,6 +32,16 @@ The work on rolls, in order. An item leaves this file when it is done; what it f
   what from the game's records instead of rebuilding them from asking addresses, and so that a
   roll kept out of the log is told from one that is shown.
 
+- With the combat log: what a creature is about to do, a step before the die. Count-only probes
+  on the AI's functions and on the start of a cast over an enemy's turn show which run before its
+  attack roll (the AI's damage estimate, `code:unplaced::EstimateSpellDamage`, is one already
+  read); the aim is a row for "this creature chose this action against this target" early enough
+  to act on, where today a row comes only when the die is thrown or after the hit.
+- The registry and the fork joined both ways: a probe put on by registry id, with the address of
+  the running executable filled in; every address a probe or a roll event reports - a caller, a
+  chain, a pointer to an object - named by its registry id, the unnamed ones listed as what to
+  read next; a scene's run turned into a `watch` evidence item with the command that repeats it.
+
 ## Demonstrations of control
 
 Scenes that show the process is held end to end, made once the interception is proven:

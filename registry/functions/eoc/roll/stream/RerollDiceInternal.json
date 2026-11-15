@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "eoc::roll::stream::RerollDiceInternal",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "Throws again each die at or below a reroll boost's face, through the whole-number draw on the stream, and keeps the new die when the boost says it always stands or when it is higher.",
   "evidence": [
     {
@@ -16,6 +16,14 @@
     {
       "kind": "read",
       "says": "It draws with the roll's own faces and records the old and the new value"
+    },
+    {
+      "kind": "watch",
+      "says": "A passive check of a creature with Halfling Luck whose first die was chosen as 1 drew a third die from +0x105B449 inside this function, and the roll's natural die became that third die; the same check without the passive drew two dice and kept the 1"
+    },
+    {
+      "kind": "read",
+      "says": "It draws with the roll's own faces and keeps the new die when the boost says it always stands or when it is higher"
     }
   ],
   "questions": [
