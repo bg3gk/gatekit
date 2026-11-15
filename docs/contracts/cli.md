@@ -315,10 +315,11 @@ and nothing is probed; a function the extender cannot probe is named on the erro
 rest go on. Needs the Script Extender build with function probes: without it -> `ERROR: this
 Script Extender build has no function probes`.
 
-### 2.8.2 `cover`, `cover-fold`
+### 2.8.2 `cover`, `cover-fold`, `cover-diff`
 
 The record of coverage: which functions of the running executable run, and from where, while the
-game is played. Needs the Script Extender build with coverage counters (`Ext.Debug.CoverStart`).
+game is played. Needs the Script Extender build with coverage counters
+(`Ext.Debug.StartCoverage`).
 
 - `gatekit cover start [--min-size N] [--limit N] [--hot N]` puts a counter on the functions of
   the executable the game runs, as the pseudo-code database lists them: thunks and functions
@@ -333,10 +334,16 @@ game is played. Needs the Script Extender build with coverage counters (`Ext.Deb
   function and the address that called it, `L <calls lost>`; rvas in hex. `--reset` starts the
   counts again, so that each file holds one stretch of play.
 - `gatekit cover stop` takes every counter off; the counts stay for a last `save`.
-- `gatekit cover-fold FILE... [--top N]` needs no game: it adds the files up and reads them
-  against the registry - how many functions ran, how many of them an id names, the named ones and
-  the unnamed ones that ran the most (default 30 of each), each unnamed one with the number of
-  places it was called from.
+- `gatekit cover-fold FILE... [--top N] [--where inCombat|inDialog|neither] [--names]` needs no
+  game: it adds the files up and reads them against the registry - how many functions ran, how
+  many of them an id names, the named ones and the unnamed ones that ran the most (default 30 of
+  each), each unnamed one with the number of places it was called from. A function taken off as
+  hot counts once, with the most it reached in any file. `--where` takes only the files whose
+  state file beside them (the same name, `.json`) says the game was in that situation; `--names`
+  puts beside an unnamed function the name the databases give it (slower).
+- `gatekit cover-diff FILE... --against FILE... [--top N] [--names]` needs no game: the functions
+  that ran in the first set of files and in none of the second - a scene with a mechanic against
+  the same scene without it names the mechanic's functions.
 
 ### 2.9 `shot`, `key`
 
