@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "unplaced::RollSkillCheck",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "Rolls a skill check against a difficulty through the roll against a difficulty, then applies a guaranteed-outcome boost.",
   "evidence": [
     {
@@ -12,6 +12,14 @@
     {
       "kind": "watch",
       "says": "A passive skill check's count writes return through +0x1075CCE inside this function"
+    },
+    {
+      "kind": "watch",
+      "says": "A count-only probe on it shows one call for each of three passive skill checks, from +0x1188BBC, and the roll against a difficulty called from +0x1075CCE inside it"
+    },
+    {
+      "kind": "read",
+      "says": "The skill is mapped to its ability and the stream id comes from the caller"
     }
   ],
   "questions": [
