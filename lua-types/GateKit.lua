@@ -1143,6 +1143,18 @@ function GK.Rolls.Streams() end
 ---@return { ok: boolean, written: table[], missing: table[]? }
 function GK.Rolls.SetStreams(list) end
 
+---The dice a roll stream gives to its next roll, computed from its seed and count and not drawn
+---(dice: how many, default the pair of a d20 roll; faces: default 20; rolls: another count). Server. Observation.
+---@param spec { type: string, player: string?, combat: string?, dice: integer?, faces: integer?, rolls: integer? }
+---@return { ok: boolean, type: string?, player: string?, combat: string?, seed: integer?, rolls: integer?, dice: integer[]?, error: string? }
+function GK.Rolls.Next(spec) end
+
+---Chooses the natural die of the next roll drawn from a roll stream, for the stage scope: moves the
+---stream's count to the nearest one that gives `die` (with `both`, on every die of the roll). Server. Cheat.
+---@param spec { type: string, player: string?, combat: string?, die: integer, both: boolean?, dice: integer?, faces: integer? }
+---@return { ok: boolean, type: string?, player: string?, combat: string?, seed: integer?, rolls: integer?, was: integer?, dice: integer[]?, error: string? }
+function GK.Rolls.SetNext(spec) end
+
 ---The oldest finished roll of who not yet joined to a RollResult (take removes it). Server. Observation.
 ---@param who GK.Uuid
 ---@param take boolean?

@@ -24,6 +24,7 @@ Rolls.Class = {
     Pin = "cheat", Unpin = "cheat", Pins = "observation", Kinds = "observation",
     Karmic = "observation", SetKarmic = "cheat", Finished = "observation",
     Inspiration = "observation", SetInspiration = "cheat", Streams = "observation", SetStreams = "cheat",
+    Next = "observation", SetNext = "cheat",
     WriteInspiration = "cheat", WriteKarmic = "cheat", WriteStreams = "cheat",
 }
 
@@ -637,6 +638,103 @@ function Rolls.WriteStreams(list)
         if spec.seed ~= nil then back.stream.State.Seed = spec.seed end
         if spec.rolls ~= nil then back.stream.State.NumRolls = spec.rolls end
     end
+end
+
+-- The outputs 0..upto of the game's generator for a stream: the standard 64-bit Mersenne Twister
+-- seeded with the stream's seed (code:eoc::roll::stream::RollManager::InternalRollDice).
+local function outputs(seed, upto)
+    local mt = { [0] = seed }
+    for i = 1, 311 do local p = mt[i - 1]; mt[i] = (p ~ (p >> 62)) * 6364136223846793005 + i end
+    local at, out = 312, {}
+    for k = 0, upto do
+        if at >= 312 then
+            for i = 0, 311 do
+                local x = (mt[i] & ~0x7FFFFFFF) | (mt[(i + 1) % 312] & 0x7FFFFFFF)
+                local v = mt[(i + 156) % 312] ~ (x >> 1)
+                if x & 1 ~= 0 then v = v ~ 0xB5026F5AA96619E9 end
+                mt[i] = v
+            end
+            at = 0
+        end
+        local x = mt[at]; at = at + 1
+        x = x ~ ((x >> 29) & 0x5555555555555555)
+        x = x ~ ((x << 17) & 0x71D67FFFEDA60000)
+        x = x ~ ((x << 37) & 0xFFF7EEE000000000)
+        out[k] = x ~ (x >> 43)
+    end
+    return out
+end
+
+-- One die of `faces` from an output, the output taken as unsigned.
+local function face(x, faces) return 1 + (((x >> 1) % faces) * 2 + (x & 1)) % faces end
+
+-- The output a call's die number k (from 0) is drawn at, the stream's count being `count` when the
+-- call begins: the generator is seeded once for the call and each die discards the count again.
+local function drawnAt(count, k) return (k + 1) * count + (k * (k + 3)) // 2 end
+
+local function oneStream(spec, verb)
+    if type(spec) ~= "table" or type(spec.type) ~= "string" then
+        error("GK.Rolls." .. verb .. "{ type, player, combat, ... }: the stream's type, got " .. tostring(spec and spec.type), 3)
+    end
+    local found = matching(spec)
+    if #found > 1 then error(("GK.Rolls.%s: %d streams of type %s - name the player or the combat"):format(verb, #found, spec.type), 3) end
+    return found[1] and found[1].read
+end
+
+--- The dice the stream `spec` names gives to its next roll, computed from its seed and count and
+--- not drawn: { ok, type, player, combat, seed, rolls, dice = { ... } }. `spec.dice` is how many
+--- dice the roll draws (default 2: the game draws a pair for every d20 roll and keeps the first
+--- unless advantage or disadvantage chooses), `spec.faces` their faces (default 20), `spec.rolls`
+--- a count to compute from instead of the stream's own. A roll forced by Karmic Dice, a die
+--- thrown again by a reroll boost and a die replaced by a guaranteed-outcome boost are not these.
+function Rolls.Next(spec)
+    local s = oneStream(spec, "Next")
+    if not s then return { ok = false, error = "no stream of type " .. spec.type .. " (the game makes a stream at its first roll)" } end
+    local dice, faces, count = spec.dice or 2, spec.faces or 20, spec.rolls or s.rolls
+    if not (integer(dice) and dice >= 1 and dice <= 64) then error("GK.Rolls.Next: dice is a whole number from 1 to 64, got " .. tostring(spec.dice), 2) end
+    if not (integer(faces) and faces >= 2) then error("GK.Rolls.Next: faces is a whole number from 2, got " .. tostring(spec.faces), 2) end
+    if not (integer(count) and count >= 0) then error("GK.Rolls.Next: rolls is a whole number from 0, got " .. tostring(spec.rolls), 2) end
+    local out = outputs(s.seed, drawnAt(count, dice - 1))
+    local list = {}
+    for k = 0, dice - 1 do list[#list + 1] = face(out[drawnAt(count, k)], faces) end
+    return { ok = true, type = s.type, player = s.player, combat = s.combat, seed = s.seed, rolls = count, dice = list }
+end
+
+local SEARCH = 4000   -- counts looked through for a wanted die; one in `faces` fits (one in its square for both dice)
+
+--- Chooses the natural die of the next d20 roll drawn from the stream `spec` names, for the
+--- length of the stage scope: moves the stream's count forward to the nearest one at which the
+--- first die of the pair is `spec.die` and, with `spec.both`, the second too (so that advantage
+--- and disadvantage keep it as well). One roll is chosen: the roll after it draws what the
+--- stream gives at the count it is left at. `spec.faces` (default 20) and `spec.dice` (default 2)
+--- describe another roll, every die of which is then `spec.die` with `both`. Not chosen: a roll
+--- Karmic Dice forces, a die a boost throws again or bounds, a die replaced outside the streams.
+--- Refused outside a scope. { ok, type, player, combat, seed, rolls, was, dice }.
+function Rolls.SetNext(spec)
+    local s = oneStream(spec, "SetNext")
+    needScope("SetNext")
+    if not s then return { ok = false, error = "no stream of type " .. spec.type .. " (the game makes a stream at its first roll)" } end
+    local dice, faces = spec.dice or 2, spec.faces or 20
+    if not (integer(faces) and faces >= 2) then error("GK.Rolls.SetNext: faces is a whole number from 2, got " .. tostring(spec.faces), 2) end
+    if not (integer(dice) and dice >= 1 and dice <= 4) then error("GK.Rolls.SetNext: dice is a whole number from 1 to 4, got " .. tostring(spec.dice), 2) end
+    if not (integer(spec.die) and spec.die >= 1 and spec.die <= faces) then
+        error(("GK.Rolls.SetNext: die is a whole number from 1 to %d, got %s"):format(faces, tostring(spec.die)), 2)
+    end
+    local last = s.rolls + SEARCH
+    local out = outputs(s.seed, drawnAt(last, dice - 1))
+    for count = s.rolls, last do
+        local fits = face(out[count], faces) == spec.die
+        if fits and spec.both then
+            for k = 1, dice - 1 do fits = fits and face(out[drawnAt(count, k)], faces) == spec.die end
+        end
+        if fits then
+            local set = Rolls.SetStreams{ { type = s.type, player = s.player, combat = s.combat, rolls = count } }
+            local list = {}
+            for k = 0, dice - 1 do list[#list + 1] = face(out[drawnAt(count, k)], faces) end
+            return { ok = set.ok, type = s.type, player = s.player, combat = s.combat, seed = s.seed, rolls = count, was = s.rolls, dice = list }
+        end
+    end
+    return { ok = false, error = ("no count within %d of %d gives the die %d"):format(SEARCH, s.rolls, spec.die), rolls = s.rolls }
 end
 
 function Rolls.SetKarmic(on)

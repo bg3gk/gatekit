@@ -331,8 +331,8 @@ computed: 13, 4, 20, 1. Without advantage or disadvantage the first die of the p
 
 0 Generic, 1 Dialog, 2 PlayerSpell, 3 NPCSpell, 4 PlayerRandomCast, 5 NPCRandomCast, 6
 PlayerDamage, 7 NPCDamage: read in the code's stream getters and seen in the manager's streams of
-a fight (2, 6, 7, 3 in the order they were made). Script Extender's enumeration is to be checked
-against this. A stream is found by its id (+0x58), not by a player.
+a fight (2, 6, 7, 3 in the order they were made); Script Extender's names for them agree. A
+stream is found by its id (+0x58), not by a player.
 
 ### Who asks
 

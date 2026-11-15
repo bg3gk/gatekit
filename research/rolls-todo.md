@@ -25,6 +25,22 @@ The work on rolls, in order. An item leaves this file when it is done; what it f
   dice on the board in a roll window (dialogue, lock, trap) - told apart from the calls that
   decide the number: a watch says whether each moves a stream's count.
 
+## Demonstrations of control
+
+Scenes that show the process is held end to end, made once the interception is proven:
+
+- Five goblins around the caster; Magic Missile cast at one of them; the darts fly at it, and the
+  damage - a chosen amount, such as 1000 - lands on the other four and not on it. The dice are
+  the interception's; the target of the damage is the hit's, so this also needs the damage
+  functor's events.
+- A dialogue check rolled by a party member who is not the speaker: the roller of the request
+  replaced at the moment of the throw, with that member's bonuses and boosts.
+- One dart of a volley, or one hit of a multi-attack, given a chosen die while the others keep
+  the stream's own.
+- An enemy's saving throw against a spell chosen per target in one cast.
+- A halfling's natural 1 thrown again into a chosen die; a roll under Karmic Dice forced the
+  other way.
+
 ## The sweep of effects that use dice
 
 Begins when the machinery above is covered. Every effect of the game that throws or changes a die
