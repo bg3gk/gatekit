@@ -267,23 +267,24 @@ What the stage of rolls reached is in `research/studies/rolls.md` (sections 8-18
   new dice.
 - **A heal's roll has the type `Sentinel`** and initiative `None`: neither can be named by kind
   in a pin or a rig.
-- **The second executable (`bg3.exe`, Vulkan) was never run.** Its places are in the registry
-  (moved by `registry reanchor`) and the byte patterns of the hooks are found once in it; no
-  game was started on it.
+- **The second executable (`bg3.exe`, Vulkan) was run once**: every hook of the fork was found
+  in it, and the tests of the roll log's origins, of the game's chance and of a roll changed
+  after the throw pass on it. The rest of the tests were run on `bg3_dx11.exe` only.
 - **The pin was judged and not changed.** Kept as the standing rule on stock Script Extender;
   the condition in the game's boost words (`when`) is proposed and not built; one throw is the
   rig's business, on the fork.
-- **A verb does not say which Script Extender it needs.** The rig and the roll log need the
-  fork's roll events and answer so at run time; the field `needs` in the table of verbs, one
-  refusal in one place and a `needs` in a test's header are proposed and not built.
+- **A test's header does not say which Script Extender it needs.** A verb now does (`needs` in
+  the table of verbs, one refusal in one sentence: `GK.Verbs.Has`, `GK.Verbs.Lacks`); a test asks
+  with `need(...)` by hand. A `needs` in the header, read by the runner, is proposed and not built.
 - **The cause of a roll asked by the story or by a dialogue** is the request's own record
   (`request`): the parties and the spell are empty, by the game's own account.
-- **What the rolls of no dice evaluate** (seen after nearly every cast, from the plain dice of
-  a stats expression) is not known.
+- **The rolls of no dice** seen after nearly every cast are the duration of a status that a
+  weapon attack's own properties give a creature that is no player (an AI helper): named.
 - **Karmic Dice on damage** was watched once: the dice were not the generator's own. The rule
   of that draw is read in the code and not confirmed by a test.
-- **The game's own hit chance for a caster, a spell and a target of a mod's choosing** has a
-  function in the game and no call from Lua yet (section 13).
+- **The game's own chance is built for a spell's roll** (`Ext.Stats.GetSpellRollChance`,
+  `GK.Rolls.Chance`; section 22). Not built: the damage a hit would do to a given target - the
+  server has no cheap function for it; a check that is no spell's roll (a skill check's chance).
 - **The freshness of the generated files is not checked by itself**: after a `registry commit`
   the build table of `bg3.exe` and `Server/RollOrigins.json` are refreshed by hand
   (`registry reanchor --target bg3.exe`, `registry places`).
