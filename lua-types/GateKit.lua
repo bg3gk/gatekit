@@ -3231,3 +3231,25 @@ function GK.RollLog.Origin(module, rva) end
 ---The askers known for each executable. Server. Observation.
 ---@return table<string, { id: string, what: string, rva: integer, size: integer }[]>
 function GK.RollLog.Origins() end
+
+---Decides one throw at the moment it is made, for the stage scope. Server. Cheat.
+---@param spec { who: string?, kind: string?, stream: string?, nth: integer?, times: integer?, natural: integer?, total: integer? }
+---@return { ok: boolean, id: integer?, error: string? }
+function GK.Rolls.Rig(spec) end
+
+---Takes a rig off (every rig without an id). Server. Cheat.
+---@param id integer?
+---@return { ok: boolean, removed: integer }
+function GK.Rolls.Unrig(id) end
+
+---The rigs in force. Server. Observation.
+---@return { id: integer, who: string?, kind: string?, stream: string?, nth: integer, times: integer, natural: integer?, total: integer?, seen: integer, decided: integer }[]
+function GK.Rolls.Rigs() end
+
+---Whether this Script Extender build raises the roll event a rig acts through. Server. Observation.
+---@return boolean
+function GK.Rolls.CanRig() end
+
+---The causes of a roll known for each executable. Server. Observation.
+---@return table<string, { id: string, cause: string, rva: integer, size: integer }[]>
+function GK.RollLog.Causes() end
