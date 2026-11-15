@@ -96,43 +96,18 @@ public static class LiveCommands
                 var store = RegistryStore.Find(p.GetValue(coverage)) ?? throw new RegistryException("no registry found");
                 var path = p.GetValue(file)!;
                 var root = GateKit.Json.JsonText.Read(path).AsObject();
-                var ids = new SortedSet<string>(StringComparer.Ordinal);
-                void Walk(JsonNode? node)
-                {
-                    if (node is JsonObject o)
-                        foreach (var (key, value) in o)
-                        {
-                            if (key == "places") continue;
-                            if (key == "id" && GateKit.Json.JsonText.Text(value) is { } id) ids.Add(id);
-                            else Walk(value);
-                        }
-                    else if (node is JsonArray a) foreach (var item in a) Walk(item);
-                }
-                Walk(root);
-                var places = new JsonObject();
-                var missing = new List<string>();
-                foreach (var id in ids)
-                {
-                    var found = store.Places(id);
-                    if (found.Count == 0) missing.Add(id);
-                    foreach (var (build, binary, row) in found.OrderBy(f => f.Build, StringComparer.Ordinal).ThenBy(f => f.Binary, StringComparer.Ordinal))
-                    {
-                        var ofBuild = places[build] as JsonObject ?? (JsonObject)(places[build] = new JsonObject());
-                        var ofBinary = ofBuild[binary] as JsonObject ?? (JsonObject)(ofBuild[binary] = new JsonObject());
-                        ofBinary[id] = new JsonArray(row.Rva, row.Size ?? 0);
-                    }
-                }
+                var (places, missing, ids) = PlacesOf(store, root);
                 foreach (var id in missing) s.Out.WriteLine($"no place: {id}");
                 var before = root["places"]?.ToString();
                 if (p.GetValue(check))
                 {
                     var same = before == places.ToString();
-                    s.Out.WriteLine(same ? $"{path}: its places are the registry's ({ids.Count} ids)" : $"{path}: its places are not the registry's - run `gatekit registry places {path}`");
+                    s.Out.WriteLine(same ? $"{path}: its places are the registry's ({ids} ids)" : $"{path}: its places are not the registry's - run `gatekit registry places {path}`");
                     return same ? 0 : 1;
                 }
                 root["places"] = places;
                 GateKit.Json.JsonText.Write(path, root);
-                s.Out.WriteLine($"{path}: {ids.Count} ids, {missing.Count} with no place");
+                s.Out.WriteLine($"{path}: {ids} ids, {missing.Count} with no place");
                 return 0;
             }));
             root.Subcommands.Add(c);
@@ -410,6 +385,40 @@ public static class LiveCommands
         };
         if (live.Of(id).OrderBy(c => c.When).LastOrDefault() is { } now) answer["now"] = Summary(now.Entry, now.Id, now.Build, true, now);
         return answer;
+    }
+
+    /// <summary>Where the build tables put every function id a data file names (every string under a
+    /// key "id", at any depth, the file's own "places" left aside): the places as the file should
+    /// hold them, the ids with no place, and how many ids there are.</summary>
+    public static (JsonObject Places, List<string> Missing, int Ids) PlacesOf(RegistryStore store, JsonObject root)
+    {
+        var ids = new SortedSet<string>(StringComparer.Ordinal);
+        void Walk(JsonNode? node)
+        {
+            if (node is JsonObject o)
+                foreach (var (key, value) in o)
+                {
+                    if (key == "places") continue;
+                    if (key == "id" && GateKit.Json.JsonText.Text(value) is { } id) ids.Add(id);
+                    else Walk(value);
+                }
+            else if (node is JsonArray a) foreach (var item in a) Walk(item);
+        }
+        Walk(root);
+        var places = new JsonObject();
+        var missing = new List<string>();
+        foreach (var id in ids)
+        {
+            var found = store.Places(id);
+            if (found.Count == 0) missing.Add(id);
+            foreach (var (build, binary, row) in found.OrderBy(f => f.Build, StringComparer.Ordinal).ThenBy(f => f.Binary, StringComparer.Ordinal))
+            {
+                var ofBuild = places[build] as JsonObject ?? (JsonObject)(places[build] = new JsonObject());
+                var ofBinary = ofBuild[binary] as JsonObject ?? (JsonObject)(ofBuild[binary] = new JsonObject());
+                ofBinary[id] = new JsonArray(row.Rva, row.Size ?? 0);
+            }
+        }
+        return (places, missing, ids.Count);
     }
 
     /// <summary>What is known of an id, as JSON: the committed entry and its places, and the live claims.</summary>

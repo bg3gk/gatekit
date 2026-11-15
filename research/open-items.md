@@ -285,9 +285,9 @@ What the stage of rolls reached is in `research/studies/rolls.md` (sections 8-18
 - **The game's own chance is built for a spell's roll** (`Ext.Stats.GetSpellRollChance`,
   `GK.Rolls.Chance`; section 22). Not built: the damage a hit would do to a given target - the
   server has no cheap function for it; a check that is no spell's roll (a skill check's chance).
-- **The freshness of the generated files is not checked by itself**: after a `registry commit`
-  the build table of `bg3.exe` and `Server/RollOrigins.json` are refreshed by hand
-  (`registry reanchor --target bg3.exe`, `registry places`).
+- **The build table of `bg3.exe` is refreshed by hand** after a `registry commit`
+  (`registry reanchor --target bg3.exe`); a data file of the mod whose places went stale is then
+  refused by `registry check` until `registry places` is run on it.
 
 Found on the way, about tests and tools:
 

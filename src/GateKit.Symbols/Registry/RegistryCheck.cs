@@ -78,6 +78,27 @@ public static partial class RegistryCheck
         CheckTables(store, ids, report);
         foreach (var entry in entries) CheckEntry(store, entry, report);
         CheckCitations(store, known, report);
+        // A data file of the bridge mod that holds places written from the build tables
+        // (`registry places`) must hold them as the tables are now: a hook or a log that names
+        // code by a stale place names the wrong code.
+        var mods = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(store.Root))!, "mods");
+        if (Directory.Exists(mods))
+            foreach (var path in Directory.EnumerateFiles(mods, "*.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+            {
+                JsonObject? root;
+                try
+                {
+                    var text = File.ReadAllText(path);
+                    if (!text.Contains("\"places\"", StringComparison.Ordinal)) continue;
+                    root = JsonText.Read(path) as JsonObject;
+                }
+                catch (Exception e) when (e is IOException or JsonProblemException or ArgumentException) { continue; }
+                if (root?["places"] is not JsonObject held) continue;
+                var (places, _, _) = LiveCommands.PlacesOf(store, root);
+                if (JsonText.Inline(held) != JsonText.Inline(places))
+                    report.Refuse("places", Path.GetRelativePath(Path.GetDirectoryName(mods)!, path).Replace(Path.DirectorySeparatorChar, '/'),
+                        "its places are not what the build tables hold: run `gatekit registry places` on it");
+            }
         return report;
     }
 

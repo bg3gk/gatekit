@@ -1566,6 +1566,10 @@ Code that meets raw addresses in the game (the roll log, with the frames above a
 from such a file and holds no table written by hand. An id with no place is printed (`no place:
 <id>`) and left out. `--check` writes nothing and exits 1 when the file's places are not the
 registry's.
+`registry check` refuses (rule `places`) a JSON file under `mods/` whose top-level `places` are not
+what the build tables hold now, so a table moved by a commit or a reanchor is not left stale in
+the mod.
+
 
 `registry signature <id | name | binary+0xRVA> [--limit N]` prints a byte pattern for the start of
 a function, for every binary the registry places the id in (or for the one address given): whole
