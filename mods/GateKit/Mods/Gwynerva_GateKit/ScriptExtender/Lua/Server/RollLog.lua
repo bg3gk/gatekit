@@ -177,6 +177,18 @@ local function write(e)
         origin = origin and origin.id or "unknown", what = origin and origin.what or nil, caller = asked,
         cause = cause and cause.cause or "unknown", causeId = cause and cause.id or nil, request = cause and cause.request or nil,
     }
+    -- What the roll is for, as the extender reads it from the condition or the effect the roll is
+    -- thrown inside (a build without these fields leaves them out): the two parties, the spell,
+    -- the status. Where no frame named the cause, the effect does: a status's or a spell's effect.
+    pcall(function()
+        payload.source, payload.target = uuid(e.Source), uuid(e.Target)
+        local spell, status = tostring(e.Spell or ""), tostring(e.Status or "")
+        payload.spell = spell ~= "" and spell or nil
+        payload.status = status ~= "" and status or nil
+        if payload.cause == "unknown" then
+            payload.cause = payload.status and "status effect" or payload.spell and "spell effect" or "unknown"
+        end
+    end)
     -- a rig decided this roll a moment ago (the log hears the event last): the row says what the
     -- game goes on with, and what was thrown before the rig
     local rig = GK.Rolls and GK.Rolls.JustRigged
