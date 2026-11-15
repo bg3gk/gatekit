@@ -817,3 +817,27 @@ attack: Strength in place of the dagger's Dexterity). The condition reads the se
 caster's own component; nothing in the context changes it. `GK.Rolls.Chance` puts the right set
 on for the length of the question and puts it back. Whether the game's AI weighs the wrong
 number for a creature standing in its ranged set is being watched.
+
+## 23. The second sweep
+
+- **The rule behind the missing Sneak Attack dice.** Damage dice thrown for a stats expression
+  never reach the hit's list of damage rolls; only the weapon's own dice do. Seen for Sneak
+  Attack (also without a critical), Divine Smite (a hit of its own with an empty list), Sand
+  Toss and Colossus Slayer. The last is the worst case: its hit lists a weapon roll, 1d4+3 = 4,
+  which was thrown and is not the damage; it dealt 8, the d8. Dice that come from a boost
+  (a damage bonus, Hunter's Mark, a fire coating) are listed with their roll and add up.
+- **The game's AI weighs a melee attack with the weapon set in hand.** A goblin with a scimitar
+  and a shortbow, standing in its ranged set: the scorer's number for its melee attack was
+  0.2025 where the dice were 0.25. It chose the ranged attack. The bias is always against melee.
+- **The wiki's list of bugged actions: eight of eight still true in this build** - Firewine
+  Explosion's halved save, Cinderous Swipe in wild shape, Gargantuan Cleave's half damage,
+  Divine Strike (fire, melee) with no damage type, Gossamer Tomb, Sand Toss using Strength with
+  the ranged set in hand and taking Great Weapon Master's -5 with no +10, a damage bonus boost
+  not doubled on a critical.
+- Agreed: Great Weapon Master (it needs proficiency with the weapon), Sharpshooter, Bane's d4,
+  two sources of advantage (still one extra die), Bardic Inspiration with Guidance.
+- Thrown and shown nowhere: a whole roll of a dialogue check as its window opens; a second d20
+  on every saving throw, kept as discarded. Shown and not thrown as shown: a damage roll's
+  critical flag compares the sum of its dice with one die's size (3+3 on 2d6 is flagged).
+- What the player sees in the combat log's tooltip was not read: the tooltip's lines are not
+  filled by opening it from code.
