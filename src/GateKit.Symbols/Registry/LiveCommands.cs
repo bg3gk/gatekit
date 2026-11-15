@@ -183,6 +183,37 @@ public static class LiveCommands
         return Note(s, request, live, store);
     }
 
+    /// <summary>Where every function of a binary begins, as the pseudo-code database has them: the
+    /// thunks and the functions shorter than <paramref name="minimum"/> bytes left out.</summary>
+    public static List<long> FunctionStarts(string binary, long minimum, TextWriter error)
+    {
+        using var s = new DecompSession(DecompSettings.FromEnvironment(), TextWriter.Null, error);
+        return [.. s.Db.Query("SELECT f.rva FROM functions f JOIN binaries b ON b.id = f.binary_id WHERE b.name = ? COLLATE NOCASE AND f.thunk = 0 AND f.size >= ? ORDER BY f.rva",
+            binary, minimum).Select(r => Sql.Long(r[0])!.Value)];
+    }
+
+    /// <summary>Names many addresses with the databases opened once: for each, the id that names the
+    /// function holding it (committed first, else live), the function's start, and the names the
+    /// databases give it.</summary>
+    public static List<(string Address, string? Id, long? Start, string? Other)> NameMany(IEnumerable<string> addresses, RegistryStore? store, LiveLayer live, TextWriter error)
+    {
+        using var s = new DecompSession(DecompSettings.FromEnvironment(), TextWriter.Null, error);
+        var named = new List<(string, string?, long?, string?)>();
+        foreach (var address in addresses)
+        {
+            try
+            {
+                var at = AtJson(s, address, store, live);
+                var id = (at["committed"] as JsonArray)?.FirstOrDefault()?["id"]?.GetValue<string>() ?? (at["live"] as JsonArray)?.FirstOrDefault()?["id"]?.GetValue<string>();
+                var function = at["function"]?.GetValue<string>();
+                long? start = function is null ? null : RegistryStore.ParseHex(function[(function.IndexOf("+0x", StringComparison.Ordinal) + 1)..]);
+                named.Add((address, id, start, at["symbols"]?.GetValue<string>() ?? at["decompiler"]?.GetValue<string>()));
+            }
+            catch (Exception e) when (e is SymbolsException or RegistryException) { named.Add((address, null, null, null)); }
+        }
+        return named;
+    }
+
     /// <summary>A function seen at work that no id names yet, written into the live layer as
     /// <c>unplaced::unnamed_&lt;token&gt;</c> (the token from its fingerprint) with what was seen and
     /// what is asked of it; null when an id, committed or live, already names the function.</summary>

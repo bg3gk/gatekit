@@ -315,6 +315,29 @@ and nothing is probed; a function the extender cannot probe is named on the erro
 rest go on. Needs the Script Extender build with function probes: without it -> `ERROR: this
 Script Extender build has no function probes`.
 
+### 2.8.2 `cover`, `cover-fold`
+
+The record of coverage: which functions of the running executable run, and from where, while the
+game is played. Needs the Script Extender build with coverage counters (`Ext.Debug.CoverStart`).
+
+- `gatekit cover start [--min-size N] [--limit N] [--hot N]` puts a counter on the functions of
+  the executable the game runs, as the pseudo-code database lists them: thunks and functions
+  shorter than `--min-size` bytes (default 64) left out; `--limit` takes that many, spread evenly
+  (default: all). The extender refuses an address that its own table of functions does not give
+  as a function's start. A function called more often than `--hot` (default 200000) is taken off
+  by itself, with the count it reached. Prints `<binary>: <asked> functions asked, <counted>
+  counted, <refused> refused`. A second start adds to the first.
+- `gatekit cover status` prints `{ Functions, Attached, Hot, Seen, Calls, Pairs, Lost }`.
+- `gatekit cover save FILE [--reset]` writes the counts to `FILE`: `F <module> <rva> <calls>
+  <hot>` for every function called, `E <module> <rva> <module> <rva> <calls>` for every pair of a
+  function and the address that called it, `L <calls lost>`; rvas in hex. `--reset` starts the
+  counts again, so that each file holds one stretch of play.
+- `gatekit cover stop` takes every counter off; the counts stay for a last `save`.
+- `gatekit cover-fold FILE... [--top N]` needs no game: it adds the files up and reads them
+  against the registry - how many functions ran, how many of them an id names, the named ones and
+  the unnamed ones that ran the most (default 30 of each), each unnamed one with the number of
+  places it was called from.
+
 ### 2.9 `shot`, `key`
 
 - `shot OUT [--width N]`: a picture of the game, taken by the game itself (8.3, point 12), or of

@@ -51,6 +51,8 @@ public static class CopyCommands
         yield return Simple("destroy", "close this copy's game and delete its clone, profile and records", s => s.Out.WriteLine(s.Destroy()));
         yield return Exec();
         yield return Probe();
+        yield return Cover();
+        yield return CoverFold();
         yield return Shot();
         yield return Key();
         yield return Sound();
@@ -463,6 +465,110 @@ public static class CopyCommands
                 }
             }
         }));
+        return command;
+    }
+
+    /// <summary>The record of coverage while the game is played: counters on the functions of the
+    /// running executable, their counts saved to a file, the file folded against the registry.</summary>
+    static Command Cover()
+    {
+        var command = new Command("cover", "record which functions run and who calls them while the game is played; needs the Script Extender build with coverage counters");
+
+        const string Module = "local a = Ext.Debug.GetSymbolAddress and Ext.Debug.GetSymbolAddress('ecs__EntityWorld__Update') local m = a and Ext.Debug.ModuleFromAddress(a) return m and m.Module";
+
+        var minimum = new Option<long>("--min-size") { Description = "leave out functions shorter than this many bytes: the shortest are called the most", DefaultValueFactory = _ => 64 };
+        var limit = new Option<int>("--limit") { Description = "at most this many functions, spread evenly over the executable (0: all)", DefaultValueFactory = _ => 0 };
+        var hot = new Option<long>("--hot") { Description = "a function called more often than this is taken off by itself", DefaultValueFactory = _ => 200_000 };
+        var start = new Command("start", "put a counter on the functions of the running executable") { minimum, limit, hot };
+        start.SetAction((parse, _) => Run(parse, async s =>
+        {
+            var module = (await s.ExecAsync("server", Module, TimeSpan.FromSeconds(20)))?.GetValue<string>()
+                ?? throw new InvalidOperationException("this Script Extender build has no coverage counters: start the copy with the build that has them");
+            var starts = GateKit.Symbols.Registry.LiveCommands.FunctionStarts(module, parse.GetValue(minimum), TextWriter.Null);
+            if (parse.GetValue(limit) is > 0 and var most && starts.Count > most)
+            {
+                var step = (double)starts.Count / most;
+                starts = [.. Enumerable.Range(0, most).Select(i => starts[(int)(i * step)])];
+            }
+            long placed = 0, refused = 0;
+            const int Batch = 2000;
+            for (var from = 0; from < starts.Count; from += Batch)
+            {
+                var list = string.Join(",", starts.Skip(from).Take(Batch).Select(r => string.Create(CultureInfo.InvariantCulture, $"{r}")));
+                var answer = await s.ExecAsync("server", $$"""
+                    local base = Ext.Debug.AddressFromModule("{{module}}", 0)
+                    local list = { {{list}} }
+                    for i = 1, #list do list[i] = base + list[i] end
+                    return Ext.Debug.CoverStart(list, {{parse.GetValue(hot)}})
+                    """, TimeSpan.FromSeconds(120));
+                placed += answer?["Placed"]?.GetValue<long>() ?? 0;
+                refused += answer?["Refused"]?.GetValue<long>() ?? 0;
+            }
+            s.Out.WriteLine($"{module}: {starts.Count} functions asked, {placed} counted, {refused} refused");
+        }));
+        command.Subcommands.Add(start);
+
+        var status = new Command("status", "how many functions are counted, were called, were taken off as called too often");
+        status.SetAction((parse, _) => Run(parse, async s =>
+            s.Out.WriteLine((await s.ExecAsync("server", "return Ext.Debug.CoverStatus()", TimeSpan.FromSeconds(30)))?.ToJsonString(ResultJson) ?? "null")));
+        command.Subcommands.Add(status);
+
+        var file = new Argument<string>("file") { Description = "the file the counts are written to" };
+        var reset = new Option<bool>("--reset") { Description = "start the counts again from zero, so that the next file holds the next stretch of play" };
+        var save = new Command("save", "write the counts so far to a file: a line for every function called, a line for every pair of a function and the address that called it") { file, reset };
+        save.SetAction((parse, _) => Run(parse, async s =>
+        {
+            var path = Path.GetFullPath(parse.GetValue(file)!).Replace('\\', '/');
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            var answer = await s.ExecAsync("server", $"return Ext.Debug.CoverSave(\"{path}\", {(parse.GetValue(reset) ? "true" : "false")})", TimeSpan.FromSeconds(120));
+            s.Out.WriteLine($"{path}: {answer?["Functions"]} functions called, {answer?["Pairs"]} pairs");
+        }));
+        command.Subcommands.Add(save);
+
+        var stop = new Command("stop", "take every counter off; the counts stay for a last `cover save`");
+        stop.SetAction((parse, _) => Run(parse, async s =>
+            s.Out.WriteLine($"{(await s.ExecAsync("server", "return Ext.Debug.CoverStop()", TimeSpan.FromSeconds(300)))} counters taken off")));
+        command.Subcommands.Add(stop);
+        return command;
+    }
+
+    /// <summary>A saved record of coverage read against the registry: what ran, what of it has a
+    /// name, and the unnamed functions that ran the most. Needs no game.</summary>
+    public static Command CoverFold()
+    {
+        var files = new Argument<string[]>("files") { Description = "files written by `cover save`", Arity = ArgumentArity.OneOrMore };
+        var top = new Option<int>("--top") { Description = "how many of the unnamed functions to list, the most called first", DefaultValueFactory = _ => 30 };
+        var command = new Command("cover-fold", "read saved records of coverage against the registry: how many functions ran, how many of them an id names, and the unnamed ones that ran the most") { files, top };
+        command.SetAction(parse =>
+        {
+            var store = GateKit.Symbols.Registry.RegistryStore.Find(null);
+            var calls = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+            var pairs = new Dictionary<(string Callee, string Caller), long>();
+            long lost = 0;
+            foreach (var path in parse.GetValue(files)!)
+                foreach (var line in File.ReadLines(path))
+                {
+                    var p = line.Split(' ');
+                    if (p[0] == "F" && p.Length >= 4) calls[$"{p[1]}+0x{p[2]}"] = calls.GetValueOrDefault($"{p[1]}+0x{p[2]}") + long.Parse(p[3], CultureInfo.InvariantCulture);
+                    else if (p[0] == "E" && p.Length >= 6) { var k = ($"{p[1]}+0x{p[2]}", $"{p[3]}+0x{p[4]}"); pairs[k] = pairs.GetValueOrDefault(k) + long.Parse(p[5], CultureInfo.InvariantCulture); }
+                    else if (p[0] == "L" && p.Length >= 2) lost += long.Parse(p[1], CultureInfo.InvariantCulture);
+                }
+            var named = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (store is not null)
+                foreach (var address in calls.Keys)
+                {
+                    var at = address.IndexOf("+0x", StringComparison.Ordinal);
+                    var row = store.At(address[..at], GateKit.Symbols.Registry.RegistryStore.ParseHex(address[(at + 1)..])).Select(a => a.Row).FirstOrDefault(r => string.Create(CultureInfo.InvariantCulture, $"{address[..at]}+0x{r.Rva:X}").Equals(address, StringComparison.OrdinalIgnoreCase));
+                    if (row is not null) named[address] = row.Id;
+                }
+            Console.Out.WriteLine($"{calls.Count} functions ran, {calls.Values.Sum()} calls counted, {pairs.Count} pairs of a function and a calling address, {lost} calls lost by the ring");
+            Console.Out.WriteLine($"{named.Count} of them the registry names; {calls.Count - named.Count} it does not");
+            foreach (var (address, id) in named.OrderByDescending(n => calls[n.Key]).Take(parse.GetValue(top)))
+                Console.Out.WriteLine($"    named    {calls[address],12}  code:{id}");
+            foreach (var (address, count) in calls.Where(c => !named.ContainsKey(c.Key)).OrderByDescending(c => c.Value).Take(parse.GetValue(top)))
+                Console.Out.WriteLine($"    unnamed  {count,12}  {address}  from {pairs.Count(p => p.Key.Callee.Equals(address, StringComparison.OrdinalIgnoreCase))} places");
+            return 0;
+        });
         return command;
     }
 
