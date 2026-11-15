@@ -730,6 +730,17 @@ local function rigFits(r, e)
         if kind ~= r.kind and not ((r.kind == "Attack" or r.kind == "Damage") and kind:sub(-#r.kind) == r.kind) then return false end
     end
     if r.stream and not (e.HasStream and tostring(e.Stream) == r.stream) then return false end
+    -- what the roll is for, on a build of the extender that says so: the parties, the spell, the status
+    if r.source or r.target or r.spell or r.status then
+        local ok, fits = pcall(function()
+            if r.source and uuidOf(Ext.Entity.HandleToUuid(e.Source)) ~= r.source then return false end
+            if r.target and uuidOf(Ext.Entity.HandleToUuid(e.Target)) ~= r.target then return false end
+            if r.spell and tostring(e.Spell) ~= r.spell then return false end
+            if r.status and tostring(e.Status) ~= r.status then return false end
+            return true
+        end)
+        if not ok or not fits then return false end
+    end
     return true
 end
 
@@ -788,6 +799,7 @@ function Rolls.Rig(spec)
     rigSeq = rigSeq + 1
     local id = rigSeq
     rigs[id] = { who = uuidOf(spec.who), kind = spec.kind, stream = spec.stream, nth = spec.nth or 1, times = spec.times or 1,
+                 source = uuidOf(spec.source), target = uuidOf(spec.target), spell = spec.spell, status = spec.status,
                  natural = spec.natural, total = spec.total, seen = 0, decided = 0 }
     rigOrder[#rigOrder + 1] = id
     trackUndo("rig:" .. id, { op = "rig", id = id }, ("rig %d taken off"):format(id))
@@ -812,6 +824,7 @@ function Rolls.Rigs()
     for _, id in ipairs(rigOrder) do
         local r = rigs[id]
         if r then out[#out + 1] = { id = id, who = r.who, kind = r.kind, stream = r.stream, nth = r.nth, times = r.times,
+                                    source = r.source, target = r.target, spell = r.spell, status = r.status,
                                     natural = r.natural, total = r.total, seen = r.seen, decided = r.decided } end
     end
     return out
