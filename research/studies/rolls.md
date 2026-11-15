@@ -296,3 +296,88 @@ through `gatekit --instance <copy> exec server "<lua>"`. Its options are declare
 - Not readable in the extender build GateKit runs: a component's `Flags` and an entity log's
   `Entity` and `Flags` ("property does not exist"; the fork's source declares them, the build is
   older). Take the entity from the map's key.
+
+## 8. Who asks for a die
+
+Read in the code and, where a row says so, watched (`GK.Memory.Watch` on the manager's count of a
+stream, the changing writes kept each tick with their return chains).
+
+### The thrower
+
+There is no single function every die passes; there are four that end a roll, and one that draws
+nearly every die:
+
+| What | Code | Seen |
+|---|---|---|
+| One whole number at the stream's count | `code:eoc::roll::stream::DrawNumber` | watched |
+| The dice of one formula, no roller | `code:eoc::roll::stream::RollManager::InternalRollDice` | watched |
+| A formula for a roller, with its boosts | `code:eoc::roll::stream::RollManager::InternalRollDiceWithBoosts` | watched |
+| The same against a difficulty, on a stream named by id | `code:eoc::roll::stream::RollManager::RollDiceWithBoostsAgainstDC` | watched |
+| A fraction at the stream's count, for the weighted decision | `code:eoc::roll::stream::DrawFloat` | read |
+| A roll whose outcome is decided beforehand | `code:eoc::roll::stream::RollManager::RollDiceGuaranteed` | read |
+| Dice thrown again by a reroll boost, by an interrupt | `code:eoc::roll::stream::RerollDiceInternal`, `code:eoc::roll::stream::RollManager::RerollDice` | read |
+
+The generator is the standard 64-bit Mersenne Twister, seeded with the stream's seed for each
+call of the dice roll (`code:std::mt19937_64::discard`, `code:std::mt19937_64::operator()`). A die
+is drawn by discarding as many outputs as the stream's count, adding one to the count and taking
+the next output modulo the faces. The generator is not seeded again between the dice of one call,
+so with a count `c` at the start the die number `k` (from 0) is the output at
+`(k + 1) * c + k * (k + 3) / 2`: the pair of a d20 roll is the outputs `c` and `2c + 2`. A model
+of this gives the Generic stream's pairs at seed 1 (9/11 11/9 5/17 9/1 9/4 17/9 18/20 1/4 for the
+counts 0 to 14), and four passive checks whose count was written beforehand rolled the dice
+computed: 13, 4, 20, 1. Without advantage or disadvantage the first die of the pair is kept.
+
+### The stream types
+
+0 Generic, 1 Dialog, 2 PlayerSpell, 3 NPCSpell, 4 PlayerRandomCast, 5 NPCRandomCast, 6
+PlayerDamage, 7 NPCDamage: read in the code's stream getters and seen in the manager's streams of
+a fight (2, 6, 7, 3 in the order they were made). Script Extender's enumeration is to be checked
+against this. A stream is found by its id (+0x58), not by a player.
+
+### Who asks
+
+| The roll | Asked by | Stream | Seen |
+|---|---|---|---|
+| A weapon attack against armour class | `code:unplaced::RollAttack` -> `code:unplaced::RollAttackAgainstArmourClass` | the attacker's, from the roll stream provider; PlayerSpell for the player | watched |
+| A spell attack, an unarmed attack | `code:unplaced::RollSpellAttackAgainstArmourClass`, `code:unplaced::RollUnarmedAttackAgainstArmourClass` | as above | read |
+| A saving throw | `code:unplaced::RollSavingThrow` | the provider's, for the condition's context | read |
+| A skill check | `code:unplaced::RollSkillCheck` | given by the caller; Generic for a passive check | watched (passive) |
+| An ability check | `eoc::stats::AbilityCheck` | given by the caller | read |
+| A roll written in a stats expression | +0x1187D40, +0x1185A70, +0x11934E0 | Generic, or the caller's for damage | read |
+| Damage dice of a hit | `code:unplaced::RollDamageDice` from the deal-damage functor | the damage stream | watched |
+| A damage estimate over an entity's spells | +0x41C4D00, and the AI's scoring of functors | Generic | read |
+| The dodge roll of an attack's target | `code:unplaced::RollDodgeAttack` | the target's | read |
+| A heal | `code:eoc::StatusPrototype::GetHealAmount` | Generic | read |
+| Initiative | `esv::combat::SystemHelper::RollDie` (+0x32019A0) | Generic, one die, no boosts | read; the Generic count rose by 3 as a fight of three began |
+| A spell's recharge | +0x339C2C0 | Generic | read |
+| A random cast: the check, the pick of the spell | +0x2E92110, +0x2E936C0 | the random cast stream; Generic | read |
+| A script's `Roll` | +0x10F08A0 | Generic | read |
+
+A weapon attack by the player that hit moved PlayerSpell by 2 and PlayerDamage by 1; the damage
+die of that attack returned through +0x36EC3FC and +0x36E9347.
+
+### What does not pass the streams
+
+`code:unplaced::RepickGuaranteedOutcome` (and the same lines inside the weapon and spell attack
+rolls) replaces the natural die of a roller with a guaranteed-chance-roll-outcome boost by a
+number of the C runtime's generator. A stats functor's chance to apply is that generator too
+(+0x36D9DC0, +0x36DD2E0, +0x36E2970, +0x36D68D0). Read, not watched.
+
+### Karmic Dice
+
+Read in `code:eoc::roll::stream::RollManager::CheckStreamAgainstDC` and the debt lines of the
+roll with boosts; nothing of it is watched yet.
+
+- It acts only in the two rolls against a difficulty, only when the manager's mode is weighted,
+  and never on the Generic and the two damage streams.
+- A stream keeps two debts. A bad outcome adds the chance of success to the success debt; a good
+  outcome adds one less that chance to the fail debt, except on Dialog, PlayerSpell and NPCSpell,
+  whose fail debt never grows.
+- Before a roll, a stream that owes a success draws one fraction and may force the wanted
+  outcome, the chance rising with the debt divided by the type's range
+  (`RollStream<Type>DebtRange`); otherwise a stream that owes a failure may force the opposite.
+  A used debt falls by a multiple of the chance.
+- A forced roll takes its natural die uniformly among the faces that reach (or miss) the
+  difficulty and reads none of the roller's boosts: a pin's minimum and maximum, Reliable Talent
+  and Halfling Luck do not act on it. This is why a pinned dialogue check came at another number.
+- On the damage streams the weighted mode makes each die a rounded draw of a normal distribution.
