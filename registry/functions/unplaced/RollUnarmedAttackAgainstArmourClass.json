@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "unplaced::RollUnarmedAttackAgainstArmourClass",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "Rolls an unarmed attack against the target's armour class through the roll against a difficulty and decides the hit.",
   "fingerprint": {
     "calls": [
@@ -34,7 +34,14 @@
     ]
   },
   "evidence": [
-    {"kind": "read", "says": "The same flow as the weapon attack, reached for attack types 8 and 9"}
+    {
+      "kind": "read",
+      "says": "The same flow as the weapon attack, reached for attack types 8 and 9"
+    },
+    {
+      "kind": "watch",
+      "says": "An unarmed attack by the player asks the roll against a difficulty from +0x106EFD9 inside this function, on the PlayerSpell stream, the roll type a melee unarmed attack"
+    }
   ],
   "questions": [{"ask": "An unarmed attack, watched", "about": "reach", "state": "open"}]
 }

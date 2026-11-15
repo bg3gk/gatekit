@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "unplaced::RollSavingThrow",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "Rolls a saving throw of an ability against a difficulty through the roll against a difficulty and marks the hit when the save succeeds.",
   "fingerprint": {
     "calls": [
@@ -26,6 +26,10 @@
     {
       "kind": "read",
       "says": "The ability is 1 to 6, the stream comes from the roll stream provider called with the condition's context, and bit 0x100 of the hit's flags is set on success"
+    },
+    {
+      "kind": "watch",
+      "says": "A target's save against Sacred Flame and Hold Person asks the roll against a difficulty from +0x10707A0 inside this function: on the caster's PlayerSpell stream when the player casts, on the Generic stream for a status's repeating save and for an NPC's spell outside a fight; the roller named is the target"
     }
   ],
   "questions": [

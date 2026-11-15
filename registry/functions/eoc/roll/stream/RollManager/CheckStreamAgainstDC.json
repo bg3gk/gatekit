@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "eoc::roll::stream::RollManager::CheckStreamAgainstDC",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "The weighted decision of a roll against a difficulty: when the stream owes a success, forces the wanted outcome with a chance that grows with the success debt and lowers that debt; otherwise, when it owes a failure, forces the opposite outcome by the fail debt; reports whether it forced.",
   "fingerprint": {
     "calls": [
@@ -16,6 +16,14 @@
     {
       "kind": "read",
       "says": "The success debt at the stream's +0x64 and the fail debt at +0x60 are each divided by a range looked up by the stream's type, compared with one uniform draw from the stream, and reduced by a multiple of the chance when used"
+    },
+    {
+      "kind": "watch",
+      "says": "With weighted rolls on, a stream's success debt rose by the chance of each failed attack roll, and a later roll came with its outcome decided before any die of its formula was drawn while the debt fell below zero; a debt of 0.2 did not force the next roll"
+    },
+    {
+      "kind": "read",
+      "says": "The success debt at the stream's +0x64 is divided by a range looked up by the stream's type and compared with one uniform draw"
     }
   ],
   "questions": [

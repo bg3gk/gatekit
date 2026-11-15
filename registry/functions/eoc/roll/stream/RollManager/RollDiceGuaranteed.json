@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "eoc::roll::stream::RollManager::RollDiceGuaranteed",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "Makes a roll whose outcome is decided beforehand: draws the natural die uniformly among the faces that reach the difficulty, or among those that miss it, draws a second die consistent with advantage or disadvantage, and fills the result without the roller's boosts.",
   "fingerprint": {
     "calls": [
@@ -13,6 +13,14 @@
     ]
   },
   "evidence": [
+    {
+      "kind": "read",
+      "says": "The lower and upper face are computed from the difficulty less the bonus, and no boost of the roller is read"
+    },
+    {
+      "kind": "watch",
+      "says": "A roll forced under weighted rolls came as a hit at natural 14 and 13 for a roller whose attack die was pinned at 1: the roller's minimum and maximum roll result boosts did not act on it"
+    },
     {
       "kind": "read",
       "says": "The lower and upper face are computed from the difficulty less the bonus, and no boost of the roller is read"
