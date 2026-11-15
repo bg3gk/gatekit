@@ -1,7 +1,9 @@
 -- The roll log: one `dice_thrown` row for every roll the game's roll manager throws, whoever asked
 -- for it - a check, an attack, a save, damage, a heal, initiative, a die of a stats expression.
--- The rows come from the roll events of GateKit's Script Extender (Ext.Events.RollAgainstDC,
--- RollBoosted, RollDice; developer mode), which carry the return address of the code that asked.
+-- The rows come from the roll event of the Script Extender (Ext.Events.Roll: one event for a roll,
+-- whichever of the roll manager's functions carried it out); in developer mode the event carries
+-- the return address of the code that asked.
+
 -- That address is looked up among the askers the registry names: a known asker gives the row its
 -- `origin`, any other address gives `origin = "unknown"` with the address, never a dropped row.
 -- The family `dice` is off until GK.EventLog.On("dice"): a fight with the AI thinking throws many.
@@ -61,9 +63,9 @@ function Log.Origins()
     return out
 end
 
---- Whether this Script Extender build throws the roll events the log is written from.
+--- Whether this Script Extender build throws the roll event the log is written from.
 function Log.Available()
-    local ok, event = pcall(function() return Ext.Events.RollBoosted end)
+    local ok, event = pcall(function() return Ext.Events.Roll end)
     return ok and event ~= nil
 end
 
@@ -72,74 +74,55 @@ local function uuid(handle)
     return ok and id or nil
 end
 
-local dice = {}     -- the dice of a roll still open, by the sequence of its outermost call
-
-local function write(e, top, extra)
-    if e.Count == 0 and not e.HasResult then dice[top] = nil return end   -- a formula of no dice draws nothing
-    local module, rva = tostring(e.Caller):match("^(.-)%+0x(%x+)$")
-    rva = rva and tonumber(rva, 16)
-    local origin = module and Log.Origin(module, rva)
-    local asked = e.Caller
-    if origin and origin.entry then
-        -- through one of the roll manager's entry functions: the frames above name the asker
-        local frames = {}
-        for frame in tostring(e.CallerChain or ""):gmatch("0x(%x+)") do frames[#frames + 1] = tonumber(frame, 16) end
-        for i = 2, #frames do
-            local above = Log.Origin(module, frames[i])
-            if not (above and above.entry) then
-                origin, asked = above, string.format("%s+0x%X", module, frames[i])
-                break
-            end
-        end
-    end
-    local payload = {
-        who = extra.who, kind = extra.kind, stream = e.HasStream and tostring(e.StreamType) or nil, streamId = e.HasStream and e.StreamId or nil,
-        dieType = tostring(e.DieType), count = e.Count, bonus = e.Bonus, dice = dice[top],
-        natural = e.HasResult and e.Natural or nil, discarded = e.HasResult and e.Discarded or nil, total = e.Total,
-        critical = e.HasResult and tostring(e.Critical) or nil, dc = extra.dc, advantage = extra.advantage, forced = extra.forced,
-        origin = origin and origin.id or "unknown", what = origin and origin.what or nil, caller = asked,
-    }
-    dice[top] = nil
-    payload.text = string.format("%s rolled %s%s for %s: %s", payload.who or "the game", tostring(payload.total),
-        payload.natural and (" (natural " .. tostring(payload.natural) .. ")") or "", payload.what or "an unknown asker", tostring(asked))
-    GK.EventLog.Append("dice_thrown", payload)
-end
-
 local function advantage(e)
     if e.Advantage and e.Disadvantage then return "both" end
     return e.Advantage and "advantage" or e.Disadvantage and "disadvantage" or nil
 end
 
-local handlers = {
-    RollDice = function(e)
-        local top = e.AgainstDCSequence ~= 0 and e.AgainstDCSequence or e.BoostedSequence ~= 0 and e.BoostedSequence or e.Sequence
-        local list = {}
-        for _, d in ipairs(e.Dice or {}) do list[#list + 1] = d end
-        dice[top] = list
-        if top == e.Sequence then write(e, top, { dc = e.DC ~= -1 and e.DC or nil }) end
-    end,
-    RollBoosted = function(e)
-        if e.AgainstDCSequence ~= 0 then return end
-        write(e, e.Sequence, { who = uuid(e.Roller), kind = tostring(e.RollType), dc = e.DC ~= -1 and e.DC or nil, advantage = advantage(e) })
-    end,
-    RollAgainstDC = function(e)
-        write(e, e.Sequence, { who = uuid(e.Roller), kind = tostring(e.RollType), dc = e.DC, advantage = advantage(e),
-                               forced = (not e.ViaBoosted and e.HasStream) or nil })
-    end,
-}
+-- The asker among the game's frames above the roll: the first frame a named asker holds that is
+-- not one of the roll manager's own entry functions. The frames are there in developer mode.
+local function asker(e)
+    local module = tostring(e.Caller or ""):match("^(.-)%+0x%x+$")
+    if not module then return nil, nil end
+    local first
+    for frame in tostring(e.CallerChain or ""):gmatch("0x(%x+)") do
+        local rva = tonumber(frame, 16)
+        local at = string.format("%s+0x%X", module, rva)
+        first = first or at
+        local origin = Log.Origin(module, rva)
+        if origin and not origin.entry then return origin, at end
+        if not origin then return nil, at end
+    end
+    return nil, first
+end
 
-local subscribed = {}
+local function write(e)
+    if e.DiceCount == 0 and #e.Dice == 0 then return end   -- a formula of no dice draws nothing
+    local origin, asked = asker(e)
+    local dice = {}
+    for _, die in ipairs(e.Dice) do dice[#dice + 1] = die end
+    local payload = {
+        who = uuid(e.Roller), kind = tostring(e.RollType), stream = e.HasStream and tostring(e.Stream) or nil,
+        streamId = e.HasStream and e.StreamId or nil, dieType = tostring(e.DiceType), count = e.DiceCount, bonus = e.Bonus,
+        dice = dice, natural = e.Natural, discarded = e.Discarded, total = e.Total, critical = tostring(e.Critical),
+        dc = e.DC, advantage = advantage(e), forced = e.Forced or nil,
+        origin = origin and origin.id or "unknown", what = origin and origin.what or nil, caller = asked,
+    }
+    payload.text = string.format("%s rolled %s (natural %s) for %s", payload.who or "the game", tostring(payload.total),
+        tostring(payload.natural), payload.what or ("an unknown asker " .. tostring(asked)))
+    GK.EventLog.Append("dice_thrown", payload)
+end
+
+local subscribed
 
 GK.EventLog.Hooks = GK.EventLog.Hooks or {}
 GK.EventLog.Hooks.dice = {
     on = function()
-        if not Log.Available() then error("this Script Extender build has no roll events: the dice family needs GateKit's build with them, in developer mode") end
-        for name, handler in pairs(handlers) do
-            subscribed[name] = Ext.Events[name]:Subscribe(function(e) pcall(handler, e) end)
-        end
+        if not Log.Available() then error("this Script Extender build has no roll event (Ext.Events.Roll): the dice family needs a build that has it") end
+        subscribed = Ext.Events.Roll:Subscribe(function(e) pcall(write, e) end)
     end,
     off = function()
-        for name, id in pairs(subscribed) do pcall(function() Ext.Events[name]:Unsubscribe(id) end) end
-        subscribed, dice = {}, {}
+        if subscribed then pcall(function() Ext.Events.Roll:Unsubscribe(subscribed) end) end
+        subscribed = nil
     end,
 }
