@@ -1,0 +1,21 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::IsPlayerOrNearPlayer",
+  "state": "described",
+  "rung": "inferred",
+  "does": "True when an entity is a player character or stands within the radius of some player (a query of a per-entity distance and the transform).",
+  "fingerprint": {"calls": ["fp:24c801b0780dfd1d", "fp:a4616baec98bd920", "fp:e54b4f440c528147"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "HasComponent Player, else the position tested against a query of player positions and radii"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which component gives the radius (Hearing is the candidate); probe it while a creature far from the party is hit",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

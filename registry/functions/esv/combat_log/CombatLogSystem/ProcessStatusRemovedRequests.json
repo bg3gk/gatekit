@@ -1,0 +1,27 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::ProcessStatusRemovedRequests",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Builds StatusRemovedEntry (type 10) entries from the system's list of removal requests (+0x70, 0x58 bytes each), and for a removal that carries condition rolls sends saving-throw entries for them first.",
+  "fingerprint": {
+    "calls": [
+      "esv::combat_log::CombatLogSystem::SendSavingThrowEntriesForHitDesc",
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "esv::Status::SendCombatLogEntryRemoved appends to the array at +0x70 that this pass walks; calls SendSavingThrowEntriesForHitDesc when the request's roll count is above 0"
+    },
+    {
+      "kind": "watch",
+      "says": "Hold Person ended by a saving throw: SendCombatLogEntryRemoved once, SendSavingThrowEntriesForHitDesc once, one StatusRemoved entry handed to the protocol from inside this function"
+    }
+  ]
+}

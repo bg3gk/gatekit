@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::ProcessPickUpFinishedRequests",
+  "state": "described",
+  "rung": "inferred",
+  "does": "A pass of the combat log update: builds the entries of its kind from esv::pickup::SuccessfullyPickedUpSingletonComponent.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<esv::pickup::SuccessfullyPickedUpSingletonComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<esv::pickup::SuccessfullyPickedUpSingletonComponent>,ls::TypeList<>,ecs::QueryTypeModifiedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its one query is on esv::pickup::SuccessfullyPickedUpSingletonComponent (fingerprint), and the combat log update calls it once a tick"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "stage the event of its kind and probe CombatLogProtocolAddEntries to see the entry it hands over",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::interrupt::EventSystem::StartInterruptEvent",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Starts an interrupt event for a roll or action that interrupts may answer: gathers the interrupts whose context fits, evaluates them with the roll manager and queues the chosen ones; on the path by which an OnPostRoll interrupt such as SetRoll(N) rewrites a thrown die.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:3a47fbcf22fd449c",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:b6c57dea714c5a49",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "takes the interrupt data, decision and action resource components and the roll manager; pseudo-code pairing with the Toolkit name at 0.25"
+    },
+    {
+      "kind": "watch",
+      "says": "called once or twice over an attack while an OnPostRoll SetRoll(1) interrupt is unlocked on the attacker, once over the same attack with SetRoll(10); the hit then records NaturalRoll 1 while the roll event had seen 19"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the function that writes the new natural into the roll result is not placed: probe the callees of this function over the same scene",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -598,3 +598,51 @@ still; places are of `bg3_dx11.exe`, the build the registry holds).
 
 Not yet named: the methods of the AI's score object that ran only in an enemy's turn, the
 constructors of the context, and the caller of two Generic rolls of no dice seen in a fight.
+
+## 14. The combat log's account, read and probed
+
+- One update a frame, `esv::combat_log::CombatLogSystem::Update`, runs about twenty passes; each
+  reads one kind of event component and turns it into typed entries. The entries leave through
+  `unplaced::CombatLogProtocolAddEntries`, which hands each to a table of 31 slots, one per type
+  of entry. A probe on a slot counts the entries of that type sent: "was this logged" for any
+  roll.
+- A hit, a miss, a spell's save and a status's repeated save all pass `ProcessHitEvents` and
+  become one hit entry built from the hit's result event: the roller is the hit's inflicter, the
+  natural die, total, critical, difficulty and terms are the hit's condition rolls, the damage is
+  the hit's own account. A miss and a save that took no harm are hits all the same.
+- A check asked by the story and a Stealth check pass `ProcessSkillCheckRequests` and become a
+  roll-finished entry built from the skill-check event.
+- The "hidden Perception roll" beside a Stealth check was not there in the scene staged: the
+  Stealth check's difficulty was the watcher's passive Perception, and no Perception die was thrown.
+- What has no entry, and why:
+  - damage dice - folded into the hit entry as totals;
+  - a roll of no dice from an expression (seen after nearly every cast) - no pass reads it;
+  - a failed Perception, Survival or Investigation check when the ruleset modifier
+    `HIDE_FAILED_PERCEPTION_ROLLS` is on (watched both ways); an event marked for the modifier
+    `DIALOGUE_PASSIVE_ROLL_HIDE` (read only);
+  - a spell with the flag `CombatLogSetSingleLineRoll`, a status with `DisableCombatlog` (read only);
+  - a hit whose target is invisible and no player, or where neither side is a player, near a
+    player or in a fight with one (`EntitiesMeritLogEntry`).
+- The request's "from a script" mark and its context play no part in any pass read.
+- Open: one failed Stealth roll in an enemy's turn had no entry and did not happen again.
+
+## 15. What a creature is about to do, before the die
+
+The first thing watched that knows "this creature, this action, this target" is the making of
+the cast's entity: its `SpellCastState` (caster, spell, targets, position, the cast's own random
+seed) appears about a tenth of a second before the attack roll, for a player and for the AI
+alike. A mod can listen to it today (`Ext.Entity.OnCreate("SpellCastState")`). The step between
+the AI's chosen action and the cast's start request is not placed.
+
+## 16. A die changed after the throw
+
+An interrupt whose property is `SetRoll(n)` (the game's own: Portent, Shield against Magic
+Missile, Illusory Self, Critical Execution) changes the natural die after the roll manager has
+returned: the roll event and the roll log said natural 19, total 24; the hit's condition roll
+and the combat log ended with natural 1 and a miss. A rig at the throw is overridden the same
+way. It passes `esv::interrupt::EventSystem::StartInterruptEvent`; neither the reroll functions
+of the roll manager nor a conditional roll adjustment ran. The function that writes the new die
+is not placed yet.
+
+So the roll log says what was thrown, and the game may go on with another number. Until the
+writer is found the row cannot say so: this is the first thing owed to the log.

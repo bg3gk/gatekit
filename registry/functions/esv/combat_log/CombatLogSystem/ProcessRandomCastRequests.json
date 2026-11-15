@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::ProcessRandomCastRequests",
+  "state": "described",
+  "rung": "inferred",
+  "does": "A pass of the combat log update: builds the entries of its kind from esv::spell_cast::random::ResultEventOneFrameComponent.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<esv::spell_cast::random::ResultEventOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<esv::spell_cast::random::ResultEventOneFrameComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its one query is on esv::spell_cast::random::ResultEventOneFrameComponent (fingerprint), and the combat log update calls it once a tick"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "stage the event of its kind and probe CombatLogProtocolAddEntries to see the entry it hands over",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

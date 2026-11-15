@@ -1,0 +1,15 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CombatLogProtocolAddHitEntry",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Appends one HitEntry to the combat log protocol's queue (slot 0 of its entry table).",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"], "vtables": [{"slot": 0}]},
+  "evidence": [
+    {"kind": "read", "says": "slot 0 of the table at +0x57E4D20"},
+    {
+      "kind": "watch",
+      "says": "called once per hit from CombatLogProtocolAddEntries over hits, misses, saves and status ticks"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::Update",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "The combat log's update each tick: runs its passes one after another (stealth spotted, drops, hits, skill checks, interrupts, status added and removed, random casts, summons, pings, equip, pick-ups, experience, rounds), each turning one kind of event or request into typed entries for the clients.",
+  "fingerprint": {
+    "calls": [
+      "esv::combat_log::CombatLogSystem::ProcessDropEntityNotifications",
+      "esv::combat_log::CombatLogSystem::ProcessEquipStatusRequests",
+      "esv::combat_log::CombatLogSystem::ProcessHitEvents",
+      "esv::combat_log::CombatLogSystem::ProcessInterruptsUsedRequests",
+      "esv::combat_log::CombatLogSystem::ProcessInventoryPickUpRequests",
+      "esv::combat_log::CombatLogSystem::ProcessPickUpFinishedRequests",
+      "esv::combat_log::CombatLogSystem::ProcessPingRequests",
+      "esv::combat_log::CombatLogSystem::ProcessRandomCastRequests",
+      "esv::combat_log::CombatLogSystem::ProcessSkillCheckRequests",
+      "esv::combat_log::CombatLogSystem::ProcessStatusAddedRequests",
+      "esv::combat_log::CombatLogSystem::ProcessStatusRemovedRequests",
+      "esv::combat_log::CombatLogSystem::ProcessSummonSpawnRequests",
+      "esv::combat_log::CombatLogSystem::ProcessXPGainedEvents",
+      "fp:227aadb92d3cd447",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:7961f2db949632b4",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<esv::lock::NotificationEventOneFrameComponent,esv::lock::LockpickingStateComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the per-frame update the system factory stores; it calls the pass functions in a fixed order with the view, the protocol and the game server"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe on each pass shows every one called once a tick from this function's body"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::ProcessSkillCheckRequests",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Builds a RollFinishedEntry (type 21) for each SkillCheckEvent: roller and subject as net entities, success, critical, the stats expression and the roll result. Skips an event whose spell has CombatLogSetSingleLineRoll, a failed Perception, Survival or Investigation check while the ruleset modifier HIDE_FAILED_PERCEPTION_ROLLS is on, and an event with +0x158 equal to 1 while DIALOGUE_PASSIVE_ROLL_HIDE is on.",
+  "fingerprint": {
+    "calls": [
+      "eoc::CopyStatsRollResult",
+      "fp:123b79ba6c390bab",
+      "fp:4fcdb2e1dc88eca1",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<esv::stats::SkillCheckEventOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<esv::stats::SkillCheckEventOneFrameComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "spell prototype flag bit 11 (CombatLogSetSingleLineRoll); ruleset modifier guids 19e33ff1 (HIDE_FAILED_PERCEPTION_ROLLS) and 38fc0d10 (DIALOGUE_PASSIVE_ROLL_HIDE); three string constants Perception, Survival, Investigation compared with the stats expression when Success is false"
+    },
+    {
+      "kind": "watch",
+      "says": "Osi.RequestPassiveRoll and the Stealth checks of Hide each give one RollFinished entry from this pass; with HIDE_FAILED_PERCEPTION_ROLLS written true a failed passive Perception gives none while a failed Athletics still gives one; written false, the failed Perception gives one"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which rolls carry +0x158 = 1 (seen 0 for a story passive roll, 2 for Stealth, 8 for a passive Perception); a dialogue passive roll is the candidate",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

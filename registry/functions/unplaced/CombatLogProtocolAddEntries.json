@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CombatLogProtocolAddEntries",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Takes a pass's batch of typed combat log entries into the server's combat log protocol, one function a type through a table of 31 (Hit 0, StatusAdded 9, StatusRemoved 10, RollFinished 21, RandomCast 22, StealthSpotted 30), to be sent to the clients.",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "grows the protocol's queue at +0x48, then calls through the table at +0x57E4D20 indexed by each entry's type"
+    },
+    {
+      "kind": "watch",
+      "says": "called once by each pass that built entries in a tick (from inside ProcessHitEvents, ProcessSkillCheckRequests, ProcessStatusAddedRequests, ProcessStatusRemovedRequests); never for zero-dice rolls or damage dice alone"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "no direct caller: reached through the helper's SendEntriesToProtocol (vtable slot 1), whose address in this build is not placed",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

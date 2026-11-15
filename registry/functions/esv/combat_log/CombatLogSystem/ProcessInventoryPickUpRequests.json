@@ -1,0 +1,35 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::ProcessInventoryPickUpRequests",
+  "state": "described",
+  "rung": "inferred",
+  "does": "A pass of the combat log update: builds the entries of its kind from esv::inventory::InteractionRequestsComponent.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:dae30e5c01f1fabd",
+      "fp:e4d053ad9455ea7c",
+      "fp:e801dda3a3edc85c",
+      "unplaced::IsInFightWithPlayer",
+      "unplaced::IsPlayerOrNearPlayer"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<esv::inventory::InteractionRequestsComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its one query is on esv::inventory::InteractionRequestsComponent (fingerprint), and the combat log update calls it once a tick"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "stage the event of its kind and probe CombatLogProtocolAddEntries to see the entry it hands over",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}
