@@ -12,7 +12,7 @@ GK.RollLog = GK.RollLog or {}
 local Log = GK.RollLog
 
 --- Each verb's class, for the fair/cheat/observation split.
-Log.Class = { Available = "observation", Origin = "observation", Origins = "observation", Causes = "observation" }
+Log.Class = { Available = "observation", Origin = "observation", Origins = "observation", Causes = "observation", Forget = "observation" }
 
 -- The askers: the functions that call the roll manager, by their place in each executable of the
 -- build the registry holds (registry/builds/<build>/<binary>). `what` is the roll asked for.
@@ -46,9 +46,23 @@ local ASKERS = {
 
 --- The asker an address belongs to: { id, what, entry }, or nil for an address no named asker
 --- holds. `entry` marks one of the roll manager's own entry functions, whose caller is the asker.
+local forgotten = {}
+
+--- Leaves one named asker or cause out of the log's tables until the family `dice` is turned off
+--- (the scope's end does it): its rolls are then written as any roll asked from a place the
+--- registry does not name yet. Changes nothing in the game. Without an id: nothing is left out.
+function Log.Forget(id)
+    if id == nil then forgotten = {} return { ok = true, forgotten = {} } end
+    forgotten[id] = true
+    local out = {}
+    for name in pairs(forgotten) do out[#out + 1] = name end
+    table.sort(out)
+    return { ok = true, forgotten = out }
+end
+
 function Log.Origin(module, rva)
     for _, a in ipairs(ASKERS[module] or {}) do
-        if rva >= a[1] and rva < a[1] + a[2] then return { id = a[3], what = a[4], entry = a[5] } end
+        if rva >= a[1] and rva < a[1] + a[2] and not forgotten[a[3]] then return { id = a[3], what = a[4], entry = a[5] } end
     end
     return nil
 end
@@ -146,7 +160,7 @@ local function causeOf(e)
     for frame in tostring(e.CallerChain or ""):gmatch("0x(%x+)") do frames[#frames + 1] = tonumber(frame, 16) end
     for _, rva in ipairs(frames) do
         for _, c in ipairs(list) do
-            if rva >= c[1] and rva < c[1] + c[2] then
+            if rva >= c[1] and rva < c[1] + c[2] and not forgotten[c[3]] then
                 local cause = { id = c[3], cause = c[4] }
                 if c[4] == "status" then
                     local enter = STATUS_ENTER[module]
@@ -178,6 +192,14 @@ local function write(e)
         origin = origin and origin.id or "unknown", what = origin and origin.what or nil, caller = asked,
         cause = cause and cause.cause or "unknown", causeId = cause and cause.id or nil, request = cause and cause.request or nil,
     }
+    -- a rig decided this roll a moment ago (the log hears the event last): the row says what the
+    -- game goes on with, and what was thrown before the rig
+    local rig = GK.Rolls and GK.Rolls.JustRigged
+    if rig then
+        GK.Rolls.JustRigged = nil
+        payload.rigged = { id = rig.id, natural = rig.was.natural, total = rig.was.total }
+        payload.total = rig.total
+    end
     payload.text = string.format("%s rolled %s (natural %s) for %s", payload.who or "the game", tostring(payload.total),
         tostring(payload.natural), payload.what or ("an unknown asker " .. tostring(asked)))
     GK.EventLog.Append("dice_thrown", payload)
@@ -189,10 +211,13 @@ GK.EventLog.Hooks = GK.EventLog.Hooks or {}
 GK.EventLog.Hooks.dice = {
     on = function()
         if not Log.Available() then error("this Script Extender build has no roll event (Ext.Events.Roll): the dice family needs a build that has it") end
-        subscribed = Ext.Events.Roll:Subscribe(function(e) pcall(write, e) end)
+        if GK.Rolls then GK.Rolls.JustRigged = nil end
+        -- the lowest priority: heard after every other listener, so the row is what they left
+        subscribed = Ext.Events.Roll:Subscribe(function(e) pcall(write, e) end, { Priority = 1 })
     end,
     off = function()
         if subscribed then pcall(function() Ext.Events.Roll:Unsubscribe(subscribed) end) end
         subscribed = nil
+        forgotten = {}
     end,
 }

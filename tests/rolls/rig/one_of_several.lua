@@ -65,7 +65,16 @@ function run(game)
     step("the four checks again", "cheat", function() game.server(ASK) end)
     step("the third is decided, the others are the stream's", "observation", function()
         local thrown = naturals(game, second, "dice_thrown", host)
-        eq(thrown, free, "the streams gave the same four dice again")
+        eq(thrown, { free[1], free[2], rigged, free[4] }, "the roll log's four rows: what the game goes on with")
+        local n, third = 0, nil
+        for _, r in ipairs(game.events(second, { "dice_thrown" }).rows or {}) do
+            local p = r.payload
+            if uuid(p.who) == host and p.kind == "SkillCheck" then
+                n = n + 1
+                if n == 3 then third = p elseif n <= 4 then eq(p.rigged, nil, "a throw the rig left alone") end
+            end
+        end
+        eq(third.rigged.natural, free[3], "the third row says what the stream had thrown")
         local was = row(second, "roll_rigged", nil, 30).payload
         eq(was.natural, rigged, "the rig's die")
         eq(was.was.natural, free[3], "the rig replaced the third throw")

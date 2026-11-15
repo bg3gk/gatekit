@@ -752,6 +752,9 @@ local function onRigRoll(e)
                 r.decided = r.decided + 1
                 GK.EventLog.Append("roll_rigged", { id = id, who = r.who, kind = tostring(e.RollType), stream = e.HasStream and tostring(e.Stream) or nil,
                     natural = r.natural, total = r.total, was = was })
+                -- for the roll log, which hears the same event after this: the extender moves the
+                -- total with a changed natural only when every handler has returned
+                Rolls.JustRigged = { id = id, was = was, total = r.total or (was.total + (e.Natural - was.natural)) }
                 if r.times > 0 and r.decided >= r.times then rigs[id] = nil end
                 break   -- one rig decides a roll
             end

@@ -3228,6 +3228,13 @@ function GK.RollLog.Available() end
 ---@return { id: string, what: string, entry: boolean? }?
 function GK.RollLog.Origin(module, rva) end
 
+---Leaves one named asker or cause out of the log's tables until the family `dice` is turned off,
+---so that its rolls are written as rolls of an unknown origin. Without an id: nothing is left out.
+---Server. Observation.
+---@param id string?
+---@return { ok: boolean, forgotten: string[] }
+function GK.RollLog.Forget(id) end
+
 ---The askers known for each executable. Server. Observation.
 ---@return table<string, { id: string, what: string, rva: integer, size: integer }[]>
 function GK.RollLog.Origins() end
