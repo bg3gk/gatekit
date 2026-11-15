@@ -1,0 +1,53 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::ProfileShownTutorialsUpdateNotificationComponent",
+  "kind": "struct",
+  "size": 56,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "ProfileGuid",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCClient.dll+0x5CA000 ecl::profile::ManagementSystem::ProcessUpdateShownTutorialsRequests groups the components by the FixedString at +0 (HashMap keyed by it, the HashSet at +8 merged into the value) and passes each key to the profile manager's vfunc +0x100 to get the net::PlayerProfile it calls AddTutorialEntriesShown on, then vfunc +0x108 (save). ecl::tutorial::ResetSystem::Update (EoCClient.dll+0x63BD50) calls the same vfunc +0x100 with PlayerManager::GetPlayerProfileGUID(playerId): the key is the player profile's GUID."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding (alignment)"}]
+    },
+    {
+      "offset": 8,
+      "name": "ShownTutorials",
+      "type": "HashSet<Guid>",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Windows type name ls::FieldMeta<class ls::HashSet<class ls::Guid,struct ls::HashTableOpsDefault> eoc::notification::ProfileShownTutorialsUpdateNotificationComponent::*,8>; macOS ls::FieldMeta<ls::HashSet<ls::Guid, ls::HashTableOpsDefault> eoc::notification::ProfileShownTutorialsUpdateNotificationComponent::*, &eoc::notification::ProfileShownTutorialsUpdateNotificationComponent::m_ShownTutorials>"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationProfileShownTutorialsUpdate",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": ["Meaning of the FixedString at +0."],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

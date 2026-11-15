@@ -1,0 +1,67 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::controller::FloodComponent",
+  "kind": "struct",
+  "about": "Client-side AI-grid flood run for the controller (gamepad) UI: owning pointer to an eoc::AiFlood object, the AiGrid flood request handle and the level name. Created and cleaned up by the per-frame update of ecl::controller::FloodSystem (bg3.exe+0x1DA9A90); same trio as in eoc::aigrid::FloodRequestComponent / _private::FloodRequestStateComponent. Never seen alive. Registry total 16 (client row).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Flood",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1DAA5B0 (AllocRaw 0x10) zeroes the qword at +0. ecl::controller::FloodSystem update bg3.exe+0x1DA9A90 allocates a 0x100-byte object (FUN_1441beb10, constructor FUN_142057110 - the eoc::AiFlood passed to AiGrid flood requests) and stores it at +0; on removal it calls the object's virtual destructor `(**(code**)*p)(p, 1)`."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "RequestHandle",
+      "type": "uint16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes uint16 0 at +8. The update writes `*(undefined2*)(p+8) = DAT_1461766d0` (the invalid-handle constant) on creation; on removal it calls FUN_140e4dd40(aiGrid, (short)p[8], 0) (cancel the AiGrid flood request with this handle), as eoc::aigrid::_private::FloodRequestStateComponent holds it."
+        }
+      ]
+    },
+    {
+      "offset": 10,
+      "name": "_PadA",
+      "type": "uint8_t[2]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "alignment of the FixedString at +0xC; not written."}]
+    },
+    {
+      "offset": 12,
+      "name": "Level",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes 0xFFFFFFFF at +0xC; destructor bg3.exe+0x69EE80 DecRefs +0xC. The update copies (IncRef/DecRef) the FixedString at +8 of a 16-byte source element into +0xC, and on removal hashes `*(uint*)(p+0xC)` into the level map to find the level's AiGrid (+0x80) - the level name, like FloodRequestComponent.Level."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ControllerFlood", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 6,
+    "open_questions": [
+      "Which entity carries it and what the controller uses the flood for (movement range preview?) is not established.",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

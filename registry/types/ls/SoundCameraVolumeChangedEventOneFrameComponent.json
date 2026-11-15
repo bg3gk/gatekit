@@ -1,0 +1,80 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::SoundCameraVolumeChangedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event added to a sound camera by ecl::sound::CameraSystem::CheckSoundTriggersToUpdateSoundVolumes when the camera enters another sound volume trigger; read by ecl::crowds::SoundVolumeSystem and ecl::sound::AmbienceMixSystem.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "OldSoundVolume",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll+0xDCC2F0 (event add, ComponentFrameStorageAllocRaw 0x18) writes the value its third argument points to at +0; the caller CheckSoundTriggersToUpdateSoundVolumes (EoCClient.dll+0xDD0760) passes a stack copy of SoundCameraComponent.SoundVolume read before it is overwritten. Live: entity handles / null."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "NewSoundVolume",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same add: +8 = the value its fourth argument points to = the SoundCameraComponent after its +0 was set to the new trigger's entity."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "PlayerId",
+      "type": "int16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same add: writes the 16-bit value its fifth argument points to at +0x10, the short player id the check runs for (stored also in SoundCameraComponent +0x34). Live: 1."
+        }
+      ]
+    },
+    {
+      "offset": 18,
+      "name": "field_12",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same add: byte +0x12 = the byte its sixth argument points to (a bool argument of the check, probably the 'notify/force' flag). Live: 0."
+        }
+      ]
+    },
+    {
+      "offset": 19,
+      "name": "_Pad13",
+      "type": "uint8_t[5]",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "not written by the add; live bytes vary (uninitialised)."}
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SoundCameraVolumeChangedEvent", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Meaning of the byte at +0x12; the event add's two extra stack arguments were not traced to their source.",
+      "Read from the Toolkit build (EoCClient.dll), not from bg3.exe."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

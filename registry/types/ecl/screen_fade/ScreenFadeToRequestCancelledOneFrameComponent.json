@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::screen_fade::ScreenFadeToRequestCancelledOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event of ecl::screen_fade::ScreenFadeSystem (written in ProcessScreenFadeToRequests / ProcessClearScreenFadeRequests / FinalizeComponents, whose WorldView names all four screen_fade one-frame events). Holds a set of short player ids: players whose fade-to request was cancelled. Born live together with camera ScreenFadeTo/ClearScreenFade manual requests and SnapFadeRequest (cinematic/scene steps).",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "PlayerIds",
+      "type": "HashSet<int16_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1909100 allocates 0x30 bytes, zeroes three 16-byte parts (HashSet shape: buckets, next ids, keys) and registers destructor thunk_FUN_140582ad0, which only frees three buffers (trivial keys). macOS ScreenFadeSystem instantiates ls::HashTable<short, HashTableOpsDefault>::operator= and Toolkit FinalizeComponents (EoCClient) copies short values ('IndexedStorage<short, ...s_TagHashTable>'); ScreenFadeComponent keys are the same short player ids (HashMap<short, DynamicArray<ScreenFadeData>>). Live (17 instances): bucket count 5, next ids cap/size 1/1, keys cap/size 1/1 - one player per event."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientScreenFadeScreenFadeToRequestCancelled",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 4,
+    "open_questions": [
+      "The key name is inferred (short player id, as in ScreenFadeComponent's keys); not given by the game."
+    ],
+    "raw_check": "24 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

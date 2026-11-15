@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "registry/build-info/1",
+  "title": "Which build a folder of address tables is of (registry/builds/<build>/build.json)",
+  "description": "The game's Steam build and the SHA-256 of each binary the tables beside this file are of, so that an address is never read against other bytes.",
+  "type": "object",
+  "required": ["schema", "build", "binaries"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "registry/build-info/1"},
+    "build": {"type": "string", "pattern": "^[0-9]+$"},
+    "binaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

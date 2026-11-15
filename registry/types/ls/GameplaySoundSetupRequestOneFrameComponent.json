@@ -1,0 +1,79 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::GameplaySoundSetupRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request that sets up an entity's sound component: the sound resources to load and an optional ls::GameplaySoundSetupRequestOneFrameComponent::SoundComponentSetupInfo (name from an assert). Born with dialogues, traders, locks, scenes.",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Sounds",
+      "type": "HashSet<FixedString>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessSetupRequests (GameEngine.dll+0x89B840) copies +0..+0x2F (three arrays, 4-byte keys) into GameplayLoadedSoundsComponent::SoundInfo.Sounds (a HashSet<FixedString> per ProcessLoadRequests / LoadSounds). Live: prime bucket counts, 2 keys."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Duration",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Optional<SoundComponentSetupInfo> value, first member: copied to ls::SoundComponent +0x14 (Script Extender name Duration); when the optional is empty SoundComponent+0x14 is set to -1.0. Live 60..200 or -1."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "Effect",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second member of SoundComponentSetupInfo: assigned to ls::SoundComponent +0x18 (SE name Effect)."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "HasSetupInfo",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Has-value byte of the Optional ('Trying to access value of ls::Optional<struct ls::GameplaySoundSetupRequestOneFrameComponent::SoundComponentSetupInfo>' assert when 0). Live always 1."
+        }
+      ]
+    },
+    {
+      "offset": 57,
+      "name": "_Pad39",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Optional tail padding (live 0x39..0x3F garbage)"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "GameplaySoundSetupRequestOneFrame",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 5,
+    "open_questions": [],
+    "raw_check": "37 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

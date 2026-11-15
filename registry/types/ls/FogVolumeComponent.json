@@ -1,0 +1,389 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::FogVolumeComponent",
+  "kind": "struct",
+  "about": "Fog volume render object (the registry stores an 8-byte pointer; registration bg3.exe+0x3D48010 sets size 8; the object is 0x130 bytes per the coverage totalSize and the live sample). Created from eoc::FogVolumeRequestComponent (macOS: EntityCommandBuffer::AddComponentUnchecked<ls::FogVolumeComponent>(..., FogVolumeTemplate const*)). Member offsets from the Toolkit's exported accessors (GameEngine.dll, symbols.py fields) - every one agrees with the live sample.",
+  "size": 304,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "VMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "live: always the same executable address (virtual table); MoveableObject base"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "WorldTransform",
+      "type": "Transform",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE MoveableObject (GameDefinitions/Render.h) layout (WorldTransform); live: quaternion (0,0,0,1) at +8..+0x17, world position at +0x18, scale 1,1,1 at +0x24."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "LocalTransform",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "SE MoveableObject (GameDefinitions/Render.h) layout; live 0."}
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "Scene",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE MoveableObject (GameDefinitions/Render.h) layout; live heap pointer, equal to AssociatedScene."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "WorldBoundMin",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE MoveableObject (GameDefinitions/Render.h) layout (AABound WorldBound, min); live: world position minus the radius."
+        }
+      ]
+    },
+    {
+      "offset": 76,
+      "name": "WorldBoundMax",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE MoveableObject (GameDefinitions/Render.h) layout (AABound WorldBound, max)."
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "BaseBoundMin",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE MoveableObject (GameDefinitions/Render.h) layout (AABound BaseBound, min); live -Radius on every axis."
+        }
+      ]
+    },
+    {
+      "offset": 100,
+      "name": "BaseBoundMax",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE MoveableObject (GameDefinitions/Render.h) layout (BaseBound, max); live +Radius."
+        }
+      ]
+    },
+    {
+      "offset": 112,
+      "name": "MinLODDistance",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "SE MoveableObject (GameDefinitions/Render.h) layout; live 0."}
+      ]
+    },
+    {
+      "offset": 116,
+      "name": "MaxLODDistance",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE MoveableObject (GameDefinitions/Render.h) layout; live FLT_MAX."
+        }
+      ]
+    },
+    {
+      "offset": 120,
+      "name": "SceneIndex",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE MoveableObject (GameDefinitions/Render.h) layout; live small indices."
+        }
+      ]
+    },
+    {
+      "offset": 124,
+      "name": "field_7C",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "between MoveableObject.SceneIndex and the first Toolkit accessor (+0x80); live 0 or 0x330020"
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "Layer",
+      "type": "uint32_t",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor GetLayer (enum ls::EFogVolumeLayer, 4 bytes) at +0x80; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 132,
+      "name": "Density",
+      "type": "float",
+      "rung": "toolkit",
+      "evidence": [{"kind": "toolkit-name", "says": "Toolkit GetDensity +0x84; live 0.005..0.02."}]
+    },
+    {
+      "offset": 136,
+      "name": "NoiseCoverage",
+      "type": "float",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit GetNoiseCoverage +0x88; live 0.75 / 1."}
+      ]
+    },
+    {
+      "offset": 140,
+      "name": "NoiseFrequency",
+      "type": "glm::vec3",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit NoiseFrequency (Vector3f) +0x8C; live 0.05 x3."}
+      ]
+    },
+    {
+      "offset": 152,
+      "name": "NoiseRotation",
+      "type": "glm::vec3",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit NoiseRotation +0x98 (symbols.py also prints a 'game +0x90' that does not fit the live sample, where +0x8C..+0x97 is the 0.05 triple); live 0."
+        }
+      ]
+    },
+    {
+      "offset": 164,
+      "name": "NoiseWind",
+      "type": "glm::vec3",
+      "rung": "toolkit",
+      "evidence": [{"kind": "toolkit-name", "says": "Toolkit NoiseWind +0xA4; live 0 / (0,5,0)."}]
+    },
+    {
+      "offset": 176,
+      "name": "Albedo",
+      "type": "glm::vec3",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit Albedo +0xB0; live colours (1,0.41,0.13) or (1,1,1)."
+        }
+      ]
+    },
+    {
+      "offset": 188,
+      "name": "Radius",
+      "type": "float",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit GetRadius +0xBC; live 4..7, equal to the BaseBound half extent."
+        }
+      ]
+    },
+    {
+      "offset": 192,
+      "name": "Size",
+      "type": "glm::vec3",
+      "rung": "toolkit",
+      "evidence": [{"kind": "toolkit-name", "says": "Toolkit Size +0xC0; live 10..55."}]
+    },
+    {
+      "offset": 204,
+      "name": "TransitionDistance",
+      "type": "float",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit GetTransitionDistance +0xCC; live 1..6."}
+      ]
+    },
+    {
+      "offset": 208,
+      "name": "FogVolumeShape",
+      "type": "uint32_t",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit GetFogVolumeShape (enum ls::EFogVolumeShape, 4 bytes) +0xD0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 212,
+      "name": "Replaces",
+      "type": "bool",
+      "rung": "toolkit",
+      "evidence": [{"kind": "toolkit-name", "says": "Toolkit GetReplaces +0xD4; live 0/1."}]
+    },
+    {
+      "offset": 213,
+      "name": "Enabled",
+      "type": "bool",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit GetEnabled / IsEnabled +0xD5; live 1."}
+      ]
+    },
+    {
+      "offset": 214,
+      "name": "_PadD6",
+      "type": "uint8_t[2]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding before the pointer at +0xD8; live garbage"}]
+    },
+    {
+      "offset": 216,
+      "name": "Template",
+      "type": "void*",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit GetTemplate (ls::FogVolumeTemplate const*) +0xD8; live heap pointers."
+        }
+      ]
+    },
+    {
+      "offset": 224,
+      "name": "AssociatedScene",
+      "type": "void*",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit GetAssociatedScene (ls::Scene*) +0xE0; live equals Scene at +0x38."
+        }
+      ]
+    },
+    {
+      "offset": 232,
+      "name": "BaseTransform",
+      "type": "Transform",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit BaseTransform (ls::Transform) +0xE8; live: same position as WorldTransform, unit rotation and scale."
+        }
+      ]
+    },
+    {
+      "offset": 272,
+      "name": "field_110",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "live 0x601 / 0x5F0601 (bytes 01 06 00/5F 00)."}]
+    },
+    {
+      "offset": 276,
+      "name": "UUID",
+      "type": "FixedString",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit UUID (FixedString) +0x114; live FixedString indices."
+        }
+      ]
+    },
+    {
+      "offset": 280,
+      "name": "field_118",
+      "type": "void*",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "live: a different heap pointer per instance."}]
+    },
+    {
+      "offset": 288,
+      "name": "Group",
+      "type": "uint32_t",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit GetGroup (unsigned int) +0x120; live 1..0x28."}
+      ]
+    },
+    {
+      "offset": 292,
+      "name": "GroupVolume",
+      "type": "float",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit GetGroupVolume +0x124; live 268..1437."}
+      ]
+    },
+    {
+      "offset": 296,
+      "name": "field_128",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "live 0 or bytes 01 01 FF FF."}]
+    },
+    {
+      "offset": 300,
+      "name": "field_12C",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "live 0 or 0xFFFFFFFF."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "FogVolume", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "base": "MoveableObject (Render.h) - +0..+0x7F",
+    "class_size": 304,
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 9,
+    "open_questions": [
+      "Whether the object really ends at 0x130 (coverage totalSize 304) or the last 8 bytes belong to the allocation: the allocator / constructor was not found.",
+      "field_7C, field_110, field_118, field_128, field_12C unknown.",
+      "The registry holds a pointer (inline 8): how the layout tool maps a pointer-stored component must follow the convention used for triggers."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

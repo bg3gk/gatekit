@@ -1,0 +1,78 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::SoundRoomNeighborStateComponent",
+  "kind": "struct",
+  "about": "For a sound in a room next to the listener's room: which neighbouring room, through which portal and where the portal is. Written by ecl::sound::RoomSystem (macOS: IsInNeighborRoom / GetPortalPosition), read by ls::SoundTransformSystem and ls::SoundOcclusionSystem (sound positioned at the portal).",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Room",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1DB5A80 (component add, AllocRaw 0x20) copies the value its third argument points to into +0; caller bg3.exe+0x1DB4200 passes a stack copy of the 8-byte value at +0x70 of the room object (an entity of the room) or the null handle. Live: entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Portal",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "+8 = the value its fourth argument points to, filled by bg3.exe+0x1DAF910 (nearest portal search: loops over 0x20-byte portal records, keeps the alive entity with the smallest squared distance, default null). Live: entity handles / null."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "PortalPosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "+0x10..+0x1B = the 12-byte position from bg3.exe+0x1DAF910 (portal transform +0x10..+0x18), default (FLT_MAX, FLT_MAX, FLT_MAX). Live: world coordinates and 3.403e+38."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "field_1C",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "+0x1C = the byte its sixth argument points to, from the caller. Live: low byte 0/1."
+        }
+      ]
+    },
+    {
+      "offset": 29,
+      "name": "_Pad1D",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "tail padding."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SoundRoomNeighborState", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "Meaning of the flag at +0x1C.",
+      "Whether +0 is the neighbouring room or the sound's own room (taken from a room object's +0x70)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

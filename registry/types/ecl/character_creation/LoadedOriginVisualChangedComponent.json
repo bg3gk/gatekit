@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::LoadedOriginVisualChangedComponent",
+  "kind": "struct",
+  "about": "One-frame event of the character editor: the visual of the selected origin finished loading. situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Origin",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x203AFD0 (AllocRaw 0x10) copies Guid::Empty (DAT_14625aad0..dc). Live value is the origin Astarion (3780c689-d903-41c2-bf64-1e6ec6a8e1e5, Origins.lsx) (looked up in the game data index)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientCharacterCreationLoadedOriginVisualChanged",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

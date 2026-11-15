@@ -1,0 +1,383 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::SceneCameraBehavior",
+  "kind": "struct",
+  "size": 264,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor bg3.exe+0x1C713A0 (~ ecl::SceneCameraBehavior::SceneCameraBehavior, Toolkit EoCClient.dll+0xF88FA0) writes 1. SE Coverage.h: bg3.exe+0x1F1D8A0 copies a byte of the timeline camera request into byte 0 of the new camera's SceneCameraBehavior. Live 0 (bytes 1..7 garbage)."
+        }
+      ]
+    },
+    {
+      "offset": 1,
+      "name": "_Pad1",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding before the EntityRef"}]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "ecs::EntityRef",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit constructor builds ecs::EntityRef at +8 (game: null handle 0xffc0000000000000 at +8, 0 at +0x10). Live null."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "ecs::EntityRef",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "Toolkit constructor builds ecs::EntityRef at +0x18. Live null."}
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "field_28",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit constructor builds FixedString at +0x28 (game writes -1). Live -1."
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "field_2C",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "Toolkit constructor builds FixedString at +0x2C. Live -1."}
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor writes 0. Live 0."}]
+    },
+    {
+      "offset": 56,
+      "name": "field_38",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor writes 0. Live 0."}]
+    },
+    {
+      "offset": 64,
+      "name": "field_40",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit constructor writes a byte 0 at +0x40 after an 8-byte clear. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 65,
+      "name": "_Pad41",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding before the Guid"}]
+    },
+    {
+      "offset": 72,
+      "name": "field_48",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "Toolkit constructor calls ls::Guid::Guid at +0x48. Live zero."}
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor zeroes +0x58..+0x63; together with the next two rows it is the Position/Rotation/Scale triple of SE's eoc::platform::TransformData (Coverage.h). Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 100,
+      "name": "Rotation",
+      "type": "glm::quat",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor writes 1.0 at +0x64 and 0 at +0x68..+0x73 - identity quaternion with the 1.0 first, as in TransformData. Live identical."
+        }
+      ]
+    },
+    {
+      "offset": 116,
+      "name": "Scale",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "Constructor writes 1.0 to +0x74, +0x78, +0x7C. Live 1, 1, 1."}
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "Framing",
+      "type": "FramingSettings",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit constructor calls ls::FramingSettings::FramingSettings at +0x80 (0x30 bytes, copy constructor GameEngine.dll+0x4402D0); game constructor writes the same defaults inline."
+        }
+      ]
+    },
+    {
+      "offset": 176,
+      "name": "field_B0",
+      "type": "uint16_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit move-assignment EoCClient.dll+0x2ACDB0 copies 16 bits at +0xB0. Constructor 0. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 178,
+      "name": "field_B2",
+      "type": "uint16_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "16-bit copy at +0xB2 in the same operator=. Live 0."}]
+    },
+    {
+      "offset": 180,
+      "name": "field_B4",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor 0. Live 0."}]
+    },
+    {
+      "offset": 184,
+      "name": "field_B8",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor 0. Live 0."}]
+    },
+    {
+      "offset": 188,
+      "name": "field_BC",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor 0. Live 0."}]
+    },
+    {
+      "offset": 192,
+      "name": "field_C0",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "Constructor writes 1.0 (8-byte store 0x3f800000). Live 1.0."}
+      ]
+    },
+    {
+      "offset": 196,
+      "name": "field_C4",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor 0. Live 0."}]
+    },
+    {
+      "offset": 200,
+      "name": "field_C8",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor 0. Live 0."}]
+    },
+    {
+      "offset": 204,
+      "name": "field_CC",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor 0. Live 0."}]
+    },
+    {
+      "offset": 208,
+      "name": "field_D0",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor 0. Live 0."}]
+    },
+    {
+      "offset": 212,
+      "name": "DeltaExposure",
+      "type": "DeltaExposure",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit constructor calls ls::DeltaExposure::DeltaExposure at +0xD4 (SE Camera.h: bool Enabled + 3 floats = 0x10). Game writes byte 0 at +0xD4 and zeroes +0xD8..+0xE3. Live: byte +0xD4 = 0, bytes +0xD5..+0xD7 garbage (padding inside DeltaExposure)."
+        }
+      ]
+    },
+    {
+      "offset": 228,
+      "name": "field_E4",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "4-byte copy in operator=. Constructor 0. Live 0."}]
+    },
+    {
+      "offset": 232,
+      "name": "field_E8",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "4-byte copy in operator=. Constructor 0. Live 0."}]
+    },
+    {
+      "offset": 236,
+      "name": "field_EC",
+      "type": "uint8_t[16]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Copied as two 8-byte chunks (+0xEC, +0xF4) by operator=; constructor 0; live 0. Nothing seen reading it."
+        }
+      ]
+    },
+    {
+      "offset": 252,
+      "name": "field_FC",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit constructor writes a byte 0 at +0xFC after an 8-byte clear. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 253,
+      "name": "_PadFD",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 256,
+      "name": "field_100",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "operator= copies 8 bytes at +0x100; constructor zeroes +0x100..+0x107. Live 0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientSceneCameraBehavior", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "low",
+    "functions_read": 5,
+    "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet",
+    "minutes": 12,
+    "open_questions": [
+      "Most members after the transform have no meaning yet (+0xB0..+0xD3, +0xE4..+0x107); ecl::TimelineCameraSystem::UpdateSceneCameraBehavior (Toolkit EoCClient.dll+0xCCE810, game ~bg3.exe+0x1F1E2F0) writes them and was not read through.",
+      "Names of the two EntityRefs, the two FixedStrings and the Guid (likely target / look-at entities, camera / level names and a timeline id) are not established.",
+      "FramingSettings float names follow the order of GameEngine.dll statics, not a proven visitor key."
+    ],
+    "reuses": "DeltaExposure (GameDefinitions/Camera.h, sizeof 0x10) at +0xD4",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "the layout file is not valid yet: ecl::SceneCameraBehavior.DeltaExposure: offset 212 is not aligned to 8",
+    "structs": [
+      {
+        "name": "FramingSettings",
+        "size": 48,
+        "fields": [
+          {
+            "name": "Framing",
+            "offset": 0,
+            "type": "glm::vec2",
+            "source": "inferred",
+            "evidence": "ls::FramingSettings::Visit (GameEngine.dll+0x7D4260) visits +0 as a Vector2f with default s_DefaultFraming2 (1/3, 1/3); constructor GameEngine.dll+0x7D4110 writes 0.3333 twice. Live 0.3333, 0.3333 at +0x80/+0x84 of the component."
+          },
+          {
+            "name": "FramingOffset",
+            "offset": 8,
+            "type": "glm::vec2",
+            "source": "inferred",
+            "evidence": "Visit: +8 Vector2f with default s_DefaultFramingOffset (0, 0)."
+          },
+          {
+            "name": "FreeBounds",
+            "offset": 16,
+            "type": "glm::vec2",
+            "source": "inferred",
+            "evidence": "Visit: +0x10 Vector2f with default s_DefaultFreeBounds (0.03, 0.01). Live 0.03, 0.01."
+          },
+          {
+            "name": "SoftBounds",
+            "offset": 24,
+            "type": "glm::vec2",
+            "source": "inferred",
+            "evidence": "Visit: +0x18 Vector2f with default s_DefaultSoftBounds (0.1, 0.08)."
+          },
+          {
+            "name": "DampingStrength",
+            "offset": 32,
+            "type": "float",
+            "source": "inferred",
+            "evidence": "Visit: float at +0x20 compared with 4.0; the only float static with no other match is s_DefaultDampingStrength. Live 4.0."
+          },
+          {
+            "name": "FreeZoneDelay",
+            "offset": 36,
+            "type": "float",
+            "source": "inferred",
+            "evidence": "Visit: float at +0x24 default 0.3 (statics s_DefaultFreeZoneDelay / s_DefaultSoftZoneDelay both 0.3; order of the statics in GameEngine.dll follows the members). Live 0.3."
+          },
+          {
+            "name": "SoftZoneDelay",
+            "offset": 40,
+            "type": "float",
+            "source": "inferred",
+            "evidence": "Visit: float at +0x28 default 0.3. Live 0.3."
+          },
+          {
+            "name": "SoftZoneRampTime",
+            "offset": 44,
+            "type": "float",
+            "source": "inferred",
+            "evidence": "Constructor writes 5.0 at +0x2C (s_DefaultSoftZoneRampTime). Live 5.0."
+          }
+        ]
+      }
+    ]
+  }
+}

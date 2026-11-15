@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ai::swarm::CalculatingComponent",
+  "kind": "struct",
+  "about": "AI swarm members during a swarm turn (idle levels with swarm groups).",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Live (37 instances): entity-handle shaped (index 0x90F..0x27A27, high dword 0x800001..0x2000012); the same handles appear at +0x18 of NextActionComponent. Read by FindTargets/CalculateMoveGroups/Activation/Deactivation systems (DeactivationSystem::DestroyCalculatingEntities)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerAiSwarmCalculating", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 0,
+    "minutes": 4,
+    "open_questions": ["which entity it names"],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

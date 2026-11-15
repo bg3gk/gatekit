@@ -1,0 +1,50 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::party::AttachedToGroupEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Server event (registry does not mark it one-frame) of esv::party::DataSystem (macOS index: writers DataSystem::Update / ProcessRecipeRequests): a party member was attached to another group. Created on a fresh event entity by bg3.exe+0x2BC2690 when the old and new 16-byte group values differ; read by esv::StoryCharacterEventManager::Init (Osiris events). Seen.py context: party changes (recruiting / dismissing companions, summons).",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2BC5370 (AllocRaw 0x18) default null handle at +0; bg3.exe+0x2BC2690 line ~104 writes the member entity. Live (6): entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Group",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator zeroes +8/+0x10; bg3.exe+0x2BC2690 returns early when param_5 == param_6 (two 16-byte values compared as two qwords) and writes param_6 (the new value) here. 16-byte value compared and copied as a pair of qwords: a group Guid. Live: always zero (attached to the default/empty group)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerPartyAttachedToGroupEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [
+      "Whether +8 is the new group Guid or another 16-byte id (always zero live)."
+    ],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

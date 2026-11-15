@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::trade::TraderMapMarkerLinkedWithComponent",
+  "kind": "struct",
+  "about": "Server component of a trader whose map marker is linked to another entity; read by esv::trade::TraderMapTrackingSystem (ProcessAddedTraders EoCServer.dll+0xD0B420, ProcessHiddenTraders, ProcessRemovedTraders, ProcessLevelSwap). Saved: `symbols.py savemodel` shows it copied into the model ls::model::core::v0::EntityId (core.v0.EntityId, 16 bytes) - the whole component is one entity reference. Seen alive on traders (S_GOB_Quartermaster etc.).",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Save model is ls::model::core::v0::EntityId (savegame Ops<TraderMapMarkerLinkedWithComponent,esv::trade::Loader>::Save bg3_macos_x64+0x4E8A1B0); registry size 8; live: 48 distinct entity handles (low dword index, high dword salt/type 0x00800001..0x02000013)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerTraderMapMarkerLinkedWith",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [
+      "Which entity the marker is linked with (likely the trader's own map-marker owner / the linked character)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

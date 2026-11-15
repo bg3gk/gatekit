@@ -1,0 +1,67 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::SetCharacterLightCullFlagsRequestsSingletonComponent",
+  "kind": "struct",
+  "about": "Client singleton queue of cull-flag changes for character lights, filled by ecl::CharacterLightSystem (macOS: Update, SetupCharacterLightComponent; Toolkit EoCClient.dll+0xACA680 is in its WorldView) - the same request type as ls::SetLightCullFlagsRequestsSingletonComponent.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<SetCharacterLightCullFlagsRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll+0xACA680 (CharacterLightSystem lighting setup, WorldView with SetCharacterLightCullFlagsRequestsSingletonComponent) pushes IndexedStorage<ls::LightCullFlagRequest> elements. Live: heap pointer, capacity 0x20..0x100, size 0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "SetCharacterLightCullFlagsRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [
+      "Push in EoCClient.dll+0xACA680 not read field by field; element layout taken from the shared LightCullFlagRequest push of ApplyVisibilityToEntities."
+    ],
+    "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "SetCharacterLightCullFlagsRequest",
+        "size": 16,
+        "fields": [
+          {
+            "name": "Light",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "Same element type ls::LightCullFlagRequest as SetLightCullFlagsRequestsSingletonComponent (EoCClient.dll+0xACA680 asserts IndexedStorage<ls::LightCullFlagRequest>; macOS has one DynamicArray<ls::LightCullFlagRequest>). +0 = light entity there (EoCClient.dll+0xAF6F50)."
+          },
+          {
+            "name": "Flags",
+            "offset": 8,
+            "type": "uint16_t",
+            "source": "inferred",
+            "evidence": "16-bit flag word at +8 as in EoCClient.dll+0xAF6F50."
+          },
+          {
+            "name": "_PadA",
+            "offset": 10,
+            "type": "uint8_t[6]",
+            "source": "unknown",
+            "evidence": "padding."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::ClusterVisualLoadingComponent",
+  "kind": "struct",
+  "about": "Client visual streaming: present on a cluster while its visuals are being loaded; holds the loading job (ls::ClusterVisualLoaderSystem replaces it by ClusterVisualLoadedComponent when the job finishes).",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Job",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x3E72E70 zeroes the 8 bytes; destructor bg3.exe+0x3B71A20 takes the pointer, nulls it and atomically decrements a reference count at +0x100 of the pointee, destroying and freeing it at zero: an intrusive ls::SharedPtr. macOS names show ls::DynamicArray<ls::SharedPtr<ls::ClusterVisualLoadingJob>> in the visual loader, so this is SharedPtr<ls::ClusterVisualLoadingJob> (opaque). Live: 48 heap pointers."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClusterVisualLoading", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 3,
+    "open_questions": [
+      "Pointee type (ClusterVisualLoadingJob) inferred from macOS names; not bound."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

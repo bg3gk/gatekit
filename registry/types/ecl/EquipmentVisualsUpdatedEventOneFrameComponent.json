@@ -1,0 +1,57 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::EquipmentVisualsUpdatedEventOneFrameComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x19939C0 (size 16, default null handle). bg3.exe+0x198DF20 (ecl::EquipmentVisualsSystem) walks a per-frame map {owner entity -> array of slot bytes}; for every slot it fires a signal with {entity, slot}, creates a fresh event entity and writes the map key (the owner whose equipment visuals were updated) here. Capture: one and the same handle 0x0140000100003931 in all 16 instances."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Slot",
+      "type": "ItemSlot",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same loop: one byte taken from the slot array of that owner (the system puts 3,4,5,6 = MeleeMainHand..RangedOffHand into such arrays with FUN_1410449e0). Creator default 0x13. ItemSlot is uint8_t. Capture first byte: 0,1,2,3 (the other 7 bytes are garbage)."
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "_Pad9",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "padding; creator writes one byte only, capture shows garbage"}
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientEquipmentVisualsUpdatedEvent",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "unsheath",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "Slot is taken as ItemSlot from the values pushed (3..6) and the captured 0..3; the creator default 0x13 (ItemSlot::MainHand) looks like an 'invalid' sentinel - not checked against a reader."
+    ],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

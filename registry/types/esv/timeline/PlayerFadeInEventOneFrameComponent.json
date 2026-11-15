@@ -1,0 +1,76 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::timeline::PlayerFadeInEventOneFrameComponent",
+  "kind": "struct",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "User",
+      "type": "UserId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2D10A20 (esv::timeline::FadeSystem) creates one component on a new entity (bg3.exe+0x2D124E0, default = the invalid user id constant) per user of an esv::timeline::DeferredEndingStateComponent whose fade-in finished or timed out, and stores the 4-byte user id."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 8,
+      "name": "Fade",
+      "type": "STDString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2D10A20 copy-constructs it from the string at +0 of the deferred ending state (default empty, capacity 15)."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "field_20",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2D10A20 copies the dword at +0x50 of the deferred ending state. The consumer bg3.exe+0x3451800 (query of added PlayerFadeInEventOneFrameComponent, called from the per-frame update of esv::script::GameplayEventSystem) calls every registered listener with (component, component + 8, this dword)."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "_Pad24",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerTimelinePlayerFadeInEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "timeline",
+    "confidence": "high",
+    "functions_read": 6,
+    "minutes": 11,
+    "open_questions": [
+      "field_20: probably the dialog instance id (same values as esv::timeline::DeferredEndingStateComponent+0x50, live 1..0x11C), not proven; the listener of esv::script::GameplayEventSystem was not identified.",
+      "Registered as a regular component (ComponentTypeIdContext) although named OneFrame."
+    ],
+    "raw_check": "24 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Offsets and widths are Windows-side (bg3.exe+0x2D10A20 writer, bg3.exe+0x3451800 reader passing +0, +8 and the dword at +0x20); 24 live instances agree (user 0x10001 at +0, STDString at +8). STDString is a builtin of generate.py now (24 bytes), so the earlier external_types override was removed.",
+    "status": "confirmed"
+  }
+}

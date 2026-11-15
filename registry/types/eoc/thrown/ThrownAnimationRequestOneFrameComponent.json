@@ -1,0 +1,55 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::thrown::ThrownAnimationRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request to play the in-flight animation of a thrown object, carrying the same float and byte as eoc::thrown::IsThrownComponent +0/+4. Written on the server by esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (bg3.exe+0x2AFA000) from esv::thrown::EntityThrownRequestOneFrameComponent +0xC/+0x10, and on the client by the per-frame update of ecl::thrown::ThrowAnimationSystem (bg3.exe+0x1A25B70) from a 16-byte component (IsThrownComponent). Never seen alive. Registry total 8 on both rows.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Duration",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Server: ProcessThrownRequests (EoCServer.dll+0x3D3D50 line 589, add helper 0x3CF6D0 = this 8-byte type) copies esv::thrown::EntityThrownRequestOneFrameComponent +0xC (eoc::PathMover::SampleDuration of the throw path, InitializeProjectileThrown EoCServer.dll+0x7F2D80); client bg3.exe+0x1A25B70 copies eoc::thrown::IsThrownComponent +0, the same value."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "SpellAnimationType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Server: ProcessThrownRequests (EoCServer.dll+0x3D3D50 line 590) copies the request byte +0x10 = eoc::SpellPrototype +0x19 (Script Extender's SpellPrototype.SpellAnimationType, written by InitializeProjectileThrown EoCServer.dll+0x7F2D80); client copies IsThrownComponent +4."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "_Pad5",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding to 8; not written."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ThrownThrownAnimationRequest", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 4,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 7,
+    "open_questions": [
+      "Meanings of the float (flight duration? spin period - pi is divided by it) and of the byte are not established; they mirror eoc::thrown::IsThrownComponent field_0/field_4 (layouts\\alive).",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

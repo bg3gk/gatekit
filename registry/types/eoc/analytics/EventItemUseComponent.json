@@ -1,0 +1,81 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::analytics::EventItemUseComponent",
+  "kind": "struct",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Character",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x9F3310 reads an entity (bg3.exe+0x4017180) into +0 first, default 0xFFC0000000000000 (null handle); EoCClient.dll ecl::GameAnalyticsSystem::ProcessItemUseEvents (EoCClient.dll+0xD30490) checks it is alive and resolves it to the ecl::Character passed to RecordItemUse. Live: client 0x01400001000001FE, server 0x01800001000007C3 (different worlds = entity handles)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "ItemName",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCClient.dll+0xD39F80 ecl::GameAnalyticsSystem::RecordItemUse writes FixedString::ToChar(+8) as analytics key \"item_name\"; serializer reads a FixedString (bg3.exe+0x4016110) here, default -1."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "StatsName",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "RecordItemUse writes FixedString +0xC as \"stats_name\"; serializer FixedString, default -1."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Category",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "RecordItemUse writes FixedString +0x10 as \"category\"; serializer FixedString, default -1."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "Amount",
+      "type": "int32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "RecordItemUse writes the int at +0x14 as \"amount\"; serializer reads 4 raw bytes last. Live: 1 (one potion)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnalyticsEventItemUse", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "Names are taken from the analytics JSON keys (snake_case to PascalCase), not from FieldMeta."
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::item::InUseComponent",
+  "kind": "struct",
+  "about": "Put on an item while a character uses it (potions, dialogues and scripted events in act 1; at most 2 holders at once). Written by esv::item::UseSystem (macOS UseSystem::Update; Toolkit EoCServer.dll+0x13C0440 Update -> GatherUsageRequests / UpdateState / SendEvents, WorldView<..., ObjectInteractionSingletonComponent const, InUseComponent, UseEventsOneFrameComponent>), removed by esv::item::EntityDestructionSystem.",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Users",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "48 bytes = HashSet. Live in all 42 instances: +0 bucket pointer, +8 bucket count 5, +0x10 NextIds (capacity 1, size 1), +0x20 Keys (capacity 1, size 1) -> a set holding one key. The UseSystem works on entity handles of users (UpdateState walks 8-byte entity lists and IsEntityAlive); keys taken as EntityHandle."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerItemInUse", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "Key type (user character) is inferred from the system, not from a direct read of the set."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::timeline::ActorEndStateAppliedOneFrameComponent",
+  "kind": "struct",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Template",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x330AE50 (esv::TimelineSystem, applies the end state of an actor; Toolkit ApplyActorEndState) creates the component on the actor (bg3.exe+0x3312E50), formats the Guid of the end state record as text, resolves it with ls::GlobalTemplateManager::GetTemplateRaw and stores the FixedString at +0x10 of the template (its id) through the optional-assign helper bg3.exe+0xAF2EF0 (which DecRefs the old value)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "TemplateType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x330AE50 passes 'template(+0x1C) >> 29' (the top 3 bits of the template handle = its type) as the second member; bg3.exe+0xAF2EF0 stores that byte at +4."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "_Pad5",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "alignment of the pair to 4"}]
+    },
+    {
+      "offset": 8,
+      "name": "HasTemplate",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0xAF2EF0 sets the byte at +8 to 1 on first assignment and tests it before releasing the old FixedString: the engaged flag of an optional<{FixedString, uint8}>. Created 0 (bg3.exe+0x3312E50)."
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "_Pad9",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerTimelineActorEndStateApplied",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "timeline",
+    "confidence": "high",
+    "functions_read": 5,
+    "live": "not verified",
+    "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "minutes": 10,
+    "open_questions": [
+      "The first 12 bytes are one optional<{FixedString, uint8}> (engaged flag at +8), flattened here.",
+      "The creation helper writes 0, not the FixedString null value, into +0: the value is meaningful only when HasTemplate is set."
+    ],
+    "second_pass": "Re-read the optional-assign helper bg3.exe+0xAF2EF0: FixedString at +0 (DecRef of the old one), byte at +4, engaged flag at +8 set on first assignment - all members settled on Windows; one live instance was all zero (not engaged).",
+    "status": "declared"
+  }
+}

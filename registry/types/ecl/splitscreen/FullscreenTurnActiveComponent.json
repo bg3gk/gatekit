@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::splitscreen::FullscreenTurnActiveComponent",
+  "kind": "struct",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "User",
+      "type": "UserId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::splitscreen::GetActiveFullscreenTurnUser (EoCClient.dll+0x84A1A0, returns class net::UserID) finds the turn-order entity, fetches this component and returns its first 4 bytes as the UserID. macOS default constructor stores one 32-bit register at +0 (str w0, [x23]). Live: 1 instance during a fight, value 1."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSplitscreenFullscreenTurnActive",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [
+      "Member name is ours; the Toolkit only shows that the 4 bytes are returned as net::UserID."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

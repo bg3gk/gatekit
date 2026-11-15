@@ -1,0 +1,78 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::crowds::TriggerSpawnStateComponent",
+  "kind": "struct",
+  "about": "Server-only, saved (models game.crowds.v0/v1 16 bytes, v2 12 bytes align 4; no member names known). Lives on crowd character triggers (esv::CrowdCharacterTrigger), up to 212 holders, from level load on. Driven by esv::crowds::SpawnSystem::ProcessTriggers / SpawnCharacters (EoCServer.dll, CrowdCharacterSpawnSystem.cpp): a spawn timer per trigger, the number of characters it has spawned, and a flag that blocks spawning while players are near.",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "SpawnInterval",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0xD73760 ProcessTriggers: while the float at state+4 is less than the float at state+0 the trigger keeps waiting, otherwise it spawns; i.e. +0 is the time to wait before the next spawn (re-rolled with ls::Random). macOS Save copies 8 bytes (+0..+8) to the v2 model. Live floats 0 .. 24.6"
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "ElapsedTime",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessTriggers: adds the frame's delta time to the float at state+4 when no blocking query matches; compared with +0. Live floats 0 .. 2910"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "SpawnedCount",
+      "type": "uint16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SpawnCharacters EoCServer.dll+0xD74A30: checks that the unsigned 16-bit count at state+8 plus the new count stays at or below the trigger max (CrowdCharacterTrigger +0x7C scaled by crowd quality); ProcessTriggers compares the trigger's max with the unsigned 16-bit value at state+8. macOS Save copies a 2-byte value from +8. Live 0"
+        }
+      ]
+    },
+    {
+      "offset": 10,
+      "name": "PlayersNearby",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessTriggers: stores in the bool at state+10 the result of a distance-to-players test (one computed float compared as less than another) and spawning is skipped while it is set; written from EoCServer.dll+0xD72950 (called with the players and the transform). macOS Save copies one byte from +0xA. Live 0"
+        }
+      ]
+    },
+    {
+      "offset": 11,
+      "name": "_Pad0B",
+      "type": "uint8_t[1]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding; never read; live garbage (00/35/37/38/c1)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerCrowdsTriggerSpawnState", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 9,
+    "open_questions": [
+      "exact meaning of the bool at +0xA (players near / in view)",
+      "whether +0 is an interval or a target time; units seconds"
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::StateComponent",
+  "kind": "struct",
+  "size": 56,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Users",
+      "type": "HashSet<UserId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "server creator bg3.exe+0x2DF2180 allocates 0x38 bytes and zeroes a HashSet layout (+0 buckets, +0x10 NextIds, +0x20 Keys with capacity/size at +0x28/+0x2C). Its caller bg3.exe+0x2DEDED0 iterates the keys (+0x20, count +0x2C, stride 4) of eoc::notification::DestinationComponent (HashSet<net::UserID>, FieldMeta m_Users) and inserts each into this set (bg3.exe+0xCAE7D0). Reader bg3.exe+0x2DEEBB0 inserts more users as they arrive. Live: buckets 5, one key. Probably the users that still have to receive/acknowledge the notification."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "creator writes 4 zero bytes at +0x30. Live: 0 or 1 in the low dword."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "_Pad34",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding to 56 (live stale bytes)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NotificationState", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 7,
+    "open_questions": [
+      "Meaning of the set (pending vs. acknowledged users) and of +0x30 (bool or counter)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::CharacterCreationStatsComponent",
+  "kind": "struct",
+  "size": 96,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Race",
+      "type": "Guid",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::CharacterCreationStatsComponent::Race at +0x0 (BG3Extender/GameDefinitions/Components/Data.h:168): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "SubRace",
+      "type": "Guid",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::CharacterCreationStatsComponent::SubRace at +0x10 (BG3Extender/GameDefinitions/Components/Data.h:168): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "BodyType",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::CharacterCreationStatsComponent::BodyType at +0x20 (BG3Extender/GameDefinitions/Components/Data.h:168): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+        }
+      ]
+    },
+    {
+      "offset": 33,
+      "name": "BodyShape",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::CharacterCreationStatsComponent::BodyShape at +0x21 (BG3Extender/GameDefinitions/Components/Data.h:168): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Name",
+      "type": "STDString",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::CharacterCreationStatsComponent::Name at +0x28 (BG3Extender/GameDefinitions/Components/Data.h:168): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "PointBuyAbilities",
+      "type": "std::array<int32_t, 7>",
+      "rung": "extender",
+      "known_as": [{"name": "Abilities", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::CharacterCreationStatsComponent::PointBuyAbilities at +0x40 (BG3Extender/GameDefinitions/Components/Data.h:168): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+        }
+      ]
+    },
+    {
+      "offset": 92,
+      "name": "field_5C",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender declares eoc::CharacterCreationStatsComponent::field_5C at +0x5C (BG3Extender/GameDefinitions/Components/Data.h:168): its author's name and type; the offset is computed from the declared types; the computed offset equals the one in its earlier name. Not checked against the game's code."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "CharacterCreationStats", "one_frame": false},
+  "survey": {
+    "batch": "extender",
+    "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Data.h:168, kind component), by gatekit symbols se-layouts on 2026-11-14",
+    "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `extender` - the extender's name for the field at that offset, which nobody has checked against the game's code. A name is raised from `extender` only with evidence from the code, by `gatekit names set`.",
+    "status": "declared"
+  }
+}

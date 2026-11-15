@@ -1,0 +1,89 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::SkillCheckNotificationComponent",
+  "kind": "struct",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "EntityUuid",
+      "type": "Guid",
+      "rung": "inferred",
+      "known_as": [{"name": "field_0", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Server: bg3.exe+0x2DF53B0 (notification dispatch, case '$') creates the component through bg3.exe+0x2DF3D50 and fills +0/+8 with the 16 bytes returned by FUN_14107e6f0(entity) (the ls::uuid of the notification's entity); client consumer bg3.exe+0x18A7E20 resolves the Guid back to an entity (FUN_141013470). Replication member 1 (bg3.exe+0x99E3F0). | first pass: write-all serializer bg3.exe+0x99E3F0: member 1, raw 16-byte write at +0; macOS default stp q0,q0 [x23] = 0"
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Success",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS ecl::GameStateRunning::Update (bg3_macos_x64+0x35833C0) walks the added SkillCheckNotificationComponents and calls every ecl::UIFeedbackManager listener with feedback type (byte +0x10 == 0) | 10; the Noesis registration of ecl::EFeedbackType (Noesis::TypeEnumCreator<ecl::EFeedbackType>::Fill, bg3_macos_x64+0x297E8B0) names 10 SavingThrowSuccess and 11 SavingThrowFail, so a set byte shows the success message. The Windows consumer bg3.exe+0x18A7E20 computes the same (byte == 0) + 10."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "field_11",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "write-all serializer bg3.exe+0x99E3F0: member 3, raw 1-byte write at +0x11 | names pass 2: Server: notification byte +9; client bg3.exe+0x18A7E20 copies it into the listener payload."
+        }
+      ]
+    },
+    {
+      "offset": 18,
+      "name": "_Pad12",
+      "type": "uint8_t[6]",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "alignment padding; nothing serialized or initialised here"}
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "StatsExpression",
+      "type": "STDString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x844E70 (lambda over esv::stats::SkillCheckEventOneFrameComponent, stride 400; variant tag 0x24 = SkillCheckNotificationRequest) copies event +0 (Target), +0x159 (Success), +0x158 and the STDString at +0x160 (StatsExpression in Script Extender's Events.h) into the request; dispatcher bg3.exe+0x2DF53B0 case 0x24 constructs this STDString from request +0x10, which is that string."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationSkillCheckNotification",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 6,
+    "names_pass_2": "No FieldMeta or savegame names (replication: no macOS field names). EntityUuid from the server dispatch bg3.exe+0x2DF53B0 and the client consumer bg3.exe+0x18A7E20.",
+    "open_questions": [
+      "Not seen alive (seen.py has no samples).",
+      "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+      "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+      "Guid guessed from width; the two bytes may be skill/ability enums or bools; meaning of the string unknown. Client readers (bg3.exe+0x18A86A0) not decoded.",
+      "names pass 2: field_10: listener event kinds 10/11 not decoded (would settle Success vs Failed).",
+      "names pass 2: Who queues notification '$' (the server side source of bytes +8/+9 and the string) was not found; the related Toolkit esv::stats::RollNotificationSystem::LEGACY_NotifySkillCheck (EoCServer.dll+0x10499E0) only queues eoc::stats::SkillCheckData."
+    ],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

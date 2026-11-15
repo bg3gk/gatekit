@@ -1,0 +1,120 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::progression::FeatComponent",
+  "kind": "struct",
+  "size": 128,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Feat",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0xAFDD60 esv::FeatSystem::ProcessConditionCreation: the component's +0 Guid is the key passed to ls::ModdableFilesLoader<ls::Guid,eoc::Feat>::GetObjectByKey - the UUID of the Feat resource. Script Extender's name, now backed by the code."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "int32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Progression.h:23): its author's name and type; the offset is computed from the declared types; the computed offset equals the one in its earlier name. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "ConditionId",
+      "type": "std::optional<int32_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0xAFDD60 esv::FeatSystem::ProcessConditionCreation: when the Feat resource's condition string (resource +0x20) is not empty, ls::thoth::shared::Machine::CreateCondition's result is stored at +0x14 and the has-value byte at +0x18 is set; EoCServer.dll+0xAFDE60 ProcessConditionRemoval asserts ls::Optional<ls::ID<ls::thoth::shared::ConditionHandleTraits>>::Get, calls Machine::DestroyCondition(+0x14) and zeroes +0x14..+0x1B. An optional handle of the feat's thoth condition. Script Extender's name, now backed by the code."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "Proficiencies",
+      "type": "Array<SkillId>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::progression::FeatComponent::Proficiencies at +0x20 (Script Extender's header BG3Extender/GameDefinitions/Components/Progression.h calls it Proficiencies; offset computed from the header)"
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Expertise",
+      "type": "Array<SkillId>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::progression::FeatComponent::Expertise at +0x30 (Script Extender's header BG3Extender/GameDefinitions/Components/Progression.h calls it Expertise; offset computed from the header)"
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "AddSpells",
+      "type": "Array<SpellDefinition>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::progression::FeatComponent::AddSpells at +0x40 (Script Extender's header BG3Extender/GameDefinitions/Components/Progression.h calls it AddSpells; offset computed from the header)"
+        }
+      ]
+    },
+    {
+      "offset": 80,
+      "name": "AddPassives",
+      "type": "Array<FixedString>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::progression::FeatComponent::AddPassives at +0x50 (Script Extender's header BG3Extender/GameDefinitions/Components/Progression.h calls it AddPassives; offset computed from the header)"
+        }
+      ]
+    },
+    {
+      "offset": 96,
+      "name": "AbilityImprovements",
+      "type": "std::array<int32_t, 7>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::progression::FeatComponent::AbilityImprovements at +0x60 (Script Extender's header BG3Extender/GameDefinitions/Components/Progression.h calls it AbilityImprovements; offset computed from the header)"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ProgressionFeat", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "external_types": {
+      "SkillId": {
+        "size": 1,
+        "align": 1,
+        "from": "Script Extender's enumeration SkillId is uint8_t (Enumerations/Stats.inl:349); only the element of the two Arrays, which are 16 bytes whatever it is."
+      }
+    },
+    "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Progression.h:23, kind component), by gatekit symbols se-layouts on 2026-11-14",
+    "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `unknown` because no rung of section 7 is that - not game (no FieldMeta or macOS name behind it), not toolkit, not inferred (ours, with evidence in the record). A name is raised from `unknown` only with evidence, by `gatekit names set`.",
+    "seen": true,
+    "size_check": "Size 0x80 equals the registry's (client 128, server 128; coverage.json, game v4.76.31.656).",
+    "status": "declared"
+  }
+}

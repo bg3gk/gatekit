@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::EffectSoundEntityAttachedComponent",
+  "kind": "struct",
+  "about": "On effect entities that carry a sound; read by ls::SoundOcclusionSystem (macOS name, view with ls::EffectComponent, ParentEntityComponent). One 8-byte member, an entity handle.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS default constructor stores 0xFFC0000000000000 (the null EntityHandle) to +0; registration bg3.exe+0x3B4F130: size 8, no destructor; live: 48 different handles with the usual handle high bits (0x01400001 / 0x01C00002). Probably the sound entity attached to the effect (name from the component's name)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "EffectSoundEntityAttached", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [
+      "Which entity it points to (the sound object entity or the owner) was not proven from a reader."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

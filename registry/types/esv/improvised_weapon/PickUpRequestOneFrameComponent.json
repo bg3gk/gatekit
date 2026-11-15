@@ -1,0 +1,35 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::improvised_weapon::PickUpRequestOneFrameComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Weapon",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2EB2690 walks pairs (wielder, {weapon, 8 more bytes}); when the wielder is alive and has no eoc::improvised_weapon::WieldingComponent (bg3.exe+0xAACE50) and the weapon is alive and has no WieldedComponent (bg3.exe+0xAACB10) and is not already requested by another wielder, it creates the component on the wielder through bg3.exe+0x2EB4040 and writes the weapon's handle into it."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerImprovisedWeaponPickUpRequest",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "equipment",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 4,
+    "open_questions": ["Never alive in the captures."],
+    "status": "declared"
+  }
+}

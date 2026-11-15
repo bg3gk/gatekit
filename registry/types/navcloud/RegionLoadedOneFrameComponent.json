@@ -1,0 +1,51 @@
+{
+  "schema": "registry/type/1",
+  "id": "navcloud::RegionLoadedOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event (client and server) raised by navcloud::RegionSystem when a navcloud region finished loading; holds the region coordinates (Vector3i<int>, the key type of navcloud::RegionDataComponent's map). Read by the obstacle processing (ProcessObstacle).",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "RegionX",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "creator bg3.exe+0x3928D10 (alloc 0xC) zeroes 8+4 bytes; macOS navcloud::RegionSystem::Update allocates 0xC and zeroes it the same way. 12 bytes = Vector3i<int> region key (navcloud::RegionDataComponent keys, stride 0xC). Live small positive ints 0..0xD, same values as navcloud::RegionLoadingComponent +0"
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "RegionY",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "second int of the region key; live 0..4 and -1"}]
+    },
+    {
+      "offset": 8,
+      "name": "RegionZ",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "third int of the region key; live negative (-0x40 .. -0x4C) and small positives"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NavcloudRegionLoaded", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": ["axis order of the three ints (x,y,z vs x,z,y) not checked"],
+    "raw_check": "60 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

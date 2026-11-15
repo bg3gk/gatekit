@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::drop::DropEntitiesToProcessComponent",
+  "kind": "struct",
+  "about": "On the dropping character ('shove-throw' step): how many dropped entities have not yet ended up.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Count",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "esv::drop::DropEntityEndUpSystem::ProcessDropStateCreation (EoCServer.dll+0x9A7780) counts the alive handles of DropEntitiesListComponent and writes the count to +0 of the added component (FUN_1809a3660); the update then works with HashMap<EntityHandle, unsigned int> of finished counts. Live: 1 (one thrown entity)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerDropEntitiesToProcess", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 2,
+    "open_questions": [],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

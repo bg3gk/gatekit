@@ -1,0 +1,57 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::SpellCastFailedComponent",
+  "kind": "struct",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "SpellCastGuid",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializers bg3.exe+0x997FA0 / 0x998130 / 0x997D10 / 0x997EE0: member 1 = raw 16 bytes at +0 (DAT_14627ff40). Live: the same Guid values as SpellCastDestroyed / SpellCastMovementAndPrecalculationEnd (spell cast id)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Result",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x83BF10 section for eoc::spell_cast::FinishedEventOneFrameComponent (variant tag 0x28 = SpellCastFailedNotificationRequest) sends only when the event's byte +0 (Result, SpellCastFailReason) is non-zero, with that byte at request +8; dispatcher bg3.exe+0x2DF53B0 case 0x28 stores request +8 here. Live values 2, 5, 6 fit a non-zero fail reason."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "_Pad11",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "tail padding to the Guid's 8-byte alignment (size 24); server samples hold stale bytes there"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NotificationSpellCastFailed", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [
+      "Meaning/enum of the byte at +0x10 (failure reason?). Client reader: bg3.exe+0x7606E0 (Accepted + SpellCastFailed query) not read."
+    ],
+    "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::relation::BaseFactionChangedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame event of esv::relation::RelationSystem (ProcessSetBaseFactionRequests / UpdateCurrentFaction): an entity's base faction changed from one faction Guid to another. Read by esv::status::RequestSystem::GatherBaseFactionChangedRequests and the Anubis/Osiris event bridge (ls::anubis::game::event::BaseFactionChanged); also saved (ls::model game::relation v0/v1). Seen.py context: appears in fights, spells, shove/throw, deaths, dialogues and on level load; up to 12 holders at once.",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x8938C0 constructor BaseFactionChangedEventOneFrameComponent(ID<EntityHandleTraits> const&, Guid const&, Guid const&) stores the ID at +0; default constructor EoCServer.dll+0x50B420 sets 0xffc0000000000000. Live: entity-handle-shaped values."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "Guid",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "First Guid argument of the constructor (probably the old or the new faction). Live: 9 distinct Guid-like values."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "Guid",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second Guid argument of the constructor. Live: 8 distinct Guid-like values."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerRelationBaseFactionChangedEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 6,
+    "open_questions": ["Which of the two faction Guids is the old one and which the new one."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

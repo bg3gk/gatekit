@@ -1,0 +1,59 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::SoundVirtualPositionComponent",
+  "kind": "struct",
+  "about": "Virtual positioning of a sound emitter (ls::SoundTransformSystem::ProcessNewVirtualPositioningComponents / ProcessVirtualPositionedSounds, which also use SoundRoomStateComponent): the emitter's own position and two copies of the virtual (room-portal) position.",
+  "size": 36,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit ctor ls::SoundVirtualPositionComponent(Vector3f const&, Vector3f const&) (GameEngine.dll+0x68F410) stores the first argument at +0; live: a distinct value per instance (emitter positions), NaN/FLT_MAX defaults. Windows creator bg3.exe+0x3EA5C90 (ComponentFrameStorageAllocRaw(.., 0x24, ..)) copies its first Vector3f argument here as 8 + 4 bytes. Some live instances hold 0xFFC00000 (a NaN default of the caller) - the raw check's 'not an ordinary float' is that NaN, not a wrong type."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "VirtualPosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same ctor stores the second argument at +0x0C and again at +0x18; live +0x0C..+0x17 and +0x18..+0x23 hold the same 9 values. Windows creator bg3.exe+0x3EA5C90 copies its second Vector3f argument to +0x0C (8 + 4 bytes)."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "glm::vec3",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Initialised from the same argument as +0x0C (ctor); probably the previous/target virtual position used for interpolation. Windows creator bg3.exe+0x3EA5C90 copies the same second argument again to +0x18 (8 + 4 bytes); size 0x24 ends here."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SoundVirtualPosition", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "Role of the third vector (+0x18): initialised like +0x0C; whether it is the previous or the target virtual position was not read from the parallel jobs of ProcessVirtualPositionedSounds."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Offsets and widths confirmed on Windows by the creator bg3.exe+0x3EA5C90 (AllocRaw 0x24; three 12-byte vectors from two Vector3f arguments), matching the Toolkit constructor. The failed raw check was a NaN (0xFFC00000) default in live data.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::DistantSoundSetupRequestOneFrameComponent",
+  "kind": "struct",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "ActivationRange",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::sound::DistantSoundSystem::ProcessSetupRequests (EoCClient.dll+0xE81910) copies DistantSoundSystem::DistantSoundSetupRequest {4 bytes, FixedString, FixedString} into the component; the 4 bytes come from DistantSoundInfo.ActivationRange (+0x60 of DistantSoundStateComponent, ProcessDistantSoundInfoAdded). Live 150.0 / 200.0."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Name",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second member: DistantSoundInfo.Name (+0 of the state component) in ProcessDistantSoundInfoAdded."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "InitSound",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Third member, assigned after Name; live always null (0xFFFFFFFF); probably DistantSoundInfo.InitSound."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSoundDistantSoundSetupRequest",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": ["Third FixedString source (InitSound or Level) not confirmed."],
+    "raw_check": "14 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

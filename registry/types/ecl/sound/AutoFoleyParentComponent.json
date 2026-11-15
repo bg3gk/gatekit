@@ -1,0 +1,103 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::AutoFoleyParentComponent",
+  "kind": "struct",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit constructor ecl::sound::AutoFoleyParentComponent::AutoFoleyParentComponent (EoCClient.dll+0x2927F0) sets +0 to the null handle 0xFFC0000000000000; live values are entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Flags",
+      "type": "uint32_t",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessors: bit0 IsPlayingVelocity, bit1 IsPlayingRotation, bit2 IsCurrentlyCulled, bit3 HasVelocitySpikeDetected, bit4 HasRotationSpikeDetected (EoCClient.dll+0xEC5850..0xEC5890)."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "FoleySet",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor builds a FixedString at +0xC; FUN_180ec0510 (AutoFoleySystem update) uses it as the foley name, falling back to a default when empty."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "TimelineActor",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor null handle at +0x10; FUN_180ec0510 checks it alive before looking up the timeline."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "TimelineId",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor ls::Guid at +0x18; FUN_180ec0510 passes it to ecl::TimelineSystem::GetTimeline."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Fade",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor 0 at +0x28; FUN_180ec0510 clamps +0x28 to 0..1 while adding a per-frame step (live 0 or 1.0)."
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "_Pad2C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Size 0x30; copy constructor (EoCClient.dll+0x2927A0) copies only up to +0x2C (live bytes are garbage)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientSoundAutoFoleyParent", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 4,
+    "minutes": 8,
+    "open_questions": ["Names Entity/FoleySet/TimelineActor/TimelineId/Fade are ours."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

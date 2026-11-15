@@ -1,0 +1,59 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::PointSoundTriggerDummy",
+  "kind": "struct",
+  "size": 128,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "_Base",
+      "type": "Trigger",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::PointSoundTriggerDummy::PointSoundTriggerDummy bg3.exe+0x1BB4EF0 calls the trigger base ctor bg3.exe+0x3C11A30 and CullTrigger::SetTemplate; base = bg3se::Trigger (Trigger.h, 0x70 bytes: VMT, LoggableObjectVMT, Template, Flags, SyncFlags, TriggerType, TriggerEntity, Level, PreviousLevel, Protocol, HasCustomPoint, IsGlobal, CustomPointTransform). Base ctor bg3.exe+0x3C11A30 initialises up to +0x6C, like every SE trigger."
+        }
+      ]
+    },
+    {
+      "offset": 112,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::PointSoundTriggerDummy::PointSoundTriggerDummy bg3.exe+0x1BB4EF0 stores 0xFFC0000000000000 at +0x70, the same place SE's ecl::FloorTrigger/PortalTrigger keep EntityHandle Entity."
+        }
+      ]
+    },
+    {
+      "offset": 120,
+      "name": "field_78",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "registry size 128 leaves 8 bytes after Entity; not touched by the ctor."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientPointSoundTriggerDummy", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "medium",
+    "functions_read": 2,
+    "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet",
+    "minutes": 5,
+    "open_questions": [
+      "field_78 (8 bytes) unknown; NO REPLICATED serializer exists for this class (ser.py), and the macOS default ctor is a stub",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it"
+  }
+}

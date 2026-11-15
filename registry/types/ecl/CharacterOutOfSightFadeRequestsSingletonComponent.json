@@ -1,0 +1,52 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::CharacterOutOfSightFadeRequestsSingletonComponent",
+  "kind": "struct",
+  "size": 224,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "FadeRequests",
+      "type": "std::array<HashMap<EntityHandle, TimelineFadeRequest>, 2>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same component type as ecl::TimelineFadeRequestsSingletonComponent (Coverage.h, sizeof 224): every fade-request singleton is registered with the same destructor FUN_140697cd0 (12 registrations bg3.exe+0x6867A0..0x689400) and created with the same constructor helpers FUN_1418c2f60 (2 maps of 0x40) / FUN_1418c2fe0 (2 sets of 0x30) after zeroing 0xE0 bytes (seen in bg3.exe+0x1CB0DE0 for CharacterOutOfSight). The macOS build reads all of them in one template ecl::FadeResolveSystem::ProcessFadeRequests<BasicGOVisual..., CharacterAttachToScene..., CharacterCreation..., CharacterOutOfSight..., Crowd..., Invisibility..., ...>. One map per render view (View0/View1). The value type is named ecl::StartFadeRequest by the macOS build (ls::HashMap<ls::ID<EntityHandleTraits>, ecl::StartFadeRequest>::EnsureUniversal at macOS 0x102EAABA0, next to the Crowd query registration); 16-byte value, same as SE's TimelineFadeRequest. Live: two allocated hash maps at +0x00 and +0x40 (bucket pointer, bucket count 5, three arrays of capacity 1 size 0), empty sets at +0x80/+0xB0."
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "RemoveFadeRequests",
+      "type": "std::array<HashSet<EntityHandle>, 2>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Zeroed 0x80..0xE0 then FUN_1418c2fe0 in bg3.exe+0x1CB0DE0; same as the Timeline singleton (name taken from there, not confirmed). Live: empty."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientCharacterOutOfSightFadeRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "hold": "uses types declared elsewhere (TimelineFadeRequest): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet",
+    "minutes": 2,
+    "open_questions": [
+      "The value struct's game name is ecl::StartFadeRequest; SE calls the same 16-byte struct TimelineFadeRequest - consider renaming / aliasing.",
+      "Name of the two HashSets (RemoveFadeRequests) is inherited from the Timeline layout, not confirmed for this producer."
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "reuses": "TimelineFadeRequest (GameDefinitions/Components/Coverage.h); whole layout identical to ecl::TimelineFadeRequestsSingletonComponent",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

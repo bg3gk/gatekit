@@ -1,0 +1,68 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::inventory::ReturnToOwnerEquipRequestComponent",
+  "kind": "struct",
+  "about": "Request component of the return-to-owner feature (neighbour of the tag esv::inventory::ReturnToOwnerComponent). One holder, idle level, seen empty. A HashMap whose values are themselves arrays of trivial elements.",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "HashMap<EntityHandle, ReturnToOwnerEquipRequestList>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Adder bg3.exe+0x31DC610 zeroes the 64-byte HashMap pattern; destructor bg3.exe+0x591CF0 calls bg3.exe+0x5BD8A0 (walk values at +0x30, size +0x2C, stride 0x10, free each inner array), frees +0x30, then the HashSet destructor. Keys: 8 bytes, EntityHandle assumed."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerInventoryReturnToOwnerEquipRequest",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "low",
+    "functions_read": 2,
+    "minutes": 7,
+    "open_questions": [
+      "Key type; element type of the inner arrays (macOS has HashMap<EntityHandle, DynamicArray<esv::inventory_transfer::TransferFinishedDescription>> of the same shape - not proven to be this one)."
+    ],
+    "second_pass": "Not settled in this pass: key and inner-array element types not established on the Windows side; not saved (no savegame model).",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "structs": [
+      {
+        "name": "ReturnToOwnerEquipRequestList",
+        "size": 16,
+        "fields": [
+          {
+            "name": "field_0",
+            "offset": 0,
+            "type": "void*",
+            "source": "unknown",
+            "evidence": "array data pointer: the value destructor bg3.exe+0x5BD8A0 runs the trivial array clear bg3.exe+0x5BD630 on each 0x10-byte value and frees its pointer; element type unknown."
+          },
+          {
+            "name": "field_8",
+            "offset": 8,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "array capacity."
+          },
+          {
+            "name": "field_c",
+            "offset": 12,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "array size."
+          }
+        ]
+      }
+    ]
+  }
+}

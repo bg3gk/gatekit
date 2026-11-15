@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "registry/index/1",
+  "title": "The registry of schemas (schemas/index.json)",
+  "description": "Binds paths and tool names to kinds. A path pattern is matched against the trailing segments of a file's path: `*` within one segment, `**/` any number of segments; the first pattern that matches wins.",
+  "type": "object",
+  "required": ["schema", "files", "tools"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "registry/index/1"},
+    "about": {"type": "string", "minLength": 1},
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {"type": "string", "minLength": 1, "description": "A glob on the trailing segments of the path."},
+          "kind": {"type": "string", "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)*/[1-9][0-9]*$", "description": "kind/version"},
+          "about": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["tool", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "tool": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "The tool's name, as an MCP client sees it."},
+          "kind": {"type": "string", "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)*/[1-9][0-9]*$", "description": "kind/version of the tool's answer"},
+          "about": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::tutorial::RollEventRequestsSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Filled by esv::tutorial::RollSystem.",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Advantage",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3422110 (RollSystem update over eoc::RequestedRollComponent) appends RequestedRoll.Roller (+0x20) when AdvantageType (+0x40) == 1; ValidateSystem index 2 ActiveRoll_Advantage (bg3.exe+0x3428D70)"
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Disadvantage",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "appends Roller when AdvantageType == 2; index 3 ActiveRoll_Disadvantage (bg3.exe+0x3428E50)"
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "Dialog",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "appends Roller when RollContext (+0x54) == 1; index 4 ActiveRoll_Dialog (bg3.exe+0x3428F30); destructor bg3.exe+0x6C9C70 frees 3 arrays"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerTutorialRollEventRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [],
+    "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

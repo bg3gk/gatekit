@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::death::DeathAnimationFallbackTimerComponent",
+  "kind": "struct",
+  "about": "Server fallback timer for a death animation that never reports its end (born with character deaths in 'spells-1' and dialogue fights). Written by esv::death::CharacterSystem.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Timer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2BAB330 (called from the per-frame update of esv::death::CharacterSystem) adds or fetches the component (creator FUN_142bac930, 4 bytes, default 0) and sets it to 4.0 (0x40800000); later it subtracts delta time scaled by the entity time factor and at <= 0 fires FUN_142bada70 (the fallback-finished event, cf. esv::death::AnimFallbackTimerFinishedEventOneFrameComponent). Live 2.81..4.0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerDeathAnimationFallbackTimer",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [],
+    "raw_check": "31 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

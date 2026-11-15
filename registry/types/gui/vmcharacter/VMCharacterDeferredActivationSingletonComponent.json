@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::vmcharacter::VMCharacterDeferredActivationSingletonComponent",
+  "kind": "struct",
+  "about": "Client UI: character entities whose VMCharacter activation was postponed; ActivateVMCharacterSystem retries them each frame and drops them when done. Singleton from game start (idle, level-change); the array was always empty in samples.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entities",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "NoesisGameUI.dll+0x421CD0 (Toolkit, ActivateVMCharacterSystem::ProcessCharacterDeferredActivation, EntityView<VMCharacterActivatedSingletonComponent, VMCharacterDeferredActivationSingletonComponent>): tests the size at +0xC, then walks the buffer at +0 with stride 8 (end = base + size*8) as ls::SpanIterator<ls::ID<ecs::EntityHandleTraits>> (assert string), and removes entries by index (FUN_1802e4be0) once found in a HashSet of entities. Registry size 16 = Array (pointer, capacity +8, size +0xC); live: heap pointer at +0, capacity 2..0x40 at +8, size always 0 at +0xC."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "GuiVMCharacterDeferredActivation",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 5,
+    "open_questions": [
+      "Writer (who appends to the array) not read; element type taken from the reader's SpanIterator<ID<EntityHandleTraits>>."
+    ],
+    "raw_check": "12 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

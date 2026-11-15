@@ -1,0 +1,54 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::LootingStateComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Looter_M",
+      "type": "EntityHandle",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::LootingStateComponent::Looter_M at +0x0 (Script Extender's header BG3Extender/GameDefinitions/Components/Data.h calls it Looter_M; offset computed from the header)"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "State",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::LootingStateComponent::State at +0x8 (Script Extender's header BG3Extender/GameDefinitions/Components/Data.h calls it State; offset computed from the header)"
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "field_C",
+      "type": "int32_t",
+      "rung": "unknown",
+      "known_as": [{"name": "field_24", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows save of the component, bg3_dx11.exe+0x25A4F90 (the model loader bg3.exe+0x25A51F0 is inside it): for each component it writes the 16-byte model entry {EntityId from +0, byte +8, dword +0xC} - so the dword is at +0xC, inside the 16-byte registry size. Script Extender declares it `int field_24` after `uint8_t State` (Data.h:239), which also puts it at +0xC; field_24 is a machine name for an offset it does not have, so the field is called field_C here (legacy field_24). The game's own name is not known."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "LootingState", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Data.h:235, kind component), by gatekit symbols se-layouts on 2026-11-14",
+    "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `unknown` because no rung of section 7 is that - not game (no FieldMeta or macOS name behind it), not toolkit, not inferred (ours, with evidence in the record). A name is raised from `unknown` only with evidence, by `gatekit names set`.",
+    "seen": true,
+    "size_check": "Size 0x10 equals the registry's (client 16, server 16; coverage.json, game v4.76.31.656).",
+    "status": "declared"
+  }
+}

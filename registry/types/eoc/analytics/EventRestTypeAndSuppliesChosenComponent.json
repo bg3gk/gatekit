@@ -1,0 +1,113 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::analytics::EventRestTypeAndSuppliesChosenComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "SuppliesAvailable",
+      "type": "int32_t",
+      "rung": "game",
+      "known_as": [{"name": "TotalSupplies", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCClient.dll+0xD34BF0 ecl::GameAnalyticsSystem::RecordCampSupplies (event \"camp_supplies\"; the component is its last argument, mangled AEBUEventRestTypeAndSuppliesChosenComponent@analytics@eoc@@): int param_3[0] (+0) is written under the key \"supplies_available\". Replaces the inferred TotalSupplies. Earlier reading: replication writer bg3.exe+0x9E95A0 writes 4 raw bytes at the FieldMeta offset global DAT_14627FC18 (0: the next members are at +4 and +8). Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): copied from the first int of a 4-byte component of the camp chest query (SE eoc::camp::TotalSuppliesComponent.Amount is the only 4-byte camp component of that system's view)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "SuppliesRequired",
+      "type": "int32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCClient.dll+0xD34BF0 ecl::GameAnalyticsSystem::RecordCampSupplies (event \"camp_supplies\"; the component is its last argument, mangled AEBUEventRestTypeAndSuppliesChosenComponent@analytics@eoc@@): int param_3[1] (+4) is written under the key \"supplies_required\". Earlier reading: replication writer bg3.exe+0x9E95A0 writes 4 raw bytes at +4. Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): copied from +4 of an 8-byte component of the same query (two ints; SE eoc::camp::QualityComponent has that shape)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "SuppliesUsed",
+      "type": "int32_t",
+      "rung": "game",
+      "known_as": [{"name": "SuppliesUsedValue", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCClient.dll+0xD34BF0 ecl::GameAnalyticsSystem::RecordCampSupplies (event \"camp_supplies\"; the component is its last argument, mangled AEBUEventRestTypeAndSuppliesChosenComponent@analytics@eoc@@): int param_3[2] (+8) is written under the key \"supplies_used\". Replaces the inferred SuppliesUsedValue. Earlier reading: replication writer bg3.exe+0x9E95A0 writes 4 raw bytes at +8. Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): int sum over the used supply items of count * eoc::camp::SupplyComponent amount (FUN_1809C6890)."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "_PadC",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding (the array at +0x10 is 8-aligned)"}]
+    },
+    {
+      "offset": 16,
+      "name": "SuppliesUsedList",
+      "type": "Array<FixedString>",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Windows type name ls::FieldMeta<class ls::DynamicArray<class ls::FixedString,struct ls::TaggedAllocator<int> > eoc::analytics::EventRestTypeAndSuppliesChosenComponent::*,16>; macOS ls::FieldMeta<ls::DynamicArray<ls::FixedString, ls::TaggedAllocator<int> > eoc::analytics::EventRestTypeAndSuppliesChosenComponent::*, &eoc::analytics::EventRestTypeAndSuppliesChosenComponent::m_SuppliesUsedList> Windows side: replication writer bg3.exe+0x9E95A0 calls the Array<FixedString> writer FUN_140A82550 on +0x10. Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0) builds it from the used supply items (template names)."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "RestType",
+      "type": "STDString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCClient.dll+0xD34BF0 ecl::GameAnalyticsSystem::RecordCampSupplies (event \"camp_supplies\"; the component is its last argument, mangled AEBUEventRestTypeAndSuppliesChosenComponent@analytics@eoc@@): STDString::ToChar(param_3 + 8 ints = +0x20) is written under the key \"rest_type\". Earlier reading: replication writer bg3.exe+0x9E95A0 writes an STDString (bg3.exe+0x4016480) at +0x20 (24 bytes up to +0x38). Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): STDString = \"FullRest\" when the rest event's first byte is 1, else \"PartialRest\"."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "AutoSelectUsed",
+      "type": "bool",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCClient.dll+0xD34BF0 ecl::GameAnalyticsSystem::RecordCampSupplies (event \"camp_supplies\"; the component is its last argument, mangled AEBUEventRestTypeAndSuppliesChosenComponent@analytics@eoc@@): the byte at param_3 + 0xE ints = +0x38 is written with the bool writer under the key \"auto_select_used\". Earlier reading: replication writer bg3.exe+0x9E95A0 writes 1 raw byte at +0x38. Toolkit esv::GameAnalyticsSystem::ProcessLongRestEvents (EoCServer.dll+0x134A5A0): copied from byte +0x48 of the rest-type-chosen event element (0x50 bytes)."
+        }
+      ]
+    },
+    {
+      "offset": 57,
+      "name": "_Pad39",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding (component size 0x40)"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "AnalyticsEventRestTypeAndSuppliesChosen",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 12,
+    "open_questions": [
+      "The names of +4 and +0x38 and the exact sources of +0 / +4 (which camp component) rest on the Toolkit build; the flag's meaning is unknown."
+    ],
+    "second_pass": "Offsets and widths settled by the Windows replication writer bg3.exe+0x9E95A0 (three 4-byte values, Array<FixedString> at +0x10, STDString at +0x20, byte at +0x38); the Toolkit ProcessLongRestEvents shows the ints are counts and the string is \"FullRest\"/\"PartialRest\".",
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it"
+  }
+}

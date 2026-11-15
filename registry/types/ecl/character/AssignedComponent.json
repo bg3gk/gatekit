@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character::AssignedComponent",
+  "kind": "struct",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "PlayerId",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "The only member: the writer bg3.exe+0x17FAAA0 (called from bg3.exe+0x17F5A30) allocates it with ComponentFrameStorageAllocRaw(storage, 4), initialises it with DAT_14617ceac (the Toolkit's DefaultConstructComponents EoCClient.dll+0x2CC8A0 writes *Unassigned_exref, the same 'unassigned id' constant) and then copies a 4-byte value queued for that entity (system +0x1A0 values, +0x1B0 entities). Live value 1 for the controlled character while eoc::user::ReservedForComponent of the same session holds the UserId 0x10001: so it is not a UserId but the local player number (1 = first local player). The Toolkit's ecl::InputController::IsInSelectorMode, which takes this component in its WorldView, resolves the player through Character::GetReservedForPlayerId and PlayerManager::GetPlayerCamera."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientCharacterAssigned", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 6,
+    "minutes": 12,
+    "open_questions": [
+      "The name: the 4-byte value is a local player number by its live value (1) and its readers (input, camera target, lightbar, sound per player), but no reader that compares it with a named PlayerId was read; the type of the Toolkit's 'Unassigned' constant was not established."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Offset and width settled by the Windows writer bg3.exe+0x17FAAA0 (4-byte AllocRaw, default from the 'Unassigned' constant, then a queued 4-byte id); live 1 against ReservedFor's 0x10001 rules out a UserId, so it is written as an int32 player number.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

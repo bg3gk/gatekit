@@ -1,0 +1,58 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::lookat::LifetimeComponent",
+  "kind": "struct",
+  "about": "Server component of esv::lookat::StateSystem: how long the current look-at request of an entity still lasts. Holds the request id and a timer; its values match esv::lookat::ChangedOneFrameComponent (+0x10 id, +0xC duration). Seen.py context: dialogues and fights.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Id",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2B42C30 (AllocRaw 0x18) zeroes +0 and +8. Live (48): random 16-byte values, the same set of values as ChangedOneFrameComponent +0x10 (look-at request id)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "TimeLeft",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator default 0x7f7fffff (FLT_MAX). Live: 1.47..2.16 s or 9999999 - below the Duration of the matching ChangedOneFrameComponent (2.3..2.5), so a countdown."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "_Pad14",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not written by the creator; live values random (0..0xFFFFFFFF) - alignment padding."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerLookAtLifetime", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Countdown vs elapsed time not confirmed in code (readers bg3.exe+0x2B43340/0x2B43410/0x2B41C50 not traced)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

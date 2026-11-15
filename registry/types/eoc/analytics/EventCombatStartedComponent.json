@@ -1,0 +1,160 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::analytics::EventCombatStartedComponent",
+  "kind": "struct",
+  "size": 112,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Character",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same head as the confirmed eoc::analytics::EventCombatTurnComponent (m_CharacterHandle at +0). Live: client 0x01400001000001FE-like, server 0x01800001000007C3-like values (entity handles of the two worlds). RecordCombatStart (EoCClient.dll+0xD36CA0) gets the resolved character as a separate argument."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Faction",
+      "type": "Guid",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCClient.dll+0xD36CA0 ecl::GameAnalyticsSystem::RecordCombatStart: ls::Guid::ToString(+8) -> \"faction_id\", FactionContainer lookup of +8 -> \"faction_name\". Live: 5 distinct 16-byte values, identical on client and server."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "CombatId",
+      "type": "EventCombatStartedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "RecordCombatStart: ls::STDString::ToChar(+0x18) -> \"combat_id\". Live: heap pointer, size 0x24 (36, a guid string), capacity 0x2F."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "CombatGroupId",
+      "type": "EventCombatStartedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "RecordCombatStart: STDString +0x30 -> \"combat_group_id\". Live: mostly empty (size 0, capacity 15) or 36 chars."
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "CombatTurn",
+      "type": "int32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "RecordCombatStart: int at +0x48 -> \"combat_turn\". Live 0/1."
+        }
+      ]
+    },
+    {
+      "offset": 76,
+      "name": "_Pad4C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "alignment padding before the next string; live holds stale bytes"}
+      ]
+    },
+    {
+      "offset": 80,
+      "name": "CombatTeam",
+      "type": "EventCombatStartedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "RecordCombatStart: STDString +0x50 -> \"combat_team\". Live: heap pointer, size 36, capacity 47."
+        }
+      ]
+    },
+    {
+      "offset": 104,
+      "name": "Initiative",
+      "type": "int32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "RecordCombatStart: int at +0x68 -> \"initiative\". Live small values and 0xFFFFFFEF.. (negative allowed)."
+        }
+      ]
+    },
+    {
+      "offset": 108,
+      "name": "_Pad6C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "tail padding to 8-byte alignment (112); live holds stale bytes"}
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnalyticsEventCombatStarted", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 7,
+    "open_questions": [
+      "Character name taken by analogy with EventCombatTurnComponent (m_CharacterHandle); RecordCombatStart itself does not print it.",
+      "The equipment ids (helmet_id ...) of the event come from the character, not from this component."
+    ],
+    "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "EventCombatStartedString",
+        "size": 24,
+        "fields": [
+          {
+            "name": "Ptr",
+            "offset": 0,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "heap pointer to the characters when Capacity > 15, else bytes 0..15 are the inline buffer. Equals the 24-byte game string used as STDString in the confirmed layout se-fork\\coverage\\layouts\\fieldmeta\\eoc.analytics.EventCombatTurnComponent.json"
+          },
+          {
+            "name": "InlineTail",
+            "offset": 8,
+            "type": "uint64_t",
+            "source": "inferred",
+            "evidence": "bytes 8..15 of the inline buffer; live 0 for heap strings"
+          },
+          {
+            "name": "Size",
+            "offset": 16,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "live 0x24 (36-character guid strings) or 0"
+          },
+          {
+            "name": "Capacity",
+            "offset": 20,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "live 0x2F (heap) or 0xF (inline)"
+          }
+        ]
+      }
+    ]
+  }
+}

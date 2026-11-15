@@ -1,0 +1,67 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::roll::stream::Stream",
+  "kind": "struct",
+  "fields": [
+    {
+      "offset": 76,
+      "name": "PlayerUuid",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GetDialogStream (+0x309F570) matches the player's id here, and the Dialog stream it made on the first dialogue check reads a PlayerUuid in GK.Rolls.Streams(); Script Extender's PlayerUuid (the copy at +0x105DB40 moves it as a FixedString)"
+        }
+      ]
+    },
+    {
+      "offset": 80,
+      "name": "StreamType",
+      "type": "uint8",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GetDialogStream (+0x309F570) matches type 1 here and CreateStream is called with 1 for the Dialog stream it made (read: Dialog); Script Extender's StreamType"
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "Id",
+      "type": "uint64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "CreateStream (+0x309FBB0) writes the manager's incremented last stream id here (watched: the manager's +0x18 went 1->2 at +0x309FD9E as the Dialog stream was made, which then read 2 here and Generic 1); GetDialogStream (+0x309F570) returns it. Script Extender calls it State.Frame"
+        }
+      ]
+    },
+    {
+      "offset": 104,
+      "name": "Seed",
+      "type": "uint64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GK.Memory.Read of the Generic stream's +0x68 in the roll manager read 1 on a cold start and base+1 after a load, equal to Script Extender's State.Seed; CreateStream (+0x309FBB0) writes base seed + id here; the first dialogue check's Dialog stream read base+2"
+        }
+      ]
+    },
+    {
+      "offset": 112,
+      "name": "NumRolls",
+      "type": "uint64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GK.Memory.Watch at buffer+0x70 of the Generic stream: 26 to 27, 27 to 28 over one passive check; reads equal the Lua NumRolls"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,452 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::Projectile",
+  "kind": "struct",
+  "about": "Client projectile object (class with virtual table, stored inline). Born when spells/throws were used (with ecl::projectile::Attachment/Spell/ImpactEvent, jump events). Names from Toolkit accessors of ecl::Projectile and its copy constructors EoCClient.dll+0x2951F0 / +0x295400, whose layout ends at 0x23A (padded 0x240 = registry size 576).",
+  "size": 576,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "VMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "copy ctor EoCClient.dll+0x2951F0 sets *(this) = ecl::Projectile::vftable (base ls::ITextKeyEventHandler). Live: module pointer."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "copied as 8 bytes by the copy ctor; live equals the handle in EntityRef (+0x30) - the projectile entity."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "copied as 8 bytes; live always 0."}]
+    },
+    {
+      "offset": 24,
+      "name": "Template",
+      "type": "void*",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor get/set Template (ls::GameObjectTemplate const*) at +0x18. Live heap pointer."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "PeerIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "copy ctor EoCClient.dll+0x295400 copies +0x20..+0x2C as ls::DynamicArray of ls::TypeWrap<int, net::PeerIDClassname> (IndexedStorage assert), element 4 bytes. Live capacity 2."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ref EntityRef (ecs::EntityRef, 16 bytes: handle + world) at +0x30; this is its handle. Live entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "EntityWorld",
+      "type": "void*",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "second half of the EntityRef accessor at +0x30 (EntityWorld pointer). Live heap pointer."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "SourceWeapon",
+      "type": "EntityHandle",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit accessor set SourceWeapon at +0x40. Live null."}
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "Path",
+      "type": "uint8_t[296]",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ref Path (eoc::PathMover) at +0x48, size 0x128 (next member at +0x170); same type as SE path::PathMover (ExposedTypes.h) - kept opaque because only primitive types may be used here."
+        }
+      ]
+    },
+    {
+      "offset": 368,
+      "name": "LevelName",
+      "type": "FixedString",
+      "rung": "inferred",
+      "known_as": [{"name": "field_170", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::Projectile::TryExplode (EoCClient.dll+0x921AF0): 'LevelManager::GetLevel(this + 0x170)' and copies it as the level of temp sound events. | first pass: copy ctor copies it with ls::FixedString::FixedString."
+        }
+      ]
+    },
+    {
+      "offset": 372,
+      "name": "_Pad174",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding before the 8-aligned SpellId (live garbage)"}]
+    },
+    {
+      "offset": 376,
+      "name": "SpellId",
+      "type": "ClientProjectileSpellId",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ref SpellID (eoc::spell::SpellId) at +0x178, 0x38 bytes (next member +0x1B0)."
+        }
+      ]
+    },
+    {
+      "offset": 432,
+      "name": "SpawnEffect",
+      "type": "FixedString",
+      "rung": "inferred",
+      "known_as": [{"name": "field_1B0", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::EntityConversionHelpers::CreateProjectile (EoCClient.dll+0x98AD00) assigns it from eoc::ProjectileDefinition +0x110 and the next byte (+0x114) into SpawnOverridesImpact; TryExplode plays it with ls::EffectsManager::PlayAndForgetEffect when != -1 and skips the impact effect when SpawnOverridesImpact is set. Server pair: Toolkit accessors SpawnEffect (+0x518) / SpawnOverridesImpact (+0x51C). | first pass: copy ctor copies it as FixedString. Live always empty (0xFFFFFFFF)."
+        }
+      ]
+    },
+    {
+      "offset": 436,
+      "name": "_Pad1B4",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 440,
+      "name": "Target",
+      "type": "EntityHandle",
+      "rung": "toolkit",
+      "evidence": [{"kind": "toolkit-name", "says": "Toolkit accessor set Target at +0x1B8."}]
+    },
+    {
+      "offset": 448,
+      "name": "Caster",
+      "type": "EntityHandle",
+      "rung": "toolkit",
+      "evidence": [{"kind": "toolkit-name", "says": "Toolkit accessor set Caster at +0x1C0."}]
+    },
+    {
+      "offset": 456,
+      "name": "Source",
+      "type": "EntityHandle",
+      "rung": "toolkit",
+      "evidence": [{"kind": "toolkit-name", "says": "Toolkit accessor set Source at +0x1C8."}]
+    },
+    {
+      "offset": 464,
+      "name": "MovingObject",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "known_as": [{"name": "field_1D0", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::Projectile::SetMovingObject(IGameObject*, bool) (EoCClient.dll+0x921200) works on +0x1D0; TryExplode (EoCClient.dll+0x921AF0) looks it up as Item / Character; Update waits for it to be activated. Name as esv::Projectile::MovingObject. | first pass: copied as 8 bytes; live entity handles or null."
+        }
+      ]
+    },
+    {
+      "offset": 472,
+      "name": "TemporalMovingObject",
+      "type": "EntityHandle",
+      "rung": "game",
+      "known_as": [{"name": "field_1D8", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Toolkit accessors ecl::Projectile::GetTemporalMovingObject (EoCClient.dll+0x351E50: returns *(this+0x1D8)) and SetTemporalMovingObject (EoCClient.dll+0x418A20: writes +0x1D8). Update (EoCClient.dll+0x923540) clears it when the entity is dead. | first pass: copied as 8 bytes; live always null (0xFFC0000000000000)."
+        }
+      ]
+    },
+    {
+      "offset": 480,
+      "name": "MovingObjectTransform",
+      "type": "Transform",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ref MovingObjectTransform (ls::Transform, 40 bytes) at +0x1E0. Live scale +0x200/+0x204 = 1.0."
+        }
+      ]
+    },
+    {
+      "offset": 520,
+      "name": "SourcePosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "copied 8+4 bytes at +0x208/+0x210 right before TargetPosition; live world-coordinate-like floats (cf. esv::Projectile SourcePos)."
+        }
+      ]
+    },
+    {
+      "offset": 532,
+      "name": "TargetPosition",
+      "type": "glm::vec3",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ref TargetPosition (Vector3f) at +0x214."
+        }
+      ]
+    },
+    {
+      "offset": 544,
+      "name": "LifeTime",
+      "type": "float",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit accessor set LifeTime at +0x220. Live 9.2/10/20."}
+      ]
+    },
+    {
+      "offset": 548,
+      "name": "ExplodeRadius",
+      "type": "float",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit accessor set ExplodeRadius at +0x224. Live 0."}
+      ]
+    },
+    {
+      "offset": 552,
+      "name": "InfluenceRadius",
+      "type": "float",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit accessor get/set InfluenceRadius at +0x228."}
+      ]
+    },
+    {
+      "offset": 556,
+      "name": "FallbackTimer",
+      "type": "float",
+      "rung": "inferred",
+      "known_as": [{"name": "field_22C", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor EoCClient.dll+0x9200F0 writes 15.0 (0x41700000); ecl::Projectile::Update (EoCClient.dll+0x923540) decrements it by the frame time and, below 0, logs 'Projectile aborted by fallback timer! Thrown entity has never been activated!' and requests deletion. Same name and default (15.0) as esv::Projectile::FallbackTimer in Script Extender. | first pass: copied as 4 bytes; live 14.11/15.0 (esv::Projectile has FallbackTimer 15.0 - possibly the same)."
+        }
+      ]
+    },
+    {
+      "offset": 560,
+      "name": "field_230",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "copied as 4 bytes; live 0."}]
+    },
+    {
+      "offset": 564,
+      "name": "IsRequestDeleted",
+      "type": "bool",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit accessor get IsRequestDeleted at +0x234."}
+      ]
+    },
+    {
+      "offset": 565,
+      "name": "SpawnOverridesImpact",
+      "type": "bool",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit accessor set SpawnOverridesImpact at +0x235."}
+      ]
+    },
+    {
+      "offset": 566,
+      "name": "field_236",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "copied as a byte by the copy ctor."}]
+    },
+    {
+      "offset": 567,
+      "name": "IsOnHold",
+      "type": "bool",
+      "rung": "toolkit",
+      "evidence": [
+        {"kind": "toolkit-name", "says": "Toolkit accessor get IsOnHold / set OnHold at +0x237."}
+      ]
+    },
+    {
+      "offset": 568,
+      "name": "IsThrown",
+      "type": "bool",
+      "rung": "inferred",
+      "known_as": [{"name": "field_238", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SetMovingObject stores its bool argument here (EoCClient.dll+0x921200: 'this[0x238] = param_2'); the server's esv::Projectile::SetMovingObject (EoCServer.dll+0x80CF40) stores the same argument at +0x52C, which lies between the Toolkit accessors IsTrap (+0x52B) and MoveFromSource (+0x52D) = IsThrown in Script Extender's esv::Projectile. | first pass: copied as a byte."
+        }
+      ]
+    },
+    {
+      "offset": 569,
+      "name": "PathStarted",
+      "type": "bool",
+      "rung": "inferred",
+      "known_as": [{"name": "field_239", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::Projectile::Update (EoCClient.dll+0x923540): on the first update it is 0 and is set to 1 without calling PathMover::Update; later updates advance Path. Constructor 0. | first pass: copied as a byte."
+        }
+      ]
+    },
+    {
+      "offset": 570,
+      "name": "MovingObjectActivated",
+      "type": "bool",
+      "rung": "inferred",
+      "known_as": [{"name": "field_23A", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::Projectile::Update (EoCClient.dll+0x923540): while 0 it is set to 1 once MovingObject is valid and passes FUN_1805f66e0; the path only advances when MovingObject is null or this is set (the fallback timer catches the case where it never happens). | first pass: copied as a byte (last member copied)."
+        }
+      ]
+    },
+    {
+      "offset": 571,
+      "name": "_Pad23B",
+      "type": "uint8_t[5]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "tail padding to 0x240 (live garbage)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientProjectile", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 10,
+    "names_pass_2": "TemporalMovingObject from the Toolkit accessors; FallbackTimer / MovingObject / IsThrown / SpawnEffect / LevelName / MovingObjectActivated / PathStarted from ecl::Projectile::Update, SetMovingObject, TryExplode, CreateProjectile (EoCClient.dll) and the server neighbour esv::Projectile.",
+    "open_questions": [
+      "Offsets come from the Toolkit (EoCClient.dll) accessors/copy ctor; the total size matches the game registry (576) and live samples fit, but no bg3.exe function was read field by field.",
+      "Path (eoc::PathMover) kept opaque as uint8_t[296]; its inner layout is SE path::PathMover.",
+      "+0x08, +0x10, +0x170, +0x1B0, +0x1D0, +0x1D8, +0x22C, +0x230, +0x236, +0x238..+0x23A unnamed.",
+      "names pass 2: field_8 (entity handle equal to Entity; GameControl::DisconnectBeamsFromTarget(this+8) in TryExplode), field_10, field_230, field_236 (set in TryExplode from the moving object's state, gates the explosion branch) not named."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "ClientProjectileSpellId",
+        "size": 56,
+        "fields": [
+          {
+            "name": "OriginatorPrototype",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Same layout as SE SpellId (ExposedTypes.h, SpellMetaId + Prototype), redeclared. Live +0x178 FixedString-like values."
+          },
+          {
+            "name": "_Pad4",
+            "offset": 4,
+            "type": "uint8_t[4]",
+            "source": "unknown",
+            "evidence": "padding (SE SpellMetaId::_Pad)"
+          },
+          {
+            "name": "SourceType",
+            "offset": 8,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "SpellSourceType enum (uint8_t). Live low byte 5..9."
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[7]",
+            "source": "unknown",
+            "evidence": "padding"
+          },
+          {
+            "name": "Source",
+            "offset": 16,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "SE SpellMetaId::Source. Live 0."
+          },
+          {
+            "name": "ProgressionSource",
+            "offset": 32,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "SE SpellMetaId::ProgressionSource."
+          },
+          {
+            "name": "Prototype",
+            "offset": 48,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "SE SpellId::Prototype. Live +0x1A8 equals +0x178 (same spell)."
+          },
+          {
+            "name": "_Pad34",
+            "offset": 52,
+            "type": "uint8_t[4]",
+            "source": "unknown",
+            "evidence": "tail padding"
+          }
+        ]
+      }
+    ]
+  }
+}

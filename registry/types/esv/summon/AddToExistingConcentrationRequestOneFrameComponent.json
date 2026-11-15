@@ -1,0 +1,45 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::summon::AddToExistingConcentrationRequestOneFrameComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Caster",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0xB1F0A0 esv::concentration::ConcentrationSystem::GatherAddTargetOnSummon, second loop (stride 0x10): element +0 must be alive, its eoc::concentration::ConcentrationComponent is fetched and its SpellId (+0x18) must be valid; FilterAddConcentrationTargetRequest(+0, that SpellId, Target(owner of the one-frame component, +8, null)) then queues the request for entity +0 - the concentrating caster the summon is added to."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0xB1F0A0 esv::concentration::ConcentrationSystem::GatherAddTargetOnSummon, second loop: the byte at +8 is passed as the `bool` parameter of eoc::concentration::ConcentrationComponent::Target::Target(handle, bool, handle) - so a bool (Script Extender declares uint8_t field_8, Summon.h:28). Which member of Target it sets was not read; the name waits."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "SummonAddToExistingConcentrationRequest",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Summon.h:23, kind oneframe component), by gatekit symbols se-layouts on 2026-11-14",
+    "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `unknown` because no rung of section 7 is that - not game (no FieldMeta or macOS name behind it), not toolkit, not inferred (ours, with evidence in the record). A name is raised from `unknown` only with evidence, by `gatekit names set`.",
+    "seen": true,
+    "size_check": "Size 0x10 equals the registry's (server 16; coverage.json, game v4.76.31.656).",
+    "status": "declared"
+  }
+}

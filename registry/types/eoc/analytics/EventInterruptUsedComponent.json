@@ -1,0 +1,79 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::analytics::EventInterruptUsedComponent",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Character",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x9F17C0/0x9F19C0 member 1: 16 bytes at +0 (global offset DAT_14627fbb8 = 0); EoCClient.dll ecl::GameAnalyticsSystem::ProcessInterruptResultEvents EoCClient.dll+0xD2F540 (stride 0x20) tests Guid::IsValid(+0), resolves it to the character entity. macOS ctor zero."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Type",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "serializer member 2: Serialize(FixedString) at +0x10; reaction_use recorder EoCClient.dll+0xD3C400 writes it under \"type\" (string at EoCClient.dll+0x15642B8). macOS ctor -1."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "CauseStatsName",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "serializer member 3: FixedString at +0x14; recorder key \"cause_stats_name\"; macOS ctor -1."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Result",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "serializer member 4: FixedString at +0x18; recorder key \"result\"; macOS ctor -1."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "_Pad1C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnalyticsEventInterruptUsed", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 5,
+    "open_questions": ["Character name inferred", "Not seen alive (seen.py has no samples)."],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

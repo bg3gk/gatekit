@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::anubis::LoadRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request to load the Anubis (behaviour script) state from a savegame; added by the server's session-load system on a level change / save load (seen on the level swap teleporter to the lower city). Its pointer equals the first member of ls::anubis::savegame::LoadingComponent, which ls::anubis::System creates from it.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Visitor",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2B1D4B0 (~ per-frame update of esv::SessionLoadSystem), state 4 after esv::SessionLoadSystem::LoadGlobalsPart2(..., SavegameVisitor*): allocates the component (8 bytes) and stores the SavegameVisitor* held at +0x88 of its state object into it; live: a heap pointer, identical to LoadingComponent+0 in the same step"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnubisLoadRequest", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": ["SavegameVisitor class layout not declared here (pointer only)"],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::TimelineAutomatedLookatComponent",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "IsEnabled",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Created with 0 (16-bit store at +0 in bg3.exe+0x6D70B0). The look-at update bg3.exe+0x20548B0 (called per entity from bg3.exe+0x1D50BA0, query {eoc::TimelineActorDataComponent, this, eoc::timeline::steering::TimelineSteeringComponent, optional ecl::TimelineEyeLookAtOverrideComponent}, stride 0x20) returns at once when it is 0. Live: 0."
+        }
+      ]
+    },
+    {
+      "offset": 1,
+      "name": "DelayRequested",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x20548B0: when set, a random delay between TLLookAtAutomationConfig MinDelayTimeSeconds (+0x48) and MaxDelayTimeSeconds (+0x4C) is added to the timeline time and stored in TriggerTime, Pending is set to 1 and this flag is cleared. Live: 0."
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "_Pad2",
+      "type": "uint8_t[6]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "alignment of the Guid; live bytes are garbage (look like a heap pointer tail)"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Target",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Two qwords created as 0. bg3.exe+0x20548B0: when both are 0 the target is taken from the current speaker / listener of the timeline, otherwise these 16 bytes are passed as an actor Guid to the timeline's actor-to-entity lookup (bg3.exe+0x3CBB2F0). Live: 0."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Pending",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Created with 0; set together with TriggerTime, cleared when the look-at request has been issued to the steering component or the target turns out to be the actor itself (bg3.exe+0x20548B0). The decompiler lost the pointer assignment; +0x18 is the only byte of the constructor that fits. Live: 0."
+        }
+      ]
+    },
+    {
+      "offset": 25,
+      "name": "_Pad19",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "alignment of the float; live garbage"}]
+    },
+    {
+      "offset": 28,
+      "name": "TriggerTime",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Created with 0; written as timeline time (Timeline+0x2C) + random delay, and the look-at is issued once the timeline time passes it (bg3.exe+0x20548B0). Live: 0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientTimelineAutomatedLookat", "one_frame": false},
+  "survey": {
+    "batch": "timeline",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 9,
+    "open_questions": [
+      "Who sets IsEnabled / DelayRequested / Target (a timeline look-at automation key) was not located - writers go through a query pointer.",
+      "Pending at +0x18 rests on the constructor layout, see evidence."
+    ],
+    "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::LightProbeLoadComponent",
+  "kind": "struct",
+  "about": "Request to load a light probe's captures, added by bg3.exe+0x3E8ABD0 (at most 8 per kind per frame).",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3E8ABD0 creates the component (bg3.exe+0x3D457F0, size 8, zeroed) and stores the low 32 bits of the queued entry's second qword; the same value is compared with 2 to pick one of two quotas. Live: 1."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same writer: clamp(x, 0, 1) * 499 + 1 where x is the float in the high half of the queued entry - a priority 1..500. Live: 0 (the one live instance may come from another writer)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "LightProbeLoad", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Names: field_0 is a kind / LOD level (2 is special), field_4 a priority; the loader that reads them (ls::LightProbeLoaderSystem) was not read."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

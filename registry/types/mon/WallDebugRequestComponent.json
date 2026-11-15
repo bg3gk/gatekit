@@ -1,0 +1,54 @@
+{
+  "schema": "registry/type/1",
+  "id": "mon::WallDebugRequestComponent",
+  "kind": "struct",
+  "about": "Client-only request of the 'mon' debug monitor (EocServerMonitor) for wall debugging. Registered by bg3.exe+0x11EEE60 (size 0x18, align 0x18 in the packed size word 0x180018, no destructor). The default constructor writes a null EntityHandle first - the usual shape of a request that names the entity it concerns - then zeroes two quadwords. No system of the shipped binaries fills or reads it. Never seen alive.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "default constructor bg3.exe+0x11F0D30 (slot 3 of ops table bg3.exe+0x5567238 registered by bg3.exe+0x11EEE60) stores 0xffc0000000000000 (null EntityHandle) at +0; macOS default constructor stores the same constant at +0."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "bg3.exe+0x11F0D30 stores 0 as a quadword at +8."}]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x11F0D30 stores 0 as a quadword at +0x10 (macOS: 32-bit zero at +0x10 plus the stp at +8)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "MonWallDebugRequest", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "low",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Meaning of +8 and +0x10 (real widths may be smaller); whether +0 is really an entity (only the null default says so). No reader exists in the shipped binaries."
+    ],
+    "second_pass": "Cannot be settled from code: the second pass found no producer or consumer anywhere - bg3.exe has only the type registration (App::CreateECS -> bg3.exe+0x11EExxx), the static type-name initialiser and the component ops; the macOS build has only ComponentOps/ComponentSignals/destructor instantiations (macos_index.py names '<mon::' lists just the eight mon types) and the Toolkit DLLs mention them only in App::AddGlobalSwitchesToOptionDialog. The shapes from the creator/destructor stand; the members stay unknown.",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it"
+  }
+}

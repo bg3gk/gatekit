@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::ClosestTrackedSoundEntityComponent",
+  "kind": "struct",
+  "about": "On the client, the sound name of the closest tracked sound entity. Born live in the dialogue DEN_HarpyMeal_CharmedVictim. Created and updated by the per-frame update of ecl::TrackedSoundEntitiesSystem (bg3.exe+0x1E07680) via the get-or-create helper bg3.exe+0x1E08430.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1E08430 writes 0xFFFFFFFF (null FixedString); bg3.exe+0x1E07680 assigns it with FixedString IncRef/DecRef from a parallel array of FixedStrings of the tracked entities (eoc::TrackedSoundEntityComponent has one FixedString, Coverage.h). Live 0x26B00001 (a FixedString index)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClosestTrackedSoundEntity", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Exact meaning of the FixedString (copied from TrackedSoundEntityComponent.field_0?)."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

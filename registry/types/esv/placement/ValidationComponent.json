@@ -1,0 +1,57 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::placement::ValidationComponent",
+  "kind": "struct",
+  "about": "Validation state of a placement, written by esv::placement::ValidationSystem (GatherValidationRequests / ProcessValidationRequests, Toolkit EoCServer.dll+0x2F4790 / +0x2F5690), which checks every actor of the PlacementComponent map (alive, not incapacitated, not in repose, item not moved) and records an esv::placement::EFailureType per entity. Seen.py context: dialogues with several NPCs and scripted events.",
+  "size": 3,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "State",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2F0C7F0 (3 bytes) writes 0 (pending). The per-frame update of esv::placement::ValidationSystem bg3.exe+0x2F0AF60 writes 1 for every entity of its 'valid' list and 2 for every entity of its 'failed' list (via getter bg3.exe+0x2F0C960). Live 0, 1, 2."
+        }
+      ]
+    },
+    {
+      "offset": 1,
+      "name": "Failure",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Payload of an optional failure code: bg3.exe+0x2F0AF60 stores the per-entity byte of the failed list (enum esv::placement::EFailureType, 1 byte) here together with State = 2. Left unwritten by the creator (stale while HasFailure is 0). Live 0, 2, 4, 0x0A."
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "HasFailure",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Engaged flag of that optional: the creator zeroes byte 2; bg3.exe+0x2F0AF60 sets it to 1 (if it was 0) when it stores Failure. Live 0/1."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerPlacementValidation", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "The Windows creator bg3.exe+0x2F0C7F0 and ValidationSystem's update bg3.exe+0x2F0AF60 show byte 0 is the state (0 pending, 1 valid, 2 failed) and bytes 1-2 are an optional EFailureType (value, engaged flag).",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

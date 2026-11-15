@@ -1,0 +1,63 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::CinematicArenaScriptEventComponent",
+  "kind": "struct",
+  "size": 56,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Source",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCClient.dll+0x6741A0 ecl::timeline::ArenaDecisionSystem::AddScriptEvents resolves the Guid at +0 to an entity (EoCClient.dll+0x6751A0) and puts it, with its position, in the first entity slot of an arena event of kind 4 (ArenaEventToString: OnScriptEvent). In AddDeathEvents (EoCClient.dll+0x673580) that first slot holds DeathComponent +0 (DeathData::Cause), the second the dying entity: the first slot is the event's source."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Target",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCClient.dll+0x6741A0 ecl::timeline::ArenaDecisionSystem::AddScriptEvents resolves the Guid at +0x10 to an entity and puts it, with its position, in the second entity slot of an OnScriptEvent arena event; in AddDeathEvents (EoCClient.dll+0x673580) that slot holds the entity that died while the first holds the death's Cause: the second slot is the event's subject."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "field_20",
+      "type": "STDString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x98BCB0 member 3: bg3.exe+0x4016480 writes an int32 length read at +0x10 then the bytes (inline when capacity at +0x14 <= 15): the 24-byte STDString layout; 0x20+24 = 56 = registered size."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationCinematicArenaScriptEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 0,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 4,
+    "open_questions": [
+      "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+      "Read by ecl::timeline::ArenaDecisionSystem (GetPosition, ProcessSpellCastEvents, ShouldConsiderEvent) - not read; names of the two Guids and the string (event name?) not established."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

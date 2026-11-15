@@ -1,0 +1,74 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::CombineResultCreatedComponent",
+  "kind": "struct",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Results",
+      "type": "HashSet<CombinationResult>",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Windows type name ls::FieldMeta<class ls::HashSet<struct eoc::combine::CombinationResult,struct ls::HashTableOpsDefault> eoc::notification::CombineResultCreatedComponent::*,0>; macOS ls::FieldMeta<ls::HashSet<eoc::combine::CombinationResult, ls::HashTableOpsDefault> eoc::notification::CombineResultCreatedComponent::*, &eoc::notification::CombineResultCreatedComponent::m_Results>. Serializer bg3.exe+0x99CE20 -> bg3.exe+0xAC0330 walks the key array (+0x20, count +0x2C) with stride 0x18."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationCombineResultCreated",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "high",
+    "functions_read": 3,
+    "hold": "its struct CombinationResult is used as a hash key and has no operator==: the container must be declared by its raw parts",
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 5,
+    "open_questions": [
+      "Names of the three CombinationResult members (no FieldMeta for eoc::combine::CombinationResult)."
+    ],
+    "status": "declared",
+    "structs": [
+      {
+        "name": "CombinationResult",
+        "size": 24,
+        "fields": [
+          {
+            "name": "ResultEntity",
+            "offset": 0,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "EoCServer.dll+0x846780 (notification lambda, variant tag 7 = CombineResultCreatedNotificationRequest) walks esv::combine::ResultOneFrameComponent's records (Array at +0x20, stride 0x18) and copies record +0 (16 bytes) and +0x10 (2 bytes) after the owner's Guid; dispatcher bg3.exe+0x2DF53B0 case 7 inserts {request +0x10..+0x21} into this component's set (creator bg3.exe+0x2DF2B40). Record +0 is CombineResultRecord.ResultEntity (savegame model m_ResultEntities)."
+          },
+          {
+            "name": "BaseNotFound",
+            "offset": 16,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "Copied from esv::combine::ResultOneFrameComponent record +0x10 by EoCServer.dll+0x846780 and bg3.exe+0x2DF53B0 case 7; that byte is CombineResultRecord.BaseNotFound (savegame model member m_BaseNotFounds, stored as a bool by bg3.exe+0x2606770)."
+          },
+          {
+            "name": "IngredientNotFound",
+            "offset": 17,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "Copied from esv::combine::ResultOneFrameComponent record +0x11 by EoCServer.dll+0x846780 and bg3.exe+0x2DF53B0 case 7; that byte is CombineResultRecord.IngredientNotFound (savegame model member m_IngredientNotFounds, stored as a bool by bg3.exe+0x2606770)."
+          },
+          {
+            "name": "_Pad12",
+            "offset": 18,
+            "type": "uint8_t[6]",
+            "source": "inferred",
+            "evidence": "tail padding to the 0x18 stride used by bg3.exe+0xAC0330"
+          }
+        ]
+      }
+    ]
+  }
+}

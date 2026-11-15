@@ -1,0 +1,159 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ai::swarm::SpellsComponent",
+  "kind": "struct",
+  "about": "AI swarm spell choice per member (idle levels).",
+  "size": 240,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "AttackSpell",
+      "type": "AiSwarmSpellsSpellId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll esv::ai::swarm::FindSpellsSystem::Update: eoc::spell::GetAttackSpell result is assigned to +0 (also overridden by a spell with prototype flag bit 50). Live FixedStrings at +0/+0x30."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "field_38",
+      "type": "AiSwarmSpellsSpellId",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FindSpellsSystem::Update assigns a spell found in a FixedString-keyed map of the entity (values of 0x68 bytes, chosen when value+8 == 0) to +0x38."
+        }
+      ]
+    },
+    {
+      "offset": 112,
+      "name": "DashSpell",
+      "type": "AiSwarmSpellsSpellId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FindSpellsSystem::Update: SpellId::operator=(+0x70) next to ls::Optional<esv::ai::swarm::DashSpell>::Get (spells of type 6 with an AI flag)."
+        }
+      ]
+    },
+    {
+      "offset": 168,
+      "name": "DashMovementPoints",
+      "type": "double",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x16B2960 FindSpellsSystem::Update stores here the double of the ls::Optional<esv::ai::swarm::DashSpell> that FindSpellsSystemHelper slot 3 (EoCServer.dll+0x16B0DD0) returns for the spell it puts in DashSpell (+0x70). Slot 3 runs the spell's functors in a prepared context and returns eoc::action_resource::GetResourceValue(Movement) afterwards, only when it is above the value before: the movement the character has after dashing. Live 16.8 / -1.0."
+        }
+      ]
+    },
+    {
+      "offset": 176,
+      "name": "MoveSpell",
+      "type": "AiSwarmSpellsSpellId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FindSpellsSystem::Update: eoc::spell::IsMovementSpell -> SpellId::operator=(+0xB0)."
+        }
+      ]
+    },
+    {
+      "offset": 232,
+      "name": "MoveSpellMovementCost",
+      "type": "double",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x16B2960 esv::ai::swarm::FindSpellsSystem::Update stores here, for a spell eoc::spell::IsMovementSpell accepts, the result of FindSpellsSystemHelper vtable slot 1 (vtable slots 0x23D290, 0x16B0D20, 0x16B1BA0, 0x16B0DD0); slot 1, EoCServer.dll+0x16B0D20, returns eoc::action_resource::GetMovementCost of eoc::SpellPrototype::GetTotalCosts for that spell. Live 0 / 3.0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerAiSwarmSpells", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 8,
+    "open_questions": [
+      "meaning of +0x38, +0xA8, +0xE8",
+      "offsets taken from the Toolkit; the live sample agrees (FixedStrings at 0/0x30/0x38/0x68/0x70/0xA0/0xB0/0xE0, doubles at 0xA8/0xE8)"
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "AiSwarmSpellsSpellId",
+        "size": 56,
+        "fields": [
+          {
+            "name": "OriginatorPrototype",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Same members as Script Extender SpellId (Base/ExposedTypes.h: SpellMetaId + Prototype), size 0x38. "
+          },
+          {
+            "name": "_Pad4",
+            "offset": 4,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "compiler padding / bytes nobody reads"
+          },
+          {
+            "name": "SourceType",
+            "offset": 8,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "SpellSourceType (1 byte); macOS default ctor stores the Sentinel byte at +8; live value 0x17 when empty"
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "compiler padding / bytes nobody reads"
+          },
+          {
+            "name": "Source",
+            "offset": 16,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "SpellMetaId::Source"
+          },
+          {
+            "name": "ProgressionSource",
+            "offset": 32,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "SpellMetaId::ProgressionSource"
+          },
+          {
+            "name": "Prototype",
+            "offset": 48,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "SpellId::Prototype"
+          },
+          {
+            "name": "_Pad34",
+            "offset": 52,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "compiler padding / bytes nobody reads"
+          }
+        ]
+      }
+    ]
+  }
+}

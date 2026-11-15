@@ -1,0 +1,774 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::zone::CreateRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame request to create a spell zone (cone/line area of a spell; seen alive when a Mud Mephit cast a spell, born together with esv::zone::SpellComponent and FinishedEventOneFrameComponent). It is one esv::zone::CreationParams (0x188 bytes): esv::zone::CreationSystem::ProcessCreateRequests (EoCServer.dll+0x114C5E0) walks CreationParams with stride 0x188, creates the zone entity, fills esv::zone::SpellComponent from it and copies the whole CreationParams with the assignment EoCServer.dll+0x114C290, which gives every member's offset and width. The builder EoCServer.dll+0x164DC50 names the member types (SpellId, InitialTarget, eoc::SpellZoneInfo, optional arrays of AiTilePos / EntityHandle / HitDesc). Game defaults from creator bg3.exe+0x3377AF0.",
+  "size": 392,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "StoryActionId",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS esv::functor::StatsFunctorCreateZone::Execute (bg3_macos_x64+0x64CB660), whose demangled signature is (StoryActionID, EntityHandle, Guid, HitDesc, AttackDesc, Vector3f, Vector3f, EntityHandle, SpellId, EAbility, InitialTarget, ESurfaceType, SpellZoneInfo&&, uint, float, float, AiTilePos[]*, EntityHandle[]*, HitDesc[]*, bool, bool, FixedString, int, bool), fills a local esv::zone::CreationParams (0x188 bytes, copy-constructed into the request array). It stores the first argument, ls::TypeWrap<unsigned int, eoc::TStoryActionIDClassname>, at CreationParams +0 (the first slot of the local copy). The Windows builder EoCServer.dll+0x164DC50 likewise stores its second parameter here, and its parameter order matches the macOS signature at every other field: Guid +0x10 = its 4th parameter, Vector3f +0x28/+0x34 = its 7th/8th, EntityHandle +0x20 = its 9th. Game default -1. Live 0x2E / 0x126."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "not copied by the assignment; live 0xFFFFFFFF garbage"}
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "SpellCast",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS esv::functor::StatsFunctorCreateZone::Execute (bg3_macos_x64+0x64CB660) takes this EntityHandle as its second argument. Its spell-cast caller bg3_macos_x64+0x641B5D0 passes the entity at +8 of its 5th parameter, the entity it reads eoc::spell_cast::StateComponent and esv::spell_cast::StateComponent from (and whose state's SpellCastGuid it passes as the Guid stored at +0x10): the spell cast entity. esv::functor::ExecuteStatsFunctors (bg3_macos_x64+0x64E1ED0) passes Unassigned, so a zone made by a functor has none. ProcessCreateRequests copies it to esv::zone::SpellComponent +0 only when valid."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "SpellCastUuid",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests copies request +0x10..+0x1F (16 bytes) to the new ZoneAction +0x40, which is SurfaceAction::SpellCastUuid in Script Extender's layout (esv::SurfaceAction +0x40). Toolkit 4.69 build; the request is 0x188 bytes there as in the game."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "Owner",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x80 = request +0x20 (EntityHandle); +0x80 is CreateSurfaceActionBase::Owner in Script Extender's layout. Toolkit 4.69 build."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "ActionPosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x8C..+0x97 = request +0x28 (8+4 bytes); +0x8C is CreateSurfaceActionBase::Position in Script Extender's layout. Live samples are world positions. Toolkit 4.69 build. Prefixed Action because the layout already calls the SpellZoneInfo position at +0x118 Position (the two are equal in live samples)."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "ActionTarget",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x5DC..+0x5E7 = request +0x34 (vec3). In the Toolkit's ZoneAction the accessor TextKey is at +0x5D8 and Script Extender's ZoneAction declares glm::vec3 Target right after TextKey, so +0x5DC is ZoneAction::Target. Live a second world position near Position. Prefixed Action because the layout already calls the InitialTarget at +0x80 Target."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "SpellId",
+      "type": "ZoneCreateRequestSpellId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x114C290: eoc::spell::SpellId::operator= at +0x40 (0x38 bytes, equals SE SpellId)"
+        }
+      ]
+    },
+    {
+      "offset": 120,
+      "name": "Ability",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS esv::functor::StatsFunctorCreateZone::Execute (bg3_macos_x64+0x64CB660), whose demangled signature is (StoryActionID, EntityHandle, Guid, HitDesc, AttackDesc, Vector3f, Vector3f, EntityHandle, SpellId, EAbility, InitialTarget, ESurfaceType, SpellZoneInfo&&, uint, float, float, AiTilePos[]*, EntityHandle[]*, HitDesc[]*, bool, bool, FixedString, int, bool), fills a local esv::zone::CreationParams (0x188 bytes, copy-constructed into the request array). The EAbility const& argument is stored as one byte at CreationParams +0x78 (the byte read through its 13th parameter). Windows builder: byte read through its 11th parameter, the 10th argument in the same order. Live 2 / 4 (EAbility values)."
+        }
+      ]
+    },
+    {
+      "offset": 121,
+      "name": "_Pad79",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding before the 8-aligned InitialTarget"}]
+    },
+    {
+      "offset": 128,
+      "name": "Target",
+      "type": "ZoneCreateRequestInitialTarget",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x114C290: eoc::spell_cast::InitialTarget::operator= at +0x80 (equals SE InitialTarget); copied to esv::zone::SpellComponent +8"
+        }
+      ]
+    },
+    {
+      "offset": 240,
+      "name": "field_F0",
+      "type": "int32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "dword copy; the builder's 24th parameter; copied to SpellComponent +0x7C; game default 0. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 244,
+      "name": "Shape",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "known_as": [{"name": "field_F4", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "start of eoc::SpellZoneInfo (builder: SpellZoneInfo::SpellZoneInfo at this offset, 0x34 bytes up to +0x128); game default byte 0. Live 0. | Name: eoc::SpellZoneInfo::Init (EoCShared.dll+0x10075A0, same offsets in the macOS build) stores (stats Shape == \"Square\") in SpellZoneInfo +0, i.e. 0 = cone, 1 = square (stats property Shape of the zone spell)."
+        }
+      ]
+    },
+    {
+      "offset": 245,
+      "name": "_PadF5",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "live garbage"}]
+    },
+    {
+      "offset": 248,
+      "name": "field_F8",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "SpellZoneInfo member; live 0.2 / 0.249"}]
+    },
+    {
+      "offset": 252,
+      "name": "field_FC",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "SpellZoneInfo member; live 1.614 / 1.663"}]
+    },
+    {
+      "offset": 256,
+      "name": "Range",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SpellZoneInfo (starts at +0xF4) +0xC. macOS eoc::spell_cast::InitializeZoneInfoForSpellCast (bg3_macos_x64+0x22D79B0) stores eoc::spell::Ranges +8 here, after capping it by the stats global RangeBoostedGlobalCap. eoc::spell::GetSpellRanges(RangeContext) (bg3_macos_x64+0x22FB8C0) fills Ranges +8 from SpellPrototype::GetSpellRange(strRange) / GetTargetRadius / strAreaRadius / strExplodeRadius, by targeting type, plus a context offset. Live 5.2 for a 5 m spell (with +0xF8 = 0.2)."
+        }
+      ]
+    },
+    {
+      "offset": 260,
+      "name": "CeilingRange",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SpellZoneInfo +0x10 = eoc::spell::Ranges +0xC (InitializeZoneInfoForSpellCast, bg3_macos_x64+0x22D79B0). GetSpellRanges (bg3_macos_x64+0x22FB8C0) writes Ranges +0xC = SpellPrototype::GetSpellRange(strTargetCeiling) when the spell's TargetCeiling stat is set, else the base range. Live 5."
+        }
+      ]
+    },
+    {
+      "offset": 264,
+      "name": "FloorRange",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SpellZoneInfo +0x14 = eoc::spell::Ranges +0x10 (InitializeZoneInfoForSpellCast, bg3_macos_x64+0x22D79B0). GetSpellRanges (bg3_macos_x64+0x22FB8C0) writes Ranges +0x10 = SpellPrototype::GetSpellRange(strTargetFloor) when the spell's TargetFloor stat is set, else the base range. Live 5."
+        }
+      ]
+    },
+    {
+      "offset": 268,
+      "name": "AngleOrBase",
+      "type": "float",
+      "rung": "inferred",
+      "known_as": [{"name": "field_10C", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SpellZoneInfo member; live 60 (cone angle in degrees?) | Name: SpellZoneInfo::Init stores stats Angle (cone) or Base (square) as float at SpellZoneInfo +0x18 = component +0x10C; live 60 = a cone angle."
+        }
+      ]
+    },
+    {
+      "offset": 272,
+      "name": "FrontOffset",
+      "type": "float",
+      "rung": "inferred",
+      "known_as": [{"name": "field_110", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SpellZoneInfo member; live 0 | Name: SpellZoneInfo::Init stores stats FrontOffset as float at SpellZoneInfo +0x1C = component +0x110; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 276,
+      "name": "Height",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SpellZoneInfo +0x20. macOS InitializeZoneInfoForSpellCast (bg3_macos_x64+0x22D79B0) calls eoc::spell::GetVerticalBounds(bound, position, &bottom, &top) and stores top - bottom here: the zone's vertical extent. Live 1.4 / 2, the size of a character's bounds."
+        }
+      ]
+    },
+    {
+      "offset": 280,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SpellZoneInfo +0x24..+0x2F. macOS InitializeZoneInfoForSpellCast (bg3_macos_x64+0x22D79B0) copies its Vector3f const& argument (the cast position, also passed to GetVerticalBounds) here. Live it equals the world position at +0x28."
+        }
+      ]
+    },
+    {
+      "offset": 292,
+      "name": "ZoneFlags",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "known_as": [{"name": "field_124", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "game creator clears its low two bits (flags byte, end of SpellZoneInfo); live 8 | Name: SpellZoneInfo::Init sets bit 1 of SpellZoneInfo +0x30 (= component +0x124) from bit 4 of SpellPrototype byte +0x10; the other bits are set elsewhere."
+        }
+      ]
+    },
+    {
+      "offset": 293,
+      "name": "_Pad125",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding (live 0)"}]
+    },
+    {
+      "offset": 296,
+      "name": "SurfaceType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS esv::functor::StatsFunctorCreateZone::Execute (bg3_macos_x64+0x64CB660), whose demangled signature is (StoryActionID, EntityHandle, Guid, HitDesc, AttackDesc, Vector3f, Vector3f, EntityHandle, SpellId, EAbility, InitialTarget, ESurfaceType, SpellZoneInfo&&, uint, float, float, AiTilePos[]*, EntityHandle[]*, HitDesc[]*, bool, bool, FixedString, int, bool), fills a local esv::zone::CreationParams (0x188 bytes, copy-constructed into the request array). The eoc::ESurfaceType const& argument is stored as one byte at CreationParams +0x128 (the byte read through its 15th parameter), right after the SpellZoneInfo copy at +0xF4. Windows builder: read through its 13th parameter, the 12th argument. Game default 0xFF. Live 0x15 / 0x4B."
+        }
+      ]
+    },
+    {
+      "offset": 297,
+      "name": "_Pad129",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "live 0xFF garbage"}]
+    },
+    {
+      "offset": 300,
+      "name": "GrowStep",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x620 = request +0x12C (int32); the Toolkit exports the accessor esv::ZoneAction set GrowStep at +0x620 (symbols fields esv::ZoneAction). Game default 10."
+        }
+      ]
+    },
+    {
+      "offset": 304,
+      "name": "GrowTimer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x61C = request +0x130 (float); the Toolkit exports the accessor esv::ZoneAction set GrowTimer at +0x61C (symbols fields esv::ZoneAction). Game default 1.0."
+        }
+      ]
+    },
+    {
+      "offset": 308,
+      "name": "Duration",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests: ZoneAction +0x88 = request +0x134 (float); +0x88 is CreateSurfaceActionBase::Duration in Script Extender's layout. Game default 0; live 0 and 18."
+        }
+      ]
+    },
+    {
+      "offset": 312,
+      "name": "Tiles",
+      "type": "ZoneCreateRequestOptionalTiles",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "optional<Array<eoc::AiTilePos>>, flag at +0x148. Live: engaged, capacity 0x199-0x1A0, size 0x3C-0x3F."
+        }
+      ]
+    },
+    {
+      "offset": 336,
+      "name": "Entities",
+      "type": "ZoneCreateRequestOptionalEntities",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "optional<Array<EntityHandle>>, flag at +0x160. Live empty."}
+      ]
+    },
+    {
+      "offset": 360,
+      "name": "Hits",
+      "type": "ZoneCreateRequestOptionalHits",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "optional<Array<eoc::HitDesc>>, flag at +0x178. Live empty."}
+      ]
+    },
+    {
+      "offset": 384,
+      "name": "TextKey",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests passes request +0x180 as the FixedString argument of esv::ZoneAction::SetSpellID (EoCServer.dll+0x6AD110), which stores it at ZoneAction +0x5D8 = the Toolkit accessor TextKey, and looks the spell properties up by it (LEGACY_GetSpellProperties(prototype, TextKey))."
+        }
+      ]
+    },
+    {
+      "offset": 388,
+      "name": "IsFromItem",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x6D5690 esv::SurfaceManager::ProcessZoneRequests passes byte +0x184 as the first bool of esv::ZoneAction::SetSpellID (EoCServer.dll+0x6AD110), which writes it to bit 0 of ZoneAction +0x670 = the Toolkit accessor 'get IsFromItem' (bit 0, mask 0x1)."
+        }
+      ]
+    },
+    {
+      "offset": 389,
+      "name": "IgnoreSpellRolls",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows builder EoCServer.dll+0x164DC50 stores its 21st and 22nd parameters as the bytes +0x184 and +0x185 (the two bytes stored together in one 2-byte write). In the macOS spell-cast caller bg3_macos_x64+0x641B5D0 the matching two bools of StatsFunctorCreateZone::Execute are 'the state's Source entity is valid' (+0x184, IsFromItem) and (eoc::spell_cast::StateComponent CastOptions & 4) >> 2; 4 is SpellCastOptions::IgnoreSpellRolls. ProcessZoneRequests passes +0x185 as the second bool of esv::ZoneAction::SetSpellID (bit 3 of ZoneAction +0x670)."
+        }
+      ]
+    },
+    {
+      "offset": 390,
+      "name": "field_186",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "the builder's 25th parameter; game default 0"}]
+    },
+    {
+      "offset": 391,
+      "name": "_Pad187",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding (live 0xFF garbage)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerZoneCreateRequest", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 7,
+    "minutes": 18,
+    "names_pass_2": "Names of the SpellZoneInfo part settled by eoc::SpellZoneInfo::Init (Toolkit EoCShared.dll and the macOS build), which reads the spell's stats Shape, FrontOffset and Angle/Base into it; no savegame model, FieldMeta or Osiris parameter names this one-frame request.",
+    "open_questions": [
+      "Names of the scalar members and of eoc::SpellZoneInfo's members (its split into floats is from live values only).",
+      "Element size of the HitDesc array in the game build (Toolkit 0x1B0).",
+      "SpellZoneInfo floats +0xF8..+0x108, +0x114 and the vec3 +0x118: written by esv::zone::CreationSystem / SpellZoneInfo::ComputeZoneCells (origin, target, range); reading the Toolkit callers of EoCServer.dll+0x164DC50 (the builder) with their argument sources would name them."
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "ZoneCreateRequestSpellId",
+        "size": 56,
+        "fields": [
+          {
+            "name": "OriginatorPrototype",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "equals Script Extender SpellId (ExposedTypes.h); game default 0xFFFFFFFF (null FixedString) at component +0x40"
+          },
+          {
+            "name": "_Pad4",
+            "offset": 4,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "SE SpellMetaId _Pad"
+          },
+          {
+            "name": "SourceType",
+            "offset": 8,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "SE SpellSourceType (1 byte); game default 0x17 = Sentinel at component +0x48"
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding"
+          },
+          {
+            "name": "Source",
+            "offset": 16,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "SE SpellMetaId.Source"
+          },
+          {
+            "name": "ProgressionSource",
+            "offset": 32,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "SE SpellMetaId.ProgressionSource"
+          },
+          {
+            "name": "Prototype",
+            "offset": 48,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "SE SpellId.Prototype; game default null at component +0x70; live equal to OriginatorPrototype"
+          },
+          {
+            "name": "_Pad34",
+            "offset": 52,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "padding (live 0xFFFFFFFF garbage)"
+          }
+        ]
+      },
+      {
+        "name": "ZoneCreateRequestBaseTarget",
+        "size": 48,
+        "fields": [
+          {
+            "name": "VMT",
+            "offset": 0,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "SE eoc::spell_cast::BaseTarget has virtual methods"
+          },
+          {
+            "name": "Target",
+            "offset": 8,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "SE BaseTarget.Target"
+          },
+          {
+            "name": "TargetProxy",
+            "offset": 16,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "SE BaseTarget.TargetProxy (std::optional<EntityHandle> value)"
+          },
+          {
+            "name": "HasTargetProxy",
+            "offset": 24,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "std::optional engaged flag"
+          },
+          {
+            "name": "_Pad19",
+            "offset": 25,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding"
+          },
+          {
+            "name": "Position",
+            "offset": 32,
+            "type": "glm::vec3",
+            "source": "inferred",
+            "evidence": "SE BaseTarget.Position (std::optional<glm::vec3> value)"
+          },
+          {
+            "name": "HasPosition",
+            "offset": 44,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "std::optional engaged flag"
+          },
+          {
+            "name": "_Pad2D",
+            "offset": 45,
+            "type": "uint8_t[3]",
+            "source": "inferred",
+            "evidence": "padding"
+          }
+        ]
+      },
+      {
+        "name": "ZoneCreateRequestInitialTarget",
+        "size": 112,
+        "fields": [
+          {
+            "name": "VMT",
+            "offset": 0,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "game creator bg3.exe+0x3377AF0 writes a pointer to the virtual table at bg3.exe+0x54DB080 at component +0x80; equals SE eoc::spell_cast::InitialTarget (0x70 bytes, a 112-byte InitialTarget local variable in the Toolkit)"
+          },
+          {
+            "name": "Target",
+            "offset": 8,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "game default null handle at +0x88"
+          },
+          {
+            "name": "TargetProxy",
+            "offset": 16,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "SE BaseTarget.TargetProxy value"
+          },
+          {
+            "name": "HasTargetProxy",
+            "offset": 24,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "game default byte 0 at component +0x98"
+          },
+          {
+            "name": "_Pad19",
+            "offset": 25,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding"
+          },
+          {
+            "name": "Position",
+            "offset": 32,
+            "type": "glm::vec3",
+            "source": "inferred",
+            "evidence": "SE BaseTarget.Position value"
+          },
+          {
+            "name": "HasPosition",
+            "offset": 44,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "game default byte 0 at component +0xAC"
+          },
+          {
+            "name": "_Pad2D",
+            "offset": 45,
+            "type": "uint8_t[3]",
+            "source": "inferred",
+            "evidence": "padding"
+          },
+          {
+            "name": "TargetingType",
+            "offset": 48,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "SE InitialTarget.TargetingType (SpellType, 1 byte); game default 0 at component +0xB0; live 1"
+          },
+          {
+            "name": "_Pad31",
+            "offset": 49,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding"
+          },
+          {
+            "name": "Target2",
+            "offset": 56,
+            "type": "ZoneCreateRequestBaseTarget",
+            "source": "inferred",
+            "evidence": "SE InitialTarget.Target2 (std::optional<BaseTarget> value)"
+          },
+          {
+            "name": "HasTarget2",
+            "offset": 104,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "game default byte 0 at component +0xE8"
+          },
+          {
+            "name": "_Pad69",
+            "offset": 105,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding"
+          }
+        ]
+      },
+      {
+        "name": "ZoneCreateRequestAiTilePos",
+        "size": 8,
+        "fields": [
+          {
+            "name": "field_0",
+            "offset": 0,
+            "type": "int32_t",
+            "source": "unknown",
+            "evidence": "eoc::AiTilePos, 8 bytes, alignment 4 (EoCServer.dll+0x6A9380 allocates count*8 align 4; assert names ls::IndexedStorage<struct eoc::AiTilePos>)"
+          },
+          {
+            "name": "field_4",
+            "offset": 4,
+            "type": "int32_t",
+            "source": "unknown",
+            "evidence": "second half of eoc::AiTilePos"
+          }
+        ]
+      },
+      {
+        "name": "ZoneCreateRequestOptionalTiles",
+        "size": 24,
+        "fields": [
+          {
+            "name": "Value",
+            "offset": 0,
+            "type": "Array<ZoneCreateRequestAiTilePos>",
+            "source": "inferred",
+            "evidence": "std::optional<Array<eoc::AiTilePos>> copied by EoCServer.dll+0x6A9380"
+          },
+          {
+            "name": "HasValue",
+            "offset": 16,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "engaged flag tested at +0x10 by EoCServer.dll+0x114C290"
+          },
+          {
+            "name": "_Pad11",
+            "offset": 17,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding"
+          }
+        ]
+      },
+      {
+        "name": "ZoneCreateRequestOptionalEntities",
+        "size": 24,
+        "fields": [
+          {
+            "name": "Value",
+            "offset": 0,
+            "type": "Array<EntityHandle>",
+            "source": "inferred",
+            "evidence": "std::optional<Array<EntityHandle>> copied by EoCServer.dll+0x6A92C0 (assert IndexedStorage<ls::ID<ecs::EntityHandleTraits>>, ECS container allocator)"
+          },
+          {
+            "name": "HasValue",
+            "offset": 16,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "engaged flag"
+          },
+          {
+            "name": "_Pad11",
+            "offset": 17,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding"
+          }
+        ]
+      },
+      {
+        "name": "ZoneCreateRequestOptionalHits",
+        "size": 24,
+        "fields": [
+          {
+            "name": "Buffer",
+            "offset": 0,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "std::optional<Array<eoc::HitDesc>> (EoCServer.dll+0x6A9450 allocates count*0x1B0 in the Toolkit build; Script Extender HitDesc is 448 bytes in the game, so the element is not declared): array buffer"
+          },
+          {
+            "name": "Capacity",
+            "offset": 8,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "Array capacity"
+          },
+          {
+            "name": "Size",
+            "offset": 12,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "Array size"
+          },
+          {
+            "name": "HasValue",
+            "offset": 16,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "engaged flag"
+          },
+          {
+            "name": "_Pad11",
+            "offset": 17,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding"
+          }
+        ]
+      }
+    ]
+  }
+}

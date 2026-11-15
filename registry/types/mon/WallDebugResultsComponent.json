@@ -1,0 +1,84 @@
+{
+  "schema": "registry/type/1",
+  "id": "mon::WallDebugResultsComponent",
+  "kind": "struct",
+  "about": "Client-only results of the 'mon' debug monitor's mon::WallDebugRequestComponent. Registered by bg3.exe+0x11EF2C0 (size 0x18); its destructor bg3.exe+0xA51A80 is 'add rcx, 8; jmp bg3.exe+0x5946C0' = the plain-Array destructor applied at +8. The default constructor puts a 16-bit default id (global DAT_1461766d0, the same 'none' value the game uses for a short handle in esv::GameplayController and ecl::CharacterTask_Spell) at +0. No system of the shipped binaries fills or reads it; the array's element type cannot be established. Never seen alive.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint16_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "default constructor bg3.exe+0x11F1170 (slot 3 of ops table bg3.exe+0x5567260) zeroes the quadword then stores the 16-bit global DAT_1461766d0 at +0 (macOS default constructor: strh at +0). That global is the 'unset' value of a 16-bit id compared in esv::GameplayController::EnterCombat (+0x48) and ecl::CharacterTask_Spell::Clear (+0x328)."
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "_Pad2",
+      "type": "uint8_t[6]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "padding up to the 8-aligned array; zeroed by the constructor's quadword store."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Data",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0xA51A80 (disassembled: add rcx,8; jmp 0x1405946C0) destroys a plain Array at +8: buffer freed when capacity != 0, no per-element work; element type unknown."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Capacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Array capacity at +0x10 (bg3.exe+0x5946C0 via the +8 thunk); constructor zeroes it."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "Size",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Array size at +0x14; constructor bg3.exe+0x11F1170 stores 0 there."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "MonWallDebugResults", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "low",
+    "functions_read": 4,
+    "minutes": 7,
+    "open_questions": [
+      "What the 16-bit id at +0 is (shared 'none' value DAT_1461766d0).",
+      "Element type and stride of the array at +8 - no producer in the shipped binaries."
+    ],
+    "second_pass": "Cannot be settled from code: the second pass found no producer or consumer anywhere - bg3.exe has only the type registration (App::CreateECS -> bg3.exe+0x11EExxx), the static type-name initialiser and the component ops; the macOS build has only ComponentOps/ComponentSignals/destructor instantiations (macos_index.py names '<mon::' lists just the eight mon types) and the Toolkit DLLs mention them only in App::AddGlobalSwitchesToOptionDialog. The shapes from the creator/destructor stand; the members stay unknown.",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::ftb::BlockedFTBRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame notice that a player's free-turn-based (FTB) request is blocked (born in the TWN_Hospital_Reception dialogue). Created by the per-frame update of ecl::ftb::ZoneSystem from modified eoc::ftb::ZoneBlockReasonComponent.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "PlayerId",
+      "type": "int16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::ftb::ZoneSystem update bg3.exe+0x1956170: `p = FUN_141956c50(...); *(short*)p = sVar8;` where sVar8 is the low 16 bits of a uint at +0x12C of the character (player id, 0 skipped). Creator bg3.exe+0x1956C50 writes 0. Live 1."
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "Reason",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: `*(char*)(p+2) = cVar3;` where cVar3 is the byte of eoc::ftb::ZoneBlockReasonComponent (SE: uint8_t Reason; 0 skipped, 2 only when an entity is null). Live 1."
+        }
+      ]
+    },
+    {
+      "offset": 3,
+      "name": "_Pad3",
+      "type": "uint8_t[1]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientFTBBlockedRequest", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "That +0x12C of the character is a player id is inferred from its use as a short key."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::PerItemPassiveCooldownRemovedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame event: per-item passive cooldowns removed from an item, a list of passive names; same shape as esv::PerItemPassiveCooldownComponent. Saved (model game.cooldown.v0.PerItemPassiveCooldownRemovedEventOneFrameComponent, 16 bytes), read by esv::PerItemPassiveCooldownRestoreSystem. Never seen alive. Registry total 16 (server row).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Passives",
+      "type": "Array<FixedString>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Storage set-up bg3.exe+0x2705660: size 0x10, destructor bg3.exe+0x6CC770 (the same Array<FixedString> destructor as esv::PerItemPassiveCooldownComponent: FUN_1405C4050 DecRefs 4-byte elements up to size +0xC, frees +0). Name inferred."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerPerItemPassiveCooldownRemovedEvent",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 3,
+    "open_questions": [
+      "Element meaning inferred from the component name; loader slots (bg3.exe+0x2600820 / +0x2600DB0) not read.",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

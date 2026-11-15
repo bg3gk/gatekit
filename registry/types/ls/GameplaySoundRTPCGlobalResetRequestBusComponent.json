@@ -1,0 +1,51 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::GameplaySoundRTPCGlobalResetRequestBusComponent",
+  "kind": "struct",
+  "about": "Requests to reset global RTPC values.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<GameplaySoundResetGlobalRTPCRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessSoundRTPCGlobalResetRequests: elements at *(+0), count *(int*)(+0xC), stride 4. Live: one empty instance."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "GameplaySoundRTPCGlobalResetRequestBus",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "GameplaySoundResetGlobalRTPCRequest",
+        "size": 4,
+        "fields": [
+          {
+            "name": "RTPC",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessSoundRTPCGlobalResetRequests (GameEngine.dll+0x89BE30) passes each element to SoundRoutingSystem::ResetGlobalRTPCValue(FixedString const&). macOS element name ls::GameplaySoundResetRTPCRequest."
+          }
+        ]
+      }
+    ]
+  }
+}

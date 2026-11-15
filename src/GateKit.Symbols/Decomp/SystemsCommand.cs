@@ -10,13 +10,13 @@ internal static class SystemsCommand
 {
     const string SystemIndex = @"TypeIndex<([^;]+?)>_SystemsContext";
     static readonly Regex VtableSet = new(@"\*\s*(?:\([^()]*\))?\s*(\w+) = &?(PTR_\w+_|PTR_\w+|\w+_vftable_?);", RegexOptions.Compiled);
-    static readonly Regex TableAddress = new(@"PTR_\w+?_(1[0-9a-f]{8})$", RegexOptions.Compiled);
+    static readonly Regex TableAddress = new(@"PTR_\w+?_([0-9a-f]{8,16})$", RegexOptions.Compiled);
     static readonly Regex Use = new(@"(\w+) = " + SystemIndex + ";", RegexOptions.Compiled);
-    static readonly Regex HelperCall = new(@"\b(FUN_1[0-9a-f]{8})\(([^;]*?)\);", RegexOptions.Compiled);
+    static readonly Regex HelperCall = new(@"\b(FUN_[0-9a-f]{8,16})\(([^;]*?)\);", RegexOptions.Compiled);
     static readonly Regex DirectIndex = new(SystemIndex + "$", RegexOptions.Compiled);
-    static readonly Regex StoredPointer = new(@"= (?:\([^()]*\))?(?:thunk_)?FUN_(1[0-9a-f]{8});", RegexOptions.Compiled);
+    static readonly Regex StoredPointer = new(@"= (?:\([^()]*\))?(?:thunk_)?FUN_([0-9a-f]{8,16});", RegexOptions.Compiled);
     static readonly Regex VoidEntry = new(@"\bvoid\s+(?:thunk_)?FUN_", RegexOptions.Compiled);
-    static readonly Regex CallOnSystem = new(@"\b(?:thunk_)?FUN_(1[0-9a-f]{8})\(param_1,", RegexOptions.Compiled);
+    static readonly Regex CallOnSystem = new(@"\b(?:thunk_)?FUN_([0-9a-f]{8,16})\(param_1,", RegexOptions.Compiled);
     static readonly Regex NamedCallOnSystem = new(@"(?<![\w:])((?:\w+::)+~?\w+)\(param_1,", RegexOptions.Compiled);
 
     static long L(object? v) => Convert.ToInt64(v, CultureInfo.InvariantCulture);
@@ -32,6 +32,37 @@ internal static class SystemsCommand
         {
             return false;
         }
+    }
+
+    /// <summary>True when the table has a row of this binary (a table of another binary does not
+    /// count): by its id in `binary_id`, or by its name in <paramref name="nameColumn"/>.</summary>
+    internal static bool HasRows(SqliteConnection db, string table, string binary, string? nameColumn = null)
+    {
+        try
+        {
+            return (nameColumn == null
+                ? db.One($"SELECT 1 FROM {table} t JOIN binaries b ON b.id = t.binary_id WHERE b.name = ? LIMIT 1", binary)
+                : db.One($"SELECT 1 FROM {table} WHERE {nameColumn} = ? LIMIT 1", binary)) != null;
+        }
+        catch (SqliteException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Where the binary is loaded: the image base of its PE header when the file is found,
+    /// else what the pseudo-code says, the address in Ghidra's FUN_ names less the function's RVA
+    /// (the value most functions agree on). Null when neither is known.</summary>
+    internal static long? ImageBase(DecompSession s, SqliteConnection db, string binary)
+    {
+        if (s.Image(binary) is { } pe)
+            return (long)pe.ImageBase;
+        var votes = new Dictionary<long, int>();
+        foreach (var r in db.Query("SELECT f.rva, f.name FROM functions f JOIN binaries b ON b.id = f.binary_id"
+                                   + " WHERE b.name = ? AND f.name LIKE 'FUN!_%' ESCAPE '!' LIMIT 2000", binary))
+            if (Py.Hex(Py.Str(r[1])[4..]) is long address)
+                votes[address - L(r[0])] = votes.GetValueOrDefault(address - L(r[0])) + 1;
+        return votes.Count == 0 ? null : votes.MaxBy(v => v.Value).Key;
     }
 
     static int Count(string text, string part)
@@ -50,7 +81,7 @@ internal static class SystemsCommand
     /// the function most often called with a `TypeIndex&lt;...&gt;_SystemsContext` argument. The
     /// caller is the factory; the constructor is the function it calls before that which stores a
     /// virtual table into its first argument. Every row is an inference to check, not a fact.</summary>
-    public static int FindSystemFactories(SqliteConnection db, string binary)
+    public static int FindSystemFactories(SqliteConnection db, string binary, long imageBase)
     {
         var idValue = db.Scalar("SELECT id FROM binaries WHERE name = ?", binary) ?? throw new SymbolsException($"{binary} is not loaded");
         long binaryId = L(idValue);
@@ -87,7 +118,7 @@ internal static class SystemsCommand
         foreach (var (k, v) in votes)
             if (v > votes[helper])
                 helper = k;
-        long helperRva = Py.Hex(helper[4..])!.Value - 0x140000000;
+        long helperRva = Py.Hex(helper[4..])!.Value - imageBase;
         var call2 = new Regex(Regex.Escape(helper) + @"\(([^,;]+),\s*([^,;]+),");
         var updates = new List<object?[]>();
         var rows = new List<object?[]>();
@@ -115,7 +146,7 @@ internal static class SystemsCommand
                     foreach (var r in db.Query("SELECT DISTINCT callee FROM calls INDEXED BY calls_caller WHERE binary_id = ? AND caller = ?", binaryId, factory).ToList())
                     {
                         long callee = L(r[0]);
-                        int where = flat.IndexOf(string.Create(CultureInfo.InvariantCulture, $"FUN_14{callee:x7}("), StringComparison.Ordinal);
+                        int where = flat.IndexOf(string.Create(CultureInfo.InvariantCulture, $"FUN_{imageBase + callee:x8}("), StringComparison.Ordinal);
                         if (where < 0 || where > m.Index)
                             continue;
                         if (!stored.TryGetValue(callee, out var tables))
@@ -135,7 +166,7 @@ internal static class SystemsCommand
                     if (own.Count > 0)
                     {
                         var address = TableAddress.Match(own[^1].TrimEnd('_'));
-                        vtable = address.Success ? Py.Hex(address.Groups[1].Value)!.Value - 0x140000000 : null;
+                        vtable = address.Success ? Py.Hex(address.Groups[1].Value)!.Value - imageBase : null;
                         note = (constructor == null ? "constructor inlined into the factory" : "") + (address.Success ? "" : $" table named {own[^1]}");
                     }
                 }
@@ -147,7 +178,7 @@ internal static class SystemsCommand
                     // the compiler folded that update into it.
                     foreach (var pointer in StoredPointer.Matches(flat).Select(x => x.Groups[1].Value).Distinct())
                     {
-                        long thunk = Py.Hex(pointer)!.Value - 0x140000000;
+                        long thunk = Py.Hex(pointer)!.Value - imageBase;
                         var body = TextOf(thunk);
                         if (body.Length == 0)
                             continue;
@@ -156,7 +187,7 @@ internal static class SystemsCommand
                         int parameters = Count(head, "param_");
                         if (parameters is not (2 or 3) || !VoidEntry.IsMatch(head))
                             continue;                 // an update entry is void (system, world[, time])
-                        var calls = CallOnSystem.Matches(body).Select(x => Py.Hex(x.Groups[1].Value)!.Value - 0x140000000).Where(c => c != thunk).ToList();
+                        var calls = CallOnSystem.Matches(body).Select(x => Py.Hex(x.Groups[1].Value)!.Value - imageBase).Where(c => c != thunk).ToList();
                         // callees that already carry a name (from the Toolkit) are looked up by it
                         foreach (Match named in NamedCallOnSystem.Matches(body))
                         {
@@ -191,18 +222,37 @@ internal static class SystemsCommand
         return rows.Count;
     }
 
+    /// <summary>The sentence said when no system was found: which input was empty.</summary>
+    internal static string WhyNoSystems(SqliteConnection db, string binary)
+    {
+        long id = L(db.Scalar("SELECT id FROM binaries WHERE name = ?", binary) ?? throw new SymbolsException($"{binary} is not loaded"));
+        long functions = L(db.Scalar("SELECT count(*) FROM functions WHERE binary_id = ?", id)!);
+        long calls = L(db.Scalar("SELECT count(*) FROM calls WHERE binary_id = ?", id)!);
+        long context = L(db.Scalar("SELECT count(*) FROM code_fts JOIN functions f ON f.id = code_fts.rowid WHERE code_fts MATCH ? AND f.binary_id = ?",
+                                   "\"_SystemsContext\"", id)!);
+        string why = functions == 0 ? $"{binary} has no functions in the database (gatekit decomp load {binary})"
+            : calls == 0 ? $"{binary} has {functions} functions but no rows in `calls`, which the search follows (gatekit decomp load {binary} again)"
+            : context == 0 ? $"no function of {binary} mentions _SystemsContext, the system registry the search starts from (is the pseudo-code that of the game?)"
+            : $"{context} functions of {binary} mention _SystemsContext, but none passes a system index to a helper the search recognises";
+        return $"no system factory was found, so system_factories and system_updates of {binary} stay empty: {why}";
+    }
+
     public static int Run(DecompSession s, string? name, bool rebuild, string binary)
     {
-        // read-only unless the table has to be (re)built
-        var db = File.Exists(s.Settings.DbPath) && !rebuild ? s.Db : s.OpenWrite();
-        if (rebuild || !HasRows(db, "system_factories"))
+        // read-only unless the table has to be (re)built; the table comes from the pseudo-code in
+        // the database, so a missing database is an error and never created here as an empty one
+        var db = s.Db;
+        if (rebuild || !HasRows(db, "system_factories", binary))
         {
             db = s.OpenWrite();
-            int count = FindSystemFactories(db, binary);
+            long imageBase = ImageBase(s, db, binary) ?? throw new SymbolsException($"{binary} is not loaded, and its file was not found to read its image base");
+            int count = FindSystemFactories(db, binary, imageBase);
+            if (count == 0)
+                throw new SymbolsException(WhyNoSystems(db, binary));
             s.Err.WriteLine($"{count} systems found in {binary}");
         }
         var rows = db.Query("SELECT b.name, s.system, s.factory, s.constructor, s.vtable, s.note FROM system_factories s JOIN binaries b ON b.id = s.binary_id"
-                            + " WHERE s.system LIKE ? ORDER BY s.system", "%" + (name ?? "") + "%").ToList();
+                            + " WHERE b.name = ? AND s.system LIKE ? ORDER BY s.system", binary, "%" + (name ?? "") + "%").ToList();
         foreach (var r in rows)
         {
             string b = Py.Str(r[0]);

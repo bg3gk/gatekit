@@ -1,0 +1,65 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::SpellCastMovementAndPrecalculationEndComponent",
+  "kind": "struct",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "SpellCastGuid",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializers bg3.exe+0x9968D0 / 0x996A00 / 0x9965E0 / 0x9967E0: member 1 = raw 16 bytes at +0 (DAT_14627ff80). Live: same Guid values as SpellCastDestroyedComponent (spell cast id)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "PhaseFinished",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x83BF10 section for esv::spell_cast::MovementAndPrecalculationEndEventOneFrameComponent (variant tag 0x29) copies event byte +0 (PhaseFinished) to request +8 and u32 +4 to request +0xC; dispatcher helper bg3.exe+0x2DEE8B0 creates this component (creator bg3.exe+0x2DF3740) and stores request +8 at +0x10 (request +0xC at +0x14)."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "_Pad11",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "alignment padding; server samples hold stale bytes"}]
+    },
+    {
+      "offset": 20,
+      "name": "field_14",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "serializer member 3 = 4 bytes at +0x14. Live always 0."}
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationSpellCastMovementAndPrecalculationEnd",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Meaning of the flag at +0x10 and the 4-byte value at +0x14 (int or float; always 0 live)."
+    ],
+    "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

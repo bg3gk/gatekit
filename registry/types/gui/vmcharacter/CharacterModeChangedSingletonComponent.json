@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::vmcharacter::CharacterModeChangedSingletonComponent",
+  "kind": "struct",
+  "about": "Client UI: per-frame map character entity -> new gui::VMCharacter::ECharacterMode (1-byte enum, no Script Extender binding; exposed as uint8_t), filled by CharacterModeSystem::ProcessModeChanges and emptied by CharacterModeSystem::ClearModeChanges. Singleton from game start (idle, level-change).",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Modes",
+      "type": "HashMap<EntityHandle, uint8_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "NoesisGameUI.dll+0x4258C0 (Toolkit, gui::vmcharacter::CharacterModeSystem::ProcessModeChanges) walks the VMCharacter collection and calls FUN_180424ff0, whose assert strings name ls::HashMap<ls::ID<ecs::EntityHandleTraits>, enum gui::VMCharacter::ECharacterMode>::EmplaceUniversal and IndexedStorage<gui::VMCharacter::ECharacterMode>; the value store at +0x30 (capacity +0x38) is written one byte per index ('*(char *)(index + *(this+0x30)) = mode'), so the enum is 1 byte. Key = the character entity (VMCharacter member +0xA8, an EntityHandle). Live samples: HashMap shape (bucket count 5 at +8, cap/size pairs at +0x18/+0x28, value capacity at +0x38). Registry size 64 (coverage.json, client)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "GuiVMCharacterModeChanged", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 5,
+    "open_questions": [
+      "Enum values of gui::VMCharacter::ECharacterMode are not established (Script Extender has no such enum)."
+    ],
+    "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

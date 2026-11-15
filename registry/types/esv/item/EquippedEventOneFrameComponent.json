@@ -1,0 +1,70 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::item::EquippedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Event entity created by the equipment system when an item is equipped (seen alive in the equipment, shove-throw, spells and death situations, where goblins were spawned with a longsword and the host was outfitted). bg3.exe+0x34FB760 walks an array of 0x18-byte records, creates one new entity per record and adds this component through bg3.exe+0x34FF800, which copies record+0 / +8 / +0x10. Read by esv::DualWieldingSystem (Toolkit EoCServer.dll+0x5EE1D0 EvaluateOnItemEquipped gets the slot byte and checks eoc::equipment::IsHandSlot).",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Item",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x34FF800 writes at component +0 the 8-byte value its third argument points to (record+0). Live: 22 different handles, none equal to the host 0x7C3 -> the equipped item (each spawned goblin gets a fresh longsword)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Character",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x34FF800 writes at component +8 the 8-byte value its fourth argument points to (record+8). Live: includes the host character handle 0x7C3 (the equipment situation equips on the host) -> the character equipping the item."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Slot",
+      "type": "ItemSlot",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x34FF800 writes at component +0x10 the byte its fifth argument points to (record+0x10). Toolkit esv::DualWieldingSystem::Update passes the byte at +8 of its own event copy to eoc::equipment::IsHandSlot / EvaluateOnItemEquipped(slot). Live values 3 and 5 = MeleeMainHand / RangedMainHand. ItemSlot is uint8_t (Enumerations/Stats.inl)."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "_Pad11",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "never written by bg3.exe+0x34FF800; live bytes are leftovers (0xFF...)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerItemEquippedEvent", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 8,
+    "open_questions": [
+      "Item vs Character order is taken from live data (host handle at +8), not from a named reader."
+    ],
+    "raw_check": "37 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

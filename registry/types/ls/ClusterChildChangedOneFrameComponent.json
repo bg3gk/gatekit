@@ -1,0 +1,46 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::ClusterChildChangedOneFrameComponent",
+  "kind": "struct",
+  "about": "Client one-frame event on a cluster child (world object grouped into a streaming cluster) whose cluster changed. Written by ls::ClusterSystem::ProcessMovedChilds (GameEngine.dll+0x137D70): when a moved child leaves its cluster, the system moves it from the old cluster's content to the new one, then sets this component to {old cluster, new cluster} and stores the new cluster into the child's ClusterChildComponent. Read by phx::PhysXDisableSimulationSystem::ProcessChangedClusters. Seen alive in many dialogs/events (objects moved during scenes).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "OldCluster",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll+0x137D70 lines 341-344: gets the event through GameEngine.dll+0x12A9D0 (with the view and the child) and writes the current ClusterChild value (the previous cluster entity) at +0 of the event just before ClusterChild is overwritten with the new one. Game creator bg3.exe+0x3E5FA40 allocates 0x10 bytes and writes the null handle. Live entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "NewCluster",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "same lines: writes at +8 of the event the cluster the child is moved to (also written into ClusterChildComponent). Game default null handle. Live entity handles."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClusterChildChanged", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 7,
+    "open_questions": [
+      "GameEngine.dll+0x12A9D0 was taken to be the add/get of this component from the surrounding view (not opened)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

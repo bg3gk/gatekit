@@ -1,0 +1,40 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::party::CouldNotBeGroupedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event put on a character that the client could not add to a party group (ecl::party::CanGroupCharacters failed), carrying the player id the request came from. Written by ecl::party::PartySystem::Update (bg3.exe+0x1948080) beside GroupsChanged/PartyChanged/Loaded events. Never seen alive. Registry total 2 (client row).",
+  "size": 2,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "PlayerId",
+      "type": "int16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x194A9E0 (AllocRaw 2) stores `*(undefined2*)p = 0`. PartySystem update bg3.exe+0x1948080 collects an entity->uint16 map (keys at local_238, values local_228) filled by bg3.exe+0x1948600 and bg3.exe+0x1949430, then for each key creates this component and writes `*(undefined2*)p = value`. The value stored in those maps is `(short)*(uint*)(character + 300)` (0 when the high half is set) - the same player id that ecl::ftb::BlockedFTBRequestOneFrameComponent keeps as int16 PlayerId."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientPartyCouldNotBeGroupedEvent",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 4,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 7,
+    "open_questions": [
+      "That character +0x12C is the player id comes from the FTB sibling layout (inferred there too).",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::drop::DropEntitiesListComponent",
+  "kind": "struct",
+  "about": "On the dropping character during a drop/throw ('shove-throw' step): the entities being dropped.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entities",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "DropEntityExecuteSystem::ProcessWaitingForActionResourceSpending (EoCServer.dll+0x9B4590) walks it with stride 8 calling IsEntityAlive and adds DropEntityTargetComponent to each; DropEntityEndUpSystem::ProcessDropStateCreation (EoCServer.dll+0x9A7780) counts its alive handles into DropEntitiesToProcessComponent. macOS has esv::drop::DropEntitiesListComponent::~DropEntitiesListComponent (frees the buffer). Live: heap pointer, capacity 1, size 1."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerDropEntitiesList", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 3,
+    "open_questions": [],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

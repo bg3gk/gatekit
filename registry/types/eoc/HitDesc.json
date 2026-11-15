@@ -1,0 +1,42 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::HitDesc",
+  "kind": "struct",
+  "fields": [
+    {
+      "offset": 44,
+      "name": "EffectFlags",
+      "type": "uint32",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "RollAttackAgainstArmourClass (+0x106CA40) ors 1 into the hit record's +0x2C on a hit and 2|4 on a miss; Script Extender's HitDesc.EffectFlags read Hit|HitpointsDamaged for the pinned 15 and Dodge|Miss for the pinned 2 and for 15 against AC 21 (Ext.Enums.DamageFlags: Hit 1, Dodge 2, Miss 4, Critical 8)"
+        }
+      ]
+    },
+    {
+      "offset": 76,
+      "name": "HitWith",
+      "type": "uint8",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's HitDesc puts HitWith (uint8) at +0x4C; RollAttackAgainstArmourClass (+0x106CA40) writes 1 (HitWith Weapon) at the hit record's +0x4C only in its hit branch; a live miss read HitDesc.HitWith None"
+        }
+      ]
+    },
+    {
+      "offset": 80,
+      "name": "ConditionRolls",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "RollAttackAgainstArmourClass (+0x106CA40) appends with eoc::ConditionRolls::AddNew at the hit record's +0x50; Script Extender's HitDesc.ConditionRolls held that one element (MeleeWeaponAttack) after the hit"
+        }
+      ]
+    }
+  ]
+}

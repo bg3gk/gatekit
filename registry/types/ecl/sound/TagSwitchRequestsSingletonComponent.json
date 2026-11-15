@@ -1,0 +1,57 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::TagSwitchRequestsSingletonComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Switches",
+      "type": "Array<TagSwitchRequestData>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessGlobalDefaultSwitches takes EntityView<TagSwitchRequestsSingletonComponent> and appends ecl::sound::TagSwitchData elements to component+0 (capacity +8, size +0xC). macOS default zeroes 16 bytes. Live: capacity 2."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSoundTagSwitchRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": ["Member names Switch/Value are ours (SE SetSoundSwitchRequest style)."],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "TagSwitchRequestData",
+        "size": 8,
+        "fields": [
+          {
+            "name": "Switch",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Game name of the element: ecl::sound::TagSwitchData (IndexedStorage<ecl::sound::TagSwitchData>, stride 8). ecl::tag::SoundSystem::ProcessGlobalDefaultSwitches (EoCClient.dll+0xD611C0) copies the sound state's FixedString at state+0x30 to +0."
+          },
+          {
+            "name": "Value",
+            "offset": 4,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "ProcessGlobalDefaultSwitches copies state+0x34 to +4 (default switch value)."
+          }
+        ]
+      }
+    ]
+  }
+}

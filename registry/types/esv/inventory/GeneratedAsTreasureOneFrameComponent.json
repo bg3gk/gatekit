@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::inventory::GeneratedAsTreasureOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame marker on an item that was just generated as treasure; carries one entity handle. Born with AddTreasureRequest and EntityMergeEvent during treasure generation. Read by esv::inventory::EntityReceivalNotificationSystem::DeduceEntityReceival (Toolkit).",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe creator 0x34C33F0 allocates 8 bytes and writes 0xffc0000000000000 (invalid EntityHandle) as default. Live (48 instances): always a valid handle (high dword 0x01800001..0x0200000A). Probably the container/inventory or the entity the treasure was generated for; not established."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerInventoryGeneratedAsTreasure",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [
+      "Which entity the handle names (generator container vs. receiving inventory)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

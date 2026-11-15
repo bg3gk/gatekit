@@ -1,0 +1,108 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::pickup::PickUpPermissionComponent",
+  "kind": "struct",
+  "about": "A pending permission request (Osiris may veto a pick-up) for a validated pick-up request. Added by esv::pickup::PickUpPermissionSystem::ProcessValidatedPickUpRequests (Toolkit EoCServer.dll+0xD3EAB0) to the request entity; answered through ScriptPermissionResponsesSingletonComponent (RequestId compared there). Seen.py context: tree3 dialogue UND_PanicRoom_HiddenGnome.",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "EntityToPickUp",
+      "type": "EntityHandle",
+      "rung": "game",
+      "known_as": [{"name": "Target", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Written from esv::pickup::PickUpRequestComponent+8 (Target). Live 0x19F6D = request's +8. Game name: member 0 (m_EntityToPickUp) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): model EntityId +0 -> component +0."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "TargetInventory",
+      "type": "EntityHandle",
+      "rung": "game",
+      "known_as": [{"name": "field_8", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "The second qword is written from PickUpRequestComponent+0. Live 0x13727. Game name: member 1 (m_TargetInventory) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): model EntityId +8 -> component +8."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "PickUpRequestID",
+      "type": "Guid",
+      "rung": "game",
+      "known_as": [{"name": "RequestGuid", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "The third and fourth qwords are written from the first 16 bytes of eoc::pickup::PickUpRequestComponent (stride 0x18; SE Data.h field_0 Guid). Live random 16 bytes. Game name: member 2 (m_PickUpRequestID) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): 16 bytes at model +0x10 -> component +0x10."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "ScriptRequestId",
+      "type": "int32_t",
+      "rung": "game",
+      "known_as": [{"name": "RequestId", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "The 32-bit integer at +0x20 is written from the global counter at EoCServer.dll+0x221449C, post-incremented - a unique permission request id (compared with esv::pickup ScriptPermissionResponse.RequestId). Live 256. Game name: member 3 (m_ScriptRequestId) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): int32 model +0x20 -> component +0x20."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "TimeLeft",
+      "type": "float",
+      "rung": "game",
+      "known_as": [{"name": "field_24", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Set to 1.0f (0x3f800000) on creation. Live 1.0. Possibly a timeout/time left; not established. Game name: member 4 (m_TimeLeft) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): 4 bytes model +0x24 -> component +0x24 (a float, 1.0 at creation)."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "State",
+      "type": "bool",
+      "rung": "game",
+      "known_as": [{"name": "field_28", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Byte +0x28 set to 0 on creation; macOS default ctor zeroes the qword +0x28. Live 0 (+0x29.. garbage ff). Game name: member 5 (m_State) of savegame model ls::model::game::pickup::v0::PickUpPermissionComponent; matched by the Windows loader bg3.exe+0x258C0C0 (model to component): byte model +0x28 -> component +0x28."
+        }
+      ]
+    },
+    {
+      "offset": 41,
+      "name": "_Pad29",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Padding to 48."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerPickupPickUpPermission", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 5,
+    "names_pass": "All 6 model members matched by the Windows loader bg3.exe+0x258C0C0.",
+    "open_questions": [
+      "Meaning of the float at +0x24 and the byte at +0x28 (probably answered/timeout state)."
+    ],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,241 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::EditorCameraBehavior",
+  "kind": "struct",
+  "about": "Camera behaviour of the editor (free) camera; seen on camera entities in every level and in dialogues. The member boundaries come from the Toolkit's move-assignment operator, which copies member by member: 4@0, 1@4, 1@5, 1@6, 4@8, 4@0xC, 4@0x10, 1@0x14, 4@0x18, 8@0x1C, 8@0x24, 4@0x2C, 8@0x30, 4@0x38, 4@0x3C (bytes 7 and 0x15-0x17 are not copied = padding). Defaults from the macOS constructor (offsets agree with operator=). Registration bg3.exe+0x3B5CE40: size/alignment word 0x400040 (size 0x40), no destructor.",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "ZoomInput",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760) writes +input / -input on input events 0x1B / 0x1C, the events ls::OrthoCameraBehavior and ls::ArcBallCameraBehavior store as ZoomInput; GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior adds value / (frame time * 25) to the forward movement target. Earlier reading: ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) writes +input / -input on input events 0x1B / 0x1C (one axis of camera movement); ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; macOS default 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) stores the InputValue byte of event 0x10 here; macOS default 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "field_5",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) stores event 0x11 here and acts when both field_5 and field_6 are set (mouse warp / capture); live 0."
+        }
+      ]
+    },
+    {
+      "offset": 6,
+      "name": "field_6",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) stores event 0x12 here (pair of field_5); live 0."
+        }
+      ]
+    },
+    {
+      "offset": 7,
+      "name": "_Pad7",
+      "type": "uint8_t[1]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "not copied by operator=; live holds garbage 0..0xFF"}]
+    },
+    {
+      "offset": 8,
+      "name": "YawInput",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760) writes +x / -x on events 0x21 / 0x22, the events ls::ArcBallCameraBehavior stores as YawInput; GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior: half of it is the target YawVelocity (+0x1C) is damped toward. Earlier reading: ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) writes +x / -x of the input value on events 0x21 / 0x22 (rotation axis); default 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "PitchInput",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760) writes +x / -x on events 0x23 / 0x24, the events ls::ArcBallCameraBehavior stores as PitchInput; GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior: half of it is the target PitchVelocity (+0x20) is damped toward. Earlier reading: ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) writes +x / -x on events 0x23 / 0x24; default 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "SpeedMultiplier",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior (this_00 = the EditorCameraBehavior of the view): set every frame to 0.1 while input id 40 is pressed, 5.0 while input id 41 is pressed, else 1.0 (0 when the view is locked); the camera translation is scaled by input * frame time * this value. Constructor GameEngine.dll+0x7D5170 writes 1.0. Earlier reading: macOS default 1.0 (w1 = 0x3F800000); ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; live always 1.0 (a speed multiplier?)."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "field_14",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS default 1 (strb); operator= copies one byte; live always 1."
+        }
+      ]
+    },
+    {
+      "offset": 21,
+      "name": "_Pad15",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "not copied by operator=; live garbage"}]
+    },
+    {
+      "offset": 24,
+      "name": "MoveForwardInput",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760) writes the difference of the inputs of events 0x17 / 0x18 (ls::OrthoCameraBehavior stores the same pair as MoveZInput); GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior uses it as the forward target of MoveVelocityForward (+0x2C). Earlier reading: ls::CameraSystem::OnInputEditorCameraBehavior (GameEngine.dll+0x62E760; the view's slot +0x50 = EditorCameraBehavior) writes the difference of two input values on events 0x17 / 0x18 (pfVar5[6]); default 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "YawVelocity",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior (this_00 = the EditorCameraBehavior of the view): damped toward the yaw input with GetCurrentCameraRotDamping()[0], then the direction vector is rotated about the vertical axis by -value * pi/4 * frame time (sin/cos over x and z), multiplied by RotDamping[1] each frame and zeroed below RotDamping[2]. Earlier reading: ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies +0x1C..+0x2B as two 8-byte moves; default 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "PitchVelocity",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior (this_00 = the EditorCameraBehavior of the view): damped toward the pitch input with GetCurrentCameraRotDamping()[0]; -value * frame time moves the look direction along the up vector, clamped so the direction stays within -0.995..0.995; then decays by RotDamping[1] and is zeroed below RotDamping[2]. Earlier reading: see field_1C; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "MoveVelocityRight",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior (this_00 = the EditorCameraBehavior of the view): first of a vec3 (+0x24/+0x28/+0x2C) damped toward the movement target with GetCurrentCameraMoveDamping()[0]; the camera moves by right vector * this (+ up vector * +0x28 + direction * +0x2C) * speed; decays by MoveDamping[1] and is zeroed below MoveDamping[2] when there is no input. Earlier reading: see field_1C; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "MoveVelocityUp",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior (this_00 = the EditorCameraBehavior of the view): second component of the damped movement vec3; multiplies TransformComponent::GetUpVector in the translation. Earlier reading: see field_1C; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "MoveVelocityForward",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll+0x631410 ls::CameraSystem::UpdateEditorCameraBehavior (this_00 = the EditorCameraBehavior of the view): third component of the damped movement vec3; multiplies the direction vector (GetDirVector) in the translation. Earlier reading: ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; default 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 8 bytes; default 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "field_38",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; macOS default 0 (stp wzr, w3); live 0."
+        }
+      ]
+    },
+    {
+      "offset": 60,
+      "name": "DampingLevel",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll+0x7D51B0 ls::EditorCameraBehavior::GetCurrentCameraMoveDamping and +0x7D51F0 GetCurrentCameraRotDamping (Toolkit exports) switch on the int at +0x3C: 0 -> s_HighSpeed{Move,Rot}Damping, 1 -> s_MediumSpeed..., 2 -> s_LowSpeed..., else s_OffSpeedDamping; the constructor +0x7D5170 writes 3 (off). Live always 3. Earlier reading: ls::EditorCameraBehavior::operator=(&&) (GameEngine.dll+0x2647D0) copies 4 bytes; macOS default 3; live always 3. The class has statics s_Off/Low/Medium/HighSpeed{Move,Rot}Damping (macOS names) - possibly the current speed level."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "EditorCameraBehavior", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 9,
+    "open_questions": [
+      "Meaning of every member: the input event ids of OnInputEditorCameraBehavior were not mapped to names, and the update function that consumes the members was not read.",
+      "Whether +0x1C..+0x2F are floats (two vec3?) or other 4-byte values - all zero live."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

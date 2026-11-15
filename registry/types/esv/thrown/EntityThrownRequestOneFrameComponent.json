@@ -1,0 +1,97 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::thrown::EntityThrownRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame request that an entity is being thrown (seen alive in item-throw and shove-throw). Drained by esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (EoCServer.dll+0x3D3D50), which copies +0xC, +0x10 and +0x18 into eoc::thrown::IsThrownComponent (layouts\\alive\\eoc.thrown.IsThrownComponent.json: float, byte, EntityHandle) and uses +0..+0xC in the rotation it writes to the frame data; also read by improvised_weapon::PickUpSystem and invisibility::ChangesSystem::ProcessItemAnimationStateChanges.",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Displacement",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x7F2D80 esv::ProjectileInitializationSystem::InitializeProjectileThrown (bg3.exe twin 0x2E8EC40) adds the request and writes +0..+8 = InitializationInfo.TargetPosition (+0x10) - StartPosition (+4) (Script Extender's esv::projectile::InitializationData layout): the vector from the throw's start to its target, not normalised (live (17.6,-1.36,5)). ProcessThrownRequests EoCServer.dll+0x3D3D50 uses its length against the throw-param thresholds to choose the number of spins and its x/z direction for the yaw."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "Duration",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x7F2D80 InitializeProjectileThrown writes +0xC = eoc::PathMover::SampleDuration(projectile +0x238, 1.0): the flight time of the projectile path. ProcessThrownRequests EoCServer.dll+0x3D3D50 skips the request when it is ~0, copies it into eoc::thrown::IsThrownComponent +0 and ThrownAnimationRequestOneFrameComponent +0, and divides spins*2*pi by it to get the angular velocity. Live 0.287 .. 1.313."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "SpellAnimationType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x7F2D80 InitializeProjectileThrown writes +0x10 = byte +0x19 of the throw's eoc::SpellPrototype, which Script Extender's stats::SpellPrototype names SpellAnimationType (gatekit symbols layout: +0x019 uint8_t SpellAnimationType). Copied to IsThrownComponent +4 and ThrownAnimationRequestOneFrameComponent +4. Live 3."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "_Pad11",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "live garbage (0x53/0x87/0xFF...), never written by the creator"}
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Caster",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x7F2D80 InitializeProjectileThrown writes +0x18 = InitializationInfo +0x70, Script Extender's esv::projectile::InitializationData.Caster (gatekit symbols layout +0x070 EntityHandle Caster). Copied into eoc::thrown::IsThrownComponent +8 by ProcessThrownRequests."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "ThrownObject",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x7F2D80 InitializeProjectileThrown writes +0x20 = InitializationInfo +0x2B0, the entity the function checks for character/item ('Thrown object type is not supported' otherwise) and matches against split stacks - Script Extender's InitializationData.ThrownObject."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerThrownEntityThrownRequest",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 9,
+    "names_pass_2": "Members copy into eoc::thrown::IsThrownComponent, itself unnamed; Osiris OnThrown(_ThrownObject, _ThrownObjectTemplate, _Thrower, _StoryActionID, pos) is not raised from these offsets in the code read.",
+    "open_questions": [
+      "Names of all members (thrower vs. target handle; meaning of the byte and the float).",
+      "Whether +0..+0xF is one quaternion (live values are not unit length)."
+    ],
+    "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::RoomTriggerCharacterFadeRequestsSingletonComponent",
+  "kind": "struct",
+  "size": 224,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "FadeRequests",
+      "type": "std::array<HashMap<EntityHandle, TimelineFadeRequest>, 2>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x18C2360 (rx3 user of the type index) calls FUN_1418c2f60, the shared constructor of the two 0x40-byte fade-request maps (same as ecl::TimelineFadeRequestsSingletonComponent, bg3.exe+0x1D77460). Read by the macOS template ecl::FadeResolveSystem::ProcessFadeRequests with the other fade singletons; value type ecl::StartFadeRequest (16 bytes = SE TimelineFadeRequest). Live: map 0 at +0x00 bucket pointer, 5 buckets, key/value arrays capacity 2 size 0; map 1 at +0x40 the same; +0x80..+0xE0 zero."
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "RemoveFadeRequests",
+      "type": "std::array<HashSet<EntityHandle>, 2>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same template as the Timeline singleton (name from there). Live: zero."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientRoomTriggerCharacterFadeRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "hold": "uses types declared elsewhere (TimelineFadeRequest): Script Extender's own headers or another layout; whether they are declared before this one is not checked yet",
+    "minutes": 2,
+    "open_questions": [
+      "Game name of the value struct is ecl::StartFadeRequest; SE calls it TimelineFadeRequest.",
+      "RemoveFadeRequests name inherited from the Timeline layout."
+    ],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "reuses": "TimelineFadeRequest (GameDefinitions/Components/Coverage.h); whole layout identical to ecl::TimelineFadeRequestsSingletonComponent",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

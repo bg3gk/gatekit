@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "registry/build/1",
+  "title": "Where an entry is in one build of one binary (a row of registry/builds/<build>/<binary>/<top scope>.jsonl)",
+  "description": "Written by machine, sorted by id, one table a top-level scope of the ids so that two branches adding different entries merge: the id, its RVA, its size and the hash of its masked body. Several ids may share an RVA (the linker folds identical code); an id appears once. registry/README.md.",
+  "type": "object",
+  "required": ["id", "rva"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {"$ref": "registry/parts#/$defs/id"},
+    "rva": {"type": "string", "pattern": "^0x[0-9A-F]+$"},
+    "size": {"type": "integer", "minimum": 0, "description": "Bytes, a function's split-off parts included."},
+    "body": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 of the body with every placement-dependent byte masked, and of the mask (Registry/Fingerprint.cs); left out below 64 bytes or 16 instructions."
+    }
+  }
+}

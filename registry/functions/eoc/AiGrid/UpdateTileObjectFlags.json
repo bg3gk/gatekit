@@ -1,0 +1,19 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::AiGrid::UpdateTileObjectFlags",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Rebuilds the object part of one tile's flags from the bound objects listed in the tile's metadata: the flags of all of them are taken off, then those of the objects whose height reaches the tile's floor band are put back.",
+  "parameters": [{"storage": "reg:r9", "name": "tileFlags"}],
+  "locals": [
+    {"storage": "unresolved", "name": "allObjectFlags", "decompiler_name": "uVar10"},
+    {"storage": "unresolved", "name": "reachingFlags", "decompiler_name": "uVar9"}
+  ],
+  "fingerprint": {"calls": ["fp:5227b96c8688ff31", "fp:8efc2b447ddf1668", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "write watch on an AI grid tile's AiFlags (TestLevel_Tom, tile 34,81): a barrel created on it (GK.Cheat.Spawn) - hits at +0xE3353B in frames 103, 104, 106 writing the bits 0x180 (WalkBlockItem, ShootBlockItem, as GetTileDebugInfo read after); on the door's tile at Osi.Open, frames 0 and 33; return chain FUN_140e38ae0 (add to tile) < FUN_140fc53f0 < eoc::AiGrid::ForEachBoxCell < eoc::BoundComponent::ForEachCell < FUN_140fc1cc0 (called by eoc::BoundComponent::Increase); decomp code read"
+    }
+  ]
+}

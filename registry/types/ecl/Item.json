@@ -1,0 +1,238 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::Item",
+  "kind": "struct",
+  "size": 120,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "VMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit ctor ecl::Item::Item(GameObjectTemplate const*) EoCClient.dll+0x1118D00 stores the ITextKeyEventHandler vtable; live: module pointer, same in all 12 samples."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "LoggableObjectVMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same ctor stores the ILoggableObject vtable at +8; live module pointer (VMT + 0x18 region)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Ctor writes null handle 0xffc0000000000000; live = the item's own entity handle (same as EntityRef.Handle). esv::Item has the same EntityHandle field_10 (Item.h)."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Flags",
+      "type": "uint64_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Ctor writes 8 bytes of 0; live bit sets 0x1 / 0x80 / 0x81 / 0x86 / 0x400000.. and bit 0x2000 in the high dword - a flag word like esv::Item.Flags (ItemFlags, 8 bytes, at the same offset). Client bit meanings not established."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "EntityRef",
+      "type": "ecs::EntityRef",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ecl::Item::GetEntityRef, game offset +0x20 confirmed (bg3.exe+0xF75B90); live handle + world pointer."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Ctor writes 4 bytes of 0 at +0x30; live always 0."}]
+    },
+    {
+      "offset": 52,
+      "name": "CurrentLevel",
+      "type": "FixedString",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ecl::Item::GetCurrentLevel, game offset +0x34 confirmed (bg3.exe+0x1853E80); live FixedString (same as the triggers' Level)."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "ItemType",
+      "type": "FixedString",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ecl::Item::GetItemType, game offset +0x38 (bg3.exe+0x179F960); ctor initialises it to the FixedString \"Common\"; live one constant FixedString."
+        }
+      ]
+    },
+    {
+      "offset": 60,
+      "name": "Flags2",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Ctor: byte +0x3C = (byte & 0x81) | 1 - a bit field byte; live 1 or 9. Bit meanings unknown."
+        }
+      ]
+    },
+    {
+      "offset": 61,
+      "name": "_Pad3D",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "alignment padding before the pointer at +0x40; live 0."}
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "Template",
+      "type": "void*",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ecl::Item::GetTemplate (GameObjectTemplate const*), game offset +0x40 confirmed (bg3.exe+0x1C7DED0); live heap pointer."
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "ItemMachine",
+      "type": "void*",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessors Get/SetItemMachine (ecl::ItemMachine*) at +0x48 (Toolkit offset); ctor writes 0; live heap pointer in all samples."
+        }
+      ]
+    },
+    {
+      "offset": 80,
+      "name": "StatusMachine",
+      "type": "void*",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessors Get/SetStatusMachine (ecl::StatusMachine*) at +0x50 (Toolkit offset); ctor writes 0; live heap pointer in all samples."
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "LadderData",
+      "type": "void*",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessors ecl::Item::HasLadderData (EoCClient.dll+0x1C6590: return *(this+0x58) != 0) and GetLadderData (EoCClient.dll+0x111C6D0: returns the eoc::LadderData* at +0x58, building it with UpdateLadderData when absent); the game constructor writes 0. Earlier reading: Ctor writes 0; live always 0 (possibly a pointer that is set only for some items)."
+        }
+      ]
+    },
+    {
+      "offset": 96,
+      "name": "InUseByCharacter",
+      "type": "EntityHandle",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessors ecl::Item::GetInUseByCharacter (EoCClient.dll+0x1C6230: returns the ID<EntityHandleTraits> at +0x60) and SetInUseByCharacter (EoCClient.dll+0x1120DE0: *(this+0x60) = the handle argument); the game constructor writes the null handle. Earlier reading: Ctor writes 0xffc0000000000000 (null EntityHandle); live always null."
+        }
+      ]
+    },
+    {
+      "offset": 104,
+      "name": "HotRefCount",
+      "type": "int16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "int16 reference count of update requests: ecl::Item::SetInUseByCharacter (EoCClient.dll+0x1120DE0) increments it and calls ItemManager::RequestUpdate when it was 0; ReleaseUpdate (EoCClient.dll+0x11206A0) asserts \"Item HOT refcount is already zero!\" when it is < 1; NeedsUpdate (EoCClient.dll+0x111ED80) returns 0 < it. Earlier reading: Ctor 16-bit store of 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 106,
+      "name": "field_6A",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Ctor byte store of 0; live 0."}]
+    },
+    {
+      "offset": 107,
+      "name": "_Pad6B",
+      "type": "uint8_t[5]",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "padding to the class end 0x70 (live +0x6C = 0 or 0xF: garbage)."}
+      ]
+    },
+    {
+      "offset": 112,
+      "name": "_Pad70",
+      "type": "uint8_t[8]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Registry size 120 is 8 more than the class (0x70, last ctor store at +0x6A); live +0x70 is mostly the ecl::Item VMT value = next element. Same +8 as the trigger proxy components (see ecl.CullTrigger.json)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientItem", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "class_size": 112,
+    "confidence": "medium",
+    "functions_read": 1,
+    "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet",
+    "minutes": 6,
+    "open_questions": [
+      "Offsets come from the Toolkit ctor; the game's own ctor was not located (game offsets confirmed only for EntityRef, CurrentLevel, ItemType, Template). Live data agrees with all of them.",
+      "Meaning of Flags / Flags2 bits and of field_30, field_58, field_60, field_68, field_6A.",
+      "The 8-byte registry tail."
+    ],
+    "raw_check": "33 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "se_pattern": "proxy component like esv::Item (Item.h: struct Item : public BaseProxyComponent, DEFINE_COMPONENT(ServerItem, \"esv::Item\")); ECS.inl:1356 has E(ClientItem) commented out.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

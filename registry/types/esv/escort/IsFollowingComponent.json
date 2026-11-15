@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::escort::IsFollowingComponent",
+  "kind": "struct",
+  "about": "On an escort follower that is actively following (SCL drider caravan / hyena dialogues; born with esv::escort::RequestFollowComponent).",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "FollowId",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "esv::escort::FollowerSystem::Update (EoCServer.dll+0xCED460) passes the address of the component's dword (stride 4) as the unsigned int& of the follower helper's vtable+8 call = esv::escort::FollowerHelper::StartFollowing(WorldView<esv::Character>&, EntityHandle, EntityHandle, unsigned int&) (macOS name), and passes the value to vtable+0x10 = StopFollowing(..., EntityHandle, unsigned int). Live: 0x17B3..0x1847 (small ids of the follow task)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerEscortIsFollowing", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": ["What object the id names (follow task / steering request)."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

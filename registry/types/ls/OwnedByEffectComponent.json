@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::OwnedByEffectComponent",
+  "kind": "struct",
+  "about": "Back-link from an entity created by a visual effect (e.g. the light of an effect's Light component) to the effect entity that owns it; seen on equipment, spells, potions, dialogues.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Effect",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3F4ED10 (the only user of the string \"Appearance.Light UUID\" - an effect light component setting up its light entity) adds the component with AllocRaw(8), initialises it to the null handle 0xFFC0000000000000 and then stores *(this + 0x48) - the owning effect's entity handle - into it; bg3.exe+0x3D00DE0 reads it by entity. Live: entity handles (high dword 0x01400001.. type bits)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "OwnedByEffect", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [
+      "Whether +0x48 of the effect-side object is the effect entity itself or its parent effect - assumed the effect."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

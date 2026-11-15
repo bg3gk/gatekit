@@ -1,0 +1,117 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::placement::SteeringRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request from esv::placement::ExecutionSystem to turn an actor (steering) at the end of a placement; consumed by esv::steering::StateSystem::ProcessBeginRequests (Toolkit EoCServer.dll+0x9BC9C0) together with the lock:: and trap:: SteeringRequestOneFrameComponents. Seen.py context: dialogues, scripted events and lock/trader interactions where NPCs turn.",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Target",
+      "type": "std::array<uint32_t, 3>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Storage of ls::Variant<eoc::steering::ToDirection, eoc::steering::ToEntity> (names from the Toolkit's ls::Variant<...>::ValidateAccess used by esv::steering::StateSystem::ProcessBeginRequests, EoCServer.dll+0x9BC9C0): alternative 0 = a direction glm::vec3 (+0..+0xB), alternative 1 = an EntityHandle (+0..+7; the Toolkit checks it for null when the index is 1). Windows writer bg3.exe+0x2F06990 (esv::placement::ExecutionSystem) stores a 16-byte value: the forward vector of the target rotation (quaternion rotated (0,0,1)) at +0..+0xB and 0 at +0xC (alternative 0). Declared as raw dwords because the alternatives overlay each other (the live raw check failed on +4 for an entity alternative)."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "TargetType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Variant index of Target: Toolkit ProcessBeginRequests tests *(char*)(request+0xC) == 1 (ToEntity) before treating +0 as an entity; Windows creator bg3.exe+0x2F07BC0 zeroes it, the writer stores 0 with the direction."
+        }
+      ]
+    },
+    {
+      "offset": 13,
+      "name": "_PadD",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Rest of the variant's 16-byte slot; written as zero together with the index, never read."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows creator bg3.exe+0x2F07BC0 writes dword 0 at +0x10; the Toolkit copies the dword at +0x10 when it turns the request into a steering request (puVar19+2). Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "_Pad14",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Never written by the creator or the writer, never copied by the Toolkit consumer (which copies +0x10 as a dword, then +0x18 as qwords); live garbage."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "RequestId",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows writer bg3.exe+0x2F06990 stores a freshly generated Guid (FUN_144130D80 twice) at +0x18/+0x20 (also kept in the placement entry +0x38); Toolkit ProcessBeginRequests calls WasAborted(..., (Guid*)(request+0x18)) - matched against SteeringAbortRequestOneFrameComponent. Live: 48 distinct random values."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "field_28",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows creator bg3.exe+0x2F07BC0 default 0x4B18967F (9999999.0f); the placement writer sets 1.5f (0x3FC00000); the Toolkit builds other steering requests with 9999999 then 1.0f. A time limit or speed factor, not established. Live 1.5."
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "_Pad2C",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not written; tail padding to the 8-byte alignment (the variant may hold an EntityHandle)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerPlacementSteeringRequest", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 4,
+    "minutes": 7,
+    "open_questions": ["Meaning of the dword +0x10 and the float +0x28."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Windows creator bg3.exe+0x2F07BC0 and writer bg3.exe+0x2F06990 plus the Toolkit consumer esv::steering::StateSystem::ProcessBeginRequests show +0 is ls::Variant<ToDirection, ToEntity> with its index byte at +0xC (declared as raw storage), +0x18 the request Guid checked by WasAborted, +0x10 a dword and +0x28 a float.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

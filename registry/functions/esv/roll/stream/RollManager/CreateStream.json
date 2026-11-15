@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::roll::stream::RollManager::CreateStream",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Adds a roll stream of a type to the roll manager: the manager's last stream id plus one becomes the stream's id, the base seed plus that id its seed, its count zero; sets the manager's HasChanges.",
+  "parameters": [
+    {"storage": "reg:rcx", "name": "manager"},
+    {"storage": "reg:r8", "name": "streamType"}
+  ],
+  "locals": [{"storage": "stack:-0x50", "name": "seed"}, {"storage": "stack:-0x60", "name": "id"}],
+  "ties": [{"type": "esv::roll::stream::RollManager", "via": "manager"}],
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a", "fp:5227b96c8688ff31", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "GK.Memory.Watch on the roll manager's +0x18 (the last stream id) over the first dialogue check: one change 1->2 written at +0x309FD9E, and the new Dialog stream read seed = base seed + 2 with id 2 (Generic: id 1, seed base+1); same shape as EoCServer.dll esv::roll::stream::RollManager::CreateStream"
+    }
+  ]
+}

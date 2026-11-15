@@ -1,0 +1,74 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::item::EntityMovingFinishedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame event on an item whose inventory move finished. Added by the per-frame update of esv::ItemManager (bg3.exe+0x33A3990) for every entry of a local list (entity key + 16-byte value); read by esv::pickup::PickUpExecutionFinishedSystem::Update (macOS index). A character twin esv::character::EntityMovingFinishedEventOneFrameComponent exists. Seen.py context: item moves (pick-up / ToInventory).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x33B4820 (AllocRaw 0x10) default 0xffc0000000000000; ItemManager update bg3.exe+0x33A3990 line ~163 copies a 64-bit handle from the list value +0. Live (3): entity handles. Probably the target inventory / mover; not established."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Amount",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator default 1; bg3.exe+0x33A3990 line ~166-167 writes esv::Item::GetAmount(item) here. Live: always 1."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "field_C",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator default 2; bg3.exe+0x33A3990 line ~164 copies a byte from the list value +8 (an enum: result / move kind?). Live: 0."
+        }
+      ]
+    },
+    {
+      "offset": 13,
+      "name": "_PadD",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Never written by the creator; live bytes are leftovers (00/b5/ff)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerItemEntityMovingFinishedEvent",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 7,
+    "open_questions": [
+      "Meaning of the handle at +0 and the enum byte at +0xC (read in PickUpExecutionFinishedSystem::ProcessSuccessfullyFinishedMoves, not traced)."
+    ],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

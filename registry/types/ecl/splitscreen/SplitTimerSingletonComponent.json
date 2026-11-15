@@ -1,0 +1,47 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::splitscreen::SplitTimerSingletonComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Timer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::splitscreen::HeightSplitSystem::Update (EoCClient.dll+0x84D690): on PlayerCharacterChanged t[0] = t[1]; when the two characters stand on the same floor but different levels t[0] += frame time while t[0] < t[1], otherwise t[0] = 0; HeightSplitReasons |= 2 when t[1] <= t[0]. Default 0, live 0."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Delay",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: threshold the timer is compared with. Default 0 in the constructor (macOS str xzr), live 1.75 (0x3FE00000) - set from configuration after creation."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSplitscreenSplitTimerSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": ["Names are ours."],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

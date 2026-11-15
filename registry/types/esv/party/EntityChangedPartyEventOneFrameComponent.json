@@ -1,0 +1,60 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::party::EntityChangedPartyEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Server event (registry does not mark it one-frame) of esv::party::DataSystem: an entity moved from one party to another. Created on a fresh event entity by bg3.exe+0x2BC1DA0, which also creates/updates eoc::party::MemberComponent (its Party handle at +0x18 is the new party); read by esv::StoryCharacterEventManager::Init. Seen.py context: party changes (recruit / dismiss / summon).",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2BC47C0 (AllocRaw 0x18) sets all three handles to null. bg3.exe+0x2BC1DA0 line ~228 writes param_5, the entity whose MemberComponent is checked. Live (11): entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "OldParty",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2BC1DA0 line ~229 writes lVar19 = the Party handle (+0x18) of the entity's existing eoc::party::MemberComponent (null when it had none). Live: one valid handle, others null."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "NewParty",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2BC1DA0 line ~230 writes *param_3, the party handle it stores into MemberComponent +0x18; the event is only raised when it differs from OldParty. Live: valid handles or null."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerPartyEntityChangedPartyEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [],
+    "raw_check": "13 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

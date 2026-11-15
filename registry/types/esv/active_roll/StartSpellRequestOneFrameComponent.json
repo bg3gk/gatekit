@@ -1,0 +1,160 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::active_roll::StartSpellRequestOneFrameComponent",
+  "kind": "struct",
+  "size": 192,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Spell",
+      "type": "SpellId",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares esv::active_roll::StartSpellRequestOneFrameComponent::Spell at +0x0 (Script Extender's header BG3Extender/GameDefinitions/Components/Roll.h calls it Spell; offset computed from the header)"
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "Flags",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "known_as": [{"name": "field_28", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: dword copied from +0x38. Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "Caster",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "known_as": [{"name": "field_30", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: qword copied from +0x40. Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "Targets",
+      "type": "Array<bg3se::spell_cast::InitialTarget>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: Array<eoc::spell_cast::InitialTarget> (element 0x70) rebuilt from +0x48 (size at +0x54). Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "Originator",
+      "type": "ActionOriginator",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: ActionOriginator::operator= from +0x58. Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 120,
+      "name": "Source",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "known_as": [{"name": "field_68", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: qword copied from +0x78. Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "field_70",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: qword copied from +0x80. Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The machine name keeps Script Extender's spelling; its number is the offset of an older layout. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 136,
+      "name": "Position",
+      "type": "std::optional<glm::vec3>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: 16 bytes copied from +0x88/+0x90. Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 152,
+      "name": "StoryActionId",
+      "type": "int32_t",
+      "rung": "unknown",
+      "known_as": [{"name": "field_88", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: dword copied from +0x98. Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 160,
+      "name": "NetGUID",
+      "type": "STDString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: STDString::operator= from +0xA0. Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The game's own name is not known."
+        }
+      ]
+    },
+    {
+      "offset": 184,
+      "name": "field_A8",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Script Extender's declaration (BG3Extender/GameDefinitions/Components/Roll.h:182): its author's name and type. Offset from the Toolkit's EoCServer.dll+0xE43960 esv::active_roll::ModifierSystem::ProcessStartSpellRequests, which walks the components with stride 0xC0 and copies each into a new cast request: byte copied from +0xB8, the last member before the stride 0xC0. Script Extender's SpellId is 0x38 bytes (SpellMetaId 0x30 + Prototype), so every member after Spell sits 0x10 later than an offset computed from a 0x28-byte SpellId. The machine name keeps Script Extender's spelling; its number is the offset of an older layout. The game's own name is not known."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerRollStartSpellRequest", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "external_types": {
+      "bg3se::spell_cast::InitialTarget": {
+        "size": 112,
+        "align": 8,
+        "from": "Toolkit EoCServer.dll+0xE43960 ProcessStartSpellRequests allocates and destroys the Targets elements as eoc::spell_cast::InitialTarget with stride 0x70 (AllocateInternal(n, 0x70, 8))."
+      }
+    },
+    "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Roll.h:182, kind oneframe component), by gatekit symbols se-layouts on 2026-11-14",
+    "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `unknown` because no rung of section 7 is that - not game (no FieldMeta or macOS name behind it), not toolkit, not inferred (ours, with evidence in the record). A name is raised from `unknown` only with evidence, by `gatekit names set`.",
+    "seen": false,
+    "size_check": "Size 0xc0 equals the registry's (server 192; coverage.json, game v4.76.31.656).",
+    "status": "declared"
+  }
+}

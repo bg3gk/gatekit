@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::character::DeathActionsQueueSingletonComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Characters",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Server character manager update bg3.exe+0x332FF50 (macOS esv::CharacterManager::Update / HandleJustDiedCharacter take this singleton in their WorldView) gets or creates the singleton (bg3.exe+0x3336370 on a new entity), compares 8-byte entity handles from its queries against the array (pointer +0, size +0xC) to avoid duplicates, appends the new ones with stride 8, then walks the array resolving each element to a character (FUN_140b21680 / esv::Task::GetCharacter) and finally sets the size (+0xC) to 0. Live: 5 instances, heap pointer, capacity up to 185, size 0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCharacterDeathActionsQueue",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 7,
+    "open_questions": [
+      "Exact meaning (characters whose death actions run this frame) - the 6 KB update function was read only around the queue."
+    ],
+    "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

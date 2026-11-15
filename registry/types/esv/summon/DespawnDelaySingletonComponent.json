@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::summon::DespawnDelaySingletonComponent",
+  "kind": "struct",
+  "about": "Singleton of esv::summon::DespawnSystem (CollectEntitiesToDestroy, ProcessSummonDestruction): summons whose despawn is delayed. Lives from level load; empty in the sample.",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entities",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2DD8420 zeroes a HashSet (0x30) with destructor thunk_FUN_140582ad0. DespawnSystem::ProcessSummonDestruction looks entities up in the singleton with FUN_18021f230 (handle % bucket count) and inserts with FUN_18021e210 (HashSet<EntityHandle> insert). Live: 48 zero bytes (empty)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerSummonDespawnDelay", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "live": "not verified",
+    "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "minutes": 5,
+    "open_questions": [],
+    "seen": true,
+    "status": "declared"
+  }
+}

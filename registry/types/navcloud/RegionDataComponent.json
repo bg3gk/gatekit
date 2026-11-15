@@ -1,0 +1,133 @@
+{
+  "schema": "registry/type/1",
+  "id": "navcloud::RegionDataComponent",
+  "kind": "struct",
+  "about": "Singleton (client and server, one holder each, present from level load in TUT_Avernus_C, WLD_Main_A, SCL_Main_A) holding the loaded navcloud regions: ls::HashMap<Vector3i<int>, navcloud::Region, navcloud::HashTableOps> (macOS signatures of navcloud::TryGetTileInfo / ToTilePos / GetNeighbors take exactly this map as the component). Written by navcloud::RegionSystem (ProcessMemoryData, ProcessObstacles, ProcessAgents, MetaDataRemoval), read by navcloud::PathfindingSystem. The map is written out member by member because its key is a struct (own structs may not be hash keys). Region (0x58 bytes, Windows dtor stride): +0 int32 tile resolution kind (0 -> 2, 1 -> 6 tiles per axis in TryGetTileInfo), +0x08 a 64-byte HashMap whose values are 48-byte HashSets, +0x48 Array<uint8_t> of per-tile data (index = (z*n + y)*n + x, bounded by the array size at +0x54).",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "HashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bucket array (int32 per bucket) of the HashMap; creator bg3.exe+0x392A420 allocates 0x40 and zeroes it with the HashMap pattern (sizes at +0x1C/+0x2C); destructor thunk bg3.exe+0x6C8250 -> bg3.exe+0x6CFFB0 ends with the HashSet destructor bg3.exe+0x582AD0 on +0. Live: heap pointer."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "HashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bucket count; macOS TryGetTileInfo takes the hash modulo the 32-bit integer at +8 of the map. Live server: 0x607 (1543 buckets)"
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "_Pad0C",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding; live always 0"}]
+    },
+    {
+      "offset": 16,
+      "name": "NextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "hash chain: TryGetTileInfo follows the chain through the 32-bit entry i of the buffer whose pointer is at +0x10 of the map. Live: capacity 0x400, size 0"
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "Keys",
+      "type": "Array<NavcloudRegionDataKey>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Vector3i<int> keys in the buffer pointed to by +0x20 of the map, stride 0xC, count = the 32-bit integer at +0x2C of the map (macOS TryGetTileInfo; Windows dtor bg3.exe+0x6CFFB0 loops up to the 32-bit count at +0x2C of the object). Live: capacity 0x400, size 0"
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Values",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "navcloud::Region per key, stride 0x58: Windows dtor bg3.exe+0x6CFFB0 destroys element i (stride 0x58) of the buffer pointed to by +0x30 of the object (Array at +0x48 freed, map at +0x08 destroyed by bg3.exe+0x5E19C0 whose values are 0x30-byte HashSets); macOS GetComponentDestructor<RegionDataComponent> calls navcloud::Region::~Region with the same stride"
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "ValuesCapacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "size of the uninitialised value storage; live 0x400"}]
+    },
+    {
+      "offset": 60,
+      "name": "_Pad3C",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding; live always 0"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NavcloudRegionData", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 7,
+    "minutes": 12,
+    "open_questions": [
+      "Live instances held an empty map (sizes 0, capacity 0x400): element boundaries of Region are untested live.",
+      "Key and value types of Region's inner map at +0x08 (values are 48-byte HashSets) and the 8 bytes at Region+0x00 beyond the int32 kind."
+    ],
+    "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "NavcloudRegionDataKey",
+        "size": 12,
+        "fields": [
+          {
+            "name": "X",
+            "offset": 0,
+            "type": "int32_t",
+            "source": "inferred",
+            "evidence": "Vector3i<int> key: macOS TryGetTileInfo compares the three 32-bit integers at +0/+4/+8 of key i (stride 0xC) with the tile position's region coordinates"
+          },
+          {
+            "name": "Y",
+            "offset": 4,
+            "type": "int32_t",
+            "source": "inferred",
+            "evidence": "second int of Vector3i<int>"
+          },
+          {
+            "name": "Z",
+            "offset": 8,
+            "type": "int32_t",
+            "source": "inferred",
+            "evidence": "third int of Vector3i<int>"
+          }
+        ]
+      }
+    ]
+  }
+}

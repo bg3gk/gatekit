@@ -1,0 +1,44 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::thrown::ThrownSoundComponent",
+  "kind": "struct",
+  "about": "Client sound state of a thrown object (whoosh sound). Born live in shove-throw together with the other thrown/drop components. Created and filled by bg3.exe+0x1E9E170, called from ecl::thrown::SoundSystem (per-frame update bg3.exe+0x1E9D500; Toolkit ecl::thrown::SoundSystem::Update with WorldView<ThrowerSoundEventOneFrameComponent, ThrownSoundComponent, SoundRequestBusComponent, ...>).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1E9F260 writes 1; bg3.exe+0x1E9E170 then stores the 4-byte result of a virtual call (slot 1) of an object of the system. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1E9E170 copies 12 bytes from +0x10 of the entity's ls::TransformComponent (0x28 stride; +0x10 = translation). Live world coordinates (53.8, 18.7, -167.4)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientThrownThrownSound", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": ["What field_0 holds (result of a virtual call: sound id or state)."],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

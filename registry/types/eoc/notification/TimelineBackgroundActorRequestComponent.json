@@ -1,0 +1,60 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::TimelineBackgroundActorRequestComponent",
+  "kind": "struct",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DF53B0 (server notification system, case 0x2A = esv::timeline::BackgroundActorRequestOneFrameComponent) creates the component (bg3.exe+0x2DF4200) and stores the ls::uuid of the request's actor entity (bg3.exe+0x107E6F0), or the null Guid when the entity has none."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Timeline",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DF53B0 copies +8..+0x18 of the server request (its Timeline Guid). Script Extender's ecl TimelineBackgroundEntityRequest has the same first two members (Guid Entity, Guid Timeline)."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "ActorGuid",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DF53B0 copies +0x18..+0x28 of the server request (the actor Guid of the timeline)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationTimelineBackgroundActorRequest",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "timeline",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [
+      "Client-side readers (bg3.exe+0x75B7F0 and others) were not read; never alive in the captures."
+    ],
+    "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

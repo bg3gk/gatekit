@@ -1,0 +1,61 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::crowds::SoundStationComponent",
+  "kind": "struct",
+  "about": "Crowd sound station entity in Act 3 (CTY/BGO levels, idle). Created by ecl::crowds::SoundStationSystem::FinalizeStations from its per-frame new-station requests.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1F3C870 writes 0xffc0000000000000 (null handle). Filled by ecl::crowds::SoundStationSystem::FinalizeStations (EoCClient.dll+0xE9B950): *comp = request[+0x20] (an entity of the new-station request). Live: entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "StationId",
+      "type": "int32_t",
+      "rung": "inferred",
+      "known_as": [{"name": "field_8", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes -1. FinalizeStations writes the 4-byte key of the frame's new-station map (station id). Live 0..0x10."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "field_C",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes 0. FinalizeStations copies request +0xC. Live 3..14."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientCrowdsSoundStation", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 8,
+    "names_pass_2": "StationId: ecl::crowds::SoundStationSystem::FinalizeStations (EoCClient.dll+0xE9B950) writes the key of its new-station map here.",
+    "open_questions": [
+      "Meaning of the three members (id and count are guesses).",
+      "names pass 2: field_0 (entity of the new-station request, request +0x20) and field_C (request +0xC) not named."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

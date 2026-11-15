@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::aigrid::SubgridProximityListComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Subgrids",
+      "type": "HashMap<uint32_t, int32_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "eoc::aigrid::SubgridProximitySystem<ecl::ShroudManager>::CommitFrameData (macOS name; Windows bg3.exe+0x771F30) gets the component (bg3.exe+0x77AF60), walks 4-byte subgrid ids of each listener, inserts each id (bg3.exe+0x77B320), zeroes the value on a new insert and increments the int32 value at Values(+0x30)[index*4] - a reference count per subgrid; the same ids go into SubgridProximityListChangedEventOneFrame. Live: buckets ptr + 0x25..0x61, NextIds and Keys capacity 0x20/0x40 with size 0x18..0x27, values ptr + capacity at +0x30/+0x38 (HashMap values array carries no own size: +0x3C always 0)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AigridSubgridProximityList", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 7,
+    "open_questions": [
+      "Key type uint32_t (subgrid id) from the 4-byte stride; it may be a game struct of 4 bytes."
+    ],
+    "raw_check": "20 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

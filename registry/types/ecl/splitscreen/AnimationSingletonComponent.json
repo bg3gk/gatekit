@@ -1,0 +1,61 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::splitscreen::AnimationSingletonComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "State",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::splitscreen::IsSplit (EoCClient.dll+0x84AAD0) returns (*(byte*)component & 0x24) != 0; ecl::splitscreen::AnimationSystem::Update (EoCClient.dll+0x852000) writes single-bit values 2, 4, 0x20 to this byte and tests masks 0x1a (a one-hot animation state). Live: 2."
+        }
+      ]
+    },
+    {
+      "offset": 1,
+      "name": "_Pad1",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Only the low byte is read or written by AnimationSystem::Update and IsSplit; the macOS default constructor writes 8 bytes then zeroes +4."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Progress",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "AnimationSystem::Update sets +4 to 0.5 or 0.0 when the state changes, otherwise adds GameTime delta (param_2+8) and compares with 0.5 (animation timer in seconds). macOS default: str wzr, [x23, #4]. Live: 0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSplitscreenAnimationSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Meaning of each state bit (2 = merged?, 4, 0x20 = split per IsSplit mask 0x24) - would need an enum name; none found."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::LongRestCancelComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x98EAC0 member 1: 1-byte scratch write at +0; macOS default strb wzr,[x23]."
+        }
+      ]
+    },
+    {
+      "offset": 1,
+      "name": "_Pad1",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding (alignment)"}]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x98EAC0 member 2: ecs::sync::Serialize(FixedString) at +4; macOS default str w26,[x23,#4]."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NotificationLongRestCancel", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 0,
+    "minutes": 2,
+    "open_questions": [
+      "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+      "Meaning not established (cancel reason?)."
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

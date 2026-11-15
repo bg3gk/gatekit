@@ -1,0 +1,67 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::input::TrackingSingletonComponent",
+  "kind": "struct",
+  "about": "Client GUI singleton alive in every idle level; gui::input::TrackingSystem collects key-binding refreshes and input-device changes for the UI.",
+  "size": 56,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "KeyBindingsRefreshed",
+      "type": "HashSet<int16_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x12B5A30 (gui::input::TrackingSystem update) drains its message queue (system+0x80): message variant index 0 inserts the 2-byte payload with bg3.exe+0x796C40 (hash of a short, keys compared as short at Keys + i*2) into component+0; the set is cleared each update (bg3.exe+0x5C4330) when its key count +0x2C is non-zero. macOS gui::input::TrackingSystem::OnKeyBindingsRefresh(short const&) is the handler taking a short. Creator bg3.exe+0x12B5EB0 zeroes +0..+0x30."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "InputDevice",
+      "type": "int16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Message variant index 1 stores its 2-byte payload at +0x30 (*(undefined2*)(comp+0x30)); macOS TrackingSystem::OnUIInputDeviceChanged(ls::EInputDeviceID) - enum ls::EInputDeviceID written as its 2-byte integer."
+        }
+      ]
+    },
+    {
+      "offset": 50,
+      "name": "InputDeviceChanged",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Message 1 sets the byte at +0x32 to 1 together with InputDevice; the update resets it to 0 the next frame; creator zeroes it."
+        }
+      ]
+    },
+    {
+      "offset": 51,
+      "name": "_Pad33",
+      "type": "uint8_t[5]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "alignment padding (never written)."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "GuiInputTrackingSingleton", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "minutes": 5,
+    "open_questions": [
+      "What the int16 keys are (player ids whose key bindings were refreshed, by the macOS handler name); names are inferred from the macOS signal handlers."
+    ],
+    "second_pass": "Re-read the Windows update bg3.exe+0x12B5A30 and the insert bg3.exe+0x796C40: the set holds 2-byte keys, message 1 writes 2 bytes at +0x30 and the flag at +0x32 - every boundary is established on Windows.",
+    "seen": true,
+    "status": "declared"
+  }
+}

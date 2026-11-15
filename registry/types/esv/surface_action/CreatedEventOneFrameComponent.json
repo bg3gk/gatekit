@@ -1,0 +1,46 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::surface_action::CreatedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Apparently unused in this build: bg3.exe has only the registration function (bg3.exe+0x2F9310) and the generic storage helper bg3.exe+0x2211560; no creator, no system reads it; macOS index shows no writer or reader either. Siblings in Script Extender (ServerData.h): FinishedEventOneFrameComponent / GrownEventOneFrameComponent of esv::surface_action.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Registry size 16. No code writes or reads it in bg3.exe, the Toolkit (no esv::SurfaceManager WorldView names it) or the macOS build (only ComponentOps). Its storage registration bg3.exe+0x2211560 is byte-for-byte the one of esv::surface_action::FinishedEventOneFrameComponent (bg3.exe+0x22119D0: size 0x10, same ops tables PTR_FUN_1454bdf30 / PTR_FUN_1454d9020, no destructor), so the 16 bytes are trivially destructible: no container. Widths of the members are a guess."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "see field_0"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerSurfaceActionCreatedEvent",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "low",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [
+      "Unused in every build available: member boundaries cannot be established from code. Only known: 16 bytes, trivially destructible (same storage ops as FinishedEventOneFrameComponent, whose member is a Guid)."
+    ],
+    "second_pass": "Not settled: the type has no writer or reader in bg3.exe, the Toolkit or macOS; the only new fact is that its storage registration equals the one of FinishedEventOneFrameComponent (16 bytes, no destructor, so no container).",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it"
+  }
+}

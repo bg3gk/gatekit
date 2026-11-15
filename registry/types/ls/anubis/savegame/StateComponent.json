@@ -1,0 +1,334 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::anubis::savegame::StateComponent",
+  "kind": "struct",
+  "about": "Server-only, 48 holders (every Anubis-driven entity). The component is an ls::anubis::savegame::Writer moved into the ECS (macOS: EntityCommandBuffer::AddComponentUnchecked<StateComponent, Writer>(Writer&&); ls::anubis::System::Save fills the Writer; ls::anubis::savegame::Reader::Reader(Writer&&) consumes it). It holds the serialized Anubis behaviour state: a constant pointer, seven containers (a 0x70-byte block moved by bg3.exe+0x38284F0) and one more array. Not itself a savegame model (savemodel.py matched only unrelated StateComponents).",
+  "size": 136,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Registry",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "The component is a Writer (macOS AddComponentUnchecked<StateComponent, Writer>); ls::anubis::savegame::Writer::Writer(Registry&) (AnubisFramework.dll+0x105AF0) stores '*(Registry**)this = param_1' before constructing the Header at +8; macOS Reader::Reader(Writer&&) (bg3_macos_x64+0x6740F00) copies Writer +0 to Reader +0 first."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Scalars",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writer +8 is model::Header; this is Header +0. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "ScalarsCapacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "capacity of the Header +0 array (Scalars); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "ScalarsSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "size of the Header +0 array (Scalars); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Tables",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writer +8 is model::Header; this is Header +0x10. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "TablesCapacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "capacity of the Header +0x10 array (Tables); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "TablesSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "size of the Header +0x10 array (Tables); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "TableEntries",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writer +8 is model::Header; this is Header +0x20. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "TableEntriesCapacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "capacity of the Header +0x20 array (TableEntries); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "TableEntriesSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "size of the Header +0x20 array (TableEntries); moved as uint32 by bg3.exe+0x38284F0. Name of the array from AnubisFramework.dll+0x1196D0 Header::Visit."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "Variables",
+      "type": "Array<AnubisSavegameStateNamedValue>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Header +0x30 = DynamicArray<ls::anubis::savegame::model::Variable> (macOS ~Header); Windows destructor bg3.exe+0x3828670 resizes it with bg3.exe+0x3839060 (0x20-byte elements: STDString + qword). Live heap, capacity 0x1F..0x80."
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "TreesPages",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Header +0x40 = PagedArray<ls::anubis::savegame::model::Tree, AnubisPagedArrayOps> (macOS ~Header: RemoveAll, then frees each page and the page table, clears the u16 page count at +0x4A); Windows bg3.exe+0x3839240 destroys pages of 0x28-byte elements holding a string and a FixedString. Page table pointer."
+        }
+      ]
+    },
+    {
+      "offset": 80,
+      "name": "TreesPageShift",
+      "type": "uint16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "page-size shift of the paged array (Windows move helper bg3.exe+0x38284F0); live 9."
+        }
+      ]
+    },
+    {
+      "offset": 82,
+      "name": "TreesPageCount",
+      "type": "uint16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "page count (macOS ~Header loops to and clears the u16 at Header+0x4A = component +0x52); live 1."
+        }
+      ]
+    },
+    {
+      "offset": 84,
+      "name": "TreesCount",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "element count of the paged array; live 1."}]
+    },
+    {
+      "offset": 88,
+      "name": "Operations",
+      "type": "Array<AnubisSavegameStateNamedValue>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Header +0x50 = DynamicArray<ls::anubis::savegame::model::Operation> (macOS ~Header); Windows resizes it with the same 0x20-byte element function bg3.exe+0x3839060. Live empty."
+        }
+      ]
+    },
+    {
+      "offset": 104,
+      "name": "Components",
+      "type": "Array<AnubisSavegameStateComponentEntry>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Header +0x60 = DynamicArray<ls::anubis::savegame::model::Component> (macOS ~Header); Windows bg3.exe+0x3839460 walks 0x40-byte elements with destructor bg3.exe+0x383CEC0. Live capacity 1 size 1."
+        }
+      ]
+    },
+    {
+      "offset": 120,
+      "name": "TypeArrays",
+      "type": "Array<AnubisSavegameStateTypeArray>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writer +0x78 = DynamicArray<ls::anubis::savegame::model::TypeArray> (macOS ~Writer reallocates it to 0 and frees it); Windows component destructor bg3.exe+0x3850240 calls bg3.exe+0x3839730(comp+0x78, 0) (0x20-byte elements, destructor bg3.exe+0x383D230). Live capacity 0x29 size 0x29."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnubisSavegameState", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 9,
+    "minutes": 12,
+    "open_questions": [
+      "Element sizes of the three plain arrays at +8, +0x18, +0x28 (Header +0..+0x20) are not established.",
+      "Meaning of the qword at +0x18 of Variable/Operation elements, of +0/+8/+0x38 of Component elements, and the nested 0x40-byte value elements.",
+      "The pointer at +0; member names (only the macOS type names of the containers are known).",
+      "Coverage.h's AnubisSavegameReader (ls::anubis::savegame::LoadingComponent) has the same first 0x88 bytes; it could reuse these names."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "The macOS destructors of Writer and model::Header name the containers (Variables, a PagedArray of Trees, Operations, Components, TypeArrays) and the Windows element destructors give their strides and members (STDString + qword, STDString + owned pointer, a 0x40-byte component entry); three plain arrays and some element members stay unknown.",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "AnubisSavegameStateNamedValue",
+        "size": 32,
+        "fields": [
+          {
+            "name": "Name",
+            "offset": 0,
+            "type": "STDString",
+            "source": "inferred",
+            "evidence": "element resize bg3.exe+0x3839060 (stride 0x20) frees the buffer when the capacity at +0x14 exceeds 0xF, resets size +0x10 / capacity +0x14 and the first byte: a 24-byte ls::STDString. Name inferred."
+          },
+          {
+            "name": "field_18",
+            "offset": 24,
+            "type": "uint64_t",
+            "source": "unknown",
+            "evidence": "moved as one qword by bg3.exe+0x3839060; not destroyed."
+          }
+        ]
+      },
+      {
+        "name": "AnubisSavegameStateTypeArray",
+        "size": 32,
+        "fields": [
+          {
+            "name": "Name",
+            "offset": 0,
+            "type": "STDString",
+            "source": "inferred",
+            "evidence": "element destructor bg3.exe+0x383D230 (stride 0x20, resize bg3.exe+0x3839730): STDString at +0 (capacity +0x14 > 0xF frees). Name inferred."
+          },
+          {
+            "name": "Data",
+            "offset": 24,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x383D230 deletes the object at +0x18 through its virtual destructor (slot 0, argument 1); the resize moves and nulls it: an owned polymorphic pointer."
+          }
+        ]
+      },
+      {
+        "name": "AnubisSavegameStateComponentEntry",
+        "size": 64,
+        "fields": [
+          {
+            "name": "field_0",
+            "offset": 0,
+            "type": "uint64_t",
+            "source": "unknown",
+            "evidence": "element destructor bg3.exe+0x383CEC0 (stride 0x40, resize bg3.exe+0x3839460) does not touch +0..+0x10."
+          },
+          {
+            "name": "field_8",
+            "offset": 8,
+            "type": "uint64_t",
+            "source": "unknown",
+            "evidence": "not touched by the element destructor."
+          },
+          {
+            "name": "Name",
+            "offset": 16,
+            "type": "STDString",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x383CEC0 frees +0x10 when the capacity at +0x24 exceeds 0xF and resets size +0x20 / capacity +0x24: STDString. Name inferred."
+          },
+          {
+            "name": "Values",
+            "offset": 40,
+            "type": "void*",
+            "source": "unknown",
+            "evidence": "bg3.exe+0x383CEC0 resizes the array at +0x28 to 0 with bg3.exe+0xF4CEC0 (0x40-byte elements holding a STDString and a nested structure at +0x18) and frees it; element layout not established, so raw parts."
+          },
+          {
+            "name": "ValuesCapacity",
+            "offset": 48,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "capacity of the same array."
+          },
+          {
+            "name": "ValuesSize",
+            "offset": 52,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "size of the same array."
+          },
+          {
+            "name": "field_38",
+            "offset": 56,
+            "type": "uint64_t",
+            "source": "unknown",
+            "evidence": "not touched by the element destructor."
+          }
+        ]
+      }
+    ]
+  }
+}

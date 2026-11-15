@@ -1,0 +1,68 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::lookat::ChangedOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame event: an entity got a new look-at target. Written by bg3.exe+0x2B41AB0 (called from the per-frame update of esv::lookat::StateSystem, bg3.exe+0x238BFF0) from the last element (stride 0x28) of a per-entity request list; the same id and time travel into esv::lookat::LifetimeComponent. Shape mirrors eoc::lookat::TargetComponent (EntityHandle Target + FixedString). Seen.py context: dialogues and fights (characters turning to look at each other).",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Target",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2B431B0 (AllocRaw 0x20) default null handle; 0x2B41AB0 checks the request's handle is alive, then writes it here. Same first member as eoc::lookat::TargetComponent.Target. Live: entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator default 0xFFFFFFFF; 0x2B41AB0 copies request +8 with FixedString IncRef/DecRef. Like eoc::lookat::TargetComponent field_8 (bone/attachment name?). Live: always empty (0xFFFFFFFF)."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "Duration",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator default 0x7f7fffff (FLT_MAX); 0x2B41AB0 copies request +0x20. Live: 2.3..2.5 s or 9999999 (endless); LifetimeComponent's float holds the same values counting down."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Id",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator zeroes +0x10/+0x18; 0x2B41AB0 copies 16 bytes from request +0x10, the value 0x2B419C0 compares. Live: random 16-byte values, the same set as esv::lookat::LifetimeComponent +0 (request id)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerLookAtChanged", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 8,
+    "open_questions": ["Name of the FixedString at +8 (always empty in samples)."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

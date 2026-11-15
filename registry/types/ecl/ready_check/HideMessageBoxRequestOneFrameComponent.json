@@ -1,0 +1,55 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::ready_check::HideMessageBoxRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request of ecl::ready_check::UserSystem (per-frame update bg3.exe+0x78B6C0) to hide the ready-check message box; seen when using a level-swap teleporter / elevator (party ready check).",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "MessageBoxId",
+      "type": "int16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Filler bg3.exe+0x78C380 copies a 2-byte value from the system's request (stride 0x18); gui::MessageBoxManager::OnHideMessageBoxRequested(short const&, FixedString const&) takes a short id. Creator bg3.exe+0x78D1E0 zeroes +0 (8 bytes). Live 1."
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "_Pad2",
+      "type": "uint8_t[6]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding before the array"}]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "Array<FixedString>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x78C500 copies it element by element with stride 4 and FixedString IncRef. Live: capacity 4, size 3."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientReadyCheckHideMessageBoxRequest",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": ["What the FixedStrings are (message box ids / owners)."],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

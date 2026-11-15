@@ -1,0 +1,77 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ai::swarm::NextActionComponent",
+  "kind": "struct",
+  "about": "AI swarm turn (idle levels). Read by ExecuteActionsSystem.",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Action",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "eoc::ai::swarm::EActionType (1 byte). EoCServer.dll+0x16B7530 (from ExecuteActionsSystem::Update, element stride 0x20): switches on byte +0 (3, 6/7, 0 ...). Live 0 or 6."
+        }
+      ]
+    },
+    {
+      "offset": 1,
+      "name": "_Pad1",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 4,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: ls::Optional<Vector3f>::Get on +4 (flag +0x10), passed as the move/cast position."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "HasPosition",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Optional flag tested before Get. Live 0."}]
+    },
+    {
+      "offset": 17,
+      "name": "_Pad11",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 24,
+      "name": "Target",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x16B7530: IsEntityAlive(+0x18), used as the action target. Live entity handles."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerAiSwarmNextAction", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

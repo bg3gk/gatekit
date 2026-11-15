@@ -1,0 +1,44 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::crowds::FleeingCombatComponent",
+  "kind": "struct",
+  "about": "Timer of an Act 3 crowd character fleeing from a nearby fight (seen in the lower city when a fight started, items were thrown, etc.). Written by esv::crowds::BehaviourSystem::ProcessFleeComponents; read by esv::crowds::SpawnSystem (despawn) and AnimationSystem. Saved: model game.crowds.v1.FleeingCombatComponent (8 bytes, alignment 4).",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Duration",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0xDA8280 BehaviourSystem::ProcessFleeComponents sets *comp = 6.0f (0x40C00000) when adding/refreshing it; live always 6.0"
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Timer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessFleeComponents adds ls::time::GetDeltaTimeForEntity to the float at +4 (stride 8); live 0..12 rising"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerCrowdsFleeingCombat", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 5,
+    "open_questions": [],
+    "raw_check": "36 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

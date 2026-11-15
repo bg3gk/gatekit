@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::camp::EndTheDayStateEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Seen once at a level change (camp). Written by esv::camp::InteractionSystem::Update (macOS).",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "State",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "eoc::EEndTheDayState (4 bytes). EoCServer.dll esv::camp::InteractionSystem::ProcessSetEndTheDayStateRequests takes the last of a DynamicArray<eoc::EEndTheDayState> of requests ('only using last') and posts it; the event is in its WorldView. Live 1."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerCampEndTheDayStateEvent", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": ["the event write itself was not read (only the request array)"],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::camp::UserAssignedChestChangedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event of esv::camp::ChestSystem: the camp chest assigned to a user changed. Created on a new event entity by bg3.exe+0x2BEAF80 (AllocRaw 0x10) from bg3.exe+0x2BE9510 (macOS: esv::camp::ChestSystem::Update writes it), which writes the user id and the chest entity. Never seen alive. Registry total 16 (server row).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "User",
+      "type": "UserId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2BEAF80 writes the global at bg3.exe+0x617CEAC (the default UserID global) at +0; writer bg3.exe+0x2BE9510 line ~900 copies a 4-byte user id to +0."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding before the 8-byte handle."}]
+    },
+    {
+      "offset": 8,
+      "name": "Chest",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes 0xffc0000000000000 (null EntityHandle) at +8; writer line ~901 writes an 8-byte value at +8 (the entity assigned to the user; name from the component name)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCampUserAssignedChestChangedEvent",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 5,
+    "open_questions": [
+      "That +8 is the chest (and not the user's character) follows from the component name only.",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

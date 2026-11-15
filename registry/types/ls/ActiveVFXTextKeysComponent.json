@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::ActiveVFXTextKeysComponent",
+  "kind": "struct",
+  "about": "Animation component listing the VFX text keys currently active on an animated entity (client and server; seen alive on idle characters, in dialogs and fights). Managed by ls::ActiveVFXTextKeysSystem::Update (GameEngine.dll+0x4EAE90, game per-frame update bg3.exe+0x3C42D60) and read by ecl/esv::AnimationUpdateSystem and ls::AnimationBlueprintSystem. The Toolkit's move assignment ls::ActiveVFXTextKeysComponent::operator= (GameEngine.dll+0x4EAD90) moves one DynamicArray whose clear routine GameEngine.dll+0x108F70 destroys FixedStrings with stride 4.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "TextKeys",
+      "type": "Array<FixedString>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GameEngine.dll+0x4EAD90 operator= moves pointer (+0), capacity (+8) and size (+0xC); element destructor GameEngine.dll+0x108F70 asserts 'ls::IndexedStorage<class ls::FixedString,...>' and walks stride 4. Live: heap pointer, capacity = size = 1..3. macOS default writes 16 zero bytes."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ActiveVFXTextKeys", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 5,
+    "open_questions": ["Member name is inferred from the class name (text keys)."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

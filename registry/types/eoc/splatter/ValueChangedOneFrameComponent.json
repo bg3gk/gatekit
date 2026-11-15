@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::splatter::ValueChangedOneFrameComponent",
+  "kind": "struct",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows: adder bg3.exe+0x781BA0 allocates 4-byte one-frame storage and zeroes it; its caller bg3.exe+0x781040 (splatter update) keeps a per-entity uint32 map at system+0x18 (keys +0x38, values +0x48), sets the value to 0xF for every entity of one query (line 'value = 0xf') and copies the 4-byte value into this component ('*comp = *value') for each changed splatter entity. Read by ecl::VisualSystem::Update (macOS). Live (client, fight): 2 and 0xF - a bit mask of the splatter channels that changed (0xF = all four)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SplatterValueChangedOneFrame", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 7,
+    "open_questions": [
+      "Which bit is which splatter channel (blood, dirt, wet, bruise...) is not traced; the name is ours to give."
+    ],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Width and kind confirmed on Windows: adder bg3.exe+0x781BA0 (4-byte storage, zeroed) and writer bg3.exe+0x781040, which copies a 4-byte per-entity mask into it and uses 0xF for 'all channels'.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

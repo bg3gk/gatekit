@@ -25,7 +25,7 @@ internal sealed partial class DecompLink(string path) : IDisposable
             if (!tried)
             {
                 tried = true;
-                if (File.Exists(Path))
+                if (GateKit.Home.HomeDatabase.Usable(Path))
                 {
                     try
                     {

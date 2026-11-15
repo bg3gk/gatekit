@@ -1,0 +1,58 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::history::TargetUpdateRequestsSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton: the frame's target-history update requests (esv::history::TargetUpdateRequestSystem fills it from spell, passive, projectile and status UpdateTargetTracking one-frame components; TargetSystem drains it). The component is a DynamicArray<esv::history::UpdateRequest>. Alive in idle levels.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<HistoryTargetUpdateRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x5B1440 TargetUpdateRequestSystem::Update casts the singleton to DynamicArray<esv::history::UpdateRequest> (typed local), clears it element by element and passes it to ProcessSpell/Passive/Projectile/StatusRequests. Live: 3 heap arrays with capacity 1..4."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerHistoryTargetUpdateRequests",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 4,
+    "minutes": 6,
+    "open_questions": [],
+    "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "HistoryTargetUpdateRequest",
+        "size": 64,
+        "fields": [
+          {
+            "name": "TargetUUID",
+            "offset": 0,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "macOS (anonymous)::UpdateRequests(view, Guid const&, HashSet<EntityHandle> const&, DynamicArray<UpdateRequest>&) builds the element from a Guid and an entity set; Toolkit element destructor EoCServer.dll+0x5AFBB0 frees only +0x10..+0x40, so +0..+0x10 is trivially destructible (the Guid)."
+          },
+          {
+            "name": "Targets",
+            "offset": 16,
+            "type": "HashSet<EntityHandle>",
+            "source": "inferred",
+            "evidence": "EoCServer.dll+0x5AFBB0 (IndexedStorage<esv::history::UpdateRequest>, stride 0x40): resizes +0x30 to 0 with FUN_1805b0cf0 whose assert names IndexedStorage<ls::ID<EntityHandleTraits>,...s_TagHashTable> (HashSet keys), +0x20 with FUN_1805b0b50 = IndexedStorage<int> (next ids), frees +0x10 (buckets)."
+          }
+        ]
+      }
+    ]
+  }
+}

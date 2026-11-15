@@ -1,0 +1,35 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::anubis::EventsForwardingComponent",
+  "kind": "struct",
+  "about": "Server: list of entities an Anubis (behaviour script) entity forwards its events to; built by ls::anubis::EventsForwardingSystem (per-frame update bg3.exe+0x3825D80 -> bg3.exe+0x3826350) and read by every ls::anubis::EventStorage::...::Dispatch.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Targets",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x3826A30 allocates 0x10 bytes zeroed; destructor bg3.exe+0x686280 = POD array. Windows per-frame update bg3.exe+0x3825D80 -> bg3.exe+0x3826350 walks the system's request map (keys: entity handles checked for ls::anubis::TreeComponent with bg3.exe+0x5DFB40; values: hash sets, keys array +0x20, count +0x2C, stride 0x30), fetches/creates the component and appends every 8-byte key not already present (linear search comparing whole 8-byte values; append bg3.exe+0x756460); the second loop removes them (swap with last). The requests come from the exported ls::anubis::EventsForwardingSystem::LEGACY_RegisterForEvents(ID<EntityHandleTraits> const&, ID<EntityHandleTraits> const&) / LEGACY_UnregisterForEvents - both arguments entity handles. Live: capacity 1, size 1."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnubisEventsForwarding", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 7,
+    "open_questions": [
+      "Game member name; which of the two Register arguments becomes the key and which the element is inferred from the code shape (component on the key entity, elements from its set)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Windows update bg3.exe+0x3826350 appends/removes 8-byte values from per-entity sets, and the Toolkit export LEGACY_RegisterForEvents takes two entity handles, which settles the element as EntityHandle.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

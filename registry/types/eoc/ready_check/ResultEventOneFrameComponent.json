@@ -1,0 +1,65 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::ready_check::ResultEventOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event with the outcome of a ready check, put on a new entity by esv::ready_check::OverseerSystem::ProcessResultEvents from its esv::ready_check::ResultEvent list (seen at the level swap teleporter vote, with eoc::ready_check::StateComponent). Saved model game.ready_check.v0.ResultEventOneFrameComponent (40 bytes, member names not known).",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "EventId",
+      "type": "STDString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x2E29D0 ProcessResultEvents: STDString::operator=(component, event+8); live heap ptr, size 0x17, capacity 0x1F - the same 23-character id as StateComponent.EventId (m_EventId of the state model)"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "TransactionId",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessResultEvents copies two qwords (event+0x20/+0x28) to +0x18/+0x20; live: the same Guid as StateComponent.TransactionId"
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Result",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessResultEvents copies one byte (event+0x30) to +0x28; live 1; matches StateComponent.ResultVal"
+        }
+      ]
+    },
+    {
+      "offset": 41,
+      "name": "_Pad29",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "never written; live garbage"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ReadyCheckResultEvent", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 5,
+    "open_questions": [
+      "names come from the state model's member names, not this event's own model"
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

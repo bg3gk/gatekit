@@ -1,0 +1,57 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::movement::DashingComponent",
+  "kind": "struct",
+  "size": 28,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "StartPosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Live: world coordinates (x 46.26, y 2.15..17, z -391..-420) close to but different from +0xC; the position the dash started from. Not read in the update path that was examined."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "TargetPosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::movement::DashingSystem update bg3.exe+0x1917090 (registered by bg3.exe+0x726190 with DashingComponent + DashTransformRequestsSingleton): computes (+0xC,+0x10,+0x14) minus the transform translation, and when arrived copies +0xC..+0x14 into the TransformComponent translation and removes DashingComponent. Live: world coordinates."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Speed",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "same update reads the float at +0x18 together with the frame time (param_3+8) to advance toward the target. Live always 6.0 (metres per second)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "MovementDashing", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 7,
+    "open_questions": [
+      "Speed vs. duration for +0x18 not fully traced; StartPosition name from live data only."
+    ],
+    "raw_check": "75 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

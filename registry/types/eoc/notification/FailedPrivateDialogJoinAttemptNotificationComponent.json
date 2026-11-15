@@ -1,0 +1,100 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::FailedPrivateDialogJoinAttemptNotificationComponent",
+  "kind": "struct",
+  "size": 72,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "DialogId",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Server: EoCServer.dll+0x846050 (esv::notification::System query lambda over esv::dialog::FailedPrivateDialogJoinAttemptOneFrameComponent, stride 0x28) copies the whole one-frame (u32 +0, Guid +8, Guid +0x18) into a notification request with variant tag 0xF; tag 15 of ls::Variant<esv::notification::System::...> is FailedPrivateDialogJoinAttemptNotification (variant type list in the lambda's IndexedStorage name). Client: the notification dispatcher bg3.exe+0x2DF53B0 case 0xF calls this component's creator bg3.exe+0x2DF14F0 and stores request +0 (u32) here. The one-frame's +0 is DialogId (key of PrivacySystem's map, first argument of ecl::LSDialogsProtocol::SendFailedJoinDialog)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "padding (the Guid at +8 is 8-aligned in the game's layout; nothing written)"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Listener",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DF53B0 case 0xF copies request +8..+0x17 here; the request is the esv::dialog::FailedPrivateDialogJoinAttemptOneFrameComponent copied whole by EoCServer.dll+0x846050, whose +8 is Listener (second argument of SendFailedJoinDialog, the character that tried to join)."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "ListenerName",
+      "type": "TranslatedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DF53B0 case 0xF maps the Guid at request +8 to an entity (FUN_141013470) and calls bg3.exe+0x41FD1C0, which reads that entity's eoc::DisplayNameComponent (bg3.exe+0xB22830 uses TypeIndex<eoc::DisplayNameComponent>) and returns a TranslatedString; both handles of it are stored at +0x18/+0x20: the display name of the Listener."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Speaker",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DF53B0 case 0xF copies request +0x18..+0x27 to +0x28; request = esv::dialog::FailedPrivateDialogJoinAttemptOneFrameComponent (copied whole by EoCServer.dll+0x846050), whose +0x18 is Speaker (third argument of SendFailedJoinDialog)."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "SpeakerName",
+      "type": "TranslatedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DF53B0 case 0xF maps the Guid at request +0x18 to an entity and stores the TranslatedString from bg3.exe+0x41FD1C0 (the entity's eoc::DisplayNameComponent) at +0x38/+0x40: the display name of the Speaker."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationFailedPrivateDialogJoinAttempt",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 3,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 10,
+    "names_pass_2": "Replicated without macOS FieldMeta names; the Guid + TranslatedString pairs look like two characters with their display names, not settled.",
+    "open_questions": [
+      "Names: probably two {Guid, TranslatedString} groups (dialog and speaker?) after a 4-byte value - not established; no FieldMeta names."
+    ],
+    "second_pass": "Settled on Windows: the replication writer bg3.exe+0x9A3090 gives every replicated member, the creator bg3.exe+0xFC0E40 (size 0x48) and the destructor bg3.exe+0xA53660 show the two whole TranslatedStrings at +0x18 and +0x38.",
+    "seen": false,
+    "status": "declared"
+  }
+}

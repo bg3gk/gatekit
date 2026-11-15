@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::script::light::EffectComponent",
+  "kind": "struct",
+  "about": "On a scripted light: the entity of the effect esv::script::light::EffectRequestSystem (per-frame update bg3.exe+0x2EA97F0) created for it from EffectParametersComponent. Saved with the savegame (esv::script::light::Loader). Seen.py context: alive in idle levels (WLD_Main_A), up to 15 holders.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Effect",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Layout of the sibling esv::script::light::PlayEffectRequestsSingletonComponent (layouts/alive): EffectRequestSystem::UpdateScriptedLightEffects (EoCServer.dll+0x4EC920) creates an effect entity and stores the same handle in the request and in the light's EffectComponent. Live: 48 entity-handle-shaped values (index in the low dword, 0x0200000x in the high dword)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerScriptLightEffect", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 0,
+    "minutes": 3,
+    "open_questions": [
+      "Not re-read in bg3.exe; rests on the sibling layout's reading of UpdateScriptedLightEffects plus live shape."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

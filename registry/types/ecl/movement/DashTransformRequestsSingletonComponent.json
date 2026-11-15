@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::movement::DashTransformRequestsSingletonComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "HashMap<EntityHandle, Transform>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Consumed (const) by Toolkit EoCClient.dll+0x548D10 ecl::transform::GameplayTransformRequestSystem::Update together with the other transform-request singletons; the two 64-byte request singletons there are walked as keys (+0x20, stride 8 = EntityHandle) and values (+0x30, stride 0x28 = ls::Transform) and emplaced into ls::transform::GameplaySetTransformRequestsComponent (assert names ls::HashMap<ls::ID<ecs::EntityHandleTraits>, ls::Transform>). Same shape and size as ecl::camera::PhotoModeCameraTransformRequestsSingletonComponent (Camera.h: HashMap<EntityHandle, Transform> SetTransform). Live (3 samples): bucket array with 5 buckets at +0/+8, NextIds/keys/values arrays of capacity 1 and size 1 = one pending request; one sample empty."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientMovementDashTransformRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 9,
+    "minutes": 6,
+    "open_questions": [
+      "The WorldView getters in GameplayTransformRequestSystem::Update are not labelled with type names; Dash was matched to a HashMap<EntityHandle, Transform> consumer by size/shape (the only other 64-byte member is the photo-mode singleton with this exact type), not by reading the getter's query."
+    ],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

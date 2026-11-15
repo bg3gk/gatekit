@@ -293,6 +293,9 @@ internal static class CodeMatch
     /// <summary>`match`: pairs Toolkit functions with game functions by pseudo-code and stores the pairs.</summary>
     public static int Run(DecompSession s, string binary, int jobs, string? source)
     {
+        // The pairs come from pseudo-code already loaded: a missing database is an error here, not
+        // an empty one to create.
+        _ = s.Db;
         var db = s.OpenWrite();
         void Log(string text) => s.Err.WriteLine(text);
         var started = Stopwatch.StartNew();

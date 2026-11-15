@@ -1,0 +1,69 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::platform::MovementComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Type",
+      "type": "uint64_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "write-all serializer bg3.exe+0x91B560: member 1, raw 8-byte write at +0; Toolkit eoc::platform::MovePlatform (EoCShared.dll+0xDBD980) compares the 8 bytes with 0 (move to target branch) and 1 (move on spline branch), anything else returns result 4. macOS default zero."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "write-all serializer bg3.exe+0x91B560: member 2, raw 1-byte write at +8"
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "field_9",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "write-all serializer bg3.exe+0x91B560: member 3, raw 1-byte write at +9"
+        }
+      ]
+    },
+    {
+      "offset": 10,
+      "name": "_PadA",
+      "type": "uint8_t[6]",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "alignment padding; nothing serialized or initialised here"}
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "PlatformMovement", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Not seen alive (seen.py has no samples).",
+      "No ls::FieldMeta / macOS member names (symbols.py replication: 'no macOS field names for this class'); all names are inferred or unknown.",
+      "The first member is addressed as DAT_<global> + component in the pseudo-code; taken as offset 0 because the next member follows directly at the expected offset.",
+      "Type is probably an enum read as 8 bytes (0 = MoveToTarget, 1 = MoveOnSpline); the two bytes are probably bools (moving/paused?) - not established."
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

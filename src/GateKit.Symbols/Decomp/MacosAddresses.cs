@@ -5,7 +5,7 @@ using System.Text;
 namespace GateKit.Symbols.Decomp;
 
 /// <summary>The functions of a thin x86-64 Mach-O file, read from its symbol table.</summary>
-internal static class MachO
+internal static partial class MachO
 {
     /// <summary>Functions as (address, size, mangled name), sorted by address: every defined
     /// symbol in the __text section, the shortest name per address, each running to the next.</summary>

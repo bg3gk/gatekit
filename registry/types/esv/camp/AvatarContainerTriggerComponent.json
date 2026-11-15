@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::camp::AvatarContainerTriggerComponent",
+  "kind": "struct",
+  "about": "Kept by esv::camp::AvatarContainerSystem on the avatar container (camp chest) entity next to eoc::camp::AvatarContainerComponent and esv::camp::AvatarContainerRequestsComponent: the handle of the esv::AvatarContainerTrigger the container belongs to. Created by bg3.exe+0x2BF03C0 (AllocRaw 8, default null handle; storage bg3.exe+0x27070E0, no destructor). Saved as model game.camp.v0.AvatarContainerTriggerComponent (8 bytes, alignment 8) together with core.v0.EntityId. Never seen alive. Registry total 8 (server row).",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Trigger",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2BF03C0 writes 0xffc0000000000000 (null EntityHandle). Toolkit esv::camp::AvatarContainerSystem::ProcessTriggersChanged (EoCServer.dll+0x9FB2E0): for every removed trigger entity `if (*triggerComp == removedEntity) *triggerComp = 0xffc0000000000000` (the component is the third member of the EntityView<AvatarContainer, AvatarContainerRequests, AvatarContainerTrigger, Transform>). The savegame writes an EntityId model with it."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCampAvatarContainerTrigger",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 4,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 6,
+    "open_questions": ["Not seen alive (seen.py has no samples)."],
+    "seen": false,
+    "status": "declared"
+  }
+}

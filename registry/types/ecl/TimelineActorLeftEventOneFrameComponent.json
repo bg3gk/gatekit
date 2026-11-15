@@ -1,0 +1,57 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::TimelineActorLeftEventOneFrameComponent",
+  "kind": "struct",
+  "size": 176,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "ActorGuids",
+      "type": "HashMap<EntityHandle, Guid>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1D4E250 (called from ecl::TimelineSystem update bg3.exe+0x1D41270) drains ecl::TimelineSystem::ActorLeftEventRequests (system +0x710, stride 0x30 = Script Extender TimelineActorLeftEventRequest {Timeline, PlayerIndex, Actor, ActorGuid, DialogInstanceId}); component created on request.Timeline by bg3.exe+0x1D711F0. Inserts key request.Actor (8 bytes, FUN_14127f6f0) and writes 16 bytes of request.ActorGuid to 'values(+0x30) + index * 0x10'. Probe: 5 hash buckets, 1 key, 1 value."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "ActorPlayers",
+      "type": "HashMap<EntityHandle, PlayerId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: key = the actor entity, or qword +0x88 of a component of the actor when FUN_1413fb710 finds one (owner/original entity), skipped when it is the null handle; inserted with the 8-byte set insert on comp+0x40; value array at comp+0x70 is regrown with 2-byte elements and 'values[index] = (int16) request.PlayerIndex'. Probe: 5 buckets, 1 key, 1 value."
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "Players",
+      "type": "HashSet<PlayerId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: 'if (request.PlayerIndex != 0) FUN_140796c40(comp + 0x80, .., &request.PlayerIndex)' - the int16 set insert used for player sets elsewhere. Probe: 5 buckets, 1 key."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientTimelineActorLeftEvent", "one_frame": true},
+  "survey": {
+    "batch": "timeline",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 8,
+    "open_questions": [
+      "Key of ActorPlayers: which component bg3.exe+0x13FB710 fetches (its +0x88 handle replaces the actor) was not resolved.",
+      "Member names are descriptive."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

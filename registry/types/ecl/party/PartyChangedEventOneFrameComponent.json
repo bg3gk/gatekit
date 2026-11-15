@@ -1,0 +1,56 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::party::PartyChangedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Event entity written by ecl::party::PartySystem::Update (bg3.exe+0x1949EF0) and read by gui::AssignedCharactersSystem (macOS). The system collects a HashMap<EntityHandle, pair of EntityHandles> of members whose two party handles differ (old != new) and creates one event entity per entry. Born live in party/summon steps (with GroupsChangedEvent, summons).",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x194B100 (0x18 bytes) initialises three null handles; bg3.exe+0x1949EF0 writes the 8-byte map key here. Live: entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second handle of the map value (value[1]); the map only keeps entries whose two handles differ. Live: handle or 0/null. Probably the new or old party (view) entity - not established."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "First handle of the map value (value[0]). Live: handle or 0/null."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientPartyPartyChangedEvent", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": ["Which of +8/+0x10 is the old and which the new party/group entity."],
+    "raw_check": "23 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

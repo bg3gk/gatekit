@@ -1,0 +1,58 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::movement::MSIdleComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "MSIdleSystem per-frame update bg3.exe+0x1936BB0: for an entity whose template is found it calls FUN_1411966F0(grid, ..., &translate, template+0x5C0) with the entity's Transform translate (view storage stride 0x28, +0x10 qword and +0x18 dword); on success it copies that translate into the component: qword at +0 and dword at +8 (12 bytes = one vec3). Add-helper bg3.exe+0x19375A0 zeroes +0 (qword) and +8 (dword). Live: 0 in all 48 instances."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "HasPosition",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1936BB0 clears byte +0xC (component stride 0x10) of every instance whose byte is set, and sets it to 1 together with the vec3 copy above; add-helper zeroes it. Live: byte +0xC always 0."
+        }
+      ]
+    },
+    {
+      "offset": 13,
+      "name": "_PadD",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Never written by the add-helper or the system (only 13 bytes written); live bytes +0xD..+0xF vary = uninitialised padding."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientMovementMSIdle", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 7,
+    "open_questions": [
+      "Names are inferred: the stored position is the translate that passed FUN_1411966F0 (probably a walkable/AI-grid check with a template radius at template+0x5C0); why it is stored is not established"
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "The per-frame update of ecl::movement::MSIdleSystem (bg3.exe+0x1936BB0) writes the component: a 12-byte vec3 copied from Transform.Translate at +0 and a set/cleared flag byte at +0xC, matching the add-helper's 8+4+1 zero stores.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

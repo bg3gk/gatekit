@@ -1,0 +1,74 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::pickup::PickUpExecutionInFlightComponent",
+  "kind": "struct",
+  "about": "Tracks a pick-up whose item transfers are running. Added by PickUpExecutionSystem::ProcessTransferRequests (Toolkit EoCServer.dll+0xD4A630, FUN_180d48510 default-constructs it) and updated by PickUpExecutionFinishedSystem::UpdateTrackComponents (EoCServer.dll+0xD47E60). Seen.py context: tree3 dialogue UND_PanicRoom_HiddenGnome.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "PendingCount",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "UpdateTrackComponents reads *(int*)(element+0) of an 8-byte-stride storage and acts when it reaches 0. Live 1 (one transfer in flight)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Byte +4 tested in UpdateTrackComponents ((char)... != 0). Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "Result",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "UpdateTrackComponents: if byte +5 == 0x0E it is replaced by a new value; live 0x0E (default/pending result code of the pick-up result enum, same family as the 0x13/0x14 codes in PickUpExecutionFinishedSystem)."
+        }
+      ]
+    },
+    {
+      "offset": 6,
+      "name": "_Pad6",
+      "type": "uint8_t[2]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Live garbage d0 07; macOS default ctor stores one qword (str x0, [x23])."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerPickupPickUpExecutionInFlight",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "The storage read in UpdateTrackComponents is assumed to be this component's (8-byte stride matches); the enum behind Result is not named."
+    ],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

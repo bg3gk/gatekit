@@ -1,0 +1,60 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::statusVisual::FadeComponent",
+  "kind": "struct",
+  "about": "Fade-out of a status visual on the client: an entity handle, the current opacity and the fade speed (1 / fade time). Added by the status visual state machine bg3.exe+0x1BF6060 (state 4 -> 5) and run by the per-frame update of ecl::statusVisual::FadeSystem (bg3.exe+0x1A55070, query FadeComponent + ls::VisualComponent), which lowers the opacity each frame and destroys the visual when it drops to 1/256. Never seen alive. Registry total 16 (client row). The savegame model game.crowds.v0.FadeComponent matched by short name belongs to a crowds component, not to this one.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1BF6D20 (AllocRaw 0x10) writes 0xFFC0000000000000 (null handle) at +0. bg3.exe+0x1BF6060 writes the entity handle its second argument points to at +0 (an entity handle passed in by the status visual code). Which entity (visual owner vs. status) is not established."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Opacity",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes dword 0 at +8. bg3.exe+0x1BF6060 writes the float at +0x30 of the status visual (only when >= 1/256). FadeSystem update bg3.exe+0x1A55070 subtracts GameTime.DeltaTime (at +8 of the game time) times the float at +0xC from the float at +8; if the result is above 0.00390625 (1/256) it stores it back at +8 and applies it, otherwise it removes the component."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "FadeSpeed",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes 0x3F800000 (1.0f) at +0xC. bg3.exe+0x1BF6060 writes 1.0 divided by the float at +0x4C of the settings (1 / fade duration); the update multiplies DeltaTime by it."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientStatusVisualFade", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 4,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 7,
+    "open_questions": [
+      "Exact meaning of Entity (the visual's entity or the status owner).",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

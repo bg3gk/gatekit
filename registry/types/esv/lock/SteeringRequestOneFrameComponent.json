@@ -1,0 +1,117 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::lock::SteeringRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request of the lockpicking system to turn the lockpicker towards the lock: created by bg3.exe+0x2E2AB60 (esv::lock::LockpickingSystem) and consumed by esv::steering::StateSystem::ProcessBeginRequests (Toolkit EoCServer.dll+0x9BC9C0) as an esv::steering::Request, like esv::placement::SteeringRequestOneFrameComponent (same 48-byte shape, see layouts/alive). The first 16 bytes are ls::Variant<eoc::steering::ToDirection, ...> with the index byte at +0xC; this writer always uses alternative 1 (a target entity). Never seen alive. Registry total 48 (server row).",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "TargetEntity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2E2CA60 (AllocRaw 0x30) zeroes +0..+0xC. Writer bg3.exe+0x2E2AB60 lines 181-188: dwords +0/+4 = the target entity handle (the lock item). Toolkit ProcessBeginRequests: when byte +0xC == 1 it checks the 8-byte value at +0 of the request as an entity (type < 0x61, not null); with index 0 (eoc::steering::ToDirection) the same bytes hold a direction vec3 (placement request)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Third dword of the variant storage (z of a ToDirection vector); writer stores the dword 0 at +8."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "TargetType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Variant index: writer stores dword 1 at +0xC; Toolkit EoCServer.dll+0x9BC060 / ProcessBeginRequests test whether the byte at +0xC of the request is 1 (entity) vs 0 (eoc::steering::ToDirection)."
+        }
+      ]
+    },
+    {
+      "offset": 13,
+      "name": "_PadD",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Upper bytes of the dword written with 1; not read."}]
+    },
+    {
+      "offset": 16,
+      "name": "Flags",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes dword 0 at +0x10; Toolkit ProcessBeginRequests copies the dword at request+0x10 to +0x10 of the steering state, whose layout (layouts/alive/esv.steering.StateComponent) names it Flags (bits tested in ProcessSteering)."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "_Pad14",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Not written by creator or writer."}]
+    },
+    {
+      "offset": 24,
+      "name": "RequestId",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator zeroes qwords +0x18/+0x20; writer lines 198-205 store two results of bg3.exe+0x4130D80 (Guid generation) at +0x18/+0x20 and copy them into the lockpicking state. Toolkit: WasAborted(..., (Guid*)(req+0x18)); esv::steering::LifetimeComponent.RequestId receives it."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Lifetime",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator default 0x4B18967F (9999999.0); writer sets 1.0 (0x3F800000 at +0x28). Toolkit copies request+0x28 into esv::steering::LifetimeComponent.Lifetime (layouts/alive), which is counted down."
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "_Pad2C",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Not written."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerLockSteeringRequest", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 5,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 10,
+    "open_questions": [
+      "+0..+0xB is a union (target entity or direction vector); the layout fixes the entity alternative, the only one this writer uses.",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

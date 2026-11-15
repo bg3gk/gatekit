@@ -1,0 +1,101 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::CustomStatDefinitionComponent",
+  "kind": "struct",
+  "about": "Client copy of a custom stat definition (legacy HUB object with a virtual table), kept in sync by ecl::CustomStatsSystem::UpdateStatDefinition from CustomStatDefinitionSyncInfo messages (bg3.exe+0x1FF69B0, message 0xD7, 0x48-byte sync records). Custom stats are a DOS2 feature that BG3 still carries.",
+  "size": 80,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "VMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Destructor registered by bg3.exe+0x5FD290 is bg3.exe+0x6835D0 = call through the first pointer of the object (virtual destructor); EoCShared.dll eoc::CustomStatDefinitionComponent ctor writes its _vftable_ at +0; macOS ecl::CustomStatDefinitionComponent::~ writes PTR_..._CustomStatDefinitionComponent at +0."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Id",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Assert text in EoCClient.dll+0xA405F0 ecl::CustomStatsSystem::UpdateStatDefinition: 'Id cannot be changed during updating stat definition' while comparing *(int*)(comp+8) with the sync info. bg3.exe+0x1FF69B0 compares comp+8 with the record's id before calling the move-assign bg3.exe+0x11CE600, which moves a FixedString at +8."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "_PadC",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding before the 8-aligned string at +0x10"}]
+    },
+    {
+      "offset": 16,
+      "name": "Name",
+      "type": "STDString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x11CE600 (game move-assign) moves a 24-byte string at +0x10 with FUN_144122f50; EoCShared.dll eoc::CustomStatDefinitionComponent::Visit sends it as STDString. Name/Description from DOS2's CustomStatDefinitionComponent (Id, Name, Description) - order not proven."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Description",
+      "type": "STDString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x11CE600 moves the second 24-byte string at +0x28; see Name."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "field_40",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Inside the registry size 0x50 (bg3.exe+0x5FD290 registers 0x500050) but not touched by the game move-assign or by the Toolkit/macOS eoc ctor/dtor (macOS default ctor stores only up to +0x40). Possibly ecl-only members of this build."
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "field_48",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "see field_40"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientCustomStatDefinition", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "base": "eoc::CustomStatDefinitionComponent (Toolkit EoCShared.dll: VMT, FixedString +8, STDString +0x10, STDString +0x28; 0x40 bytes)",
+    "class_size": 80,
+    "confidence": "medium",
+    "functions_read": 9,
+    "minutes": 10,
+    "open_questions": [
+      "+0x40..+0x50: 16 bytes inside the registry size that no function touches (the shared object is 0x40 bytes; macOS ecl::CustomStatDefinitionComponent has no members beyond it) - possibly registry padding.",
+      "Name vs Description order of the two strings (the Toolkit Visit sends them unnamed).",
+      "The creating function (HUB factory) was not found on the Windows side."
+    ],
+    "second_pass": "Not settled: the update bg3.exe+0x1FF69B0 walks 0x48-byte sync records (entity + a 0x40-byte object at +8) and move-assigns only +8..+0x40 (bg3.exe+0x11CE600); the macOS ecl destructor (bg3_macos_x64+0x3450110) releases only the two strings and the FixedString, so nothing names +0x40..+0x50 on either side.",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it"
+  }
+}

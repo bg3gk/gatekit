@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::SpellCastDestroyedComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "SpellCastGuid",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "replication serializers bg3.exe+0x99A350 / 0x99A4D0 / 0x99A110 / 0x99A2A0 move one raw 16-byte member at +0 (DAT_14627ff58) and nothing else. Live: 32 distinct 16-byte values identical on client and server; the same values are the +0 Guid of SpellCastMovementAndPrecalculationEndComponent and SpellCastFailedComponent samples (the id of a spell cast)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationSpellCastDestroyed",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [
+      "Name inferred (spell cast id shared with the other spell cast notifications); no FieldMeta names."
+    ],
+    "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

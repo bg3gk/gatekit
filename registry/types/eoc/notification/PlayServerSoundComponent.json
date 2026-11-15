@@ -1,0 +1,88 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::PlayServerSoundComponent",
+  "kind": "struct",
+  "about": "Replicated request from the server to play a sound on a character's client; routed by ecl::ServerSoundSystem::RouteCharacterServerRequests (macOS). Born live in many dialogues, scripted events (explosions, collapses), idle and item use.",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Serializer bg3.exe+0x995AE0 member 1: 16 bytes at +0. macOS RouteCharacterServerRequests looks the two qwords at +0/+8 up in a HashMap<Guid, EntityHandle> (uuid -> handle) to find the character."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "SoundEvent",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Serializer member 2: ecs::sync::Serialize(FixedString*) at +0x10; RouteCharacterServerRequests passes it to character::SoundSystem::PlaySound / PlayerManager::PlaySoundForLocalPlayer."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "SoundObjectType",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x845C60 (lambda over esv::sound::PlayServerSoundRequestOneFrameComponent, variant tag 0x1C = PlayServerSoundNotificationRequest) copies the request whole (Entity, Event, u32 +0xC, bytes +0x10/+0x11); dispatcher helper bg3.exe+0x2DEE710 stores request +0xC here, and on the same value chooses whose Guid goes to +0: 0 -> the character's, 1 -> the item's (esv::Item::GetUUID), 2/3 -> empty. Request +0xC is the one-frame's SoundObjectType (PlayHUDRequest writes 2)."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "FromResource",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DEE710 stores byte +0x10 of the PlayServerSoundNotificationRequest here, which EoCServer.dll+0x845C60 copied from esv::sound::PlayServerSoundRequestOneFrameComponent +0x10 - the byte esv::ServerSoundSystem::Request*SoundFromResource (EoCServer.dll+0x4CAA70 / +0x4CA860) set to 1 and RequestPlaySound / RequestPlayHUDSound set to 0. Client side: when set, RouteCharacterServerRequests resolves the sound through the current sound bank (type 9)."
+        }
+      ]
+    },
+    {
+      "offset": 25,
+      "name": "LocalPlayerOnly",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Serializer member 5: 1 byte at +0x19; macOS default strb wzr at +0x19; when set, RouteCharacterServerRequests calls PlayerManager::PlaySoundForLocalPlayer / PlayExternalSoundForLocalPlayer instead of the character sound system."
+        }
+      ]
+    },
+    {
+      "offset": 26,
+      "name": "_Pad1A",
+      "type": "uint8_t[6]",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "tail padding to 32; live garbage (sometimes pointer-shaped)"}
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NotificationPlayServerSound", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

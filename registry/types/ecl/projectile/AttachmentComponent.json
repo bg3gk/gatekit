@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::projectile::AttachmentComponent",
+  "kind": "struct",
+  "about": "Client twin of esv::projectile::AttachmentComponent (SE ServerProjectileAttachment { EntityHandle Attachment }). Read by ecl::thrown::AttachmentSystem (GatherDetachmentRequests / Update). Born live while casting projectile spells.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Attachment",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Registry size 8; live values are entity handles (0x00400001_000xxxxx shape); macOS ecl::thrown::AttachmentSystem::GatherDetachmentRequests/Update read it; same size and role as SE esv::projectile::AttachmentComponent::Attachment (Projectile.h)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientProjectileAttachment", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [
+      "Only the presence check (bg3.exe+0x1897C20) and the server twin were read; the value was not traced on the client."
+    ],
+    "raw_check": "14 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

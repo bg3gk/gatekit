@@ -1,0 +1,96 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::inventory::MembersCreatedSingletonComponent",
+  "kind": "struct",
+  "about": "Singleton of esv::inventory::InteractionSystem (queried together with ReplicateMembersRequestComponent, MemberUnloadRequestComponent and MemberChangesSingletonComponent, query registered at bg3.exe+0x3499210) and read by esv::notification::System. Alive in every level (idle), seen empty. It is a HashMap with trivially destructible values; the value type was not established, so the value array is given as its raw parts.",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "HashMap bucket table pointer (HashKeys). Adder bg3.exe+0x348B300 zeroes +0..+0x38 in the HashMap pattern (sizes at +0x1C and +0x2C); destructor bg3.exe+0x5C4870 frees +0x30 then calls the HashSet destructor bg3.exe+0x582AD0 (frees +0x20, +0x10, +0)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count of the HashMap (0 when never used)."}]
+    },
+    {
+      "offset": 12,
+      "name": "_Pad0C",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding of the bucket StaticArray."}]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "HashMap NextIds chain array (freed by the HashSet destructor)."}
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "field_20",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "HashMap key array; 8-byte keys, assumed EntityHandle as in every other inventory map of this system (macOS: InteractionSystem keeps HashMap<ID<EntityHandleTraits>, ...> for its per-container data)."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "void*",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "value array pointer; values are trivially destructible (freed without per-element destructor); element type/size not established."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "field_38",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "value array capacity."}]
+    },
+    {
+      "offset": 60,
+      "name": "field_3c",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "value array size."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerInventoryMembersCreated", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "low",
+    "functions_read": 5,
+    "minutes": 9,
+    "open_questions": [
+      "Value type of the map (it should become HashMap<EntityHandle, T>); key type assumed EntityHandle."
+    ],
+    "second_pass": "Not settled: the value type of the map was not established on the Windows side; the bg3.exe query that names this singleton (bg3.exe+0x347C370) only removes the singleton entity at shutdown.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+  }
+}

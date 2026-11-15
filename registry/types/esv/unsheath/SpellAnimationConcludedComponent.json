@@ -1,0 +1,55 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::unsheath::SpellAnimationConcludedComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Spell",
+      "type": "SpellId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x32EF230 (size 0x40): FixedString -1 at +0, byte 0x17 at +8 (SpellSourceType::Sentinel), two zero Guids at +0x10/+0x20, FixedString -1 at +0x30 - the default SpellId of Script Extender (Base/ExposedTypes.h, 0x38 bytes: OriginatorPrototype, SourceType, Source, ProgressionSource, Prototype). bg3.exe+0x32ECA80 creates it when esv::unsheath::SpellAnimationLifetimeComponent is removed and copies that component's SpellId (FUN_1407a2480 for the first 0x30 bytes, then the Prototype FixedString at +0x30 with ref counting from the 0x50-byte Lifetime element)."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "Timer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x32ECA80 writes 0x40400000 (3.0 s) on creation (another path copies a float from +0xA0 of a spell cast record), then subtracts the frame time every tick at +0x38 and queues the entity for removal at <= 0. Read by the resolver through bg3.exe+0x32F4790 (it looks the spell up by Prototype at +0x30)."
+        }
+      ]
+    },
+    {
+      "offset": 60,
+      "name": "_Pad3C",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding; creator leaves it untouched"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerUnsheathSpellAnimationConcluded",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "unsheath",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 7,
+    "open_questions": [
+      "Never alive in the capture. SpellId is taken on the strength of the default pattern and of the copy from SpellAnimationLifetimeComponent.Spell; the +0xA0 source of the second timer value was not identified."
+    ],
+    "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::player_management::UserComponent",
+  "kind": "struct",
+  "size": 2,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "PlayerId",
+      "type": "int16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x797440 allocates 2 bytes, stores 0, no destructor. Toolkit ecl::player_management::GetUserEntityByPlayerId(WorldView<UserComponent const>&, short) (EoCClient.dll+0x549F70) finds the user entity whose component matches the short player id; macOS readers gui::GetPlayerHandle, CheckMultiplayerUser. Live: 1."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientPlayerManagementUser", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [
+      "The comparison inside GetUserEntityByPlayerId was not read to the end; a short player id is the only thing that fits 2 bytes and the function signature."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

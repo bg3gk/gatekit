@@ -1,0 +1,44 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::vmcharacter::VMCharacterDeactivatedOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event on a fresh entity: a character's gui::VMCharacter view-model was deactivated (removed from the active collection); carries the object and the character entity. Seen whenever characters leave (fights, deaths, dialogues, level change).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Object",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "NoesisGameUI.dll+0x420580 (Toolkit, ActivateVMCharacterSystem::ProcessCharacterActivation): for each gui::VMCharacter of the active collection whose entity (+0xA8) is being deactivated, EntityCommandBuffer::CreateEntity, then FUN_18041b1c0 adds this component (SetupComponentFrameStorage(..., 0x10, ...)) and stores the object with AddRef/Release in slot [0]. ViewModelProvider::ProcessActivations (NoesisGameUI.dll+0x2D7100) reads it with stride 0x10 and inserts the first 8 bytes into a HashSet<Noesis::Ptr<gui::VMCharacter>>. Value type Noesis::Ptr<gui::VMCharacter>, written as void*. Live: 48 instances, all heap pointers."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same writer: 'plVar15[1] = *(longlong *)pEVar13' - the character entity it compared with VMCharacter+0xA8. Live: 48 values shaped like entity handles (index low dword, type/salt 0x14..0x1C000xx high dword)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "GuiVMCharacterDeactivated", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 5,
+    "open_questions": ["Object is a Noesis::Ptr<gui::VMCharacter>; exposed as an opaque pointer."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

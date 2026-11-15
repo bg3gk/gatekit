@@ -1,0 +1,51 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character::TradingComponent",
+  "kind": "struct",
+  "about": "Trade mode of a character on the client (born in pickpocket/trader dialogues: DEN_Thieflings_Pickpocket, GOB_DrowCommander). Same shape as SE TradeModeChangeRequest (Visual.h: uint16_t field_0, uint8_t field_2) fed from ecl::CharacterManager::TradingModeChanges.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint16_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1CB02B0 (from ecl::CharacterManager update) writes 1 (16-bit). Live 1. Possibly a player id."
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "Mode",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes 4. Toolkit ecl::trade::GetTradeContext tests `*(char*)(c+2) == 0`; macOS ecl::trade::ProcessMoveTradeItem compares it with 0 and 3 - a trade mode enum (uint8_t). Live 2/4."
+        }
+      ]
+    },
+    {
+      "offset": 3,
+      "name": "_Pad3",
+      "type": "uint8_t[1]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding (live garbage)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientCharacterTrading", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 8,
+    "open_questions": ["Meaning of the uint16 at +0 and the enum names of Mode."],
+    "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::CombatantKilledNotificationComponent",
+  "kind": "struct",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Combatant",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "esv::combat::CombatantKilledSystem::ProcessDeaths (EoCServer.dll+0x149A060; query Spec<Participant, Death | optional eoc::PlayerComponent | added Death>) writes esv::combat::CombatantKilledEventOneFrameComponent +0 = the dying entity. EoCServer.dll+0x83FE70 (notification lambda, variant tag 6 = CombatantKilledNotificationRequest) turns event +0 into its Guid (FUN_180367e90) at request +0; dispatcher bg3.exe+0x2DF53B0 case 6 copies request +0..+0x22 straight into this component (creator bg3.exe+0x2DF4690, TypeIndex CombatantKilledNotificationComponent). The combatant that died."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Cause",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessDeaths EoCServer.dll+0x149A060 writes event +8 = DeathComponent +0 (death::DeathData::Cause); EoCServer.dll+0x83FE70 turns it into its Guid at request +0x10 (Empty Guid when the handle is invalid); bg3.exe+0x2DF53B0 case 6 copies it to +0x10. Named after DeathData::Cause: the entity that caused the death."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "CombatantIsPlayer",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessDeaths EoCServer.dll+0x149A060 writes event +0x10 = (the query's optional eoc::PlayerComponent of the dying entity is present); copied through request (EoCServer.dll+0x83FE70, 3 bytes) and bg3.exe+0x2DF53B0 case 6 to +0x20. Read as a flag by ecl::GameplaySoundSystem::ProcessCombatMusicNotifications (EoCClient.dll+0xE39BB0)."
+        }
+      ]
+    },
+    {
+      "offset": 33,
+      "name": "CauseIsPlayer",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessDeaths EoCServer.dll+0x149A060 writes event +0x11 = HasComponent(DeathData::Cause, eoc::PlayerComponent) (type index DAT_1821f166c, registered by EoCServer.dll+0x156D0 with GetTypeName<eoc::PlayerComponent>); copied through the request to +0x21. ProcessCombatMusicNotifications branches on it."
+        }
+      ]
+    },
+    {
+      "offset": 34,
+      "name": "CauseHasEnemiesInCombat",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessDeaths EoCServer.dll+0x149A060 writes event +0x12 = true when eoc::relation::IsEnemy(Cause (or the dying entity when Cause is invalid), p) holds for some participant p != the dying entity of eoc::CombatHelpers::GetCombatParticipants(dying entity's combat); copied through the request to +0x22. ProcessCombatMusicNotifications picks its sound event first on this byte."
+        }
+      ]
+    },
+    {
+      "offset": 35,
+      "name": "_Pad23",
+      "type": "uint8_t[5]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NotificationCombatantKilled", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 0,
+    "minutes": 3,
+    "names_pass_2": "Replicated without macOS FieldMeta names; not settled.",
+    "open_questions": [
+      "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+      "Meaning of the Guids and the three bytes (bools or small enums) not established."
+    ],
+    "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

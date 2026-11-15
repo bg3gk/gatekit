@@ -1,0 +1,52 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::inventory::FailedAddsUnloadRequestComponent",
+  "kind": "struct",
+  "about": "Server component (one instance, singleton-like): entities to unload/destroy because they could not be added to an inventory (esv::inventory::MemberUnloadSystem::ProcessMemberUnloadRequests, log 'Destroying entity %s because it failed to be added to an inventory'). Written by InteractionRequestSystem. Seen once, empty.",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entities",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "MemberUnloadSystem::ProcessMemberUnloadRequests (EoCServer.dll+0xF59380) iterates the component's array at +0 with stride 8, logs each element with GetEntityDataStr and destroys/unloads them. bg3.exe creator 0x3476260 zeroes two arrays; destructor FUN_1406a2280 clears both with the trivial-array clear."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "Array<EntityHandle>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second trivially-destructible DynamicArray (destructor FUN_1406a2280 frees +0x10). Element type not read; EntityHandle assumed by analogy with +0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerInventoryFailedAddsUnloadRequest",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 9,
+    "open_questions": [
+      "Element type and role of the second array.",
+      "Which of the two singletons read in ProcessMemberUnloadRequests (FUN_180f59070 / FUN_180f58d60) is this component was inferred from the log texts."
+    ],
+    "second_pass": "Not settled in this pass: the role and element type of the second array (+0x10) need the bg3.exe MemberUnloadSystem, which was not reached; the macOS index names InteractionRequestSystem as the only writer of the component.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::RoomTriggerFadeView0Component",
+  "kind": "struct",
+  "size": 20,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "TargetValue",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x18F52B0 (same template as the other fade-view creators) writes 0; meaning from TimelineFadeView0 (Coverage.h). Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x18F52B0 writes 0x40800000 = 4.0; live 4.0. Probably fade speed."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Immediate",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "Creator writes 0; meaning from TimelineFadeView0. Live 0."}
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "field_9",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Creator writes 0. Live 0."}]
+    },
+    {
+      "offset": 10,
+      "name": "field_A",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "bg3.exe+0x18F52B0 writes 1 at +10. Live 1."}]
+    },
+    {
+      "offset": 11,
+      "name": "_PadB",
+      "type": "uint8_t[1]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding (live garbage 0x15)"}]
+    },
+    {
+      "offset": 12,
+      "name": "CurrentValue",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x18F52B0 writes 1.0; meaning from TimelineFadeView0. Live 0.0 (= TargetValue, fade finished)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Active",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator template writes 1; meaning from TimelineFadeView0. Live 1."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "_Pad11",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "tail padding to 0x14 (live garbage 0x3F8000)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientRoomTriggerFadeView0", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 2,
+    "open_questions": [
+      "field_4 / field_9 / field_A meaning (same open items as TimelineFadeView0)."
+    ],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "reuses": "identical to ecl::TimelineFadeView0Component (Coverage.h, sizeof 20) - same fade-view template",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

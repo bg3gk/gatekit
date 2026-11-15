@@ -1,0 +1,93 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::room_portal::RoomStateComponent",
+  "kind": "struct",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "HasBeenVisible",
+      "type": "bool",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Toolkit EoCClient.dll: ls::FieldMeta<bool eoc::room_portal::RoomStateComponent::*,0>; macOS ls::FieldMeta<bool eoc::room_portal::RoomStateComponent::*, &eoc::room_portal::RoomStateComponent::m_HasBeenVisible>. Offsets 0/1 assigned by macOS FieldMeta order (HasBeenVisible before IsRoomVisible)."
+        }
+      ]
+    },
+    {
+      "offset": 1,
+      "name": "IsRoomVisible",
+      "type": "bool",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Toolkit ls::FieldMeta<bool eoc::room_portal::RoomStateComponent::*,1>; macOS ls::FieldMeta<bool eoc::room_portal::RoomStateComponent::*, &eoc::room_portal::RoomStateComponent::m_IsRoomVisible> (order assumption)"
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "_Pad2",
+      "type": "uint8_t[6]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding (alignment)"}]
+    },
+    {
+      "offset": 8,
+      "name": "RoomConnections",
+      "type": "Array<RoomPortalConnection>",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Windows type name ls::FieldMeta<class ls::DynamicArray<struct eoc::room_portal::Connection,struct ls::TaggedAllocator<int> > eoc::room_portal::RoomStateComponent::*,8>; macOS ls::FieldMeta<ls::DynamicArray<eoc::room_portal::Connection, ls::TaggedAllocator<int> > eoc::room_portal::RoomStateComponent::*, &eoc::room_portal::RoomStateComponent::m_RoomConnections>. Serializer bg3.exe+0x92D130 -> bg3.exe+0xA986E0, element stride 0x20."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "RoomPortalRoomState", "one_frame": false},
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [
+      "Which of the two bools is at +0 (order-based).",
+      "Names of the Connection members."
+    ],
+    "raw_check": "16 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "RoomPortalConnection",
+        "size": 32,
+        "fields": [
+          {
+            "name": "field_0",
+            "offset": 0,
+            "type": "Guid",
+            "source": "unknown",
+            "evidence": "bg3.exe+0xA986E0 writes 16 bytes at +0"
+          },
+          {
+            "name": "field_10",
+            "offset": 16,
+            "type": "EntityHandle",
+            "source": "unknown",
+            "evidence": "entity at +0x10 (bg3.exe+0x4017090)"
+          },
+          {
+            "name": "field_18",
+            "offset": 24,
+            "type": "EntityHandle",
+            "source": "unknown",
+            "evidence": "entity at +0x18"
+          }
+        ]
+      }
+    ]
+  }
+}

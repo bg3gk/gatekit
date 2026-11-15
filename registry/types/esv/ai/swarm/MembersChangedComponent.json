@@ -1,0 +1,55 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ai::swarm::MembersChangedComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Changes",
+      "type": "HashMap<EntityHandle, AiSwarmMembersChange>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "UpdateMembers gets this singleton (FUN_1816a1ce0), clears it (FUN_18169ab10 / FUN_180226330) and for every alive entity inserts the entity as key (FUN_1816a1770(singleton, entity)) and assigns two FixedStrings to the returned 8-byte value. Adder bg3.exe+0x3258980 allocates 0x40 bytes and zeroes them. Live: 4 instances of cleared maps (bucket count 29/43, key/value capacity 32, size 0)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerAiSwarmMembersChanged", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 9,
+    "open_questions": [
+      "Old/New order rests on one function (pair written as {current, requested})."
+    ],
+    "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "AiSwarmMembersChange",
+        "size": 8,
+        "fields": [
+          {
+            "name": "OldSwarmGroup",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "esv::ai::swarm::MemberSystem::UpdateMembers (EoCServer.dll+0x16A3080): for each entity of the request map it reads the current group FixedString from the entity's eoc::ai::swarm::MemberComponent (FUN_180bbf0c0, Empty when absent) and, when it differs from the requested one, writes it to value +0."
+          },
+          {
+            "name": "NewSwarmGroup",
+            "offset": 4,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Same function writes the requested group (value of the HashMap<EntityHandle, FixedString> argument) to value +4; the pair is then copied into the singleton and into the entity's MemberChangedEvent."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::InvisibleClimbingHelper",
+  "kind": "struct",
+  "size": 80,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "VMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows constructor bg3.exe+0x3D6E8C0 (same stores inlined in the creator bg3.exe+0x3C56E60): *this = &ls::InvisibleClimbingHelper::vftable. The creator stores only a pointer to the object in the component slot (ComponentFrameStorageAllocRaw(storage, 8, ...); *slot = object)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "VMT2",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows constructor bg3.exe+0x3D6E8C0 (same stores inlined in the creator bg3.exe+0x3C56E60): this[1] = &PTR_LAB_1458d0d20 - the second virtual table of SE's StandardGameObject (ILoggableObject)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "GameObjectEntity",
+      "type": "EntityRef",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows constructor bg3.exe+0x3D6E8C0 (same stores inlined in the creator bg3.exe+0x3C56E60): +0x10 = 0xFFC0000000000000 (null EntityHandle), +0x18 = 0 - SE's StandardGameObject EntityRef GameObjectEntity (handle + world pointer)."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "field_20",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows constructor bg3.exe+0x3D6E8C0 (same stores inlined in the creator bg3.exe+0x3C56E60): +0x20 = 0 (qword). SE StandardGameObject field_20."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Level",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows constructor bg3.exe+0x3D6E8C0 (same stores inlined in the creator bg3.exe+0x3C56E60): *(uint32 *)(+0x28) = 0xFFFFFFFF (null FixedString). SE StandardGameObject Level."
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "GameObjectFlags",
+      "type": "uint16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows constructor bg3.exe+0x3D6E8C0 (same stores inlined in the creator bg3.exe+0x3C56E60): *(uint16 *)(+0x2C) = 0. SE StandardGameObject GameObjectFlags."
+        }
+      ]
+    },
+    {
+      "offset": 46,
+      "name": "_Pad2E",
+      "type": "uint8_t[2]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "alignment of the pointer at +0x30"}]
+    },
+    {
+      "offset": 48,
+      "name": "ParentConstructionTile",
+      "type": "void*",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor annotation '+0x30 ParentConstructionTile'. Windows constructor bg3.exe+0x3D6E8C0 (same stores inlined in the creator bg3.exe+0x3C56E60): +0x30 = the constructor's argument (bg3.exe+0x3C56E60: puVar10[6] = *param_3)."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "UUID",
+      "type": "Guid",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Annotation '+0x38 UUID [accessor, game offset]' on Toolkit ls::InvisibleClimbingHelper::SetUUID (writes 16 bytes). Windows constructor bg3.exe+0x3D6E8C0 (same stores inlined in the creator bg3.exe+0x3C56E60): +0x38..+0x47 = the null Guid constant DAT_14625aad0."
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "_Pad48",
+      "type": "uint8_t[8]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "The registry size (80, client and server) is 8 bytes larger than the 72-byte class, as for the trigger proxies already declared (layouts/alive/ecl.CullTrigger.json, ecl.FadeTrigger.json); the constructor writes nothing past +0x47."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "InvisibleClimbingHelper", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "base": "StandardGameObject (Script Extender, GameDefinitions/Components/Visual.h): VMT, VMT2, EntityRef GameObjectEntity, field_20, FixedString Level, uint16_t GameObjectFlags = 0x30 bytes",
+    "class_size": 72,
+    "confidence": "high",
+    "functions_read": 3,
+    "hold": "build 2026-11-13: uses the foreign type EntityRef (not declared before Coverage.h) and is an object behind a pointer; waits for the pointer-object form of declaration",
+    "minutes": 5,
+    "open_questions": [
+      "Not seen alive.",
+      "ParentConstructionTile could be typed ConstructionTile* in Script Extender; kept void*."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Settled from the Windows constructor bg3.exe+0x3D6E8C0 / creator bg3.exe+0x3C56E60, which write every member of the 72-byte object (two VMTs, null EntityRef, FixedString -1, flags 0, tile pointer, null Guid); size set to the registry's 80 with class_size 72 and an 8-byte tail, the convention of the confirmed trigger layouts - this fixes the raw-check size mismatch.",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

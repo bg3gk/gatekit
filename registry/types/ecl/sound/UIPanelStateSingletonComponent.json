@@ -1,0 +1,76 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::UIPanelStateSingletonComponent",
+  "kind": "struct",
+  "size": 72,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Players",
+      "type": "HashMap<uint16_t, UIPanelStatePlayerPanel>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessPanelRequests looks up the singleton (+0) with short keys (hash of *psVar14 % bucket count +8; keys at +0x20 stride 2, values at +0x30 stride 8) and removes entries for removed players (key from ProcessPlayerEvents, which reads short player ids from player_management::EventsSingletonComponent). Game key type is short (declared uint16_t). Live: 5 buckets, 1 entry."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "IsMuffled",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessPanelRequests sets byte +0x40 to 1 after SendMuffleEvent(..., true, ...) and to 0 after SendMuffleEvent(..., false, ...); checked before muffling. macOS default: str xzr, [x23, #0x40]. Live: 0."
+        }
+      ]
+    },
+    {
+      "offset": 65,
+      "name": "_Pad41",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Alignment to 8 (size 0x48); not accessed."}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSoundUIPanelStateSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": ["Value member names are ours (no game struct name found)."],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "UIPanelStatePlayerPanel",
+        "size": 8,
+        "fields": [
+          {
+            "name": "Panel",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "UIPrioritySystem::ProcessPanelRequests (EoCClient.dll+0xD47FF0) passes value+0 as the FixedString panel name to SendMuffleEvent and copies it with FixedString::operator= when compacting the map."
+          },
+          {
+            "name": "OpenCount",
+            "offset": 4,
+            "type": "int32_t",
+            "source": "inferred",
+            "evidence": "ProcessPanelRequests tests *(int*)(value+4) < 1 / == 0 to decide whether to post the muffle on/off event (number of open panels of that player); copied as 4 bytes on compaction."
+          }
+        ]
+      }
+    ]
+  }
+}

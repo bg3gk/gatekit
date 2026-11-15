@@ -1,0 +1,65 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::thrown::IsThrownComponent",
+  "kind": "struct",
+  "about": "Replicated marker of an object in flight after a throw, written by esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (bg3.exe+0x2AFA000) from a 0x28-byte throw request. Born live in shove-throw with RotationParametersComponent, drop components and the client thrown components.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Duration",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (EoCServer.dll+0x3D3D50, line 321) copies esv::thrown::EntityThrownRequestOneFrameComponent +0xC here, which InitializeProjectileThrown fills with eoc::PathMover::SampleDuration of the projectile path (flight time). Live 0.33 .. 1.31."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "SpellAnimationType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessThrownRequests (EoCServer.dll+0x3D3D50, line 322) copies the request byte +0x10, which InitializeProjectileThrown (EoCServer.dll+0x7F2D80) takes from eoc::SpellPrototype +0x19 = Script Extender's SpellPrototype.SpellAnimationType. Live 3."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "_Pad5",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "live garbage"}]
+    },
+    {
+      "offset": 8,
+      "name": "Caster",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessThrownRequests (EoCServer.dll+0x3D3D50, line 323) copies the request handle +0x18, which InitializeProjectileThrown (EoCServer.dll+0x7F2D80) takes from InitializationInfo +0x70 = Script Extender's esv::projectile::InitializationData.Caster."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ThrownIsThrown", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "Names: float (throw duration/speed?), byte (throw type?), handle (thrower?)."
+    ],
+    "raw_check": "11 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

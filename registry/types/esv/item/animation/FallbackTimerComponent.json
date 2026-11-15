@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::item::animation::FallbackTimerComponent",
+  "kind": "struct",
+  "about": "Server per-item float timer of esv::item::animation::StateTransitionSystem: Toolkit EoCServer.dll+0x13AF810 StateTransitionSystem::EvaluateFallbackTimers walks it (WorldView<FallbackTimerComponent, StateChangedEventOneFrameComponent, StateComponent, ...>); FinalizeState (EoCServer.dll+0x13B03A0) takes it as an optional view member. Server twin of ecl::item::animation::FallbackTimerComponent (layouts/alive: float Time). A fallback for item animations that never report completion (doors, chests). Savegame model ls::model::game::item::animation::v0::FallbackTimerComponent.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Time",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Registry size 4; same 4-byte float as the client twin (ecl::item::animation::FallbackTimerComponent.Time). FinalizeState gets a float* from the view (EoCServer.dll+0x13AD890) for it. Live (48): 0..3.74, counting time."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerItemAnimationFallbackTimer",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Counting up vs down not confirmed on the server side (client twin counts up from 0)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

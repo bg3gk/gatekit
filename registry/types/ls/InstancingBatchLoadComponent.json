@@ -1,0 +1,46 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::InstancingBatchLoadComponent",
+  "kind": "struct",
+  "about": "Pending load request of an instancing batch (instanced scenery meshes) in the stream loader: ls::StreamSystemLoadHelper::UpdateLoadRequests<InstancingBatchRegisteredComponent, InstancingBatchLoadComponent, InstancingBatchComponent, ...> (macOS names) keeps it; ls::InstancingSystem (FinishFolderLoad, ProcessBatchModifyRequests, StartGroupVisualLoads, Update) writes it, ProcessBatchModifications reads it. Same aio::Priority encoding as ls::TerrainLoadComponent / ls::PhysicsLoadComponent (SE Physics.h: aio::Priority Priority) but without the callback. Seen alive on idle levels.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "PriorityLevel",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Game creator bg3.exe+0x3B02690 allocates 8 bytes and writes the qword 1 (level 1, value 0.0). First half of aio::Priority, as in ls.TerrainLoadComponent.json (StreamSystemLoadHelper). Live 1 / 2."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Priority",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second half of aio::Priority (float). Live 500.0 .. 990 (distance-like values)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "InstancingBatchLoad", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [
+      "Whether Script Extender's aio::Priority struct can be used directly here (not referenced by rule)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

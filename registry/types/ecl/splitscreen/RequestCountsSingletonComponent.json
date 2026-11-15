@@ -1,0 +1,61 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::splitscreen::RequestCountsSingletonComponent",
+  "kind": "struct",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "ScreenFadeSplitRequests",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::splitscreen::RequestSystem::Update (EoCClient.dll+0x8441B0): counts[0] += pending LEGACY_ScreenFadeStart/StopSplitRequest delta (system+0x28); assert \"LEGACY_ScreenFadeStopSplitRequest without a LEGACY_ScreenFadeStartSplitRequest call\" when negative; clamped to >= 0. Default 0 (macOS str xzr,[x23]), live 0."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "UISplitRequests",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: counts[1] += system+0x24 (UIStart/UIStopSplitRequest), assert \"UIStopSplitRequest without a UIStartSplitRequest call\"; reset to 0 by LEGACY_ResetUI (system+0x2C flag). Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "SplineSplitRequests",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: counts[2] += system+0x20 (SplineStart/SplineStopSplitRequest), assert \"SplineStopSplitRequest without a SplineStartSplitRequest call\". Default 0 (macOS str wzr,[x23,#8]), live 0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSplitscreenRequestCountsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [
+      "Names are ours, built from the RequestSystem method names (Toolkit exports)."
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

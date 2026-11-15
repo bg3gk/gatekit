@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::VisualStreamChangeCullDistanceOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request carrying a new cull distance for an entity's VisualStreamComponent; read only by ls::VisualStreamSystem::Cull (macOS). Added in dialogues/fights (dialogue camera changes).",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "CullDistance",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x3E5B520 allocates 4 bytes and writes 0xBF800000 (-1.0f); bg3.exe+0x3D09C60 reads it together with ls::VisualStreamComponent; type name says 'ChangeCullDistance'. Live floats 46.8..150 (0x423B43A7..0x43169280)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "VisualStreamChangeCullDistance", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": ["Game member name."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

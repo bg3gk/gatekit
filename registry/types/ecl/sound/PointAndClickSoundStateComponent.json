@@ -1,0 +1,146 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::PointAndClickSoundStateComponent",
+  "kind": "struct",
+  "size": 88,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "User",
+      "type": "UserId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS default constructor stores its first argument (str w1, [x23]) at +0; PointAndClickSoundSystem keeps a HashMap<net::UserID, PointAndClickSoundStateComponent*> (macOS) and ResetPlayerState (EoCClient.dll+0xDFEFF0) finds the state by user id. Live: always 1 (the local user)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Alignment before the 8-byte handle; live bytes vary (0, 0xFFFFFFF4, ...) - uninitialised padding."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Target",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ResetPlayerState writes the global DAT_1819cb010 (null handle) to +8; macOS default stores x3 (str x3, [x23, #8]). Live: 0xFFC0000000000000 (null entity handle). Probably the entity the point-and-click sound refers to - name is a guess."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Actions",
+      "type": "HashSet<uint8_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ResetPlayerState clears a hash set at +0x10: memsets the bucket table (+0x10 pointer, +0x18 count) to 0xFF, walks IndexedStorage<enum ecl::sound::EPointAndClickActionType> keys (capacity +0x38, size +0x3C) and resets the next-id array at +0x20. Element width of the enum not established (values up to 0x11 seen in ChangeActionIfNeeded) - declared uint8_t. Live: empty."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "field_40",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS default: strb wzr, [x23, #0x40]. Live: 0 (the following 3 bytes vary - padding)."
+        }
+      ]
+    },
+    {
+      "offset": 65,
+      "name": "_Pad41",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "Live bytes vary (0x09/0x6F/0xAA/0xFF): uninitialised padding."}
+      ]
+    },
+    {
+      "offset": 68,
+      "name": "field_44",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Live: 0 or -0.00635 (float-shaped). Default 0."}]
+    },
+    {
+      "offset": 72,
+      "name": "field_48",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "Default 0 (stur xzr, [x23, #0x44] covers 0x44-0x4B). Live: 0."}
+      ]
+    },
+    {
+      "offset": 76,
+      "name": "Count",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ResetPlayerState zeroes 8 bytes at +0x4C; PointAndClickSoundSystem::ChangeActionIfNeeded (EoCClient.dll+0xDFC500) compares a helper's result with *(int*)(state+0x4C) + 1 (a play counter). Name is ours."
+        }
+      ]
+    },
+    {
+      "offset": 80,
+      "name": "Cooldown",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ChangeActionIfNeeded advances the action only when *(float*)(state+0x50) <= 0.0 (a timer); reset to 0 by ResetPlayerState. Name is ours."
+        }
+      ]
+    },
+    {
+      "offset": 84,
+      "name": "field_54",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "Default 0 (str wzr, [x23, #0x54]). Live: 0 or 0xFFFFFFFF."}
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSoundPointAndClickSoundState",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 9,
+    "names_pass_2": "No game names found.",
+    "open_questions": [
+      "That param_3 of ChangeActionIfNeeded is this component (the +0x4C/+0x50 reset in ResetPlayerState supports it).",
+      "Width of EPointAndClickActionType in the hash set.",
+      "Meaning of +0x40, +0x44, +0x48, +0x54."
+    ],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

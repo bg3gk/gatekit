@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::crowds::DynamicAnimationSetComponent",
+  "kind": "struct",
+  "about": "Dynamic animation set of a spawned Act 3 crowd character, copied from its crowd proxy (eoc::crowds::ProxyDynamicAnimationSetComponent, a Guid chosen by weighted random in SpawnSystem::CreateCrowdProxy) when esv::crowds::SpawnSystem spawns the character; read by the per-frame update of esv::animation::DynamicAnimationSetsSystem. Saved: model game.crowds.v0.DynamicAnimationSetComponent (16 bytes).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "DynamicAnimationSet",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x35393A0 (called from the per-frame update of esv::crowds::SpawnSystem) allocates the 16-byte component, zeroes it and copies four u32 from a 16-byte-stride component of its query (the proxy's ProxyDynamicAnimationSetComponent Guid, same name as SE's Coverage.h field); live: 10 different random-looking 16-byte values"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCrowdsDynamicAnimationSet",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 5,
+    "open_questions": [],
+    "raw_check": "10 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

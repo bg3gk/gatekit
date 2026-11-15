@@ -5,7 +5,7 @@ using GateKit.Symbols.Queries;
 namespace GateKit.Symbols.Decomp;
 
 /// <summary>`run`: Ghidra without its window over one binary - analysis, the names the symbol
-/// database knows, decompilation of every function into functions.jsonl.</summary>
+/// database knows, decompilation of every function into the export (<see cref="DecompStore.ExportName"/>).</summary>
 internal static class GhidraCommand
 {
     /// <summary>Ghidra (GHIDRA_HOME, else the last ghidra_* folder under the tools folder) and
@@ -53,24 +53,13 @@ internal static class GhidraCommand
 
     public static int Run(DecompSession s, string binaryName, string memory, int cpu, string? range, bool fresh)
     {
-        var (ghidra, jdk) = FindTools(s.Settings);
-        var scripts = FindScripts();
         var binary = s.Locate(binaryName) ?? throw new SymbolsException($"binary not found: {binaryName}");
         var file = new FileInfo(binary);
         var work = Path.Combine(s.Settings.Work, file.Name);
         Directory.CreateDirectory(work);
-        var output = Path.Combine(work, "functions.jsonl");
-        var log = Path.Combine(work, "ghidra.log");
-        // Ghidra's own settings, cache and temporary files go next to the output, so that a run does
-        // not depend on (or leave anything in) the user profile.
-        var user = Path.Combine(s.Settings.Work, "ghidra-user");
-        foreach (var sub in new[] { "settings", "cache", "tmp" })
-            Directory.CreateDirectory(Path.Combine(user, sub));
-        var vmargs = $"-Dapplication.settingsdir={Path.Combine(user, "settings")} -Dapplication.cachedir={Path.Combine(user, "cache")}"
-                     + $" -Djava.io.tmpdir={Path.Combine(user, "tmp")}";
-        var launcher = Path.Combine(ghidra, "support", OperatingSystem.IsWindows() ? "launch.bat" : "launch.sh");
-        var cmd = new List<string> { launcher, "fg", "jdk", "Ghidra-Headless", memory, vmargs, "ghidra.app.util.headless.AnalyzeHeadless", work, "project" };
-        var scriptPath = new[] { "-scriptPath", scripts };
+        var output = DecompStore.ExportPath(work, s.Err);
+        var cmd = new List<string>();
+        var scriptPath = new[] { "-scriptPath", FindScripts() };
         bool gameBinary = string.Equals(Path.GetFullPath(file.DirectoryName!).TrimEnd(Path.DirectorySeparatorChar),
                                         Path.GetFullPath(Path.Combine(s.Settings.Game, "bin")).TrimEnd(Path.DirectorySeparatorChar),
                                         OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
@@ -90,8 +79,11 @@ internal static class GhidraCommand
         else
         {
             // Ghidra's launcher is a batch file and breaks on "Program Files (x86)": import a copy.
+            // The copy is the record of what was analysed (`decomp stamp` hashes it), so it is
+            // replaced whenever its bytes differ, not only its length.
             var copy = Path.Combine(work, file.Name);
-            if (!File.Exists(copy) || new FileInfo(copy).Length != file.Length)
+            if (!File.Exists(copy) || new FileInfo(copy).Length != file.Length
+                || GateKit.Platform.BuildEvidence.Sha256(copy) != GateKit.Platform.BuildEvidence.Sha256(binary))
                 File.Copy(binary, copy, true);
             cmd.AddRange(["-import", copy, "-overwrite", .. scriptPath]);
             if (gameBinary)
@@ -116,6 +108,39 @@ internal static class GhidraCommand
             if (last.Length > 0)
                 cmd.Add(last);
         }
+        string consoleLog = Path.Combine(work, "console.log");
+        long logStart = ScriptCheck.Length(consoleLog);
+        int exit = Launch(s, work, cmd, memory, cpu, "last_run.json");
+        s.Err.WriteLine($"{file.Name}: output {output}");
+        if (exit == 0)
+        {
+            // Ghidra ends with 0 also when a script did not compile and was skipped
+            var problems = ScriptCheck.Problems(ScriptCheck.Since(consoleLog, logStart), ScriptCheck.Asked(cmd));
+            foreach (var problem in problems)
+                s.Err.WriteLine($"{file.Name}: {problem}");
+            if (problems.Count > 0)
+                return 1;
+        }
+        return exit;
+    }
+
+    /// <summary>Starts Ghidra without its window on the project in <paramref name="work"/> with the
+    /// given arguments (what follows the project's name), waits for it and returns its exit code.
+    /// Its output goes to console.log there; how long it took, to <paramref name="record"/>.</summary>
+    public static int Launch(DecompSession s, string work, IReadOnlyList<string> arguments, string memory, int cpu, string record)
+    {
+        var (ghidra, jdk) = FindTools(s.Settings);
+        var log = Path.Combine(work, "ghidra.log");
+        // Ghidra's own settings, cache and temporary files go next to the output, so that a run does
+        // not depend on (or leave anything in) the user profile.
+        var user = Path.Combine(s.Settings.Work, "ghidra-user");
+        foreach (var sub in new[] { "settings", "cache", "tmp" })
+            Directory.CreateDirectory(Path.Combine(user, sub));
+        var vmargs = $"-Dapplication.settingsdir={Path.Combine(user, "settings")} -Dapplication.cachedir={Path.Combine(user, "cache")}"
+                     + $" -Djava.io.tmpdir={Path.Combine(user, "tmp")}";
+        var launcher = Path.Combine(ghidra, "support", OperatingSystem.IsWindows() ? "launch.bat" : "launch.sh");
+        var cmd = new List<string> { launcher, "fg", "jdk", "Ghidra-Headless", memory, vmargs, "ghidra.app.util.headless.AnalyzeHeadless", work, "project" };
+        cmd.AddRange(arguments);
         cmd.AddRange(["-max-cpu", cpu.ToString(System.Globalization.CultureInfo.InvariantCulture), "-log", log]);
         s.Err.WriteLine("running: " + string.Join(" ", cmd.Select(Quote)));
 
@@ -171,9 +196,9 @@ internal static class GhidraCommand
             exit = process.ExitCode;
         }
         long seconds = (long)Math.Round(started.Elapsed.TotalSeconds, MidpointRounding.ToEven);
-        File.WriteAllText(Path.Combine(work, "last_run.json"),
+        File.WriteAllText(Path.Combine(work, record),
                           $"{{\"seconds\": {seconds}, \"exit\": {exit}, \"finished\": \"{Py.Now()}\"}}", new UTF8Encoding(false));
-        s.Err.WriteLine($"{file.Name}: exit {exit} after {started.Elapsed.TotalSeconds:F0} s; output {output}");
+        s.Err.WriteLine($"{Path.GetFileName(work)}: exit {exit} after {started.Elapsed.TotalSeconds:F0} s");
         return exit;
     }
 }

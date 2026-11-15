@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::item::animation::PendingRequestComponent",
+  "kind": "struct",
+  "about": "Server: an item animation state request that is held back while the item is inactive or off-stage (Toolkit esv::item::animation::RequestsSystem::FinalizeRequests logs 'Active added to Pending item: (%s)', 'Offstage removed from Pending item: (%s)', 'Request in same frame, ignoring pending state'). Written by RequestsSystem::Update (macOS index). Savegame Ops with esv::item::animation::Loader.",
+  "size": 2,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "State",
+      "type": "uint16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Registry size 2 = one eoc::item::animation::EAnimationState (16-bit enum, see esv.item.animation.StateComponent / RequestSingletonComponent HashMap<EntityHandle, uint16_t> in layouts/alive). Live (1): 4, the usual state value of item animation components."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerItemAnimationPendingRequest",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 5,
+    "open_questions": [
+      "The write of the value was not located in pseudo-code (FinalizeRequests / ProcessRequests only show the logs)."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

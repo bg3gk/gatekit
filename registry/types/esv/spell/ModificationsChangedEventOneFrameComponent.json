@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::spell::ModificationsChangedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Event written by esv::spell::ModificationApplySystem (ProcessModificationsFromBoosts, UpdateComponents) when a character's spell modifications change; seen in spell casts, dialogues, dash.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit constructor ??0ModificationsChangedEventOneFrameComponent@spell@esv@@QEAA@U?$ID@UEntityHandleTraits@ecs@@@ls@@@Z takes one EntityHandle; registry size 8. Live: 48 entity handles (high dword 0x18xxxxx/0x20xxxxx)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerSpellModificationsChangedEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 2,
+    "open_questions": ["Which entity is stored (the character itself or a spell container)."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

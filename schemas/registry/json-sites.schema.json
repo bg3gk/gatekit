@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "registry/json-sites/1",
+  "title": "The allow-list of JSON handled outside GateKit.Json",
+  "description": "Every file of src/ that still parses or writes JSON on its own, with how many such sites it has and why. The guard test holds src/ to it exactly, so the list can only shrink.",
+  "type": "object",
+  "required": ["schema", "about", "patterns", "sites"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "registry/json-sites/1"},
+    "about": {"type": "string", "minLength": 1},
+    "patterns": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "The regular expressions a site is."},
+    "sites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "count", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "file": {"type": "string", "pattern": "^src/[^\\\\]+\\.cs$"},
+          "count": {"type": "integer", "minimum": 1},
+          "reason": {"type": "string", "minLength": 1, "description": "`not migrated yet`, or the permanent reason it stays (such as `MCP SDK framing`)."}
+        }
+      }
+    }
+  }
+}

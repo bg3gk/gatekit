@@ -1,0 +1,56 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ScaleChangeComponent",
+  "kind": "struct",
+  "about": "Born by statuses (ENLARGE/REDUCE etc. in TUT_Avernus_C, with ScaleMultiplierBoost). Driven by esv::VisualSystem::ProcessScaleChange.",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Live 1.0. Not used by ProcessScaleChange's step (start or original scale?)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "TargetScale",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll esv::VisualSystem::ProcessScaleChange (stride 0xC): step = clamp(+4 - +8, rate) and +8 += step. Live 1.33 after ENLARGE."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Scale",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: the current scale, moved toward +4 each frame, clamped to >= 0.01, written to the visual (+0xC of the visual component). Live 1.0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerScaleChange", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": ["meaning of +0"],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

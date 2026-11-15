@@ -1,0 +1,48 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::encumbrance::StateChangedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event of esv::encumbrance::StateSystem (per-frame update bg3.exe+0x31D8430): put on a character whose encumbrance state changed, holding the old and the new state (0..3, compared against eoc::encumbrance::StatsComponent's three weight thresholds). Never seen alive. Registry total 8 on both rows. The savemodel tool matched an unrelated model (game.camp.v0.SuppliesSelectionStateChangedEventOneFrameComponent) by substring: this one is not saved.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "OldState",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x31D9B10: AllocRaw(8), writes 0 as one 64-bit value. Update bg3.exe+0x31D8430 lines 530-574: reads the current state (the same 4 bytes the code then overwrites with the new state - eoc::encumbrance::StateComponent.State, uint32 in SE Stats.h); when it differs from the new state, it creates the component on the entity and writes the old state as a 32-bit value at +0 and the new state as a 32-bit value at +4."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "NewState",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: new state = 0..3 from testing whether the weight is greater than the first, second and third threshold of the stats (eoc::encumbrance::StatsComponent UnencumberedWeight, EncumberedWeight, HeavilyEncumberedWeight; stride 0xC) and 0 when a flag is off; written as the 32-bit value at +4."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "EncumbranceStateChangedEvent", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 6,
+    "open_questions": [
+      "That the pointer to the current state points into eoc::encumbrance::StateComponent is inferred from the write-back (bg3.exe+0x31D9FD0 not read).",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

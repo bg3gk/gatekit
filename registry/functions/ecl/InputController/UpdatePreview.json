@@ -1,0 +1,36 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::InputController::UpdatePreview",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The input controller's per-frame step for the action under the pointer: chooses the preview task, sets it, and has it update its preview (the cursor's verdict among it).",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:5ef843ed3b4f6aba",
+      "fp:6323d11770c5ab32",
+      "fp:643e3cf8b7abf688",
+      "fp:6a66df28d2e2c8ed",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:a4616baec98bd920",
+      "fp:b87a62c9a9a87876",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "components": ["ecl::ActionResourceSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "client write watch (raw Ext.Debug.WatchWrite, 1 byte) on the preview task's TaskInfo.Succeeded (ecl::CharacterTask_Spell + 0x8 + 0x15, reached ClientCharacterComponent.InputController -> +0x58 PreviewTask), TestLevel_Tom, Fire Bolt aimed at a goblin in sight (taken) then behind the wall (refused 'path blocked'): 238 hits over 54 frames, every return chain through +0x1B40850 between ecl::InputController::Update and ecl::CharacterTask_Spell::UpdatePreview; decomp code read: it calls ecl::InputController::ChoosePreviewTask and SetPreviewTask, then updates the task"
+    }
+  ]
+}

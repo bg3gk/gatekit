@@ -1,0 +1,59 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::inventory::StackSplitEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame event of esv::inventory::StackSystem: an entity was split from a stack (log 'Marking entity %s as split from stack entity %s' in the Toolkit ProcessStackChanges right before the add). Written by bg3.exe+0x34A9190 = esv::inventory::StackSystem::ProcessStackChanges from FrameData list +0x110/+0x120 (element stride 24); read by esv::TagSystem / esv::ProjectileInitializationSystem. EntitySplitEventOneFrameComponent is filled from the same 24-byte element type. Seen.py context: item splitting during shove-throw / item tests.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x34B2C40 (AllocRaw 0x18) zeroes +0 and +8. ProcessStackChanges copies element +0x08..+0x17 into component +0x00..+0x0F as four dwords (bg3.exe+0x34A9190 lines ~406-414, EoCServer.dll+0xF4E980 same). Live (5 instances): always 0. 16 bytes that default to 0, not 0xffc0.. - possibly a Guid; not established."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second half of the 16 bytes above (element +0x10..+0x17). Live: always 0."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator default 0xffc0000000000000 at +0x10; ProcessStackChanges writes element +0 (a 64-bit handle) to +0x10. Live: entity handles (0x018000xx/0x0200xxxx high dwords). Either the stack or the split-off entity (log names both); not established which."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerInventoryStackSplitEvent", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 8,
+    "open_questions": [
+      "Meaning of the 16 bytes at +0 (Guid? two counters?) - always zero in samples.",
+      "Whether +0x10 is the source stack or the new split entity."
+    ],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

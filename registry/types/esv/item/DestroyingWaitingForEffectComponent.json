@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::item::DestroyingWaitingForEffectComponent",
+  "kind": "struct",
+  "about": "Server state of esv::item::DestructionSystem (macOS index: only writer): an item being destroyed waits for its fade-out / destruction effect to finish (Toolkit DestructionSystem::Update helper logs 'Can't play fade-out effect (%s) on item destruction: %s'). Seen.py context: item-destroy, spells that destroy items, level events.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "TimeLeft",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x33D00D0 allocates 4 bytes, default 0. bg3.exe+0x33CFE20 reads the float, removes the waiting state when it is <= 0.0, otherwise stores value - GameTime delta (param_2 +8). Live (10): 1.5..2.49 s."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerItemDestroyingWaitingForEffect",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [],
+    "raw_check": "11 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

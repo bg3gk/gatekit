@@ -1,0 +1,62 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::CharacterChangedAppearanceComponent",
+  "kind": "struct",
+  "size": 312,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Definition",
+      "type": "character_creation::ChangeAppearanceDefinitionBase",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_Definition (eoc::character_creation::ChangeAppearanceDefinition), position 1 of 3 in the macOS serializer TypeList; serializer bg3.exe+0x98F630 writes the definition via bg3.exe+0xABD610 (string +0, bytes +0x18/+0x19, Guids +0x20/+0x30, byte +0x40, Appearance +0x48 via bg3.exe+0xAD93E0) at +0x0 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 288,
+      "name": "CharacterGUID",
+      "type": "Guid",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_CharacterGUID (ls::Guid), position 2 of 3 in the macOS serializer TypeList; serializer bg3.exe+0x98F630 writes 16 bytes at +0x120 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 304,
+      "name": "StartTime",
+      "type": "int64_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_StartTime (long long), position 3 of 3 in the macOS serializer TypeList; serializer bg3.exe+0x98F630 writes 8 bytes at +0x130 in the same order"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationCharacterChangedAppearance",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "high",
+    "external_types": {
+      "character_creation::ChangeAppearanceDefinitionBase": "Script Extender GameDefinitions/Components/CharacterCreation.h; same layout (Name, BodyType 0x18, BodyShape 0x19, RootTemplate 0x20, Voice 0x30, Identity 0x40, Visual 0x48), 0x120 bytes, matches bg3.exe+0xABD610"
+    },
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 5,
+    "open_questions": [],
+    "status": "declared"
+  }
+}

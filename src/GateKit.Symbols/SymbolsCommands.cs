@@ -24,6 +24,8 @@ public static class SymbolsCommands
             gatekit symbols vtable ecl::TLPreviewDummy   slots of an exported virtual table (or binary+0xRVA)
             gatekit symbols users ecl::TLPreviewDummy --callers 2
             gatekit symbols system ecl::EquipmentVisualsSystem
+        gatekit symbols digest esv::camp::EndTheDaySystem   what its update does: operations, calls, strings
+        gatekit symbols creators esv::camp::EndTheDayResultEventOneFrameComponent
             gatekit symbols signature bg3.exe+0x1899220
             gatekit symbols export --format ghidra --out names.tsv
             gatekit symbols stats
@@ -50,6 +52,7 @@ public static class SymbolsCommands
 
         int Run(ParseResult p, Action<SymbolContext> body)
         {
+            if (CopyFree.Refuse(p, "symbols") is not 0 and var refused) return refused;
             var output = p.InvocationConfiguration.Output;
             var error = p.InvocationConfiguration.Error;
             try
@@ -81,16 +84,21 @@ public static class SymbolsCommands
             var exportsOnly = new Option<bool>("--exports-only") { Description = "skip strings, type names, virtual tables and matching" };
             var noPseudo = new Option<bool>("--no-pseudo-code") { Description = "do not take the pairs found by pseudo-code (gatekit decomp match) as seeds" };
             var check = new Option<bool>("--check-matching") { Description = "measure the call matching: hide a fifth of the text-matched pairs and see if it finds them" };
-            var c = new Command("build", "read the Toolkit binaries and the game executables and write the database") { toolkit, recursive, game, bg3se, jobs, exportsOnly, noPseudo, check };
+            var allowMissing = new Option<bool>("--allow-missing-extender")
+            {
+                Description = "replace a database that has ECS records (ecs_ids) with one built without a Script Extender tree, which has none",
+            };
+            var c = new Command("build", "read the Toolkit binaries and the game executables and write the database") { toolkit, recursive, game, bg3se, jobs, exportsOnly, noPseudo, check, allowMissing };
             c.SetAction(p =>
             {
+                if (CopyFree.Refuse(p, "symbols") is not 0 and var refused) return refused;
                 try
                 {
                     SymbolBuilder.Run(new BuildOptions
                     {
                         Db = p.GetValue(db)!, Toolkit = p.GetValue(toolkit)!, Game = p.GetValue(game)!, Bg3Se = string.IsNullOrEmpty(p.GetValue(bg3se)) ? null : p.GetValue(bg3se),
                         Recursive = p.GetValue(recursive), Jobs = p.GetValue(jobs), ExportsOnly = p.GetValue(exportsOnly), NoPseudoCode = p.GetValue(noPseudo),
-                        CheckMatching = p.GetValue(check),
+                        CheckMatching = p.GetValue(check), AllowMissingExtender = p.GetValue(allowMissing),
                     }, p.InvocationConfiguration.Output, p.InvocationConfiguration.Error);
                     return 0;
                 }
@@ -263,6 +271,72 @@ public static class SymbolsCommands
             c.Arguments.Add(name);
             c.SetAction(p => Run(p, s => SymbolText.System(s, p.GetValue(name)!, o(p))));
         }
+        // creators
+        {
+            var name = Name("component, e.g. esv::camp::EndTheDayResultEventOneFrameComponent (or the end of its name after ::)");
+            var dll = new Option<string?>("--dll") { Description = "only this game executable (default: bg3_dx11.exe, then bg3.exe)" };
+            var c = new Command("creators", "the functions that add a component (through the engine's add helpers) and the systems whose update reaches them") { name, dll };
+            c.SetAction(p => Run(p, s => Creators(s, p.GetValue(name)!, p.GetValue(dll))));
+            root.Subcommands.Add(c);
+        }
+        // digest
+        {
+            var name = new Argument<string?>("name") { Description = "system, e.g. esv::camp::EndTheDaySystem", Arity = ArgumentArity.ZeroOrOne };
+            var dll = new Option<string?>("--dll") { Description = "only this game executable (default: bg3_dx11.exe and bg3.exe)" };
+            var asJson = new Option<bool>("--json") { Description = "the digest as JSON" };
+            var all = new Option<bool>("--all") { Description = "every system with an update entry, one file each in --out" };
+            var ns = new Option<string?>("--ns") { Description = "with --all: only systems whose name starts with this" };
+            var force = new Option<bool>("--force") { Description = "with --all: write again the digests already in --out" };
+            var outDir = new Option<string?>("--out")
+            {
+                Description = "with --all: the folder (default <BG3_DECOMP_WORK>/digests, outside the repository: a digest is derived from the game's code)",
+            };
+            var c = new Command("digest", "what a system's update does, in facts: update entries, counterparts, component operations in call order with their guards, "
+                + "constants and strings, calls out, unknowns - no pseudo-code") { name, dll, asJson, all, outDir, ns, force };
+            c.SetAction(p => Run(p, s =>
+            {
+                if (p.GetValue(all))
+                    SystemDigest.WriteAll(s, p.GetValue(outDir) ?? Path.Combine(SymbolPaths.DecompWork, "digests"), p.GetValue(dll), p.GetValue(asJson), p.GetValue(ns), p.GetValue(force));
+                else if (p.GetValue(name) is { Length: > 0 } system)
+                    SystemDigest.Write(s, system, p.GetValue(dll), p.GetValue(asJson));
+                else
+                    throw new SymbolsException("name a system, or pass --all");
+            }));
+            root.Subcommands.Add(c);
+        }
+        // describe-systems
+        {
+            var output = new Option<string>("--out") { Description = "the systems folder: <out>/<namespace with :: as __>/<Name>.json", DefaultValueFactory = _ => Path.Combine("research", "coverage", "systems") };
+            var ns = new Option<string?>("--ns") { Description = "only systems whose name starts with this, e.g. esv::inventory" };
+            var survey = new Option<string?>("--survey") { Description = "the list of systems, a CSV with a `system` column (default <out>/survey.csv; without it every system of the database)" };
+            var dll = new Option<string?>("--dll") { Description = "the game executable the addresses are for (default bg3_dx11.exe, the one a copy runs)" };
+            var c = new Command("describe-systems", "write the \"symbols\" layer of each system's description file (reads, writes, methods with "
+                + "addresses), keeping every other key of a file that exists") { output, ns, survey, dll };
+            c.SetAction(p => Run(p, s =>
+            {
+                var folder = p.GetValue(output)!;
+                var systems = SystemFiles.List(s, p.GetValue(survey) ?? Path.Combine(folder, "survey.csv"));
+                var (written, created, unchanged) = SystemFiles.Write(s, systems, p.GetValue(ns), folder, p.GetValue(dll));
+                s.WriteLine($"{written} written ({created} new), {unchanged} unchanged, of {systems.Count} systems listed; in {Path.GetFullPath(folder)}");
+            }));
+            root.Subcommands.Add(c);
+        }
+        // se-layouts
+        {
+            var coverage = new Option<string>("--coverage") { Description = "the coverage record (coverage.json, layouts/)", DefaultValueFactory = _ => Path.Combine("research", "coverage") };
+            var output = new Option<string>("--out") { Description = "where the files go, for review before they join research/coverage/layouts", Required = true };
+            var ns = new Option<string?>("--ns") { Description = "only types whose name starts with this" };
+            var c = new Command("se-layouts", "layout files from Script Extender's declarations for the mapped types the record has no layout for "
+                + "(names are the extender author's: every field's rung is `extender`)") { coverage, output, ns };
+            c.SetAction(p => Run(p, s =>
+            {
+                var (written, missing, skipped) = SeLayouts.Write(s, p.GetValue(coverage)!, p.GetValue(output)!, p.GetValue(ns));
+                s.WriteLine($"{written} layout files written to {Path.GetFullPath(p.GetValue(output)!)}; {skipped} mapped types already have one; "
+                    + $"{missing} mapped types have no declaration of the extender's in the symbol database");
+                s.WriteLine("The names are Script Extender's author's, not the game's: every field's rung is `extender`. `gatekit names take <folder>` checks them and moves those that hold together into research/coverage/layouts.");
+            }));
+            root.Subcommands.Add(c);
+        }
         // savemodel
         {
             var name = Name("component or model name, or a part of it, e.g. esv::crowds::DetourIdlingComponent");
@@ -315,6 +389,40 @@ public static class SymbolsCommands
         return root;
     }
 
+    /// <summary>`symbols creators`: who adds a component, by the classified add helpers of each binary.</summary>
+    static void Creators(SymbolContext s, string text, string? dll)
+    {
+        var binaries = dll != null ? [dll] : new[] { "bg3_dx11.exe", "bg3.exe" };
+        var db = s.Decomp.Db ?? throw new SymbolsException($"{s.Decomp.Path} does not exist: the helpers come from the pseudo-code (gatekit decomp helpers)");
+        var types = new SortedSet<string>(StringComparer.Ordinal);
+        try
+        {
+            foreach (var r in db.Query("SELECT DISTINCT type FROM ecs_helpers WHERE family = 'add' AND (type = ? OR type LIKE ? ESCAPE '!')", text,
+                                       "%::" + text.Replace("!", "!!", StringComparison.Ordinal).Replace("%", "!%", StringComparison.Ordinal).Replace("_", "!_", StringComparison.Ordinal)))
+                types.Add(PyText.Str(r[0]));
+        }
+        catch (Microsoft.Data.Sqlite.SqliteException)
+        {
+            throw new SymbolsException($"{s.Decomp.Path} has no table ecs_helpers; make it with:  gatekit decomp helpers --rebuild");
+        }
+        var type = types.Contains(text) ? text : types.Count == 1 ? types.Min! : null;
+        if (type == null)
+        {
+            if (types.Count == 0)
+                s.Note($"no add helper of {text} is known (gatekit decomp helpers {text} lists what is)");
+            else
+                s.Note($"{types.Count} components end with {text}: " + string.Join(", ", types));
+            return;
+        }
+        var found = ComponentFacts.Creators(s, type, binaries);
+        foreach (var (binary, function, fname, helper, systems) in found)
+            s.WriteLine($"{binary}+0x{function:X}  {(fname.Length > 0 ? fname : "?")}  (adds through {binary}+0x{helper:X})"
+                        + (systems.Count > 0 ? "  update of " + string.Join(", ", systems) : ""));
+        int withSystem = found.Count(f => f.Systems.Count > 0);
+        s.Note($"{type}: {found.Count} functions add it, {withSystem} of them reached from a system's update (depth 2); "
+               + $"{found.SelectMany(f => f.Systems).Distinct().Count()} systems");
+    }
+
     static int ParseInt(ArgumentResult r, string text)
     {
         if (int.TryParse(text, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int v))
@@ -336,6 +444,7 @@ public static class SymbolsCommands
         c.Aliases.Add("managed-strings");
         c.SetAction(p =>
         {
+            if (CopyFree.Refuse(p, "symbols") is not 0 and var refused) return refused;
             var output = p.InvocationConfiguration.Output;
             try
             {
@@ -373,6 +482,7 @@ public static class SymbolsCommands
         var c = new Command("vtable", "slots of the virtual table at binary+0xRVA (the same as gatekit symbols vtable)") { name, db, full };
         c.SetAction(p =>
         {
+            if (CopyFree.Refuse(p, "decomp") is not 0 and var refused) return refused;
             var error = p.InvocationConfiguration.Error;
             try
             {

@@ -5,13 +5,9 @@ namespace GateKit.Symbols;
 /// <summary>Small helpers over Microsoft.Data.Sqlite shared by the symbol and pseudo-code databases.</summary>
 public static class Sql
 {
-    /// <summary>Opens a database read-only (the file must exist).</summary>
-    public static SqliteConnection OpenReadOnly(string path)
-    {
-        var c = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString());
-        c.Open();
-        return c;
-    }
+    /// <summary>Opens a database read-only. A missing, empty or table-less file is a
+    /// <see cref="GateKit.Home.MissingDatabaseException"/> that says how to fix it (<see cref="GateKit.Home.HomeDatabase"/>).</summary>
+    public static SqliteConnection OpenReadOnly(string path) => GateKit.Home.HomeDatabase.OpenReadOnly(path);
 
     /// <summary>Opens (creating when needed) a database for writing.</summary>
     public static SqliteConnection OpenWrite(string path)

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ActiveMusicVolumeComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Trigger",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Savegame loader bg3.exe+0x253F3F0 (ls::model::game::triggers::v0::ActiveMusicVolumeComponent) resolves a saved value through bg3.exe+0x4018730 (uuid -> entity handle lookup) and stores the 8-byte result as the whole component (ComponentFrameStorageAllocRaw(...,8,...)). Queried together with esv::Character and ls::trigger::IsInsideOfComponent (bg3.exe+0x2D3D430); macOS writer (anonymous)::GetBestTriggerEntity in the server trigger system - the music-volume trigger the character is in. Live: 14 instances, entity handles or the null handle 0xFFC0000000000000."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerActiveMusicVolume", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 6,
+    "open_questions": [
+      "Not checked that the handle points to a MusicVolumeTrigger entity (name inferred from GetBestTriggerEntity)."
+    ],
+    "raw_check": "22 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

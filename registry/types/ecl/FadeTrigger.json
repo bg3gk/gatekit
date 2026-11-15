@@ -1,0 +1,247 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::FadeTrigger",
+  "kind": "struct",
+  "size": 136,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "VMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; constructor stores the class vtable; live: module pointer."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "LoggableObjectVMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; second vtable (ILoggableObject in the Toolkit ctor); live: module pointer, same for all trigger types."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Template",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples (TriggerTemplate* in SE); ctor sets it via SetTemplate; live heap pointer."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Flags",
+      "type": "uint16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; the ecl ctor ORs 2 into +0x18; live 2."
+        }
+      ]
+    },
+    {
+      "offset": 26,
+      "name": "SyncFlags",
+      "type": "uint16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; zeroed by the base ctor (4-byte store at +0x18); live 0."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "TriggerType",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; base ctor copies its FixedString argument here (IncRef); live a FixedString index."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "TriggerEntity",
+      "type": "ecs::EntityRef",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; base ctor writes null handle 0xffc0000000000000 + world 0; live: own entity handle + world pointer (16 bytes)."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Level",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; base ctor writes -1 pair at +0x30; live FixedString (same value as ecl::Item.CurrentLevel)."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "PreviousLevel",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; live 0xFFFFFFFF (null)."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "Protocol",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; base ctor writes 0; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "HasCustomPoint",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; base ctor 16-bit store of 0 at +0x40; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 65,
+      "name": "IsGlobal",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples; live 0."
+        }
+      ]
+    },
+    {
+      "offset": 66,
+      "name": "_Pad42",
+      "type": "uint8_t[2]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "padding before the Transform (live garbage 0xFFFF in one sample)."
+        }
+      ]
+    },
+    {
+      "offset": 68,
+      "name": "CustomPointTransform",
+      "type": "Transform",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE struct Trigger (GameDefinitions/Components/Trigger.h:249), checked against the base constructor FUN_143c11a30 (bg3.exe+0x3C11A30) called from ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 and the live samples (Transform = quat + vec3 Translate + vec3 Scale, 40 bytes); base ctor writes 0 at +0x44..+0x50, 1.0 at +0x50 (quat w), 1.0 at +0x60/+0x64/+0x68 (scale); live identical."
+        }
+      ]
+    },
+    {
+      "offset": 108,
+      "name": "_Pad6C",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "alignment padding; live garbage."}]
+    },
+    {
+      "offset": 112,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::FadeTrigger::FadeTrigger bg3.exe+0x1BB4A00 writes null handle 0xffc0000000000000; live = the trigger's own entity (same as TriggerEntity). SE names this member Entity in the other ecl trigger proxies (Trigger.h:726ff); the Toolkit annotates the same store in ecl::RegionTrigger::RegionTrigger as Entity."
+        }
+      ]
+    },
+    {
+      "offset": 120,
+      "name": "NeedsReevaluate",
+      "type": "bool",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessors ecl::FadeTrigger::NeedsReevaluate / SetNeedsReevaluate (EoCClient.dll+0x351DA0 / +0x4188A0) read/write byte +0x78; the game ctor bg3.exe+0x1BB4A00 writes 1. Live 0 (already evaluated)."
+        }
+      ]
+    },
+    {
+      "offset": 121,
+      "name": "_Pad79",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "padding to 0x80 (live: garbage, sometimes the high dword of an entity handle)."
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "_Pad80",
+      "type": "uint8_t[8]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "The registry size is 8 bytes larger than the class: the same +8 is seen for the trigger proxies SE already maps (ecl::RoomTrigger SE sizeof 0x80 vs registry 136, ecl::AtmosphereTrigger 0x90 vs 152, ecl::RegionTrigger 0x7B->0x80 vs 136); live, these 8 bytes often hold the next element's VMT (e.g. FadeTrigger +0x80 = its own VMT value). Not written by any constructor."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientFadeTrigger", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "class_size": 128,
+    "confidence": "high",
+    "functions_read": 2,
+    "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet",
+    "minutes": 4,
+    "open_questions": [
+      "None for the class body; the 8-byte registry tail as for the other trigger proxies."
+    ],
+    "raw_check": "26 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "se_pattern": "struct [[bg3::component]] FadeTrigger : public bg3se::AreaTrigger { DEFINE_PROXY_COMPONENT(...); EntityHandle Entity; ... } as for ecl::RoomTrigger in Trigger.h. ",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

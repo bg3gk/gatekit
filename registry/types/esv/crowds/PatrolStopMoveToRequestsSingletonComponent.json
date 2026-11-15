@@ -1,0 +1,35 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::crowds::PatrolStopMoveToRequestsSingletonComponent",
+  "kind": "struct",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entities",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "48 bytes = HashSet. esv::crowds::CharacterMovementSystem::Update (EoCServer.dll+0xD8C530) reads the three StopMoveTo singletons: keys at +0x20, count at +0x2C, stride 8, each key added to an entity set and removed from the pending MoveTo map (hashed as uint64) = crowd character entity handles. esv::crowds::PatrolSystem::Update (EoCServer.dll+0xD86770) also walks StopMoveTo and DetourStopMoveTo keys with stride 8 and passes them to an EntityHandle set insert (FUN_18021e210). Writer: esv::crowds::PatrolSystem::Update (macOS index). Live (seen.py, idle): one instance, all bytes zero (empty container)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCrowdsPatrolStopMoveToRequests",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 3,
+    "open_questions": ["Member name is ours."],
+    "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

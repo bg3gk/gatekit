@@ -1,0 +1,65 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::tutorial::UserActionEventRequestsSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Activated",
+      "type": "Array<UserActionEventRequestsEntry>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x34262E0 (UserActionSystem update) turns 8-byte {UserID, uint8} requests into 16-byte {entity, uint8}; ValidateSystem index 16 UserAction_Activated (bg3.exe+0x34291D0)"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerTutorialUserActionEventRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": ["meaning/enum of the action byte"],
+    "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "UserActionEventRequestsEntry",
+        "size": 16,
+        "fields": [
+          {
+            "name": "Entity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x34262E0 stores the user's entity"
+          },
+          {
+            "name": "Action",
+            "offset": 8,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x34262E0 copies the byte at request+4"
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "alignment padding"
+          }
+        ]
+      }
+    ]
+  }
+}

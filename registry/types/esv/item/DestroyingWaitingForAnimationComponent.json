@@ -1,0 +1,55 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::item::DestroyingWaitingForAnimationComponent",
+  "kind": "struct",
+  "about": "An item being destroyed waits for its destruction animation (seen in the fight with S_FOR_Bottomless_Ettercap_02, items/webs broken). esv::item::DestructionSystem adds it with a 20 s timeout and, each frame, finishes the destruction when the timeout runs out or the flag at +0 is set.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "AnimationDone",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x33D0230 (add helper, 8 bytes) zeroes +0; bg3.exe+0x33CF4B0 (~ per-frame update of esv::item::DestructionSystem) proceeds when the byte at +0 (stride 8) is non-zero; live 0 (the setter was not read)"
+        }
+      ]
+    },
+    {
+      "offset": 1,
+      "name": "_Pad1",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "never written; live garbage"}]
+    },
+    {
+      "offset": 4,
+      "name": "Timeout",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x33CDB40 sets +4 = 20.0f (0x41A00000) after adding it; bg3.exe+0x33CF4B0 subtracts the frame time and proceeds when <= 0; live 20.0"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerItemDestroyingWaitingForAnimation",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": ["who sets the flag at +0 (animation-finished callback, not read)"],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

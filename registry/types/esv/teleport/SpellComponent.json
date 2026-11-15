@@ -1,0 +1,239 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::teleport::SpellComponent",
+  "kind": "struct",
+  "about": "Spell part of a teleport request, put on the teleport helper entity by esv::teleport::ExecutionSystem::ProcessRequests (bg3.exe+0x3373FE0 lines 133-154) when RequestParams+0x28 is a valid entity: that entity, a copy of the request's eoc::spell_cast::InitialTarget (RequestParams+0x38, Toolkit LEGACY_DoTeleport EoCServer.dll+0x1150010 copies it with InitialTarget::InitialTarget) and RequestParams+0xA8. Its first member goes into FinishedEventOneFrameComponent+8 (bg3.exe+0x3373660 line 130-131). Creator bg3.exe+0x33753A0, destructor bg3.exe+0x22BDDA0. Not saved. The InitialTarget part equals Script Extender's eoc::spell_cast::InitialTarget (SpellCastShared.h: BaseTarget{VMT, Target, optional<EntityHandle> TargetProxy, optional<vec3> Position}, SpellType TargetingType, optional<BaseTarget> Target2) - Windows offsets agree with it.",
+  "size": 128,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "SpellCast",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3373FE0 line 139: = RequestParams+0x28, only when that is a valid handle (line 133); creator writes the null handle. Read back into FinishedEventOneFrameComponent+8. Name inferred from the spell-cast target kept next to it."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "TargetVMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Start of the InitialTarget (SE eoc::spell_cast::InitialTarget): creator sets +8 = &PTR_FUN_1454DB080 (its virtual table)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Target",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "line 140: = RequestParams+0x40 (InitialTarget+8); creator: null handle. SE InitialTarget.Target."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "TargetProxy",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "lines 141-143: +0x18/+0x20 = RequestParams+0x48/+0x50; SE optional<EntityHandle> TargetProxy."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "TargetProxyHasValue",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "creator writes byte +0x20 = 0 (optional flag)."}]
+    },
+    {
+      "offset": 33,
+      "name": "_Pad21",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 40,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "lines 144-150: four dwords +0x28..+0x37 = RequestParams+0x58..+0x67; SE optional<vec3> Position."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "PositionHasValue",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "creator writes byte +0x34 = 0 (optional flag)."}]
+    },
+    {
+      "offset": 53,
+      "name": "_Pad35",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 56,
+      "name": "TargetingType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "line 151: byte = RequestParams+0x68; creator 0. SE InitialTarget.TargetingType (SpellType, 1 byte)."
+        }
+      ]
+    },
+    {
+      "offset": 57,
+      "name": "_Pad39",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 64,
+      "name": "Target2",
+      "type": "TeleportSpellBaseTarget",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "line 152: FUN_140F1D180(comp+0x40, RequestParams+0x70) = optional<BaseTarget> assignment (flag at +0x30 of it); destructor calls the virtual destructor at +0x40 when +0x70 is set. SE InitialTarget.Target2."
+        }
+      ]
+    },
+    {
+      "offset": 112,
+      "name": "Target2HasValue",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "creator zeroes byte +0x70; destructor tests it."}]
+    },
+    {
+      "offset": 113,
+      "name": "_Pad71",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 120,
+      "name": "field_78",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "creator writes 0xFFFFFFFF (null FixedString); destructor bg3.exe+0x22BDDA0 DecRefs +0x78 when != -1. Not written by ProcessRequests."
+        }
+      ]
+    },
+    {
+      "offset": 124,
+      "name": "field_7C",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "line 153: = RequestParams+0xA8 (4 bytes); creator 0."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerTeleportSpell", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 4,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 12,
+    "open_questions": [
+      "Who writes the FixedString at +0x78 and what +0x7C holds (RequestParams+0xA8)."
+    ],
+    "seen": false,
+    "status": "declared",
+    "structs": [
+      {
+        "name": "TeleportSpellBaseTarget",
+        "size": 48,
+        "fields": [
+          {
+            "name": "VMT",
+            "offset": 0,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "FUN_140F1D180 (optional<BaseTarget> copy) sets +0 = &PTR_FUN_1454DB050 when it constructs the value; destructor bg3.exe+0x22BDDA0 calls (*VMT[0])(this, 0)."
+          },
+          {
+            "name": "Target",
+            "offset": 8,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "FUN_140F1D180 copies +8 (8 bytes); SE BaseTarget::Target"
+          },
+          {
+            "name": "TargetProxy",
+            "offset": 16,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "FUN_140F1D180 copies +0x10/+0x18 together; SE BaseTarget::TargetProxy (optional<EntityHandle>, value at +0x10)"
+          },
+          {
+            "name": "TargetProxyHasValue",
+            "offset": 24,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "flag of the optional (SE layout); copied as part of the 8 bytes at +0x18"
+          },
+          {
+            "name": "_Pad25",
+            "offset": 25,
+            "type": "uint8_t[7]",
+            "source": "unknown",
+            "evidence": "padding"
+          },
+          {
+            "name": "Position",
+            "offset": 32,
+            "type": "glm::vec3",
+            "source": "inferred",
+            "evidence": "FUN_140F1D180 copies +0x20/+0x28; SE BaseTarget::Position (optional<vec3>)"
+          },
+          {
+            "name": "PositionHasValue",
+            "offset": 44,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "flag of the optional at +0x2C (SE layout; same as InitialTarget's own flag at component +0x34 that the creator zeroes)"
+          },
+          {
+            "name": "_Pad45",
+            "offset": 45,
+            "type": "uint8_t[3]",
+            "source": "unknown",
+            "evidence": "padding to 48"
+          }
+        ]
+      }
+    ]
+  }
+}

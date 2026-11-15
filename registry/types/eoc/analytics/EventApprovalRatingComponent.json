@@ -1,0 +1,107 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::analytics::EventApprovalRatingComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "CompanionId",
+      "type": "Guid",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "serializer bg3.exe+0x9EC820/0x9EC990 member 1: 16-byte write at +0 (offset from the global at bg3.exe+0x627FBF8 = 0); EoCClient.dll+0xD349B0 (approval_rating recorder, called from EoCClient.dll ecl::GameAnalyticsSystem::ProcessApprovalRatingChanges EoCClient.dll+0xD2C1A0) writes Guid::ToString(+0) under the JSON key \"companion_id\". macOS default ctor: zero."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Character",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x9EC820/0x9EC990 member 2: 16-byte write at +0x10. ProcessApprovalRatingChanges (EoCClient.dll+0xD2C1A0, element stride 0x40) tests Guid::IsValid(+0x10), resolves it to an entity and passes that entity as the character to the recorder (FillGameEventsData)."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "Amount",
+      "type": "int32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "serializer bg3.exe+0x9EC820/0x9EC990 member 3: 4 bytes at +0x20; recorder EoCClient.dll+0xD349B0 writes it as integer under \"amount\"."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "NewValue",
+      "type": "int32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "serializer bg3.exe+0x9EC820/0x9EC990 member 4: 4 bytes at +0x24; recorder writes it as integer under \"new_value\"."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "State",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "serializer bg3.exe+0x9EC820/0x9EC990 member 5: ecs::sync::Serialize(FixedString) at +0x28; recorder FixedString::ToChar(+0x28) under \"state\"; macOS default ctor -1 (null FixedString)."
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "_Pad2C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "ApprovalMoment",
+      "type": "Guid",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "serializer bg3.exe+0x9EC820/0x9EC990 member 6: 16 bytes at +0x30; recorder Guid::ToString(+0x30) under \"approval_moment\"; macOS ctor zero."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnalyticsEventApprovalRating", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 4,
+    "minutes": 6,
+    "open_questions": [
+      "Character (+0x10) name is inferred from use (resolved to the character entity), not a game name",
+      "signedness of Amount/NewValue (written through the integer json setter)",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

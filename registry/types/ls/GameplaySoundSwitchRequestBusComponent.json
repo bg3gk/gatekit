@@ -1,0 +1,77 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::GameplaySoundSwitchRequestBusComponent",
+  "kind": "struct",
+  "about": "Requests to set a sound switch on an entity or sound object (macOS element ls::GameplaySoundSwitchRequest).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<GameplaySoundSwitchBusRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessSoundSwitchRequests: stride 0x18, count at +0xC. Live capacity 0..0x40."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "GameplaySoundSwitchRequestBus", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [
+      "SwitchGroup / SwitchState names follow Wwise's SetSwitch(group, state) argument order; not checked inside SetSoundSwitch."
+    ],
+    "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "GameplaySoundSwitchBusRequest",
+        "size": 24,
+        "fields": [
+          {
+            "name": "SubjectValue",
+            "offset": 0,
+            "type": "uint64_t",
+            "source": "inferred",
+            "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessSoundSwitchRequests (GameEngine.dll+0x89BF90): element+0 is passed either as ID<EntityHandleTraits> or as TypeWrap<uint64, SoundObjectHandle> to SoundRoutingSystem::SetSoundSwitch - a Variant value."
+          },
+          {
+            "name": "SubjectType",
+            "offset": 8,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "Byte +8 selects the overload: 0 = entity handle, 1 = sound object handle."
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "variant index occupies a qword"
+          },
+          {
+            "name": "SwitchGroup",
+            "offset": 16,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Second argument of SetSoundSwitch (element+0x10)."
+          },
+          {
+            "name": "SwitchState",
+            "offset": 20,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Third argument of SetSoundSwitch (element+0x14)."
+          }
+        ]
+      }
+    ]
+  }
+}

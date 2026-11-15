@@ -1,0 +1,123 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::BasicGOVisualFadeView1Component",
+  "kind": "struct",
+  "about": "Per-entity fade state for render view 1, one of the ~13 ecl::*FadeView0/1 sources that bg3.exe+0x18E1E00 handles side by side (it removes the component for entities no longer in its source list). Never alive in the captures; layout from the Windows creator only.",
+  "size": 20,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "TargetValue",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x18F0C80 (only rx3 user; ComponentFrameStorageAllocRaw(.., 0x14)) writes 0 as a 4-byte store (*puVar4 = 0); meaning from the identical creator/system pair of the Timeline sibling (bg3.exe+0x18F6530 / 0x18EB2D0)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x18F0C80 writes 0x40800000 = 4.0 (puVar4[1]). Probably the fade speed, as in the Timeline sibling; no reader found."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Immediate",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x18F0C80 writes 0 with one 16-bit store covering +8/+9; the Timeline sibling's system copies byte 8 of the request here and, when set, writes TargetValue into CurrentValue at once."
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "field_9",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x18F0C80: second byte of the 16-bit zero store at +8; byte-wide in the Timeline sibling's request copy."
+        }
+      ]
+    },
+    {
+      "offset": 10,
+      "name": "field_A",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "bg3.exe+0x18F0C80 writes 1 as a byte at +10."}]
+    },
+    {
+      "offset": 11,
+      "name": "_PadB",
+      "type": "uint8_t[1]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "not written by bg3.exe+0x18F0C80; padding before the float at +0xC (live garbage in the siblings)"
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "CurrentValue",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x18F0C80 writes 0x3f800000 = 1.0 (puVar4[3]); meaning from the Timeline sibling."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Active",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x18F0C80 writes 1 as a byte at +0x10; meaning from the Timeline sibling."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "_Pad11",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding to the registry size 20 (alignment 4)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientBasicGOVisualFadeView1", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 3,
+    "open_questions": [
+      "field_4 / field_9 / field_A meaning (open in all fade-view siblings).",
+      "Widths of +8/+9 rest on the Timeline sibling's byte-wise request copy; the creator writes them with one 16-bit store."
+    ],
+    "reuses": "same 20-byte fade-view template as ecl::TimelineFadeView1Component (layouts\\timeline, confirmed live for View0) and ecl::ObstructionFadeView0Component (layouts\\alive, 31 live instances); field names copied from there",
+    "seen": false,
+    "status": "declared"
+  }
+}

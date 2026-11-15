@@ -1,0 +1,48 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::relation::FactionChangedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Event entity created in the per-frame update of ecl::relation::RelationSystem (bg3.exe+0x759530): for each entry of a HashMap<EntityHandle, Guid> of pending faction changes (fed by the FactionComponent::m_CurrentFactionID sync hook in SystemLoad) a new entity gets this component. Born live in fights together with combat merge/switch and temporary-hostility events.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1963430 (0x18 bytes) copies the 8-byte map key (key stride 8 in bg3.exe+0x759530) to +0. Live: entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Faction",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator copies four dwords of the 16-byte map value (value stride 0x10) to +8..+0x17. Live: random-looking 16-byte values (faction uuids). macOS SystemLoad watches eoc::relation::FactionComponent::m_CurrentFactionID (a Guid) - name inferred from that."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientRelationFactionChangedEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": ["Whether the Guid is the new faction (most likely) or the previous one."],
+    "raw_check": "41 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

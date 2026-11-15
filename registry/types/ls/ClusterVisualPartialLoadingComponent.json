@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::ClusterVisualPartialLoadingComponent",
+  "kind": "struct",
+  "about": "Client visual streaming: present on a loaded cluster while part of its content (added/changed entities) is being reloaded; holds the partial loading jobs. Written by ls::ClusterLoadHelper<ls::ClusterVisualLoaderSystem::LoadOps> (ProcessContentChanges, ProcessClusterLoadResult), ClusterVisualLoaderSystem::ApplyLoadResultToEntity / ProcessEntitiesToUnload / Update. Seen alive when the party split and on a raft event (content moved within loaded clusters).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Jobs",
+      "type": "Array<void*>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Game creator bg3.exe+0x3E75C00 allocates 0x10 bytes, zeroes pointer/capacity/size and registers destructor bg3.exe+0x3B71A70 = bg3.exe+0x3B81750 on the object with 0, then a free of the buffer pointer at +0. bg3.exe+0x3B81750 resizes a DynamicArray with stride 8 whose elements are intrusive ls::SharedPtr (atomic decrement of a count at +0x100 of the pointee, destroy at zero) - the same job object shape as ClusterVisualLoadingComponent's SharedPtr<ls::ClusterVisualLoadingJob>. Live: heap pointer, capacity = size = 1."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClusterVisualPartialLoading", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [
+      "Element pointee type (ClusterVisualLoadingJob) inferred from the refcount layout shared with ClusterVisualLoadingComponent; not bound."
+    ],
+    "raw_check": "18 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

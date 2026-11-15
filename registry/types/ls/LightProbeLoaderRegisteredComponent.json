@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::LightProbeLoaderRegisteredComponent",
+  "kind": "struct",
+  "about": "Client and server: marks that the entity is registered with the generic stream loader (ls::StreamSystemLoadHelper) and holds its slot index there; -1 = not registered. Same template as ls::PhysicsLoaderRegisteredComponent (SE Physics.h, int field_0) and ls::InstancingBatchRegisteredComponent (SE Coverage.h, int32 Index). Never seen alive.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Index",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x3E8C4B0 (AllocRaw 4) writes 0xFFFFFFFF and registers no destructor; bg3.exe+0x3E8DD20 / bg3.exe+0x3E8DEE0 read it as one 4-byte value. macOS names: ls::LightProbeLoaderSystem::Update and StreamSystemLoadHelper::Initialize/UpdateLoadRequests/Unregister<ls::LightProbeLoaderRegisteredComponent, ls::LightProbeLoadComponent, ls::LightProbeComponent, ...>. Name and meaning as SE's InstancingBatchRegisteredComponent::Index (live there: small distinct integers)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "LightProbeLoaderRegistered", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 3,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 4,
+    "open_questions": [],
+    "seen": false,
+    "status": "declared"
+  }
+}

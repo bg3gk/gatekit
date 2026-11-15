@@ -1,0 +1,59 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::TerrainLoadComponent",
+  "kind": "struct",
+  "about": "Pending terrain load request of the terrain visual loader (ls::TerrainVisualLoaderSystem, StreamSystemLoadHelper::UpdateLoadRequests<TerrainLoaderRegisteredComponent, TerrainLoadComponent, TerrainObject>): an aio::Priority (level + value) and a shared callback pointer. Live: one idle client instance, priority level 1, value -1000.0, callback null.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "PriorityLevel",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit ls::TerrainVisualLoaderSystem::ProcessLoadRequests (GameEngine.dll+0x1F1350) reads the first 8 bytes of the component as the aio::Priority passed to TerrainLoadData and counts requests with level==2 separately (this+0x304 vs +0x300). The same priority encoding 0xC47A0000_00000001 (level 1, -1000.0) appears in ls::TwoStepLoadable::Load. Live: always 1."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Priority",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second half of aio::Priority (float, compared second in the BinaryHeap of StreamSystemLoadHelper::ProcessLoadRequests). Live: -1000.0."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Callback",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit ProcessLoadRequests moves an ls::SharedPtr<Callback<void(TerrainDescription const&, TerrainLoadResult)>> into component+8 (refcount at +0x50 of the pointee, freed with size 0x58). Creator bg3.exe+0x19DC490 zeroes 16 bytes. Live: 0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "TerrainLoad", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 10,
+    "open_questions": [
+      "Toolkit offsets; bg3.exe confirms only size and zero init.",
+      "Game member names."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

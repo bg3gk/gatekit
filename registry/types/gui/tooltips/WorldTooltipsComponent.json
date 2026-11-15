@@ -1,0 +1,47 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::tooltips::WorldTooltipsComponent",
+  "kind": "struct",
+  "about": "Client UI: per-player state of gui::tooltips::WorldTooltipsSystem (world tooltips of items/characters). The system adds it to a player's user entity, keeps there the entity the tooltips are computed for, and a set of item entities whose item view-model did not exist yet. Never seen alive.",
+  "size": 56,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x12EC340 (AllocRaw 0x38) writes 0xFFC0000000000000 (null handle). Toolkit NoesisGameUI.dll+0x3D0480 (WorldTooltipsSystem::Update) adds the component to the entity resolved from a playerId (FUN_18017FFB0) and writes the 8-byte entity of the player record into +0 (line ~486); later it checks +0 as a valid handle and builds the tooltip WorldView / TryGet for it (lines ~621, ~810). Toolkit copy constructor NoesisGameUI.dll+0x30ABC0 copies +0 as 8 bytes."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "PendingItems",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit move constructor NoesisGameUI.dll+0x30AB40 moves ptr/u32/u32 triples at +8, +0x18, +0x28 (HashSet buckets, NextIds, Keys); destructor NoesisGameUI.dll+0x30B6D0 frees +0x28 with an IndexedStorage<ls::ID<ecs::EntityHandleTraits>> (assert in NoesisGameUI.dll+0x316020), +0x18 with IndexedStorage<int> and +8. Update inserts (FUN_1800F88D0(this+8, ...), line ~1030) item entities for which VMItemDataSingletonComponent::LEGACY_GetItemObject returns null, and empties the set first (buckets memset -1, key count +0x34). bg3.exe creator zeroes +8..+0x38 and registers destructor bg3.exe+0x6B4CB0. Name inferred from that use."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "GuiTooltipsWorldTooltips", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 6,
+    "minutes": 12,
+    "open_questions": [
+      "Exact meaning of Entity (the entity of the player record next to the playerId - probably the player's current character).",
+      "Set meaning taken from one insert site only."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

@@ -96,8 +96,9 @@ internal static class FixedStringsCommand
 
     public static int Run(DecompSession s, string? text, bool rebuild, string binary, int limit)
     {
-        // read-only unless the table has to be (re)built
-        var db = File.Exists(s.Settings.DbPath) && !rebuild ? s.Db : s.OpenWrite();
+        // read-only unless the table has to be (re)built; the table comes from the pseudo-code in
+        // the database, so a missing database is an error and never created here as an empty one
+        var db = s.Db;
         if (rebuild || !SystemsCommand.HasRows(db, "fixed_strings"))
         {
             db = s.OpenWrite();

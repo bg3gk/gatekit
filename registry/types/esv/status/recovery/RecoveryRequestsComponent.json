@@ -1,0 +1,63 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::status::recovery::RecoveryRequestsComponent",
+  "kind": "struct",
+  "about": "Recovery requests of esv::status::recovery::RecoverySystem (written in CheckStatusRequests, CheckSourceChange, ProcessStatusChanges, Update). Lives from level load.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<RecoveryRequestsRecoveryRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2C848C0 zeroes pointer/capacity/size. macOS has ls::DynamicArray<esv::status::recovery::RecoveryRequest>::Reallocate; the Toolkit's RecoveryRequest is 12 bytes (stride 0xC in CheckStatusRequests). Live: 3 allocated arrays, capacity up to 4, size 0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerStatusRecoveryRequests", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 8,
+    "open_questions": [
+      "Element type taken from the RecoverySystem's own request list; not proven that the component array uses exactly this struct."
+    ],
+    "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "RecoveryRequestsRecoveryRequest",
+        "size": 12,
+        "fields": [
+          {
+            "name": "StatusId",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "RecoverySystem::CheckStatusRequests (EoCServer.dll+0x94BF00) builds requests from the status ID of the status request (+8 of the request), compares *element with it when searching (stride 0xC)."
+          },
+          {
+            "name": "StackId",
+            "offset": 4,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Same function stores the prototype's StackId (GetFixedStringValue(strStackId))."
+          },
+          {
+            "name": "StackPriority",
+            "offset": 8,
+            "type": "int32_t",
+            "source": "inferred",
+            "evidence": "Same function stores GetMappedValue(strStackPriority)."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::WorldMapCameraBehavior",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not replicated. Toolkit ls::CameraSystem::SetWorldMapProperties(view, Vector3f const& pos, Vector3f const& target, float, float) (GameEngine.dll+0x6305D0) writes its first vector to +0..+0xB and passes &+0 as the eye position to the camera look-at virtual. Constructor (+0x7D5260): (128, 256, 128)."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "Target",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SetWorldMapProperties writes its second vector to +0xC..+0x17 and passes &+0xC as the look-at target; the distance between the two sets the far plane. Constructor: (128, 0, 128)."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Width",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SetWorldMapProperties' first float; CameraComponent::SetOrtho(-w/2, w/2, ...). Constructor 256."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "Height",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SetWorldMapProperties' second float; SetOrtho(..., h/2, -h/2). Constructor 256."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "WorldMapCameraBehavior", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 3,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 4,
+    "open_questions": [
+      "Client-only; registry totalSize 32 on the client row only. Widths from operator= (+0x264B30: 8,4,8,4,4,4) and the macOS default (stp q0, q1 at +0)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

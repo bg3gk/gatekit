@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::GravityActiveTimeoutComponent",
+  "kind": "struct",
+  "about": "Server-only, saved (model game.gravity.v0.GravityActiveTimeoutComponent, 4 bytes, no member names known). Seen on up to 8 holders in idle levels (WLD/SCL/CTY) and after dialogues: items whose gravity was switched on. Written by esv::GravitySystem::Update and esv::GravitySystemHelper::SetItemGravity (macOS signatures); the Update runs a query Spec<GravityActiveTimeoutComponent, read TimeFactorComponent> - a timer advanced by scaled frame time.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Timeout",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "registry size 4 (coverage.json server row); macOS esv::GravitySystem::Update allocates it with ComponentFrameStorageAllocRaw(...,4,...) and iterates it in a query together with ls::TimeFactorComponent (time-scaled countdown); per-frame update of esv::GravitySystem bg3.exe+0x2EBCEE0 -> bg3.exe+0x2EBDBD0 adds/removes it. Live: 27 values, all floats 1.38 .. 10.0 (0x41200000), i.e. a seconds timer starting at 10"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerGravityActiveTimeout", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 5,
+    "open_questions": [
+      "whether the float counts down from 10 to 0 (time left) or up to a limit (elapsed); the name Timeout is inferred"
+    ],
+    "raw_check": "27 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

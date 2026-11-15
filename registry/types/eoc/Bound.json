@@ -1,0 +1,19 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::Bound",
+  "kind": "struct",
+  "fields": [
+    {
+      "offset": 24,
+      "name": "AiGrid",
+      "type": "AiGrid*",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's layout (BG3Extender/GameDefinitions/Ai.h), confirmed live in TestLevel_Tom: walking Bound+0x18 -> AiGrid -> Subgrids -> AiSubgrid.TileGrid -> Tiles reached a tile whose MetaDataIndex (32) and flags agree with Ext.Level.GetTileDebugInfo, and a write watch there caught the grid's own writers; eoc::AiGrid::RemoveObjectFromTile and AddObjectToTile read the same offsets; the pointer's first word is the grid's VMT at bg3_dx11.exe+0x5512FE8; FUN_140fc1cc0 (called by eoc::BoundComponent::Increase) passes Bound+0x18 to eoc::BoundComponent::ForEachCell as its AiGrid"
+        }
+      ]
+    }
+  ]
+}

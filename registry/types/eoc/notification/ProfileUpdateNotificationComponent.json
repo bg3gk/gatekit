@@ -1,0 +1,62 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::ProfileUpdateNotificationComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializers bg3.exe+0x99EEB0 / 0x99F010 / 0x99EC60 / 0x99EE10: member 1 is passed to ecs::sync::Serialize(FixedString*) at +0 (DAT_14627fee8). Live always 0x07D00021 (one string). Not used by ecl::profile::ManagementSystem::ProcessUpdateRequests (EoCClient.dll+0x5C9D70)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "TutorialCompleted",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "member 2 at +4 is an optional<bool> (bg3.exe+0xA96120 writes has-value byte +5, then the value byte +4). ProcessUpdateRequests: if byte +5 != 0 then net::PlayerProfile::SetTutorialCompleted(profile, byte +4). Live 1."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "TutorialCompletedHasValue",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "engaged flag of the optional<bool> at +4 (see above). Live 1."}
+      ]
+    },
+    {
+      "offset": 6,
+      "name": "_Pad6",
+      "type": "uint8_t[2]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding (live stale bytes)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NotificationProfileUpdate", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 7,
+    "open_questions": [
+      "What the FixedString at +0 names (profile/user id?).",
+      "+4/+5 are std::optional<bool> in the game; declared as two bools because optional is not in the type list."
+    ],
+    "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

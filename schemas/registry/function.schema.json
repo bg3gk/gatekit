@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "registry/function/1",
+  "title": "A function of the game's code (registry/functions/<scope>/<Name>.json)",
+  "description": "What we have understood of one function, keyed by its id; where it is in each build is in builds/. Our own words, never code of the game. registry/README.md.",
+  "type": "object",
+  "required": ["schema", "id"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "registry/function/1"},
+    "id": {"$ref": "registry/parts#/$defs/id"},
+    "known_as": {"$ref": "registry/parts#/$defs/knownAs"},
+    "state": {"$ref": "registry/parts#/$defs/state"},
+    "rung": {"$ref": "registry/parts#/$defs/rung", "description": "The certainty of the name."},
+    "guess": {"$ref": "registry/parts#/$defs/guess"},
+    "does": {"type": "string", "minLength": 1, "description": "Our sentence: what the function does."},
+    "piece_of": {"$ref": "registry/parts#/$defs/id", "description": "For a piece the compiler made (a thunk, a part split off, a copy for one caller): the function it is a piece of."},
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "returns": {"type": "string", "minLength": 1, "description": "The return type as C++ writes it."},
+        "returns_id": {"$ref": "registry/parts#/$defs/id"},
+        "calling_convention": {"enum": ["win64", "vectorcall", "sysv", "unknown"]},
+        "rung": {"$ref": "registry/parts#/$defs/rung"}
+      }
+    },
+    "parameters": {"type": "array", "items": {"$ref": "registry/parts#/$defs/variable"}, "description": "By storage, in the order of the calling convention."},
+    "locals": {"type": "array", "items": {"$ref": "registry/parts#/$defs/variable"}},
+    "ties": {
+      "type": "array",
+      "description": "The structures the function is tied to: what a parameter or local points at.",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"$ref": "registry/parts#/$defs/id"},
+          "via": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$", "description": "Our name of the parameter or local that points at it."},
+          "rung": {"$ref": "registry/parts#/$defs/rung"}
+        }
+      }
+    },
+    "concept": {"$ref": "registry/parts#/$defs/concept"},
+    "fingerprint": {"$ref": "#/$defs/fingerprint"},
+    "evidence": {"$ref": "registry/parts#/$defs/evidence"},
+    "questions": {"$ref": "registry/parts#/$defs/questions"},
+    "comments": {"$ref": "registry/parts#/$defs/comments"}
+  },
+  "$defs": {
+    "fingerprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Facts about the code that do not depend on the build, never the code or its text: what finds the function again after a patch (Registry/Fingerprint.cs). Its size and body hash are in each build's table.",
+      "properties": {
+        "calls": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "description": "Sorted: a callee's registry id; fp: and 16 digits of the hash of a callee without one; import: and the hash of an imported name; calls:<n> in a callee's own facts."
+        },
+        "strings": {"type": "array", "items": {"type": "string", "pattern": "^[0-9a-f]{16}$"}, "description": "Hashes of the text constants it loads, sorted."},
+        "components": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "The component types whose index it touches, sorted."},
+        "vtables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["slot"],
+            "additionalProperties": false,
+            "properties": {
+              "table": {"type": "string", "minLength": 1},
+              "slot": {"type": "integer", "minimum": 0}
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::ModuleUnloadComponent",
+  "kind": "struct",
+  "about": "Step counter of a client module unload, created by bg3.exe+0x1868270 and advanced by ecl::ModuleUnloadSystem::Update.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "State",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1868270 allocates 4 bytes and writes 0. EoCClient.dll+0xBB10F0 ecl::ModuleUnloadSystem::Update reads *(int*)comp and steps 0 -> 1 -> 2 or 4 -> 3 -> 4 (... DoUnload in state 3)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientModuleUnload", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 3,
+    "open_questions": [],
+    "seen": false,
+    "status": "declared"
+  }
+}

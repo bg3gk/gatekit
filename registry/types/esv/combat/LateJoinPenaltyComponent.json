@@ -1,0 +1,29 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::combat::LateJoinPenaltyComponent",
+  "kind": "struct",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Timer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS SystemUpdate<esv::combat::LateJoinPenaltySystem> (bg3_macos_x64, decomp): the component is added with the float 6.0 (0x40C00000) for entities that get esv::summon::LateJoinPenaltyOneFrameComponent; for entities without eoc::IsInTurnBasedModeComponent each frame does value -= GameTime+8 (the frame delta) and collects the entity when it drops below 0. Runner read 5.962 / 5.967 live, a few frames after creation."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "CombatLateJoinPenalty", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Combat.h:175, kind component), by gatekit symbols se-layouts on 2026-11-14",
+    "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `unknown` because no rung of section 7 is that - not game (no FieldMeta or macOS name behind it), not toolkit, not inferred (ours, with evidence in the record). A name is raised from `unknown` only with evidence, by `gatekit names set`.",
+    "seen": true,
+    "size_check": "Size 0x4 equals the registry's (server 4; coverage.json, game v4.76.31.656).",
+    "status": "declared"
+  }
+}

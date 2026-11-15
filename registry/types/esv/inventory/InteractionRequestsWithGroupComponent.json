@@ -1,0 +1,206 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::inventory::InteractionRequestsWithGroupComponent",
+  "kind": "struct",
+  "about": "Server component (one instance): the inventory interaction requests after grouping. esv::inventory::GroupSystem::ProcessInventoryRequests (EoCServer.dll+0xFD6760) copies InteractionRequestsComponent into it field by field and regroups the member requests; StackSystem reads it. Seen once in an idle level, empty. Same layout and destructor as InteractionRequestsComponent.",
+  "size": 80,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "ContainerInteractions",
+      "type": "Array<InvInteractionRequestsWithGroupContainerRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe creator 0x34D20E0 is identical to InteractionRequestsComponent's and shares its destructor bg3.exe+0x22CF8A0. GroupSystem::ProcessInventoryRequests copies +0 and +0x10 with EoCServer.dll+0xFD58B0 (IndexedStorage<ContainerInteractionRequestData>, alloc 0x10). Name from SE InteractionRequestSystem::ContainerInteractions."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "Array<InvInteractionRequestsWithGroupContainerRequest>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second ContainerInteractionRequestData array: same copy function EoCServer.dll+0xFD58B0 as +0. Role (e.g. deferred vs. immediate) not established."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "MemberInteractions",
+      "type": "Array<InvInteractionRequestsWithGroupMemberRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GroupSystem::ProcessInventoryRequests iterates source+0x20 (the pointer read from source+0x20, count +0x2C, stride 0xE0) as MemberInteractionRequestData; destructor uses the 0xE0 variant-element clear."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "Array<InvInteractionRequestsWithGroupMemberRequest>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second MemberInteractionRequestData array: GroupSystem copies source+0x30 to target+0x30 element by element (AllocateInternal(n, 0xe0, 8), EoCServer.dll+0xF26A60). Role not established."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "NotifyInteractions",
+      "type": "Array<InvInteractionRequestsWithGroupNotifyRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GroupSystem copies source+0x40 to target+0x40 with assert IndexedStorage<esv::inventory::NotifyInteractionRequestData>, stride 0x10. Name from SE InteractionRequestSystem::NotifyInteraction."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerInventoryInteractionRequestsWithGroup",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 7,
+    "open_questions": [
+      "Why there are two container and two member arrays (+0x10, +0x30).",
+      "The member variant (200 bytes) is left opaque."
+    ],
+    "second_pass": "Not settled: same open points as esv::inventory::InteractionRequestsComponent (identical creator and destructor in bg3.exe); roles of the arrays at +0x10/+0x30 not traced.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "structs": [
+      {
+        "name": "InvInteractionRequestsWithGroupContainerRequest",
+        "size": 16,
+        "fields": [
+          {
+            "name": "Inventory",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "Element of IndexedStorage<esv::inventory::ContainerInteractionRequestData> (Toolkit asserts in EoCServer.dll+0xFD58B0 and StackSystem::ProcessInventoryRequests, allocation size 0x10). Same layout as SE ContainerInteractionRequestData (Inventory.h): EntityHandle Inventory + std::variant<ContainerSortData, ContainerScatterData>."
+          },
+          {
+            "name": "ActionData0",
+            "offset": 8,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "Variant storage byte 0: ContainerSortData::SortType or ContainerScatterData::ToParent (SE Inventory.h). InteractionRequestSystem::GatherRequests (EoCServer.dll+0xFC7B40) writes the dword at +8 as 0x0101xxxx when it queues a scatter request."
+          },
+          {
+            "name": "ActionData1",
+            "offset": 9,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "Variant storage byte 1: ContainerScatterData::MainInventory."
+          },
+          {
+            "name": "ActionData2",
+            "offset": 10,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "Variant storage byte 2: ContainerScatterData::OnlyDropOnDeathItems."
+          },
+          {
+            "name": "ActionType",
+            "offset": 11,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "std::variant index (0 = Sort, 1 = Scatter): GatherRequests stores 1 in byte +0xB for scatter requests."
+          },
+          {
+            "name": "_Pad12",
+            "offset": 12,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "Padding to the 0x10 element size."
+          }
+        ]
+      },
+      {
+        "name": "InvInteractionRequestsWithGroupMemberRequest",
+        "size": 224,
+        "fields": [
+          {
+            "name": "Inventory",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "Element of IndexedStorage<esv::inventory::MemberInteractionRequestData> (Toolkit asserts in GroupSystem::ProcessInventoryRequests EoCServer.dll+0xFD6760; AllocateInternal(n, 0xe0, 8)). SE MemberInteractionRequestData: EntityHandle Inventory; int Amount; std::variant<MemberAddData, MemberMoveToSlotData, MemberTransferData, MemberDropData, MemberEquipmentRequestFailedData, MemberRemoveData> Action."
+          },
+          {
+            "name": "Amount",
+            "offset": 8,
+            "type": "int32_t",
+            "source": "inferred",
+            "evidence": "SE MemberInteractionRequestData::Amount; GroupSystem copies the dword at element+8 next to the handle at +0."
+          },
+          {
+            "name": "_Pad12",
+            "offset": 12,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "Alignment padding before the 8-aligned variant."
+          },
+          {
+            "name": "ActionData",
+            "offset": 16,
+            "type": "std::array<uint64_t, 25>",
+            "source": "unknown",
+            "evidence": "std::variant storage, 200 bytes: bg3.exe+0x22E29E0 destroys element+0x10 with bg3.exe+0x22D5900 when the index byte (element+0x10+200) is 3 (MemberDropData, which holds an optional FixedString). Not decodable without a variant type."
+          },
+          {
+            "name": "ActionType",
+            "offset": 216,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "Variant index at element+0xD8 (checked against 3 by the element destructor; GroupSystem tests the byte at element+0xD8 for 0 for MemberAddData)."
+          },
+          {
+            "name": "_Pad217",
+            "offset": 217,
+            "type": "std::array<uint8_t, 7>",
+            "source": "inferred",
+            "evidence": "Padding to the 0xE0 stride."
+          }
+        ]
+      },
+      {
+        "name": "InvInteractionRequestsWithGroupNotifyRequest",
+        "size": 16,
+        "fields": [
+          {
+            "name": "Container",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "IndexedStorage<esv::inventory::NotifyInteractionRequestData> (Toolkit assert), copied as 16 bytes, allocation 0x10. SE NotifyInteractionRequestData: EntityHandle Container, Actor."
+          },
+          {
+            "name": "Actor",
+            "offset": 8,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "Second member of SE NotifyInteractionRequestData."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::steering::LifetimeComponent",
+  "kind": "struct",
+  "about": "Remaining lifetime of the active steering request of an entity, kept by esv::steering::StateSystem::ProcessLifetime (Toolkit EoCServer.dll+0x9BD860): created from the started request (ChangedOneFrameComponent), decremented each frame, removed when it runs out. Seen.py context: born with ChangedOneFrameComponent at the first shove/throw step.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "RequestId",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessLifetime writes the request Guid (+0x18 of the changed/request data) to +0 and compares it with ls::operator== against stored request ids. Creator bg3.exe+0x2B48D50 zeroes it. Live: 16 random bytes equal to ChangedOneFrameComponent.RequestId."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Lifetime",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessLifetime copies request +0x28 here and later does value -= delta time (EoCServer.dll+0x9BD860, element stride 0x18). Live: 0.3 .. 9999999.0."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "_Pad14",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Not written; live garbage."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerSteeringLifetime", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::crowds::DetourComponent",
+  "kind": "struct",
+  "about": "Crowd characters walking detours along splines (4 holders, idle).",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Live 0xFFFFFFFF (null FixedString); macOS default stores w27 (-1) at +0."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "TargetPosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll esv::crowds::DetourSystem::FindNextMainSplineTarget passes +4 as the Vector3f& output of GetSplineInfo (spline node position). Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FindNextMainSplineTarget passes +0x10 as GetSplineInfo's float& (node value + 0.1). Live FLT_MAX."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "field_14",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Live 1.0."}]
+    },
+    {
+      "offset": 24,
+      "name": "NodeIndex",
+      "type": "int16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GetSplineInfo's short& node index (wrapped to the spline's node count). Live -1."
+        }
+      ]
+    },
+    {
+      "offset": 26,
+      "name": "field_1a",
+      "type": "int16_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FindNextMainSplineTarget compares it with node indices and sets it to 0x7FFF or 0."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "field_1c",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "FindNextMainSplineTarget tests byte +0x1C. Live 0."}]
+    },
+    {
+      "offset": 29,
+      "name": "_Pad1D",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerCrowdsDetour", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "names_pass_2": "No game names: not saved or replicated.",
+    "open_questions": ["names of +0, +0x10, +0x14, +0x1A, +0x1C"],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

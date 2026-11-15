@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::stats::EntityHealedEventOneFrameComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x31C27A0 (server heal path) creates a new event entity (FUN_14401aff0, flags |5), allocates 8 bytes of EntityHealedEventOneFrameComponent storage (ComponentFrameStorageAllocRaw(...,8,...)) and stores *param_2 there - the handle of the healed entity (same handle passed to the HealthChanged writer bg3.exe+0x31C2AA0). Live: 3 instances, all values shaped like entity handles (0x...7C3 | 0x01800001.. high dword)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "StatsEntityHealedEvent", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [
+      "The component lives on a separate event entity; Entity is the healed target (no heal amount is stored here)."
+    ],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

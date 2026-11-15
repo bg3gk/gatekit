@@ -1,0 +1,61 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::tadpole_tree::AddedPowerOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame list of tadpole powers just added to a character (seen once in the 'tadpole' scenario, born with eoc::tadpole_tree::PowerContainerComponent). The element type is esv::tadpole_tree::AddedPowerOneFrameComponent::AddedPower (named in macOS template instantiations). Saved: model game.tadpole_tree.v1.AddedPowerOneFrameComponent (16 bytes) with element model game.tadpole_tree.v1.AddedPower.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Powers",
+      "type": "Array<TadpoleTreeAddedPower>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2F04C10 allocates the 16-byte one-frame component, zeroes it and grows/pushes into the array (size +0xC, capacity +8, stride 8); macOS ls::DynamicArray<esv::tadpole_tree::AddedPowerOneFrameComponent::AddedPower>; live heap pointer, capacity 1, size 1"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerTadpoleTreeAddedPower", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 6,
+    "open_questions": ["meaning of the bool in AddedPower (resource count at +0x24 > 0)"],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "TadpoleTreeAddedPower",
+        "size": 8,
+        "fields": [
+          {
+            "name": "Power",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x2F04C10 appends elements with stride 8: +0 = the power's FixedString (IncRef'd) taken from the request list"
+          },
+          {
+            "name": "field_4",
+            "offset": 4,
+            "type": "bool",
+            "source": "unknown",
+            "evidence": "bg3.exe+0x2F04C10 stores (0 < resource->+0x24) for the power looked up through a virtual call on the power manager"
+          },
+          {
+            "name": "_Pad5",
+            "offset": 5,
+            "type": "uint8_t[3]",
+            "source": "unknown",
+            "evidence": "never written"
+          }
+        ]
+      }
+    ]
+  }
+}

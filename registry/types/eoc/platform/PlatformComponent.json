@@ -1,0 +1,124 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::platform::PlatformComponent",
+  "kind": "struct",
+  "size": 72,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not replicated; macOS default ctor stores 0xFFC0000000000000 (null EntityHandle) at +0"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Destroyed",
+      "type": "bool",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Toolkit EoCClient.dll: ls::FieldMeta<bool eoc::platform::PlatformComponent::*,8>; macOS ls::FieldMeta<bool eoc::platform::PlatformComponent::*, &eoc::platform::PlatformComponent::m_Destroyed>; replication reader bg3.exe+0x919460 reads 1 byte to +8"
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "_Pad9",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding (alignment)"}]
+    },
+    {
+      "offset": 12,
+      "name": "TransformData",
+      "type": "TransformData",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Toolkit ls::FieldMeta<struct eoc::platform::TransformData eoc::platform::PlatformComponent::*,12>; macOS ls::FieldMeta<eoc::platform::TransformData eoc::platform::PlatformComponent::*, &eoc::platform::PlatformComponent::m_TransformData>; bg3.exe+0x919460 reads it via bg3.exe+0xA91580 (0x28 bytes + 1 byte)"
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "field_38",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "Not replicated; macOS default ctor zeroes +0x38..0x48"}
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "field_40",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Not replicated; zero default"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "Platform", "one_frame": false},
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 9,
+    "names_pass_2": "Only m_Destroyed and m_TransformData are FieldMeta-named; the non-replicated members and TransformData +0x28 have no name source.",
+    "open_questions": [
+      "Meaning of +0 (entity) and +0x38..0x48.",
+      "TransformData member names and whether rotation is stored w-first."
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "TransformData",
+        "size": 44,
+        "fields": [
+          {
+            "name": "Position",
+            "offset": 0,
+            "type": "glm::vec3",
+            "source": "inferred",
+            "evidence": "bg3.exe+0xA91580 reads 0x28 bytes at +0; macOS default 0 for +0..+0xC"
+          },
+          {
+            "name": "Rotation",
+            "offset": 12,
+            "type": "glm::quat",
+            "source": "inferred",
+            "evidence": "macOS default stores 1.0f at the first float (+0xC) and 0 in the other three - an identity quaternion (w first in memory)"
+          },
+          {
+            "name": "Scale",
+            "offset": 28,
+            "type": "glm::vec3",
+            "source": "inferred",
+            "evidence": "macOS default stores 1.0f to all three floats (+0x1C d8, +0x24 w22=1.0) - unit scale"
+          },
+          {
+            "name": "field_28",
+            "offset": 40,
+            "type": "bool",
+            "source": "unknown",
+            "evidence": "bg3.exe+0xA91580 reads 1 byte at +0x28"
+          },
+          {
+            "name": "_Pad29",
+            "offset": 41,
+            "type": "uint8_t[3]",
+            "source": "inferred",
+            "evidence": "tail padding"
+          }
+        ]
+      }
+    ]
+  }
+}

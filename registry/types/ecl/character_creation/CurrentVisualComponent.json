@@ -1,0 +1,319 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::CurrentVisualComponent",
+  "kind": "struct",
+  "about": "Visual currently applied to the character-editor dummy (queried together with TargetVisualComponent; the creator stores the same defaults as TargetVisual, shifted by 8 bytes). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "size": 216,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x201B8E0 writes 0xFFFFFFFF; destructor DecRefs it. FillTargetVisualComponent sets it from a FixedString of the character template (template +0x4B8 on macOS). Live: 0x0EF00E61 in TargetVisual (also IconDefinition +8), null in CurrentVisual."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "int32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FillTargetVisualComponent increments it when field_0 is set (a change counter). Creator zeroes +4..+0xB. Live 1 (Target), 0 (Current)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "int32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FillTargetVisualComponentColorsAndMaterials increments it (change counter of colors/materials). Live 1 (Target), 0 (Current)."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "_PadC",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "never written by the creator (live 0 in Target, 0xFFFFFFFF garbage in Current)"
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x201B8E0 writes 8 zero bytes; macOS 'stp q1,q1,[x19,#0x10]' zeroes it too. Not in TargetVisualComponent. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Visuals",
+      "type": "Array<Guid>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe+0x201B8E0) copies eoc::character_creation::Appearance +0xA8 (SE: Visuals); Windows creator zeroes ptr/cap/size here"
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Elements",
+      "type": "Array<CCCurrentVisualMaterialSetting>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe+0x201B8E0) copies Appearance +0xB8 (SE: Elements). Live (TargetVisual): 9 entries"
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "AdditionalChoices",
+      "type": "Array<float>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe+0x201B8E0) copies Appearance +0xC8 (SE: AdditionalChoices)"
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "HairColor",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe+0x201B8E0) copies Appearance +0x58; creator writes Guid::Empty"
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "SkinColor",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "copies Appearance +0x68"}]
+    },
+    {
+      "offset": 104,
+      "name": "EyeColor",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "copies Appearance +0x78"}]
+    },
+    {
+      "offset": 120,
+      "name": "SecondEyeColor",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "copies Appearance +0x88"}]
+    },
+    {
+      "offset": 136,
+      "name": "Race",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS FillTargetVisualComponent writes its Guid parameter 7 here; live (TargetVisual +0x80) = Elf race 6c038dcb-... (Races.lsx), same value as LoadedRaceVisualChangedComponent"
+        }
+      ]
+    },
+    {
+      "offset": 152,
+      "name": "Classes",
+      "type": "Array<Guid>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same member as TargetVisualComponent.Classes (+0x90), shifted by the 8 bytes CurrentVisual has at +0x10 (identical default-store sequence of the Windows creators bg3.exe+0x201B8E0 / 0x201BE90): filled by macOS SubsystemHelper::FillTargetVisualComponent from its first Span<Guid> argument (parameter 5), which DummySubsystem::UpdateDummyVisual takes from the DummyDefinitionComponent class list (Script Extender's CharacterCreation.h). Live 1 entry."
+        }
+      ]
+    },
+    {
+      "offset": 168,
+      "name": "Subclasses",
+      "type": "Array<Guid>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same member as TargetVisualComponent.Subclasses (+0xA0), shifted by 8 (identical default-store sequence of the Windows creators bg3.exe+0x201B8E0 / 0x201BE90): filled by macOS FillTargetVisualComponent from its second Span<Guid> argument (parameter 6), which UpdateDummyVisual takes from DummyDefinitionComponent +0xB8 (Script Extender names it the subclass list). Live 1 entry."
+        }
+      ]
+    },
+    {
+      "offset": 184,
+      "name": "Origin",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FillTargetVisualComponent writes its Guid parameter 4 here; live (TargetVisual +0xB0) = Astarion origin 3780c689-... (Origins.lsx), same as LoadedOriginVisualChangedComponent"
+        }
+      ]
+    },
+    {
+      "offset": 200,
+      "name": "BodyType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FillTargetVisualComponent: stores the body type (ls::EBodyType, 1 byte) at +0xC0 of the object passed as its first argument; creator 16-bit zero store with the next byte"
+        }
+      ]
+    },
+    {
+      "offset": 201,
+      "name": "BodyShape",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "stores the body shape (ls::EBodyShape, 1 byte) at +0xC1 of the same object"
+        }
+      ]
+    },
+    {
+      "offset": 202,
+      "name": "field_CA",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "creator writes byte 0"}]
+    },
+    {
+      "offset": 203,
+      "name": "_PadCB",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 204,
+      "name": "field_CC",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes 8 zero bytes at +0xCC; macOS 'stp wzr, wzr, [x19,#0xcc]' = two 4-byte members. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 208,
+      "name": "field_D0",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "see field_CC. Live 0."}]
+    },
+    {
+      "offset": 212,
+      "name": "_PadD4",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "tail padding (live 0xFFFFFFFF garbage)"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientCharacterCreationCurrentVisual",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [
+      "Member meanings are transferred from TargetVisualComponent (already in the build) by the identical Windows default-store sequence; no Windows function that reads CurrentVisual's members was found (its writers are the macOS-named CharacterCreationVisualSubSystem::Update and EquipmentSubSystem, not paired with bg3.exe functions).",
+      "field_10 (one 8-byte zero store at +0x10) and +0xCC (one 8-byte zero store) - their inner split (u64 / pointer / two u32) is not established on Windows; the macOS creator's two 32-bit stores at +0xCC are a hint only."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Re-read the Windows creator bg3.exe+0x201B8E0 (AllocRaw 0xD8): every boundary (FixedString +0, two ints +4/+8, 8 bytes +0x10, arrays +0x18/+0x28/+0x38, Guids +0x48..+0x88, arrays +0x98/+0xA8, Guid +0xB8, u16+byte at +0xC8/+0xCA, 8 bytes +0xCC) matches the layout and TargetVisualComponent shifted by 8; the meaning of the extra 8 bytes and of the tail could not be settled from Windows code.",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "CCCurrentVisualMaterialSetting",
+        "size": 48,
+        "fields": [
+          {
+            "name": "Material",
+            "offset": 0,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "same layout as Script Extender's AppearanceMaterialSetting (GameDefinitions/CharacterCreation.h)"
+          },
+          {
+            "name": "Color",
+            "offset": 16,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "as SE AppearanceMaterialSetting"
+          },
+          {
+            "name": "ColorIntensity",
+            "offset": 32,
+            "type": "float",
+            "source": "inferred",
+            "evidence": "as SE AppearanceMaterialSetting"
+          },
+          {
+            "name": "MetallicTint",
+            "offset": 36,
+            "type": "float",
+            "source": "inferred",
+            "evidence": "as SE AppearanceMaterialSetting"
+          },
+          {
+            "name": "GlossyTint",
+            "offset": 40,
+            "type": "float",
+            "source": "inferred",
+            "evidence": "as SE AppearanceMaterialSetting"
+          },
+          {
+            "name": "_Pad2C",
+            "offset": 44,
+            "type": "uint8_t[4]",
+            "source": "unknown",
+            "evidence": "padding to 8-byte alignment (Guid)"
+          }
+        ]
+      }
+    ]
+  }
+}

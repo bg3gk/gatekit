@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::tutorial::MagicPocketsEventRequestsSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entities",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x341FFA0 (MagicPocketsEventSystem update, esv::inventory::EntityMovedMagicPocketsEventOneFrameComponent) appends unique, valid entity handles (8-byte stores); ValidateSystem index 12 MagicPockets (bg3.exe+0x3428BB0)"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerTutorialMagicPocketsEventRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "minutes": 4,
+    "open_questions": [],
+    "seen": true,
+    "status": "declared"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::trade::ShownTraderMapMarkerNameComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Name",
+      "type": "TranslatedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Replication serializer (bg3.exe+0x8F28C0 and the dirty-mask slot): one member at DAT_146280588 + base = offset 0, written as a 2-byte version read from +4 followed by ecs::sync::Serialize(FixedString at +0) - the Handle of a TranslatedString; the masked slot calls bg3.exe+0x40162B0 and the reader bg3.exe+0x4016300 on the same address. Size 16 = TranslatedString (Handle {FixedString, uint16 Version} + ArgumentString) as declared by Script Extender. macOS default: stp xzr, xzr through x24 plus a call (bg3.exe-equivalent string init)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "TradeShownTraderMapMarkerName", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [
+      "Only the Handle part is replicated; the ArgumentString half (+8..+0xF) is inferred from Script Extender's TranslatedString layout and the registry size."
+    ],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

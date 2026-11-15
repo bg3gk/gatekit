@@ -1,0 +1,71 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::photo_mode::ColorGradingComponent",
+  "kind": "struct",
+  "about": "Client photo mode: the colour grading chosen in the photo-mode UI (gui::DCPhotoMode::OnColorGradingChanged), applied by ecl::photo_mode::ColorGradingSystem while photo mode is active. Never seen alive.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Id",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1AF5D10 (AllocRaw 0x10) writes 0xFFFFFFFF and registers the FixedString destructor bg3.exe+0x698FE0. Toolkit EoCClient.dll+0x593DC0 (ColorGradingSystem::UpdateColorGrading) compares +0 as an int and assigns it with ls::FixedString::operator=; macOS DCPhotoMode::OnColorGradingChanged takes it from the selected UI entry (+0x60 of the object at DCPhotoMode+0x988)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Contrast",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS gui::DCPhotoMode::OnColorGradingChanged (bg3_macos_x64+0x28AF530) copies DCPhotoMode+0xB10 into the ColorGrading request at +0x14 (request +0x10 FixedString Id, then +0x14/+0x18/+0x1C in component order); gui::DCPhotoMode::DCPhotoMode registers Noesis symbol 'Contrast' right after that value (value at +0xB10, AddString(\"Contrast\") stored at +0xB10+4, the pattern 'DOFStrength'/'DOFDistance' follows for the DoF fields). Name is the photo-mode UI property, not a member name."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Saturation",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS gui::DCPhotoMode::OnColorGradingChanged (bg3_macos_x64+0x28AF530) copies DCPhotoMode+0xB28 into the ColorGrading request at +0x18 (request +0x10 FixedString Id, then +0x14/+0x18/+0x1C in component order); gui::DCPhotoMode::DCPhotoMode registers Noesis symbol 'Saturation' right after that value (value at +0xB28, AddString(\"Saturation\") stored at +0xB28+4, the pattern 'DOFStrength'/'DOFDistance' follows for the DoF fields). Name is the photo-mode UI property, not a member name."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "Highlights",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS gui::DCPhotoMode::OnColorGradingChanged (bg3_macos_x64+0x28AF530) copies DCPhotoMode+0xB40 into the ColorGrading request at +0x1C (request +0x10 FixedString Id, then +0x14/+0x18/+0x1C in component order); gui::DCPhotoMode::DCPhotoMode registers Noesis symbol 'Highlights' right after that value (value at +0xB40, AddString(\"Highlights\") stored at +0xB40+4, the pattern 'DOFStrength'/'DOFDistance' follows for the DoF fields). Name is the photo-mode UI property, not a member name."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "PhotoModeColorGrading", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 3,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 7,
+    "open_questions": [
+      "Names of the three floats (Noesis properties of DCPhotoMode not resolved)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

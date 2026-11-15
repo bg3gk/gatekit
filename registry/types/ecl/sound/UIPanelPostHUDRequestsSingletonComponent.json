@@ -1,0 +1,74 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::UIPanelPostHUDRequestsSingletonComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<UIPanelPostSoundEventRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "UIPrioritySystem::SendMuffleEvent(FixedString const&, bool, UIPanelPostHUDRequestsSingletonComponent*) (EoCClient.dll+0xD48B20) appends an ls::PostSoundEventRequest at component+0 (capacity +8, size +0xC, stride 0xC); InterfaceSystem::ProcessPostHUDEventRequests (EoCClient.dll+0xDBE200) forwards the elements."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSoundUIPanelPostHUDRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 3,
+    "open_questions": [
+      "Meaning of PostSoundEventRequest +4 and +8.",
+      "Only empty instances were seen."
+    ],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "UIPanelPostSoundEventRequest",
+        "size": 12,
+        "fields": [
+          {
+            "name": "Event",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Element is ls::PostSoundEventRequest. UIPrioritySystem::SendMuffleEvent (EoCClient.dll+0xD48B20) builds an event name from two global FixedStrings plus the panel name and stores it at +0."
+          },
+          {
+            "name": "field_4",
+            "offset": 4,
+            "type": "uint32_t",
+            "source": "unknown",
+            "evidence": "SendMuffleEvent writes 0 (MixStateSystem::PostMixEvent writes 3 to the same member of ls::PostSoundEventRequest). Possibly SoundEventType - not confirmed."
+          },
+          {
+            "name": "ObjectType",
+            "offset": 8,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "Toolkit EoCClient.dll+0xDBE200 ecl::sound::InterfaceSystem::ProcessPostHUDEventRequests hands each element of the three PostHUD request singletons (MixState, TimelineSave, UIPanel; stride 0xC) to EoCClient.dll+0xD4E0A0, which appends it to ls::GameplayGlobalSoundRequestsSingletonComponent copying FixedString +0, uint +4 and byte +8 one for one; byte +8 there is GameplayGlobalSoundRequest::ObjectType, which GameEngine.dll+0x89B3A0 ls::GameplaySoundInterfaceSystem::ProcessPostSoundEventRequests maps 0..3 to ERoutedSoundEventType and otherwise asserts EGlobalSoundObjectType not supported. Value 2 at every writer."
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[3]",
+            "source": "inferred",
+            "evidence": "Stride 0xC."
+          }
+        ]
+      }
+    ]
+  }
+}

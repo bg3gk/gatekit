@@ -1,0 +1,59 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::combine::AddToInventoryRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request of item combination (crafting): put the created items into an inventory. Filled in esv::combine::ExecutionSystem::FinalizeComponents (bg3.exe+0x2F28BA0, Toolkit-matched): a set of entity handles plus a bool set to 1 whenever the component is filled. Saved (model game.combine.v0.AddToInventoryRequestOneFrameComponent, 16 bytes = one array; member names not in the macOS symbols - the bool is apparently not saved). Never seen alive. Registry total 56 (server row).",
+  "size": 56,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entities",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2F29BA0 (AllocRaw 0x38) zeroes +0..+0x2F in the HashSet pattern; destructor thunk of bg3.exe+0x582AD0 frees the buffers at +0x20, +0x10, +0. FinalizeComponents lines 138-143 insert 8-byte keys with bg3.exe+0x721030 (HashSet<8-byte> insert)."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes 0 at +0x30 (byte); FinalizeComponents line 145 writes the byte 1 at +0x30 of the component after filling the set. Meaning not established."
+        }
+      ]
+    },
+    {
+      "offset": 49,
+      "name": "_Pad31",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding to the registry size 56."}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCombineAddToInventoryRequest",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 4,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 6,
+    "open_questions": [
+      "Meaning of the bool at +0x30 (always set to 1 by FinalizeComponents; maybe 'notify'/'from crafting').",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

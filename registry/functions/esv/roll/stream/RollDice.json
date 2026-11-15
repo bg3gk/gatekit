@@ -1,0 +1,16 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::roll::stream::RollDice",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Rolls a dice formula from a roll stream: seeds a 64-bit Mersenne Twister with the stream's seed, draws each die from 1 to its faces at the stream's count, adds the formula's bonus, and moves the stream's success or failure debt by the outcome against a difficulty.",
+  "fingerprint": {
+    "calls": ["esv::roll::stream::DrawNumber", "fp:5227b96c8688ff31", "fp:e4d053ad9455ea7c"]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "Every hit of the draw (GK.Memory.Watch on the roll manager's count, +0x105AAE3) returns through +0x105CB3D; one passive check moves the count by two"
+    }
+  ]
+}

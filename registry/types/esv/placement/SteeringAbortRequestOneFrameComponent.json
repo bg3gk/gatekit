@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::placement::SteeringAbortRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request from esv::placement::ExecutionSystem to abort a steering (turning) it started; read by esv::steering::StateSystem. Seen.py context: dialogues and lock interactions where a placement was interrupted.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "Guid",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2F075E0 allocates 0x10 and zeroes two qwords. Live: 20 instances, 20 distinct random 16-byte values - a Guid, presumably the id of the steering request to abort (SteeringRequestOneFrameComponent carries a Guid at +0x18)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerPlacementSteeringAbortRequest",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": ["Link with SteeringRequestOneFrameComponent.field_18 not proven in code."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

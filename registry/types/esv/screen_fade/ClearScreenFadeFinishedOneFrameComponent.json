@@ -1,0 +1,61 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::screen_fade::ClearScreenFadeFinishedOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame singleton event of esv::screen_fade::ScreenFadeSystem::FinalizeComponents: per screen-fade id, the clear-fade requests that finished this frame (name + user). Same shape as ScreenFadeToFinishedOneFrameComponent. Seen.py context: exploration (Expl_UND_ZhentElelvator), scenes and dialogues that fade the screen.",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Finished",
+      "type": "HashMap<Guid, Array<ClearScreenFadeFinishedNameData>>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2EEF5E0 allocates 0x40 zeroed, HashMap shape. macOS template ls::HashMap<ls::Guid, ls::DynamicArray<esv::screen_fade::ScreenFadeNameData>>. EoCServer.dll+0x399FD0 adds it, gets/inserts the array for a Guid (FUN_1803931f0) and pushes a 0x20 ScreenFadeNameData, then logs m_ClearFadeFinishedData. Live: buckets 5, 1 key, value array present."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerClearScreenFadeFinished", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [],
+    "raw_check": "26 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "ClearScreenFadeFinishedNameData",
+        "size": 32,
+        "fields": [
+          {
+            "name": "Name",
+            "offset": 0,
+            "type": "STDString",
+            "source": "game",
+            "evidence": "esv::screen_fade::ScreenFadeNameData; log 'FinalizeComponents::m_ClearFadeFinishedData: Guid[%s], Name[%s], User[%d]' (EoCServer.dll+0x399FD0) prints the STDString copied to element+0."
+          },
+          {
+            "name": "User",
+            "offset": 24,
+            "type": "int32_t",
+            "source": "game",
+            "evidence": "Same log 'User[%d]'; 4 bytes at element+0x18; net::UserID."
+          },
+          {
+            "name": "_Pad1C",
+            "offset": 28,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "Element stride 0x20 (index*0x20, IndexedStorage<ScreenFadeNameData>)."
+          }
+        ]
+      }
+    ]
+  }
+}

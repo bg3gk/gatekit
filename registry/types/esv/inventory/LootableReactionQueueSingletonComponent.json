@@ -1,0 +1,52 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::inventory::LootableReactionQueueSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton backed by a savegame model (ls::model::game::inventory::v0::LootableReactionQueueSingletonComponent): two hash sets. Seen once in an idle level, empty.",
+  "size": 96,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "HashSet<EntityHandle>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows save loader bg3.exe+0x25C2290 (model game.inventory.v0.LootableReactionQueueSingletonComponent, 32 bytes = two arrays; the only other model saved with it is ls::model::core::v0::EntityId) converts the model with bg3.exe+0x2779F90 into two 48-byte hash sets and moves the first into component +0..+0x30. bg3.exe+0x2779F90 builds the set from 8-byte elements (count = byte size >> 3, bucket = key % bucket count on the full 8 bytes, keys stored at +0x20) - entity handles. Destructor FUN_1406c6a10 frees both with the HashSet destructor FUN_140582AD0. Live: empty."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "HashSet<EntityHandle>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second set, built by bg3.exe+0x2779F90 from the second model array (same 8-byte EntityId elements) and moved to +0x30 by the loader bg3.exe+0x25C2290."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerInventoryLootableReactionQueue",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "live": "not verified",
+    "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "minutes": 6,
+    "open_questions": [
+      "Roles of the two sets: no system reads or writes the component on macOS or in bg3.exe outside the creator, the destructor and the save loader/saver (it may be dead data kept for old saves)."
+    ],
+    "second_pass": "The Windows save loader bg3.exe+0x25C2290 and its converter bg3.exe+0x2779F90 settle both members as HashSet<EntityHandle> at +0 and +0x30 (model of two EntityId arrays); the names stay unknown because no system uses the component.",
+    "seen": true,
+    "status": "declared"
+  }
+}

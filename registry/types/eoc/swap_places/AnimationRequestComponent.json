@@ -1,0 +1,88 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::swap_places::AnimationRequestComponent",
+  "kind": "struct",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not replicated. Windows creator bg3.exe+0x2E9F6E0 (ComponentFrameStorageAllocRaw 0x18, the only caller is bg3.exe+0x2E9E370) stores its entity argument - the same value it uses as the key of the storage's entity map - at +0 and zeroes the array at +8: the handle of the entity that owns the component. macOS default ctor: null handle."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Requests",
+      "type": "Array<SwapPlacesAnimationRequestData>",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Windows type name ls::FieldMeta<class ls::DynamicArray<struct eoc::swap_places::AnimationRequestData,struct ls::TaggedAllocator<int> > eoc::swap_places::AnimationRequestComponent::*,8>; macOS m_Requests. Serializer bg3.exe+0x8E5FE0 -> bg3.exe+0xA7FD00 (stride 0x18). Windows: the replication writer bg3.exe+0x8E5FE0 passes +8 to the array writer bg3.exe+0xA7FD00 (count from +0xC, stride 0x18)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SwapPlacesAnimationRequest", "one_frame": false},
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "high",
+    "functions_read": 5,
+    "minutes": 7,
+    "open_questions": [
+      "Names of the eoc::swap_places::AnimationRequestData members (no FieldMeta names)."
+    ],
+    "second_pass": "Settled on Windows: the creator bg3.exe+0x2E9F6E0 writes the owner entity at +0 and an empty array at +8; the array writer bg3.exe+0xA7FD00 gives the element (two entities, two bytes, stride 0x18).",
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it",
+    "structs": [
+      {
+        "name": "SwapPlacesAnimationRequestData",
+        "size": 24,
+        "fields": [
+          {
+            "name": "Source",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "Toolkit EoCServer.dll+0x5D7C70 ProcessSwapPlacesRequests: the animation element is built as {request +0 (source handle), request +8 (target handle), the two bools at request +0x14}; esv::animation::GameplaySystem::ProcessSwapPlacesAnimationRequests (EoCServer.dll+0x1517940) triggers EoCGE::PositionSwap(true, +0x10, +0x11) on element +0."
+          },
+          {
+            "name": "Target",
+            "offset": 8,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "EoCServer.dll+0x5D7C70: element +8 = the request's target handle; EoCServer.dll+0x1517940 triggers EoCGE::PositionSwap(false, +0x10, +0x11) on element +8."
+          },
+          {
+            "name": "field_10",
+            "offset": 16,
+            "type": "bool",
+            "source": "unknown",
+            "evidence": "Windows array writer bg3.exe+0xA7FD00 writes 1 byte at +0x10. Toolkit EoCServer.dll+0x5D7C70 copies it from request +0x14 = the second argument of the SwapPlaces stats functor (functor +0x4C; Script Extender SwapPlacesFunctor::Arg1); EoCServer.dll+0x1517940 passes it to the animation gameplay event EoCGE::PositionSwap(isSource, +0x10, +0x11), whose parameter names are not in the binaries."
+          },
+          {
+            "name": "field_11",
+            "offset": 17,
+            "type": "bool",
+            "source": "unknown",
+            "evidence": "Windows array writer bg3.exe+0xA7FD00 writes 1 byte at +0x11. Toolkit EoCServer.dll+0x5D7C70 copies it from request +0x15 = the third argument of the SwapPlaces functor (functor +0x4D; Script Extender Arg2); passed to EoCGE::PositionSwap like +0x10."
+          },
+          {
+            "name": "_Pad12",
+            "offset": 18,
+            "type": "uint8_t[6]",
+            "source": "inferred",
+            "evidence": "tail padding"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::tutorial::ValidatedEventRequestsSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Events",
+      "type": "Array<ValidatedEventRequestsEntry>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3427CE0 (ValidateSystem update, part 2) clears it and appends 24-byte {entity, Guid}: entity = +0 of the variant entry, Guid found via the tutorial event lookup; macOS esv::StoryGameEventManager::OnTutorialEvent(esv::tutorial::ValidatedEventData const&) consumes them"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerTutorialValidatedEventRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "ValidatedEventRequestsEntry",
+        "size": 24,
+        "fields": [
+          {
+            "name": "Entity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x3427CE0 stores the variant's entity at +0"
+          },
+          {
+            "name": "Event",
+            "offset": 8,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x3427CE0 stores the 16-byte tutorial event id at +8"
+          }
+        ]
+      }
+    ]
+  }
+}

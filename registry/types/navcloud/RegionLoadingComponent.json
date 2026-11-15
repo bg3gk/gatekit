@@ -1,0 +1,104 @@
+{
+  "schema": "registry/type/1",
+  "id": "navcloud::RegionLoadingComponent",
+  "kind": "struct",
+  "about": "Client and server, one per navcloud region entity being streamed in (12/48 holders). Written by navcloud::RegionSystem (Update / ProcessAgents / ProcessMemoryData / MetaDataRemoval), read by navcloud::generate::GenerationSystem. Holds the region coordinates, the worker job that processes the loaded data, the asynchronous file read (navcloud.data) and a flag.",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "RegionX",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "creator bg3.exe+0x392B120 (alloc 0x28) zeroes *(uint64*)+0 and *(uint32*)+8 (a 12-byte Vector3i); macOS RegionSystem::Update copies *(uint64*)comp and *(uint32*)(comp+8) into the processing WorkerThreadJob as the region key. Live: small ints 0..0xD (same as RegionLoadedOneFrame)"
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "RegionY",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "second int of the Vector3i region key"}]
+    },
+    {
+      "offset": 8,
+      "name": "RegionZ",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "third int of the Vector3i region key; live negative values (-0x40 .. -0x4C)"
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "_Pad0C",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "not written by the creator; live garbage"}]
+    },
+    {
+      "offset": 16,
+      "name": "ProcessJob",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS RegionSystem::Update: *(WorkerThreadJob**)(comp+0x10) = new job (0x70 bytes, vtable OnWTCompletion) built from the region key and the read buffer; on removal the job is waited for and freed. Windows creator zeroes +0x10. Live mostly 0 (heap in 4 samples) [offset from macOS, size/zeroing confirmed on Windows]"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "ReadRequest",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS RegionSystem::Update reads a state at *(*(comp+0x18)+0x40) (0..7, atomically set to 7 = cancelled, spins while 5) and a buffer at +0x1C0 of the same object: an asynchronous IO request for navcloud.data. Windows creator zeroes +0x18. Live always a heap pointer"
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "field_20",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows creator bg3.exe+0x392B120 and macOS writer both set byte +0x20 = 0; live byte 0 always 00"
+        }
+      ]
+    },
+    {
+      "offset": 33,
+      "name": "_Pad21",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding; live garbage"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NavcloudRegionLoading", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 8,
+    "open_questions": [
+      "meanings of +0x10/+0x18 rest on macOS pseudo-code (Windows creator only confirms two zeroed pointers there)",
+      "meaning of the bool at +0x20"
+    ],
+    "raw_check": "60 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

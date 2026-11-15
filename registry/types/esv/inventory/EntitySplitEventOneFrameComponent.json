@@ -1,0 +1,51 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::inventory::EntitySplitEventOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event of a stack split (items / level-change / locked-hatch steps; born with esv::inventory::StackSplitEventOneFrameComponent). Written by esv::inventory::StackSystem::ProcessStackChanges, read by TradeBuybackSystem::CreateSetBuybackPriceRequests.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "Guid",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe creator FUN_1434b2ad0: 0x18 bytes, no destructor (POD), +0/+8 zeroed. ProcessStackChanges (bg3.exe+0x34A9190) copies 16 bytes from frame-data value+8 (24-byte values of a map at FrameData+0xD0) into +0..+0x10. Probably a request Guid (drop/pick-up split requests carry a Guid at +8); live always zero."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator default 0xFFC0000000000000 (null handle); ProcessStackChanges copies value+0 (8 bytes) here. Live valid handles (0x02000009_000168FA ...): the other entity of the split (source stack or new stack - not established)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerInventoryEntitySplitEvent",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "low",
+    "functions_read": 3,
+    "minutes": 9,
+    "open_questions": [
+      "Which entity +0x10 names and what the 16 bytes at +0 are (never non-zero live)."
+    ],
+    "second_pass": "Not settled in this pass (time): no new Windows reader of the two members was decoded; the creator bg3.exe+0x34B2AD0 and ProcessStackChanges bg3.exe+0x34A9190 of the first pass remain the only evidence.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "the author's confidence is low: types fit the live data, meanings are not established"
+  }
+}

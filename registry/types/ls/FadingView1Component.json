@@ -1,0 +1,56 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::FadingView1Component",
+  "kind": "struct",
+  "about": "Resolved fade of an entity for render view 1, written by ecl::FadeResolveSystem from all ecl::*FadeView1Component sources; the entity is also put into ls::FadingEntitiesForRenderingSingletonComponent.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Opacity",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows creator bg3.exe+0x18EC020 (ComponentFrameStorage element size 8, TypeIndex<ls::FadingView1Component>) stores 0x3F800000 (1.0f) at +0; bg3.exe+0x18E2BF0 (fade resolve, View1 branch) sets it to 0 when the entity's 2-byte request says so. Toolkit ls::IsFading (GameEngine.dll+0x74B7B0, WorldView<..., FadingView0Component const, FadingView1Component const, ...>) reads the float and returns 'fading' when it is below 0.49. Live: 0, 0.5, 1."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows creator bg3.exe+0x18EC020 writes byte 1 at +4 (1-byte store); bg3.exe+0x18E2BF0 copies the second byte of the entity's 2-byte request into it. No reader of it was found (IsFading reads only the float). Live: 0 or 1."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "_Pad5",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "Never written by the creator (live garbage); padding to 8."}
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "FadingView1", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 4,
+    "minutes": 5,
+    "open_questions": [
+      "Name and meaning of the bool at +4 (no reader found; same as Script Extender's FadingView0Component.field_4 in Coverage.h)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Offsets and widths settled from the Windows View1 creator bg3.exe+0x18EC020 (8-byte element, 1.0f at +0, byte 1 at +4) and the resolve writer bg3.exe+0x18E2BF0; Toolkit ls::IsFading confirms the float is the opacity compared with 0.49.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

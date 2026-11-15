@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::script::CompletedRequestsSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton of esv::script::RequestSystem: the set of request entities whose execution finished; RequestSystem::ProcessUpdateRequests destroys each of them. Seen.py context: singleton present in the idle level; one sample held 5 buckets and 1 key.",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x4FB560 RequestSystem::ProcessUpdateRequests (WorldView with CompletedRequestsSingletonComponent const) walks component+0x20 for *(int*)(+0x2C) qwords and calls EntityCommandBuffer::DestroyEntity on each - the Keys array of a HashSet of entity handles. Live: +0 heap/+8 = 5 (buckets), +0x10 and +0x20 arrays with capacity 1 / size 1 - HashSet shape."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerScriptCompletedRequests", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

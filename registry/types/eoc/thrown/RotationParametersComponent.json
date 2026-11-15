@@ -1,0 +1,72 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::thrown::RotationParametersComponent",
+  "kind": "struct",
+  "about": "Replicated rotation parameters of a thrown object (how it spins in flight), written by esv::thrown::ThrowAnimationSystem::ProcessApplyRotationParams (Toolkit EoCServer.dll) and copied into ecl::thrown::CurrentRotationComponent on the client. Born live in shove-throw.",
+  "size": 56,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "AngularVelocity",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessThrownRequests (EoCServer.dll+0x3D3D50, lines 480-552) computes spins (0..3 by the throw displacement's length against three thresholds of the item throw param) * 2*pi / Duration, puts it on the axis and sign the throw param's axis enum selects (cases 1..6), and stores it as the first vec3 of the 0x38-byte rotation parameters that ProcessApplyRotationParams copies into this component. Live (0,-18.8,0) = 3 turns * 2*pi / 1.0 s; (0,-24.2,0) = 3 turns / 0.78 s."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "StartAngle",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "esv::thrown::ThrowAnimationSystem::ProcessThrownRequests (EoCServer.dll+0x3D3D50, lines 519-522 and 542-552) copies the vec3 at +0x44 of the item throw param into +0xC..+0x17 of the 0x38-byte rotation parameters it stores for this component. That resource is resource::ItemThrowParams: its +0x38/+0x3C/+0x40 are the MaxDistFor{One,Two,Zero}Rotations thresholds and +0x50 the RotationAxis the same function compares and switches on, and +0x44 is Script Extender's StartAngle (gatekit symbols layout ItemThrowParams). Live (0, 0, 1.5708)."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "glm::vec4",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Serializer member 3: 16 bytes at +0x18. Live (0, 0.70, 0, 0.46) - not a unit quaternion, so kept as vec4."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "field_28",
+      "type": "glm::vec4",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Serializer member 4: 16 bytes at +0x28. Live equal to field_18. macOS default writes 1.0 (w1) at +0x34 (hint only)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ThrownRotationParameters", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 7,
+    "names_pass_2": "Replicated without macOS FieldMeta names; not settled.",
+    "open_questions": [
+      "Meaning of the four members; whether the 16-byte members are quaternions (live values are not normalised).",
+      "Toolkit esv::thrown::ThrowAnimationSystem::ProcessApplyRotationParams writes it; its named locals would name the four members."
+    ],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

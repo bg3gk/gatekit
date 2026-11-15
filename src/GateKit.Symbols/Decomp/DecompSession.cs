@@ -11,6 +11,9 @@ internal sealed class DecompSession(DecompSettings settings, TextWriter output, 
     public TextWriter Out { get; } = output;
     public TextWriter Err { get; } = error;
 
+    /// <summary>The type indices the macOS build names (<see cref="TypeRefs.IndexNames"/>); a test gives its own.</summary>
+    public Func<DecompSettings, string, Action<string>, (Dictionary<long, string> OfAddress, Dictionary<long, string> OfSlot)?> IndexNames { get; init; } = TypeRefs.IndexNames;
+
     SqliteConnection? db, symbols;
     bool ownsDb, symbolsTried;
     readonly Dictionary<string, PeImage?> images = new(StringComparer.Ordinal);
@@ -32,20 +35,49 @@ internal sealed class DecompSession(DecompSettings settings, TextWriter output, 
         }
     }
 
-    /// <summary>decomp.sqlite read-only when it exists, else null.</summary>
-    public SqliteConnection? DbIfExists => db ?? (File.Exists(Settings.DbPath) ? Db : null);
+    /// <summary>Lets go of decomp.sqlite, so that it can be replaced; the next read opens it again.</summary>
+    public void CloseDb()
+    {
+        if (db != null && ownsDb)
+            db.Dispose();
+        db = null;
+        SqliteConnection.ClearAllPools();
+    }
 
-    /// <summary>Opens decomp.sqlite for writing; later reads of this session go through it.</summary>
+    bool decompNoted;
+
+    /// <summary>decomp.sqlite read-only when it can be read, else null - and then a note on
+    /// <see cref="Err"/>, once, of what is left out and why.</summary>
+    public SqliteConnection? DbIfExists
+    {
+        get
+        {
+            if (db != null) return db;
+            if (GateKit.Home.HomeDatabase.Usable(Settings.DbPath)) return Db;
+            if (!decompNoted)
+            {
+                decompNoted = true;
+                Err.WriteLine(GateKit.Home.HomeDatabase.LeftOut(Settings.DbPath, "what the pseudo-code database adds"));
+            }
+            return null;
+        }
+    }
+
+    /// <summary>Opens decomp.sqlite for writing, creating it (and saying where) when it is not
+    /// there; later reads of this session go through it.</summary>
     public SqliteConnection OpenWrite()
     {
         if (db != null && ownsDb)
             db.Dispose();
+        if (!File.Exists(Settings.DbPath))
+            Err.WriteLine($"creating {Path.GetFullPath(Settings.DbPath)} (BG3_DECOMP_WORK or the home moves it; `gatekit doctor` shows the source)");
         db = DecompStore.OpenWrite(Settings.DbPath);
         ownsDb = true;
         return db;
     }
 
-    /// <summary>The symbol database read-only, or null when it does not exist.</summary>
+    /// <summary>The symbol database read-only, or null when it cannot be read - and then a note on
+    /// <see cref="Err"/>, once, of what is left out and why.</summary>
     public SqliteConnection? Symbols
     {
         get
@@ -53,8 +85,10 @@ internal sealed class DecompSession(DecompSettings settings, TextWriter output, 
             if (!symbolsTried)
             {
                 symbolsTried = true;
-                if (File.Exists(Settings.SymbolsDb))
+                if (GateKit.Home.HomeDatabase.Usable(Settings.SymbolsDb))
                     symbols = Sql.OpenReadOnly(Settings.SymbolsDb);
+                else
+                    Err.WriteLine(GateKit.Home.HomeDatabase.LeftOut(Settings.SymbolsDb, "names, types and layouts from the symbol database"));
             }
             return symbols;
         }

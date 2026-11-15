@@ -1,0 +1,96 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::sound::PlayServerSoundRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "Put on a request entity by esv::ServerSoundSystem (bg3.exe+0x2D92180 drains the system's queue of ls::Variant<ServerSoundSystem::PlayRequest, PlayHUDRequest>, 0x18-byte elements with the index at +0x10) and consumed by ServerSoundSystem::ProcessServerSoundRequests (EoCServer.dll+0x4CA630), which forwards it to clients (eoc::notification::PlayServerSoundComponent). macOS: ServerSoundSystem::RequestPlaySound(EntityHandle const&, FixedString const&, bool) / RequestPlayHUDSound. Seen.py context: born at the first shove/throw step together with drop/thrown/steering types; very common afterwards (up to 787 holders).",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Both writers bg3.exe+0x2D922B0 (PlayRequest) and bg3.exe+0x2D924B0 (PlayHUDRequest) copy the request's EntityHandle (+0) after checking IsEntityAlive. Live: entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Event",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writers copy the request FixedString at +8 with IncRef; ProcessServerSoundRequests destroys a FixedString at +8. RequestPlaySound(entity, FixedString, bool): the sound event name. Live: FixedString indices."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "SoundObjectType",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "PlayRequest writer stores the 0..3 result of a virtual call on the system's sound helper (rejects 2 and >=4); PlayHUDRequest writer stores constant 2. Live: 0..2. Enum name not established (an ESoundObjectType-like value, 4 bytes)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "FromResource",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "esv::ServerSoundSystem queues PlayRequest {Entity +0, FixedString +8, u8 +0xC, u8 +0xD} (variant tag 0) and PlayHUDRequest {Entity, FixedString, u8 +0xC} (tag 1). The exported request functions differ only in that byte: RequestPlaySound (EoCServer.dll+0x4CA960) and RequestPlayHUDSound (+0x4CA760) write 0 at +0xC, RequestPlaySoundFromResource (+0x4CAA70) and RequestPlayHUDSoundFromResource (+0x4CA860) write 1. Both component writers copy request +0xC here; EoCServer.dll+0x845C60 carries it into PlayServerSoundNotificationRequest +0x10 and bg3.exe+0x2DEE710 stores it at eoc::notification::PlayServerSoundComponent +0x18, which makes the client resolve the sound through the sound bank."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "LocalPlayerOnly",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "esv::ServerSoundSystem queues PlayRequest {Entity +0, FixedString +8, u8 +0xC, u8 +0xD} (variant tag 0) and PlayHUDRequest {Entity, FixedString, u8 +0xC} (tag 1). This byte is RequestPlaySound's bool (EoCServer.dll+0x4CA960 stores param_3 at request +0xD; the PlayHUDRequest writer stores 1). EoCServer.dll+0x845C60 copies component +0x11 into the notification request +0x11, and bg3.exe+0x2DEE710 stores it at eoc::notification::PlayServerSoundComponent +0x19 (LocalPlayerOnly: the client plays it through PlayerManager::PlaySoundForLocalPlayer); the same function branches on it to pick the receiving peers."
+        }
+      ]
+    },
+    {
+      "offset": 18,
+      "name": "_Pad12",
+      "type": "uint8_t[6]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Never written by the creators; live bytes here are uninitialised garbage."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerSoundPlayServerSoundRequest",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 9,
+    "open_questions": ["The enum behind +0xC (SoundObjectType)."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

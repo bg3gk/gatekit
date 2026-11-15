@@ -1,0 +1,162 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::timeline::GlobalActiveEventComponent",
+  "kind": "struct",
+  "size": 648,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1A5E180(storage, entity, request): constructor writes the null handle, then '*comp = entity' - the handle of the event entity the component is added to (created just before in bg3.exe+0x1A5DBF0, ecl::timeline::ActiveEventSystem)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "Guid",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor: the null-Guid constant DAT_14625AAD0; bg3.exe+0x1A5DBF0 copies TimelineThothCondition +0x50 (field_50, the id of the condition's source record) of the selected condition."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Condition",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1A5DBF0 copies the first 16 bytes of the selected 0x68-byte TimelineThothCondition (its Id; the element is found by bg3.exe+0x1A5DEC0 from the Guid in GlobalThothResultComponent::Condition and the request type)."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "EventName",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor -1; assigned with the FixedString assignment bg3.exe+0x412E090 from TimelineThothCondition +0x14. bg3.exe+0x1A68ED0 (ecl::timeline::EventFrequencySystem) walks these components with stride 0x288 and uses the FixedString at +0x28 as the key of GlobalEventFrequencyComponent::Cooldowns and of its frequency table."
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "_Pad2C",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "alignment / tail padding"}]
+    },
+    {
+      "offset": 48,
+      "name": "Request",
+      "type": "TimelineThothRunRequest",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator copies int32 +0x30 and byte +0x34 from the source and copy-constructs +0x38 with bg3.exe+0x18A8DE0 (eoc::HitDesc copy constructor, then members up to +0x230; destroyed by bg3.exe+0x18856E0) - exactly the 0x238-byte element {Index, Type, payload at +8} of GlobalRunThothComponent / the engaged value of GlobalThothResultComponent::Request (source = result component +0x10, stride 0x250). Struct already declared in Components/Coverage.h."
+        }
+      ]
+    },
+    {
+      "offset": 616,
+      "name": "Timeline",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor 0. bg3.exe+0x1A5DBF0: default = TimelineThothCondition +0x38 (the Guid of the timeline the condition was loaded from, see TimelineLoadedComponent); replaced, for request type 1, by a Guid of the target's template (+0x598) and, for type 0, by a Guid found through the request's FixedString - when those are non-zero."
+        }
+      ]
+    },
+    {
+      "offset": 632,
+      "name": "field_278",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor 0; copied from TimelineThothCondition +0x48 (index of the record inside its timeline)."
+        }
+      ]
+    },
+    {
+      "offset": 636,
+      "name": "field_27C",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "Constructor 0; copied from TimelineThothCondition +0x34."}
+      ]
+    },
+    {
+      "offset": 637,
+      "name": "_Pad27D",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "alignment / tail padding"}]
+    },
+    {
+      "offset": 640,
+      "name": "field_280",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor -1; FixedString assignment from TimelineThothCondition +0x60."
+        }
+      ]
+    },
+    {
+      "offset": 644,
+      "name": "field_284",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Constructor 0; not written by bg3.exe+0x1A5DBF0."}]
+    },
+    {
+      "offset": 645,
+      "name": "_Pad285",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "alignment / tail padding"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientTimelineGlobalActiveEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "timeline",
+    "confidence": "medium",
+    "external_types": {"TimelineThothRunRequest": [568, 8]},
+    "functions_read": 6,
+    "minutes": 18,
+    "names_pass_2": "No game names found (members copy the unnamed TimelineThothCondition).",
+    "open_questions": [
+      "TimelineThothRunRequest in Components/Coverage.h is the opaque variant (payload as bytes); ecl.timeline.GlobalThothResultComponent.json holds the decoded one (HitDesc at +8, AttackDesc at +0x1B8, ...) - same 0x238 bytes.",
+      "field_278 / field_27C / field_280 / field_8 mirror unnamed members of TimelineThothCondition (+0x48, +0x34, +0x60, +0x50).",
+      "field_284: only its constructor value is known; the main reader bg3.exe+0x1A5FE20 was only skimmed.",
+      "Never alive in the captures."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

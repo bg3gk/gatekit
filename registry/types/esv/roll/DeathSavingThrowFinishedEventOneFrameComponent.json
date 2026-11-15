@@ -1,0 +1,69 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::roll::DeathSavingThrowFinishedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Event of esv::RollSystem (per-frame update bg3.exe+0x32933F0) when a death saving throw finished; esv::StatusDowned::Enter/Resume (bg3.exe+0x371D180 / 0x371D520) subscribe to its creation.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x329C1F0 writes the null handle 0xFFC0000000000000; bg3.exe+0x32933F0 copies 8 bytes from a 16-byte local record."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes the 2-byte value 2 at +8 (byte +8 = 2, byte +9 = 0); bg3.exe+0x32933F0 copies byte +8 of the record separately (an enum or result code; default 2)."
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "field_9",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x32933F0 copies byte +9 of the record separately; default 0."
+        }
+      ]
+    },
+    {
+      "offset": 10,
+      "name": "_PadA",
+      "type": "uint8_t[6]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding to 16"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerRollDeathSavingThrowFinishedEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "Meaning of the two bytes (outcome of the death saving throw?) and of the handle; the StatusDowned handler was not read."
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

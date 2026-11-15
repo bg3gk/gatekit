@@ -168,15 +168,18 @@ public sealed partial class SymbolQueries : IDisposable
                 if (c["callee_rva"] != null)
                     c["name"] = NameAt(PyText.Long(c["callee_dll"]), PyText.L(c["callee_rva"]));
         }
-        var code = Decomp()?.Code(dll, start);
+        var pseudo = Decomp();
+        var code = pseudo?.Code(dll, start);
         if (code?.Text != null)
             result["pseudo_code"] = code.Text;
+        else if (pseudo == null)
+            result["pseudo_code"] = GateKit.Home.HomeDatabase.LeftOut(env.DecompDb, "the pseudo-code");
         return result;
     }
 
     DecompQueries? Decomp()
     {
-        if (decomp == null && File.Exists(env.DecompDb))
+        if (decomp == null && GateKit.Home.HomeDatabase.Usable(env.DecompDb))
         {
             string work = Path.GetDirectoryName(Path.GetFullPath(env.DecompDb))!;
             decomp = new DecompQueries(new DecompSettings(work, SymbolPaths.DecompTools, env.Game, env.Toolkit, SymbolPaths.SymbolsDb, env.MacosSymbols));
@@ -313,4 +316,12 @@ public sealed partial class SymbolQueries : IDisposable
         if (ownsDb)
             db.Dispose();
     }
+}
+
+public sealed partial class SymbolQueries
+{
+    /// <summary>What the database already knows about the members of an engine class: the game's own
+    /// names, the Toolkit's accessors and Script Extender's layout (see <see cref="FieldFact"/>).
+    /// <paramref name="dll"/> picks the game executable; by default the DirectX one, then the other.</summary>
+    public List<FieldFact> FieldFacts(string component, string? dll = null) => SymbolText.FieldFacts(db, env, component, dll);
 }

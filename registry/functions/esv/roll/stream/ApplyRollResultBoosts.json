@@ -1,0 +1,22 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::roll::stream::ApplyRollResultBoosts",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Takes one drawn die and the roll type; for every MaximumRollResult boost of that type on the roller lowers the die to its Result, for every MinimumRollResult boost raises it to its Result. A boost of an umbrella roll type covers the rolls under it.",
+  "fingerprint": {
+    "calls": [
+      "fp:2979fa21d04b041c",
+      "fp:50f1c6810f6cb4d5",
+      "fp:5227b96c8688ff31",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8c904b320f1070b"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "With MinimumRollResult and MaximumRollResult (SkillCheck,20) on the host, GK.Memory.Watch on the roll manager's count saw both draws run (0 to 1, 1 to 2) and the check came 20/20 instead of the stream's 9/11 at count 0; this is the only function called on each drawn die between the draw and the keeping of one (read in +0x105CCA0). A read watch on the boost's Result closed the game twice, so no read hit backs it. Independently: GK.Memory.Freeze of the Result (+0x1) of the host's attack pin's two boosts from 19 to 2 made the next fair melee attack miss plainly where 19 hit, and the function reads exactly those two components"
+    }
+  ]
+}

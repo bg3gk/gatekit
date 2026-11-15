@@ -1,0 +1,64 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::UIFrameIdSingletonComponent",
+  "kind": "struct",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x18B23B0 (12-byte frame storage) zeroes +0..+0xB. ecl::screen_fade::ScreenFadeSyncingSystem::Update (Toolkit EoCClient.dll+0x7D9CA0; WorldView<UIFrameIdSingletonComponent const, ScreenFadeComponent const, ScreenFadeSyncSingletonComponent>) copies this dword into ScreenFadeSyncSingletonComponent +0x84. Live 0xA14 (2580) - looks like a frame counter."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function copies it into ScreenFadeSyncSingletonComponent +0x80. Live 0xA14 (= field_0)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ScreenFadeSyncingSystem::Update returns early when this byte is 0 (unless its other condition holds) - a 'frame id changed / valid' flag. Live 1."
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "_Pad9",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding (live 0)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientUIFrameIdSingleton", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [
+      "Which of the two dwords is the current and which the previous/other UI frame id; the UI-side writer was not found."
+    ],
+    "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

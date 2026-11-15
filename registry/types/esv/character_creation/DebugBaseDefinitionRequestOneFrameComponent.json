@@ -1,0 +1,136 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::character_creation::DebugBaseDefinitionRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "Debug request to create / reset a character from a full character-creation definition at a position (used by party presets: esv::party_preset::System::SystemLoad ~bg3.exe+0x2DBB770 reads it). The first 0x288 bytes are an SE character_creation::CharacterDefinition (the same object eoc::character_creation::RespecDefinitionComponent holds at +0x10), followed by a position. Created by bg3.exe+0x2DC0C60 -> bg3.exe+0x2DC29C0 (AllocRaw 0x298); consumed by bg3.exe+0x378F960, which calls esv::Character::SetTranslate(character, comp + 0x288) and then removes the component. Registered as a normal component although named OneFrame. Destructor thunk bg3.exe+0x6AA750 -> bg3.exe+0x6CF3C0. Never seen alive. Registry total 664 (server row).",
+  "size": 664,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "int32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE CharacterDefinition.field_0 (Components/CharacterCreation.h); not touched by the destructor."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding before the STDString."}]
+    },
+    {
+      "offset": 8,
+      "name": "Name",
+      "type": "STDString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Destructor bg3.exe+0x6CF3C0 frees the heap buffer at +8 when the capacity at +0x1C > 0xF, then resets size +0x18 = 0, capacity +0x1C = 0xF, first char +8 = 0 (LS STDString). SE CharacterDefinition.Name."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "Definition",
+      "type": "uint8_t[144]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Equals SE BaseCharacterDefinition (Origin, Race, Subrace Guids, BodyType, BodyShape, RootTemplate, Background, Deity, Voice, VOLines Guids, field_A8; 0x90 bytes with padding) at CharacterDefinition +0x20; kept as bytes (SE struct). Plain data: the destructor does not touch +0x20..+0xAF."
+        }
+      ]
+    },
+    {
+      "offset": 176,
+      "name": "Visual",
+      "type": "uint8_t[216]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Equals SE character_creation::Appearance (CharacterDefinition.Visual); destructor calls bg3.exe+0x6CF220 on comp + 0xB0. Size 0xD8 follows from the next members' offsets (Abilities must end where LevelUpData begins at 0x1A8)."
+        }
+      ]
+    },
+    {
+      "offset": 392,
+      "name": "Abilities",
+      "type": "std::array<int32_t, 7>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SE CharacterDefinition.Abilities (7 ints) between Visual and LevelUpData; offset derived, not read."
+        }
+      ]
+    },
+    {
+      "offset": 420,
+      "name": "_Pad1A4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding to the 8-aligned LevelUpData."}]
+    },
+    {
+      "offset": 424,
+      "name": "LevelUpData",
+      "type": "uint8_t[224]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Equals SE LevelUpData (Progression.h: Class, SubClass, Feat, AccessorySet Guids, Abilities[7], LevelUpUpgrades, Array<SpellMetaId> Spells; 0xE0). Creator bg3.exe+0x2DC29C0 writes the null Guid (the global at bg3.exe+0x625AAD0) at +0x1A8, +0x1B8, +0x1C8, +0x1D8, zeroes +0x1E8..+0x203 (abilities), seven Array patterns at +0x208..+0x277 (LevelUpUpgrades; destructor bg3.exe+0x5F18C0(comp + 0x208)) and the Array at +0x278 (destructor bg3.exe+0x67D5E0(comp + 0x278), SpellMetaId stride 0x30)."
+        }
+      ]
+    },
+    {
+      "offset": 648,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator zeroes the qword at +0x288 and the dword at +0x290; consumer bg3.exe+0x378F960 passes comp + 0x288 as the position vector to esv::Character::SetTranslate (with the flags false, false, true)."
+        }
+      ]
+    },
+    {
+      "offset": 660,
+      "name": "_Pad294",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "padding to the registry size 0x298 (not written by the creator)."}
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCCDebugBaseDefinitionRequest",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 10,
+    "open_questions": [
+      "Definition / Visual / LevelUpData are kept as bytes equal to SE BaseCharacterDefinition / Appearance / LevelUpData; the split between Visual and Abilities (Visual 0xD8, Abilities at 0x188) is derived, not read from code.",
+      "field_0 meaning (SE CharacterDefinition.field_0).",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "second_pass": "Not settled this pass: the 0x288-byte CharacterDefinition part stays as SE-equal byte blocks (Definition / Visual / LevelUpData), whose internal split is SE's, not read from Windows code; Position at +0x288 is Windows (bg3.exe+0x378F960).",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it"
+  }
+}

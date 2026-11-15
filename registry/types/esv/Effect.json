@@ -1,0 +1,250 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::Effect",
+  "kind": "struct",
+  "size": 120,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "The effect's own entity: game bg3.exe+0x2D665F0 passes *param_2 as the entity to CreateEffect (bg3.exe+0x2D66670 ~ esv::EffectManager::CreateEffect), which creates one when it is null. Live: entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Peers",
+      "type": "Array<int32_t>",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "esv::Effect::AddPeer / HasPeer / RemovePeer (EoCServer.dll+0x51AF50, +0x51CC10) push and search ls::TypeWrap<int, net::PeerIDClassname> values in the array at this+8 (capacity +0x10, size +0x14). Live: heap pointer, size 0/1."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Set to 1 together with +0x1B by the play-and-forget wrappers (game bg3.exe+0x2D664E0, bg3.exe+0x2D66550; Toolkit esv::EffectManager::PlayAndForgetEffect). Live 0/1."
+        }
+      ]
+    },
+    {
+      "offset": 25,
+      "name": "DetachBeam",
+      "type": "bool",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"DetachBeam\" (bool visitor slot 0x1A8, the same slot that visits Loop at +0x1A). The Toolkit offsets of the members already named (Scale +0x24, Bone +0x2C, Target +0x38, Position +0x48, Rotation +0x60) are the game offsets of this layout, so the keys land on the same members. Earlier reading: Live 0/1; no writer read."
+        }
+      ]
+    },
+    {
+      "offset": 26,
+      "name": "Loop",
+      "type": "bool",
+      "rung": "game",
+      "known_as": [{"name": "Looping", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"Loop\" (bool visitor). Replaces the inferred Looping. The Toolkit offsets of the members already named (Scale +0x24, Bone +0x2C, Target +0x38, Position +0x48, Rotation +0x60) are the game offsets of this layout, so the keys land on the same members. Earlier reading: CreateEffect copies a byte of the EffectResource (+0xA0 in the game, +0xF0 Toolkit) here; Toolkit PlayEffect warns 'Trying to play a looping effect ... not a looping one' when it is 0."
+        }
+      ]
+    },
+    {
+      "offset": 27,
+      "name": "Forget",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "CreateEffect sets it to !Looping; PlayAndForgetEffect sets it to 1 - the effect is released by the manager when finished (name inferred)."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "field_1C",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Live: varying bytes, never written in the functions read (maybe padding)."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "Duration",
+      "type": "float",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"Duration\" (float visitor slot 0x178, the same slot as Scale). The Toolkit offsets of the members already named (Scale +0x24, Bone +0x2C, Target +0x38, Position +0x48, Rotation +0x60) are the game offsets of this layout, so the keys land on the same members. Earlier reading: CreateEffect copies a 4-byte value of the EffectResource (+0x9C game, +0xEC Toolkit). Live floats 1.0-6.0 (duration?)."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "Scale",
+      "type": "float",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"Scale\" (float visitor slot 0x178). Earlier reading: Float argument of PlayEffect(name, Vector3f, Quaternionf, float) stored here (Toolkit EoCServer.dll+0xCF9930, game bg3.exe+0x2D66330). Live always 1.0."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "EffectName",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "CreateEffect assigns its FixedString name argument to +0x28 (game and Toolkit)."
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "Bone",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"Bone\" (FixedString visitor slot 0xD0). Earlier reading: PlayEffect(name, EntityHandle target, FixedString) stores the third argument here (game bg3.exe+0x2D663A0 / 0x2D66550 / 0x2D665F0). Live FixedString indices or 0xFFFFFFFF."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "BeamTargetBone",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"BeamTargetBone\" (FixedString visitor slot 0xD0, as Bone at +0x2C). The Toolkit offsets of the members already named (Scale +0x24, Bone +0x2C, Target +0x38, Position +0x48, Rotation +0x60) are the game offsets of this layout, so the keys land on the same members. Earlier reading: Live: FixedString-like values or 0xFFFFFFFF; macOS default constructor stores a 4-byte constant."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "field_34",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Live 0..0x80000000."}]
+    },
+    {
+      "offset": 56,
+      "name": "Target",
+      "type": "EntityHandle",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"Target\" (ls::SavegameVisitor::Visit of an ID<EntityHandleTraits>). Earlier reading: PlayEffect on an entity stores the target handle here (game bg3.exe+0x2D663A0, 0x2D66550, 0x2D665F0; Toolkit PlayEffectOnEntity). Live: entity handles."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "BeamTarget",
+      "type": "EntityHandle",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"BeamTarget\" (ls::SavegameVisitor::Visit of an ID<EntityHandleTraits>, as Target at +0x38). The Toolkit offsets of the members already named (Scale +0x24, Bone +0x2C, Target +0x38, Position +0x48, Rotation +0x60) are the game offsets of this layout, so the keys land on the same members. Earlier reading: Live: entity handles or null."
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"Position\" (vec3 visitor slot 0x148). Earlier reading: PlayEffect(name, Vector3f, Quaternionf, float) copies the position here (game bg3.exe+0x2D66330 / 0x2D664E0). Live zero for the entity-attached effects sampled."
+        }
+      ]
+    },
+    {
+      "offset": 84,
+      "name": "BeamTargetPos",
+      "type": "glm::vec3",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"BeamTargetPos\" (vec3 visitor slot 0x148, as Position at +0x48). The Toolkit offsets of the members already named (Scale +0x24, Bone +0x2C, Target +0x38, Position +0x48, Rotation +0x60) are the game offsets of this layout, so the keys land on the same members. Earlier reading: Live: world-coordinate-like floats in 4 of 48 samples (43.4, 17.0, -420.8), else zero."
+        }
+      ]
+    },
+    {
+      "offset": 96,
+      "name": "Rotation",
+      "type": "glm::quat",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "EoCServer.dll+0xCFB3F0 esv::Effect::SavegameVisit (Toolkit) visits this offset under the key \"Rotation\" (quaternion visitor; older save versions are converted from a matrix first). Earlier reading: PlayEffect copies the Quaternionf argument (16 bytes) here. Live (0,0,0,1)."
+        }
+      ]
+    },
+    {
+      "offset": 112,
+      "name": "_Pad70",
+      "type": "uint8_t[8]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Registry size 120 is 8 more than the object (0x70; the last stores of the macOS default constructor end at +0x70). Live +0x70 belongs to the next element."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerEffect", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "base": "No virtual table (live +0 is an entity handle); plain C++ object stored behind the component pointer.",
+    "class_size": 112,
+    "confidence": "medium",
+    "functions_read": 9,
+    "minutes": 12,
+    "names_pass_2": "No game names: esv::Effect is neither saved nor replicated; the Osiris PlayEffect(_Object, _FxName, _Bone, _Scale) parameters only confirm the members already named.",
+    "open_questions": [
+      "field_18/field_19/field_1C/field_20/field_30/field_34/field_40/field_54 meanings.",
+      "Whether the component's own storage is the object (size 120) or a pointer to it: the registry says inline 8, total 120 - handled like ecl::Item.",
+      "field_20 (float copied from the EffectResource) and field_40 (a second entity) - the Toolkit esv::Effect methods (Update / Stop) would tell."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

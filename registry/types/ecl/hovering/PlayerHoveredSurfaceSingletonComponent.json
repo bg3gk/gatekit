@@ -1,0 +1,81 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::hovering::PlayerHoveredSurfaceSingletonComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Surfaces",
+      "type": "HashMap<int16_t, HoveredSurfaceDetails>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Game element name ecl::hovering::HoveredSurfaceDetails (IndexedStorage string in EoCClient.dll ecl::hovering::PlayerHoveredSurfaceSingletonSystem::LEGACY_HoveredSurfaceChanged(short, SurfaceTemplate const*, SurfaceTemplate const*, ushort, ushort)); the short key is the player id passed by GameInput::HandleHoverSurface. PlayerHoveredSurfaceSingletonSystem::Update copies the system map into the singleton (checks singleton+0x2c, the key count). Live: all zero."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientHoveringPlayerHoveredSurfaceSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 8,
+    "open_questions": [
+      "Layout from the Toolkit build; game copy not cross-checked",
+      "Key is a short player id (ecl player id); SE has no named type for it"
+    ],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "HoveredSurfaceDetails",
+        "size": 24,
+        "fields": [
+          {
+            "name": "GroundSurfaceTemplate",
+            "offset": 0,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "EoCClient.dll ecl::GameInput::HandleHoverSurface: eoc::SurfaceTemplate::FetchTemplate(GetSurfaceType(0, tile)) (layer 0), nulled unless NeedsTooltip; stored at +0 by PlayerHoveredSurfaceSingletonSystem::LEGACY_HoveredSurfaceChanged"
+          },
+          {
+            "name": "CloudSurfaceTemplate",
+            "offset": 8,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "same, GetSurfaceType(1, tile) (layer 1), stored at +8"
+          },
+          {
+            "name": "GroundSurfaceIndex",
+            "offset": 16,
+            "type": "uint16_t",
+            "source": "inferred",
+            "evidence": "eoc::AiGrid::GetSurface(tile, layer 0) passed as the ushort param_4, stored at +0x10"
+          },
+          {
+            "name": "CloudSurfaceIndex",
+            "offset": 18,
+            "type": "uint16_t",
+            "source": "inferred",
+            "evidence": "eoc::AiGrid::GetSurface(tile, layer 1) passed as param_5, stored at +0x12"
+          },
+          {
+            "name": "_Pad20",
+            "offset": 20,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "element stride is 0x18 (allocation and copy loop in LEGACY_HoveredSurfaceChanged)"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::registration::VMItemRegisteredSingletonComponent",
+  "kind": "struct",
+  "about": "Client UI registry: the item entities whose view-model was created in this frame (the set is cleared at the start of each update, then filled after CreateVM). Singleton, lives from game start.",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entities",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "NoesisGameUI.dll+0x462DD0 (VMItemRegistrationSystem::Update): the singleton view's first pointer is cleared when its key count (+0x2C) is non-zero, and after VMItemDataSingletonComponent::CreateVM(entity) the entity is inserted with NoesisGameUI.dll+0xF88D0 (the same EntityHandle hash insert used by the Data maps); bg3.exe+0x1299840 allocates 0x30 and zeroes it as a HashSet; destructor (a thunk to bg3.exe+0x582AD0) frees three arrays (trivial 8-byte keys). HashSet = StaticArray<int32> buckets +0, Array<int32> NextIds +0x10, Array<key> Keys +0x20; live samples: bucket count at +8, cap/size pairs at +0x18/+0x28. Samples always show an empty key array (size 0), consistent with a per-frame 'newly registered' set."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "GuiRegistrationVMItemRegistered",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [],
+    "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

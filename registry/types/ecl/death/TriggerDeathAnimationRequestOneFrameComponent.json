@@ -1,0 +1,71 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::death::TriggerDeathAnimationRequestOneFrameComponent",
+  "kind": "struct",
+  "size": 20,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "AnimationType",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1959370 (the client death system, macOS name ecl::death::CharacterSystem::Update) writes it through bg3.exe+0x195CFC0: default 9, 8..11 chosen from the angle between the character's facing and the death impact direction (cos 45 deg test, front/back/left/right), then remapped to 4..7 when a longer animation variant is available. Live: 9."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1959370: byte set to 0, or 1 after a distance/length test against a float at character+0x300. Live: 1."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "_Pad5",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "alignment of the vec3 after it"}]
+    },
+    {
+      "offset": 8,
+      "name": "ImpactDirection",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1959370: piVar15[2..4] = the impact vector (read from the death impact component +0xC, default FLT_MAX each) rotated by the inverse of the character's rotation quaternion, i.e. impact direction in character space. Live: -inf, NaN, NaN (FLT_MAX rotated when there was no impact)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientDeathTriggerDeathAnimationRequest",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [
+      "Exact meaning of the byte at +4.",
+      "Enum names of AnimationType values 4..11 (no SE enum found).",
+      "The failed raw check is a false alarm: with no impact the source vector is FLT_MAX, and FLT_MAX rotated by the inverse character rotation gives -inf / NaN, which the checker does not accept as ordinary floats."
+    ],
+    "second_pass": "All offsets come from the Windows writer bg3.exe+0x1959370 (int at +0, byte at +4, vec3 at +8 written through bg3.exe+0x195CFC0); confirmed that the vec3 is the DeathImpactComponent +0xC vector (read through bg3.exe+0x195CDC0) rotated into character space, so the NaN / inf samples are expected values.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "the raw check failed: client entity 126100798156315802: ImpactDirection: glm::vec3 part 2 is not an ordinary float; client entity 126100798156320001: ImpactDirection: glm::vec3 part 2 is not an ordinary float"
+  }
+}

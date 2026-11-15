@@ -1,0 +1,73 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::trap::DisarmResultEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Result of a trap disarm attempt. Created in bg3.exe+0x2CF7DB0 (called from the DisarmSystem per-frame update bg3.exe+0x2CF4C80): AllocRaw 0x18 (two null handles, 0 word at +0x10) then a copy of a 0x18-byte DisarmSystem result record. Saved: model ls::model::game::traps::v0::DisarmResultEventOneFrameComponent (24 bytes) with members DisarmerEntity, ObjectUsed, IsAttemptValid, Disarmed; save loader bg3.exe+0x25426B0 builds the component from the model with the same 8/8/1/1 copies.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "DisarmerEntity",
+      "type": "EntityHandle",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Savegame model member 0 (m_DisarmerEntity). bg3.exe+0x2CF7DB0: +0 = null handle, then record +0 (8 bytes)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "ObjectUsed",
+      "type": "EntityHandle",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Model member 1 (m_ObjectUsed). +8 = null handle, then record +8 (8 bytes)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "IsAttemptValid",
+      "type": "bool",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Model member 2. Creator zeroes the word at +0x10; copies the byte at record +0x10."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "Disarmed",
+      "type": "bool",
+      "rung": "game",
+      "evidence": [
+        {"kind": "game-name", "says": "Model member 3. Copies the byte at record +0x11."}
+      ]
+    },
+    {
+      "offset": 18,
+      "name": "_Pad12",
+      "type": "uint8_t[6]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "not written; padding to 24"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerTrapDisarmResultEvent", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 5,
+    "open_questions": [],
+    "seen": false,
+    "status": "declared"
+  }
+}

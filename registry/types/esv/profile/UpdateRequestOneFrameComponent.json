@@ -1,0 +1,77 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::profile::UpdateRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame event entity of esv::profile::ManagementSystem: one per (user, profile setting) change queued in the system's HashMap<net::UserID, HashMap<FixedString, UpdateData>>; ProcessUpdateRequests creates a fresh entity with this component for each pair and ClearOneFrameComponents removes them. Read by esv::notification::System. Seen.py context: appears during dialogues, fights, jumps, events and explorations - i.e. whenever the player's profile flags change (one holder at a time).",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "User",
+      "type": "UserId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x8168A0 ProcessUpdateRequests copies the outer map key (net::UserID, 4 bytes; macOS: ls::HashMap<net::UserID, ls::HashMap<ls::FixedString, esv::profile::ManagementSystem::UpdateData>>) to +0. bg3.exe+0x2F377A0 default: a global (invalid user id). Live: always 0x10001 (user 1)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Key",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FixedString::operator= from the inner map key (the profile setting name). Default 0xFFFFFFFF (null FixedString)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Value",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Copied from UpdateData byte 0 when its byte 1 is set (ls::Optional<bool> assignment). Live: 1."
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "HasValue",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Set to 1 together with Value (Optional engaged flag); default 0 in bg3.exe+0x2F377A0. Live: 1."
+        }
+      ]
+    },
+    {
+      "offset": 10,
+      "name": "_PadA",
+      "type": "uint8_t[2]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Padding to 12 bytes (live: uninitialised bytes)."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerProfileUpdateRequest", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Name of the FixedString (which profile setting) and whether +8/+9 are an ls::Optional<bool> (likely)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

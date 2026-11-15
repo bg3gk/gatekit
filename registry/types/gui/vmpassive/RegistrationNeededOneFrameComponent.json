@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::vmpassive::RegistrationNeededOneFrameComponent",
+  "kind": "struct",
+  "about": "Client UI one-frame request: gui::vmpassive::TagParserSystem finds a passive named in a stats description tag and creates an entity with this component holding the passive's name, so gui::registration::VMPassiveRegistrationSystem registers a view-model for it. Never seen alive.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "PassiveId",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x12C5B80 (AllocRaw 4) writes 0xFFFFFFFF (null FixedString) and registers the FixedString destructor bg3.exe+0x698FE0; Toolkit constructors NoesisGameUI.dll+0x30A7C0 / +0x30A7E0 are ls::FixedString::FixedString. TagParserSystem per-frame update bg3.exe+0x12C4EC0 assigns a FixedString with IncRef/DecRef (lines ~535-547); macOS TagParserSystemUTHelper::IsPassive(eoc::Passives const&, FixedString const&) names what the string is. Name as SE's VMPassiveFromTadpoleComponent::PassiveId."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "GuiVmpassiveRegistrationNeeded", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 4,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 6,
+    "open_questions": [],
+    "seen": false,
+    "status": "declared"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::trade::ShownTraderMapMarkerGuidComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Guid",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Replication serializer (slots of the handler around bg3.exe+0x8F1590): dirty bit 1 -> ScratchBuffer::Write(DAT_146280578 + base, 0x10 bytes), i.e. one 16-byte member at offset 0. macOS default constructor: stp xzr, xzr at +0 (zero Guid). Named after the component (a Guid of the shown trader map marker)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "TradeShownTraderMapMarkerGuid", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [
+      "Type Guid is by width (16 raw bytes) and by the component name; no reader was opened (macOS index lists none)."
+    ],
+    "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

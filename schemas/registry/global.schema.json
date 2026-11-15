@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "registry/global/1",
+  "title": "A global of the game's code (registry/globals/<scope>/<Name>.json)",
+  "description": "A variable, constant, virtual table, singleton or text constant at a fixed place of a binary; where it is in each build is in builds/. registry/README.md.",
+  "type": "object",
+  "required": ["schema", "id", "kind"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "registry/global/1"},
+    "id": {"$ref": "registry/parts#/$defs/id"},
+    "kind": {"enum": ["variable", "constant", "vtable", "singleton", "string", "type_index"]},
+    "known_as": {"$ref": "registry/parts#/$defs/knownAs"},
+    "state": {"$ref": "registry/parts#/$defs/state"},
+    "rung": {"$ref": "registry/parts#/$defs/rung"},
+    "guess": {"$ref": "registry/parts#/$defs/guess"},
+    "about": {"type": "string", "minLength": 1},
+    "type": {"type": "string", "minLength": 1},
+    "type_id": {"$ref": "registry/parts#/$defs/id"},
+    "size": {"type": "integer", "minimum": 0},
+    "value": {"type": "string", "minLength": 1, "description": "A constant's value, as a number or the text constant."},
+    "concept": {"$ref": "registry/parts#/$defs/concept"},
+    "evidence": {"$ref": "registry/parts#/$defs/evidence"},
+    "questions": {"$ref": "registry/parts#/$defs/questions"},
+    "comments": {"$ref": "registry/parts#/$defs/comments"}
+  }
+}

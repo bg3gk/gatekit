@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::SnapFadeRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request that the next fade of an entity is applied at once (born in many dialogue/scene/trigger steps). Read by ecl::FadeResolveSystem::DetermineSnapFade.",
+  "size": 2,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Snap",
+      "type": "std::array<bool, 2>",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "ecl::FadeResolveSystem::DetermineSnapFade (EoCClient.dll, export) reads it as ls::StaticArray<bool,2> (assert 'ls::StaticArray<bool,2>::Get', index 0..1) - one flag per fade view (View0/View1). Creator bg3.exe+0x18DC2E0 writes 0x0101. Live 01 00."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientSnapFadeRequest", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": ["Which index is which fade view is assumed (0 = View0)."],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

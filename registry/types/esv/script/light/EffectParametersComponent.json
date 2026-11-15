@@ -1,0 +1,48 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::script::light::EffectParametersComponent",
+  "kind": "struct",
+  "about": "On a scripted light: which effect to play and on which bone. Read by esv::script::light::EffectRequestSystem::UpdateScriptedLightEffects to fill PlayEffectRequestsSingletonComponent; saved with the savegame (esv::script::light::Loader, model ls::model::game::script::light::v0::EffectParametersComponent). Seen.py context: alive in idle levels (WLD_Main_A), up to 17 holders.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "EffectName",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Savegame model field order m_EffectName, m_BoneName (macOS Visit<...EffectParametersComponent, _Field_m_EffectName, _Field_m_BoneName>). UpdateScriptedLightEffects copies +0 into the PlayEffectOnEntityRequest FixedString at +8 (sibling layout esv.script.light.PlayEffectRequestsSingletonComponent). Live: FixedString indices."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "BoneName",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Second model field m_BoneName; copied into the request's FixedString at +0x18. Live: 0xFFFFFFFF (null) in some samples."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerScriptLightEffectParameters",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 0,
+    "minutes": 5,
+    "open_questions": [],
+    "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

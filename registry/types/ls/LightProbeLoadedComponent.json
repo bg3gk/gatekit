@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::LightProbeLoadedComponent",
+  "kind": "struct",
+  "about": "Marks a light probe whose captures are loaded; owns a heap object.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "void*",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Registration bg3.exe+0x3B521E0: size 8, destructor bg3.exe+0x3B7D840 destroys and frees the pointee (an object with an array at +8) and nulls the pointer - an owned pointer, probably the ls::LightProbeLoadRequest (macOS name) or loaded capture data. macOS default 0; live: heap pointer or 0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "LightProbeLoaded", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 3,
+    "open_questions": ["Type of the owned object."],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

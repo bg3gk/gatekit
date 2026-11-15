@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::item::animation::FallbackTimerComponent",
+  "kind": "struct",
+  "about": "Per-item float timer of ecl::item::animation::StateTransitionSystem (per-frame update bg3.exe+0x191E250 -> bg3.exe+0x191F340): when an item's animation state changes the system gets or creates this component and sets it to 0; otherwise it removes it. Queried with StateComponent, CulledComponent and ls::AnimationUpdateComponent (bg3.exe+0x19204F0) - a fallback timer for item animations that do not report completion. Seen while idle and in many item steps (no companions born).",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Time",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x191FB20 allocates 4 bytes and zeroes them; bg3.exe+0x191F340 writes 0 (as a 4-byte value at +0) on a state transition. Live: 48 instances, floats 0..9.87 (counting time). Name inferred."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientItemAnimationFallbackTimer",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 5,
+    "open_questions": [
+      "Whether the timer counts up (elapsed) or down was not read in the update; live values 0..9.9 suggest elapsed seconds."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

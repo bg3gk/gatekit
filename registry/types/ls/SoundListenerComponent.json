@@ -1,0 +1,99 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::SoundListenerComponent",
+  "kind": "struct",
+  "about": "The Wwise listener of a sound camera, written by ecl::sound::CameraSystem::UpdateListenerPosition / UpdateSoundForCameras together with ls::SoundManager::SetListenerTransformation; read by room, ambience mix, mix state, performance, spell impact and occlusion systems.",
+  "size": 44,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Front",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::sound::CameraSystem::UpdateListenerPosition (EoCClient.dll+0xDD20E0) copies the 24-byte ls::SoundObjectOrientation to +0..+0x17; in UpdateSoundForCameras the orientation is built from TransformComponent::GetDirVector (first) and GetUpVector (second). Live: unit vectors."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "Up",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "Second half of SoundObjectOrientation (GetUpVector), see Front."}
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Position",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "UpdateListenerPosition: puVar2[3] / +0x20 = the Vector3f position argument (also given to SetListenerTransformation); ecl::sound::RoomSystem (bg3.exe+0x1DB0C60) reads +0x18/+0x20 with a 0x2C stride to find the listener's room. Live: world coordinates (52.31, 1.224, 204.2)."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "ZoomLevel",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "UpdateListenerPosition: +0x24 = float argument; UpdateSoundForCameras passes the value from helpers::GetCameraZoomLevel (via UpdateCameraSoundInfo). Live: 0, 0.7647, 1."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "PlayerIndex",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "UpdateListenerPosition: byte +0x28 = (char) ls::EInputPlayerIndex argument (PlayerManager::GetInputPlayerIndex). Live: 0 or 0xFF."
+        }
+      ]
+    },
+    {
+      "offset": 41,
+      "name": "field_29",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "UpdateListenerPosition: byte +0x29 = bool argument; UpdateSoundForCameras sets it to 1 only on the branch that positions the listener from helpers::GetSoundListenerPosition / GetAmbientVolumeCheckPoint (0 otherwise); bg3.exe+0x1DB0C60 (RoomSystem) only assigns a SoundRoomListenerComponent when it is set. Live: 0/1."
+        }
+      ]
+    },
+    {
+      "offset": 42,
+      "name": "_Pad2A",
+      "type": "uint8_t[2]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "tail padding to 44."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SoundListener", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "Exact meaning of the bool at +0x29 (listener positioned from the gameplay listener point?).",
+      "Read from the Toolkit build (EoCClient.dll) plus one bg3.exe reader."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

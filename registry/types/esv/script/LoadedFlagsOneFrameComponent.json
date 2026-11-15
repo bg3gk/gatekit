@@ -1,0 +1,35 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::script::LoadedFlagsOneFrameComponent",
+  "kind": "struct",
+  "about": "Flags loaded from a story flags file of a party preset (esv::script::GlobalFlagsLoadSystem::LoadStoryFlagsFile on macOS = bg3.exe+0x2EBAF60); feeds the Osiris event StoryGameEventManager::OnAllLoadedFlagsInPresetReceivedEvent.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Flags",
+      "type": "Array<Guid>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2EBB620 zeroes an Array header (+0 ptr, +8 capacity, +0xC size); destructor bg3.exe+0x686280 = FUN_1405BD630 + free (no element destructor). bg3.exe+0x2EBAF60 reads the flags file into a local array and copies it with FUN_140591AE0, which copies elements as two 8-byte words with stride 0x10 = 16-byte POD (flag UUIDs)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerScriptLoadedFlags", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 3,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 6,
+    "open_questions": [
+      "Elements are 16-byte POD; Guid (flag UUID) is inferred from the size and the flags context."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

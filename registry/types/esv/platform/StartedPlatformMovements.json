@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::platform::StartedPlatformMovements",
+  "kind": "struct",
+  "about": "Server singleton of esv::platform::MovementSystem: the moving-platform entities whose movement started in this update. MovementSystem::ProcessStartedPlatforms appends the frame's started platforms, MovementSystem::ProcessSingletonComponent empties it on the next update. Seen.py context: singleton present in the idle level and act1-idle (array allocated, capacity 1, size 0).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Platforms",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x64B2A0 ProcessStartedPlatforms gets the singleton (EoCServer.dll+0x63C230, WorldView getter used only by MovementSystem) and appends each qword of FrameData +0xA0 (count +0xAC); assert ls::IndexedStorage<ls::ID<ecs::EntityHandleTraits>>; EoCServer.dll+0x64B1F0 ProcessSingletonComponent clears it (size at +0xC set to 0). bg3.exe+0x2CC6400 allocates 0x10 and zeroes the Array shape. Live: +0 heap pointer, +8 capacity 1, +0xC size 0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerPlatformStartedPlatformMovements",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 3,
+    "open_questions": [],
+    "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

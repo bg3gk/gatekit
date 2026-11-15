@@ -1,0 +1,91 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::controller::LocomotionComponent",
+  "kind": "struct",
+  "size": 132,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "std::array<uint32_t, 10>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS default ctor zeroes +0..+0x28 (stp q0,q0 +0; str xzr +0x20)."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "field_28",
+      "type": "glm::vec3",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "macOS ctor FLT_MAX at +0x28, +0x2C (d8) and +0x30 (w22)."}
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "field_34",
+      "type": "std::array<uint32_t, 8>",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "macOS ctor zero (stur q0 +0x34, +0x44)."}]
+    },
+    {
+      "offset": 84,
+      "name": "field_54",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "macOS ctor 0 (stp wzr,w22 +0x54)."}]
+    },
+    {
+      "offset": 88,
+      "name": "field_58",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "macOS ctor FLT_MAX."}]
+    },
+    {
+      "offset": 92,
+      "name": "field_5C",
+      "type": "std::array<uint32_t, 5>",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "macOS ctor zero (+0x5C, +0x64 xzr; +0x6C wzr)."}]
+    },
+    {
+      "offset": 112,
+      "name": "field_70",
+      "type": "glm::vec4",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS ctor q1 constant 0x1077EE0E0 = (1.0, 0, 0, 1.0) - maybe two vec2 or a 2x2 identity."
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "field_80",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "macOS ctor 0."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ControllerLocomotion", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "low",
+    "functions_read": 2,
+    "minutes": 12,
+    "open_questions": [
+      "Not settled on Windows: not replicated, not saved, no FieldMeta, no live samples (seen.py has none). The Windows users opened (bg3.exe+0x42968A0, bg3.exe+0x42953D0, controller input code) only test for the component's presence and remove it; the members are read by eoc::legacy::PathingSystem::UpdateSystem / OnDirectionChanged and ecl::camera::TargetSystem (named on macOS), whose Windows copies were not decoded.",
+      "All widths of the zeroed regions (+0..+0x27, +0x34..+0x53, +0x5C..+0x6F) and all names rest on the macOS default constructor only."
+    ],
+    "second_pass": "Not settled: the Windows functions found through the type index (bg3.exe+0x42968A0, bg3.exe+0x42953D0) only check presence and remove the component; the readers are the pathing and camera-target systems (macOS names), not decoded here. Layout unchanged, confidence stays low.",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it"
+  }
+}

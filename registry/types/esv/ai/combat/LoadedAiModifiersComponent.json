@@ -1,0 +1,54 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ai::combat::LoadedAiModifiersComponent",
+  "kind": "struct",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "ModuleId",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "esv::ai::combat::AiModifiersSystem::Update (Toolkit EoCServer.dll+0x17630E0) takes the singleton, compares its first 16 bytes with ls::Module::GetId(ModManager::GetActiveMod()) and, when they differ (or the lethality changed), reloads the AI modifiers of the load-ordered modules and copies the active module's Guid here. Live: one random-looking 16-byte value."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "AILethality",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function compares *(int*)(+0x10) with the value of eoc::ruleset::code::AILethality::GetValue and stores it with ls::FixedString::operator= after the reload. Live: a FixedString index."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "_Pad14",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Padding to 24 (live 0)."}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerAiCombatLoadedAiModifiers",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

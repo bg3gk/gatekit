@@ -1,0 +1,107 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::attack_range::EffectsComponent",
+  "kind": "struct",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "EffectsHashSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "LegacyMap<FixedString, PreviewEffectList*>::HashSize (SE CoreLib/Base/LegacyMap.h MapInternals). FUN_141c80640 (bg3.exe+0x1C80640) writes 0xB; ecl::PreviewEffectMap::Begin/PlayEffect (Toolkit EoCClient.dll+0xF40BC0/+0xF40D30) hash FixedString::GetHandle(key) % *(uint*)this. Live always 11."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "padding before the bucket pointer; live holds garbage."}
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "EffectsHashTable",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "LegacyMap bucket table: FUN_141c80640 allocates 11 zeroed node pointers; nodes are {next, FixedString key at +8, PreviewEffectList* value at +0x10} (Toolkit PlayEffect allocates the 0x18-byte node and the 0x18-byte value {NextEffectIndex, Array<EntityHandle>}). Live heap pointer."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "EffectsItemCount",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "LegacyMap ItemCount: FUN_141c80640 writes 0. Live 1 in every sample."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "_Pad14",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding of the 24-byte LegacyMap."}]
+    },
+    {
+      "offset": 24,
+      "name": "IsBeginCalled",
+      "type": "bool",
+      "rung": "toolkit",
+      "evidence": [
+        {
+          "kind": "toolkit-name",
+          "says": "Toolkit accessor ecl::PreviewEffectMap::IsBeginCalled, game offset +0x18 (bg3.exe+0x18482C0); Begin() sets it to 1 and asserts 'Calling Begin() twice?', PlayEffect asserts it is set. FUN_141c80640 writes 0. Script Extender calls it 'Updating'."
+        }
+      ]
+    },
+    {
+      "offset": 25,
+      "name": "_Pad19",
+      "type": "uint8_t[7]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "tail padding of the 0x20-byte object."}]
+    },
+    {
+      "offset": 32,
+      "name": "field_20",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not part of the object: bg3.exe+0x79A840 allocates and constructs only 0x20 bytes; the registry size (40) is the object size + 8. Live holds unrelated heap bytes."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientAttackRangeEffects", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "base": "The component slot holds only a pointer (bg3.exe+0x79A840: ComponentFrameStorageAllocRaw(storage, 8) receives the address of a 0x20-byte ecl::PreviewEffectMap built by FUN_141c80640); the registry size 40 = object 0x20 + 8, as with the other objects stored behind a pointer. Script Extender already declares the object: ecl::PreviewEffectMap in GameDefinitions/Controllers/CharacterTask.h (LegacyMap<FixedString, PreviewEffectList*> Effects; bool Updating). The fields below are that object written with the primitive types generate.py knows.",
+    "class_size": 32,
+    "confidence": "high",
+    "functions_read": 5,
+    "minutes": 9,
+    "open_questions": [
+      "Should the build expose the component as a pointer to Script Extender's existing ecl::PreviewEffectMap (CharacterTask.h) instead of this flattened copy? The generator cannot express LegacyMap, so the map is written as its three raw members."
+    ],
+    "raw_check": "45 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "Established that the component slot is a pointer to an ecl::PreviewEffectMap (bg3.exe+0x79A840 allocates 0x20 bytes, stores 8): a LegacyMap<FixedString, PreviewEffectList*> (FUN_141c80640, Toolkit PreviewEffectMap::Begin/PlayEffect hash FixedString handles) plus the Toolkit-named IsBeginCalled flag at game offset +0x18; the LegacyMap is written as raw HashSize/HashTable/ItemCount because generate.py does not know the type.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::inventory::ShowInventoryRequestsSingletonComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "HashMap<EntityHandle, ShowInventoryRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Game element name ecl::inventory::ShowInventoryRequestsSingletonComponent::Request (IndexedStorage string, mem::s_TagHashTable, stride 0x10) in EoCClient.dll+0x808600, called from ecl::LootValidationSystem::Update (EoCClient.dll+0x808D10) which builds a local map and moves it into the singleton (EoCClient.dll+0x808230: four arrays, values at +0x30). Key = entity of the looting view (read from element 7 of the function's second argument; element size not checked). Live: all zero."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientInventoryShowInventoryRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 9,
+    "open_questions": [
+      "Key is most likely the entity being looted (container/corpse); not proven",
+      "PlayerId may be the low half of a UserId rather than a player id",
+      "Windows side: only the 64-byte HashMap shape is confirmed (creator bg3.exe+0x19BD830 zeroes buckets/next/keys/values, destructor bg3.exe+0x5C4870 for plain keys and values); the 16-byte value stride and the members of the value rest on the Toolkit (EoCClient.dll+0x808600) - the bg3.exe twin of LootValidationSystem was not found by matches."
+    ],
+    "second_pass": "Not settled further: on Windows only the HashMap shell (creator bg3.exe+0x19BD830, destructor bg3.exe+0x5C4870) was confirmed; the value struct still rests on the Toolkit, so it stays medium.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "structs": [
+      {
+        "name": "ShowInventoryRequest",
+        "size": 16,
+        "fields": [
+          {
+            "name": "PlayerId",
+            "offset": 0,
+            "type": "int16_t",
+            "source": "inferred",
+            "evidence": "EoCClient.dll+0x808600 copies the first uint16 of a user record whose second uint16 is compared with net::GetLocalPeerID(); default 0. Container exploration code keys players by such shorts."
+          },
+          {
+            "name": "_Pad2",
+            "offset": 2,
+            "type": "uint8_t[6]",
+            "source": "inferred",
+            "evidence": "alignment"
+          },
+          {
+            "name": "Inventory",
+            "offset": 8,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "EoCClient.dll+0x808600: result of eoc::inventory::GetInventory for the looted entity; default 0xFFC0000000000000 (null handle)"
+          }
+        ]
+      }
+    ]
+  }
+}

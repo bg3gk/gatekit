@@ -1,0 +1,76 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::DistantSoundRequestBusComponent",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint8_t[16]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not touched by DistantSoundSystem; always zero live (likely an unused Array)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "TranslationRequests",
+      "type": "Array<DistantSoundTranslationRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessDistantSoundStatePosition appends to the array at +0x10 (capacity +0x18, size +0x1C, grow FUN_18039fff0)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSoundDistantSoundRequestBus",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 7,
+    "open_questions": ["The first 16 bytes (maybe a second request array, e.g. rotations)."],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "DistantSoundTranslationRequest",
+        "size": 24,
+        "fields": [
+          {
+            "name": "Entity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "ecl::sound::DistantSoundSystem::ProcessDistantSoundStatePosition (EoCClient.dll+0xE80E80) writes the distant-sound entity handle at element+0."
+          },
+          {
+            "name": "Position",
+            "offset": 8,
+            "type": "glm::vec3",
+            "source": "inferred",
+            "evidence": "Same function copies DistantSoundStateComponent.Position (+0x68, 12 bytes) to element+8 when it moved; ecl::transform::GameplayTransformRequestSystem::Update (EoCClient.dll+0x548D10) reads the array at +0x10 with stride 0x18 as transform requests."
+          },
+          {
+            "name": "_Pad14",
+            "offset": 20,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "Stride 0x18."
+          }
+        ]
+      }
+    ]
+  }
+}

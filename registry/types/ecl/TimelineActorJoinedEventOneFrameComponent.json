@@ -1,0 +1,44 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::TimelineActorJoinedEventOneFrameComponent",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Actors",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1D4DEB0 (called from ecl::TimelineSystem update bg3.exe+0x1D41270) drains ecl::TimelineSystem::ActorJoinedEventRequests (system +0x700, stride 0x18 = Script Extender TimelineActorJoinedEventRequest {Timeline, Actor, PlayerIndex}); the component is created on request.Timeline by bg3.exe+0x1D77C00 and request.Actor (8 bytes) is appended here if not present (pointer +0, capacity +8, size +0xC, grow helper bg3.exe+0x5C4620). Probe: heap pointer, capacity 0x80, size 0x5A."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Players",
+      "type": "Array<PlayerId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: when request.PlayerIndex (int16) != 0 it is appended as a 2-byte element if not present (pointer +0x10, capacity +0x18, size +0x1C, grow helper bg3.exe+0x5C4420, 'ptr + size * 2'). Probe: heap pointer, capacity 1, size 1."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientTimelineActorJoinedEvent", "one_frame": true},
+  "survey": {
+    "batch": "timeline",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "The component sits on the timeline entity (request.Timeline); element names follow the Script Extender request struct."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::RandomAppearancesComponent",
+  "kind": "struct",
+  "about": "Pool of randomised appearances for the 'random appearance' button of character creation (gui::DCCharacterCreation RandomAppearanceIndex/Count, HasNewRandomAppearance). Created by bg3.exe+0x2027B00 with 16 slots.",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "Guid",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x201D380 copies the 16-byte global DAT_14625AAD0 (a Guid that bg3.exe+0x2027B00 tests for all-zero, i.e. the null Guid) to +0..+0x10."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "LatestIndex",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same ring as RandomCharactersComponent, for appearances (Appearances at +0x18, size +0x24). EoCClient.dll DefinitionView::GetRandomAppearanceIndex (0x11BC4F0) shows (comp[+0x14] - comp[+0x10] - 1 + count) % count, and GetNextRandomAppearanceIndex (FUN_1811cc120) returns -1 when +0x14 equals +0x10: the slot of the most recently generated appearance. Creators write -1."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "CurrentIndex",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll FUN_1811cc120 (GetNextRandomAppearanceIndex) starts from +0x14 and steps (mod the size at +0x24) to the next eoc::character_creation::Appearance slot; GetRandomAppearanceIndex (0x11BC4F0) shows its position relative to +0x10. The slot the shown random appearance is taken from."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Appearances",
+      "type": "Array<RandomAppearancesAppearance>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator zeroes +0x18..+0x28; destructor bg3.exe+0x6ACFB0 resizes the array at +0x18 to 0 with bg3.exe+0x6DAAE0 (stride 0xD8) and frees it; bg3.exe+0x2027B00 resizes it to 16. macOS: ls::DynamicArray<eoc::character_creation::Appearance>::Reallocate(.., 0x10)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientCCRandomAppearances", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 6,
+    "open_questions": [
+      "Meaning of the Guid at +0 and of the 8 bytes at +0x10.",
+      "Appearance element kept as bytes."
+    ],
+    "second_pass": "Not settled: all Windows users (bg3.exe+0x1F8A210, 0x208DA70, 0x208EB70, 0x20769F0) only fetch the component into view structures for the command processor; the reader of +0x10 (macOS ecl::character_creation::_private::ProcessCommands template, bg3_macos_x64+0x39DE7A0) has no matched Windows counterpart (decomp.py matches finds none), so the width of the 8 bytes at +0x10 is still open.",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it",
+    "structs": [
+      {
+        "name": "RandomAppearancesAppearance",
+        "size": 216,
+        "equals": "Script Extender character_creation::Appearance (GameDefinitions/CharacterCreation.h), game type eoc::character_creation::Appearance (0xD8 bytes)",
+        "fields": [
+          {
+            "name": "Data",
+            "offset": 0,
+            "type": "uint8_t[216]",
+            "source": "inferred",
+            "evidence": "0xD8-byte element (stride from bg3.exe+0x6DAAE0: alloc count*0xD8, element dtor FUN_1406CF220); members as in SE Appearance - kept as bytes"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::HiZComponent",
+  "kind": "struct",
+  "about": "Hierarchical-Z (occlusion) data of a render view entity; macOS names ls::DynamicArray<ls::UniquePtr<ls::HiZComponent::RenderViewData>>.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "RenderViews",
+      "type": "Array<void*>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Registration bg3.exe+0x3B5ED50: size 0x18, align 8, destructor bg3.exe+0x3B792A0 destroys the elements of the array at +0 (owned pointers) and frees its buffer; macOS template DynamicArray<UniquePtr<ls::HiZComponent::RenderViewData>>. Live: capacity 1, size 1."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not touched by the destructor (plain data); live heap-like pointers, small values or 0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "HiZ", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": ["field_10: pointer or two 32-bit values."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

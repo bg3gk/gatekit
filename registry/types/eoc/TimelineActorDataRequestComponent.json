@@ -1,0 +1,55 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::TimelineActorDataRequestComponent",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "No function of the game or of the Toolkit DLLs reads or writes the component (only the registration bg3.exe+0xD0EBF0 and ls::GetTypeName exist)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "see field_0"}]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "see field_0"}]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "see field_0"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "TimelineActorDataRequest", "one_frame": false},
+  "survey": {
+    "batch": "timeline",
+    "confidence": "low",
+    "functions_read": 2,
+    "minutes": 7,
+    "open_questions": [
+      "Dead type in every build examined: bg3.exe has only the registrations (bg3.exe+0x139DA0, +0xD0EBF0), the Toolkit and macOS have no reader or writer.",
+      "macOS default constructor: 'stp x0, xzr, [x23]' and 'stp xzr, xzr, [x23, #0x10]' - a non-zero first qword (likely the null EntityHandle) and zeros after it, which fits the ecl TimelineActorDataCreateDestroyRequest shape (EntityHandle, Guid, flags) better than (Guid, Guid). macOS only, so not used."
+    ],
+    "second_pass": "Re-checked users and macOS: still nothing reads or writes the component; the macOS default constructor hints at an EntityHandle first, which is not enough to declare members. Left as four opaque qwords, low.",
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::dialog::StartedEventsSingletonComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "DialogInstanceIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Element type is ecl::dialog::Event (macOS ls::DynamicArray<ecl::dialog::Event>), a 4-byte record: EoCClient.dll ecl::dialog::EventsSystem::OnDialogStarted pushes *(int*)DialogInstance (the dialog id) into the system's array at +8. bg3.exe+0x1D96E30 later turns started dialog ids into entities with ecl::dialog::DialogInstanceComponent. Live: pointer, capacity 1, size 0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientDialogStartedEventsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 2,
+    "open_questions": ["Which system array feeds which singleton is inferred from the names"],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::lightbar_haptics::LightbarSoundFallbackComponent",
+  "kind": "struct",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "User",
+      "type": "uint16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCClient.dll+0x7C6B90 LightbarHapticsSystem::FinalizeComponents writes *(uint16*)component = low 16 bits of LightbarColorData+0 (the ReservedFor user id). Live: 1 in all 5 instances (same as LightbarColorComponent.UserId); macOS default constructor: strh at +0."
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "_Pad2",
+      "type": "uint16_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Never written; live bytes there vary (00/42/aa/ff) = uninitialised padding."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FinalizeComponents compares component+4/+8 with LightbarColorData+0x1C/+0x20 and assigns them (FixedString::operator=) when they differ, after calling the lightbar helper's slot 0x18. The data comes from CalculateSpell (EoCClient.dll+0x7C6560): the FixedStrings at +0x18/+0x1C of a lightbar settings entry of the spell - most likely sound event names (component is the 'sound fallback'). Live: null (0xFFFFFFFF)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second FixedString of the same pair (data+0x20 <- settings entry +0x1C). Live: null."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientLightbarHapticsLightbarSoundFallback",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [
+      "Exact meaning of the two FixedStrings (probably start/stop sound events of the lightbar effect); not checked against game data."
+    ],
+    "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

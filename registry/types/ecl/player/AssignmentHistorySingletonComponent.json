@@ -1,0 +1,35 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::player::AssignmentHistorySingletonComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "History",
+      "type": "HashMap<int16_t, Array<EntityHandle>>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1A9AA70 (0x40 bytes, zeroed); destructor bg3.exe+0x591CF0 destroys 16-byte array values (bg3.exe+0x5BD8A0 stride 0x10) then the key set. Toolkit ecl::player::PostCombatAssignmentSystem::UpdateAssignmentHistory (EoCClient.dll+0x6A0C90) walks short keys (stride 2) and 16-byte values; GatherPostCombatAssignment (EoCClient.dll+0x69EC70) looks up by player id (short hash) and compares the array's 8-byte elements with character entity handles. Live: one key, value array of 1."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientPlayerAssignmentHistorySingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 4,
+    "minutes": 7,
+    "open_questions": [],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

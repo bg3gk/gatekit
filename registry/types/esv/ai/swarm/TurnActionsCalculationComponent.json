@@ -1,0 +1,490 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ai::swarm::TurnActionsCalculationComponent",
+  "kind": "struct",
+  "about": "AI swarm turn calculation per member (idle levels).",
+  "size": 320,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "UpdateIndex",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x16BBC80 esv::ai::swarm::DebugSystem::FindEntitiesInfo copies the 4 bytes at +0 of this component into eoc::ai::swarm::DebugTurnActionsComponent +0x10 and marks replication bit 1 - that member is the game's m_UpdateIndex (macOS FieldMeta, serialization position 2). Live 0..2."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 8,
+      "name": "CalculationState",
+      "type": "int32_t",
+      "rung": "inferred",
+      "known_as": [{"name": "TargetIndex", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x16BBC80 FindEntitiesInfo copies the first dword of the TurnActionsCalculation held in a debug entry (entry +0x48, which is this component's +8: CastPosition follows at entry +0x4C = component +0xC) into ReplicatedDebugCalculation +0x54, m_CalculationState in the macOS FieldMeta; TargetIndex comes from the entry's own +0, outside the calculation. EoCServer.dll+0x16CC2A0 sets this dword to 2, 1 or 0xF when it is 0. Was TargetIndex by member order."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "CastPosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "TurnActionsCalculation +4 (16 bytes copied, Optional<vec3>); ReplicatedDebugCalculation m_CastPosition by order. Live world coordinates, flag 1."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "HasCastPosition",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "ls::Optional flag of CastPosition"}]
+    },
+    {
+      "offset": 25,
+      "name": "_Pad19",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 28,
+      "name": "field_1c",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "TurnActionsCalculation +0x14: optional 8-byte value (FixedString copied with its ctor + int), flag at +0x1C (game dtor bg3.exe+0x30B9EA0 releases it when the flag is set) - probably an Optional<esv::ai::swarm::PathID>."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "field_20",
+      "type": "int32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Second half of that optional (live 0..0xE3D)."}]
+    },
+    {
+      "offset": 36,
+      "name": "field_24",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Its optional flag (live 0/1)."}]
+    },
+    {
+      "offset": 37,
+      "name": "_Pad25",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 40,
+      "name": "MoveSpellIntermediary",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "TurnActionsCalculation +0x20 (16 bytes); ReplicatedDebugCalculation m_MoveSpellIntermediary by order."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "HasMoveSpellIntermediary",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "ls::Optional flag of MoveSpellIntermediary"}]
+    },
+    {
+      "offset": 53,
+      "name": "_Pad35",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 56,
+      "name": "MoveSpellAttackCastPosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "TurnActionsCalculation +0x30 (16 bytes); ReplicatedDebugCalculation m_MoveSpellAttackCastPosition by order."
+        }
+      ]
+    },
+    {
+      "offset": 68,
+      "name": "HasMoveSpellAttackCastPosition",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "ls::Optional flag of MoveSpellAttackCastPosition"}]
+    },
+    {
+      "offset": 69,
+      "name": "_Pad45",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 72,
+      "name": "field_48",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Optional 8-byte value (FixedString + int) with flag at +8, like field_1c; game dtor releases the FixedString when the flag is set."
+        }
+      ]
+    },
+    {
+      "offset": 76,
+      "name": "field_4c",
+      "type": "int32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Second half of the optional value."}]
+    },
+    {
+      "offset": 80,
+      "name": "field_50",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Optional flag."}]
+    },
+    {
+      "offset": 81,
+      "name": "_Pad51",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 84,
+      "name": "field_54",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Optional 8-byte value (FixedString + int) with flag at +8, like field_1c; game dtor releases the FixedString when the flag is set."
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "field_58",
+      "type": "int32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Second half of the optional value."}]
+    },
+    {
+      "offset": 92,
+      "name": "field_5c",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Optional flag."}]
+    },
+    {
+      "offset": 93,
+      "name": "_Pad5D",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 96,
+      "name": "MoveSpell",
+      "type": "AiSwarmTurnActionsCalculationSpellId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "TurnActionsCalculation +0x58: Optional<{SpellId, vec3, vec3}> (flag +0xA8); eoc::spell::SpellId copy ctor; ReplicatedDebugCalculation m_MoveSpell."
+        }
+      ]
+    },
+    {
+      "offset": 152,
+      "name": "MoveSpellStart",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "Calc +0x90 (copied with the SpellId); m_MoveSpellStart by order."}
+      ]
+    },
+    {
+      "offset": 164,
+      "name": "MoveSpellEnd",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Calc +0x9C; m_MoveSpellEnd by order."}]
+    },
+    {
+      "offset": 176,
+      "name": "HasMoveSpell",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Calc +0xA8: flag guarding the SpellId (dtor/copy)."}]
+    },
+    {
+      "offset": 177,
+      "name": "_PadB1",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 184,
+      "name": "MovementPoints",
+      "type": "double",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Calc +0xB0 (8 bytes); m_MovementPoints (double) by order; live 18.0 / -1.0 (the debug builder defaults it to -1.0)."
+        }
+      ]
+    },
+    {
+      "offset": 192,
+      "name": "DashSpell",
+      "type": "AiSwarmTurnActionsCalculationSpellId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Calc +0xB8: SpellId (copy ctor, always destroyed); m_DashSpell by order. Live FixedStrings at +0xC0/+0xF0."
+        }
+      ]
+    },
+    {
+      "offset": 248,
+      "name": "PathDistanceXZ",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Calc +0xF0 (8 bytes: float + flag); m_PathDistanceXZ (Optional<float>). Live 3.5 / 33.5 with flag 1."
+        }
+      ]
+    },
+    {
+      "offset": 252,
+      "name": "HasPathDistanceXZ",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Optional flag."}]
+    },
+    {
+      "offset": 253,
+      "name": "_PadFD",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 256,
+      "name": "ReachablePosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0x16CC2A0 (swarm action calculation) creates TurnActionsComponent and copies the 16 bytes at +0x100 (vec3 + flag) into TurnActions +0x160, which FindEntitiesInfo (EoCServer.dll+0x16BBC80) copies to DebugTurnActions.ReachablePosition. The same FindEntitiesInfo copies the slot right after PathDistanceXZ into ReplicatedDebugCalculation.m_ReachablePosition (+0x138, macOS FieldMeta). Live world coordinates with flag 1 in 16 of 48 samples."
+        }
+      ]
+    },
+    {
+      "offset": 268,
+      "name": "HasReachablePosition",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::Optional flag of ReachablePosition (+0x100); copied with it into TurnActions +0x16C at EoCServer.dll+0x16CC2A0."
+        }
+      ]
+    },
+    {
+      "offset": 269,
+      "name": "_Pad10D",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 272,
+      "name": "field_110",
+      "type": "glm::vec3",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Calc +0x108 (16 bytes). Live zero."}]
+    },
+    {
+      "offset": 284,
+      "name": "field_110_set",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "ls::Optional flag of field_110"}]
+    },
+    {
+      "offset": 285,
+      "name": "_Pad11D",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    },
+    {
+      "offset": 288,
+      "name": "PathPoints",
+      "type": "Array<glm::vec3>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Calc +0x118: copy ctor allocates count * 0xC (IndexedStorage<Vector3f>); m_PathPoints by order. Live heap, capacity 4..0x40."
+        }
+      ]
+    },
+    {
+      "offset": 304,
+      "name": "field_130",
+      "type": "glm::vec3",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Was ReachablePosition by member order; the code contradicts that (see +0x100). Toolkit EoCServer.dll+0x16CC2A0 saves the 16 bytes at +0x130 before resetting the calculation (memset of +0x8..+0x140) and writes them back after, so the value survives a recalculation. No reader of it found; ReplicatedDebugCalculation has no member for it."
+        }
+      ]
+    },
+    {
+      "offset": 316,
+      "name": "field_130_set",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Optional flag of field_130 (byte after the vec3; cleared in the default value at EoCServer.dll+0x16CC2A0)."
+        }
+      ]
+    },
+    {
+      "offset": 317,
+      "name": "_Pad13D",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding / bytes nobody reads"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerAiSwarmTurnActionsCalculation",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 12,
+    "names_pass_2": "Re-checked against the replicated debug copy eoc::ai::swarm::ReplicatedDebugCalculation (macOS FieldMeta names): the still-unnamed members (three Optional<FixedString,int>, two Optional<vec3>, the leading int) have no counterpart there; nothing else names them.",
+    "open_questions": [
+      "field_0 (8-byte header before the TurnActionsCalculation)",
+      "names come from ReplicatedDebugCalculation by member order - not proven one-to-one",
+      "the three PathID-like optionals and two optional vec3 (+0x100, +0x110)",
+      "The Optional<{FixedString,int}> members could be named from esv::ai::swarm::CalculateActionsSystem (macOS named) where they are filled."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "AiSwarmTurnActionsCalculationSpellId",
+        "size": 56,
+        "fields": [
+          {
+            "name": "OriginatorPrototype",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Same members as Script Extender SpellId (Base/ExposedTypes.h: SpellMetaId + Prototype), size 0x38. "
+          },
+          {
+            "name": "_Pad4",
+            "offset": 4,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "compiler padding / bytes nobody reads"
+          },
+          {
+            "name": "SourceType",
+            "offset": 8,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "SpellSourceType (1 byte); macOS default ctor stores the Sentinel byte at +8; live value 0x17 when empty"
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "compiler padding / bytes nobody reads"
+          },
+          {
+            "name": "Source",
+            "offset": 16,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "SpellMetaId::Source"
+          },
+          {
+            "name": "ProgressionSource",
+            "offset": 32,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "SpellMetaId::ProgressionSource"
+          },
+          {
+            "name": "Prototype",
+            "offset": 48,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "SpellId::Prototype"
+          },
+          {
+            "name": "_Pad34",
+            "offset": 52,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "compiler padding / bytes nobody reads"
+          }
+        ]
+      }
+    ]
+  }
+}

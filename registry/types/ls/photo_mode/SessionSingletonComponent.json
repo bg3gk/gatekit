@@ -1,0 +1,274 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::photo_mode::SessionSingletonComponent",
+  "kind": "struct",
+  "about": "Client photo-mode session object (registry inline 8, total 1592 = 0x630-byte object + 8). Built by bg3.exe+0x3C4BB80: scalar camera/session settings up to +0x50, then two embedded ls::Atmosphere objects (+0x50 and +0x340, 0x2F0 bytes each; destructor bg3.exe+0x3B7C2D0 calls ls::Atmosphere::~Atmosphere on both and DecRefs the FixedString at +0xC). seen.py show crashes on this type (probe.py survey IndexError), so live values were not usable.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "uint8_t[8]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Never written by the creator bg3.exe+0x3C4BB80, the session reset in UpdateSystemStatus or ProcessUIChanges, and never read there; live: stale allocator bytes (ASCII text)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Dirty",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "creator bg3.exe+0x3C4BB80 and the session reset write 0; Toolkit ls::photo_mode::PhotoModeSystem::ProcessUIChanges (GameEngine.dll+0x752580; Windows bg3.exe+0x3C4A540) sets it to 1 after every photo-mode setting it copies (brightness, colour grading, DoF, exposure, vignette); UpdateSystemStatus sets it to 1 at the end of activation."
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "_Pad9",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding before the FixedString"}]
+    },
+    {
+      "offset": 12,
+      "name": "ColorGradingId",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessUIChanges assigns ls::photo_mode::ColorGradingComponent.Id (+0 of its 0x10-byte element) with FixedString::operator=; the reset calls FixedString::Reset; creator bg3.exe+0x3C4BB80 copies a global FixedString with IncRef."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "ColorDirty",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessUIChanges sets it to 1 (with Dirty) only when Brightness or the colour grading changed; the creator/reset store 2 zero bytes at +0x10 covering it and +0x11."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "VignetteEnabled",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessUIChanges copies byte +0 of ls::photo_mode::VignetteComponent (0x18-byte element: Enabled)."
+        }
+      ]
+    },
+    {
+      "offset": 18,
+      "name": "_Pad12",
+      "type": "uint8_t[2]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 20,
+      "name": "VignetteColor",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessUIChanges copies VignetteComponent +4..+0xF (Color) as 8 + 4 bytes to +0x14/+0x1C; reset writes 8 zero bytes at +0x14 and 4 at +0x1C."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "VignetteIntensity",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessUIChanges copies VignetteComponent +0x10 (Intensity); creator/reset 1.0f."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "VignettePower",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessUIChanges copies VignetteComponent +0x14 (Power); creator/reset 10.0f (8-byte store 0x41200000 also zeroes +0x28)."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "ColorGradingParams",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessUIChanges copies ColorGradingComponent +4, +8, +0xC (Script Extender field_4/field_8/field_c, floats) to +0x28/+0x2C/+0x30; reset 0."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "Brightness",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessUIChanges copies the 4-byte ls::photo_mode::BrightnessComponent (first 4-byte block in WorldView order Brightness, ColorGrading, DoF, Exposure, FoV, Vignette) and sets ColorDirty; reset 0."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "Exposure",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessUIChanges copies the 4-byte ls::photo_mode::ExposureComponent (the 4-byte block after DoF; FoV goes to CameraComponent::SetFov instead); reset 0."
+        }
+      ]
+    },
+    {
+      "offset": 60,
+      "name": "DoFEnabled",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "UpdateSystemStatus and ProcessUIChanges copy ls::photo_mode::DoFComponent +0 (Enabled, 0x18-byte element); reset stores 2 zero bytes at +0x3C."
+        }
+      ]
+    },
+    {
+      "offset": 61,
+      "name": "DoFAutoFocus",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Copied from DoFComponent +1 (AutoFocus)."}]
+    },
+    {
+      "offset": 62,
+      "name": "_Pad3E",
+      "type": "uint8_t[2]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 64,
+      "name": "DoFDistance",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Copied from DoFComponent +4 (Distance); creator/reset 5.0f (= the DoF request default)."
+        }
+      ]
+    },
+    {
+      "offset": 68,
+      "name": "DoFStrength",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Copied from DoFComponent +8 (Strength); creator/reset 2.5f (= the DoF request default)."
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "DoFFocusTarget",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Copied from DoFComponent +0x10 (FocusTarget); creator/reset the null handle 0xFFC0000000000000."
+        }
+      ]
+    },
+    {
+      "offset": 80,
+      "name": "Atmosphere",
+      "type": "PhotoModeSessionAtmosphere",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ls::Atmosphere constructed by the creator bg3.exe+0x3C4BB80 (bg3.exe+0x3D50E60); UpdateSystemStatus copies the render view's current atmosphere (PhotoModeSystemHelper vtable +8 = GetDefaultAtmosphere) into it and then applies it with PhotoModeSystemHelper::SetAtmosphere (vtable +0x18, argument session+0x50): the atmosphere photo mode edits."
+        }
+      ]
+    },
+    {
+      "offset": 832,
+      "name": "DefaultAtmosphere",
+      "type": "PhotoModeSessionAtmosphere",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second ls::Atmosphere (+0x340 .. +0x630): UpdateSystemStatus stores the copy of the current atmosphere here first (Atmosphere::operator=(session+0x340, current)), i.e. the atmosphere to restore when photo mode ends."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "PhotoModeSessionSingleton", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "base": "none (plain object behind a pointer; the component's 8 inline bytes are the pointer)",
+    "class_size": 1584,
+    "confidence": "medium",
+    "functions_read": 6,
+    "minutes": 12,
+    "open_questions": [
+      "The two ls::Atmosphere members are opaque 0x2F0-byte blocks (Script Extender's Resources.h Atmosphere struct not checked against 0x2F0 and not usable here).",
+      "Names of the scalar members are inferred from the photo-mode component each is copied from; the game has no names for them.",
+      "+0x0..+0x7 is never written or read in the functions found."
+    ],
+    "second_pass": "Every scalar member settled from the Windows creator bg3.exe+0x3C4BB80 and the named Toolkit UpdateSystemStatus / ProcessUIChanges, which copy the Brightness, ColorGrading, DoF, Exposure and Vignette components member by member into it. The component slot is an 8-byte POINTER to this 0x630-byte heap object (creator: ComponentFrameStorageAllocRaw(.., 8, ..) then *slot = object): the generator must declare the component as a pointer to this struct, not inline - that is why the validator saw 1584 against 8.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "the layout file is not valid yet: ls::photo_mode::SessionSingletonComponent: fields end at 1584 (struct size 1584), expected 8",
+    "structs": [
+      {
+        "name": "PhotoModeSessionAtmosphere",
+        "size": 752,
+        "fields": [
+          {
+            "name": "Data",
+            "offset": 0,
+            "type": "uint8_t[752]",
+            "source": "unknown",
+            "evidence": "An embedded ls::Atmosphere (0x2F0 bytes on Windows: +0x50 .. +0x340; constructed by bg3.exe+0x3D50E60, destroyed by ls::Atmosphere::~Atmosphere in bg3.exe+0x3B7C2D0; starts with a virtual table pointer, live). Script Extender declares ls::Atmosphere in GameDefinitions/Resources.h, but the build allows no external types, so it is kept opaque here."
+          }
+        ]
+      }
+    ]
+  }
+}

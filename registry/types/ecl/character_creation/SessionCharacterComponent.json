@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::SessionCharacterComponent",
+  "kind": "struct",
+  "about": "Character-creation session: the entity the session edits. situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Character",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x201AAD0 (AllocRaw 8) writes 0xffc0000000000000 (null handle); macOS default ctor stores the null handle too. Live: an entity handle (0x01C00006_0002FE6B), the same one held by SessionStateComponent +0 and IconDefinitionComponent +0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientCharacterCreationSessionCharacter",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": ["Whether the handle is the edited character or the session entity."],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

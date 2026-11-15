@@ -1,0 +1,177 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::jump::StateComponent",
+  "kind": "struct",
+  "about": "Animation/flight state of a jump in progress (both sides). Initialised by eoc::jump::helpers::SetupJumpInitialState (bg3.exe+0x114B1F0), advanced by eoc::jump::helpers::UpdateJumpState and by the jump TrajectoryAnimationStateSystems (client UpdateJumpAnimationState bg3.exe+0x1A21CA0). Born live in the jump situation, a mud-mephit fight and a tadpoling pod, with jump::AnimationRequestOneFrameComponent.",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Direction",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x114B0B0 (called by SetupJumpInitialState/UpdateJumpAnimationState with the state as 2nd arg) stores a normalised direction between two points of the path mover at +0..+0xB when its pitch is <= 1.553 rad. Live unit-length vectors e.g. (0.155, 0.862, -0.475)."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "State",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SetupJumpInitialState writes -1; UpdateJumpAnimationState sets 0/1 (takeoff), 2, 3/4 (landing), 5 (finished/aborted) and compares with < 3; the new value is sent in jump::AnimationRequestOneFrameComponent. Live -1."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Time",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SetupJumpInitialState writes 0; UpdateJumpAnimationState adds GameTime delta (+8) each frame. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "PeakTime",
+      "type": "float",
+      "rung": "inferred",
+      "known_as": [{"name": "field_14", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SetupJumpInitialState sets +0x14 and +0x1C from the same value; when Time crosses it State becomes 1 (takeoff time). Live 0.109 .. 0.32. | Name: Toolkit eoc::jump::helpers::SetupJumpInitialState (EoCShared.dll+0x133EAE0, same offsets as bg3.exe: Time +0x10, State +0xC) stores PathMover::SampleDuration(PathMover::GetInterpolationAtHeightPoint()) here: the time of the jump's highest point."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "FallStartTime",
+      "type": "float",
+      "rung": "inferred",
+      "known_as": [{"name": "field_18", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SetupJumpInitialState writes +0x1C (or half of it); used as the next phase threshold in UpdateJumpAnimationState. Live equals +0x1C. | Name: SetupJumpInitialState: when the drop is at least the stats ExtraData FallDamageMinimumDistance, the time where the path crosses the start height again (GetInterpolationAtSourceYIntersection) or min(Duration/2, 0.3); otherwise Duration."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "Duration",
+      "type": "float",
+      "rung": "inferred",
+      "known_as": [{"name": "field_1C", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Written by SetupJumpInitialState; read when State becomes 2. Live 0.25 .. 0.91. | Name: SetupJumpInitialState stores PathMover::SampleDuration(1.0): the duration of the whole jump path."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "Started",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SetupJumpInitialState clears it; UpdateJumpAnimationState sets it to 1 when the flight starts (projectile taken off hold) and returns early while it is 0."
+        }
+      ]
+    },
+    {
+      "offset": 33,
+      "name": "field_21",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Set to (request byte == 0) from a land request map in UpdateJumpAnimationState; leads to State 3/4/5."
+        }
+      ]
+    },
+    {
+      "offset": 34,
+      "name": "field_22",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "Copied from the same land request byte; leads to State 3 or 5."}
+      ]
+    },
+    {
+      "offset": 35,
+      "name": "IsLongFall",
+      "type": "bool",
+      "rung": "inferred",
+      "known_as": [{"name": "field_23", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Set by SetupJumpInitialState; selects State 4 instead of 3 and enables the State 2 phase. | Name: SetupJumpInitialState sets it to (start height - end height >= ExtraData FallDamageMinimumDistance); selects the falling phase (State 2) and landing State 4."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "field_24",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Set from land request bytes 1/2; selects State 5 instead of 3. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 37,
+      "name": "FinishRequested",
+      "type": "bool",
+      "rung": "inferred",
+      "known_as": [{"name": "field_25", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Server UpdateJumpAnimationState (Toolkit) sets it when a jump finish request arrives. Live 0. | Name: Server UpdateJumpAnimationState (Toolkit) sets it when a jump finish request arrives."
+        }
+      ]
+    },
+    {
+      "offset": 38,
+      "name": "_Pad26",
+      "type": "uint8_t[2]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding to 40; live 0x0000/0xFFFF garbage"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "JumpState", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 12,
+    "names_pass_2": "Timing members settled by the Toolkit's eoc::jump::helpers::SetupJumpInitialState (EoCShared.dll, typed StateComponent&, offsets identical to bg3.exe); not replicated, not saved.",
+    "open_questions": [
+      "Names of the three phase-time floats and the land-request flags; offsets confirmed on Windows (bg3.exe) only for the client update and SetupJumpInitialState.",
+      "field_21 / field_22 / field_24 come from bytes of the land request map in UpdateJumpAnimationState; the request struct's members (eoc::jump land request) would name them."
+    ],
+    "raw_check": "16 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

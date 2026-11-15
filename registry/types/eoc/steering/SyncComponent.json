@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::steering::SyncComponent",
+  "kind": "struct",
+  "about": "Replicated steering value of a moving character, written by esv::steering::StateSystem::Update (macOS). Born live in many dialogues, events, scenes and shove-throw (characters that turn).",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Serializer bg3.exe+0x8E0340 writes 4 bytes from +0 (DAT_1462805f0 base); macOS default str w1,[x23]. Live floats in about -3.13 .. 3.13 (a heading angle in radians, e.g. target rotation)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SteeringSync", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": ["Name of the value (target/current heading) not established."],
+    "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

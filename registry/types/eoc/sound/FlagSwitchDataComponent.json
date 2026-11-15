@@ -1,0 +1,62 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::sound::FlagSwitchDataComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "FlagSwitchOverrides",
+      "type": "Array<SoundFlagSwitchData>",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Windows type name ls::FieldMeta<class ls::DynamicArray<struct eoc::sound::FlagSwitchData,struct ls::TaggedAllocator<int> > eoc::sound::FlagSwitchDataComponent::*,0>; macOS m_FlagSwitchOverrides. Serializer bg3.exe+0x9DF420 -> bg3.exe+0xAD44D0 (stride 0x18)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SoundFlagSwitchData", "one_frame": false},
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 4,
+    "open_questions": [
+      "Names of the FlagSwitchData members (flag guid, switch group, switch state?)."
+    ],
+    "status": "declared",
+    "structs": [
+      {
+        "name": "SoundFlagSwitchData",
+        "size": 24,
+        "fields": [
+          {
+            "name": "field_0",
+            "offset": 0,
+            "type": "Guid",
+            "source": "unknown",
+            "evidence": "bg3.exe+0xAD44D0 writes 16 bytes at +0"
+          },
+          {
+            "name": "field_10",
+            "offset": 16,
+            "type": "FixedString",
+            "source": "unknown",
+            "evidence": "FixedString at +0x10"
+          },
+          {
+            "name": "field_14",
+            "offset": 20,
+            "type": "FixedString",
+            "source": "unknown",
+            "evidence": "FixedString at +0x14"
+          }
+        ]
+      }
+    ]
+  }
+}

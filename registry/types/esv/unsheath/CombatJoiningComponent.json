@@ -1,0 +1,30 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::unsheath::CombatJoiningComponent",
+  "kind": "struct",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Timer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x32E3DB0 (size 4, default 0). bg3.exe+0x32E2DE0 (esv::unsheath::CombatSystem) writes 0x41000000 (8.0 s) right after creating/refreshing it, then every tick subtracts the frame time (GameTime+8, scaled by an optional per-entity time factor; 0 while paused) and removes the component when the value is <= 0. The resolver bg3.exe+0x32F1AD0 only tests presence (bg3.exe+0x32E4280) and adds reason 6 with the preferred melee/ranged state. The same system reads it back through bg3.exe+0x32E4350 as float and compares with 0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerUnsheathCombatJoining", "one_frame": false},
+  "survey": {
+    "batch": "unsheath",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 4,
+    "open_questions": ["Never alive in the capture; layout from code only."],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

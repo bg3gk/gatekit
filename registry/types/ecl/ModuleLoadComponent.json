@@ -1,0 +1,169 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::ModuleLoadComponent",
+  "kind": "struct",
+  "about": "One module (mod set) being loaded by the client, driven step by step by ecl::ModuleLoadSystem (per-frame update bg3.exe+0x18B61B0); the first 0x18 bytes are an ls::ModuleSettings handed to the mod manager.",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "VMT",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x184A520 writes &PTR_FUN_1454c2bb0 at +0: the ls::ModuleSettings virtual table (SE ModuleSettings: VMT + Array<ModuleShortDesc> Mods). The update passes the component start to the mod manager (Windows FUN_143BC7870(modManager, comp); macOS ls::ModManager::LoadMod(mgr, (ModuleSettings*)comp))."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Mods",
+      "type": "Array<ModuleLoadModuleShortDesc>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator zeroes +8 (pointer) and +0x10 (capacity/size); destructor bg3.exe+0x6B8230 destroys a new[]-allocated array at +8 with 0x78-byte elements. SE ModuleSettings.Mods."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Progress",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator zeroes (4 bytes). bg3.exe+0x18B61B0 stores a float from a per-state table (0, 5, ..., 90, 100) here on each state change - loading progress in percent."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "LoadLocalization",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes 0 as a byte at +0x1C; bg3.exe+0x18B61B0 state 0 reads the byte and passes it to the localization load job (macOS: ecl::ModuleLoadSystem::DoLoadLoca(bool))."
+        }
+      ]
+    },
+    {
+      "offset": 29,
+      "name": "_Pad1D",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 32,
+      "name": "State",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator zeroes (4 bytes at +0x20); bg3.exe+0x18B61B0 switches on it (case 0, 1, 2, 3, ...) and writes the next state."
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "_Pad24",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding to 40"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientModuleLoad", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 4,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 8,
+    "open_questions": [
+      "ModuleShortDesc members inside the 0x78-byte element are SE's (only the stride is checked here)."
+    ],
+    "seen": false,
+    "status": "declared",
+    "structs": [
+      {
+        "name": "ModuleLoadModuleShortDesc",
+        "size": 120,
+        "equals": "Script Extender ModuleShortDesc (GameDefinitions/Module.h)",
+        "fields": [
+          {
+            "name": "ModuleUUIDString",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "SE ModuleShortDesc layout; element stride 0x78 confirmed by the component destructor bg3.exe+0x6B8230 (eh_vector_destructor_iterator size 0x78, element dtor bg3.exe+0x5BCEF0)."
+          },
+          {
+            "name": "_Pad4",
+            "offset": 4,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "alignment of the Guid"
+          },
+          {
+            "name": "ModuleUUID",
+            "offset": 8,
+            "type": "Guid",
+            "source": "inferred",
+            "evidence": "SE layout"
+          },
+          {
+            "name": "Name",
+            "offset": 24,
+            "type": "STDString",
+            "source": "inferred",
+            "evidence": "SE layout"
+          },
+          {
+            "name": "ModVersion",
+            "offset": 48,
+            "type": "uint64_t",
+            "source": "inferred",
+            "evidence": "SE Version (64-bit)"
+          },
+          {
+            "name": "PublishVersion",
+            "offset": 56,
+            "type": "uint64_t",
+            "source": "inferred",
+            "evidence": "SE Version (64-bit)"
+          },
+          {
+            "name": "Hash",
+            "offset": 64,
+            "type": "STDString",
+            "source": "inferred",
+            "evidence": "SE layout"
+          },
+          {
+            "name": "Folder",
+            "offset": 88,
+            "type": "STDString",
+            "source": "inferred",
+            "evidence": "SE layout"
+          },
+          {
+            "name": "PublishHandle",
+            "offset": 112,
+            "type": "uint64_t",
+            "source": "inferred",
+            "evidence": "SE layout"
+          }
+        ]
+      }
+    ]
+  }
+}

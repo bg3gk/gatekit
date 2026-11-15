@@ -1,0 +1,35 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::RollSystem::RollDice",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Rolls one requested roll on the server: gets the roller's stream (the Dialog stream of a player for a dialogue check), copies the rolled result into the request, decides the verdict - a natural 20 succeeds, a natural 1 fails, else success when the difficulty is at most the total - and writes the natural die, the discarded die (only when advantage and disadvantage differ) and the verdict into the request.",
+  "fingerprint": {
+    "calls": [
+      "eoc::CopyRollAndResult",
+      "esv::roll::stream::RollManager::GetDialogStream",
+      "fp:123b79ba6c390bab",
+      "fp:175ac60533e9dfb9",
+      "fp:24c801b0780dfd1d",
+      "fp:2cc78a07aa0cc937",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3bba8475365606e0",
+      "fp:3dc70372a826ba29",
+      "fp:5227b96c8688ff31",
+      "fp:6dbec13f747384e3",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:a4fcd6458dbd5380",
+      "fp:e1ce6ce4655c3791",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8733ab4e537d29f",
+      "fp:f8c904b320f1070b"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "GK.Memory.Watch on a new passive check's eoc::RequestedRollComponent, armed in the tick the request appeared: its NaturalRoll (+0x42) written at +0x3296664 and +0x4C written at +0x3296682 (1 on a pass: natural 13 total over DC 10; read 0 on a fail: total 12 against DC 99), and its Result written through +0xF1889D from +0x32961CE; return chain into SystemUpdate<esv::RollSystem> (+0x2390BAC) via +0x32937EF, +0x32981CF; the decompiler's weak pairing with the Toolkit's esv::RollSystem::RollDice"
+    }
+  ]
+}

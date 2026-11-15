@@ -1,0 +1,86 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::script::light::PlayEffectRequestsSingletonComponent",
+  "kind": "struct",
+  "about": "Singleton of the scripted-light effect requests, filled by esv::script::light::EffectRequestSystem::UpdateScriptedLightEffects. Lives from level load (situation idle); empty in every sample.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<ScriptLightPlayEffectOnEntityRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2EAA9B0 allocates 0x10 and zeroes pointer, capacity, size. EoCServer.dll+0x4EC920 (EffectRequestSystem::UpdateScriptedLightEffects) clears it per frame destroying FixedStrings at +8/+0x18 of 0x20-byte elements ('ls::IndexedStorage<struct ls::PlayEffectOnEntityRequest>') and appends with EoCServer.dll+0x4E98F0 (stride 0x20). Live: one instance, all zero (empty array)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerScriptLightPlayEffectRequests",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 6,
+    "open_questions": ["Meaning of the two FixedStrings (effect parameters +0 and +4)."],
+    "raw_check": "4 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "ScriptLightPlayEffectOnEntityRequest",
+        "size": 32,
+        "fields": [
+          {
+            "name": "EffectEntity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "ls::PlayEffectOnEntityRequest (name from the IndexedStorage assert in EoCServer.dll+0x4E98F0). The adder defaults +0 to the null handle; UpdateScriptedLightEffects (EoCServer.dll+0x4EC920) stores the entity it has just created for the effect (the same handle it puts into the light's EffectComponent)."
+          },
+          {
+            "name": "field_8",
+            "offset": 8,
+            "type": "FixedString",
+            "source": "unknown",
+            "evidence": "Adder constructs a FixedString at +8; UpdateScriptedLightEffects assigns the first FixedString (+0) of the light's 8-byte effect-parameters component (esv::script::light::EffectParametersComponent, read in the same WorldView) - probably the effect resource."
+          },
+          {
+            "name": "_PadC",
+            "offset": 12,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "compiler padding"
+          },
+          {
+            "name": "Entity",
+            "offset": 16,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "Adder defaults it to the null handle; UpdateScriptedLightEffects stores the scripted light entity the query is iterating (the entity holding the effect parameters)."
+          },
+          {
+            "name": "field_18",
+            "offset": 24,
+            "type": "FixedString",
+            "source": "unknown",
+            "evidence": "Adder constructs a FixedString at +0x18; UpdateScriptedLightEffects assigns the second FixedString (+4) of the effect-parameters component (perhaps a bone/attachment name)."
+          },
+          {
+            "name": "_Pad1C",
+            "offset": 28,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "compiler padding"
+          }
+        ]
+      }
+    ]
+  }
+}

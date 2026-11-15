@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::sight::ViewshedSystem::UpdateViewshedParticipants",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Keeps, on every entity in a viewshed, the set of observers whose sight holds it: adds the participant component, inserts and removes observers in its CanSee set, removes the component when nobody holds it.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:20d92adf69bc92bc",
+      "fp:3bd03f40a80a66b5",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:d436bb26916b564a",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<esv::sight::ViewshedParticipantComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<esv::sight::EventsEnabledComponent>,ls::TypeList<>,ecs::QueryTypeRemovedTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<esv::sight::ViewshedParticipantComponent>,ls::TypeList<eoc::sight::DataComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "esv::sight::ViewshedParticipantComponent"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "GK.Memory hardware watch on ViewshedParticipantComponent.CanSee (+0x10) of a goblin in TestLevel_Tom: the writes when it left and re-entered the host's sight came from HashTable Remove/Ensure called at +0x2E5E784 and +0x2E5E73B of this function, itself called from +0x2E53BAC under SystemUpdate<esv::sight::ViewshedSystem>; the decompiled body adds and removes ViewshedParticipantComponent and raises ViewshedParticipantsAddedEventOneFrameComponent"
+    }
+  ]
+}

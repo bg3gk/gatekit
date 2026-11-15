@@ -1,0 +1,31 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::AiGridTileData",
+  "kind": "struct",
+  "fields": [
+    {
+      "offset": 8,
+      "name": "Width",
+      "type": "int32",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's layout (BG3Extender/GameDefinitions/Ai.h), confirmed live in TestLevel_Tom: walking Bound+0x18 -> AiGrid -> Subgrids -> AiSubgrid.TileGrid -> Tiles reached a tile whose MetaDataIndex (32) and flags agree with Ext.Level.GetTileDebugInfo, and a write watch there caught the grid's own writers; eoc::AiGrid::RemoveObjectFromTile and AddObjectToTile read the same offsets; read 128"
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Tiles",
+      "type": "AiGridTile*",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's layout (BG3Extender/GameDefinitions/Ai.h), confirmed live in TestLevel_Tom: walking Bound+0x18 -> AiGrid -> Subgrids -> AiSubgrid.TileGrid -> Tiles reached a tile whose MetaDataIndex (32) and flags agree with Ext.Level.GetTileDebugInfo, and a write watch there caught the grid's own writers; eoc::AiGrid::RemoveObjectFromTile and AddObjectToTile read the same offsets; a tile is 16 bytes, index x + y * Width"
+        }
+      ]
+    }
+  ]
+}

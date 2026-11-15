@@ -1,0 +1,78 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::DistantSoundStateTrackerComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "State",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "eoc::sound::EDistantSoundState (4 bytes, as in eoc::sound::DistantSoundStateComponent.State): DistantSoundSystem::ProcessDistantSoundStatePosition (EoCClient.dll+0xE80E80) compares it with the replicated state and stores the new one; live 0x1/0x2/0x11/0x22 (flag values tested by HasDistantSoundStateFlag)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "SetupPending",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessDistantSoundInfoAdded (EoCClient.dll+0xE7FC20) queues a setup request when +4 is set, then writes 0x0100 to +4 (clears +4, sets +5)."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "PostInitSoundPending",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessSoundsActivated (EoCClient.dll+0xE81A40) posts the init sound event when +5 is set; also set when the state has flag 4; ProcessDistantSoundStatePosition writes 0x0101 to +4."
+        }
+      ]
+    },
+    {
+      "offset": 6,
+      "name": "field_6",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessSoundsActivated skips the entity and clears +6 when it is set."
+        }
+      ]
+    },
+    {
+      "offset": 7,
+      "name": "_Pad7",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Live byte is garbage (0x00/0x07/0x15/0x3F)."}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSoundDistantSoundStateTracker",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": ["Names of the three flags are ours."],
+    "raw_check": "16 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

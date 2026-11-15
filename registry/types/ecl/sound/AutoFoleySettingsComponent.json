@@ -1,0 +1,77 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::AutoFoleySettingsComponent",
+  "kind": "struct",
+  "size": 80,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "FoleySettings",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FUN_180ec0510 (ecl::sound::AutoFoleySystem update, EoCClient.dll) reads +0 of the singleton as an ls::FoleySettings* (falls back to the timeline's settings when null); live: null."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "TimelineViewerCount",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FUN_180ec1610 (EoCClient.dll) adds/removes the number of players viewing a timeline; asserts \"Less than 0 players are currently viewing a timeline?\" when it goes below 0. Live 0..3."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "SoundEventsEnabled",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FUN_180ec0510 stores ls::Timeline::IsSoundEventsEnabled of the last timeline at +0xC; macOS default constructor strb at +0xC; live 1."
+        }
+      ]
+    },
+    {
+      "offset": 13,
+      "name": "_PadD",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Alignment of the hash map."}]
+    },
+    {
+      "offset": 16,
+      "name": "Timelines",
+      "type": "HashMap<Guid, int32_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "FUN_180ebf9d0 / FUN_180ebfb40 (EoCClient.dll) add/decrement an int refcount (values at +0x40, 4 bytes) for a 16-byte key (keys at +0x30, stride 0x10) and erase it at 0; FUN_180ec1610 clears the map at +0x10. Live: bucket count 5."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientSoundAutoFoleySettings", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 10,
+    "open_questions": [
+      "Key type Guid inferred from the 16-byte key stride (a timeline id).",
+      "Names are ours."
+    ],
+    "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

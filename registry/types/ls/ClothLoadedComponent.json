@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::ClothLoadedComponent",
+  "kind": "struct",
+  "about": "Client physics: the NVCloth soft shapes (cloth simulations) currently loaded for an entity's visual, maintained by phx::NVClothScene::ProcessPendingAddReleaseCloths (PhysXSceneClothSolverUpdateSystem). Seen on characters with cloth in idle and dialogue situations.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Cloths",
+      "type": "Array<void*>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x3A68D40 zeroes 16 bytes; destructor bg3.exe+0x5946C0 frees a plain ls::Array buffer (pointer +0, capacity +8, size +0xC) without element destructors. Only writer phx::NVClothScene::ProcessPendingAddReleaseCloths (macOS x64 pseudo-code, hint only) removes released cloths from it by comparing 8-byte elements with the pending cloth pointers (stride 8). Live: heap pointer, capacity and size 1..2."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClothLoaded", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 5,
+    "open_questions": [
+      "Element type (phx::PhysicsSoftShape* per macOS) only from the macOS build; Windows shows the plain-array destructor and the live array shape."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

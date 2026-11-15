@@ -1,0 +1,53 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::analytics::DestinationComponent",
+  "kind": "struct",
+  "size": 56,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Users",
+      "type": "HashSet<UserId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "server creator bg3.exe+0x317F980 allocates 0x38 bytes and zeroes a HashSet (+0..+0x2F); caller bg3.exe+0x3177120 copies a prepared set into it (keys reallocated as count*4 bytes, i.e. 4-byte keys) - the same shape as eoc::notification::DestinationComponent's m_Users (HashSet<net::UserID>). Live: buckets 5, one key."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "int32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "creator bg3.exe+0x317F980 sets the 4 bytes at +0x30 to 200. Live 0x13..0xC8 (19..200), so a countdown starting at 200 (frames or ticks before the analytics event is dropped?)."
+        }
+      ]
+    },
+    {
+      "offset": 52,
+      "name": "_Pad34",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding to 56 (live stale bytes)"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnalyticsDestination", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "What the 200 countdown at +0x30 measures.",
+      "UserId key type taken from the analogous notification::DestinationComponent and the 4-byte key stride."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

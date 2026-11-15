@@ -5,8 +5,8 @@ using Microsoft.Data.Sqlite;
 namespace GateKit.Symbols.Decomp;
 
 /// <summary>Where the pseudo-code pipeline reads and writes. <see cref="FromEnvironment"/> takes
-/// every location from <see cref="SymbolPaths"/>; tests pass their own folders.</summary>
-/// <param name="Work">Work folder: Ghidra projects, functions.jsonl per binary, decomp.sqlite.</param>
+/// every location from <see cref="SymbolPaths"/> (the home); tests pass their own folders.</summary>
+/// <param name="Work">Work folder: Ghidra projects, the decompiler's export per binary (pseudocode.jsonl), decomp.sqlite.</param>
 /// <param name="Tools">External tools: ghidra_*, jdk-*, ilspycmd.</param>
 /// <param name="Game">The installed game.</param>
 /// <param name="Toolkit">The installed Toolkit.</param>
@@ -15,14 +15,20 @@ namespace GateKit.Symbols.Decomp;
 public sealed record DecompSettings(string Work, string Tools, string Game, string Toolkit, string SymbolsDb, string? MacosSymbols)
 {
     public static DecompSettings FromEnvironment() =>
-        new(SymbolPaths.DecompWork, SymbolPaths.DecompTools, SymbolPaths.Game, SymbolPaths.Toolkit, SymbolPaths.SymbolsDb, SymbolPaths.MacosSymbols);
+        new(SymbolPaths.DecompWork, SymbolPaths.DecompTools, SymbolPaths.Game, SymbolPaths.Toolkit, SymbolPaths.SymbolsDb, SymbolPaths.MacosSymbols)
+        {
+            References = GateKit.Platform.ReferenceList.FolderIn(GateKit.Home.GateKitHome.Current.Folder),
+        };
+
+    /// <summary>The folder of reference lists a binary's build is looked up in (<see cref="Provenance"/>), or null.</summary>
+    public string? References { get; init; }
 
     /// <summary>decomp.sqlite in the work folder.</summary>
     public string DbPath => Path.Combine(Work, "decomp.sqlite");
 }
 
-/// <summary>The pseudo-code database: schema (the same as the Python tool's, so either can read
-/// the other's file) and the zlib-compressed text blobs.</summary>
+/// <summary>The pseudo-code database: schema (the Python tool's and one table more, `republishes`,
+/// a row each refresh, so either can read the other's file) and the zlib-compressed text blobs.</summary>
 internal static class DecompStore
 {
     public const string Schema = """
@@ -61,7 +67,17 @@ internal static class DecompStore
         CREATE TABLE IF NOT EXISTS fixed_strings (binary_id INTEGER, rva INTEGER, kind TEXT, text TEXT, registered_in INTEGER);
         CREATE INDEX IF NOT EXISTS fixed_strings_rva ON fixed_strings(binary_id, rva);
         CREATE INDEX IF NOT EXISTS fixed_strings_text ON fixed_strings(text);
+        -- One row per `gatekit decomp refresh` that changed something: how many names and structures
+        -- the pass applied and how many functions it decompiled again.
+        CREATE TABLE IF NOT EXISTS republishes (binary_id INTEGER, finished TEXT, names INTEGER, structures INTEGER, functions INTEGER);
+        -- The out-of-line helpers keyed by one component's type index (gatekit decomp helpers):
+        -- family get/has/add/remove/registration/unknown; returns component/bool/nothing/value;
+        -- confidence high/medium/none; basis says what the family was read from.
+        CREATE TABLE IF NOT EXISTS ecs_helpers (dll TEXT, rva INTEGER, family TEXT, type TEXT, returns TEXT, confidence TEXT, basis TEXT);
+        CREATE INDEX IF NOT EXISTS ecs_helpers_rva ON ecs_helpers(dll, rva);
+        CREATE INDEX IF NOT EXISTS ecs_helpers_type ON ecs_helpers(type);
         CREATE INDEX IF NOT EXISTS code_matches_toolkit ON code_matches(toolkit_binary, toolkit_rva);
+        """ + PairCommand.Table + Provenance.Table + """
         CREATE INDEX IF NOT EXISTS functions_rva ON functions(binary_id, rva);
         CREATE INDEX IF NOT EXISTS functions_name ON functions(name);
         CREATE INDEX IF NOT EXISTS calls_caller ON calls(binary_id, caller);
@@ -79,13 +95,9 @@ internal static class DecompStore
         return db;
     }
 
-    /// <summary>Opens an existing database read-only; a missing file is an expected failure.</summary>
-    public static SqliteConnection OpenRead(string path)
-    {
-        if (!File.Exists(path))
-            throw new SymbolsException($"{path} does not exist; run:  gatekit decomp run <binary>  then  gatekit decomp load");
-        return Sql.OpenReadOnly(path);
-    }
+    /// <summary>Opens an existing database read-only; a missing or empty one fails with a sentence
+    /// that says how to make it (<see cref="GateKit.Home.HomeDatabase"/>).</summary>
+    public static SqliteConnection OpenRead(string path) => Sql.OpenReadOnly(path);
 
     /// <summary>zlib.compress(text.encode("utf-8"), 6).</summary>
     public static byte[] Compress(string text)
@@ -106,6 +118,31 @@ internal static class DecompStore
     }
 
     public static string? Decompress(object? blob) => blob is byte[] b ? Decompress(b) : null;
+
+    /// <summary>The decompiler's export of one binary in its project folder: pseudo-code, never ours,
+    /// and named so that it is not taken for the registry's or the coverage record's files.</summary>
+    public const string ExportName = "pseudocode.jsonl";
+
+    /// <summary>The name the export had before, which was also the name of a ledger of ours.</summary>
+    public const string FormerExportName = "functions.jsonl";
+
+    /// <summary>The export of a project folder; an export still under the former name is renamed
+    /// first, once, and <paramref name="note"/> told so.</summary>
+    public static string ExportPath(string folder, TextWriter? note)
+    {
+        var path = Path.Combine(folder, ExportName);
+        var former = Path.Combine(folder, FormerExportName);
+        if (!File.Exists(path) && File.Exists(former))
+        {
+            File.Move(former, path);
+            note?.WriteLine($"renamed {former} to {ExportName}: the decompiler's export is not called like our ledgers");
+        }
+        return path;
+    }
+
+    /// <summary>The export of a project folder under either name, without renaming it; null when there is none.</summary>
+    public static string? ExistingExport(string folder) =>
+        new[] { ExportName, FormerExportName }.Select(n => Path.Combine(folder, n)).FirstOrDefault(File.Exists);
 
     /// <summary>Where Ghidra loads the binary: the game executables at 0x140000000, the DLLs (and
     /// everything else) at 0x180000000.</summary>

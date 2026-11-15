@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::crowds::ProxyDynamicAnimationSetComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "DynamicAnimationSet",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x9CAC10/0x9CADA0: single 16-byte scratch write at +0. EoCServer.dll esv::crowds::SpawnSystem::CreateCrowdProxy (Toolkit) picks a Guid by weighted random from the trigger's list (stride 0x18, weight float at +0x10), checks ls::Guid::IsValid and adds a 16-byte component holding it - the only 16-byte component of that WorldView. macOS default ctor stp xzr,xzr,[x23]."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "CrowdsProxyDynamicAnimationSet",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [
+      "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+      "That the Guid is an animation-set resource is inferred from the component name and the weighted pick."
+    ],
+    "raw_check": "22 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

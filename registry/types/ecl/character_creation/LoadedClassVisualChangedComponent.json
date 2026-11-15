@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::LoadedClassVisualChangedComponent",
+  "kind": "struct",
+  "about": "One-frame event of the character editor: the visual of the selected class finished loading. situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Class",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x203AE70 (AllocRaw 0x10) copies Guid::Empty (DAT_14625aad0..dc). Live value is the class Rogue (e8b1eab0-ef11-40a2-8a0b-cee8d062bf2a, ClassDescriptions.lsx) (looked up in the game data index)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientCharacterCreationLoadedClassVisualChanged",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

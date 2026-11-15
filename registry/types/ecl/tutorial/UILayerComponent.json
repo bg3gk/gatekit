@@ -1,0 +1,87 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::tutorial::UILayerComponent",
+  "kind": "struct",
+  "about": "Client state of the tutorial UI layers: one entity per layer id, filled by ecl::tutorial::UILayerSystem::Update from the requests queued through UILayerSystem::LEGACY_Request(short, UILayerRequest) (UILayerRequest = two FixedStrings and a bool). Seen idle in CTY/BGO and when using the level swap teleporter and the elevator to the Underdark (born together with ecl::tutorial::UILayerChangedOneFrameComponent).",
+  "size": 72,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Layer",
+      "type": "int16_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll+0x638E00: when a layer entity is created, *component = the short key of the system's request list (LEGACY_Request(short, ...)); bg3.exe+0x1ABEDA0 (add helper, 0x48 bytes) zeroes it; live 1"
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "_Pad2",
+      "type": "uint8_t[6]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "never written; live garbage"}]
+    },
+    {
+      "offset": 8,
+      "name": "Entries",
+      "type": "Array<TutorialUILayerEntry>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Update appends 8-byte elements to the Array at +8 (count +0x14, capacity +0x10) and copies two FixedStrings into each; live capacity 1, size 0/1"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "HashSet<FixedString>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Update clears and refills the set at +0x18 (keys at +0x38 read with a 4-byte stride as FixedString, count +0x44) with the second FixedString of each entry (FUN_1805a1de0(comp+0x18, .., element+4)); bg3.exe+0x1ABEDA0 zeroes +0x18..+0x47; live buckets 5, keys 1/0..1"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientTutorialUILayer", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 10,
+    "open_questions": [
+      "meaning of the two FixedStrings of an entry (element/widget names?) and of the set"
+    ],
+    "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "TutorialUILayerEntry",
+        "size": 8,
+        "fields": [
+          {
+            "name": "field_0",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "unknown",
+            "evidence": "EoCClient.dll+0x638E00 UILayerSystem::Update: FixedString::operator=(element, request+0) for requests whose bool at +8 is 0 (8-byte elements: size*8 stride); macOS UILayerRequest::UILayerRequest sets it to FixedString::Empty"
+          },
+          {
+            "name": "field_4",
+            "offset": 4,
+            "type": "FixedString",
+            "source": "unknown",
+            "evidence": "same function: FixedString::operator=(element+4, request+4); this value is also inserted into the set at +0x18"
+          }
+        ]
+      }
+    ]
+  }
+}

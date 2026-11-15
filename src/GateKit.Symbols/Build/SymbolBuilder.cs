@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using GateKit.Home;
 using GateKit.Symbols.Demangling;
 using GateKit.Symbols.Pe;
 using GateKit.Symbols.Queries;
@@ -23,6 +24,8 @@ public sealed class BuildOptions
     public bool CheckMatching { get; set; }
     /// <summary>The pseudo-code database whose code_matches serve as seeds (default: SymbolPaths.DecompDb).</summary>
     public string? DecompDb { get; set; }
+    /// <summary>Replace a database that has ECS records with one that has none (no Script Extender tree).</summary>
+    public bool AllowMissingExtender { get; set; }
 }
 
 /// <summary>
@@ -68,6 +71,26 @@ public static partial class SymbolBuilder
         public uint Whole(uint f) => PartOf.TryGetValue(f, out var p) ? p : f;
     }
 
+    /// <summary>The ECS records of an existing database (0 when there is none, or no such table).</summary>
+    static long EcsRows(string dbPath)
+    {
+        if (!HomeDatabase.Usable(dbPath))
+            return 0;
+        try
+        {
+            using var db = Sql.OpenReadOnly(dbPath);
+            return Sql.Long(db.Scalar("SELECT count(*) FROM ecs_ids")) ?? 0;
+        }
+        catch (SqliteException)
+        {
+            return 0;
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+        }
+    }
+
     /// <summary>Builds the database; progress goes to <paramref name="log"/>, the summary to <paramref name="output"/>.</summary>
     public static void Run(BuildOptions options, TextWriter output, TextWriter log)
     {
@@ -80,6 +103,17 @@ public static partial class SymbolBuilder
             File.Delete(tmp);
         var clock = Stopwatch.StartNew();
         var started = DateTime.Now;
+        long ecsBefore = EcsRows(dbPath);
+        log.WriteLine(File.Exists(dbPath) ? $"rebuilding {dbPath}" : $"creating {dbPath} (BG3_SYMBOLS_DB or the home moves it; `gatekit doctor` shows the source)");
+        if (string.IsNullOrEmpty(options.Bg3Se))
+        {
+            log.WriteLine("WARNING: no Script Extender source tree (--bg3se, GATEKIT_SE_FORK, BG3SE_SRC or \"seFork\" in gatekit.json). The database will have NO ecs_ids (the component type "
+                          + "indices), no se_symbols and no layouts or enumerations of the extender; `gatekit decomp helpers` and `decomp systems` "
+                          + "find nothing without ecs_ids.");
+            if (ecsBefore > 0 && !options.AllowMissingExtender)
+                throw new SymbolsException($"{dbPath} has {ecsBefore} ecs_ids rows and this build would have none, so it was not started. "
+                                           + "Point --bg3se, or \"seFork\" in gatekit.json, at the Script Extender source tree, or pass --allow-missing-extender to replace it anyway.");
+        }
 
         var comparer = Decomp.Py.PathOrder;
         var toolkitFiles = Directory.EnumerateFiles(options.Toolkit, "*", options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
@@ -348,6 +382,8 @@ public static partial class SymbolBuilder
             Run(ins, "toolkit_file_version", File.Exists(glasses) ? Version(glasses) : "");
             Run(ins, "game", options.Game);
             Run(ins, "game_file_version", gameFiles.Count > 0 ? Version(gameFiles[0].Path) : "");
+            foreach (var (key, value) in GateKit.Platform.GameFingerprint.BuildMetadata(options.Game))
+                Run(ins, key, value);
             Run(ins, "bg3se", options.Bg3Se ?? "");
             Run(ins, "built", started.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
             Run(ins, "build_seconds", clock.Elapsed.TotalSeconds.ToString("F1", CultureInfo.InvariantCulture));
@@ -355,6 +391,13 @@ public static partial class SymbolBuilder
         }
         db.Close();
         SqliteConnection.ClearAllPools();
+        if (ecsRows.Count == 0)
+        {
+            log.WriteLine("WARNING: the new database has no ecs_ids rows" + (string.IsNullOrEmpty(options.Bg3Se) ? "" : $" (no ECS record found in {options.Bg3Se})"));
+            if (ecsBefore > 0 && !options.AllowMissingExtender)
+                throw new SymbolsException($"{dbPath} has {ecsBefore} ecs_ids rows and the new build has none: it was left as it was, the new one is {tmp}. "
+                                           + "Pass --allow-missing-extender to replace it anyway.");
+        }
         File.Move(tmp, dbPath, overwrite: true);
         output.WriteLine($"{dbPath}: {files.Count} files, {rows.Count} exports, {clock.Elapsed.TotalSeconds:F1} s");
         using var check = SymbolContext.Connect(dbPath);

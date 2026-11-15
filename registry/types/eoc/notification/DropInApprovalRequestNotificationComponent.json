@@ -1,0 +1,70 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::DropInApprovalRequestNotificationComponent",
+  "kind": "struct",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "UserId",
+      "type": "UserId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS ecl::multiplayer::DropInApprovalSystem::Update (bg3_macos_x64+0x346C260) walks the added requests and builds an ecl::multiplayer::ToApproveInfoHost (variant alternative 1 of AttemptsToJoinSingletonComponent) whose +0 is this value; the Toolkit's ProcessDecisions (EoCClient.dll+0x5A9500) treats that +0 as a user id (peer << 16 | user) and queues (short)info for DestroyPlayerRequests. The serializer writes it with the UserId writer bg3.exe+0x4016D50."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "_Pad4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding (alignment)"}]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "Guid",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x900150 member 2: 16-byte scratch write at +8."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Name",
+      "type": "STDString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS ecl::multiplayer::DropInApprovalSystem::Update (bg3_macos_x64+0x346C260) copy-constructs the request's STDString into ToApproveInfoHost +0x10, which the Toolkit's UpdateMessageBoxes (EoCClient.dll+0x5ABC00) passes as the text of the drop-in approval message box: the name of the player asking to join."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationDropInApprovalRequest",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 3,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 5,
+    "open_questions": [
+      "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+      "Names not established; the members may belong to a nested struct (two offset globals are added before member 1). Read by ecl::multiplayer::DropInApprovalSystem."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

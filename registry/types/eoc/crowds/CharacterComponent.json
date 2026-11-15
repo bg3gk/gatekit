@@ -1,0 +1,58 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::crowds::CharacterComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x9C7AE0/0x9C7CB0 member 1: written through bg3.exe+0x4017090 (the 64-bit entity-handle writer that also writes the replicated entity key) on the value at +0 (global offset DAT_14627fd88). macOS default ctor str q0,[x23] then str d1,[x23,#8]."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x9C7AE0/0x9C7CB0 member 2: ecs::sync::Serialize(FixedString) at +8."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "field_C",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializer bg3.exe+0x9C7AE0/0x9C7CB0 member 3: ecs::sync::Serialize(FixedString) at +0xC."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "CrowdsCharacter", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 5,
+    "open_questions": [
+      "Not seen alive (seen.py has no samples); no ls::FieldMeta names (order.py empty).",
+      "Meaning of the entity (owning trigger or proxy?) and of the two FixedStrings not established; written by esv::crowds::SpawnSystem (macos_index), read by ecl::crowds::CrowdCharacterSystem and visual systems."
+    ],
+    "raw_check": "96 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

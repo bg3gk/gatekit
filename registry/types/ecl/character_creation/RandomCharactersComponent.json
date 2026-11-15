@@ -1,0 +1,97 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::RandomCharactersComponent",
+  "kind": "struct",
+  "about": "Pool of randomised character definitions for the 'random character' button of character creation (gui::DCCharacterCreation RandomCharacterIndex/Count). Created by bg3.exe+0x2027B00 with 16 slots.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "LatestIndex",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Ring of 16 random character definitions (Definitions at +8, size +0x14). Toolkit EoCClient.dll: DefinitionView::GetRandomCharacterIndex (0x11BC5B0) shows (comp[+4] - comp[+0] - 1 + count) % count, so the slot at +0 is the last position; GetNextRandomCharacterIndex (FUN_1811cc300) returns -1 when the current slot equals +0 (nothing newer), GetPreviousRandomCharacterIndex (FUN_1811cc8e0) walks back from the current slot and stops on reaching +0. +0 is the slot of the most recently generated character. Creators write -1 (none yet)."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "CurrentIndex",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll DefinitionView::GetNext/GetPreviousRandomCharacterIndex (FUN_1811cc300 / FUN_1811cc8e0) start from +4 and step to the next/previous slot with a valid Guid at +0x58 of the 0x288-byte BaseDefinition; GetRandomCharacterCount (0x11BC530) returns 0 when +4 is -1; GetRandomCharacterIndex shows its position. The slot the shown random character is taken from."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Definitions",
+      "type": "Array<RandomCharactersCharacterDefinition>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator zeroes the array at +8; destructor bg3.exe+0x6ACB30 resizes it to 0 with bg3.exe+0x6DA880 (element stride 0x288, element dtor FUN_1406CF3C0) and frees it; bg3.exe+0x2027B00 resizes it to 16. macOS: ls::DynamicArray<eoc::character_creation::BaseDefinition>::Resize(.., 0x10)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientCCRandomCharacters", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 8,
+    "open_questions": [
+      "Meaning and width of the 8 bytes at +0 (always -1 when written).",
+      "Element kept as bytes after Name (SE CharacterDefinition)."
+    ],
+    "second_pass": "Not settled: as for RandomAppearances - the Windows users only build views (bg3.exe+0x208DA70 / 0x208E300 / 0x1F8A050), and the command processor that reads the 8 bytes at +0 has no matched Windows function; the element remains SE CharacterDefinition kept mostly as bytes.",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it",
+    "structs": [
+      {
+        "name": "RandomCharactersCharacterDefinition",
+        "size": 648,
+        "equals": "Script Extender character_creation::CharacterDefinition (Components/CharacterCreation.h, 0x288 bytes: int field_0, STDString Name, BaseCharacterDefinition, Appearance, abilities, LevelUpData) - game type eoc::character_creation::BaseDefinition",
+        "fields": [
+          {
+            "name": "field_0",
+            "offset": 0,
+            "type": "int32_t",
+            "source": "unknown",
+            "evidence": "first 4 bytes, moved as a uint32 by the element move in bg3.exe+0x6DA880; SE field_0"
+          },
+          {
+            "name": "_Pad4",
+            "offset": 4,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "padding"
+          },
+          {
+            "name": "Name",
+            "offset": 8,
+            "type": "STDString",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x6DA880 moves a 24-byte string at +8 (resets the source to the empty SSO state: size 0, capacity 0xF); SE Name"
+          },
+          {
+            "name": "Rest",
+            "offset": 32,
+            "type": "uint8_t[616]",
+            "source": "inferred",
+            "evidence": "rest of SE CharacterDefinition (BaseCharacterDefinition at +0x20, Appearance at +0xC8 moved by eoc::character_creation::Appearance::Appearance, abilities, LevelUpData) - kept as bytes here"
+          }
+        ]
+      }
+    ]
+  }
+}

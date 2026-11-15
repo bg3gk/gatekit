@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::PerItemSpellCooldownComponent",
+  "kind": "struct",
+  "about": "Server per-item spell cooldown list of an item: an Array of FixedStrings (spell names), used by esv::SpellCooldownSystem (Update / ProcessStartCooldownRequests per the macOS names). Saved (model game.cooldown.v0.PerItemSpellCooldownComponent, 16 bytes; no member names known). Never seen alive. Registry total 16 (server row).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Spells",
+      "type": "Array<FixedString>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Storage set-up bg3.exe+0x2705860: size 0x10, destructor bg3.exe+0x6CC770 -> FUN_1405C4050 (DecRefs 4-byte FixedString elements up to size +0xC, frees +0) - the same Array<FixedString> as esv::PerItemPassiveCooldownComponent. Name inferred from the component name."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerPerItemSpellCooldown", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 1,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 3,
+    "open_questions": [
+      "That the strings are spell ids (not cooldown groups) is inferred from the name; the loader slots (bg3.exe+0x2602DF0 / +0x2603360) were not read.",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

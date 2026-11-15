@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ai::swarm::AttackOrderComponent",
+  "kind": "struct",
+  "about": "AI swarm turn (one holder). Written by CalculateMoveGroupsSystem, read by ExecuteActionsSystem / ActionRequestSystem.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Order",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll esv::ai::swarm::CalculateMoveGroupsSystem::UpdateMoveGroups adds this 16-byte component (FUN_1816bf8d0, frame storage of 0x10) and pushes, for each 0x28-byte move group, its first 8 bytes through FUN_180226b20 -> FUN_180226e50 (IndexedStorage<ls::ID<ecs::EntityHandleTraits>>). Live: heap pointer, capacity 1..4, size 1..4."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerAiSwarmAttackOrder", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [],
+    "raw_check": "39 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

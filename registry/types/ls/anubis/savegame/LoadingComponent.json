@@ -1,0 +1,219 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::anubis::savegame::LoadingComponent",
+  "kind": "struct",
+  "about": "Server-side state of ls::anubis::System while it restores Anubis (behaviour script) trees from a savegame: the SavegameVisitor taken from ls::anubis::LoadRequestOneFrameComponent, an ls::anubis::savegame::Reader over the saved data, a set of entities and two flags. Seen in the same step as LoadRequestOneFrameComponent (level change through S_CTY_LevelSwapTeleporter_WYR).",
+  "size": 232,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Visitor",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3839D90 (add helper, size 0xE8) copies param+0 first; live value equals ls::anubis::LoadRequestOneFrameComponent's SavegameVisitor* (stored by bg3.exe+0x2B1D4B0, esv::SessionLoadSystem)"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Reader",
+      "type": "AnubisSavegameReader",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS ~LoadingComponent calls ls::anubis::savegame::Reader::~Reader(this+8); Windows bg3.exe+0x3839D90 moves +8..+0xA0 with bg3.exe+0x3828430 (0x98 bytes)"
+        }
+      ]
+    },
+    {
+      "offset": 160,
+      "name": "Entities",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS ~LoadingComponent: HashTable<ls::ID<ecs::EntityHandleTraits>, ls::anubis::AnubisHashTableOps>::~HashTable(this+0xA0); Windows bg3.exe+0x3839D90 moves three ptr/u32/u32 groups at +0xA0/+0xB0/+0xC0; live: bucket count 0x35, next-ids 0x20/0x20, keys 0x20/0x20 - the ls::HashSet shape"
+        }
+      ]
+    },
+    {
+      "offset": 208,
+      "name": "field_d0",
+      "type": "AnubisSavegameLoadingRawArray",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS ~LoadingComponent frees the pointer at +0xD0; Windows moves ptr/u32/u32 at +0xD0; live heap, capacity 0x20, size 0; element type not established"
+        }
+      ]
+    },
+    {
+      "offset": 224,
+      "name": "field_e0",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "bg3.exe+0x3839D90 copies one byte at +0xE0; live 0"}]
+    },
+    {
+      "offset": 225,
+      "name": "field_e1",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "bg3.exe+0x3839D90 copies one byte at +0xE1; live 1"}]
+    },
+    {
+      "offset": 226,
+      "name": "_PadE2",
+      "type": "uint8_t[6]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "never copied by the move; live garbage"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnubisSavegameLoading", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 12,
+    "open_questions": [
+      "element types of the Reader's arrays and of the array at +0xD0 (declared as raw ptr/capacity/size)",
+      "meaning of the two flags at +0xE0/+0xE1",
+      "is AnubisHashTableOps' HashTable exactly ls::HashSet (shape matches live)"
+    ],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "AnubisSavegameLoadingRawArray",
+        "size": 16,
+        "fields": [
+          {
+            "name": "Buf",
+            "offset": 0,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "pointer half of an ls::Array (moved and zeroed together with the two counters)"
+          },
+          {
+            "name": "Capacity",
+            "offset": 8,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "Array layout ptr/capacity/size; live values 0x20, 0x29, 0x3A2"
+          },
+          {
+            "name": "Size",
+            "offset": 12,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "Array layout ptr/capacity/size"
+          }
+        ]
+      },
+      {
+        "name": "AnubisSavegameReader",
+        "size": 152,
+        "fields": [
+          {
+            "name": "Registry",
+            "offset": 0,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "Reader +0. ls::anubis::savegame::Writer::Writer(Registry&) (AnubisFramework.dll+0x105AF0) stores '*(Registry**)this = param_1' before constructing the Header at +8; macOS Reader::Reader(Writer&&) (bg3_macos_x64+0x6740F00) copies Writer +0 to Reader +0 first."
+          },
+          {
+            "name": "Scalars",
+            "offset": 8,
+            "type": "AnubisSavegameLoadingRawArray",
+            "source": "inferred",
+            "evidence": "Reader +8 is model::Header (macOS Reader::Reader(Writer&&) moves Writer +8..+0x78 member for member); this is Header +0. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
+          },
+          {
+            "name": "Tables",
+            "offset": 24,
+            "type": "AnubisSavegameLoadingRawArray",
+            "source": "inferred",
+            "evidence": "Reader +8 is model::Header (macOS Reader::Reader(Writer&&) moves Writer +8..+0x78 member for member); this is Header +0x10. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
+          },
+          {
+            "name": "TableEntries",
+            "offset": 40,
+            "type": "AnubisSavegameLoadingRawArray",
+            "source": "inferred",
+            "evidence": "Reader +8 is model::Header (macOS Reader::Reader(Writer&&) moves Writer +8..+0x78 member for member); this is Header +0x20. AnubisFramework.dll+0x1196D0 ls::anubis::savegame::model::Header::Visit visits the Header's seven arrays in order with keys built from string literals: +0 'Scalar' (DAT_1801b0e38, init AnubisFramework.dll+0x15E50), +0x10 'Table' (+0x16090), +0x20 'TableEntry' (+0x160C0), +0x30 'Variable', +0x40 tree key, +0x50 'Operation', +0x60 'Component' - the last four match the arrays already named Variables / Trees / Operations / Components from macOS Header::~Header (bg3_macos_x64+0x667E5F0)."
+          },
+          {
+            "name": "Variables",
+            "offset": 56,
+            "type": "AnubisSavegameLoadingRawArray",
+            "source": "inferred",
+            "evidence": "Same Reader as ls::anubis::savegame::ReloadingComponent / RestoringStateComponent (one move function bg3.exe+0x38284F0, macOS Reader::Reader(Writer&&) bg3_macos_x64+0x6740F00 copies the same offsets); Header +0x30 = DynamicArray<model::Variable> (macOS Header::~Header bg3_macos_x64+0x667E5F0; Header::Visit key 'Variable')."
+          },
+          {
+            "name": "TreesPages",
+            "offset": 72,
+            "type": "void*",
+            "source": "inferred",
+            "evidence": "Same Reader as ls::anubis::savegame::ReloadingComponent / RestoringStateComponent (one move function bg3.exe+0x38284F0, macOS Reader::Reader(Writer&&) bg3_macos_x64+0x6740F00 copies the same offsets); Header +0x40 = PagedArray<model::Tree> (macOS Header::~Header RemoveAll on this+0x40, then frees the page pointers counted by the u16 at +0x4a)."
+          },
+          {
+            "name": "TreesPageShift",
+            "offset": 80,
+            "type": "uint16_t",
+            "source": "inferred",
+            "evidence": "Same Reader as ls::anubis::savegame::ReloadingComponent / RestoringStateComponent (one move function bg3.exe+0x38284F0, macOS Reader::Reader(Writer&&) bg3_macos_x64+0x6740F00 copies the same offsets); page-size shift of the Header +0x40 PagedArray<model::Tree>; live 9."
+          },
+          {
+            "name": "TreesPageCount",
+            "offset": 82,
+            "type": "uint16_t",
+            "source": "inferred",
+            "evidence": "Same Reader as ls::anubis::savegame::ReloadingComponent / RestoringStateComponent (one move function bg3.exe+0x38284F0, macOS Reader::Reader(Writer&&) bg3_macos_x64+0x6740F00 copies the same offsets); page count of the PagedArray<model::Tree>: macOS Header::~Header loops over the u16 at Header +0x4a (= Reader +0x52) freeing pages; zeroed by the move."
+          },
+          {
+            "name": "TreesCount",
+            "offset": 84,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "Same Reader as ls::anubis::savegame::ReloadingComponent / RestoringStateComponent (one move function bg3.exe+0x38284F0, macOS Reader::Reader(Writer&&) bg3_macos_x64+0x6740F00 copies the same offsets); element count of the PagedArray<model::Tree>; zeroed by the move (macOS Reader::Reader(Writer&&) clears +0x54)."
+          },
+          {
+            "name": "Operations",
+            "offset": 88,
+            "type": "AnubisSavegameLoadingRawArray",
+            "source": "inferred",
+            "evidence": "Same Reader as ls::anubis::savegame::ReloadingComponent / RestoringStateComponent (one move function bg3.exe+0x38284F0, macOS Reader::Reader(Writer&&) bg3_macos_x64+0x6740F00 copies the same offsets); Header +0x50 = DynamicArray<model::Operation> (macOS Header::~Header reallocates this+0x50 to 0; Header::Visit key 'Operation')."
+          },
+          {
+            "name": "Components",
+            "offset": 104,
+            "type": "AnubisSavegameLoadingRawArray",
+            "source": "inferred",
+            "evidence": "Same Reader as ls::anubis::savegame::ReloadingComponent / RestoringStateComponent (one move function bg3.exe+0x38284F0, macOS Reader::Reader(Writer&&) bg3_macos_x64+0x6740F00 copies the same offsets); Header +0x60 = DynamicArray<model::Component> (macOS Header::~Header destroys this+0x60; Header::Visit key 'Component')."
+          },
+          {
+            "name": "field_78",
+            "offset": 120,
+            "type": "AnubisSavegameLoadingRawArray",
+            "source": "unknown",
+            "evidence": "bg3.exe+0x3828430 moves it; macOS Reader::~Reader frees +0x78 after clearing its size; live heap 0x29/0x29"
+          },
+          {
+            "name": "TypeArrays",
+            "offset": 136,
+            "type": "AnubisSavegameLoadingRawArray",
+            "source": "game",
+            "evidence": "macOS ls::anubis::savegame::Reader::~Reader calls DynamicArray<ls::anubis::savegame::model::TypeArray>::Reallocate(this+0x88, 0); Windows move at bg3.exe+0x3828430 confirms an Array at +0x88; element size not established; live heap 0x29/0x29"
+          }
+        ]
+      }
+    ]
+  }
+}

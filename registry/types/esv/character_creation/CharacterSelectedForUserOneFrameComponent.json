@@ -1,0 +1,56 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::character_creation::CharacterSelectedForUserOneFrameComponent",
+  "kind": "struct",
+  "about": "Character creation event: a character was selected for a user. Created on a new event entity by bg3.exe+0x37966D0 (AllocRaw 0x10) from bg3.exe+0x3791690, which writes the character handle and the user id; esv::StoryCharacterEventManager::OnCharacterSelectedForUser (Toolkit EoCServer.dll+0xEF4370) turns it into the Osiris event CharacterSelectedForUser. Registered as a normal component although named OneFrame. Never seen alive. Registry total 16 (server row).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Character",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x37966D0 writes 0xffc0000000000000 (null EntityHandle) at +0; writer bg3.exe+0x3791690 line 285 `*puVar9 = local_398` (the selected character, also returned through `*local_298`)."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "User",
+      "type": "UserId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator writes DAT_14617ceac (default UserID global) at +8; writer line 286 `*(undefined4 *)(puVar9 + 1) = param_4` (the user id argument)."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "_Pad12",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding to the registry size 16."}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCCCharacterSelectedForUser",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 5,
+    "open_questions": ["Not seen alive (seen.py has no samples)."],
+    "seen": false,
+    "status": "declared"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::ready_check::UserComponent",
+  "kind": "struct",
+  "size": 56,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "UserId",
+      "type": "UserId",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_UserId (net::UserID), position 1 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes a UserID (bg3.exe+0x4016D50); macOS default 0xFFFF0000 at +0x0 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Context",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_Context (ls::FixedString), position 2 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes a FixedString at +0x4 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "TranslatedString",
+      "type": "TranslatedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_TranslatedString (ls::TranslatedString), position 3 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes the handle version (u16 +0xC) and handle FixedString (+8) of a 16-byte TranslatedString at +0x8 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "MessageType",
+      "type": "uint32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_MessageType (eoc::ready_check::EMessageType (no SE enum)), position 4 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes 4 bytes at +0x18 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "ResponseType",
+      "type": "uint32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_ResponseType (eoc::ready_check::EResponseType (no SE enum)), position 5 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes 4 bytes at +0x1C in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "TransactionId",
+      "type": "Guid",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_TransactionId (ls::Guid), position 6 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes 16 bytes at +0x20 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Result",
+      "type": "std::optional<bool>",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_Result (ls::Optional<bool>), position 7 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes an optional bool (bg3.exe+0xA96120); macOS default strh 0 at +0x30 at +0x30 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 50,
+      "name": "_Pad32",
+      "type": "uint8_t[2]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "compiler padding (alignment)"}]
+    },
+    {
+      "offset": 52,
+      "name": "Timer",
+      "type": "float",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_Timer (float), position 8 of 8 in the macOS serializer TypeList; serializer bg3.exe+0x927B90 writes 4 bytes at +0x34 in the same order"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ReadyCheckUser", "one_frame": false},
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 8,
+    "open_questions": ["Enum values of EMessageType/EResponseType."],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

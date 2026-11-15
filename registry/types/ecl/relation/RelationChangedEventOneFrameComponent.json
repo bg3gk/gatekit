@@ -1,0 +1,58 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::relation::RelationChangedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Event entity created by ecl::relation::RelationSystem::ProcessRelationChangeRequests (bg3.exe+0x19631A0, Toolkit EoCClient.dll+0x9E8C20): for every 4-byte key of two pending sets the system creates a new entity and adds this component (macOS: EntityCommandBuffer::AddComponentUnchecked<RelationChangedEventOneFrameComponent, unsigned int const&, bool>). The keys are the unsigned int keys of eoc::relation::RelationComponent's relation maps (HashMap<unsigned int, ERelation>, watched in SystemLoad). Born live in fights (faction/relation changes).",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "RelationKey",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1963E20 (8 bytes) stores the 4-byte key from the system's set at +0 (stride 4 in bg3.exe+0x19631A0); macOS AddComponentUnchecked<..., unsigned int const&, bool>. Live values like 0x0031002B / 0x01310103 - two 16-bit halves (likely a pair of faction indices). Same key type as RelationComponent's HashMap<unsigned int, ERelation>."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second constructor argument (bool) at +4: 1 for keys of the first pending set (system +0x1B8), 0 for the second set (system +0x1E8). Which change kind each set is (e.g. permanent vs temporary) was not established. Live 0/1."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "_Pad5",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "tail padding (live garbage)"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientRelationRelationChangedEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 7,
+    "open_questions": [
+      "Meaning of the bool (which of the two request sets).",
+      "Exact packing of the 32-bit relation key."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

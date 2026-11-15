@@ -1,0 +1,127 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::roll::ActiveRollEventsSingletonComponent",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "ResultEvents",
+      "type": "Array<ActiveRollResultEvent>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Destructor bg3.exe+0x6B6C50 frees four trivial arrays. Toolkit ecl::RollSystem::ProcessActiveRollEventsSingleton (EoCClient.dll+0x8241D0, WorldView<ActiveRollEventsSingletonComponent,...>) moves the system's four buffers into singleton +0, +0x10, +0x20, +0x30 with asserts naming ActiveRollResultEvent, ServerRequestedActiveRollStateEvent, ActiveRollSelectedModifiersChangedEvent, ActiveRollFailedModifiersChangedEvent in that order. Live: empty."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "ServerRequestedStateEvents",
+      "type": "Array<ServerRequestedActiveRollStateEvent>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "see ResultEvents"}]
+    },
+    {
+      "offset": 32,
+      "name": "SelectedModifiersChangedEvents",
+      "type": "Array<ActiveRollSelectedModifiersChangedEvent>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "see ResultEvents"}]
+    },
+    {
+      "offset": 48,
+      "name": "FailedModifiersChangedEvents",
+      "type": "Array<ActiveRollFailedModifiersChangedEvent>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "see ResultEvents"}]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientRollActiveRollEventsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 5,
+    "live": "not verified",
+    "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "minutes": 9,
+    "open_questions": [
+      "EServerActiveRollStateRequest width assumed 4 bytes (stored as the enum parameter)."
+    ],
+    "seen": true,
+    "status": "declared",
+    "structs": [
+      {
+        "name": "ActiveRollResultEvent",
+        "size": 8,
+        "fields": [
+          {
+            "name": "Entity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "Toolkit EoCClient.dll+0x8216C0 appends 8 bytes (an entity handle) to the system's IndexedStorage<ecl::roll::ActiveRollResultEvent>."
+          }
+        ]
+      },
+      {
+        "name": "ServerRequestedActiveRollStateEvent",
+        "size": 16,
+        "fields": [
+          {
+            "name": "Entity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "ecl::RollSystem::ServerRequestedActiveRollState (EoCClient.dll+0x825A70) writes the roll entity (looked up by Guid) at +0, stride 0x10."
+          },
+          {
+            "name": "Request",
+            "offset": 8,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "Same function stores its ecl::roll::EServerActiveRollStateRequest argument at +8 (enum, not declared in SE)."
+          },
+          {
+            "name": "_PadC",
+            "offset": 12,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "stride 0x10"
+          }
+        ]
+      },
+      {
+        "name": "ActiveRollSelectedModifiersChangedEvent",
+        "size": 8,
+        "fields": [
+          {
+            "name": "Entity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "EoCClient.dll+0x8219A0 appends one qword (entity from the signal) with stride 8."
+          }
+        ]
+      },
+      {
+        "name": "ActiveRollFailedModifiersChangedEvent",
+        "size": 8,
+        "fields": [
+          {
+            "name": "Entity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "EoCClient.dll+0x821A50 appends one qword with stride 8."
+          }
+        ]
+      }
+    ]
+  }
+}

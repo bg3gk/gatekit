@@ -1,0 +1,92 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::camp::AvatarContainerRequestsComponent",
+  "kind": "struct",
+  "about": "Pending work of esv::camp::AvatarContainerSystem on an avatar container (camp chest of a dismissed avatar): a transform to place the container at, two flags, and the set of avatar entities that were dismissed into it. ProcessDismissAvatarRequests (Toolkit EoCServer.dll+0x9FAD70) inserts the handles of newly dismissed avatars into the set at +0x30; esv::transform::GameplayTransformRequestSystem::Update (Toolkit EoCServer.dll+0x2A6CA0) copies +0..+0x27 into a 40-byte transform request when both flags are set. Created by bg3.exe+0x2BF04D0 (AllocRaw 0x60, all zero); move-constructed by bg3.exe+0x26F7FF0. Saved model game.camp.v0.AvatarContainerRequestsComponent is 1 byte (nothing of substance saved). Never seen alive. Registry total 96 (server row).",
+  "size": 96,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Transform",
+      "type": "Transform",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit GameplayTransformRequestSystem::Update iterates this component (stride 0x60) and copies its first five qwords (+0..+0x27) into a 0x28-stride transform request entry (five 8-byte copies, qword 0..4 of the component to qword 0..4 of the entry) - the 40 bytes of an ls::Transform (rotation quat, translate, scale; SE Transform). bg3.exe move-constructor bg3.exe+0x26F7FF0 copies +0..+0x2F as plain data; creator zeroes it. Windows confirmed: per-frame update of esv::transform::GameplayTransformRequestSystem bg3.exe+0x41E84E0 (lines 225-239) walks the components with stride 0x60 and copies qwords 0..4 (+0..+0x27) into a 0x28-stride transform value."
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "field_28",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit GameplayTransformRequestSystem::Update requires the byte at +0x28 of the component to be non-zero (and the one at +0x2C) before using the transform; bg3.exe move-constructor copies the dword at +0x28; creator zeroes it. Windows: bg3.exe+0x41E84E0 tests that the byte at +0x28 is non-zero (reached as the sixth qword slot of the component) together with +0x2C."
+        }
+      ]
+    },
+    {
+      "offset": 41,
+      "name": "_Pad29",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding (copied with the dword)."}]
+    },
+    {
+      "offset": 44,
+      "name": "field_2C",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit requires the byte at +0x2C of the component to be non-zero together with +0x28; bg3.exe move-constructor copies the dword at +0x2C. Windows: bg3.exe+0x41E84E0 tests the byte at +0x2C; bg3.exe+0x2BEEB50 clears it (byte 0) and bg3.exe+0x2BEF600 sets it to 1."
+        }
+      ]
+    },
+    {
+      "offset": 45,
+      "name": "_Pad2D",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding before the 8-aligned set."}]
+    },
+    {
+      "offset": 48,
+      "name": "DismissedAvatars",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2BF04D0 zeroes +0x30..+0x5F in the HashSet pattern (buckets +0x30, next ids +0x40 with count +0x4C, keys +0x50 with count +0x5C); move-constructor bg3.exe+0x26F7FF0 moves pointer/size pairs at +0x30, +0x40, +0x50 and clears the source. Toolkit ProcessDismissAvatarRequests: for each entity that just got eoc::user::DismissedComponent it calls EoCServer.dll+0x257C60 with the set at +0x30 of the component and the entity (hash-set insert of an 8-byte handle). Windows: bg3.exe+0x2BEF3C0 (called from the AvatarContainerSystem update bg3.exe+0x238E280) inserts the entity handles of a query into +0x30 with bg3.exe+0x721030, the HashSet<uint64-like> insert (key compared as one 8-byte value, hash = key % buckets, keys at +0x20 of the set with stride 8); bg3.exe+0x2BEEB50 clears it with bg3.exe+0x5C4330."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCampAvatarContainerRequests",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 7,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 12,
+    "open_questions": [
+      "Meaning of the two flags at +0x28 / +0x2C (both must be set for the transform request to be applied; +0x2C is cleared by bg3.exe+0x2BEEB50 and set by bg3.exe+0x2BEF600).",
+      "Savegame model game.camp.v0.AvatarContainerRequestsComponent has size 1 (no members): the component is not saved member by member.",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "second_pass": "All offsets and widths confirmed on Windows: GameplayTransformRequestSystem update bg3.exe+0x41E84E0 (stride 0x60, 40-byte transform copy, byte tests at +0x28/+0x2C) and AvatarContainerSystem helpers bg3.exe+0x2BEEB50 / 0x2BEF3C0 (set at +0x30 filled with 8-byte entity handles by bg3.exe+0x721030).",
+    "seen": false,
+    "status": "declared"
+  }
+}

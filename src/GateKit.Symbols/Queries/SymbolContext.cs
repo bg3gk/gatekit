@@ -25,6 +25,16 @@ internal sealed partial class SymbolContext : IDisposable
     public TextWriter Err { get; }
     public SymbolsEnvironment Env { get; }
     public DecompLink Decomp { get; }
+
+    /// <summary>The component operations of the systems, by binary (<see cref="ComponentFacts.Of"/>), made once per query.</summary>
+    public Dictionary<string, IReadOnlyDictionary<string, List<ComponentFact>>> Facts { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>Per binary: where its functions call others (the binary's file, read once) and its classified helpers.</summary>
+    public Dictionary<string, ComponentFacts.CallSites> Sites { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, Dictionary<long, Decomp.EcsHelper>> Helpers { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>The macOS build's named functions, (name, rva) sorted by name, once read.</summary>
+    public List<(string Name, long Rva)>? MacFunctions { get; set; }
     readonly bool ownsDb;
 
     public SymbolContext(SqliteConnection db, TextWriter output, TextWriter error, SymbolsEnvironment env, bool ownsDb = false)

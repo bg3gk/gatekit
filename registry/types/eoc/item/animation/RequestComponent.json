@@ -1,0 +1,46 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::item::animation::RequestComponent",
+  "kind": "struct",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "DesiredState",
+      "type": "uint16_t",
+      "rung": "game",
+      "known_as": [{"name": "State", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "serializers bg3.exe+0x974560 / 0x9746D0 / 0x9742D0 / 0x9744A0: two 2-byte members at +0 and +2. EoCClient.dll ecl::item::animation::RequestsSystem::ProcessAddedItems copies both uint16 into ecl::item::animation::RequestComponent, whose first uint16 is the desired item animation state (see se-fork\\coverage\\layouts\\alive\\ecl.item.animation.RequestComponent.json). Written by esv::item::animation::RequestsSystem::Update (macOS). Live: 4. Game name: member 0 (m_DesiredState) of savegame model ls::model::game::item::animation::v0::RequestComponent; matched by the macOS Save (bg3_macos_x64+0x5051320), which widens the two uint16 at component +0/+2 in that order into model members 0/1, and the Windows layout has the same two uint16."
+        }
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "InitialState",
+      "type": "uint16_t",
+      "rung": "game",
+      "known_as": [{"name": "field_2", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "second 2-byte serializer member; copied to the client request's second uint16. Live: 4. Game name: member 1 (m_InitialState) of savegame model ls::model::game::item::animation::v0::RequestComponent; matched by the macOS Save (bg3_macos_x64+0x5051320): second uint16 (+2) -> model member 1."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ItemAnimationRequest", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 3,
+    "names_pass": "Both members of the model matched (DesiredState +0, InitialState +2) by the order of the copies in the macOS Save and the widths; a 4-byte component has no layout freedom.",
+    "open_questions": ["Meaning of the second uint16; no SE enum for item animation states."],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

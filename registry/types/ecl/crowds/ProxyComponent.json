@@ -1,0 +1,134 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::crowds::ProxyComponent",
+  "kind": "struct",
+  "about": "Client proxy of a crowd character (born in TWN Morgue fight and Distillery dialogue steps). Written by ecl::crowds::CrowdCharacterSystem::Update (ProcessAddAndRemoves / ProcessChangeRequests / UpdateProxies).",
+  "size": 40,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1A8BFA0 writes 0x7F7FFFFF (FLT_MAX); live always FLT_MAX."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "Creator 0 (upper half of the 8-byte store at +0). Live 0..35.4."}
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Creator 0xFFFFFFFF; live -1 or values."}]
+    },
+    {
+      "offset": 12,
+      "name": "field_C",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Creator 0xFFFFFFFF; live always -1."}]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator 0 (8-byte store with +0x14). Live 0..25 (often equal to +0x14 / +4)."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "field_14",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Creator 0. Live 0..25."}]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Creator 1.0. Live 1.0."}]
+    },
+    {
+      "offset": 28,
+      "name": "field_1C",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator 1.0 (8-byte store 0x3F800000 over +0x1C/+0x20). Live 1.0."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "field_20",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Creator 0. Live 8..15."}]
+    },
+    {
+      "offset": 36,
+      "name": "field_24",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "Creator 32-bit store 0x101 over +0x24..+0x27: 1. Live 0/1."}
+      ]
+    },
+    {
+      "offset": 37,
+      "name": "field_25",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Creator 1. Live 1."}]
+    },
+    {
+      "offset": 38,
+      "name": "field_26",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Creator 0. Live 0/1."}]
+    },
+    {
+      "offset": 39,
+      "name": "field_27",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Creator 0. Live 0/1."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientCrowdsProxy", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "low",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [
+      "No field meaning established: CrowdCharacterSystem sub-steps not read (budget).",
+      "+0x24..+0x27 could be one uint32 instead of four bools."
+    ],
+    "second_pass": "Not reached in this pass (time budget spent on the other 19 components); offsets and widths still rest on the Windows creator bg3.exe+0x1A8BFA0 and live samples, meanings unknown.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "the author's confidence is low: types fit the live data, meanings are not established"
+  }
+}

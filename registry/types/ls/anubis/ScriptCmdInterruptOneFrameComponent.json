@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::anubis::ScriptCmdInterruptOneFrameComponent",
+  "kind": "struct",
+  "about": "Server one-frame script command: interrupt the Anubis behaviour of an entity. The command handler creates a helper entity with this component; ls::anubis's interrupt step (bg3.exe+0x382B500) queues the target when it still has ls::anubis::RuntimeComponent. Never seen alive.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x38AF1A0 creates a new entity and writes the 8-byte value of its argument into the component (AllocRaw 8, no destructor). bg3.exe+0x382B500 reads each row (stride 8), checks it as a valid entity handle (<0x41 type bits, not 0xFFC0000000000000), tests the entity for ls::anubis::RuntimeComponent and adds it to a set of entities to interrupt."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AnubisScriptCmdInterrupt", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 5,
+    "open_questions": [],
+    "seen": false,
+    "status": "declared"
+  }
+}

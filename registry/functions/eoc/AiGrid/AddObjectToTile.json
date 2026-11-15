@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::AiGrid::AddObjectToTile",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Puts one bound object on one tile of the AI grid: finds or makes the tile's metadata, adds the object to it, counts it on the subgrid, then rebuilds the tile's object flags.",
+  "parameters": [
+    {"storage": "reg:rcx", "name": "grid"},
+    {"storage": "reg:rdx", "name": "tilePos"},
+    {"storage": "reg:r8", "name": "bound"}
+  ],
+  "locals": [
+    {"storage": "unresolved", "name": "tile", "decompiler_name": "lVar10"},
+    {"storage": "unresolved", "name": "metaData", "decompiler_name": "plVar7"}
+  ],
+  "ties": [{"type": "eoc::AiGrid", "via": "grid"}],
+  "fingerprint": {
+    "calls": ["eoc::AiGrid::UpdateTileObjectFlags", "fp:92dd4fee11aeea92", "fp:e4d053ad9455ea7c"]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "the caller of eoc::AiGrid::UpdateTileObjectFlags in every hit of the write watch on a tile's flags when a barrel was created and when a placed door was opened or closed (TestLevel_Tom); its own caller FUN_140fc53f0 runs per cell of eoc::AiGrid::ForEachBoxCell; decomp code read: it finds the tile as RemoveObjectFromTile does"
+    }
+  ]
+}

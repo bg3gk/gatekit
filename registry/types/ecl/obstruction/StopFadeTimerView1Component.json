@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::obstruction::StopFadeTimerView1Component",
+  "kind": "struct",
+  "about": "Second view (view 1, e.g. second split-screen player) twin of ecl::obstruction::StopFadeTimerView0Component (alive layout: float TimeLeft): seconds left before an obstruction fade stops. Written by ecl::obstruction::FadeSystem (AddFadingEntity / Update on macOS). Never seen alive - needs a second view (split-screen). Registry total 4 (client row).",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "TimeLeft",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x18D8820 (AllocRaw 4) stores 0x3F000000 (0.5f). The obstruction FadeSystem update bg3.exe+0x18D7670 (lines ~291-318) does value = max(value - GameTime.DeltaTime(+8), 0) on this component's storage (stride 4) and removes StopFadeTimerView1Component when it reaches 0; it re-adds it with 0.5 (lines ~429-434). Same code as for View0 (lines ~223-243), whose layout is confirmed alive."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientObstructionStopFadeTimerView1",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 1,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 3,
+    "open_questions": ["Not seen alive (seen.py has no samples); needs two views (split-screen)."],
+    "seen": false,
+    "status": "declared"
+  }
+}

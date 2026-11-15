@@ -1,0 +1,72 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::TimelineSavePostHUDEventRequestsSingletonComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<TimelineSavePostHUDEventRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::sound::TimelineSaveSystem (registration bg3.exe+0x731E70, callback bg3.exe+0x75B6B0): bg3.exe+0x1D36940 fetches the singleton (stride 0x10) and clears it when size (+0x0C) != 0; bg3.exe+0x1D36B10 appends 12-byte requests through bg3.exe+0x1D36FE0 (capacity at +8, size at +0xC). Read by ecl::sound::InterfaceSystem (registration bg3.exe+0x7479F0). Probe: empty."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSoundTimelineSavePostHUDEventRequestsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "timeline",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 7,
+    "open_questions": [
+      "Meaning of field_4 (always 3) and field_8 (always 2): probably a sound object / event type and a player or HUD index; the consumer in ecl::sound::InterfaceSystem (callback bg3.exe+0x761FF0) was not read."
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "TimelineSavePostHUDEventRequest",
+        "size": 12,
+        "fields": [
+          {
+            "name": "Event",
+            "offset": 0,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Append helper bg3.exe+0x1D36FE0 copies 4 bytes with ls::FixedString::IncRef (skipped for 0xFFFFFFFF); bg3.exe+0x1D36B10 builds the requests from FixedString constants."
+          },
+          {
+            "name": "field_4",
+            "offset": 4,
+            "type": "uint32_t",
+            "source": "unknown",
+            "evidence": "bg3.exe+0x1D36B10 always writes 3 (both request sites)."
+          },
+          {
+            "name": "ObjectType",
+            "offset": 8,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "Toolkit EoCClient.dll+0xDBE200 ecl::sound::InterfaceSystem::ProcessPostHUDEventRequests hands each element of the three PostHUD request singletons (MixState, TimelineSave, UIPanel; stride 0xC) to EoCClient.dll+0xD4E0A0, which appends it to ls::GameplayGlobalSoundRequestsSingletonComponent copying FixedString +0, uint +4 and byte +8 one for one; byte +8 there is GameplayGlobalSoundRequest::ObjectType, which GameEngine.dll+0x89B3A0 ls::GameplaySoundInterfaceSystem::ProcessPostSoundEventRequests maps 0..3 to ERoutedSoundEventType and otherwise asserts EGlobalSoundObjectType not supported. Value 2 at every writer."
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[3]",
+            "source": "inferred",
+            "evidence": "stride 0xC in bg3.exe+0x1D36FE0 and bg3.exe+0x1D36B10"
+          }
+        ]
+      }
+    ]
+  }
+}

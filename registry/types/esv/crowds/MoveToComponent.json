@@ -1,0 +1,99 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::crowds::MoveToComponent",
+  "kind": "struct",
+  "about": "Movement order of an Act 3 crowd character (lower-city civilians walking their splines / detours): target, last seen position, arrival radius, a path state and a stuck counter. Created and driven by esv::crowds::CharacterMovementSystem::Update from the MoveTo/Detour/Patrol request singletons. Saved: model game.crowds.v0.MoveToComponent (32 bytes, alignment 4); bg3.exe+0x25FB4C0 loads it back (two vec3 through a level-offset transform, then the rest).",
+  "size": 36,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Target",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0xD8C530 CharacterMovementSystem::Update copies the request's position (+0..+0xB, request stride 0x14) to +0..+0xB; the distance from the character to +0..+8 is compared with the radius at +0x18; live world coordinates"
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "LastPosition",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Update copies the character's ls::TransformComponent translation (+0x10..+0x18) to +0xC..+0x14 and each frame compares the current position with it (epsilon 1.19e-7) to detect a character that does not move"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "Radius",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Update copies request+0xC here; arrival when squared distance <= radius^2; increased by 0.05 when the character is stuck for 30 frames; live 0.5..3.3"
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "BehaviourStateId",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "CharacterMovementSystem::Update (EoCServer.dll+0xD8C530) passes &component+0x1C as the 'unsigned int *' of esv::BehaviourMachine::SetState(EBehaviourLayer, BehaviourState*, unsigned int*, bool) when it sets the BSMove state, tests it with BehaviourMachine::VerifyState(layer 0, id) each frame, and when the order ends clears the layer only if the current state's id (+0x10) equals it; zeroed on a new request and when stuck."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "StuckFrames",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Update increments the byte at +0x20 while the position is unchanged and resets it at 30 (0x1E) or when the character moves; live 0"
+        }
+      ]
+    },
+    {
+      "offset": 33,
+      "name": "MovementSpeed",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "esv::crowds::CharacterMovementSystem::Update (EoCServer.dll+0xD8C530) copies MoveToComponent byte +0x21 into a fresh eoc::PathSettings (constructor EoCShared.dll+0x3324E0: +4 = 2, +8 = 0) at +4 with the variant index +8 set to 0 - the uint8_t alternative of PathSettings' Speed (Script Extender: std::variant<uint8_t, float> Speed) - before putting the BSMove behaviour state on the character. Live 1..4 here; same default 2 as esv::crowds::SpawnComponent::PathMovementSpeed (game name), and the patrol request's MovementSpeed is switched on 1..4 with the assert 'Invalid m_PathMovementSpeed enum %d'."
+        }
+      ]
+    },
+    {
+      "offset": 34,
+      "name": "_Pad22",
+      "type": "uint8_t[2]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "never written; live garbage"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerCrowdsMoveTo", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 9,
+    "open_questions": ["meaning of +0x1C and +0x21 (enum names unknown)"],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

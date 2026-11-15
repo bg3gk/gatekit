@@ -1,0 +1,50 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::splitscreen::SoundCameraSingletonComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Windows bg3.exe+0x1E05380 (sound listener update; query DAT_14634cce0 = this singleton alone, registered by bg3.exe+0x1E063A0) reads *(float*)(singleton+0) as a blend factor when two or more split views exist: listener parameters = (b - a) * f + a for every pair of its stored parameter sets; with fewer than two views it zeroes them instead. Created as 8 zero bytes by bg3.exe+0x1E94F40 (frame storage element size 8, '*puVar8 = 0'). Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "field_4",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second half of the 8-byte zero default (bg3.exe+0x1E94F40); no Windows read or write located. Live 0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSplitscreenSoundCameraSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 8,
+    "minutes": 17,
+    "open_questions": [
+      "The writer of the singleton was not found on Windows (macOS names ecl::sound::CameraSystem::CheckSoundTriggersToUpdateSoundVolumes / UpdateSoundForCameras; the Windows match bg3.exe+0x1E95720 does not touch it directly); +4 is unread in the code seen - it may be a second float."
+    ],
+    "second_pass": "Windows bg3.exe+0x1E05380 reads +0 as a float blend factor between two sets of sound-listener parameters (split screen), and the creator bg3.exe+0x1E94F40 zeroes 8 bytes; +0 is therefore a float, not part of a 64-bit value. The upper 4 bytes stay unknown.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "only empty (all-zero) instances were seen: the member boundaries are untested"
+  }
+}

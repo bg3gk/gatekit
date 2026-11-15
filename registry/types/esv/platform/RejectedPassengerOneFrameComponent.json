@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::platform::RejectedPassengerOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event of esv::PlatformSystem (per-frame update bg3.exe+0x2CB1610 -> bg3.exe+0x2CB36F0, UpdateEntitiesOnTop on macOS): a passenger was rejected by a moving platform.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2CB9760 copies *param_3 with ls::FixedString::IncRef into +0 (4 bytes); destructor bg3.exe+0x698FE0 DecRefs it. param_3 is the first member of a 0x40-byte record of the platform system (local array, index * 0x40) - what that FixedString names was not established."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerPlatformRejectedPassenger",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 5,
+    "open_questions": [
+      "Meaning of the FixedString (taken from the first member of a 0x40-byte record in bg3.exe+0x2CB36F0)."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

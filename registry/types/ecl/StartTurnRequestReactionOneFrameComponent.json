@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::StartTurnRequestReactionOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request on the client: a character is selected to start its turn (party-fight situation, WLD_Main_A). Holds the user that gets the turn.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "UserId",
+      "type": "UserId",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1951370 (AllocRaw 4) writes the global at bg3.exe+0x617CEAC; its only caller bg3.exe+0x1950470 (~ ecl::TurnOrderSystem::ProcessTurnActionsCompleted) writes the value that the helper's virtual slot +0x28 returned through an out-parameter initialised from that global. The Toolkit/macOS ecl::TurnOrderSystemHelper::SelectNewCharacter(..., ID* outEntity, UserID* outUser) has exactly that shape: the component is added to the selected character and holds the user. Live: 1."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientStartTurnRequestReaction", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 6,
+    "open_questions": [
+      "Whether the slot +0x28 call really is SelectNewCharacter (inferred from the out-parameter shape)."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

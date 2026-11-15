@@ -1,0 +1,198 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::ClusterPhysicsAlwaysLoadedComponent",
+  "kind": "struct",
+  "about": "Client physics streaming: bookkeeping of a cluster's always-loaded physics (two HashMaps of ls::ClusterAlwaysLoadedPhysicsData, a uint32 map, a frame stamp, a per-frame ModifiedPair list and a pending-data array); used by phx::PhysXDisableSimulationSystem::ProcessChangedClusters and the cluster physics loader. On cluster entities of idle levels.",
+  "size": 232,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "DataKeys",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x29CDD0 on +0, whose assert names IndexedStorage<ls::ClusterAlwaysLoadedPhysicsData, mem::s_TagHashTable> for the values; key array freed like the other EntityHandle-keyed maps (key type assumed EntityHandle). Live: bucket count 5..0x1D at +8, cap/size at +0x18/+0x28, value capacity at +0x38. Key part of a ls::HashMap (buckets +0, NextIds +0x10, Keys +0x20)."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "DataValues",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Value storage of the same HashMap (IndexedStorage<ls::ClusterAlwaysLoadedPhysicsData, s_TagHashTable>); element size not established, so spelled out as raw parts."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "DataValueCapacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Value storage capacity of the same HashMap (live: equals the key capacity)."
+        }
+      ]
+    },
+    {
+      "offset": 60,
+      "name": "_Pad3C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Padding of the value storage (always 0 live)."}]
+    },
+    {
+      "offset": 64,
+      "name": "field_40",
+      "type": "HashMap<EntityHandle, uint32_t>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x29CB00 on +0x40: a HashMap whose value IndexedStorage is <unsigned int, s_TagHashTable>; key type assumed EntityHandle. Live: always empty (all zero)."
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "Frame",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "By analogy with ls::ClusterVisualLoadedComponent (GameEngine.dll+0xA0B900 compares +0x80 with the current frame index and resets the modified list when it changes); the destructor skips +0x80..+0x88. Live: low dword always 0."
+        }
+      ]
+    },
+    {
+      "offset": 132,
+      "name": "field_84",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not touched by the destructor; live values vary (0..0xFFFFFFFF), possibly uninitialised padding."
+        }
+      ]
+    },
+    {
+      "offset": 136,
+      "name": "ModifiedPairs",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x299D60 on +0x88: ls::Array<ls::ClusterPhysicsAlwaysLoadedComponent::ModifiedPair> (IndexedStorage assert); element size not read (the visual twin's ModifiedPair is 16 bytes). Live: all zero."
+        }
+      ]
+    },
+    {
+      "offset": 144,
+      "name": "ModifiedPairsCapacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Capacity of the same ls::Array."}]
+    },
+    {
+      "offset": 148,
+      "name": "ModifiedPairsSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Size of the same ls::Array."}]
+    },
+    {
+      "offset": 152,
+      "name": "InitDataKeys",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x29CDD0 on +0x98 (same map type as +0). Live: prime bucket counts at +0xA0, key/next capacities but size 0 (cleared map). Key part of a ls::HashMap (buckets +0, NextIds +0x10, Keys +0x20)."
+        }
+      ]
+    },
+    {
+      "offset": 200,
+      "name": "InitDataValues",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Value storage of the same HashMap (IndexedStorage<ls::ClusterAlwaysLoadedPhysicsData>); element size not established, so spelled out as raw parts."
+        }
+      ]
+    },
+    {
+      "offset": 208,
+      "name": "InitDataValueCapacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Value storage capacity of the same HashMap (live: equals the key capacity)."
+        }
+      ]
+    },
+    {
+      "offset": 212,
+      "name": "_PadD4",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Padding of the value storage (always 0 live)."}]
+    },
+    {
+      "offset": 216,
+      "name": "PendingData",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll+0x1DD1C0 (Toolkit; the component destructor: frees +0xD8, +0x98, +0x88, +0x40, +0 in that order) calls EoCClient.dll+0x298C70 on +0xD8: ls::Array<ls::ClusterAlwaysLoadedPhysicsData> (IndexedStorage assert, s_TagCluster), cleared and freed. Live: heap pointer, capacity 0..4, size 0."
+        }
+      ]
+    },
+    {
+      "offset": 224,
+      "name": "PendingDataCapacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Capacity of the same ls::Array."}]
+    },
+    {
+      "offset": 228,
+      "name": "PendingDataSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "Size of the same ls::Array."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClusterPhysicsAlwaysLoaded", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 9,
+    "open_questions": [
+      "Element size/members of ls::ClusterAlwaysLoadedPhysicsData and of ModifiedPair not established (macOS has DynamicArray<ClusterAlwaysLoadedPhysicsInitData> and <ClusterAlwaysLoadedPhysicsData>), hence raw value pointers.",
+      "Key types of the maps assumed EntityHandle.",
+      "Field names (Data, InitData, PendingData, Frame) are inferred placeholders."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

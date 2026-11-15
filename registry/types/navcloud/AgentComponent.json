@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "navcloud::AgentComponent",
+  "kind": "struct",
+  "about": "Client and server; one holder in the samples (the player character). Marks an entity around which navcloud regions are loaded: read by navcloud::RegionSystem::ProcessAgents / Update (with ls::TransformComponent) to decide which regions to load and unload. Added with the constant 30.0 by bg3.exe+0x1A73880 (and its twin bg3.exe+0x2EC6290). Not saved.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Radius",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "creator bg3.exe+0x1A743D0 (alloc 4) zeroes it; caller bg3.exe+0x1A73880 then writes *comp = 0x41F00000 (30.0) for each qualifying entity. Read by navcloud::RegionSystem (macOS signatures) together with the entity's transform - the region-loading range around the agent. Live: 30.0 on client and server"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NavcloudAgent", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 5,
+    "open_questions": [
+      "Radius is inferred from use (region loading around the agent); not confirmed in the RegionSystem code"
+    ],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

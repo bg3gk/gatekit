@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::OutlineEntitiesForRenderingSingletonComponent",
+  "kind": "struct",
+  "about": "Client singleton: the set of entities whose outline (ls::OutlineComponent) must be drawn by the renderer, maintained by ecl::OutlineSystem (EoCClient.dll+0x6D89B0, WorldView<OutlineComponent, OutlineEntitiesForRenderingSingletonComponent, Character, Item, hit::ProxyComponent, VisualComponent>).",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entities",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll+0x6D89B0 looks an entity handle up in the singleton by hash % *(int*)(singleton+8) (bucket count) and removes the node (FUN_180531B60). Live: +0 heap / +8 bucket count 5..0xD (primes) / +0x10 heap / +0x18 capacity 0..0x10 / +0x20 heap / +0x28 capacity with size 0..1 - the 3x16-byte ls::HashSet shape."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "OutlineEntitiesForRenderingSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [
+      "Key type taken as EntityHandle from the 8-byte hash lookup; the insert site was not opened."
+    ],
+    "raw_check": "9 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::crowds::AnimationComponent",
+  "kind": "struct",
+  "about": "Idle-animation timing of an Act 3 crowd character: esv::crowds::AnimationSystem::Update counts a timer up and, when it passes the next-animation time, picks a weighted random animation from the crowd behaviour and plays it. Read by esv::crowds::DetourSystem (spline info). Saved: model game.crowds.v1.AnimationComponent (12 bytes, alignment 4; v0 was 16 bytes).",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "NextAnimationTime",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0xDADC00 AnimationSystem::Update (stride 0xC): initialised with Random::GenerateRand(min,max) from the behaviour (+0x98/+0x9C); after an animation is chosen set to duration + random interval; the timer at +4 is compared against it; live 4.1..62"
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Timer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "AnimationSystem::Update adds ls::time::GetDeltaTimeForEntity to +4 every frame and resets it to 0 when a new animation starts; live 0..29"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "AnimationEndTime",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "AnimationSystem::Update: set to the chosen animation's duration; when the timer reaches it, it is reset to FLT_MAX (0x7F7FFFFF); live 7.7..10.4 or FLT_MAX"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerCrowdsAnimation", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 6,
+    "open_questions": ["exact naming of the three times (the game's model names are not known)"],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

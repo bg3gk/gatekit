@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::henchmen::HenchmanSelectedOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event: a henchman (hireling) was selected in character selection. Written by bg3.exe+0x3791690 (the same server function that writes esv::character_creation::CharacterSelectedForUserOneFrameComponent) after teleporting the chosen character; the value is that character's entity handle taken from esv::Character+0x10. Users in the Toolkit are esv::character_creation::System methods. Never seen alive. Registry total 8 (server row).",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Henchman",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x3793AC0 (AllocRaw 8) writes 0xffc0000000000000 (null EntityHandle) at +0; writer bg3.exe+0x3791690 line 238-239: `puVar9 = FUN_143793ac0(param_5,&param_6); *puVar9 = *(undefined8 *)(this + 0x10);` where `this` is the esv::Character just teleported (SE Character.h: EntityHandle at +0x10)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerHenchmanSelected", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 4,
+    "open_questions": [
+      "Field name inferred; the game's own member name is not known.",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

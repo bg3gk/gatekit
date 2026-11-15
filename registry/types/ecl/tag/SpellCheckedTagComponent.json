@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::tag::SpellCheckedTagComponent",
+  "kind": "struct",
+  "about": "Tag GUIDs the client checked for spells on an entity. Born live in many dialogue situations (CAMP_GoblinHuntCelebration, CAMP_Jergal, DEN_TieflingLeader) and an item PlaySound use; written by ecl::tag::TagSystem::ProcessSpellCheckedTags.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Tags",
+      "type": "Array<Guid>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCClient.dll ecl::tag::TagSystem::ProcessSpellCheckedTags (WorldView<SpellCheckedTagComponent, eoc::TagComponent const>) copies 16-byte elements into the array with the assert text ls::IndexedStorage<class ls::Guid,...>::CheckBoundary, allocating 0x10 per element; game copy bg3.exe+0x1B14470. Live: heap pointer at +0, capacity 1 / size 1 at +8/+0xC in all 29 instances."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientTagSpellCheckedTag", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

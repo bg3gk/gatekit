@@ -1,0 +1,57 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::steering::SSSteerComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Direction",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1BBE910 (reads it via bg3.exe+0x1BBEB70): if (comp[0xC]) ecl::Character::SetRotate(character, quat from (-x, -y, -z) of comp+0/+4/+8). Live: unit-length vectors such as (0.595, 0, -0.47...) or zero."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "Apply",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "SSSteerSystem update (bg3.exe+0x193C8F0): if (comp[0xC] != 0) { mark changed; comp[0xC] = 0 } every frame (one-shot flag); bg3.exe+0x1BBE910 tests it before rotating. Default 0 (macOS stp xzr,xzr)."
+        }
+      ]
+    },
+    {
+      "offset": 13,
+      "name": "_Pad13",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Padding; live bytes 13..15 hold garbage (values up to 0xFFFFFF00 in the dword at +0xC)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientSteeringSSSteer", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "Whether Direction is a direction or a target point (only seen negated into a rotation)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

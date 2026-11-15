@@ -1,0 +1,72 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::combat_log::EquipStatusRequestOneFrameComponent",
+  "kind": "struct",
+  "about": "Born by casting self-buff spells / equipping (FalseLife, ArmorOfAgathys, Light...).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<CombatLogEquipStatusRequestEntry>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll esv::combat_log::EquipStatusSystem::Update fills DynamicArray<esv::combat_log::EquipStatusRequest> (stride 0x20); CombatLogSystem::ProcessEquipStatusRequests iterates it (n * 0x20) into eoc::CombatLog::EquipStatusEntry. Live: heap, capacity 1, size 1."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCombatLogEquipStatusRequest",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "CombatLogEquipStatusRequestEntry",
+        "size": 32,
+        "fields": [
+          {
+            "name": "Target",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "esv::combat_log::EquipStatusRequest +0: EquipStatusSystem copies esv::status::ApplyEventOneFrameComponent.Target (+8) here; the combat log resolves it to a NetEntity."
+          },
+          {
+            "name": "StatusId",
+            "offset": 8,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "EquipStatusRequest +8: FixedString::operator= from the status' id; becomes EquipStatusEntry +0x38."
+          },
+          {
+            "name": "_PadC",
+            "offset": 12,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "compiler padding / bytes nobody reads"
+          },
+          {
+            "name": "field_10",
+            "offset": 16,
+            "type": "Guid",
+            "source": "unknown",
+            "evidence": "EquipStatusRequest +0x10: Guid copied from ApplyEventOneFrameComponent.field_18; becomes EquipStatusEntry +0x40."
+          }
+        ]
+      }
+    ]
+  }
+}

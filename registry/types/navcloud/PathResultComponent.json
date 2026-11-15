@@ -1,0 +1,95 @@
+{
+  "schema": "registry/type/1",
+  "id": "navcloud::PathResultComponent",
+  "kind": "struct",
+  "about": "Server (5 instances seen): result of a navcloud path search, written by navcloud::PathfindingSystem::ProcessRequests / ProcessSearches next to navcloud::PathRequestComponent and navcloud::PathInternalComponent. Holds the found path (ls::DynamicArray<navcloud::NodePath>) and result flags.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Path",
+      "type": "Array<NavcloudPathResultNode>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "creator bg3.exe+0x3922E10 (alloc 0x18) zeroes +0, +8 and +0xC; destructor bg3.exe+0x686280 calls the array-clear helper and frees *(comp+0). macOS ProcessSearches: the component is a DynamicArray<navcloud::NodePath> (stride 16 when appending). Live: heap pointer, capacity 0..0xD, size 0..0xD"
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Flags",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS ProcessSearches writes 0x10 when the start tile is invalid, 0x20 when the goal tile is invalid, clears bit 0 (masks the flags with 0xfffffffe) when the search ends, and tests (flags & 0x7E); creator zeroes it. Live 1 (searching / done) or 0x10"
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "_Pad14",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "not written by the Windows creator (its 8-byte store at +0xC ends at +0x14); live always 0xFFFFFFFF"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NavcloudPathResult", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 7,
+    "open_questions": [
+      "members of navcloud::NodePath (16 bytes) not established",
+      "bit meanings of Flags beyond 0x10 / 0x20 (offset +0x10 from macOS; Windows creator agrees on zeroing)"
+    ],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "NavcloudPathResultNode",
+        "size": 16,
+        "fields": [
+          {
+            "name": "field_0",
+            "offset": 0,
+            "type": "uint32_t",
+            "source": "unknown",
+            "evidence": "macOS ProcessSearches appends NodePath elements with stride 16: an 8-byte value (a local variable of the function) at +0"
+          },
+          {
+            "name": "field_4",
+            "offset": 4,
+            "type": "uint32_t",
+            "source": "unknown",
+            "evidence": "second half of the 8-byte value at +0"
+          },
+          {
+            "name": "field_8",
+            "offset": 8,
+            "type": "float",
+            "source": "unknown",
+            "evidence": "macOS: writes a value converted to float as the element's third 4-byte slot"
+          },
+          {
+            "name": "field_C",
+            "offset": 12,
+            "type": "uint32_t",
+            "source": "unknown",
+            "evidence": "macOS: writes 0 as the element's fourth 4-byte slot"
+          }
+        ]
+      }
+    ]
+  }
+}

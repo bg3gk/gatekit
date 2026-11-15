@@ -1,0 +1,94 @@
+{
+  "schema": "registry/type/1",
+  "id": "navcloud::RegionsUnloadedOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event (client and server) raised by navcloud::RegionSystem with the set of region coordinates that were unloaded this frame: ls::HashTable<Vector3i<int>, navcloud::HashTableOps> (a HashSet of 12-byte keys). Written out member by member because its key is a struct of this file (own structs may not be hash keys) - the same treatment as navcloud::RegionDataComponent.",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "HashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bucket array of the HashSet: creator bg3.exe+0x392B290 (alloc 0x30) zeroes 6 qwords; component destructor is thunk_FUN_140582ad0 = the HashSet destructor (also used for RegionDataComponent). macOS RegionSystem::Update types the freshly allocated 0x30 bytes as HashTable<Vector3i<int>, navcloud::HashTableOps>. Live heap pointer"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "HashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count; live 5 or 13"}]
+    },
+    {
+      "offset": 12,
+      "name": "_Pad0C",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding; live always 0"}]
+    },
+    {
+      "offset": 16,
+      "name": "NextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "HashSet chain array; live capacity 1/16, size 1/9"}]
+    },
+    {
+      "offset": 32,
+      "name": "Keys",
+      "type": "Array<NavcloudRegionsUnloadedKey>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "HashSet keys, Vector3i<int> (12-byte stride, per the HashTable<Vector3i<int>> type in macOS RegionSystem::Update); live capacity 1/16, size 1/9 (same as NextIds)"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NavcloudRegionsUnloaded", "one_frame": true},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": ["key stride 12 rests on the macOS template type, not on a Windows loop"],
+    "raw_check": "38 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "NavcloudRegionsUnloadedKey",
+        "size": 12,
+        "fields": [
+          {
+            "name": "X",
+            "offset": 0,
+            "type": "int32_t",
+            "source": "inferred",
+            "evidence": "Vector3i<int> region key (navcloud::RegionDataComponent uses the same key)"
+          },
+          {
+            "name": "Y",
+            "offset": 4,
+            "type": "int32_t",
+            "source": "inferred",
+            "evidence": "second int of Vector3i<int>"
+          },
+          {
+            "name": "Z",
+            "offset": 8,
+            "type": "int32_t",
+            "source": "inferred",
+            "evidence": "third int of Vector3i<int>"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::ai::combat::RequestCameraMoveComponent",
+  "kind": "struct",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Target",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Replication slot 1 (bg3.exe+0x9F9950) creates the component from local = 0xFFC0000000000000 (the null EntityHandle); macOS default constructor stores one 8-byte register (str x1,[x23]). Live: entity handles (client 0x01C00004_0002xxxx, server 0x02000005_0000xxxx), so the value is mapped between client and server like an EntityHandle. The name is assumed (the entity the AI wants the camera moved to); no reader was traced."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "AiCombatRequestCameraMove", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 5,
+    "open_questions": [
+      "Whether the handle is the camera target or the requester (only the type is established)."
+    ],
+    "raw_check": "52 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

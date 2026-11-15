@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "registry/evidence/1",
+  "title": "One item of the evidence of a registry entry",
+  "description": "What backs a name, a type or a sentence, in our own words. A place in the code is named by its registry id (`concerns`), never by an address; a test by its path under tests/ without the extension, its case and step as deeper levels. Kinds that can confirm (put an entry on an applied rung): watch, read, game-name, toolkit-name, test. Kinds that cannot alone: pairing, extender-name, text.",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["kind", "says"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"const": "watch", "description": "A memory watch caught the code writing or reading what the entry says."},
+        "concerns": {"$ref": "registry/parts#/$defs/id"},
+        "says": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["kind", "says"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"const": "read", "description": "A value read in a running game agrees with the entry."},
+        "concerns": {"$ref": "registry/parts#/$defs/id"},
+        "says": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["kind", "says"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"const": "pairing", "description": "The entry was paired with a function or type of another build or of the Toolkit."},
+        "concerns": {"$ref": "registry/parts#/$defs/id"},
+        "says": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["kind", "says"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"const": "game-name", "description": "The game's own name: the macOS build's symbols, FieldMeta, a type name the engine keeps as text."},
+        "concerns": {"$ref": "registry/parts#/$defs/id"},
+        "says": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["kind", "says"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"const": "toolkit-name", "description": "The Toolkit's own exported name."},
+        "concerns": {"$ref": "registry/parts#/$defs/id"},
+        "says": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["kind", "says"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"const": "extender-name", "description": "Script Extender's own name or declaration."},
+        "concerns": {"$ref": "registry/parts#/$defs/id"},
+        "says": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["kind", "test"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"const": "test", "description": "A test in the game proves it."},
+        "test": {
+          "type": "string",
+          "pattern": "^[a-z0-9_][a-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$",
+          "description": "The test's path under tests/ without the extension, then its case and its step: combat/attack/ranged/crossbow/aim."
+        },
+        "concerns": {"$ref": "registry/parts#/$defs/id"},
+        "says": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["kind", "says"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"const": "text", "description": "A sentence carried over from an earlier store, not yet split into items of the kinds above."},
+        "says": {"type": "string", "minLength": 1}
+      }
+    }
+  ]
+}

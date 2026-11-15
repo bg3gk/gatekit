@@ -1,0 +1,179 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::ugc::CachedModDependenciesResultsOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame batch of answers delivered by ls::ugc::ModDependencyCachedRequestSystem (macOS Update writes it) to the GUI (registry total 112, client only): a HashMap<ModItemDependenciesInfoId, response> at +0 and a HashSet at +0x40.",
+  "size": 112,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "HashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x3BE5B80 (AllocRaw 0x70) zeroes a HashMap (+0..+0x3F) and a HashSet (+0x40..+0x6F); destructor bg3.exe+0x3B79D10 destroys the map at +0 - bucket array of ls::HashSet"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "HashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count"}]
+    },
+    {
+      "offset": 12,
+      "name": "_PadC",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 16,
+      "name": "NextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "hash chains of ls::HashSet"}]
+    },
+    {
+      "offset": 32,
+      "name": "Keys",
+      "type": "Array<UgcCachedModDependenciesResultsModItemDependenciesInfoId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x3BE5B80 (AllocRaw 0x70) zeroes a HashMap (+0..+0x3F) and a HashSet (+0x40..+0x6F); destructor bg3.exe+0x3B79D10 destroys the map at +0 - keys (written out member by member because the key is a struct)"
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Values",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Value storage at +0x30 (values: ls::ugc::ModItemDependenciesInfoResponse, stride 0x20 - FUN_143b7d760 frees an array (element 0x50, net::UGCModDependency) at value+8 for each key)."
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "ValuesCapacity",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "size of the value storage (ls::HashMap values are an uninitialised static array: pointer + count)"
+        }
+      ]
+    },
+    {
+      "offset": 60,
+      "name": "_Pad3C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 64,
+      "name": "SetHashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Destructor bg3.exe+0x3B79D10 runs the plain-key HashSet destructor bg3.exe+0x582AD0 on +0x40; macOS component destructor calls HashTable<ls::ugc::ModItemDependenciesInfoID>::~HashTable(this+0x40) - bucket array of ls::HashSet"
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "SetHashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count"}]
+    },
+    {
+      "offset": 76,
+      "name": "_Pad4C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 80,
+      "name": "SetNextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "hash chains of ls::HashSet"}]
+    },
+    {
+      "offset": 96,
+      "name": "SetKeys",
+      "type": "Array<UgcCachedModDependenciesResultsModItemDependenciesInfoId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Destructor bg3.exe+0x3B79D10 runs the plain-key HashSet destructor bg3.exe+0x582AD0 on +0x40; key type assumed equal to the map's key (not checked) - keys (written out member by member because the key is a struct)"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "UgcCachedModDependenciesResults",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "dead",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 10,
+    "open_questions": [
+      "Width of ModItemDependenciesInfoID +8: a byte on macOS, compared as part of a qword by the Windows 16-byte key ops.",
+      "The map's value storage is written as raw parts (pointer + count); value strides are known from the Windows destructors (see the Values row), the value structs are not declared. (ls::ugc::ModItemDependenciesInfoResponse, 0x20 bytes, with an Array of 0x50-byte net::UGCModDependency at +8)",
+      "Role of the HashSet at +0x40."
+    ],
+    "second_pass": "macOS component destructor confirms both containers are keyed by ModItemDependenciesInfoID; the key is 16 bytes on Windows, but the width of its second member is known from macOS only.",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it",
+    "structs": [
+      {
+        "name": "UgcCachedModDependenciesResultsModItemDependenciesInfoId",
+        "size": 16,
+        "fields": [
+          {
+            "name": "ModId",
+            "offset": 0,
+            "type": "uint64_t",
+            "source": "inferred",
+            "evidence": "ls::ugc::ModItemDependenciesInfoID, 16 bytes (Windows key stride 0x10 in bg3.exe+0x3BE3780 / bg3.exe+0x3BE4ED0); macOS HashTable<ModItemDependenciesInfoID>::Ensure (bg3_macos_x64+0x2B60DB0) hashes the qword at +0 and compares it first; RequestItemDependencies(unsigned long long, bool) names it as the mod id."
+          },
+          {
+            "name": "Recursive",
+            "offset": 8,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "macOS modio::UGCManager::RequestItemDependencies (bg3_macos_x64+0x6794AF0) calls http::GetDependenciesRequestData(id, 0, bool) with its bool argument, and bg3_dx11.exe+0x38C0B30 (modio::http::GetDependenciesRequestData) writes it as '&recursive=true/false'. The ModItemDependenciesInfoID byte at +8 is that bool (ModDependencyCachedRequestSystemHelper::RequestItemDependencies(u64, bool) takes the key's members in order; compared with the id by bg3.exe+0x3BE4540)."
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding (compared as part of a qword by the Windows 16-byte key ops)"
+          }
+        ]
+      }
+    ]
+  }
+}

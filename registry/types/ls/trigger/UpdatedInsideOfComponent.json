@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::trigger::UpdatedInsideOfComponent",
+  "kind": "struct",
+  "about": "Client singleton of ecl::trigger::TrackingSystem: the entities whose IsInsideOfComponent changed this update (sibling of ls::trigger::UpdatedContainerComponent, Array<EntityHandle> Updates in Trigger.h). Read by the trigger SightSystem helper (macOS (anonymous)::UpdateHelperComponent).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Updates",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x1AAF380 allocates 0x10 bytes zeroed, destructor bg3.exe+0x686280 is the plain POD-array destructor. Toolkit ecl::trigger::TrackingSystem::Update (EoCClient.dll+0x9329C0) gets the singleton, clears it (IndexedStorage<ls::ID<ecs::EntityHandleTraits>> bounds checks, size at +0xC set to 0), reserves and appends every 8-byte key of the local HashSet of updated entities. Live: heap pointer, capacity 0x23..0x47B, size 0 at sampling time."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "TriggerUpdatedInsideOf", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 9,
+    "open_questions": [
+      "Game member name; why live size is always 0 (probably consumed and cleared the same frame)."
+    ],
+    "raw_check": "17 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

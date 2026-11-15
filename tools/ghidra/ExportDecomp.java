@@ -1,11 +1,21 @@
 // Decompiles every function of the program in parallel and writes one JSON object per line:
 // {"rva": "1A2B3C", "name": ..., "sig": ..., "size": n, "callees": ["rva", ...], "code": "...", "error": ...}
-// Arguments: output file [first rva (hex) [last rva (hex)]] - the range lets a run be split or resumed.
+// Arguments: output file [first rva (hex) [last rva (hex)]] - the range lets a run be split or resumed;
+// or: output file @list - only the functions whose RVAs (hex, one per line) the file <list> holds,
+// which is how `gatekit decomp refresh` decompiles again what a new name touched.
 //@category GateKit
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ghidra.app.decompiler.DecompInterface;
@@ -53,9 +63,40 @@ public class ExportDecomp extends GhidraScript {
         String[] args = getScriptArgs();
         if (args.length < 1) {
             println("ExportDecomp: no output file given");
+            println("gatekit-script: ExportDecomp failed no output file given");
             return;
         }
         final Address base = currentProgram.getImageBase();
+        // a list of functions instead of a range
+        List<Function> listed = null;
+        if (args.length > 1 && args[1].startsWith("@")) {
+            listed = new ArrayList<>();
+            File list = new File(args[1].substring(1));
+            TreeSet<Long> rvas = new TreeSet<>();
+            if (list.isFile()) {
+                try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(list), "UTF-8"))) {
+                    String line;
+                    while ((line = r.readLine()) != null) {
+                        line = line.trim();
+                        if (!line.isEmpty()) {
+                            try {
+                                rvas.add(Long.parseLong(line, 16));
+                            } catch (NumberFormatException e) {
+                                // not an address: skipped
+                            }
+                        }
+                    }
+                }
+            }
+            for (long rva : rvas) {
+                Function f = getFunctionAt(base.add(rva));
+                if (f != null) {
+                    listed.add(f);
+                }
+            }
+            println("ExportDecomp: " + listed.size() + " functions listed in " + list.getName());
+            args = new String[] { args[0] };
+        }
         Address first = args.length > 1 ? base.add(Long.parseLong(args[1], 16)) : currentProgram.getMinAddress();
         Address last = args.length > 2 ? base.add(Long.parseLong(args[2], 16)) : currentProgram.getMaxAddress();
         AddressSet range = new AddressSet(first, last);
@@ -106,7 +147,7 @@ public class ExportDecomp extends GhidraScript {
         };
         callback.setTimeout(90);
         try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[0]), "UTF-8"), 1 << 20)) {
-            java.util.Iterator<Function> functions = currentProgram.getListing().getFunctions(range, true);
+            Iterator<Function> functions = listed != null ? listed.iterator() : currentProgram.getListing().getFunctions(range, true);
             ParallelDecompiler.decompileFunctions(callback, currentProgram, functions, (String line) -> {
                 if (line == null) {
                     return;
@@ -128,5 +169,6 @@ public class ExportDecomp extends GhidraScript {
             callback.dispose();
         }
         println("ExportDecomp: " + done.get() + " functions written, " + failed.get() + " not decompiled");
+        println("gatekit-script: ExportDecomp done written=" + done.get() + " failed=" + failed.get());
     }
 }

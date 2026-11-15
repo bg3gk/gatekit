@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::sound::DistantSoundInfoComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "Guid",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "replication serializers bg3.exe+0x9D6A00 / 0x9D6B80 / 0x9D67C0 / 0x9D6950 move one raw 16-byte member at +0 (the global at bg3.exe+0x627FCE0) and nothing else. Live: version-4 Guids (byte 7 high nibble 4), 9 distinct on the server. Written by esv::sound::DistantSoundSystem::CreateDistantSoundInfo / Update, read by ecl::sound::DistantSoundSystem::Update and esv::sound::DistantSoundHelper::FindDistantSoundEntities (macOS names); probably the id of the distant sound (cf. m_EntityUUID in eoc::sound::DistantSoundInfo of DistantSoundStateComponent)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SoundDistantSoundInfo", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [
+      "Name: which Guid this is (distant sound resource / entity UUID) not established; no FieldMeta names."
+    ],
+    "raw_check": "13 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

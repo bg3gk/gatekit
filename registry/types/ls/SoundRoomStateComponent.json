@@ -1,0 +1,163 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::SoundRoomStateComponent",
+  "kind": "struct",
+  "about": "Singleton of the sound room system (written by ecl::sound::RoomSystem, read by ls::SoundOcclusionSystem and ls::SoundTransformSystem as 'SoundRoomStateComponent const&'): per-frame room-change map, a map of positions, three entity sets, the listener entity and position and two flags. Container shapes from the Toolkit destructor/copy constructor (GameEngine.dll+0x693CD0 / +0x68F0C0, same offsets as the live dumps).",
+  "size": 296,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "EntityStateChanges",
+      "type": "HashMap<EntityHandle, SoundRoomEntityStateChangeData>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit dtor: keys at +0x20 destroyed with the IndexedStorage<ls::ID<EntityHandleTraits>> helper, values checked by IndexedStorage<ls::SoundRoomEntityStateChangeData>; copy ctor allocates values with 0x10 bytes each. Live: buckets 0x61..0x607, sizes 0."
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "field_40",
+      "type": "HashMap<EntityHandle, glm::vec3>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit dtor: FUN_1800c0e90 on +0x40 checks IndexedStorage<class Vector3f> values; keys via the EntityHandle helper. Live: buckets 0x61..0x301."
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "field_80",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit dtor frees buckets +0x80, NextIds +0x90, keys +0xA0 (EntityHandle helper). Live: 0..0x11 entries."
+        }
+      ]
+    },
+    {
+      "offset": 176,
+      "name": "field_B0",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "same pattern at +0xB0/+0xC0/+0xD0. Live 4..0xB entries."}
+      ]
+    },
+    {
+      "offset": 224,
+      "name": "field_E0",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {"kind": "text", "says": "same pattern at +0xE0/+0xF0/+0x100. Live up to 0x110 entries."}
+      ]
+    },
+    {
+      "offset": 272,
+      "name": "field_110",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "copy ctor copies 8 bytes at +0x110; live entity handles / 0xFFC00000_00000000 (perhaps the listener or its room)."
+        }
+      ]
+    },
+    {
+      "offset": 280,
+      "name": "field_118",
+      "type": "glm::vec3",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "copy ctor copies 8+4 bytes at +0x118; live world-coordinate floats (FLT_MAX when unset) - perhaps the listener position."
+        }
+      ]
+    },
+    {
+      "offset": 292,
+      "name": "field_124",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "copy ctor copies byte +0x124; ProcessVirtualPositionedSounds (GameEngine.dll+0x8DDC00) skips work when it is 0. Live 0/1."
+        }
+      ]
+    },
+    {
+      "offset": 293,
+      "name": "field_125",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "copy ctor copies byte +0x125; live 1."}]
+    },
+    {
+      "offset": 294,
+      "name": "_Pad126",
+      "type": "uint8_t[2]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "padding to 0x128"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "SoundRoomState", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 12,
+    "open_questions": [
+      "Members of SoundRoomEntityStateChangeData and the meaning of the second map and the three sets.",
+      "+0x110/+0x118 may be the listener entity and position (the singleton is read by ls::SoundOcclusionSystem::ExtractListenerInfo); not proven."
+    ],
+    "raw_check": "46 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "SoundRoomEntityStateChangeData",
+        "size": 16,
+        "fields": [
+          {
+            "name": "field_0",
+            "offset": 0,
+            "type": "uint32_t",
+            "source": "unknown",
+            "evidence": "copy ctor copies the 16-byte value as 4 dwords (IndexedStorage<ls::SoundRoomEntityStateChangeData>), alignment 4"
+          },
+          {
+            "name": "field_4",
+            "offset": 4,
+            "type": "uint32_t",
+            "source": "unknown",
+            "evidence": "same"
+          },
+          {
+            "name": "field_8",
+            "offset": 8,
+            "type": "uint32_t",
+            "source": "unknown",
+            "evidence": "same"
+          },
+          {
+            "name": "field_C",
+            "offset": 12,
+            "type": "uint32_t",
+            "source": "unknown",
+            "evidence": "same"
+          }
+        ]
+      }
+    ]
+  }
+}

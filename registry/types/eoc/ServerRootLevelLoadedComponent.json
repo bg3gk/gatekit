@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::ServerRootLevelLoadedComponent",
+  "kind": "struct",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "LevelName",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Replication slot 1 (bg3.exe+0x92EA20) creates the component with local = -1 and DecRefs it as a FixedString (ls::GlobalStringTable::MainTable::DecRef) - a single FixedString member; macOS default constructor stores one 32-bit register (str w26,[x23]). Live: FixedString-shaped indexes, identical on client and server. Named after the neighbouring ls::LevelRootComponent::LevelName; the read in esv::RootLevelSystem was not traced."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerRootLevelLoaded", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [
+      "The member name: the FixedString is assumed to be the loaded root level's name."
+    ],
+    "raw_check": "36 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

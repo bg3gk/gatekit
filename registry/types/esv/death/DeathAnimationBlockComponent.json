@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::death::DeathAnimationBlockComponent",
+  "kind": "struct",
+  "about": "Server timer on a dying character that blocks the death animation for a while (born when characters were killed in 'spells-1' and dialogue fights, together with 36 other death/effect types). Written by esv::death::CharacterSystem.",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Timer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2BABAE0 (called from the per-frame update of esv::death::CharacterSystem) adds the component (creator FUN_142bacb70, 4 bytes, default 0) and sets it to 5.0 (0x40A00000); every frame it subtracts GameTime delta (+8) and removes the component when <= 0. Live 0.83..5.0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerDeathAnimationBlock", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": [],
+    "raw_check": "42 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::AiGrid",
+  "kind": "struct",
+  "fields": [
+    {
+      "offset": 24,
+      "name": "MetaData",
+      "type": "Array<AiMetaData*>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's layout (BG3Extender/GameDefinitions/Ai.h), confirmed live in TestLevel_Tom: walking Bound+0x18 -> AiGrid -> Subgrids -> AiSubgrid.TileGrid -> Tiles reached a tile whose MetaDataIndex (32) and flags agree with Ext.Level.GetTileDebugInfo, and a write watch there caught the grid's own writers; eoc::AiGrid::RemoveObjectFromTile and AddObjectToTile read the same offsets"
+        }
+      ]
+    },
+    {
+      "offset": 104,
+      "name": "Subgrids",
+      "type": "LegacyRefMap<AiSubgridId, AiSubgrid*>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's layout (BG3Extender/GameDefinitions/Ai.h), confirmed live in TestLevel_Tom: walking Bound+0x18 -> AiGrid -> Subgrids -> AiSubgrid.TileGrid -> Tiles reached a tile whose MetaDataIndex (32) and flags agree with Ext.Level.GetTileDebugInfo, and a write watch there caught the grid's own writers; eoc::AiGrid::RemoveObjectFromTile and AddObjectToTile read the same offsets; read: ItemCount 14 at +0x68, HashSize 19 at +0x6C, the bucket table at +0x70"
+        }
+      ]
+    }
+  ]
+}

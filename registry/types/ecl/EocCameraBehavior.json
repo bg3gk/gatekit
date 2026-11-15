@@ -1,0 +1,125 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::EocCameraBehavior",
+  "kind": "struct",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "glm::vec3",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit ecl::EocCameraBehavior::operator=(&&) (EoCClient.dll+0x2ABC30) copies 8+4 bytes at +0 and +0xC (two 12-byte groups). Live (dialogue camera): (52.25, 19.31, -427.2) - a world position about 1.6 above field_C, probably the camera position; zero for idle cameras."
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "field_C",
+      "type": "glm::vec3",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Second 12-byte group in operator=; live (52.25, 17.71, -427.2) - same x/z as field_0, lower y: probably the look-at / target position."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "void*",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "operator= copies four plain 8-byte values at +0x18..+0x30 (no ownership: raw pointers); live heap pointers in the active instance, 0 in the others."
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "field_20",
+      "type": "void*",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "As field_18; live heap pointer or 0."}]
+    },
+    {
+      "offset": 40,
+      "name": "field_28",
+      "type": "void*",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "As field_18; live heap pointer or 0."}]
+    },
+    {
+      "offset": 48,
+      "name": "field_30",
+      "type": "void*",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "As field_18; live heap pointer or 0."}]
+    },
+    {
+      "offset": 56,
+      "name": "field_38",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "operator= copies a 16-bit value at +0x38 and single bytes at +0x3A and +0x3B; live byte 0 or 1."
+        }
+      ]
+    },
+    {
+      "offset": 57,
+      "name": "field_39",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Second byte of the 16-bit copy; live 0."}]
+    },
+    {
+      "offset": 58,
+      "name": "field_3A",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Byte copy in operator=; live 0."}]
+    },
+    {
+      "offset": 59,
+      "name": "field_3B",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "Byte copy in operator=; live 0."}]
+    },
+    {
+      "offset": 60,
+      "name": "_Pad3C",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not copied by operator= and not initialised by the macOS default constructor (stores end at +0x3C); live garbage."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientEocCameraBehavior", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet",
+    "minutes": 6,
+    "open_questions": [
+      "Names of all members: writer is ecl::TimelineCameraSystem::UpdateCameras (macOS), readers ecl::sound::CameraSystem::UpdateSoundForCameras / CheckSoundTriggersToUpdateSoundVolumes, splitscreen::SplitReasonsSystem - none read.",
+      "What the four pointers point to (camera / trigger objects?)."
+    ],
+    "raw_check": "14 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

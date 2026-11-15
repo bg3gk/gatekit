@@ -1,0 +1,48 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::TimelineDummyAnimationThrottleSingletonComponent",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Unthrottled",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1F1C430 (ecl::TimelineDummyAnimationThrottleSystem update, reached from the callback bg3.exe+0x7627B0 set by the registration bg3.exe+0x7490E0) sets the size at +0x0C to 0 every frame, then for every dummy whose wanted state differs from bit 4 of a byte at +0x24 of its animation object: when the wanted state is 1 it appends the 8-byte entity handle of the row here (stride 8, grow helper bg3.exe+0x5C4620) and writes 1 to +0xC0 of the row's first component. The wanted state is 1 when the global switch at ls::GlobalSwitches+0x132E is off, so 1 = animation runs normally. Probe: heap pointer, capacity 8, size 0."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Throttled",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same function: size at +0x1C set to 0 every frame; when the wanted state is 0 (switch on, the system's check object at system+0x10 says yes, and the dummy is not shown / flags at +2,+3 of a 12-byte row are not both 1) the entity handle is appended here and 0 is written to +0xC0 of the row's first component. Probe: heap pointer, capacity 4, size 0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientTimelineDummyAnimationThrottleSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "timeline",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 8,
+    "open_questions": [
+      "Which of the two arrays means 'throttled' rests on reading the switch at GlobalSwitches+0x132E as 'throttling enabled' and the byte at +0xC0 as 'update enabled'; the consumer (ecl::AnimationUpdateSystem, callback bg3.exe+0x762670) was not read. If the sense is the other way round the two names swap; types and offsets do not change."
+    ],
+    "raw_check": "1 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

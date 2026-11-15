@@ -1,0 +1,35 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::trade::ShownTraderMapMarkerTranslateComponent",
+  "kind": "struct",
+  "size": 12,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Translate",
+      "type": "glm::vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Replication serializer bg3.exe+0x8F1F40 (and the dirty-mask slot): dirty bit 1 -> ScratchBuffer::Write(DAT_146280580 + base, 0xC bytes) = one 12-byte member at offset 0. macOS default: str xzr at +0, str wzr at +8 (zero vector). Named after the component (map marker position)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "TradeShownTraderMapMarkerTranslate",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": ["vec3 by width and name only; no reader opened."],
+    "raw_check": "6 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

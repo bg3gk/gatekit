@@ -1,0 +1,68 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::GoalActualsComponent",
+  "kind": "struct",
+  "about": "Notification entity made by the per-frame update of esv::notification::System from each esv::background::GoalRecordedEventOneFrameComponent (a background goal of a character was achieved; seen in the GOB_GuardUpset dialogue and the companion-death scenario, born with eoc::background::GoalsComponent, eoc::notification::BackgroundGoalComponent and eoc::analytics::EventGoalAchievedComponent). Same shape as SE's eoc::notification::BackgroundGoalComponent (EntityHandle, Guid, uint32).",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DF2000 (add helper, 0x20 bytes) sets +0 to the null handle 0xFFC0000000000000; bg3.exe+0x2DE7840 copies the event's +0 (GoalRecordedEvent.Entity, 0x28-byte stride) into it; live 0x0200003300000A2E-like handles"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Goal",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DE7840 copies the event's 16 bytes at +8 (the background goal Guid, GoalRecord.Goal in esv::background::GoalSystem::Update) to +8"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2DE7840 writes the constant 4 (a kind/enum value); live 4"
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "_Pad1C",
+      "type": "uint8_t[4]",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "zeroed by bg3.exe+0x2DF2000 (it writes 0 as one 8-byte value at +0x18), never written; live 0"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "NotificationGoalActuals", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": ["meaning of the constant 4 at +0x18 (enum name not known)"],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

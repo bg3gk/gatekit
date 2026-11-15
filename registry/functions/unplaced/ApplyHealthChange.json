@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ApplyHealthChange",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Takes the target's eoc::HealthComponent and writes the new hit points from the change it is given, clamped at 0; called by the damage event of the stats system",
+  "fingerprint": {
+    "calls": [
+      "fp:0bf01605272897e3",
+      "fp:3dc70372a826ba29",
+      "fp:4e40432705106641",
+      "fp:5227b96c8688ff31",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::gamestate::SavegameLoadComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "eoc::stats::EntityHealthChangedEventOneFrameComponent"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "GK.Memory.Watch on a goblin's eoc::HealthComponent.Hp (+0x0) during a fair melee hit for 7 on 2 hit points: the write of 0 came from bg3_dx11.exe+0x31C2DAE in the ECS frame of the damage, return address inside esv::StatsSystem::ThrowDamageEvent (+0x31C34A5); Health.Hp read 0 after"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::UnlockSpellBoostComponent",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "SpellId",
+      "type": "FixedString",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::UnlockSpellBoostComponent::SpellId at +0x0 (BG3Extender/GameDefinitions/Components/Boosts.h:110): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Ability",
+      "type": "AbilityId",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::UnlockSpellBoostComponent::Ability at +0x4 (BG3Extender/GameDefinitions/Components/Boosts.h:110): its author's name and type; the offset is computed from the declared types. Not checked against the game's code. AbilityId is an enumeration of the extender's."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "CastResource",
+      "type": "Guid",
+      "rung": "extender",
+      "known_as": [{"name": "SomeUUID", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::UnlockSpellBoostComponent::CastResource at +0x8 (BG3Extender/GameDefinitions/Components/Boosts.h:110): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "LearningStrategy",
+      "type": "SpellLearningStrategy",
+      "rung": "extender",
+      "known_as": [{"name": "SpellChildSelection", "source": "extender-legacy"}],
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::UnlockSpellBoostComponent::LearningStrategy at +0x18 (BG3Extender/GameDefinitions/Components/Boosts.h:110): its author's name and type; the offset is computed from the declared types. Not checked against the game's code. SpellLearningStrategy is an enumeration of the extender's."
+        }
+      ]
+    },
+    {
+      "offset": 25,
+      "name": "CooldownType",
+      "type": "SpellCooldownType",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares eoc::UnlockSpellBoostComponent::CooldownType at +0x19 (BG3Extender/GameDefinitions/Components/Boosts.h:110): its author's name and type; the offset is computed from the declared types. Not checked against the game's code. SpellCooldownType is an enumeration of the extender's."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "UnlockSpellBoost", "one_frame": false},
+  "survey": {
+    "batch": "extender",
+    "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Boosts.h:110, kind boost), by gatekit symbols se-layouts on 2026-11-14",
+    "names": "Every name here is Script Extender's author's (his headers), not the game's own: they are kept because they are what the extender's Lua answers to and what bg3_verify compares, and every field carries the rung `extender` - the extender's name for the field at that offset, which nobody has checked against the game's code. A name is raised from `extender` only with evidence from the code, by `gatekit names set`.",
+    "status": "declared"
+  }
+}

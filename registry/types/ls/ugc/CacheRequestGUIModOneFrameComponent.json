@@ -1,0 +1,447 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::ugc::CacheRequestGUIModOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request from the mod browser GUI to fill the three mod.io caches (client only, registry total 288): read by ModInfoCachedRequestSystem (sets +0/+0x30, bg3.exe+0x3BE8B10 component stride 0x120), ModDependencyCachedRequestSystem (sets +0x60/+0x90, bg3.exe+0x3BE3780) and ModListCachedRequestSystem (sets +0xC0/+0xF0, bg3.exe+0x3BED490). In each pair the first set is always requested and the second is filtered against the cache.",
+  "size": 288,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "InfoRefreshHashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x127E740 (via FUN_141280960, size 0x120); destructor bg3.exe+0x1286120: plain-key HashSet destructor bg3.exe+0x582AD0 on +0, +0x30, +0x60, +0x90 and the ModItemListInfoID HashSet destructor bg3.exe+0x11FC4C0 on +0xC0, +0xF0. bg3.exe+0x3BE8B10 unions it into the info requests (keys stride 0x20) - bucket array of ls::HashSet"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "InfoRefreshHashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count"}]
+    },
+    {
+      "offset": 12,
+      "name": "_PadC",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 16,
+      "name": "InfoRefreshNextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "hash chains of ls::HashSet"}]
+    },
+    {
+      "offset": 32,
+      "name": "InfoRefreshKeys",
+      "type": "Array<UgcCacheRequestGUIModModItemInfoId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x127E740 (via FUN_141280960, size 0x120); destructor bg3.exe+0x1286120: plain-key HashSet destructor bg3.exe+0x582AD0 on +0, +0x30, +0x60, +0x90 and the ModItemListInfoID HashSet destructor bg3.exe+0x11FC4C0 on +0xC0, +0xF0. bg3.exe+0x3BE8B10 unions it into the info requests (keys stride 0x20) - keys (written out member by member because the key is a struct)"
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "InfoHashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BE8B10 unions it into the info requests that are then filtered against the info cache - bucket array of ls::HashSet"
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "InfoHashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count"}]
+    },
+    {
+      "offset": 60,
+      "name": "_Pad3C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 64,
+      "name": "InfoNextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "hash chains of ls::HashSet"}]
+    },
+    {
+      "offset": 80,
+      "name": "InfoKeys",
+      "type": "Array<UgcCacheRequestGUIModModItemInfoId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BE8B10 unions it into the info requests that are then filtered against the info cache - keys (written out member by member because the key is a struct)"
+        }
+      ]
+    },
+    {
+      "offset": 96,
+      "name": "DependenciesRefreshHashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BE3780 walks keys +0x80, count +0x8C, stride 0x10 into its first set - bucket array of ls::HashSet"
+        }
+      ]
+    },
+    {
+      "offset": 104,
+      "name": "DependenciesRefreshHashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count"}]
+    },
+    {
+      "offset": 108,
+      "name": "_Pad6C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 112,
+      "name": "DependenciesRefreshNextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "hash chains of ls::HashSet"}]
+    },
+    {
+      "offset": 128,
+      "name": "DependenciesRefreshKeys",
+      "type": "Array<UgcCacheRequestGUIModModItemDependenciesInfoId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BE3780 walks keys +0x80, count +0x8C, stride 0x10 into its first set - keys (written out member by member because the key is a struct)"
+        }
+      ]
+    },
+    {
+      "offset": 144,
+      "name": "DependenciesHashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BE3780 walks keys +0xB0, count +0xBC, stride 0x10 into its second set, which is then filtered against the dependency cache - bucket array of ls::HashSet"
+        }
+      ]
+    },
+    {
+      "offset": 152,
+      "name": "DependenciesHashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count"}]
+    },
+    {
+      "offset": 156,
+      "name": "_Pad9C",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 160,
+      "name": "DependenciesNextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "hash chains of ls::HashSet"}]
+    },
+    {
+      "offset": 176,
+      "name": "DependenciesKeys",
+      "type": "Array<UgcCacheRequestGUIModModItemDependenciesInfoId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BE3780 walks keys +0xB0, count +0xBC, stride 0x10 into its second set, which is then filtered against the dependency cache - keys (written out member by member because the key is a struct)"
+        }
+      ]
+    },
+    {
+      "offset": 192,
+      "name": "ListRefreshHashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BED490 walks keys +0xE0, count +0xEC, stride 0x38 into its first set - bucket array of ls::HashSet"
+        }
+      ]
+    },
+    {
+      "offset": 200,
+      "name": "ListRefreshHashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count"}]
+    },
+    {
+      "offset": 204,
+      "name": "_PadCC",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 208,
+      "name": "ListRefreshNextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "hash chains of ls::HashSet"}]
+    },
+    {
+      "offset": 224,
+      "name": "ListRefreshKeys",
+      "type": "Array<UgcCacheRequestGUIModModItemListInfoId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BED490 walks keys +0xE0, count +0xEC, stride 0x38 into its first set - keys (written out member by member because the key is a struct)"
+        }
+      ]
+    },
+    {
+      "offset": 240,
+      "name": "ListHashKeys",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BED490 walks keys +0x110, count +0x11C, stride 0x38 into its second set, which is then filtered against the list cache - bucket array of ls::HashSet"
+        }
+      ]
+    },
+    {
+      "offset": 248,
+      "name": "ListHashKeysSize",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "bucket count"}]
+    },
+    {
+      "offset": 252,
+      "name": "_PadFC",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 256,
+      "name": "ListNextIds",
+      "type": "Array<int32_t>",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "hash chains of ls::HashSet"}]
+    },
+    {
+      "offset": 272,
+      "name": "ListKeys",
+      "type": "Array<UgcCacheRequestGUIModModItemListInfoId>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x3BED490 walks keys +0x110, count +0x11C, stride 0x38 into its second set, which is then filtered against the list cache - keys (written out member by member because the key is a struct)"
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "UgcCacheRequestGUIMod", "one_frame": true},
+  "survey": {
+    "batch": "dead",
+    "confidence": "medium",
+    "functions_read": 6,
+    "minutes": 14,
+    "open_questions": [
+      "Width of ModItemDependenciesInfoID +8: a byte on macOS (Ensure compares one byte), but Windows hashes and compares the 16-byte key as two qwords - written as uint8_t + 7 bytes of padding.",
+      "Set names inferred from behaviour; meaning of the unnamed key members."
+    ],
+    "second_pass": "All three key structs now come from Windows code (ModItemInfoID: insert bg3.exe+0x126FEA0 / find bg3.exe+0x12705B0; ModItemListInfoID: copy bg3.exe+0x127F540 / equality bg3.exe+0x15F83E0 / hash bg3.exe+0x127EB60); macOS ~CacheRequestGUIModOneFrameComponent confirms the set types at +0/+0x30 (ModItemInfoID), +0x60/+0x90 (ModItemDependenciesInfoID), +0xC0/+0xF0 (ModItemListInfoID). Only the width of the dependency id's flag rests on macOS.",
+    "seen": false,
+    "status": "hypothesis",
+    "status_reason": "no live or captured instance: needs a situation that creates it",
+    "structs": [
+      {
+        "name": "UgcCacheRequestGUIModModItemInfoId",
+        "size": 32,
+        "fields": [
+          {
+            "name": "ModId",
+            "offset": 0,
+            "type": "uint64_t",
+            "source": "inferred",
+            "evidence": "Windows HashSet<ls::ugc::ModItemInfoID> insert bg3.exe+0x126FEA0 hashes the qword at +0 and the find bg3.exe+0x12705B0 compares it first (key stride 0x20); macOS ModInfoCachedRequestSystemHelper::RequestItemInfo(unsigned long long, Optional<Version>, bool, EHardwareType) takes the members in this order (mod id first)."
+          },
+          {
+            "name": "Version",
+            "offset": 8,
+            "type": "uint64_t",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x126FEA0 hashes +8 only when the byte at +0x10 is set, and bg3.exe+0x12705B0 compares +8 only when both +0x10 bytes are set: the value of an optional (macOS Ensure<ModItemInfoID> identical) - the Optional<Version> argument."
+          },
+          {
+            "name": "HasVersion",
+            "offset": 16,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "has-value flag of the optional at +8 (bg3.exe+0x126FEA0 / bg3.exe+0x12705B0)."
+          },
+          {
+            "name": "_Pad11",
+            "offset": 17,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding"
+          },
+          {
+            "name": "RecursiveDependencies",
+            "offset": 24,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "macOS modio::UGCManager::QueryMod (bg3_macos_x64+0x67995A0, called by RequestItemInfo(Guid, EUGCRequestType, u64, Optional<STDString>, bool, EHardwareType)) stores the bool argument at request +0xF4, and ProcessQueryItemResult (bg3_macos_x64+0x67A0130) passes that byte as the third argument of http::GetDependenciesRequestData(u64, u32, bool), which bg3_dx11.exe+0x38C0B30 writes as '&recursive=true/false'. The ModItemInfoID byte at +0x18 is that bool argument (ModInfoCachedRequestSystemHelper::RequestItemInfo(u64, Optional<Version>, bool, EHardwareType) takes the key's members in order; compared, not hashed): whether the dependencies fetched with the item info are resolved recursively."
+          },
+          {
+            "name": "_Pad19",
+            "offset": 25,
+            "type": "uint8_t[3]",
+            "source": "inferred",
+            "evidence": "padding"
+          },
+          {
+            "name": "HardwareType",
+            "offset": 28,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "bg3.exe+0x126FEA0 hashes the int at +0x1C and bg3.exe+0x12705B0 compares it: the EHardwareType argument of RequestItemInfo by order (enum not declared in Script Extender; 4 bytes)."
+          }
+        ]
+      },
+      {
+        "name": "UgcCacheRequestGUIModModItemDependenciesInfoId",
+        "size": 16,
+        "fields": [
+          {
+            "name": "ModId",
+            "offset": 0,
+            "type": "uint64_t",
+            "source": "inferred",
+            "evidence": "ls::ugc::ModItemDependenciesInfoID, 16 bytes (Windows key stride 0x10 in bg3.exe+0x3BE3780 / bg3.exe+0x3BE4ED0); macOS HashTable<ModItemDependenciesInfoID>::Ensure (bg3_macos_x64+0x2B60DB0) hashes the qword at +0 and compares it first; RequestItemDependencies(unsigned long long, bool) names it as the mod id."
+          },
+          {
+            "name": "Recursive",
+            "offset": 8,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "macOS modio::UGCManager::RequestItemDependencies (bg3_macos_x64+0x6794AF0) calls http::GetDependenciesRequestData(id, 0, bool) with its bool argument, and bg3_dx11.exe+0x38C0B30 (modio::http::GetDependenciesRequestData) writes it as '&recursive=true/false'. The ModItemDependenciesInfoID byte at +8 is that bool (ModDependencyCachedRequestSystemHelper::RequestItemDependencies(u64, bool) takes the key's members in order; compared with the id by bg3.exe+0x3BE4540)."
+          },
+          {
+            "name": "_Pad9",
+            "offset": 9,
+            "type": "uint8_t[7]",
+            "source": "inferred",
+            "evidence": "padding (compared as part of a qword by the Windows 16-byte key ops)"
+          }
+        ]
+      },
+      {
+        "name": "UgcCacheRequestGUIModModItemListInfoId",
+        "size": 56,
+        "fields": [
+          {
+            "name": "Tags",
+            "offset": 0,
+            "type": "Array<STDString>",
+            "source": "inferred",
+            "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It appends '&tags=' then each STDString of the array at +0, joined by ',' (strings at bg3_dx11.exe+0x588169C / +0x5516730)."
+          },
+          {
+            "name": "Page",
+            "offset": 16,
+            "type": "uint32_t",
+            "source": "inferred",
+            "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It GetModsRequestData formats '&_offset=' from the u32 at +0x10 multiplied by 0x18 and '&_limit=' with 0x18: the page index of 24 mods."
+          },
+          {
+            "name": "SortType",
+            "offset": 20,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It switches on the byte at +0x14: 0 '&_sort=downloads', 1 '-downloads', 2 'rating', 3 '-rating', 4 '-date_added', 5 '-date_updated', 6 'name', 7 'submitted_by', 8 '-popular', 9 'subscribers'."
+          },
+          {
+            "name": "SearchType",
+            "offset": 21,
+            "type": "uint8_t",
+            "source": "inferred",
+            "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It byte +0x15 picks the search filter written before the text at +0x18: 1 '&name-lk=*', 2 '&submitted_by-lk=*'; no filter otherwise."
+          },
+          {
+            "name": "_Pad16",
+            "offset": 22,
+            "type": "uint8_t[2]",
+            "source": "inferred",
+            "evidence": "padding"
+          },
+          {
+            "name": "SearchText",
+            "offset": 24,
+            "type": "STDString",
+            "source": "inferred",
+            "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It the STDString at +0x18 (length +0x28) is appended after the name-lk / submitted_by-lk filter when it is not empty."
+          },
+          {
+            "name": "IncludeMature",
+            "offset": 48,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It adds '&maturity_option=0' when the byte at +0x30 is 0."
+          },
+          {
+            "name": "IncludeExternalDependencies",
+            "offset": 49,
+            "type": "bool",
+            "source": "inferred",
+            "evidence": "bg3_dx11.exe+0x38C0330 (the mod.io filter-string builder that modio::http::GetModsRequestData bg3_dx11.exe+0x38C15B0 calls first on its net::UGCQueryOptions; macOS names it (anonymous)::GetFiltersString(net::UGCQueryOptions const&)) reads the options member for member at the same offsets and types as ls::ugc::ModItemListInfoID (Array<STDString> +0, u32 +0x10, bytes +0x14/+0x15, STDString +0x18, bytes +0x30/+0x31; 0x38 bytes; macOS ModListCachedRequestSystemHelper::RequestQueryItems takes net::UGCQueryOptions for the system keyed by ModItemListInfoID). It adds '&tags-not-in=External+Dependency' when the byte at +0x31 is 0."
+          },
+          {
+            "name": "_Pad32",
+            "offset": 50,
+            "type": "uint8_t[6]",
+            "source": "inferred",
+            "evidence": "padding to 0x38"
+          }
+        ]
+      }
+    ]
+  }
+}

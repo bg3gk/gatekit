@@ -1,0 +1,64 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::sound::AmbienceMixRTPCEventRequestSingletonComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<GameplaySoundRTPCRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::sound::AmbienceMixSystem::ProcessRTPCRequests (EoCClient.dll+0xDDC7F0) gets the singleton, destroys every element as ls::GameplaySoundRTPCRequest (stride 0x10, size +0xC), resets size, then appends the frame's requests (FUN_180da4cc0)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientSoundAmbienceMixRTPCEventRequests",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 3,
+    "minutes": 6,
+    "open_questions": [],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "GameplaySoundRTPCRequest",
+        "size": 16,
+        "fields": [
+          {
+            "name": "Entity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "game",
+            "evidence": "ls::GameplaySoundRTPCRequest constructor (GameEngine.dll+0x1C4320, exported signature (ID<EntityHandleTraits> const&, FixedString const&, float)) stores the handle at +0."
+          },
+          {
+            "name": "RTPC",
+            "offset": 8,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Same constructor: FixedString at +8 (the RTPC name)."
+          },
+          {
+            "name": "Value",
+            "offset": 12,
+            "type": "float",
+            "source": "inferred",
+            "evidence": "Same constructor: float at +0xC."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::trade::TraderMapChangesSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton alive from the first idle level on (seen.py context: idle / act1-idle / level-change, nothing done). Written by esv::trade::TraderMapTrackingSystem (macOS: ProcessAddedTraders writes it), read by TraderMapMarkersSystem. Live: four allocated, empty hash sets.",
+  "size": 192,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Added",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll esv::trade::TraderMapTrackingSystem::ApplyComponentChanges copies FrameData+0/+0x30/+0x60/+0x90 (4 HashSets) into the singleton at the same offsets; ProcessAddedTraders adds the trader entity to FrameData+0 (EoCServer.dll+0x265780 -> HashSet insert hashing a uint64 key by modulo). bg3.exe destructor bg3.exe+0xD73580 frees 4 HashSets (bg3.exe+0x582AD0) at +0x90,+0x60,+0x30,+0; size 0xC0 at bg3.exe+0x30F4280."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Unhidden",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll TraderMapTrackingSystem::ProcessUnhiddenTraders adds to FrameData+0x30"
+        }
+      ]
+    },
+    {
+      "offset": 96,
+      "name": "Hidden",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll TraderMapTrackingSystem::ProcessHiddenTraders adds to FrameData+0x60"
+        }
+      ]
+    },
+    {
+      "offset": 144,
+      "name": "Removed",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll TraderMapTrackingSystem::ProcessRemovedTraders adds to FrameData+0x90"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerTradeTraderMapChangesSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 6,
+    "minutes": 7,
+    "open_questions": [
+      "Set names come from the Toolkit method that fills each set (offsets confirmed on bg3.exe by the destructor and live samples, membership by the Toolkit only)",
+      "key confirmed as a uint64 hashed by modulo; EntityHandle inferred from the trader entity being added"
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

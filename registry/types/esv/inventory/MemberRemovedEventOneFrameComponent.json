@@ -1,0 +1,63 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::inventory::MemberRemovedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame event of esv::inventory::InteractionSystem, born when an item leaves an inventory (equipment changes, dropping the dagger in shove-throw, deaths, scripted events). Its twin esv::inventory::MemberAddedEventOneFrameComponent is a tag. Registered with size 0x10 and no destructor (bg3.exe+0x348DE90). Readers: esv::hotbar::System (remove-slot requests), esv::status::recovery::RecoverySystem, esv::camp::SupplySystem (queried with MemberAdded and StackEntityAmountChanged).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "EntityHandle",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Live: entity handles (0x0180000100000A38 ... 0x0200000900021CB6) in all 28 instances; probably the inventory the member left (the component sits on the member). Not established from code."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "field_8",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Live: byte 0 or 1; the following bytes are 00 or FF leftovers -> one byte (a flag) followed by padding."
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "_Pad9",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "live bytes vary between 00 and FF/garbage (one-frame storage is not cleared) -> padding."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerInventoryMemberRemovedEvent",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "low",
+    "functions_read": 8,
+    "minutes": 10,
+    "open_questions": [
+      "Which entity +0 is (inventory / container owner); meaning of the flag at +8; the writer in InteractionSystem was not found."
+    ],
+    "second_pass": "Size confirmed only: bg3.exe+0x348DE90 registers the one-frame storage with element size 0x10; the reader in the hotbar system (bg3.exe+0x2DA83E0, ~ esv::hotbar::System::ProcessRemoveSlotRequests) was opened but the member reads were not isolated, so the members stay hypotheses.",
+    "seen": true,
+    "status": "hypothesis",
+    "status_reason": "the author's confidence is low: types fit the live data, meanings are not established"
+  }
+}

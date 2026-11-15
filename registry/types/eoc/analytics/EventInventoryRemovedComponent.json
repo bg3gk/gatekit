@@ -1,0 +1,130 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::analytics::EventInventoryRemovedComponent",
+  "kind": "struct",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "OwnerUUID",
+      "type": "Guid",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_OwnerUUID (ls::Guid), position 1 of 9 in the macOS serializer TypeList; serializer bg3.exe+0x9EDEE0 writes 16 bytes at +0x0 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "RootId",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_RootId (ls::FixedString), position 2 of 9 in the macOS serializer TypeList; serializer bg3.exe+0x9EDEE0 writes a FixedString at +0x10 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "ChangedEntityName",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_ChangedEntityName (ls::FixedString), position 3 of 9 in the macOS serializer TypeList; serializer bg3.exe+0x9EDEE0 writes a FixedString at +0x14 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "StatsName",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_StatsName (ls::FixedString), position 4 of 9 in the macOS serializer TypeList; serializer bg3.exe+0x9EDEE0 writes a FixedString at +0x18 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "Amount",
+      "type": "int32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_Amount (int), position 5 of 9 in the macOS serializer TypeList; serializer bg3.exe+0x9EDEE0 writes 4 bytes at +0x1C in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "Category",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_Category (ls::FixedString), position 6 of 9 in the macOS serializer TypeList; serializer bg3.exe+0x9EDEE0 writes a FixedString at +0x20 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "Value",
+      "type": "int32_t",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_Value (int), position 7 of 9 in the macOS serializer TypeList; serializer bg3.exe+0x9EDEE0 writes 4 bytes at +0x24 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Rarity",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_Rarity (ls::FixedString), position 8 of 9 in the macOS serializer TypeList; serializer bg3.exe+0x9EDEE0 writes a FixedString at +0x28 in the same order"
+        }
+      ]
+    },
+    {
+      "offset": 44,
+      "name": "EntityType",
+      "type": "FixedString",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "macOS FieldMeta m_EntityType (ls::FixedString), position 9 of 9 in the macOS serializer TypeList; serializer bg3.exe+0x9EDEE0 writes a FixedString at +0x2C in the same order"
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "AnalyticsEventInventoryRemoved",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "fieldmeta",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

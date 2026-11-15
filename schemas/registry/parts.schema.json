@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "registry/parts/1",
+  "title": "The parts every entry of the registry of the game's code is made of",
+  "description": "Shared by the function, type and global entries of registry and by the live layer in the home. registry/README.md is the rule.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A registry id: the name as the game writes it, scope by ::, a member after a dot, a compiler's piece after @ (registry/README.md)."
+    },
+    "rung": {
+      "enum": ["game", "toolkit", "confirmed", "inferred", "extender", "guess", "unknown"],
+      "description": "How certain a name or a type is, strongest first. Applied (the decompiler may be given it as a real name or type): game - the game's own name (macOS symbols, FieldMeta); toolkit - the Toolkit's exported name; confirmed - ours, with the evidence of an instrument (a watch, a read) or a test. Shown (a comment beside the code, never in it): inferred - reasoning from the code or a pairing; extender - Script Extender's author's name, unchecked; guess - supposed, with what it rests on and what would confirm it; unknown - nothing backs it."
+    },
+    "knownAs": {
+      "type": "array",
+      "description": "The names other sources give the same thing, so that a reader who comes with one finds the entry.",
+      "items": {
+        "type": "object",
+        "required": ["name", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "source": {
+            "enum": ["extender", "extender-legacy", "toolkit", "symbols", "decompiler", "macos"],
+            "description": "extender: Script Extender's declaration; extender-legacy: the earlier name Script Extender keeps as an alias in Lua (bg3::legacy); toolkit: the Toolkit's export; symbols: the symbol database's match; decompiler: the decompiler's default name; macos: the macOS build's symbol."
+          }
+        }
+      }
+    },
+    "state": {
+      "enum": ["described", "looked_at", "unlooked"],
+      "description": "How far the reading has got: described - the entry says what the thing is; looked_at - looked at and not understood; unlooked - never looked at (an entry made only to be cited, a callee)."
+    },
+    "guess": {
+      "type": "object",
+      "required": ["rests_on", "would_confirm"],
+      "additionalProperties": false,
+      "description": "A supposition, written as a statement about the code: what it rests on and what would confirm it.",
+      "properties": {
+        "rests_on": {"type": "string", "minLength": 1},
+        "would_confirm": {"type": "string", "minLength": 1}
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {"$ref": "registry/evidence"}
+    },
+    "questions": {
+      "type": "array",
+      "description": "What is open about an entry, written so that someone who knows the game, a modder or another agent can read the entry alone and help: above all how the thing is reached from the game - what a player or a test would do for this code to run or this field to change.",
+      "items": {
+        "type": "object",
+        "required": ["ask", "about", "state"],
+        "additionalProperties": false,
+        "properties": {
+          "ask": {"type": "string", "minLength": 1, "description": "The question, about the code and the game."},
+          "about": {"enum": ["reach", "conditions", "meaning", "other"], "description": "reach: how the game makes the code run or the field change; conditions: what decides its path; meaning: what a value stands for."},
+          "tried": {"type": "string", "minLength": 1, "description": "What was tried and what it showed."},
+          "state": {"enum": ["open", "answered"]},
+          "answer": {"type": "string", "minLength": 1},
+          "source": {"type": "string", "minLength": 1, "description": "Where the answer comes from: a test's address, a wiki page, an instrument's reading."}
+        }
+      }
+    },
+    "comments": {
+      "type": "array",
+      "description": "Our comments at a place of the entry: an instruction's offset from the function's start (+0x2B), a field's offset, a member's name.",
+      "items": {
+        "type": "object",
+        "required": ["at", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "at": {"type": "string", "minLength": 1},
+          "text": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "concept": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "description": "The game's own concept the entry belongs to.",
+      "properties": {
+        "kind": {"enum": ["component", "system", "singleton", "event", "rule", "query", "manager", "other"]},
+        "name": {"type": "string", "minLength": 1, "description": "The concept's name where it is not the entry itself: a system's, a rule's (by its wiki page or stats name)."},
+        "ext_name": {"type": "string", "minLength": 1, "description": "The name Script Extender's Lua answers to."},
+        "one_frame": {"type": "boolean"}
+      }
+    },
+    "storage": {
+      "type": "string",
+      "pattern": "^(reg:[a-z][a-z0-9]*|stack:[+-]0x[0-9A-F]+|unresolved)$",
+      "description": "Where a parameter or local lives: reg:rcx, reg:xmm1, stack:+0x28 (from the stack pointer at entry), stack:-0x24C; unresolved where only the decompiler's temporary name is known so far."
+    },
+    "variable": {
+      "type": "object",
+      "required": ["storage", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "storage": {"$ref": "#/$defs/storage"},
+        "name": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+        "type": {"type": "string", "minLength": 1, "description": "The type as C++ writes it."},
+        "type_id": {"$ref": "#/$defs/id", "description": "The type's registry id, where it has one."},
+        "rung": {"$ref": "#/$defs/rung"},
+        "decompiler_name": {"type": "string", "minLength": 1, "description": "Only with storage unresolved: the decompiler's temporary name it was given under, until its storage is read."},
+        "about": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::status::RequestTargetTrackingOneFrameComponent",
+  "kind": "struct",
+  "about": "One-frame request read by esv::history::TargetStartRequestSystem::ProcessStatusRequests ('Status start request received'); same family as the passive/projectile/spell_cast RequestTargetTracking components that SE already maps.",
+  "size": 64,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Same layout as esv::spell_cast/passive/projectile::RequestTargetTrackingOneFrameComponent in SE (Guid field_0 + HashSet<EntityHandle> Targets). Creator bg3.exe+0x2C5A6E0 zeroes 0x40 bytes and a HashSet at +0x10. Live: always zero."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Targets",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "HashSet zeroed at +0x10 by bg3.exe+0x2C5A6E0, destructor bg3.exe+0x22A9C50 = HashSet destructor on +0x10. Live: bucket count 5, one key."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerStatusRequestTargetTracking",
+    "one_frame": true
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 4,
+    "open_questions": ["Meaning of the Guid (unnamed in SE's sibling layouts too)."],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::character_creation::UserAvatarCreatedOneFrameComponent",
+  "kind": "struct",
+  "about": "Character creation event: a user's avatar was created. Written by bg3.exe+0x37913D0 on a new event entity; esv::StoryGameEventManager::OnUserAvatarCreated (Toolkit EoCServer.dll+0xEDE5C0) turns it into Osiris event 0xA2 with parameters (+0x10, +0, +8) - the story event UserAvatarCreated((INTEGER)_UserID, (CHARACTER)_Avatar, (CHARACTER)_Daisy) from the game's Osiris data (gatekit about UserAvatarCreated). Registered as a normal component although named OneFrame; the clean-up list bg3.exe+0x3797CF0 removes it together with CharacterSelectedForUser / CompanionSelectedForUser / CreationFinished. Never seen alive. Registry total 24 (server row).",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Avatar",
+      "type": "EntityHandle",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Creator bg3.exe+0x3796550 (AllocRaw 0x18) writes 0xffc0000000000000 at +0; writer bg3.exe+0x37913D0 line 132 stores a character handle at +0. OnUserAvatarCreated passes HUB::Get(+0) as the 2nd Osiris parameter = _Avatar of the game's Osiris event UserAvatarCreated."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Daisy",
+      "type": "EntityHandle",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Creator writes 0xffc0000000000000 at +8; writer line 133 stores another character handle at +8 (from bg3.exe+0x3791C80, a second character). OnUserAvatarCreated passes HUB::Get(+8) as the 3rd parameter = _Daisy of the Osiris event."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "UserID",
+      "type": "UserId",
+      "rung": "game",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "Creator writes the global at bg3.exe+0x617CEAC (default UserID) at +0x10; writer line 131 copies a 4-byte value (the user id) to +0x10. OnUserAvatarCreated passes the dword at +0x10 as the 1st parameter = _UserID of the Osiris event."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "_Pad14",
+      "type": "uint8_t[4]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding to the registry size 24."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerCCUserAvatarCreated", "one_frame": false},
+  "survey": {
+    "batch": "dead",
+    "confidence": "high",
+    "functions_read": 3,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 6,
+    "open_questions": [
+      "Names come from the Osiris event's parameter names (game data), not from a C++ member list.",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "seen": false,
+    "status": "declared"
+  }
+}

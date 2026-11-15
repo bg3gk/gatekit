@@ -1,0 +1,31 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::AiGridTile",
+  "kind": "struct",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Flags",
+      "type": "uint64",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's layout (BG3Extender/GameDefinitions/Ai.h), confirmed live in TestLevel_Tom: walking Bound+0x18 -> AiGrid -> Subgrids -> AiSubgrid.TileGrid -> Tiles reached a tile whose MetaDataIndex (32) and flags agree with Ext.Level.GetTileDebugInfo, and a write watch there caught the grid's own writers; eoc::AiGrid::RemoveObjectFromTile and AddObjectToTile read the same offsets; the bits 0x100 ShootBlockItem, 0x80 WalkBlockItem, 0x400000 and 0x800000 Door and DoorItemBlock seen set and cleared"
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "MetaDataIndex",
+      "type": "uint16",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's layout (BG3Extender/GameDefinitions/Ai.h), confirmed live in TestLevel_Tom: walking Bound+0x18 -> AiGrid -> Subgrids -> AiSubgrid.TileGrid -> Tiles reached a tile whose MetaDataIndex (32) and flags agree with Ext.Level.GetTileDebugInfo, and a write watch there caught the grid's own writers; eoc::AiGrid::RemoveObjectFromTile and AddObjectToTile read the same offsets; read 32 under the door, 0xFFFF on an empty tile, as GetTileDebugInfo"
+        }
+      ]
+    }
+  ]
+}

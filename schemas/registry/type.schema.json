@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "registry/type/1",
+  "title": "A type of the game's code (registry/types/<scope>/<Name>.json)",
+  "description": "A structure, class, union, enumeration, bit field, typedef, array or pointer: its size, its members and what backs each. registry/README.md.",
+  "type": "object",
+  "required": ["schema", "id", "kind"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "registry/type/1"},
+    "id": {"$ref": "registry/parts#/$defs/id"},
+    "kind": {"enum": ["struct", "class", "union", "enum", "bitfield", "typedef", "array", "pointer", "function_pointer"]},
+    "known_as": {"$ref": "registry/parts#/$defs/knownAs"},
+    "state": {"$ref": "registry/parts#/$defs/state"},
+    "rung": {"$ref": "registry/parts#/$defs/rung", "description": "The certainty of the type's name and size."},
+    "guess": {"$ref": "registry/parts#/$defs/guess"},
+    "about": {"type": "string", "minLength": 1, "description": "Our sentence: what the type is and holds."},
+    "size": {"type": "integer", "minimum": 0},
+    "align": {"type": "integer", "minimum": 1},
+    "bases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"$ref": "registry/parts#/$defs/id"},
+          "offset": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "vtable": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "global": {"$ref": "registry/parts#/$defs/id", "description": "The table's entry among the globals."},
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["index", "function"],
+            "additionalProperties": false,
+            "properties": {
+              "index": {"type": "integer", "minimum": 0},
+              "function": {"$ref": "registry/parts#/$defs/id"}
+            }
+          }
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What a typedef names, a pointer points at, an array holds.",
+      "properties": {
+        "type": {"type": "string", "minLength": 1},
+        "type_id": {"$ref": "registry/parts#/$defs/id"},
+        "count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "fields": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+    "values": {
+      "type": "array",
+      "description": "The values of an enumeration or the flags of a bit field.",
+      "items": {
+        "type": "object",
+        "required": ["name", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+          "value": {"type": "string", "pattern": "^-?(0|[1-9][0-9]*|0x[0-9A-F]+)$"},
+          "rung": {"$ref": "registry/parts#/$defs/rung"},
+          "known_as": {"$ref": "registry/parts#/$defs/knownAs"},
+          "evidence": {"$ref": "registry/parts#/$defs/evidence"},
+          "about": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "concept": {"$ref": "registry/parts#/$defs/concept"},
+    "evidence": {"$ref": "registry/parts#/$defs/evidence"},
+    "questions": {"$ref": "registry/parts#/$defs/questions"},
+    "comments": {"$ref": "registry/parts#/$defs/comments"},
+    "survey": {"$ref": "record/layout#/$defs/survey", "description": "What the coverage survey recorded of the type beside its fields, carried as it was."}
+  },
+  "$defs": {
+    "field": {
+      "type": "object",
+      "required": ["offset", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "offset": {"type": "integer", "minimum": 0},
+        "size": {"type": "integer", "minimum": 0},
+        "bits": {
+          "type": "object",
+          "required": ["first", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "first": {"type": "integer", "minimum": 0},
+            "count": {"type": "integer", "minimum": 1}
+          }
+        },
+        "name": {"type": "string", "minLength": 1},
+        "type": {"type": "string", "description": "The type as C++ writes it."},
+        "type_id": {"$ref": "registry/parts#/$defs/id"},
+        "rung": {"$ref": "registry/parts#/$defs/rung"},
+        "guess": {"$ref": "registry/parts#/$defs/guess"},
+        "known_as": {"$ref": "registry/parts#/$defs/knownAs"},
+        "evidence": {"$ref": "registry/parts#/$defs/evidence"},
+        "about": {"type": "string", "minLength": 1},
+        "state": {"$ref": "registry/parts#/$defs/state"}
+      }
+    }
+  }
+}

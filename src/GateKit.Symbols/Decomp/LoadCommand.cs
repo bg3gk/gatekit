@@ -5,37 +5,16 @@ using Microsoft.Data.Sqlite;
 
 namespace GateKit.Symbols.Decomp;
 
-/// <summary>`load` (functions.jsonl of finished runs into decomp.sqlite) and `status`.</summary>
+/// <summary>`load` (the decompiler's export of finished runs into decomp.sqlite) and `status`.</summary>
 internal static class LoadCommand
 {
-    static SqliteCommand Prepare(SqliteConnection db, string sql, params SqliteType[] types)
-    {
-        var cmd = db.CreateCommand();
-        cmd.CommandText = sql;
-        for (int i = 0; i < types.Length; i++)
-            cmd.Parameters.Add("$" + (i + 1), types[i]);
-        cmd.Prepare();
-        return cmd;
-    }
-
-    static object Value(JsonElement e) => e.ValueKind switch
-    {
-        JsonValueKind.String => e.GetString() ?? (object)DBNull.Value,
-        JsonValueKind.Number => e.TryGetInt64(out var l) ? l : e.GetDouble(),
-        JsonValueKind.True => 1L,
-        JsonValueKind.False => 0L,
-        _ => DBNull.Value,
-    };
-
-    static JsonElement? Get(JsonElement o, string name) => o.TryGetProperty(name, out var v) && v.ValueKind != JsonValueKind.Null ? v : null;
-
     /// <summary>Loads every finished output (or the one of `binary`) into the database; returns the lines it printed.</summary>
     public static int Run(DecompSession s, string? binary)
     {
         if (!Directory.Exists(s.Settings.Work))
             return 0;
         var outputs = Directory.EnumerateDirectories(s.Settings.Work)
-            .Select(d => Path.Combine(d, "functions.jsonl")).Where(File.Exists).Order(Py.PathOrder).ToList();
+            .Select(d => DecompStore.ExportPath(d, s.Err)).Where(File.Exists).Order(Py.PathOrder).ToList();
         if (outputs.Count == 0)
             return 0;
         var db = s.OpenWrite();
@@ -60,80 +39,19 @@ internal static class LoadCommand
                 db.Execute("INSERT INTO binaries (name) VALUES (?)", name);
                 binaryId = Convert.ToInt64(db.Scalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
             }
-            using var function = Prepare(db, "INSERT INTO functions (binary_id, rva, name, signature, size, thunk, lines, error) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)"
-                                             + " RETURNING id",
-                                         SqliteType.Integer, SqliteType.Integer, SqliteType.Text, SqliteType.Text, SqliteType.Integer, SqliteType.Integer,
-                                         SqliteType.Integer, SqliteType.Text);
-            using var code = Prepare(db, "INSERT INTO code VALUES ($1,$2)", SqliteType.Integer, SqliteType.Blob);
-            using var fts = Prepare(db, "INSERT INTO code_fts (rowid, name, code) VALUES ($1,$2,$3)", SqliteType.Integer, SqliteType.Text, SqliteType.Text);
-            using var call = Prepare(db, "INSERT INTO calls VALUES ($1,$2,$3)", SqliteType.Integer, SqliteType.Integer, SqliteType.Integer);
-            int count = 0, failed = 0;
-            using (var reader = new StreamReader(output, new UTF8Encoding(false, false), false, 1 << 20))
+            int count, failed;
+            using (var writer = new FunctionWriter(db, binaryId))
             {
+                using var reader = new StreamReader(output, new UTF8Encoding(false, false), false, 1 << 20);
                 string? line;
                 while ((line = reader.ReadLine()) != null)
-                {
-                    long rva;
-                    string? fname, sig, error, text;
-                    object size;
-                    bool thunk;
-                    List<long> callees = [];
-                    try
-                    {
-                        using var doc = JsonDocument.Parse(line);
-                        var r = doc.RootElement;
-                        if (r.ValueKind != JsonValueKind.Object || Py.Hex(r.GetProperty("rva").GetString() ?? "") is not long parsed)
-                            continue;
-                        rva = parsed;
-                        fname = Get(r, "name")?.GetString();
-                        sig = Get(r, "sig")?.GetString();
-                        error = Get(r, "error")?.GetString();
-                        text = Get(r, "code")?.GetString();
-                        size = Get(r, "size") is JsonElement z ? Value(z) : DBNull.Value;
-                        thunk = Get(r, "thunk") is JsonElement t && t.ValueKind == JsonValueKind.True;
-                        if (Get(r, "callees") is JsonElement list && list.ValueKind == JsonValueKind.Array)
-                            foreach (var c in list.EnumerateArray())
-                                if (Py.Hex(c.GetString() ?? "") is long callee)
-                                    callees.Add(callee);
-                    }
-                    catch (Exception e) when (e is JsonException or InvalidOperationException or KeyNotFoundException)
-                    {
-                        continue;                         // a line cut short by an interrupted run
-                    }
-                    function.Parameters[0].Value = binaryId;
-                    function.Parameters[1].Value = rva;
-                    function.Parameters[2].Value = (object?)fname ?? DBNull.Value;
-                    function.Parameters[3].Value = (object?)sig ?? DBNull.Value;
-                    function.Parameters[4].Value = size;
-                    function.Parameters[5].Value = thunk ? 1 : 0;
-                    function.Parameters[6].Value = string.IsNullOrEmpty(text) ? DBNull.Value : text.Count(c => c == '\n');
-                    function.Parameters[7].Value = (object?)error ?? DBNull.Value;
-                    long id = Convert.ToInt64(function.ExecuteScalar(), CultureInfo.InvariantCulture);
-                    if (!string.IsNullOrEmpty(text))
-                    {
-                        code.Parameters[0].Value = id;
-                        code.Parameters[1].Value = DecompStore.Compress(text);
-                        code.ExecuteNonQuery();
-                        fts.Parameters[0].Value = id;
-                        fts.Parameters[1].Value = string.IsNullOrEmpty(fname) ? "" : fname;
-                        fts.Parameters[2].Value = text;
-                        fts.ExecuteNonQuery();
-                    }
-                    else
-                        failed++;
-                    foreach (var callee in callees)
-                    {
-                        call.Parameters[0].Value = binaryId;
-                        call.Parameters[1].Value = rva;
-                        call.Parameters[2].Value = callee;
-                        call.ExecuteNonQuery();
-                    }
-                    count++;
-                }
+                    writer.Write(line, replace: false);
+                (count, failed) = (writer.Count, writer.Failed);
             }
             db.Execute("UPDATE binaries SET loaded = ?, functions = ?, failed = ? WHERE id = ?", Py.Now(), count, failed, binaryId);
             db.Execute("COMMIT");
             int renamed = NameExports(s, db, name);
+            Provenance.Record(s, db, name);
             s.Out.WriteLine($"{name}: {count} functions, {failed} without pseudo-code" + (renamed > 0 ? $", {renamed} named from the export table" : ""));
         }
         return 0;
@@ -178,7 +96,7 @@ internal static class LoadCommand
         {
             foreach (var folder in Directory.EnumerateDirectories(work).Order(Py.PathOrder))
             {
-                var output = Path.Combine(folder, "functions.jsonl");
+                var output = DecompStore.ExistingExport(folder) ?? Path.Combine(folder, DecompStore.ExportName);
                 var last = Path.Combine(folder, "last_run.json");
                 long size = File.Exists(output) ? new FileInfo(output).Length : 0;
                 string info = ", running or never finished";
@@ -197,6 +115,21 @@ internal static class LoadCommand
             using var db = Sql.OpenReadOnly(path);
             foreach (var r in db.Query("SELECT name, loaded, functions, failed FROM binaries"))
                 s.Out.WriteLine($"  in database: {Py.Str(r[0])}: {Py.Str(r[2])} functions, {Py.Str(r[3])} without pseudo-code (loaded {Py.Str(r[1])})");
+            try
+            {
+                foreach (var r in db.Query("SELECT b.name, r.finished, r.names, r.structures, r.functions FROM republishes r JOIN binaries b ON b.id = r.binary_id"
+                                           + " WHERE r.rowid IN (SELECT max(rowid) FROM republishes GROUP BY binary_id)"))
+                    s.Out.WriteLine($"  refreshed: {Py.Str(r[0])}: {Py.Str(r[2])} names, {Py.Str(r[3])} structures, {Py.Str(r[4])} functions decompiled again ({Py.Str(r[1])})");
+            }
+            catch (SqliteException)
+            {
+                // a database without the table of refreshes
+            }
+            if (Provenance.Read(db) is { } stamps)
+                foreach (var stamp in stamps)
+                    s.Out.WriteLine("  made from: " + Provenance.Line(stamp));
+            else
+                s.Out.WriteLine("  made from: not recorded (`gatekit decomp stamp` records it from the binaries the projects keep)");
             s.Out.WriteLine($"  {path}: {new FileInfo(path).Length / 1e6:F0} MB");
         }
         return 0;

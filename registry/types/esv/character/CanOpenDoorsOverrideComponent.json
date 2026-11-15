@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::character::CanOpenDoorsOverrideComponent",
+  "kind": "struct",
+  "size": 1,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "CanOpenDoors",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x15F0710 esv::character::CanOpenDoorsSystem::LEGACY_SetCanOpenDoorsOverride(ID, bool) stores the bool into an ls::Optional<bool> request per entity; EoCServer.dll+0x15F0760 ProcessRequests adds the component with byte 0 = the optional's value (*comp = *opt) or removes the component when the optional is empty (LEGACY_ClearCanOpenDoorsOverride). Runner world 2026-11-14 (recipe world_can_open_doors_override, repeated): probe read 0x01 after Osi.SetCanOpenDoorsOverride(char, 1); Clear removed the component."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCharacterCanOpenDoorsOverride",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "tags",
+    "one_byte": "not alive",
+    "one_byte_evidence": "data",
+    "one_byte_values": {"server": {}, "client": {}},
+    "status": "confirmed",
+    "tag": false
+  }
+}

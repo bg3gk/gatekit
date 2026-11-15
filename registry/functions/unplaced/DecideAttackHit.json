@@ -1,0 +1,24 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::DecideAttackHit",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Decides whether an attack roll hits: applies the critical overrides gathered from the attacker's and target's boosts and conditions (forced critical hit or miss, critical hit or miss cancelled; the distance and the creatures' heights enter), then answers a miss for a natural 1 and for a total below the armour class without a natural 20, otherwise a hit.",
+  "fingerprint": {
+    "calls": [
+      "fp:487cb3ad377ac4c8",
+      "fp:5227b96c8688ff31",
+      "fp:8efc2b447ddf1668",
+      "fp:a4616baec98bd920",
+      "fp:b5a5f57f1e22ab44",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8c904b320f1070b"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "Called by RollAttackAgainstArmourClass (+0x106CA40, on the watched return chain of the attack's d20 draws) right after the roll, with the armour class and the roll result; its rule matched three fair melee attacks read in HitDesc.ConditionRolls: total 5 against 13 a miss, 20 against 13 a hit, 20 against 21 (the goblin's Resistances.AC held at 21 by GK.Memory.Freeze) a miss"
+    }
+  ]
+}

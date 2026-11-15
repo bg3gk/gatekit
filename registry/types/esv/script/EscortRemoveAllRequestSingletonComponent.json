@@ -1,0 +1,66 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::script::EscortRemoveAllRequestSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton: Osiris requests to dissolve an escort group (ls::Variant alternative 4 of esv::script::RequestSystem's requests). Pushed by the Osiris call at EoCServer.dll+0x126B1F0 (one string argument, probably EscortRemoveAll(group)); filled by esv::script::RequestSystem::ProcessEmitRequests. Seen.py context: singleton present in the idle level, all zero.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<EscortRemoveAllRequestsEntry>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x4FA900 case 4: assert ls::IndexedStorage<esv::script::Requester<esv::script::EscortRemoveAllRequest>>, stride 0x10."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerScriptEscortRemoveAllRequests",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "live": "not verified",
+    "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "minutes": 3,
+    "open_questions": ["Name of the Osiris function at EoCServer.dll+0x126B1F0 not confirmed."],
+    "seen": true,
+    "status": "declared",
+    "structs": [
+      {
+        "name": "EscortRemoveAllRequestsEntry",
+        "size": 16,
+        "fields": [
+          {
+            "name": "RequestEntity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "esv::script::Requester<T> +0: request entity copied by EoCServer.dll+0x4FA900."
+          },
+          {
+            "name": "Group",
+            "offset": 8,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "The request's only member: EoCServer.dll+0x126B1F0 creates it from the Osiris string argument; EoCServer.dll+0x4FA900 case 4 copy-constructs it at +8."
+          },
+          {
+            "name": "_PadC",
+            "offset": 12,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "Padding to the 0x10 stride."
+          }
+        ]
+      }
+    ]
+  }
+}

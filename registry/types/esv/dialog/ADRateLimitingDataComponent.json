@@ -1,0 +1,94 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::dialog::ADRateLimitingDataComponent",
+  "kind": "struct",
+  "about": "Rate limiting of automated dialogues (ADs) on a speaker: which AD instance runs and a cooldown after it ended (act1 idle and many dialogue steps). Written by esv::dialog::ADRateLimitingSystem from its RateLimitingUpdateRequest list (RequestRateLimitingDialog(Guid, ObjectSet, float, float)). Sibling of ADRateLimitingHistoryComponent (SE Coverage.h).",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "DialogId",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2E14200 (called from the ADRateLimitingSystem per-frame update bg3.exe+0x2E13A00) creates the component (0x20 bytes) and copies the request's 16 bytes at element+0x10 (stride 0x38) to +0/+8; an existing component with the same 16 bytes makes the request a duplicate. RequestRateLimitingDialog's first argument is a Guid. Live: 14 distinct values over 48 instances."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "DialogInstanceId",
+      "type": "uint32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "+0x10 = the uint32 returned by the ADRateLimitingSystemHelper start call (vtable +0x10), the same id SE's ADRateLimitingHistoryEntry.DialogInstanceId holds; the update bg3.exe+0x2E14670 looks it up in the system's ended/failed id sets and zeroes it. Live small ints 0..0x4B."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "DialogEnded",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x2E14670 sets +0x14 to 1 when the instance id is in the ended set (system+0x108), and only then counts the timer down; creator sets 0."
+        }
+      ]
+    },
+    {
+      "offset": 21,
+      "name": "_Pad15",
+      "type": "uint8_t[3]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding"}]
+    },
+    {
+      "offset": 24,
+      "name": "Timer",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Default 15.0 (0x41700000); set from the request's first float (element+0x30); bg3.exe+0x2E14670 subtracts the frame delta while DialogEnded is set and removes the component at <= 0. Live 0.017..2.0."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "field_1C",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Default 5.0 (0x40A00000); set from the request's second float (element+0x34); not read by the update. Live 5, 10, 15, 20."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerDialogADRateLimitingData",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 7,
+    "open_questions": [
+      "Meaning of the second float (+0x1C).",
+      "Whether the Guid is the dialog resource id (assumed from RequestRateLimitingDialog(Guid, ...))."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

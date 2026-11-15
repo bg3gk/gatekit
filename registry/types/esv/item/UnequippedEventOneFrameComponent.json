@@ -1,0 +1,65 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::item::UnequippedEventOneFrameComponent",
+  "kind": "struct",
+  "about": "Twin of esv::item::EquippedEventOneFrameComponent, born in the same steps (equipment, shove-throw, spells, death). bg3.exe+0x34FB760 creates one entity per 0x18-byte unequip record and adds this component through bg3.exe+0x34FF980 (same body as the Equipped adder: copies record+0, +8 and the byte at +0x10). Read by esv::DualWieldingSystem (EvaluateOnItemUnequipped with the slot byte) and esv::status::recovery::RecoverySystem.",
+  "size": 24,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Item",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x34FF980 copies record+0 to +0. Live: 21 handles, never the host 0x7C3 -> the unequipped item."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Character",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x34FF980 copies record+8 to +8. Live: includes the host 0x7C3 -> the character."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Slot",
+      "type": "ItemSlot",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x34FF980 copies the byte record+0x10; Toolkit DualWieldingSystem::Update passes it to IsHandSlot / EvaluateOnItemUnequipped. Live value 3 (MeleeMainHand). ItemSlot is uint8_t."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "_Pad11",
+      "type": "uint8_t[7]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "never written; live bytes are leftovers."}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerItemUnequippedEvent", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 1,
+    "minutes": 2,
+    "open_questions": [
+      "Item vs Character order is taken from live data, as for the Equipped event."
+    ],
+    "raw_check": "27 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::camp::EndTheDayResultEventOneFrameComponent",
+  "kind": "struct",
+  "size": 1,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Result",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x9CB4C0 esv::camp::EndTheDaySystem::FinalizeEndTheDayState (Toolkit, named): a local byte starts 0 and is set to 1, 2, 3, 4 or 6 on the function's branches; when it is nonzero the function logs 'Creating Result event: result (%s)' (a switch over the byte picks the text) and adds the component through EoCServer.dll+0x9C7E10, whose type id (the global at EoCServer.dll+0x222F834) is registered by EoCServer.dll+0xEDA10 with EoCServer.dll+0x9C9A30 = GetTypeName<esv::camp::EndTheDayResultEventOneFrameComponent>, then *component = the byte. The byte is the end-the-day result code (values 1-6 seen in the code; the enumeration's name and labels are not in the record)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerCampEndTheDayResultEvent",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "tags",
+    "one_byte": "not alive",
+    "one_byte_evidence": "data",
+    "one_byte_values": {"server": {}, "client": {}},
+    "status": "confirmed",
+    "tag": false
+  }
+}

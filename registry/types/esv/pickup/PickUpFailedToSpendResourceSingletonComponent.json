@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::pickup::PickUpFailedToSpendResourceSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton of the pick-up pipeline: pick-ups that failed because the action resource could not be spent this frame. Seen.py context: lives in any idle level. Read by esv::pickup::PickUpExecutionFinishedSystem.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Items",
+      "type": "Array<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCServer.dll+0xD46960 esv::pickup::PickUpExecutionFinishedSystem::ProcessResourceSpendFailedDenied gets the singleton (EoCServer.dll+0xD44C20) and walks the buffer its pointer at +0 points to, for the size stored at +0xC, stride 8, putting each qword entity into FrameData+0x40 with result byte 0x14 (resource spend failed). Same shape as PickUpExecutionFailedSingletonComponent. Live (idle): one instance, all zero."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerPickupPickUpFailedToSpendResource",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "live": "not verified",
+    "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "minutes": 2,
+    "open_questions": ["Whether the entities are items or pick-up request entities."],
+    "seen": true,
+    "status": "declared"
+  }
+}

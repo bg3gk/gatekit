@@ -1,0 +1,87 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::TimelineCameraRequestComponent",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Timeline",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x1D66C30 (ecl::TimelineSystem) creates a camera entity, adds the component (bg3.exe+0x1D7A020: zero Guid) and copies the 16-byte timeline Guid it was called with (also formatted as a GUID string to look the camera up). Consumer bg3.exe+0x1F1D8A0 (ecl::TimelineCameraSystem) formats the same 16 bytes as a GUID string for the camera name. Probe: 16 different random 16-byte values."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "Level",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Constructor writes -1; bg3.exe+0x1D66C30 assigns with IncRef/DecRef the current level name (ecl::LevelManager +0x90 -> +0x18 -> +8) or, when that is empty and the timeline flag +0x48C is set, a FixedString from ecl::EoCClient +0x140. bg3.exe+0x1F1D8A0 uses it to find the level (hash lookup) and stores it in the camera's level component. Probe: one constant FixedString 0x24F000A0."
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "field_14",
+      "type": "float",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writer sets 1.0, or copies ls::EditorCameraBehavior +0x10 of the previous camera when one exists; bg3.exe+0x1F1D8A0 writes it to +0x10 of the new camera's ls::EditorCameraBehavior. Probe: always 1.0."
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18",
+      "type": "uint32_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writer sets 3, or copies ls::EditorCameraBehavior +0x3C; consumer writes it to +0x3C of the new ls::EditorCameraBehavior. Probe: always 3."
+        }
+      ]
+    },
+    {
+      "offset": 28,
+      "name": "field_1C",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writer sets 0; bg3.exe+0x1F1D8A0 copies the byte into byte 0 of the new camera's ecl::SceneCameraBehavior. Probe: 0."
+        }
+      ]
+    },
+    {
+      "offset": 29,
+      "name": "_Pad1D",
+      "type": "uint8_t[3]",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "alignment / tail padding"}]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientTimelineCameraRequest", "one_frame": false},
+  "survey": {
+    "batch": "timeline",
+    "confidence": "high",
+    "functions_read": 5,
+    "minutes": 9,
+    "open_questions": [
+      "field_14 / field_18 mirror ls::EditorCameraBehavior +0x10 / +0x3C, field_1C mirrors ecl::SceneCameraBehavior +0; Script Extender has no layout for either, so they stay unnamed."
+    ],
+    "raw_check": "8 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

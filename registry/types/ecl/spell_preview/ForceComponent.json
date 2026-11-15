@@ -1,0 +1,129 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::spell_preview::ForceComponent",
+  "kind": "struct",
+  "about": "Spell-preview data for force (push/pull) effects of the spell being targeted, added by bg3.exe+0x1ED9230 (spell preview update) with ecl::spell_preview::EffectsComponent and filled from FUN_141f6c660 (likely ecl::spell_preview::GetForceFunctorParams, named on macOS). The first 0x18 bytes are an eoc::ForceFunctorParams (same members as Script Extender's ForceFunctor arguments in Stats/Functors.h); +0x18 maps target entities to path previewers. Born live in a targeting step together with EffectsComponent, HighlightsComponent, SurfaceTilesComponent and spell_cast::TargetingComponent.",
+  "size": 104,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Distance",
+      "type": "FixedString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "eoc::ForceFunctorParams.Distance (SE ForceFunctor: FixedString Distance, Arg0). Windows: creator bg3.exe+0x1EEB290 writes 0xFFFFFFFF; destructor bg3.exe+0x6BC600 -> FUN_1406CFA80 DecRefs it as a FixedString; bg3.exe+0x1ED9230 moves a FixedString in from FUN_141F6C660's result. Live null."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Origin",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ForceFunctorParams.Origin (SE enum ForceFunctorOrigin, uint8_t). Creator writes the 16-bit word 0x0001 over +4/+5 (Origin 1 = OriginToTarget, Aggression 0); bg3.exe+0x1ED9230 copies bytes +4 and +5. Live 1."
+        }
+      ]
+    },
+    {
+      "offset": 5,
+      "name": "Aggression",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ForceFunctorParams.Aggression (SE enum ForceFunctorAggression, uint8_t); see Origin. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 6,
+      "name": "_Pad6",
+      "type": "uint8_t[2]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding before the pointer; live 0xFFFF garbage"}]
+    },
+    {
+      "offset": 8,
+      "name": "DistanceExpression",
+      "type": "void*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ForceFunctorParams.DistanceExpression (SE StatsExpressionRef); macOS ~ForceComponent destroys +8 as ls::SharedPtr<eoc::StatsExpressionInternal>; Windows destructor FUN_1406CFA80 decrements a counter at pointee +0x28 and frees it at zero; bg3.exe+0x1ED9230 moves it in (FUN_140F13750). Declared as a raw pointer. Live null."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "ControlArc",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ForceFunctorParams.ControlArc (SE ForceFunctor bool after DistanceExpression). Creator writes 2 bytes 0 at +0x10; bg3.exe+0x1ED9230 copies bytes +0x10/+0x11. Live 0."
+        }
+      ]
+    },
+    {
+      "offset": 17,
+      "name": "PullToOrigin",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "ForceFunctorParams.PullToOrigin; see ControlArc."}]
+    },
+    {
+      "offset": 18,
+      "name": "_Pad12",
+      "type": "uint8_t[6]",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "padding before the HashMap; live garbage"}]
+    },
+    {
+      "offset": 24,
+      "name": "PathPreviewers",
+      "type": "HashMap<EntityHandle, void*>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "macOS ~ForceComponent destroys +0x18 as ls::HashTable<ls::ID<ecs::EntityHandleTraits>> keys and each value with PathPreviewer::Destroy + eoc::PathPreviewer::~PathPreviewer (owned pointers). Windows: destructor FUN_1406D1360 and bg3.exe+0x1ED97C0 walk the value array at +0x48 (= map +0x30) with stride 8 destroying each value with FUN_14070DAE0 (vtable PTR_FUN_14566C860, FixedString at +0x3C), count at +0x44 (= key array size, map +0x2C); the clear memsets the buckets (+0x18) to 0xFF and zeroes +0x34 and +0x44; keys freed by FUN_140582AD0 (trivial keys). Values declared as raw pointers to eoc::PathPreviewer. Live empty."
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "field_58",
+      "type": "Array<void*>",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "16-byte array freed without element destructors by bg3.exe+0x6BC600 and by macOS ~ForceComponent (buffer +0x58, capacity +0x60, size +0x64); element type not established - declared as pointers only to keep the size. Live empty."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientSpellPreviewForce", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 4,
+    "minutes": 12,
+    "open_questions": [
+      "Element type of the array at +0x58 (trivial elements; no writer found in bg3.exe+0x1ED9230 or bg3.exe+0x1ED97C0).",
+      "Names of +0..+0x11 follow Script Extender's ForceFunctor arguments, matched by type and order; the game's ForceFunctorParams member names are not confirmed."
+    ],
+    "raw_check": "5 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "second_pass": "macOS ~ForceComponent names the parts (SharedPtr<StatsExpressionInternal> at +8, HashTable<EntityHandle> + PathPreviewer values at +0x18) and the Windows creator/destructor/clear (bg3.exe+0x1EEB290, FUN_1406CFA80, FUN_1406D1360, bg3.exe+0x1ED97C0) confirm the same offsets; the first 0x18 bytes match SE's ForceFunctor arguments member for member. Only the element type of the +0x58 array is still open.",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

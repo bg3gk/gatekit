@@ -1,0 +1,54 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::roll::stream::RollManager",
+  "kind": "struct",
+  "fields": [
+    {
+      "offset": 8,
+      "name": "Streams",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GK.Memory.Read: the buffer whose element 0 +0x68/+0x70 read the Generic stream's seed and count; CopyStreams clears and refills it every frame (watch on +0x14: 1->0 at +0x105D919, 0->1 at +0x105D967)"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "LastStreamId",
+      "type": "uint64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GK.Memory.Watch on it over the first dialogue check: 1->2 at +0x309FD9E (CreateStream), the new stream's id; copied into the streams component's +0x10 by SaveStreams. Script Extender calls it LastFrame"
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "BaseSeed",
+      "type": "uint64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GK.Memory.Read equal to Script Extender's BaseSeed (the time in seconds of the load); watched across a reset: written every frame at +0x238ABCF from the component, and the new value appears there first; CreateStream adds it to the id for a stream's seed"
+        }
+      ]
+    },
+    {
+      "offset": 42,
+      "name": "HasChanges",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "GK.Memory.Watch on it over the first dialogue check: cleared 1->0 at +0x342DE05 in SaveStreams after CreateStream set it (read in CreateStream: set to 1); Script Extender's HasChanges"
+        }
+      ]
+    }
+  ]
+}

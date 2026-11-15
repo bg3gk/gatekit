@@ -1,0 +1,58 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::GameplaySoundTransferRequestBusComponent",
+  "kind": "struct",
+  "about": "Requests to transfer an entity's sound object / loaded sounds to another entity (macOS element ls::GameplaySoundTransferRequestInfo).",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<GameplaySoundTransferBusRequest>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessTransferRequests: stride 0x10, count at +0xC, asserting 'More than one gameplay sound transfer request bus exists!'. Live capacity 0..1."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "GameplaySoundTransferRequestBus",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 4,
+    "open_questions": [],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "GameplaySoundTransferBusRequest",
+        "size": 16,
+        "fields": [
+          {
+            "name": "Source",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "GameEngine.dll ls::GameplaySoundInterfaceSystem::ProcessTransferRequests (GameEngine.dll+0x89C070): both handles must be alive; the GameplayLoadedSounds entry of element+0 is moved to element+8 and then erased."
+          },
+          {
+            "name": "Target",
+            "offset": 8,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "Receives the sound state and loaded sounds of Source."
+          }
+        ]
+      }
+    ]
+  }
+}

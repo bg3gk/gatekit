@@ -1,0 +1,72 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::script::EscortSetLeaderRequestSingletonComponent",
+  "kind": "struct",
+  "about": "Server singleton: Osiris EscortSetLeader requests (ls::Variant alternative 6 of esv::script::RequestSystem's requests). Pushed by OsirisGameFunctions::EscortSetLeader (character, group); filled by esv::script::RequestSystem::ProcessEmitRequests. Seen.py context: singleton present in the idle level, all zero.",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Requests",
+      "type": "Array<EscortSetLeaderRequestsEntry>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x4FA900 case 6: assert ls::IndexedStorage<esv::script::Requester<esv::script::EscortSetLeaderRequest>>, stride 0x18."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ServerScriptEscortSetLeaderRequests",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 2,
+    "minutes": 2,
+    "open_questions": [],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed",
+    "structs": [
+      {
+        "name": "EscortSetLeaderRequestsEntry",
+        "size": 24,
+        "fields": [
+          {
+            "name": "RequestEntity",
+            "offset": 0,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "esv::script::Requester<T> +0: request entity copied by EoCServer.dll+0x4FA900."
+          },
+          {
+            "name": "Leader",
+            "offset": 8,
+            "type": "EntityHandle",
+            "source": "inferred",
+            "evidence": "Request +0: EoCServer.dll+0x126B510 (EscortSetLeader) stores the character's entity handle."
+          },
+          {
+            "name": "Group",
+            "offset": 16,
+            "type": "FixedString",
+            "source": "inferred",
+            "evidence": "Request +8: FixedString from the string argument."
+          },
+          {
+            "name": "_Pad14",
+            "offset": 20,
+            "type": "uint8_t[4]",
+            "source": "inferred",
+            "evidence": "Padding to the 0x18 stride."
+          }
+        ]
+      }
+    ]
+  }
+}

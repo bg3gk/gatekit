@@ -1,0 +1,49 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::notification::NewMemberAddedToPlayerInventoryNotificationComponent",
+  "kind": "struct",
+  "size": 32,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Item",
+      "type": "Guid",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "serializers bg3.exe+0x8FC860 / 0x8FCA00 / 0x8FC5D0 / 0x8FC7A0: two raw 16-byte members at +0 and +0x10. EoCClient.dll+0xE24CD0 ecl::inventory::SoundSystem::ProcessInventoryEvents takes the component (stride 0x20) as a Guid*, maps +0 and +0x10 through the uuid->handle map to two entities and queues them for the add-to-inventory sound. Live: a different Guid in every instance (the item that was added)."
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "field_10",
+      "type": "Guid",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "second Guid, also resolved to an entity in ProcessInventoryEvents. Live: only 2 distinct values over 13 instances (owner/inventory side: player character or its inventory)."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "NotificationNewMemberAddedToPlayerInventory",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 2,
+    "minutes": 6,
+    "open_questions": [
+      "Which of the two Guids is the item and which the inventory/owner is inferred from live variety only."
+    ],
+    "raw_check": "43 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

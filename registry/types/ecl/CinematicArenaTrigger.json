@@ -1,0 +1,109 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::CinematicArenaTrigger",
+  "kind": "struct",
+  "size": 184,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "_Base",
+      "type": "Trigger",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::CinematicArenaTrigger::CinematicArenaTrigger bg3.exe+0x1BB8D20 (Toolkit match) calls base ctor bg3.exe+0x3C11A30; base = bg3se::Trigger (Trigger.h, 0x70 bytes: VMT, LoggableObjectVMT, Template, Flags, SyncFlags, TriggerType, TriggerEntity, Level, PreviousLevel, Protocol, HasCustomPoint, IsGlobal, CustomPointTransform). Base ctor bg3.exe+0x3C11A30 initialises up to +0x6C, like every SE trigger."
+        }
+      ]
+    },
+    {
+      "offset": 112,
+      "name": "Entity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ctor stores 0xFFC0000000000000 at +0x70 (as SE ecl::*Trigger Entity)."
+        }
+      ]
+    },
+    {
+      "offset": 120,
+      "name": "Timeline",
+      "type": "HashSet<Guid>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ctor zeroes +0x78..+0xA8 in the HashSet pattern; LoadStaticData bg3.exe+0x1BB8E00 copies template data +8 into it - SE CinematicArenaTriggerData has HashSet<Guid> Timeline at +8."
+        }
+      ]
+    },
+    {
+      "offset": 168,
+      "name": "MainMenuStartEventType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "LoadStaticData copies template data +0x38 (SE CinematicArenaTriggerData.MainMenuStartEventType) to +0xA8; ctor 0."
+        }
+      ]
+    },
+    {
+      "offset": 169,
+      "name": "MainMenuResetEventType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "LoadStaticData copies template data +0x39 to +0xA9."}]
+    },
+    {
+      "offset": 170,
+      "name": "MainMenuActivateCameraEventType",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [{"kind": "text", "says": "LoadStaticData copies template data +0x3A to +0xAA."}]
+    },
+    {
+      "offset": 171,
+      "name": "_PadAB",
+      "type": "uint8_t[5]",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "compiler padding (alignment); not written by the serializer or the macOS default constructor"
+        }
+      ]
+    },
+    {
+      "offset": 176,
+      "name": "field_B0",
+      "type": "uint64_t",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "registry size 184 leaves 8 bytes after +0xB0; not touched by the ctor or LoadStaticData."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ClientCinematicArenaTrigger", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "medium",
+    "functions_read": 3,
+    "hold": "an object the engine stores behind a pointer (trigger, item, camera behaviour): needs the proxy form of declaration and the base class of Script Extender; not generated yet",
+    "minutes": 6,
+    "open_questions": [
+      "field_B0 unknown; NO REPLICATED serializer exists (ser.py) and the macOS default ctor is a stub",
+      "Not seen alive (seen.py has no samples)."
+    ],
+    "raw_check": "3 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": false,
+    "status": "confirmed"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::thrown::AttachComponent",
+  "kind": "struct",
+  "size": 16,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "AttachedEntity",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "EoCServer.dll+0x3DD080 esv::thrown::AttachmentSystem::LEGACY_RequestAttachEntity(ID entity, ID attached, bool, bool, FixedString) queues {attached, flags, FixedString} under entity; ProcessAttachmentRequests (EoCServer.dll+0x3DDB60) adds this component on the key entity and writes the queued handle at +0, then checks that handle's eoc::WeaponComponent and parent inventory - the object being attached (held), not the holder."
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "IsEquippedWeapon",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ProcessAttachmentRequests (EoCServer.dll+0x3DDB60) writes +8 = (attached entity has eoc::WeaponComponent, has-check FUN_1803d8b40) && eoc::inventory::GetInventoryType(GetParentInventory(attached)) == 1, and inventory type 1 is Equipment (Script Extender's InventoryType enum: Main 0, Equipment 1). ecl::thrown::DummyAttachmentComponent +0x140 copies it."
+        }
+      ]
+    },
+    {
+      "offset": 9,
+      "name": "field_9",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Serializer: dirty bit 4 -> Write(base + 9, 1 byte). Copied from request byte +8 (GatherRequests writes 1 there). macOS default constructor stores 0 at +9."
+        }
+      ]
+    },
+    {
+      "offset": 10,
+      "name": "field_A",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Serializer: dirty bit 8 -> Write(base + 0xA, 1 byte). Copied from request byte +9."
+        }
+      ]
+    },
+    {
+      "offset": 11,
+      "name": "_PadB",
+      "type": "uint8_t",
+      "rung": "unknown",
+      "evidence": [{"kind": "text", "says": "alignment of the FixedString at +0xC"}]
+    },
+    {
+      "offset": 12,
+      "name": "field_C",
+      "type": "FixedString",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Serializer: dirty bit 0x10 -> ecs::sync::Serialize(writer, (FixedString *)(base + 0xC)). Copied from request +0xC, which GatherRequests fills with Empty or with the FixedString at +8 of a component looked up for the entity (FUN_180228f40 in the Toolkit)."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ThrownAttach", "one_frame": false},
+  "survey": {
+    "batch": "replicated",
+    "confidence": "high",
+    "functions_read": 1,
+    "live": "not verified",
+    "live_reason": "no live or captured instance: needs a situation that creates it",
+    "minutes": 3,
+    "names_pass_2": "Replicated without macOS FieldMeta names; not settled.",
+    "open_questions": [
+      "Meanings of every member are open (no FieldMeta names, no saved model; macOS names only the system's AttachRequest type, not its members): which entity +0 is, what the three flags at +8/+9/+A and the FixedString at +0xC mean.",
+      "+9/+A are typed bool by their 1-byte width only.",
+      "Not seen alive."
+    ],
+    "second_pass": "Offsets and widths settled by the Windows write-all serializer bg3.exe+0x8EDA90: EntityHandle at +0 (DAT_146280598, zero-filled), 1-byte writes at +8, +9, +0xA and a FixedString at +0xC; size 16 matches the registry. Names stay unknown.",
+    "seen": false,
+    "status": "declared"
+  }
+}

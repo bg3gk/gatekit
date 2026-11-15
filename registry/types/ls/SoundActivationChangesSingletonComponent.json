@@ -1,0 +1,51 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::SoundActivationChangesSingletonComponent",
+  "kind": "struct",
+  "about": "Client singleton collecting which sound entities were activated and deactivated this frame (Wwise sound object registered/unregistered), filled by ecl::SoundSystem (ActivateSound / DeactivateSound / FlushActiveChanges) and consumed by ls::SoundTransformSystem, ls::GameplaySoundInterfaceSystem and ecl::sound::PerformanceSystem.",
+  "size": 96,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Activated",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Live: +0 heap / +8 bucket count 0x35..(53, a prime) / +0x10 heap / +0x18 capacity / +0x20 heap / +0x28 capacity - the 3x16-byte shape of ls::HashSet (buckets, next ids, keys); sizes always 0 at sampling (flushed each frame). The name is by symmetry with Deactivated: the add site of this set was not located (ActivateSound EoCClient.dll+0xD7B830 pushes to SoundSystem+0x18, not here)."
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Deactivated",
+      "type": "HashSet<EntityHandle>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "ecl::SoundSystem::DeactivateSound (EoCClient.dll+0xD7CA30): after SoundManager::UnregisterSoundObject it calls FUN_1801cf310(*(singleton) + 0x30, &entity) - a HashSet insert returning bool (FUN_1801c9210). Live: same HashSet shape as +0."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "SoundActivationChangesSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 5,
+    "minutes": 8,
+    "open_questions": [
+      "Which set is which is established only for +0x30 (deactivated); +0 is assumed to be the activated set.",
+      "Read from the Toolkit build (EoCClient.dll)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

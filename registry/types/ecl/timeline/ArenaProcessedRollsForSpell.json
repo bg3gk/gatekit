@@ -1,0 +1,36 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::timeline::ArenaProcessedRollsForSpell",
+  "kind": "struct",
+  "size": 4,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "ProcessedRolls",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "bg3.exe+0x18ABCB0 (ecl::timeline::ArenaDecisionSystem, called from bg3.exe+0x18AB7D0): the component is fetched optionally from the query or created by bg3.exe+0x18AD060 with 0; 'if (count < comp) return; comp = count' where count is the size field (+0xC) of an array component of the same spell-roll entity; a cinematic-arena event is only built while 'count == 0'. Probe: 1 in all 7 instances."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientTimelineArenaProcessedRollsForSpell",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "timeline",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 5,
+    "open_questions": [
+      "Which array's size is stored (the second component of the query row, size at +0xC) was not resolved to a name."
+    ],
+    "raw_check": "7 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "status": "confirmed"
+  }
+}

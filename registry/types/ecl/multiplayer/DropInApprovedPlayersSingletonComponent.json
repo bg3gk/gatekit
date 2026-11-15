@@ -1,0 +1,39 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::multiplayer::DropInApprovedPlayersSingletonComponent",
+  "kind": "struct",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Players",
+      "type": "HashSet<int16_t>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCClient.dll+0x5AB710 ecl::multiplayer::DropInApprovalSystem::UpdateComponents inserts shorts (FrameData+0x90, stride 2) with FUN_18054ED60 and removes shorts (FrameData+0xC0) by hashing (longlong)short % bucket count (+8), keys at +0x20 / size +0x2C and NextIds at +0x10 - a 48-byte HashSet<short>; it then calls the IDropInApprovalHelper slot 0x28 for each approved player. ProcessDisconnections / ProcessAcceptedPlayers look short player ids up in it. Read by ::IsCharacterInSelectorMode and ecl::splitscreen::SplitReasonsSystem::Update (macOS). macOS default: zeroed 48 bytes; live: empty."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientMultiplayerDropInApprovedPlayersSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "live": "not verified",
+    "live_reason": "only empty (all-zero) instances were seen: the member boundaries are untested",
+    "minutes": 3,
+    "open_questions": [
+      "The short is the local player/user number (low half of a UserId); signedness as in the code (short)."
+    ],
+    "second_pass": "Confirmed on Windows: bg3.exe+0x1AD4C50 (~UpdateComponents) inserts shorts with FUN_140796C40 and removes them by (longlong)short % buckets (+8) with 2-byte key compares at +0x20 (count +0x2C) in the 0x30-byte singleton - a HashSet<int16_t>.",
+    "seen": true,
+    "status": "declared"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::markers::AvailablePortalsSingletonComponent",
+  "kind": "struct",
+  "size": 48,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Portals",
+      "type": "HashSet<Guid>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Toolkit EoCClient.dll+0x73CD90 ecl::EocUIHelper::CheckPortalConnections takes the singleton pointer itself as ls::HashSet<ls::Guid> and passes it to eoc::NavigationPortalManager::GetClosestNavigationPortal(..., HashSet<Guid> const*) - the component is exactly a HashSet<Guid> (48 bytes). Filled by ecl::markers::AvailabilitySystem::ProcessAvailablePortals (EoCClient.dll+0x7B9150, not read). macOS default constructor: three zeroed 16-byte blocks; live (idle): all zero = empty set. Guids are navigation portal (waypoint) ids."
+        }
+      ]
+    }
+  ],
+  "concept": {
+    "kind": "component",
+    "ext_name": "ClientMarkersAvailablePortalsSingleton",
+    "one_frame": false
+  },
+  "survey": {
+    "batch": "alive",
+    "confidence": "high",
+    "functions_read": 1,
+    "minutes": 3,
+    "open_questions": [],
+    "raw_check": "2 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}

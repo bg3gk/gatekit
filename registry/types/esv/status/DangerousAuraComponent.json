@@ -1,0 +1,80 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::status::DangerousAuraComponent",
+  "kind": "struct",
+  "about": "Put on an aura status entity (status type 5 = AURA) whose aura prototype is flagged dangerous, by the server status execution code (bg3.exe+0x2C4FE90, weak match to esv::status::ExecutionSystem::UpdateStatusStates); read by esv::danger::GetDangerousAurasForPathfinding (macOS; WorldView<status::ActiveComponent, DangerousAuraComponent, OwnershipComponent, ...>, with an eoc::aura::EDangerousAuraAvoidance argument) so AI pathfinding avoids it. Seen.py context: born in 'spells-5' (aura spells), also in idle/character-creation levels.",
+  "size": 8,
+  "fields": [
+    {
+      "offset": 0,
+      "name": "field_0",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Creator bg3.exe+0x2C5AFF0 zeroes it; writer bg3.exe+0x2C4FE90 stores ((statusPrototype+0x10 flags) & 6) != 0. Live: 1."
+        }
+      ]
+    },
+    {
+      "offset": 1,
+      "name": "field_1",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {"kind": "text", "says": "Writer stores bit 5 of status-prototype byte +0x122. Live: 0."}
+      ]
+    },
+    {
+      "offset": 2,
+      "name": "field_2",
+      "type": "bool",
+      "rung": "unknown",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writer stores bit 6 of status-prototype byte +0x122 (the component is only written when field_0 or this bit is set). Live: 0."
+        }
+      ]
+    },
+    {
+      "offset": 3,
+      "name": "_Pad3",
+      "type": "uint8_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Not written by the creator (writes 2 bytes + 1 byte); live garbage 0..3."
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Radius",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "text",
+          "says": "Writer stores (float) of eoc::StatusPrototype::GetMappedValue(proto, <FixedString DAT_14617619c>) and only when it is > 0 - the aura's radius value. Live: 2.0 and 5.0."
+        }
+      ]
+    }
+  ],
+  "concept": {"kind": "component", "ext_name": "ServerStatusDangerousAura", "one_frame": false},
+  "survey": {
+    "batch": "alive",
+    "confidence": "medium",
+    "functions_read": 3,
+    "minutes": 7,
+    "open_questions": [
+      "Meaning of the three flag bytes (status-prototype flags; perhaps the EDangerousAuraAvoidance categories).",
+      "Which mapped value DAT_14617619c names (radius assumed)."
+    ],
+    "raw_check": "48 instances, se-fork/coverage/check.py raw stage, game v4.76.31.656",
+    "seen": true,
+    "status": "confirmed"
+  }
+}
