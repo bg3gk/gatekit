@@ -466,3 +466,71 @@ A death save (the level has one party member, and the last one down ends the gam
 asked by an NPC inside a fight; Extra Attack; See Invisibility inside a fight; the shape of
 damage dice under weighted rolls; a guaranteed-chance-roll-outcome boost and a functor's chance,
 the randomness outside the streams.
+
+## 10. What the watched rolls mean
+
+### The stream belongs to the side that began the roll
+
+A target's save against the player's spell is drawn from the player's PlayerSpell stream, the
+roller being the target; the same save asked by a status at the end of a turn, with no caster
+acting, is drawn from Generic. So a stream is not "whose die" but "whose action": the player's
+attack rolls and his targets' saves against him share one stream and one pair of debts. This is
+what bg3.wiki describes from outside as a debt kept for a side, and a save that counts for the one
+who caused it. For choosing a die it means `GK.Rolls.SetNext` on PlayerSpell decides the next roll
+of that stream whoever throws it - the player's attack or the goblin's save.
+
+### The dialogue check's two dice on Generic
+
+When a roll window opens the check is evaluated once as a stats expression, with real dice from
+Generic, before the throw the player makes on the Dialog stream. The first result is not the one
+shown or used for the verdict. What it is for is not read; the pair is drawn every time, so a
+dialogue check moves the Generic stream as a passive check would.
+
+### A cast ordered by the story
+
+`Osi.UseSpell` is not a way to stage a roll: it casts with the rolls ignored. A scene that needs
+the attack roll or the save uses `GK.Cheat.Cast`, or the player's own input.
+
+### `once` and a spell's save
+
+A pin with `once` is taken off at the holder's next finished-roll event of the kind. A save asked
+by a spell of its target raises no such event (it lives in the hit), so the pin stays and decides
+the next save of that holder instead - seen on Hold Person, whose first save went unpinned-for
+and whose repeat at the end of the turn was the one the pin was taken off by. Suspected a defect
+of ours, not of the game: with the roll events the pin can be taken off at the throw itself.
+
+### Open after the watching
+
+- The second roll of damage dice an NPC's weapon hit throws, by another call path, not dealt.
+- The stats-expression roll of the dialogue check: what reads its result.
+- A death save, Extra Attack, a spell save asked by an NPC in a fight, See Invisibility in a
+  fight, the damage dice's shape under weighted rolls, the randomness outside the streams.
+
+## 11. The pin, judged
+
+Three ways to decide a die now exist. What each binds:
+
+| | The pin (`GK.Rolls.Pin`) | The stream's count (`GK.Rolls.SetNext`) | The roll events (the fork's build) |
+|---|---|---|---|
+| By what | the game's own boost pair on the roller | the stream's count, written | the result written at the throw |
+| Binds | every roll of one creature and one kind, for as long as it is on | the next roll of one stream, whoever throws it | any roll a condition on the event picks |
+| A single throw among several | no | only the next of its stream; the ones after move | yes: four checks in a tick, the third changed |
+| By target, by damage type, the n-th hit | no | no | the roll's type and order; the target only where the asking code is known |
+| Under Karmic Dice | a forced roll ignores it, so the pin switches Karmic Dice off | a forced roll draws other dice | decides the result whatever forced it |
+| Delay | about three ticks to arrive, three to four to leave | none | none |
+| Needs | any build, developer mode not needed for the boost | any build of ours | the build with roll events, developer mode |
+| What it is to the game | a boost a mod could give: the game's own rule | a write to saved state | an intervention in the code |
+
+The owner's two examples. "Every attack roll of ours is 20" is the pin as it is, with Karmic Dice
+off. "Every fire damage roll on X gives 1" is not: the pin has no target and no damage type. But
+the game's own boosts take a condition - Elemental Adept is
+`IF(MainDamageTypeIs(DamageType.Fire)):MinimumRollResult(Damage,2)` - so a pin given a condition
+in the game's own words reaches the damage type and whatever else a boost's condition can read,
+still with no fork.
+
+The judgement: the pin stays, for what it alone does - a standing rule, in the game's own terms,
+on any build - and is reshaped in two places: it takes an optional condition written as the
+game's boosts write theirs, and `once` is taken off at the throw where the roll events are at
+hand. Deciding one throw is not the pin's work: `SetNext` does it on any build for the next roll
+of a stream, and a verb on the roll events does it exactly where that build runs. Proposed, not
+built: the condition on the pin, `once` at the throw, and the verb on the roll events.
