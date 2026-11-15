@@ -145,6 +145,14 @@ public static class LiveCommands
             {
                 var done = LiveLayer.OfHome().Commit(RegistryCommands.Store(p.GetValue(coverage)), s.Out);
                 s.Out.WriteLine($"{done.Count} entr{(done.Count == 1 ? "y" : "ies")} committed");
+                // A claim carries the size of the part of the function its address is in; the build
+                // table's row is the whole function's size and the hash of its body, which the
+                // stamp measures. Without the databases the rows stay as the claims gave them.
+                if (done.Count > 0)
+                {
+                    try { RegistryCommands.StampCommand(s, p.GetValue(coverage)); }
+                    catch (SymbolsException e) { s.Out.WriteLine("not stamped (run `gatekit registry stamp` where the databases are): " + e.Message); }
+                }
                 return 0;
             }));
             root.Subcommands.Add(c);
@@ -173,6 +181,24 @@ public static class LiveCommands
     {
         using var s = new DecompSession(DecompSettings.FromEnvironment(), TextWriter.Null, error);
         return Note(s, request, live, store);
+    }
+
+    /// <summary>A function seen at work that no id names yet, written into the live layer as
+    /// <c>unplaced::unnamed_&lt;token&gt;</c> (the token from its fingerprint) with what was seen and
+    /// what is asked of it; null when an id, committed or live, already names the function.</summary>
+    public static Claim? NoteUnnamed(string address, IReadOnlyList<string> evidence, IReadOnlyList<string> ask, LiveLayer live, RegistryStore? store, TextWriter error)
+    {
+        using var s = new DecompSession(DecompSettings.FromEnvironment(), TextWriter.Null, error);
+        var at = AtJson(s, address, store, live);
+        if ((at["committed"] as JsonArray)?.Count > 0 || (at["live"] as JsonArray)?.Count > 0) return null;
+        var (binary, start) = Address(address);
+        if (s.DbIfExists is not null && NameAtCommand.Resolve(s, address) is { } named) (binary, start) = (named.Binary, named.Start);
+        var token = RegistryCommands.Reader(s, null).Read(binary, start).Token();
+        return Note(s, new NoteRequest($"unplaced::{RegistryId.UnnamedPrefix}{token}")
+        {
+            At = string.Create(CultureInfo.InvariantCulture, $"{binary}+0x{start:X}"), Rung = "unknown",
+            Evidence = evidence, Ask = ask, AskAbout = "meaning",
+        }, live, store);
     }
 
     /// <summary>What is known at an address, with the home's databases at hand (for the MCP tools).</summary>

@@ -295,7 +295,7 @@ running for <copy>; nothing was sent`. Side `ui` is the client side with the com
 
 ### 2.8.1 `probe`
 
-`gatekit probe ID... [--do CODE] [--seconds S] [--json]` joins the registry and the running game
+`gatekit probe ID... [--do CODE] [--seconds S] [--note] [--json]` joins the registry and the running game
 both ways. Each `ID` is a registry id of a function, looked up in the build table of the
 executable the game runs, or a `binary+0xRVA`; each gets a count-only probe
 (`Ext.Debug.ProbeFunction`). `--do` is Lua run on the server once the probes are on - the action
@@ -304,7 +304,12 @@ function the answer gives its place, how often it was called, and every caller: 
 whose function holds the caller's address with the offset inside it (`code:<id>+0x..`), or
 `unknown` with the address. A function that was called also gets a line `evidence  watch:...`,
 the sentence a `registry note --evidence` takes; the callers the registry does not name are
-listed last, as what to read next. `--json`: `[ { id, address, hits, otherCallers, callers = [
+listed last, as what to read next. Which function holds a caller's address is asked of the
+databases as `registry at` asks (a function may lie in several parts); a row's size answers only
+where they are not at hand. `--note` writes each unnamed caller into the live layer as
+`unplaced::unnamed_<token>` (the token of its fingerprint, rung `unknown`) with the functions it
+was seen to call and the question what it is for, so that what is still to read is kept; a caller
+an id already names is left as it is. `--json`: `[ { id, address, hits, otherCallers, callers = [
 { id, offset, address, count } ] } ]`. An id with no place in the running executable -> `ERROR`
 and nothing is probed; a function the extender cannot probe is named on the error stream and the
 rest go on. Needs the Script Extender build with function probes: without it -> `ERROR: this
@@ -1559,7 +1564,11 @@ path, `bg3%2Eexe`). A read sees every claim written before it.
   each id's newest claim merged over its entry, its place in the build's table. Who, when and which
   task stay in the live layer. An id in a clash not settled is held (the others are committed), an id
   a settlement dropped is left out, an entry whose new sentences the check refuses is refused, and an
-  entry the checkout already holds as it is is not written again.
+  entry the checkout already holds as it is is not written again. A claim carries the size of the
+  one part of the function its address is in, so after writing, the build tables' rows are stamped
+  as `registry stamp` does - the whole function's size, its split-off parts included, and the hash
+  of its body; where the databases are not at hand the rows stay as the claims gave them and a
+  line says so.
 
 The MCP tools `bg3_registry_note`, `bg3_registry_withdraw`, `bg3_registry_at` and `bg3_registry_show` do the same
 (`docs/contracts/mcp.md`).

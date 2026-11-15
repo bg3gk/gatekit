@@ -295,7 +295,7 @@ public static class RegistryCommands
         return (row.Binary, row.Rva);
     }
 
-    static int StampCommand(DecompSession s, string? coverageGiven)
+    internal static int StampCommand(DecompSession s, string? coverageGiven)
     {
         var coverage = RecordTypes.FindCoverage(coverageGiven) ?? throw new SymbolsException("no coverage record found; say where it is with --coverage");
         var reader = Reader(s, LedgerNames(coverageGiven));

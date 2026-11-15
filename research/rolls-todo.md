@@ -42,6 +42,14 @@ The work on rolls, in order. An item leaves this file when it is done; what it f
   chain, a pointer to an object - named by its registry id, the unnamed ones listed as what to
   read next; a scene's run turned into a `watch` evidence item with the command that repeats it.
 
+- A record of coverage while the game is played as a player plays it: counters on tens of
+  thousands of functions at once, each call written as a pair of the function called and the
+  address that called it, a function called too often taken off by itself, the whole folded into
+  a play's journal with the situation each call came in (a fight, a dialogue, the tutorial) from
+  the event log. From the journal the registry gets, in one batch: which functions run, who calls
+  whom, and the unnamed ones ordered by how often they ran. Meaning is not filled by it: a name
+  and what a function does still come from reading.
+
 ## Demonstrations of control
 
 Scenes that show the process is held end to end, made once the interception is proven:

@@ -322,7 +322,8 @@ public static class CopyCommands
         var action = new Option<string?>("--do") { Description = "Lua run on the server once the probes are on: the action to watch (or @file.lua)" };
         var seconds = new Option<double>("--seconds") { Description = "how long to let the game run after the action before the probes are read", DefaultValueFactory = _ => 3 };
         var asJson = new Option<bool>("--json") { Description = "the answer as JSON" };
-        var command = new Command("probe", "put count-only probes on functions named by registry id, run an action, and name what called them by registry id; needs the Script Extender build with function probes") { ids, action, seconds, asJson };
+        var note = new Option<bool>("--note") { Description = "write each caller the registry does not name into the live layer, as unplaced::unnamed_<token>, with what it was seen to call" };
+        var command = new Command("probe", "put count-only probes on functions named by registry id, run an action, and name what called them by registry id; needs the Script Extender build with function probes") { ids, action, seconds, asJson, note };
         command.SetAction((parse, _) => Run(parse, async s =>
         {
             var store = GateKit.Symbols.Registry.RegistryStore.Find(null) ?? throw new InvalidOperationException("no registry found (run from a checkout that has registry/)");
@@ -371,7 +372,33 @@ public static class CopyCommands
                 return out
                 """, TimeSpan.FromSeconds(20));
 
-            // game -> registry: every caller named by the id whose function holds it
+            // game -> registry: every caller named by the id whose function holds it. Which function
+            // holds an address is the binary's own fact (a function may lie in several parts), so it
+            // is asked of the databases as `registry at` asks; a row's size alone answers when they
+            // are not there.
+            var live = GateKit.Symbols.Registry.LiveLayer.OfHome();
+            var known = new Dictionary<string, (string? Id, long? Start)>(StringComparer.OrdinalIgnoreCase);
+            (string? Id, long? Start) Named(string binary, long at)
+            {
+                var address = string.Create(CultureInfo.InvariantCulture, $"{binary}+0x{at:X}");
+                if (known.TryGetValue(address, out var seen)) return seen;
+                (string? Id, long? Start) found = (null, null);
+                try
+                {
+                    var answerAt = GateKit.Symbols.Registry.LiveCommands.AtJson(address, store, live, TextWriter.Null);
+                    var id = (answerAt["committed"] as JsonArray)?.FirstOrDefault()?["id"]?.GetValue<string>()
+                        ?? (answerAt["live"] as JsonArray)?.FirstOrDefault()?["id"]?.GetValue<string>();
+                    var function = answerAt["function"]?.GetValue<string>();
+                    long? begins = function is null ? null : long.Parse(function[(function.IndexOf("+0x", StringComparison.Ordinal) + 3)..], NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    found = (id, id is null ? null : begins ?? at);
+                }
+                catch (Exception e) when (e is GateKit.Symbols.SymbolsException or GateKit.Symbols.Registry.RegistryException or InvalidOperationException)
+                {
+                    var row = store.At(binary, at).Select(a => a.Row).FirstOrDefault();
+                    found = (row?.Id, row?.Rva);
+                }
+                return known[address] = found;
+            }
             var answer = new JsonArray();
             foreach (var probe in read?.AsArray() ?? [])
             {
@@ -381,10 +408,10 @@ public static class CopyCommands
                 {
                     var callerModule = caller!["module"]?.GetValue<string>();
                     var callerRva = caller["rva"]?.GetValue<long>() ?? 0;
-                    var row = callerModule is null ? null : store.At(callerModule, callerRva).Select(a => a.Row).FirstOrDefault();
+                    var (callerId, callerStart) = callerModule is null ? (null, (long?)null) : Named(callerModule, callerRva);
                     callers.Add(new JsonObject
                     {
-                        ["id"] = row?.Id, ["offset"] = row is null ? null : GateKit.Symbols.Registry.RegistryStore.Hex(callerRva - row.Rva),
+                        ["id"] = callerId, ["offset"] = callerStart is { } start ? GateKit.Symbols.Registry.RegistryStore.Hex(callerRva - start) : null,
                         ["address"] = string.Create(CultureInfo.InvariantCulture, $"{callerModule ?? "?"}+0x{callerRva:X}"), ["count"] = caller["count"]?.GetValue<long>() ?? 0,
                     });
                 }
@@ -396,7 +423,7 @@ public static class CopyCommands
             }
 
             if (parse.GetValue(asJson)) { s.Out.WriteLine(answer.ToJsonString(ResultJson)); return; }
-            var unknown = new SortedSet<string>(StringComparer.Ordinal);
+            var unknown = new SortedDictionary<string, SortedSet<string>>(StringComparer.Ordinal);
             foreach (var probe in answer)
             {
                 s.Out.WriteLine($"{probe!["id"]}  {probe["address"]}  called {probe["hits"]}");
@@ -404,7 +431,12 @@ public static class CopyCommands
                 foreach (var caller in probe["callers"]!.AsArray())
                 {
                     var id = caller!["id"]?.GetValue<string>();
-                    if (id is null) unknown.Add(caller["address"]!.GetValue<string>());
+                    if (id is null)
+                    {
+                        var address = caller["address"]!.GetValue<string>();
+                        if (!unknown.TryGetValue(address, out var calls)) unknown[address] = calls = new(StringComparer.Ordinal);
+                        calls.Add(probe["id"]!.GetValue<string>());
+                    }
                     s.Out.WriteLine($"    from {(id is null ? "unknown" : $"code:{id}+{caller["offset"]}")}  {caller["address"]}  x{caller["count"]}");
                     named.Add($"{caller["count"]} from {(id is null ? caller["address"] : "inside code:" + id)}");
                 }
@@ -414,7 +446,21 @@ public static class CopyCommands
             if (unknown.Count > 0)
             {
                 s.Out.WriteLine("callers the registry does not name (gatekit decomp at <address>):");
-                foreach (var address in unknown) s.Out.WriteLine("    " + address);
+                foreach (var (address, calls) in unknown)
+                {
+                    // --note: the function goes into the live layer as one seen at work and not named,
+                    // so that what is still to read is kept and not only printed
+                    string? noted = null;
+                    if (parse.GetValue(note))
+                    {
+                        var called = string.Join(", ", calls.Where(c => !c.Contains("+0x", StringComparison.Ordinal)).Select(c => "code:" + c));
+                        if (called.Length > 0)
+                            noted = GateKit.Symbols.Registry.LiveCommands.NoteUnnamed(address,
+                                [$"watch:A count-only probe shows this function calling {called}"],
+                                [$"What this function is for: it calls {called}"], live, store, TextWriter.Null)?.Id;
+                    }
+                    s.Out.WriteLine("    " + address + (noted is null ? "" : "  noted " + noted));
+                }
             }
         }));
         return command;
