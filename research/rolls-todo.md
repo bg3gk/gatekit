@@ -115,3 +115,28 @@ Leads at hand from the wiki, each to be reproduced:
 
 Not yet looked for: reports outside the wiki; the combat log's own arithmetic (terms on the left
 against the total on the right) needs a reader of the combat log's lines first.
+
+## After the rolls: work the owner set aside for a free hand
+
+Taken when the stage of rolls is closed or an executor has nothing more pressing. What can be
+done from the wiki, the wider search and the instruments alone is taken first; order and
+priority among the open items are the worker's to choose.
+
+- **The open items** (`research/open-items.md`): gone through, and whatever needs nobody's hand
+  but ours is done.
+- **A store of a mod's own data that lives in the save.** A structure of any shape, as JSON
+  holds it, not tied to a mechanic of the game (not an item, not a position of an object that the
+  save keeps anyway), written and read through the API, kept by a save and brought back by a
+  load, by the least invasive means; getters and setters of the caller's own where they help.
+  First: whether such a store exists already - Script Extender's own variables kept in a save,
+  and what popular mods use. The proof: start from a save that holds no such data; put three
+  books around the character at positions taken at random (drawn, not computed) - the three
+  legendary books of the third act, the Tharchiate Codex and two others, each unlike the others
+  to the eye; write their positions through the API; save; remove the books; load; put them back
+  at the stored places. The stored order is compared with the first one through a mechanism of
+  its own, kept outside the save and across saves, so that the test does not compare a thing with
+  itself.
+- **A fight covered more densely.** More kinds of event rows for what happens in a fight, so
+  that what the game does can be followed from the log and tied to the code that comes alive
+  with it: the choice an enemy makes, the start and end of a turn, a cast's phases, a status
+  applied and its ticks, damage with its terms, a reaction offered and taken.
