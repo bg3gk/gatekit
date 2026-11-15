@@ -1,0 +1,28 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::RollManager::InternalRollDice",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Rolls the dice of one formula from a stream: seeds a 64-bit Mersenne Twister with the stream's seed, draws each die from 1 to its faces through the draw at the stream's count (or takes the largest face when asked to maximise), adds the bonus, and, when asked, moves the stream's two debts by the outcome against the difficulty.",
+  "fingerprint": {
+    "calls": ["eoc::roll::stream::DrawNumber", "fp:5227b96c8688ff31", "fp:e4d053ad9455ea7c"]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "Every hit of the draw (GK.Memory.Watch on the roll manager's count, +0x105AAE3) returns through +0x105CB3D; one passive check moves the count by two"
+    },
+    {
+      "kind": "watch",
+      "says": "Every changing write of a stream's count in a passive check, a weapon attack and a damage roll returns through +0x105CB3D inside this function"
+    },
+    {
+      "kind": "read",
+      "says": "The state is filled from the seed at the stream's +0x68 with the multiplier 6364136223846793005, one generator serves all the dice of the call, and the debts at +0x60 and +0x64 are raised after the dice are summed"
+    },
+    {
+      "kind": "watch",
+      "says": "A model of that generator reproduces the pairs of the Generic stream at seed 1, the second die of a pair being drawn after a discard of the count plus one"
+    }
+  ]
+}

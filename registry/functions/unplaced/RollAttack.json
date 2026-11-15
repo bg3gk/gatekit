@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RollAttack",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The entry of an attack roll: picks the weapon for the attack's type and hands over to the weapon, spell or unarmed attack roll.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Attack types 2 to 5 go to the weapon attack, 6 and 7 to the spell attack, 8 and 9 to the unarmed attack"
+    },
+    {
+      "kind": "watch",
+      "says": "A weapon attack's count writes return through +0x106FE82 inside this function"
+    }
+  ],
+  "questions": [
+    {"ask": "A spell attack and an unarmed attack, each watched", "about": "reach", "state": "open"}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "registry/function/1",
+  "id": "std::mt19937_64::discard",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Advances a 64-bit Mersenne Twister by a given number of outputs, regenerating its state of 312 words whenever the index passes the end.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The state update uses 312 words, the middle offset 156, the mask of the low 31 bits and the matrix constant 0xB5026F5AA96619E9, and the loop runs once per output asked"
+    },
+    {
+      "kind": "watch",
+      "says": "A model of the standard generator seeded with a stream's seed and advanced by the stream's count gives the natural die the game rolls: four passive checks whose die was chosen beforehand by writing the count came 13, 4, 20 and 1 as computed"
+    }
+  ]
+}

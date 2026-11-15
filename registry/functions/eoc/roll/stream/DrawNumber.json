@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::DrawNumber",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Draws one whole number from a roll stream: advances the generator by the stream's count, adds one to the count, and returns the minimum plus the next output modulo the width of the range; on a stream in bell mode it returns a rounded draw of a clamped normal distribution instead.",
+  "parameters": [
+    {"storage": "reg:rcx", "name": "generator"},
+    {"storage": "reg:rdx", "name": "min"},
+    {"storage": "reg:r8", "name": "max"}
+  ],
+  "ties": [{"type": "esv::roll::stream::Generator", "via": "generator"}],
+  "fingerprint": {"calls": ["fp:5227b96c8688ff31", "fp:acb56e21874356cf"]},
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "GK.Memory.Watch on the roll manager's stream count over one passive check: two hits at +0x105AAE3 (26 to 27, 27 to 28), one per die of the d20 pair"
+    },
+    {
+      "kind": "watch",
+      "says": "A write watch on the roll manager's count of a stream is hit at +0x105AAE3 once per die: twice for the d20 pair of a passive check and of a weapon attack, once for a weapon's damage die"
+    },
+    {
+      "kind": "read",
+      "says": "The count is read through the generator's pointer at +0x1390, passed to the generator's discard, then incremented; the result is the minimum plus the output modulo the range plus one; the byte at +0x1398 selects the normal draw"
+    },
+    {
+      "kind": "watch",
+      "says": "A stream count chosen by a model of this arithmetic made four passive checks roll the natural dice computed beforehand: 13, 4, 20 and 1"
+    }
+  ]
+}

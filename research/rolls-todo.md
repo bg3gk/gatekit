@@ -16,6 +16,14 @@ The work on rolls, in order. An item leaves this file when it is done; what it f
 - The roll log: a row per thrown roll with its origin, unknown origins marked.
 - The judgement on Pin.
 - The registry's roll entries with evidence that can confirm, under the game's own names.
+- Rolls that arise by the game's own rules and were never watched, each a source for the question
+  "who asks": an invisible creature against a character in sight who has See Invisibility
+  (unverified: said to be one check, in a fight and perhaps outside one; followers of Bhaal are
+  said to turn invisible); concentration and death saves; a status's ticking save; lock and trap
+  windows; stealth; dispel; interrupts that adjust a roll; initiative.
+- Calls from roll code that only show a result - the sound of a passive check, the sounds and the
+  dice on the board in a roll window (dialogue, lock, trap) - told apart from the calls that
+  decide the number: a watch says whether each moves a stream's count.
 
 ## The sweep of effects that use dice
 

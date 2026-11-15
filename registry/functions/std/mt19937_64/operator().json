@@ -1,0 +1,17 @@
+{
+  "schema": "registry/function/1",
+  "id": "std::mt19937_64::operator()",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Returns the next 64-bit output of a Mersenne Twister: regenerates the state when the index is at its end, then tempers one word.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The tempering shifts are 29, 17, 37 and 43 with the masks of the standard 64-bit generator, after the same state update as the discard"
+    },
+    {
+      "kind": "watch",
+      "says": "A model of the standard generator reproduces the dice of the Generic stream at seed 1 for the counts 0 to 14 and four dice chosen beforehand"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::DrawFloat",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Draws one fraction between 0 and 1 from a roll stream at its count and adds one to the count.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The same discard and increment as the whole-number draw, the output scaled by two to the power -64; its only caller is the weighted decision"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A weighted decision with a debt above zero moves the stream's count by one more than the dice",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}
