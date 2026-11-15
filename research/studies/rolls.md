@@ -734,3 +734,70 @@ Read from the server's own caller (an AI scorer) and watched on it. Not built ye
 - The roll of no dice seen after casts is the duration of a status that a weapon attack's own
   properties give to a creature that is no player (an AI helper for its extra attack). The
   "second damage row" of a weapon attack is a ground damage of the same properties.
+
+## 20. The dice against the wiki: what agreed and what did not
+
+A sweep of effects that use dice, each staged with the dice rigged where a number had to be
+exact, the roll log beside the game's own account of the hit. Level 1 host, a goblin kept alive.
+
+Agreed with the wiki and the data: the terms of an attack roll with Bless (the d4 in the terms
+is the d4 thrown); Guidance on a check; a critical doubles the weapon's dice and the dice of
+riders (Sneak Attack, a fire coating) and no flat bonus; Great Weapon Fighting rerolls a 1 or 2
+once, riders' dice too, and keeps the reroll when it is lower; Halfling Luck; Savage Attacker
+takes the higher of two throws die by die (the tooltip can be read otherwise); Elemental Adept;
+advantage with disadvantage is one die (the first of the pair); half on a save rounds down;
+vulnerability doubles; a potion of healing is 2d4+2.
+
+Did not agree:
+
+- **Sneak Attack's dice are not among the hit's damage rolls.** The spell deals
+  `DealDamage(<the weapon's> + LevelMapValue(SneakAttack))`. On a rigged critical the hit's list
+  of damage rolls held one piercing roll, 2d4+3 = 6; the sneak attack's 2d6 = 12 was in no roll
+  and no modifier; the hit's total for piercing said 18. The combat log's line reads
+  "damage roll: [1] = 18" with the left part filled from that list when hovered (not read:
+  the view model holds it empty until then). This is a likely source of the reports of terms
+  that do not add up to the total. Any dice inside a stats expression beside the weapon's roll
+  should do the same.
+- **Resistance does not bring damage below 1.** The wiki says halved, rounded down; 1 stayed 1
+  (a Fire Bolt and a greatsword, each pinned to 1), 3 became 1.
+
+Thrown and shown nowhere: the ground damage of every weapon attack, misses included (it never
+took hit points and is never doubled); Halfling Luck's reroll of the discarded die of the pair;
+the dice of Bless, Guidance and of every rider are drawn from the Generic stream, so Karmic
+Dice never weights them.
+
+Shown and not thrown: an attack forced by Karmic Dice shows a natural die and a discarded one
+in the hit; no die was drawn. The combat log says a creature kept from dying "dies" when its
+hit points reach 0.
+
+Karmic Dice, watched: the success debt of the player's stream went 0, 0.35, 0.70 over two
+misses, then a forced hit (the debt at -0.60 after); a forced hit also came at a debt of 0.10.
+
+Not staged: Great Weapon Master and Sharpshooter (the passive stayed disabled), Bane on saves,
+two sources of advantage, the damage rolls of a Sneak Attack that is no critical.
+
+## 21. What a fight's event log tells, and what it does not
+
+One small fight with every family on, each thing a fight consists of made to happen in turn,
+the rows read against the game's own events and components.
+
+Told in full: a melee, ranged and spell attack (hit, miss, critical), a save failed and made,
+an area spell on two, a status ticking, hiding with its Stealth check, surprise.
+
+Not told at all: a move (the game raises no event for it; what is left is the movement spent
+and the new position); concentration starting; a creature joining a fight that goes on.
+
+Told in part: the start of a fight (no list of who is in it; the initiative rows name no
+creature), a turn (no round, no end), damage against a resistance (the halving is not said), a
+heal (no healer, no amount before the cap), a status (no duration; why it left is not said), a
+reaction (nothing says the attack was one), a bonus action (what it spent), a jump (no
+destination), a drunk potion (no row of the item used), a kill (no killer), the end of a fight
+(no reason).
+
+For each the game holds the fact in an event of the story or in a component of one frame
+(listed in the night's notes); none needs a function hooked.
+
+What a creature is about to do: nothing says it before the cast's own state appears - 10 to 29
+ticks after its turn starts, about 20 ticks before the attack roll. The move the AI is about to
+make is inside that same state (where the caster stands and where it will cast from). The AI's
+own planning components never appeared for a single enemy.
