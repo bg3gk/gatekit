@@ -418,3 +418,51 @@ CombatLeft, CombatMultipleEncounters, CombatNextRound, ConcentrationCleared, Dea
 EntityDropped, EntityPickup, EquipStatus, Healed, Hit, Inspiration, Interrupt, ItemConsume,
 ItemLockpick, LevelChange, Ping, RandomCast, Resurrect, RollFinished, Spell, StatusAdded,
 StatusRemoved.
+
+## 9. The rolls watched one by one
+
+Each row was seen once in the roll log (the family `dice`) on a staged scene: the host, a goblin
+kept alive, spells taught for the scene. `test:` names none of them yet.
+
+| The roll | Stream | Asked by | What was seen |
+|---|---|---|---|
+| A spell attack by the player | PlayerSpell, a pair | `code:unplaced::RollSpellAttackAgainstArmourClass` (+0x106DF78) | a miss throws no damage dice; a hit throws them on PlayerDamage |
+| An unarmed attack by the player | PlayerSpell | `code:unplaced::RollUnarmedAttackAgainstArmourClass` (+0x106EFD9) | roll type MeleeUnarmedAttack; no damage roll |
+| A target's save against the player's spell | PlayerSpell: the caster's stream, the roller the target | `code:unplaced::RollSavingThrow` (+0x10707A0) | Sacred Flame, Hold Person |
+| A target's save against an NPC's spell, outside a fight | Generic | the same | outside a fight there are no NPC streams; an NPC's damage is on Generic too |
+| A status's repeating save | Generic | the same, reached through the status system | an NPC at the end of its turn; the player at once when the status is applied and at the end of each turn of his |
+| A concentration save | Generic | `code:unplaced::RollExpressionAgainstDifficulty` | difficulty 10; on a failure the spell ended |
+| A save with advantage from Gnome Cunning | as the save | | the higher die kept; the chance passed down is the caster's chance squared |
+| Scorching Ray | PlayerSpell | | three attack rolls in one cast, damage dice only for the ray that hit |
+| Magic Missile | PlayerDamage | | no attack roll; three separate rolls of one die |
+| A dialogue check | Generic, then Dialog | `code:unplaced::RollExpressionAgainstDifficulty`, then `code:unplaced::RollSkillCheck` | as the roll window opens the check is rolled once as a stats expression on Generic; the throw itself is on the Dialog stream, made as the window opens, and is the one that counts. This is the pair of Generic dice a dialogue check draws |
+| An invisible creature against one with See Invisibility, outside a fight | Generic | through the status system | the invisible creature makes a Dexterity save from the status `SEE_INVISIBILITY_SEEN`; on a failure its invisibility is taken off |
+
+A weapon hit by an NPC throws two rolls of damage dice through two call paths and deals the first;
+a miss throws one. What the second is for is not known.
+
+### A story's cast makes no roll
+
+`Osi.UseSpell` casts with the options that ignore spell rolls, cast checks and target checks: a
+Fire Bolt ordered so hit with damage dice and no attack roll, and an NPC's Sacred Flame asked no
+save. `GK.Cheat.Cast` takes those options off and the rolls are made.
+
+### Karmic Dice, watched
+
+With weighted rolls on (`GK.Rolls.SetKarmic(true)`), on the PlayerSpell and NPCSpell streams:
+
+- a failed roll adds the roll's chance of success to the stream's success debt;
+- a forced success lowers the debt by about twice one less that chance, below zero;
+- a positive debt does not always force: with a debt of 0.2 a roll was still thrown and missed;
+- a forced roll draws no dice of its own formula, and the stream's count rises by 3 where a
+  thrown roll raises it by 2 (the fraction of the decision, and the two dice of the forced roll);
+- a forced roll ignores a pin: with the attack die pinned at 1, forced rolls came at 14 and 13
+  and hit;
+- NPC streams are weighted as the player's are.
+
+### Not staged
+
+A death save (the level has one party member, and the last one down ends the game); a spell save
+asked by an NPC inside a fight; Extra Attack; See Invisibility inside a fight; the shape of
+damage dice under weighted rolls; a guaranteed-chance-roll-outcome boost and a functor's chance,
+the randomness outside the streams.
