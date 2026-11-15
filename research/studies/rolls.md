@@ -381,3 +381,23 @@ roll with boosts; nothing of it is watched yet.
   difficulty and reads none of the roller's boosts: a pin's minimum and maximum, Reliable Talent
   and Halfling Luck do not act on it. This is why a pinned dialogue check came at another number.
 - On the damage streams the weighted mode makes each die a rounded draw of a normal distribution.
+
+### One throw among several
+
+Two ways, both shown live.
+
+By the stream's count (`GK.Rolls.SetNext`, any Script Extender build of ours): the next roll of
+one stream takes a chosen die; `test:rolls/streams/chosen_die` shows it on a passive check and on
+two fair attacks. The rolls after it on the same stream draw from where the count is left, so
+they are not what they would have been.
+
+By interception (the fork's build with roll events, developer mode): the four functions of the
+thrower are wrapped and each call is an event in server Lua carrying the asking code's return
+address, the stream, the roller, the roll and the result, the result writable. Four passive
+checks asked in one tick rolled 9, 11, 5, 9; the same four from the same counts with the third
+roll's natural die written as 2 rolled 9, 11, 2, 9. The asking addresses seen are the ones the
+watches gave: a passive check from inside `code:unplaced::RollSkillCheck`, a weapon attack from
+inside `code:unplaced::RollAttackAgainstArmourClass`, weapon damage from inside
+`code:unplaced::RollDamageDice`. Replacing the roller of a check with another creature did not
+stop the game; the bonus stayed the first roller's, since the caller computes it before the
+throw, and whether the other creature's boosts act is not seen.
