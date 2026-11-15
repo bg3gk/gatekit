@@ -1,6 +1,6 @@
 -- GK.Cheat: everything that bends the game's rules, in one place, under one name - for setting up
--- tests, never for an agent that plays. The honest half is GK.See (what the party perceives) and
--- GK.Act (what a player can do); stand/situation.py and the bg3_agent_* MCP tools use only those.
+-- tests, never for an agent that plays. Every function of this table is a cheat in the registry of
+-- verbs (Shared/VerbClasses.json), where the class of every other verb is too.
 --
 -- The functions themselves live where they always did (GK.Stage, GK.Teleport, GK.Give ...); this
 -- table only names them, so a reader can tell at a glance which calls are cheats, and so a run can
@@ -11,7 +11,7 @@
 --   GK.Cheat.Used()        the cheats called so far: { { name, t } }
 --
 -- See also GK.See's scope "all" (omniscient reading): not a change to the world, but knowledge a
--- player does not have; it is refused in agent runs (GK_AGENT_STRICT=1 in stand/situation.py).
+-- player does not have; it is not for agent runs.
 
 GK.Cheat = GK.Cheat or {}
 local Cheat = GK.Cheat
@@ -44,8 +44,6 @@ local CATALOG = {
     Fight = { S("Fight"), "starts a fight with chosen enemies" },
     EndCombat = { S("EndCombat"), "ends a fight without a winner" },
     EndTurnOf = { S("EndTurn"), "ends anybody's turn, enemies' too" },
-    Cast = { S("Cast"), "casts without range, roll or cost checks" },
-    Talk = { S("Talk"), "starts a chosen dialogue from anywhere" },
     StartDialog = { function(...) return GK.StartDialog(...) end, "starts a chosen dialogue from anywhere" },
     OnStage = { S("OnStage"), "brings in a character the story keeps away" },
     Level = { S("Level"), "moves the party to another level" },
@@ -56,16 +54,22 @@ local CATALOG = {
                    "adds experience" },
 }
 
-for name, entry in pairs(CATALOG) do
-    Cheat[name] = function(...)
-        Cheat.Log[#Cheat.Log + 1] = { name = name, t = Ext.Utils.MonotonicTime() / 1000 }
-        return entry[1](...)
-    end
-end
+-- Every call of a GK.Cheat function - the catalogue's and the scripted actions defined beside their
+-- fair names (Server/Act.lua: GK.Cheat.Move, Cast, Attack ...) - is recorded in Cheat.Log by the
+-- guard GK.Verbs puts on it.
+for name, entry in pairs(CATALOG) do Cheat[name] = entry[1] end
 
+--- What every cheat does, by name: the catalogue's and the scripted actions' (their class and
+--- reason in the registry of verbs, GK.Verbs.Of("Cheat.<name>")).
 function Cheat.List()
     local out = {}
     for name, entry in pairs(CATALOG) do out[name] = entry[2] end
+    for name, fn in pairs(Cheat) do
+        if type(fn) == "function" and out[name] == nil and name ~= "List" and name ~= "Used" and name ~= "Reset" then
+            local why = GK.Verbs and select(2, GK.Verbs.Of("Cheat." .. name))
+            out[name] = why or "a scripted action"
+        end
+    end
     return out
 end
 

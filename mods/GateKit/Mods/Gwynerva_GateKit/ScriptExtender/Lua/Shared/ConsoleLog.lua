@@ -7,7 +7,7 @@
 --     (the Script Extender console, chunks run through GK.Run): the globals are wrapped here.
 -- What is not, on the stock Script Extender: anything it writes from C++ - a Lua error inside
 -- another mod's event handler, Osiris errors, its own warnings. No Lua event exists for those;
--- read them with `gatekit.py logs`. The GateKit's own build (docs/se-fork.md) has the event, and
+-- read them with `gatekit logs`. The GateKit's own build (docs/se-fork.md) has the event, and
 -- those lines are caught too, as source "Script Extender" (part 3 below).
 --
 --   GK.ConsoleEmit(level, source, text[, extra])   add a line yourself

@@ -45,7 +45,7 @@ function State.Snapshot()
         version = State.Version,
         level = levelName(),
         memory = See and See.Memory or nil,
-        log = Log and { entries = Log.Entries, next = Log.Next, hp = Log.Hp } or nil,
+        log = Log and { entries = Log.Since(0, { all = true }).entries, hp = Log.Hp } or nil,
         heard = Heard and { lines = Heard.Lines, next = Heard.Next } or nil,
         narration = Act and Act.Narration or nil,
         cheats = Cheat and Cheat.Log or nil,
@@ -101,8 +101,14 @@ function State.Restore()
     local See, Log, Heard, Act, Cheat, Focus = GK.See, GK.GameLog, GK.Heard, GK.Act, GK.Cheat, GK.Focus
     if See and type(data.memory) == "table" then See.Memory = data.memory end
     if Log and type(data.log) == "table" then
-        Log.Entries = numeric(data.log.entries)
-        Log.Next = tonumber(data.log.next) or 1
+        -- the entries of the save: history before this boot's rows (a list; older saves keyed them by number)
+        local saved = {}
+        for _, e in pairs(type(data.log.entries) == "table" and data.log.entries or {}) do
+            if type(e) == "table" then saved[#saved + 1] = e end
+        end
+        table.sort(saved, function(a, b) return (tonumber(a.t) or 0) < (tonumber(b.t) or 0) end)
+        for _, e in ipairs(saved) do e.saved = true end
+        Log.Saved = saved
         Log.Hp = data.log.hp or {}
     end
     if Heard and type(data.heard) == "table" then
@@ -113,7 +119,7 @@ function State.Restore()
     if Cheat and type(data.cheats) == "table" then Cheat.Log = data.cheats end
     if Focus and data.focus ~= nil then Focus.Enabled = data.focus and true or false end
     State.Restored = { bytes = #text, level = data.level, remembered = remembered(data.memory),
-                       logEntries = count(Log and Log.Entries), heardLines = count(Heard and Heard.Lines) }
+                       logEntries = count(Log and Log.Saved), heardLines = count(Heard and Heard.Lines) }
     return State.Restored
 end
 

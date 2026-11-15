@@ -66,11 +66,65 @@ function GK.Party()
     return out
 end
 
+--- Whether a character is in a dialogue: true, false, or nil and why when it cannot be read.
+--- Osi.IsInDialog does not exist in this game (N19 of the third run): called through a pcall it
+--- failed every time and read as "not in a dialogue", so four checks never fired. The server
+--- character's own InDialog flag is what GK.Act reads, and it was right live; the Osiris query
+--- is asked as well only where the game has it.
+function GK.InDialog(who)
+    local entity = type(who) == "string" and try(Ext.Entity.Get, who) or who
+    local flag = entity and try(function() return entity.ServerCharacter.InDialog end)
+    if type(flag) == "boolean" then return flag end
+    local query = try(function() return Osi.IsInDialog end)
+    if query ~= nil then
+        local answer = try(query, who)
+        if answer ~= nil then return answer == 1 end
+    end
+    return nil, "cannot tell whether " .. tostring(who) .. " is in a dialogue (no ServerCharacter.InDialog, no Osi.IsInDialog)"
+end
+
+--- A position in either form callers write it: { x, y, z } or { x = .., y = .., z = .. }
+--- (X/Y/Z too). Answers { x, y, z }, or nil and why for anything else (wish 37: Stage.Cast took
+--- only the first form and failed on the second with a raw "Number expected").
+function GK.Pos(p)
+    local why = "a position is { x, y, z } or { x = .., y = .., z = .. }, got "
+        .. (type(p) == "table" and "a table without three numbers" or tostring(p))
+    if type(p) ~= "table" then return nil, why end
+    local x, y, z = p[1] or p.x or p.X, p[2] or p.y or p.Y, p[3] or p.z or p.Z
+    if type(x) ~= "number" or type(y) ~= "number" or type(z) ~= "number" then return nil, why end
+    return { x, y, z }
+end
+
 --- Puts `count` items of a root template into a character's inventory.
---- The items exist a moment later; GK.Find(template, who) returns them.
+--- The items exist a moment later; GK.Find(template, who) returns them. A template the game does
+--- not have is an error (wish 29: an invented uuid answered true).
 function GK.Give(template, count, who)
-    Osi.TemplateAddTo(template, host(who), count or 1, 0)
-    return true
+    -- Written as Give(who, template[, count]) - the order a runner reached for (N30 of the third
+    -- run) - it is understood: a character first and a text second can only mean that.
+    if type(count) == "string" and type(template) == "string" and try(Osi.IsCharacter, template) == 1 then
+        template, count, who = count, who, template
+        if type(count) ~= "number" then count = nil end
+    end
+    if count ~= nil and type(count) ~= "number" then
+        error("GK.Give(template, count, who): count is a number, got " .. tostring(count) .. "; nothing was given", 2)
+    end
+    local id = host(who)
+    -- the bridge's own short names (GK.Stage.Templates: thieves_tools, longsword ...) are taken too
+    local short = GK.Stage and GK.Stage.Templates and GK.Stage.Templates[template]
+    if short then template = short end
+    local uuid = type(template) == "string" and template:match("(%x+%-%x+%-%x+%-%x+%-%x+)$")
+    local root = uuid and try(Ext.Template.GetRootTemplate, uuid)
+    if not root then
+        error("no root template " .. tostring(template) .. ": GK.Give(template, count, who) takes a root template uuid, "
+            .. "Name_uuid or a short name of GK.Stage.Templates; "
+            .. "an item's is Ext.Stats.Get(<its stats name>).RootTemplate. Nothing was given", 2)
+    end
+    count = count or 1
+    local held = try(GK.Find, uuid, id)
+    Osi.TemplateAddTo(uuid, id, count, 0)
+    return { template = uuid, name = try(function() return root.Name end), count = count, to = id,
+             before = held and #held or nil,
+             note = "queued: the items exist a moment later - GK.Find(template, who) returns them" }
 end
 
 --- Items of a root template in a character's inventory (uuids).
@@ -151,6 +205,18 @@ end
 --- Moves the player next to the speaker first: the story refuses a dialogue from afar.
 --- Returns whether the story accepted it; GK.Dialog() (UI side) shows it a moment later.
 function GK.StartDialog(dialog, speaker, who)
+    -- D26 of the day run: a character's uuid given as the dialog failed deep inside, "String
+    -- expected for argument 3, got nil" from TeleportTo. The arguments are said by name.
+    if type(dialog) ~= "string" or dialog == "" then
+        error("GK.StartDialog(dialog, speaker, who): dialog is a dialog resource name or uuid (GK.Dialogs lists them), got " .. tostring(dialog), 2)
+    end
+    if try(Osi.IsCharacter, dialog) == 1 then
+        error("GK.StartDialog(dialog, speaker, who): the first argument is a character (" .. dialog .. "), not a dialog; "
+            .. "the speaker comes second - GK.Dialogs(filter) names the dialogs", 2)
+    end
+    if type(speaker) ~= "string" or try(Osi.IsCharacter, speaker) ~= 1 and try(Osi.IsItem, speaker) ~= 1 then
+        error("GK.StartDialog(dialog, speaker, who): speaker is the uuid of a character or an item, got " .. tostring(speaker), 2)
+    end
     local id = host(who)
     Osi.TeleportTo(id, speaker, "", 0, 0, 0, 0, 1)
     return Osi.QRY_StartDialog(dialog, speaker, id) == true
@@ -162,11 +228,15 @@ function GK.Remove(id)
     return true
 end
 
---- Records an Osiris event in the event log (GK.Events) whenever it fires.
+--- Records an Osiris event in the event log whenever it fires: a row of kind `osiris`, payload
+--- { event, args }. Once per event name and Lua state; a second call is a no-op.
+GK.Watched = GK.Watched or {}
 function GK.Watch(name, arity)
+    if GK.Watched[name] then return true end
     Ext.Osiris.RegisterListener(name, arity, "after", function(...)
-        GK.Note(name, { ... })
+        GK.EventLog.Append("osiris", { event = name, args = { ... } })
     end)
+    GK.Watched[name] = arity
     return true
 end
 

@@ -1,7 +1,7 @@
 # GateKit bridge mod
 
 The game side of GateKit: a Script Extender mod that lets the `gatekit` command, the MCP
-server and scenarios run Lua inside Baldur's Gate 3 and read the answers (through files, see
+server and tests run Lua inside Baldur's Gate 3 and read the answers (through files, see
 `docs/contracts/bridge-protocol.md`), plus the in-game developer console (F11 or `!gk`).
 
 **Development only.** Installed by modders and by GateKit itself on a test game; do not ship
@@ -32,9 +32,9 @@ Under `Script Extender/Gwynerva_GateKit/`: the command channel (`queue_*`, `res_
 `console.json`, `overlay.json` (the console key, the HUD button). Theme, text size and input
 blocking are Weave's (`Script Extender/Gwynerva_Weave/settings.json`).
 
-`UICatalog.lua` (optional): the game's widgets and what their buttons do, generated from the
-game's own XAML. It is not part of this repository; `gatekit ui-catalog` will generate it from
-your installed game (not written yet). When present in this folder it is loaded at start and
-`GK.Gui.Click` replays the XAML chains of buttons; without it `GK.Gui` still works.
+`UICatalog.lua` (optional): the game's widgets and what their buttons do, from the game's own
+XAML. It is derived from the game and so is not part of this repository, and no command makes it.
+When present in this folder it is loaded at start and `GK.Gui.Click` replays the XAML chains of
+buttons; without it `GK.Gui` works all the same.
 
 Console commands: `!gk` (console), `!gkui` (settings window), `!gkrescue` (windows back on screen).

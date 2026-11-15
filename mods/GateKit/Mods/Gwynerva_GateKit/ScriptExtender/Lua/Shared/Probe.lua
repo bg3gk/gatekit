@@ -3,9 +3,7 @@
 -- they are how the engine is mapped - a type is noticed when it first has holders, its bytes
 -- are kept, and a layout hypothesis is read off the per-offset survey the host prints.
 --
--- It used to be injected in front of every call by research/coverage/lua/probe.lua, which
--- needed the old Python stand. Here it lives in the bridge, so an agent reaches all of it
--- through the MCP tools alone. The method is unchanged; only its home is.
+-- It lives in the bridge, so an agent reaches all of it through the MCP tools alone.
 --
 -- Needs the GateKit build of Script Extender in developer mode (Ext.Debug.ReadMemory,
 -- GetComponentAddress, GetComponentHolders, GetComponentCounts). On the stock extender
@@ -188,6 +186,11 @@ function Probe.Dump(name, max)
                 Entity = Ext.Utils.HandleToInteger(entity),
                 Address = address, Hex = hex(bytes), Slots = slots, ComponentCount = #others,
             }
+        elseif not address then
+            -- held, and no memory of its own to read: a type whose presence is all there is
+            -- (D17 of the 2026-11-14 day run: eoc::heal::MaxIncomingComponent had a holder and
+            -- the probe said "nothing alive carries it", because only readable instances counted)
+            out.Instances[#out.Instances + 1] = { Entity = Ext.Utils.HandleToInteger(entity), Hex = "", NoData = true, Slots = {} }
         end
     end
     return out
@@ -308,6 +311,87 @@ end
 --
 -- The state survives between calls in the global ProbeCaptureState.
 
+-- Named reads: a field by its name, from the record's layouts ------------------------------------
+--
+-- The host writes the layouts of research/coverage/layouts into the channel (layouts.json) at
+-- `up` and at every bridge reload, so a field reads by the name the record gives it - through the
+-- same raw read as Probe.View, with no extender rebuilt. A name reaches a running copy when the
+-- layouts are merged and the bridge is reloaded.
+
+local LAYOUTS_FILE = "Gwynerva_GateKit/layouts.json"
+
+--- The layouts the host handed over: { [engine name] = { size, status, fields = { [name] = { offset, type } } } }.
+--- Read once and kept; `reload` reads the file again. nil and why when there is none.
+function Probe.Layouts(reload)
+    if Probe.LayoutCache and not reload then return Probe.LayoutCache end
+    local text = Ext.IO.LoadFile(LAYOUTS_FILE)
+    if not text or text == "" then return nil, "no " .. LAYOUTS_FILE .. " (the host writes it at `up` and `bridge-reload`)" end
+    local ok, data = pcall(Ext.Json.Parse, text)
+    if not ok or type(data) ~= "table" or type(data.components) ~= "table" then return nil, LAYOUTS_FILE .. " does not read" end
+    Probe.LayoutCache = data.components
+    return data.components
+end
+
+--- The fields of `component` as Probe.View takes them, or nil and why.
+local function layoutFields(component)
+    local layouts, why = Probe.Layouts()
+    if not layouts then return nil, why end
+    local layout = layouts[component]
+    if not layout then return nil, "no layout for " .. tostring(component) .. " in the record" end
+    local fields = {}
+    for name, at in pairs(layout.fields or {}) do
+        fields[#fields + 1] = { Name = name, Offset = at[1], Type = at[2] }
+    end
+    table.sort(fields, function(a, b) return a.Offset < b.Offset end)
+    for i, field in ipairs(fields) do
+        if not FORMATS[field.Type] then
+            local nextAt = fields[i + 1] and fields[i + 1].Offset or layout.size or (field.Offset + 8)
+            field.Width = math.max(1, nextAt - field.Offset)
+        end
+    end
+    return fields, layout
+end
+
+--- One field of one entity's component, by the record's name: the value (a number, a boolean, an
+--- entity handle as an integer, or the hex of a type not read here), and what it was read as.
+--- nil and why when it cannot be read.
+function Probe.Field(entity, component, name)
+    if type(entity) == "string" then entity = Ext.Entity.Get(entity) end
+    if type(entity) == "number" then entity = Ext.Utils.IntegerToHandle(entity) end
+    if not entity then return nil, "no such entity" end
+    local fields, layout = layoutFields(component)
+    if not fields then return nil, layout end
+    local wanted
+    for _, field in ipairs(fields) do if field.Name == name then wanted = field end end
+    if not wanted then return nil, "the layout of " .. component .. " has no field " .. tostring(name) end
+    local address, total = body(entity, component)
+    if not address then return nil, "the entity does not carry " .. component end
+    local bytes = Ext.Debug.ReadMemory(address, math.max(total or 0, wanted.Offset + (wanted.Width or 8)))
+    if not bytes then return nil, "its memory could not be read" end
+    local read = readField(bytes, wanted)
+    if read.Error then return nil, read.Error end
+    local value = read.Value
+    if value == nil then value = read.NotANumber or read.Hex end
+    return value, { type = wanted.Type, offset = wanted.Offset, status = layout.status }
+end
+
+--- `name` of `component` on every holder (up to `max`, default 64): { values = { [entity integer as
+--- text] = value }, holders = n, error = why when the layout or a read fails }.
+function Probe.FieldValues(component, name, max)
+    local out = { values = {}, holders = 0 }
+    for _, entity in ipairs(Probe.Holders(component, max or 64)) do
+        out.holders = out.holders + 1
+        local value, why = Probe.Field(entity, component, name)
+        if value ~= nil then
+            out.values[tostring(Ext.Utils.HandleToInteger(entity))] = value
+        elseif not out.error then
+            out.error = why
+        end
+    end
+    return out
+end
+
+
 function Probe.CaptureStop()
     local state = ProbeCaptureState
     if state and state.Subscription then
@@ -418,7 +502,21 @@ local function seenSample(state, name, entry)
         if not entry.Taken[handle] then
             entry.Taken[handle] = true
             local address, total = body(entity, name)
-            if address and total and total > 0 then
+            if not address and not entry.NoDataSeen then
+                -- held with no memory to read (see Probe.Dump): one row says so, and for a type
+                -- with a layout it carries whether Script Extender gives it, which is all there is
+                -- to verify of it
+                entry.NoDataSeen = true
+                kept = kept + 1
+                entry.Kept = entry.Kept + 1
+                local row = { Name = name, Entity = handle, Hex = "", Size = 0, NoData = true, Tick = state.Ticks, Label = label }
+                local spec = state.Specs and state.Specs[name]
+                if spec then
+                    local known, component = pcall(function() return entity[spec.ExtName] end)
+                    row.Present = known and component ~= nil
+                end
+                state.Queue[#state.Queue + 1] = row
+            elseif address and total and total > 0 then
                 local bytes = Ext.Debug.ReadMemory(address, math.min(total, state.MaxBytes))
                 if bytes and not entry.Bytes[bytes] then
                     entry.Bytes[bytes] = true
@@ -453,7 +551,10 @@ function Probe.SeenStart(options)
     options = options or {}
     local state = { PerLabel = options.PerLabel or 3, PerType = options.PerType or 12,
                     MaxBytes = options.MaxBytes or 1024, Label = options.Label or "idle",
-                    Specs = options.Specs,  -- { [engine name] = { ExtName = ..., Fields = { ... } } }
+                    -- { [engine name] = { ExtName = ..., Fields = { ... } } }: given here, or handed
+                    -- over beforehand in batches by Seen.AddSpecs (a thousand layouts are too
+                    -- much for one chunk)
+                    Specs = options.Specs or ProbeSeenSpecs,
                     Types = {}, Queue = {}, Ticks = 0, Errors = {} }
     ProbeSeenState = state
     state.Subscription = Ext.Events.Tick:Subscribe(function()
@@ -549,14 +650,107 @@ function Probe.Available()
     return nil
 end
 
+-- A capture that survives a load ------------------------------------------------------------------
+--
+-- The capture lives in the game's Lua state, and every level or savegame load resets that state,
+-- so the types the engine makes around a load were never seen (D25 of the 2026-11-14 day run:
+-- esv::script::SavegameLoadStarted, the anubis reload types, the camp's load-time changes...).
+-- So a started capture is ARMED in a file of the channel, and what it has gathered is SPILLED
+-- to another whenever the game state changes; when the bridge loads again - at bootstrap, before
+-- the level's first tick - an armed capture starts again by itself, with the same options and
+-- layouts, under the label it had. Drain gives the spilled samples first. Seen.Stop disarms it.
+-- What it still misses: what the engine creates and removes between the last tick before the
+-- Lua state goes and the first tick after the new one starts (the reset itself).
+
+local captureSide = Ext.IsServer and Ext.IsServer() and "server" or "client"
+local ARMED = "Gwynerva_GateKit/seen_armed_" .. captureSide .. ".json"
+local SPILL = "Gwynerva_GateKit/seen_spill_" .. captureSide .. ".json"
+local SPECS = "Gwynerva_GateKit/seen_specs_" .. captureSide .. ".json"
+
+local function readJson(path)
+    local text = Ext.IO.LoadFile(path)
+    if not text or text == "" then return nil end
+    local ok, value = pcall(Ext.Json.Parse, text)
+    return ok and value or nil
+end
+
+local function writeJson(path, value)
+    local ok, text = pcall(Ext.Json.Stringify, value)
+    if ok then Ext.IO.SaveFile(path, text) end
+end
+
+--- Moves what the capture has queued, and the types it has met, into the spill file.
+function Seen.Spill(reason)
+    local state = ProbeSeenState
+    if not state then return 0 end
+    local spill = readJson(SPILL) or { Rows = {}, Types = {}, Loads = {} }
+    spill.Rows, spill.Types, spill.Loads = spill.Rows or {}, spill.Types or {}, spill.Loads or {}
+    -- the level the samples were taken in, which a drain after a level load would get wrong
+    local level
+    pcall(function() level = GK.Stage and GK.Stage.CurrentLevel and GK.Stage.CurrentLevel() end)
+    for _, row in ipairs(state.Queue) do
+        row.Level = row.Level or level
+        spill.Rows[#spill.Rows + 1] = row
+    end
+    for name, entry in pairs(state.Types) do
+        local had = spill.Types[name]
+        if not had or (entry.Max or 0) > (had.Max or 0) then
+            spill.Types[name] = { Max = entry.Max, First = entry.First, Label = (had and had.Label) or entry.Label }
+        end
+    end
+    spill.Loads[#spill.Loads + 1] = { reason = tostring(reason), ticks = state.Ticks, label = state.Label }
+    writeJson(SPILL, spill)
+    local moved = #state.Queue
+    state.Queue = {}
+    return moved
+end
+
 Seen.Start = function(options)
     local why = Probe.Available()
     if why then return { Started = false, Error = why } end
     Probe.SeenStart(options)
-    return { Started = true, Label = (options or {}).Label or "idle" }
+    -- armed: a load does not end it (the options are kept here; the layouts in SPECS)
+    local armed = {}
+    for k, v in pairs(options or {}) do if k ~= "Specs" then armed[k] = v end end
+    armed.Armed = true
+    writeJson(ARMED, armed)
+    return { Started = true, Label = (options or {}).Label or "idle", Survives = "level and savegame loads (re-armed at bootstrap)" }
 end
-Seen.Mark = Probe.SeenMark
-Seen.Drain = Probe.SeenDrain
+Seen.Mark = function(label)
+    local ok = Probe.SeenMark(label)
+    local armed = readJson(ARMED)
+    if armed then armed.Label = label; writeJson(ARMED, armed) end
+    return ok
+end
+
+--- Layouts to read through Script Extender in the tick a sample is taken, so the host can compare
+--- the two readings on drain ({ [engine name] = { ExtName = ..., Fields = { ... } } }). Merged
+--- into what was handed over before; a capture already running takes them at once. `reset` true
+--- starts the set afresh. Returns how many types are held.
+function Seen.AddSpecs(specs, reset)
+    if reset or ProbeSeenSpecs == nil then ProbeSeenSpecs = {} end
+    for name, spec in pairs(specs or {}) do ProbeSeenSpecs[name] = spec end
+    writeJson(SPECS, ProbeSeenSpecs)   -- for a capture re-armed after a load
+    if ProbeSeenState then ProbeSeenState.Specs = ProbeSeenSpecs end
+    local n = 0
+    for _ in pairs(ProbeSeenSpecs) do n = n + 1 end
+    return n
+end
+--- The queue, the spilled samples (from before a load) first.
+Seen.Drain = function(maxRows)
+    local spill = readJson(SPILL)
+    if spill and #(spill.Rows or {}) > 0 then
+        local take = math.min(maxRows or 150, #spill.Rows)
+        local rows, rest = {}, {}
+        for i = 1, #spill.Rows do if i <= take then rows[#rows + 1] = spill.Rows[i] else rest[#rest + 1] = spill.Rows[i] end end
+        spill.Rows = rest
+        writeJson(SPILL, spill)
+        local queued = ProbeSeenState and #ProbeSeenState.Queue or 0
+        return { Rows = rows, Left = #rest + queued, Running = ProbeSeenState ~= nil and ProbeSeenState.Subscription ~= nil,
+                 Ticks = ProbeSeenState and ProbeSeenState.Ticks or 0, Spilled = true }
+    end
+    return Probe.SeenDrain(maxRows)
+end
 
 --- The types that appeared since the last call, each with enough about it to decide whether to
 --- stop and close in: the tick it first had a holder, the label it appeared under, and the most
@@ -573,8 +767,25 @@ function Seen.New()
     end
     return out
 end
-Seen.Types = Probe.SeenTypes
-Seen.Stop = Probe.SeenStop
+--- The types met, those of before a load included; read after a full drain, the spill is cleared.
+Seen.Types = function()
+    local out = Probe.SeenTypes()
+    local spill = readJson(SPILL)
+    if spill then
+        for name, entry in pairs(spill.Types or {}) do
+            local now = out[name]
+            if not now or (entry.Max or 0) > (now.Max or 0) then out[name] = { Max = entry.Max, First = entry.First, Label = entry.Label } end
+        end
+        if #(spill.Rows or {}) == 0 then Ext.IO.SaveFile(SPILL, "") end
+    end
+    return out
+end
+
+--- Stops the capture and disarms it (a load no longer starts it again).
+Seen.Stop = function()
+    Ext.IO.SaveFile(ARMED, "")
+    return Probe.SeenStop()
+end
 
 --- What the capture is doing now, without taking anything out of it: the cheap poll.
 function Seen.Status()
@@ -582,8 +793,35 @@ function Seen.Status()
     if state == nil then return { Running = false, Reason = Probe.Available() } end
     local types, queued = 0, #state.Queue
     for _ in pairs(state.Types) do types = types + 1 end
+    local spill = readJson(SPILL)
     return { Running = state.Subscription ~= nil, Ticks = state.Ticks, Label = state.Label,
-             Types = types, Queued = queued, Errors = state.Errors }
+             Types = types, Queued = queued + (spill and #(spill.Rows or {}) or 0), Errors = state.Errors,
+             Resumed = state.Resumed, Loads = spill and spill.Loads or nil }
+end
+
+-- Every change of game state spills, so a load that resets the Lua state loses nothing gathered.
+if not Seen.SpillSubscribed then
+    Seen.SpillSubscribed = true
+    pcall(function()
+        Ext.Events.GameStateChanged:Subscribe(function(e)
+            if ProbeSeenState and ProbeSeenState.Subscription then
+                pcall(Seen.Spill, tostring(e.FromState) .. " to " .. tostring(e.ToState))
+            end
+        end)
+    end)
+end
+
+-- At bootstrap: an armed capture starts again at once, before the level's first tick.
+do
+    local armed = readJson(ARMED)
+    if type(armed) == "table" and armed.Armed and ProbeSeenState == nil and Probe.Available() == nil then
+        ProbeSeenSpecs = readJson(SPECS)
+        armed.Specs = ProbeSeenSpecs
+        local ok = pcall(Probe.SeenStart, armed)
+        if ok and ProbeSeenState then
+            ProbeSeenState.Resumed = { at = Ext.Utils.MonotonicTime(), label = armed.Label }
+        end
+    end
 end
 
 return Probe

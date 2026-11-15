@@ -1,5 +1,5 @@
 -- The client half of GK.Stage: the windows that stop a scene until the player does something
--- (a dice roll, a message box), read and answered from code. UI side (`ui` in the stand).
+-- (a dice roll, a message box), read and answered from code. UI side (`ui` in `gatekit`).
 --
 --   GK.Blocking()     what is on screen that waits for the player:
 --                     { roll = { state, check, dc, result }, box = { title, text, gameOver, buttons },
@@ -251,7 +251,7 @@ local function describe(element, kind)
     return row
 end
 
-local function lower(value) return tostring(value or ""):lower() end
+local function lower(value) return GK.Fold(value) end
 
 local function controls(filter)
     if type(filter) == "string" then filter = { any = filter } end

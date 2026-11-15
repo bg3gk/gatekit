@@ -1,16 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/bg3gk/gatekit/schemas/bridge/state.schema.json",
+  "$id": "bridge/state/1",
   "title": "Bridge heartbeat (state_<side>.json)",
+  "description": "Written by the game on every beat. docs/contracts/bridge-protocol.md.",
   "type": "object",
   "required": ["side", "boot"],
+  "additionalProperties": false,
   "properties": {
-    "side": { "enum": ["server", "client"] },
-    "boot": { "type": "number", "description": "Monotonic ms when this Lua state started; changes on reset." },
-    "time": { "type": "number", "description": "Monotonic ms of this beat." },
-    "gameState": { "type": ["string", "null"] },
-    "queue": { "type": "integer", "description": "Protocol version; 1 = docs/contracts/bridge-protocol.md." },
-    "done": { "type": "integer", "description": "Highest seq this side has started." }
-  },
-  "additionalProperties": true
+    "side": {"enum": ["server", "client"]},
+    "boot": {"type": "number", "description": "Monotonic ms when this Lua state started; changes on reset."},
+    "time": {"type": "number", "description": "Monotonic ms of this beat."},
+    "gameState": {"type": "string", "description": "The engine's game state name; absent while the engine has none."},
+    "queue": {"type": "integer", "description": "Protocol version of the queue."},
+    "done": {"type": "integer", "minimum": 0, "description": "Highest seq this side has started."},
+    "tick": {"type": "integer", "minimum": 0, "description": "This side's tick count at the beat (GK.EventLog.Ticks): the progress the host counts its timeouts in."}
+  }
 }

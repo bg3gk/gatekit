@@ -15,7 +15,9 @@
 --                              the scales of GK.Speed.Profile: { exploration, ownTurn, allyTurn,
 --                              enemyTurn, dialogue, combat }
 --   GK.Speed.Disable()         back to the game's pace (1) and stops following
---   GK.Speed.Set(scale)        a fixed scale (stops following); GK.Speed.Get() the current one
+--   GK.Speed.Set(scale)        a fixed scale (stops following); GK.Speed.Get() the current one;
+--                              Set("working") is GK.Speed.Working, the project's working speed
+--   GK.Speed.Clock()           the game's own clock: { ticks, time, delta, real, scale }
 --   GK.Speed.Boost(scale, seconds)  a temporary scale over whatever the situation says
 --   GK.Speed.Rule(name, priority, test, scale)  a situation of your own: test(state) -> true
 --                              when it applies; the highest priority that applies wins
@@ -23,12 +25,20 @@
 --
 -- Limits: a load or a Lua reset turns it off (the game's pace again) - Enable it after a load;
 -- the scale is the host's; in multiplayer the other players' clients keep their own
--- (their animations would run at 1 while the server runs faster). The engine's own setter clamps
--- to 0.001..10; so does this. The scale is not saved with the game; after a load it is 1 until
--- the next situation change.
+-- (their animations would run at 1 while the server runs faster). The switch itself has no cap:
+-- a direct write is honoured as written (measured exactly up to 32), so any positive scale is
+-- accepted; at 16 and above the game's own rules are known to break (BREAKS), and the answer
+-- says so. The scale is not saved with the game; after a load it is 1 until the next situation
+-- change.
 
 GK.Speed = GK.Speed or {}
 local Speed = GK.Speed
+
+--- Each verb's class: the time scale is set by script (cheat); reading it is observation.
+Speed.Class = {
+    Enable = "cheat", Disable = "cheat", Set = "cheat", Boost = "cheat", Rule = "cheat",
+    Get = "observation", State = "observation", Clock = "observation",
+}
 
 Speed.Profile = Speed.Profile or {
     exploration = 1,   -- walking around
@@ -39,15 +49,38 @@ Speed.Profile = Speed.Profile or {
     combat = 1,        -- in combat, between turns
 }
 
-local MIN, MAX = 0.05, 10
+--- The project's working speed: the scale tests run at besides 1 (GK.Speed.Set("working")).
+--- Up to 12 every verdict of the speed ramp equalled speed 1.
+Speed.Working = 8
+
+-- From this scale on the game is known to break: the party-defeated check fires on a downed
+-- member being raised (16), a turn starts before the previous hit lands (24).
+local BREAKS = 16
 
 local state = Speed.Status or { enabled = false, situation = "exploration", scale = 1, dialogs = {}, rules = {} }
 Speed.Status = state
 
+-- A scale the switch takes: a positive finite number, or "working". Anything else is refused.
+local function scaleOf(value, verb)
+    if value == "working" then return Speed.Working end
+    local n = tonumber(value)
+    if not n or n ~= n or n <= 0 or n == math.huge then
+        error("GK.Speed." .. verb .. ": a scale is a positive number or \"working\", got " .. tostring(value), 3)
+    end
+    return n
+end
+
 local function clamp(value)
     value = tonumber(value) or 1
-    if value ~= value then return 1 end
-    return math.max(MIN, math.min(MAX, value))
+    if value ~= value or value <= 0 or value == math.huge then return 1 end
+    return value
+end
+
+local function warning(scale)
+    if scale >= BREAKS then
+        return ("at %s the game is known to break: from 16 a downed member being raised fires the party-defeated check, "
+            .. "from 24 a turn starts before the previous hit lands; verdicts are only known to hold up to 12"):format(tostring(scale))
+    end
 end
 
 -- The engine's switch, under either name.
@@ -98,8 +131,7 @@ local function partyInDialog()
     local ok, players = pcall(function() return Osi.DB_Players:Get(nil) end)
     if not ok or not players then return false end
     for _, row in ipairs(players) do
-        local okDialog, inDialog = pcall(Osi.IsInDialog, row[1])
-        if okDialog and inDialog == 1 then return true end
+        if GK.InDialog(row[1]) then return true end
     end
     return false
 end
@@ -136,7 +168,7 @@ end
 
 local function update()
     if not state.enabled then return end
-    if state.boostUntil and Ext.Utils.MonotonicTime() < state.boostUntil then
+    if state.boostUntil and GK.Ticks() < state.boostUntil then
         apply(state.boost, "boost")
         return
     end
@@ -146,8 +178,9 @@ local function update()
 end
 Speed.Update = update
 
--- Events: whose turn it is, which dialogues with a player run. A poll every half second
--- catches what no event announces (combat ended by a script, a load).
+-- Events: whose turn it is, which dialogues with a player run. A look every fifteen ticks from
+-- the bridge's tick, while the scale follows the situation, catches what no event announces
+-- (combat ended by a script, a load). GAP: a read on the tick for want of those events.
 local function listen()
     if state.listening then return end
     state.listening = true
@@ -179,17 +212,25 @@ local function listen()
             if state.enabled then apply(1, "paused") end
         end
     end)
-    local function poll()
+end
+
+local LOOK_TICKS = 15
+local function follow()
+    if not (GK.Attention and GK.Attention.Pollers) then return end
+    local due = GK.Ticks() + LOOK_TICKS
+    GK.Attention.Pollers.speed = function()
+        if not state.enabled then GK.Attention.Pollers.speed = nil return end
+        if GK.Ticks() < due then return end
+        due = GK.Ticks() + LOOK_TICKS
         update()
-        Ext.Timer.WaitFor(500, poll)
     end
-    Ext.Timer.WaitFor(500, poll)
 end
 
 function Speed.Enable(profile)
     for key, value in pairs(profile or {}) do Speed.Profile[key] = value end
     state.enabled = true
     listen()
+    follow()
     update()
     return Speed.State()
 end
@@ -201,20 +242,25 @@ function Speed.Disable()
 end
 
 function Speed.Set(scale)
+    scale = scaleOf(scale, "Set")
     state.enabled = false
     apply(scale, "fixed")
-    return Speed.State()
+    local answer = Speed.State()
+    answer.warning = warning(scale)
+    return answer
 end
 
 function Speed.Boost(scale, seconds)
-    state.boost = clamp(scale)
-    state.boostUntil = Ext.Utils.MonotonicTime() + (tonumber(seconds) or 5) * 1000
+    state.boost = scaleOf(scale, "Boost")
+    -- its length is of a running game, in the server's ticks
+    state.boostUntil = GK.Ticks() + GK.LimitTicks((tonumber(seconds) or 5) * 1000)
     if not state.enabled then
         -- a boost works while not following, too: it ends back at 1
         state.enabled = true
         state.disableAfterBoost = true
         listen()
     end
+    follow()
     update()
     return Speed.State()
 end
@@ -234,6 +280,28 @@ function Speed.State()
     for _ in pairs(state.dialogs) do dialogs = dialogs + 1 end
     return { enabled = state.enabled, situation = state.situation, scale = state.scale, engine = read(),
              active = state.active, dialogs = dialogs, profile = Speed.Profile }
+end
+
+-- The game's own clock as the last server tick gave it (Ext.Events.Tick's Time).
+Speed.Time = Speed.Time or {}
+if not Speed.ClockSubscribed then
+    Speed.ClockSubscribed = true
+    Ext.Events.Tick:Subscribe(function(e)
+        local t = Speed.Time
+        pcall(function()
+            t.ticks, t.time, t.delta = e.Time.Ticks, e.Time.Time, e.Time.DeltaTime
+            t.real = Ext.Utils.MonotonicTime()
+        end)
+    end)
+end
+
+--- The game's clock: { ticks = the server's own tick count, time = the game time in seconds,
+--- delta = the game seconds of the last tick (the scale makes a tick longer, not more frequent),
+--- real = Ext.Utils.MonotonicTime() of that tick in ms, scale }. Two readings give ticks, game
+--- time and real time between them. Observation.
+function Speed.Clock()
+    local t = Speed.Time
+    return { ticks = t.ticks, time = t.time, delta = t.delta, real = t.real, scale = read() }
 end
 
 -- The engine's scale outlives a load and a Lua reset, the state of this file does not: a game

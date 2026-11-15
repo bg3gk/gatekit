@@ -1,7 +1,7 @@
 -- GK.See: the situation as a player could know it - who and what is around, the fight, the party,
 -- who watches whom (stealth), where one can walk. Server side; reads only, changes nothing.
 --
--- Honest by default: every list is filtered by what the party perceives (the engine's own sight
+-- What a player could know, by default: every list is filtered by what the party perceives (the engine's own sight
 -- test, Osi.CanSee, or a clear line of sight within a member's sight range - the camera shows what
 -- the character's eyes do not face). Things a player cannot know are left out: characters off
 -- stage, invisible or sneaking unseen, undiscovered traps, items in other inventories, story
@@ -29,7 +29,7 @@
 --
 -- Conventions: positions are { x, y, z } with y up; `d` is the distance in metres from the
 -- viewpoint; `dir` is the compass direction from it, with north = +z and east = +x (the game's map
--- has the same orientation: see docs/agent-play.md); `rel` is "party", "ally", "neutral" or
+-- has the same orientation); `rel` is "party", "ally", "neutral" or
 -- "hostile".
 
 GK.See = GK.See or {}
@@ -153,7 +153,7 @@ function See.Members()
     return out
 end
 
--- A party member: PartyMember, and on stage - the stand keeps an off-stage player dummy
+-- A party member: PartyMember, and on stage - GateKit keeps an off-stage player dummy
 -- ("Player") that also carries PartyMember (seen 2026-11-13 by the blind run's game log).
 local function isMember(id)
     local entity = entityOf(id)
@@ -166,7 +166,6 @@ end
 -- Perception
 
 See.EyeHeight = 1.6          -- metres above the feet a character looks from
-See.FixtureRange = 30        -- doors and ladders are perceived up to here (with a clear line)
 See.CameraRange = 16         -- what the default camera shows around the leader (bg3-agent-harness, measured)
 
 -- Static and dynamic geometry; terrain, scenery, items; not characters and not what one can see
@@ -197,60 +196,114 @@ local function eyeOf(id)
     return p and { p[1], p[2] + See.EyeHeight, p[3] } or nil
 end
 
-local function centreOf(id, isCharacter)
-    local p = posOf(id)
-    if not p then return nil end
-    return { p[1], p[2] + (isCharacter and 1.0 or 0.4), p[3] }
-end
-
 local function sightOf(entity)
     local s = try(function() return entity.Sight end)
     return s and s.Sight or 18, s and s.FOV or 90, s and s.DarkvisionRange or 0
 end
 
---- Whether character `viewer` perceives `target`: the engine's own sight test (field of view,
---- range, light, stealth), or - for objects and for characters that do not hide - a clear line
---- of sight within the viewer's sight range (the player's camera looks around freely).
-function See.Perceives(viewer, target, isCharacter)
-    if bool(try(Osi.CanSee, viewer, target)) then return true, "sight" end
-    local ve, te = entityOf(viewer), entityOf(target)
-    if not (ve and te) then return false end
-    if isCharacter then
-        if bool(try(Osi.IsInvisible, target)) then return false end
-        local dark = try(function() return te.Darkness end)
-        if dark and (dark.ActuallySneaking or dark.CharacterSneaking) then return false end
+-- The uuids of those whose sight holds `entity` now: the sight system's own set of its
+-- observers (esv::sight::ViewshedParticipantComponent.CanSee, kept on the one seen). An entity
+-- without the component is held by nobody's sight.
+local function sightHolders(entity)
+    local out = {}
+    local set = try(function() return entity.ServerViewshedParticipant.CanSee end)
+    for _, handle in pairs(set or {}) do
+        local id = uuidOf(try(Ext.Entity.Get, handle))
+        if id then out[id] = true end
     end
-    local eye, centre = eyeOf(viewer), centreOf(target, isCharacter)
-    if not (eye and centre) then return false end
-    local range = sightOf(ve)
-    -- big fixtures (doors, ladders) show on screen from further than the eyes' sight range: the
-    -- camera looks down on a wider area (bg3-agent-harness used a similar rule for large objects)
-    if not isCharacter and (has(te, "Door") or has(te, "IsDoor") or has(te, "Ladder")) then
-        range = math.max(range, See.FixtureRange)
-    end
-    if dist(eye, centre) > range then return false end
-    if See.Clear(eye, centre, 0.6, te) then return true, "line" end
-    return false
+    return out
 end
 
---- Whether any party member perceives `target` (GK.See.PartyPerceives(uuid)).
-local function partyPerceives(target, isCharacter, members)
-    if isCharacter == nil then
-        local e = entityOf(target)
-        isCharacter = e ~= nil and has(e, "ServerCharacter")
+-- The one rule of what the party is shown (See.Perception): in the world - on the host's level
+-- and on stage - and a party member or without an Invisibility component (invisible, hidden, or
+-- not yet revealed: the clients of other parties neither show it nor let the cursor take it).
+local function hostLevel() return try(function() return entityOf(host()).Level.LevelName end) end
+local function shownToParty(entity, id, memberSet, level)
+    if not entity then return false end
+    -- what a member carries is the party's own
+    local owner = type(id) == "string" and try(Osi.GetInventoryOwner, id)
+    if owner and owner ~= "" then
+        owner = owner:sub(-36)
+        return (memberSet and memberSet[owner]) or isMember(owner) or false
     end
-    members = members or See.Members()
-    for _, m in ipairs(members) do
-        if m == target then return true, "self" end
-        if bool(try(Osi.IsDead, m)) == false then
-            local yes, how = See.Perceives(m, target, isCharacter)
-            if yes then return true, how end
-        end
-    end
-    return false
+    local l = try(function() return entity.Level.LevelName end)
+    if not (l and l == (level or hostLevel()) and bool(try(Osi.IsOnStage, id))) then return false end
+    if memberSet then return memberSet[id] or not has(entity, "Invisibility") end
+    return isMember(id) or not has(entity, "Invisibility")
+end
+
+--- Whether member `viewer`'s own sight holds `target` now: the sight system's set of its
+--- observers (Osi.CanSee answers from it). What the party is shown is See.Perception's rule.
+function See.Perceives(viewer, target)
+    local te = entityOf(target)
+    return te ~= nil and sightHolders(te)[viewer] == true, "sight"
+end
+
+--- Whether the party is shown `target` (a uuid of a character or an item): See.Perception's rule.
+--- `isCharacter` and `members` are taken for the callers that pass them and change nothing.
+local function partyPerceives(target, _, members)
+    local entity = entityOf(target)
+    local id = entity and uuidOf(entity) or target
+    if id == host() then return true, "self" end
+    local memberSet
+    if members then memberSet = {} for _, m in ipairs(members) do memberSet[m] = true end end
+    if memberSet and memberSet[id] then return true, "self" end
+    return shownToParty(entity, id, memberSet), "shown"
 end
 See.PartyPerceives = partyPerceives
 See.IsMember = isMember
+
+--- Whom the party perceives, by the game's own state, as a player knows it. A creature with an
+--- Invisibility component (invisible, hidden, or not yet revealed) is hidden from the clients of
+--- other parties: not shown, refused by the cursor, left out of an area's preview; one without
+--- it is shown at any distance. Apart from that, the sight of each member (`sight`): the members
+--- whose sight holds the creature now - within the member's sight range, a clear line, not
+--- invisible, in every direction (the set the sight system keeps; Osi.CanSee answers from it).
+---   options: target (a uuid: is it perceived), who (a member: whose sight counts; default the
+---            party), radius (30 m around `who` or the host), dead = true (keep the dead)
+--- Returns { ok, perceived = { { uuid, name, rel, d, sight = { member uuids } } } }, nearest
+--- first, listing only creatures the party is shown; for a target { ok, uuid, perceived, sight }.
+--- A creature hidden from the party is never named, placed or counted.
+function See.Perception(options)
+    options = options or {}
+    local members = options.who and { options.who } or See.Members()
+    local memberSet = {}
+    for _, m in ipairs(See.Members()) do memberSet[m] = true end
+    local level = hostLevel()
+    -- in the world: on the host's level (a hireling waiting in SYS_Hirelings is on stage, has no
+    -- level and no entity on the client) and on stage
+    local function shown(entity, id) return shownToParty(entity, id, memberSet, level) end
+    local function sightOfParty(entity)
+        local holders, out = sightHolders(entity), {}
+        for _, m in ipairs(members) do
+            if holders[m] then out[#out + 1] = m end
+        end
+        return out
+    end
+    if options.target then
+        local entity = entityOf(options.target)
+        local id = entity and uuidOf(entity)
+        if not (id and has(entity, "ServerCharacter") and shown(entity, id)) then
+            return { ok = true, uuid = options.target, perceived = false }
+        end
+        return { ok = true, uuid = id, perceived = true, sight = sightOfParty(entity) }
+    end
+    local at = posOf(options.who or host())
+    if not at then return { ok = false, error = "no viewpoint: the host has no position" } end
+    local radius = options.radius or 30
+    local out = {}
+    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+        local id = uuidOf(entity)
+        local p = id and posOf(entity)
+        if p and dist(p, at) <= radius and shown(entity, id)
+            and (options.dead or not bool(try(Osi.IsDead, id))) then
+            out[#out + 1] = { uuid = id, name = nameOf(entity), rel = See.Relation(id), d = round(dist(p, at)),
+                              sight = sightOfParty(entity) }
+        end
+    end
+    table.sort(out, function(a, b) return a.d < b.d end)
+    return { ok = true, perceived = out }
+end
 
 -- ---------------------------------------------------------------------------------------
 -- Characters
@@ -755,7 +808,14 @@ function See.Resources(id)
             elseif name == "ReactionActionPoint" then out.reaction = pair
             elseif name == "Movement" then out.movement = pair
             elseif name == "SpellSlot" or name == "WarlockSpellSlot" then
-                out.slots[v.ResourceId or (#out.slots + 1)] = pair
+                -- A slot's level is its entry's Level. Keyed by ResourceId, every level fell on one
+                -- key and the last entry won, so slots the game had were reported missing (N20 of
+                -- the third run: level 2 at 8/8, and "no spell slot of level 2 or higher").
+                -- Two pools of one level (wizard and warlock) are added up.
+                local level = tonumber(v.Level)
+                if not level or level < 1 then level = tonumber(v.ResourceId) or (#out.slots + 1) end
+                local had = out.slots[level]
+                out.slots[level] = had and { had[1] + pair[1], had[2] + pair[2] } or pair
             else
                 out.other[name] = pair
             end
@@ -1728,7 +1788,7 @@ end
 --- Where a character is, in words a person reads: the level, its height, and the nearest named
 --- thing the party perceives (a door, a ladder, a container, a usable fixture or a character),
 --- e.g. "TUT_Avernus_C, by Sphincter Door (door, 3 m NE)". The zone name the HUD shows comes from the UI
---- side (GK.Places.Zone) and is put first by stand/situation.py when there is one.
+--- side (GK.Places.Zone) and is for the caller to put first when there is one.
 function See.Place(who)
     who = who or host()
     local p = posOf(who)
@@ -1763,7 +1823,7 @@ function See.Status(options)
     for _, m in ipairs(See.Members()) do
         local e = entityOf(m)
         if bool(try(Osi.IsInCombat, m)) then inCombat = true end
-        if bool(try(Osi.IsInDialog, m)) then inDialog = true end
+        if GK.InDialog(m) then inDialog = true end
         if bool(try(Osi.IsInForceTurnBasedMode, m)) then ftb = true end
         local health = e and try(function() return e.Health end)
         out.party[#out.party + 1] = { id = m, name = nameOf(m), hp = health and health.Hp, maxHp = health and health.MaxHp,

@@ -1,16 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/bg3gk/gatekit/schemas/bridge/answer.schema.json",
+  "$id": "bridge/answer/1",
   "title": "Bridge answer (res_<side>_<id>.json)",
+  "description": "Written by the game for every command it ran. docs/contracts/bridge-protocol.md.",
   "type": "object",
   "required": ["id", "ok"],
+  "additionalProperties": false,
   "properties": {
-    "id": { "type": "string" },
-    "side": { "enum": ["server", "client"] },
-    "ok": { "type": "boolean" },
-    "result": { "description": "What the chunk returned, as JSON. Absent when nil." },
-    "error": { "type": "string", "description": "Present when ok is false: message and Lua traceback." },
-    "log": { "type": "array", "items": { "type": "string" }, "description": "Lines passed to GK.Log." }
-  },
-  "additionalProperties": true
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "side": {"enum": ["server", "client"]},
+    "ok": {"type": "boolean"},
+    "result": {"description": "What the chunk returned, as JSON. Absent when nil; any shape (the chunk decides)."},
+    "error": {"type": "string", "description": "Present when ok is false: message and Lua traceback."},
+    "log": {"type": "array", "items": {"type": "string"}, "description": "Lines passed to GK.Log."}
+  }
 }

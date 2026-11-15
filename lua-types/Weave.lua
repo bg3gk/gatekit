@@ -1,8 +1,8 @@
 ---@meta
--- LuaLS annotations for the public API of Weave, the UI framework of GateKit (client side only).
--- Derived from Client/Kit/*.lua of the old repo's bridge mod (kit version 4, 2026-11-13).
+-- LuaLS annotations for the public API of Weave, the UI framework of GateKit (client side only),
+-- whose code is mods/Weave/Mods/Gwynerva_Weave/ScriptExtender/Lua/Client.
 -- The table is the global `Weave` of the Weave mod's Lua environment; other mods reach it as
--- Mods.GateKitWeave.Weave, GateKit also as GK.Weave (old spelling). See mods/Weave/README.md and
+-- Mods.GateKitWeave.Weave, GateKit also as GK.Weave. See mods/Weave/README.md and
 -- docs/contracts/lua-api.md. Every function below is CLIENT side. User copies of files
 -- (Weave.Eject) live in Script Extender/Gwynerva_Weave/ui/.
 --
@@ -10,8 +10,8 @@
 -- read back, styles that can be taken back, per-element text size). Where it is missing,
 -- Weave.Mount returns nil and the kit says why once in the console.
 --
--- The language (templates, expressions, styles, utility classes) is described in docs/weave.md;
--- this file is the Lua surface only. Internal helpers (Weave.Internal, the Backend functions the
+-- This file is the Lua surface only; the language (templates, expressions, styles, utility
+-- classes) is shown by Weave.Demo and the built-in components in ui/. Internal helpers (Weave.Internal, the Backend functions the
 -- kit itself calls, parser internals, OnFrame) are NOT part of the contract.
 
 -- =========================================================================================

@@ -104,7 +104,7 @@ local function record(instanceId, instance)
     -- a bark repeated on a loop ("Help us!" every few seconds) is logged once a minute
     Heard.Recent = Heard.Recent or {}
     local key = tostring(name) .. "|" .. text
-    local nowT = Ext.Utils.MonotonicTime() / 1000
+    local nowT = GK.Ticks() * GK.TickMs / 1000
     if Heard.Recent[key] and nowT - Heard.Recent[key] < 60 then return end
     Heard.Recent[key] = nowT
     local n = Heard.Next
@@ -146,17 +146,23 @@ function Heard.Since(n, options)
     return { last = Heard.Next - 1, lines = out }
 end
 
+-- The dialogues are read every LOOK_TICKS server ticks from the bridge's one tick. GAP: the game
+-- raises no event of a line spoken that is found yet; a read on the tick stands for it.
+local LOOK_TICKS = 5
+
 function Heard.Start()
-    if Heard.Timer then return true end
-    Heard.Timer = Ext.Timer.WaitFor(150, function() Heard.Poll() end, 150)
+    if not (GK.Attention and GK.Attention.Pollers) then return false end
+    local due = 0
+    GK.Attention.Pollers.heard = function()
+        if GK.Ticks() < due then return end
+        due = GK.Ticks() + LOOK_TICKS
+        Heard.Poll()
+    end
     return true
 end
 
 function Heard.Stop()
-    if Heard.Timer then
-        Ext.Timer.Cancel(Heard.Timer)
-        Heard.Timer = nil
-    end
+    if GK.Attention and GK.Attention.Pollers then GK.Attention.Pollers.heard = nil end
     return true
 end
 

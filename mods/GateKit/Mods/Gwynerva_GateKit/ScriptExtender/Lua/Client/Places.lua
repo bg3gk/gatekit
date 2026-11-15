@@ -1,5 +1,5 @@
 -- GK.Places: where the party is and where the journal points - the zone name the HUD shows and the
--- markers of the map (quest objectives, traders, waypoints). UI side (`ui` in the stand): it reads
+-- markers of the map (quest objectives, traders, waypoints). UI side (`ui` in `gatekit`): it reads
 -- the game's own view models, the same the map window and the minimap draw from.
 --
 --   GK.Places.Zone()       the zone's name ("" when the place has none, as on the Nautiloid)

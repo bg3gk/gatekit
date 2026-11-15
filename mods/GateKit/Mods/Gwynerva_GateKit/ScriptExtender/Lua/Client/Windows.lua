@@ -1,5 +1,5 @@
 -- GK.Gui: every window of the game (GK.UI is the overlay's own panels, Client/Panels.lua), operated from code - opened, read, clicked through, closed -
--- without the mouse and without window focus. UI side (`ui` in the stand: the code runs inside
+-- without the mouse and without window focus. UI side (`ui` in `gatekit`: the code runs inside
 -- Ext.UI.Defer).
 --
 -- How the game's UI is built (found 2026-11-13, game 4.1.1.7631656):
@@ -28,16 +28,24 @@
 --   GK.Gui.Controls(name, filter)      the controls of an open widget, with what a click runs
 --   GK.Gui.Click(name, control, n)     clicks a control the way a player does (the XAML chain)
 --   GK.Gui.Input(name, event)          what a key does in that widget ("UIAccept", "UICancel" ...)
---   GK.Gui.Run(name, command, param)   runs a command of the widget's data (strings are boxed)
 --   GK.Gui.Read(name, options)         the widget's data as plain values (see GK.Gui.Snapshot)
 --   GK.Gui.Item(text) / GK.Gui.ItemDo(action, text)   an item by name; equip, unequip, use, drop
 --   GK.Gui.Windows                     the registry of named windows - add your own entries
 --
+-- Every GK.Gui verb is fair or an observation (Shared/VerbClasses.json). What reaches past the
+-- controls a player has lives in GK.Cheat on this side, under the same kind of name:
+--   GK.Cheat.Run(name, command, param) runs any command of the widget's data (strings are boxed)
+--   GK.Cheat.Set(name, path, value)    sets any property of the widget's data and reads it back
+--   GK.Cheat.Step / Auto / Resolve     a window's choices made by its step function
+--   GK.Cheat.Quiet / Recover / AimBest
+--
 -- Waiting is the caller's job (a widget appears a frame or more after the event): poll
--- GK.Gui.IsOpen, or use stand/ui.py from Python, which waits for you.
+-- GK.Gui.IsOpen.
 
 GK.Gui = GK.Gui or {}
 local UI = GK.Gui
+GK.Cheat = GK.Cheat or {}
+local Cheat = GK.Cheat
 local catalog = GK.UICatalog or { widgets = {}, library = {} }
 
 -- The widgets that are always there while playing: the HUD. Not "windows".
@@ -125,22 +133,51 @@ local function contentRoot()
     return guard(function() return Ext.UI.GetRoot():Find("ContentRoot") end)
 end
 
--- The open widgets, top-most last.
-local function widgets()
-    local root = contentRoot()
-    local out = {}
-    if not root then return out end
-    local count = guard(function() return root.VisualChildrenCount end) or 0
+-- The open widgets, top-most last. Most are children of ContentRoot; the main menu is not (D10
+-- of the 2026-11-14 day run: in the main menu only CrossplayOverlay was listed), so the rest of
+-- the UI tree is walked too - every ls.UIWidget wherever it hangs, never looking inside one, within
+-- a budget so a deep tree costs a bounded walk.
+local function widgetElements()
+    local found = {}
+    local function add(element) found[#found + 1] = element end
+    local content = contentRoot()
+    local count = content and guard(function() return content.VisualChildrenCount end) or 0
     for i = 1, count do
-        local element = guard(function() return root:VisualChild(i) end)
-        if element and typeOf(element) == "ls.UIWidget" then
+        local element = guard(function() return content:VisualChild(i) end)
+        if element and typeOf(element) == "ls.UIWidget" then add(element) end
+    end
+    local root = guard(function() return Ext.UI.GetRoot() end)
+    local budget = 2500
+    local function walk(element, depth)
+        if budget <= 0 or depth > 8 then return end
+        budget = budget - 1
+        if typeOf(element) == "ls.UIWidget" then add(element) return end
+        -- ContentRoot's widgets are listed above (by name: Noesis userdata are not compared)
+        if depth > 0 and guard(function() return element.Name end) == "ContentRoot" then return end
+        local n = guard(function() return element.VisualChildrenCount end) or 0
+        for i = 1, n do
+            local child = guard(function() return element:VisualChild(i) end)
+            if child then walk(child, depth + 1) end
+        end
+    end
+    if root then walk(root, 0) end
+    return found
+end
+
+local function widgets()
+    local out = {}
+    for _, element in ipairs(widgetElements()) do
+        if element then
             local name = guard(function() return element.Name end)
             if name == nil or name == "" then
                 -- a page without x:Name (the first-launch screens: HDR calibration ...): named by
                 -- its data type, "gui::DCHDRCalibration" -> "HDRCalibration" (the page's file)
                 local data = typeOf(guard(function() return element.DataContext end))
                 local short = data:match("::DC(%w+)$") or data:match("%.DC(%w+)$")
-                if short and catalog.widgets[short] then name = short end
+                -- named by its data even when the catalog has no page of that name: the options
+                -- widget (gui::DCOptions, whose pages are VideoOptions, AudioOptions ...) was dropped
+                -- from GK.Gui.Open and could not be reached by Controls or Click (D24 of the day run)
+                if short then name = short elseif data ~= "" and data ~= "nil" and data ~= "?" then name = data end
             end
             if name then out[#out + 1] = { name = name, element = element } end
         end
@@ -216,6 +253,27 @@ local function eventSource(preferred)
         local command = guard(function() return element.DataContext.CustomEvent end)
         if command then return command end
     end
+end
+
+--- The game's own input events, from its input configuration (PlayerProfiles/Default/inputconfig.json
+--- in the game's data, read through Ext.IO): { [event name] = { keys bound } }, filtered by a part of
+--- the name. N36 of the third run: no command was found for the player's weapon toggle - its input
+--- event is the player's own way to sheathe, and GK.Gui.Event raises it.
+function UI.InputEvents(filter)
+    local text = guard(function() return Ext.IO.LoadFile("PlayerProfiles/Default/inputconfig.json", "data") end)
+    if not text or text == "" then return { ok = false, error = "the game's inputconfig.json could not be read" } end
+    local ok, config = pcall(Ext.Json.Parse, text)
+    if not ok or type(config) ~= "table" then return { ok = false, error = "inputconfig.json does not read" } end
+    local out, n = {}, 0
+    local wanted = filter and tostring(filter):lower()
+    for name, keys in pairs(config) do
+        if type(name) == "string" and (not wanted or name:lower():find(wanted, 1, true)) then
+            out[name] = keys
+            n = n + 1
+        end
+    end
+    return { ok = true, events = out, count = n,
+             note = "GK.Gui.Event(name) raises one as its key would (a widget with CustomEvent must be open: the HUD in play)" }
 end
 
 --- Raises a game input event (one of GK.Gui.Events, or any the game knows) as its key would.
@@ -400,7 +458,11 @@ local function runChain(entry, control, widget, log, whichWidget, whichControl)
         local kind = type(live)
         if live ~= nil and kind ~= "userdata" then live = guard(function() return Ext.UI.Box(live) end) end
         if live ~= nil then
-            local command = resolve(entry.command, control, widget)
+            -- the path the XAML names is resolved from the control's DataContext; a binding whose
+            -- source is an ancestor's (the reaction prompt's ReactButton: InterruptReactCommand
+            -- lives on the popup's view model, not on the row's) is not found that way, and the
+            -- live control's own Command - what a click runs - is taken instead
+            local command = resolve(entry.command, control, widget) or (control and guard(function() return control.Command end))
             local _, problem = guard(function() command:Execute(live) end)
             log[#log + 1] = (problem and "failed " or "ran ") .. tostring(entry.command.path) .. (problem and (": " .. problem) or "")
         else
@@ -436,6 +498,46 @@ end
 -- Controls -----------------------------------------------------------------------------------
 
 local UNKNOWN = "ls::TranslatedStringRepository::s_HandleUnknown"
+
+-- The game's own automation name of an element (the attached property
+-- ls:AttachedProperties.AutomationId, e.g. "HotBarSlot_Spell_Projectile_FireBolt"), read from the
+-- element's stored dependency values; nil when it has none.
+local function automationIdOf(element)
+    local values = guard(function() return element:DependencyProperties() end)
+    local id = type(values) == "table" and values.AutomationId or nil
+    return type(id) == "string" and id ~= "" and id or nil
+end
+UI.AutomationIdOf = automationIdOf
+
+-- A control's automation names: its own first, then those inside it (a hotbar slot is the list
+-- item "HotbarSlotIndex_3" holding the grid "HotBarSlot_Spell_Projectile_FireBolt"), eight levels down.
+local function automationIdsWithin(element)
+    local out = {}
+    local own = automationIdOf(element)
+    if own then out[1] = own end
+    local level = { element }
+    for _ = 1, 8 do
+        local nextLevel = {}
+        for _, e in ipairs(level) do
+            local n = guard(function() return e.VisualChildrenCount end) or 0
+            for i = 1, math.min(n, 12) do
+                local child = guard(function() return e:VisualChild(i) end)
+                if child then
+                    local id = automationIdOf(child)
+                    if id and #out < 4 then out[#out + 1] = id end
+                    nextLevel[#nextLevel + 1] = child
+                end
+            end
+        end
+        level = nextLevel
+    end
+    return out
+end
+
+local function hasAutomationId(row, id)
+    for _, a in ipairs(row.automationIds or {}) do if a == id then return true end end
+    return false
+end
 
 local function loca(handle)
     if not handle then return nil end
@@ -507,10 +609,16 @@ function UI.Controls(name, filter)
                 or typeName:find("ListBoxItem", 1, true) or known
             if isControl and (elementName or filter.all or filter.data) and element ~= widget then
                 local row = { name = elementName, kind = typeName, catalogued = known ~= nil }
+                local autos = automationIdsWithin(element)
+                if #autos > 0 then row.automationId = autos[1]; row.automationIds = #autos > 1 and autos or nil end
                 row.enabled = guard(function() return element.IsEnabled end)
                 -- what the control stands for: the type of its data ("ls.VMSpellSelector" ...)
                 local context = guard(function() return element.DataContext end)
                 row.data = context and typeOf(context) or nil
+                -- what a slot or a spell button stands for, in the game's own words: the action
+                -- (spell) id of its data, e.g. Throw_Throw (D13 of the day run: a hotbar slot was
+                -- only reachable by its position among every control of the bar)
+                if context then row.action = UI.ActionOf(context) end
                 row.command = guard(function() return element.Command end) ~= nil
                 row.text = known and loca(known.text) or nil
                 if not row.text then
@@ -530,12 +638,15 @@ function UI.Controls(name, filter)
                     end
                     row.runs = runs
                 end
-                local lower = function(value) return tostring(value or ""):lower() end
-                local fits = (not filter.data or lower(row.data):find(lower(filter.data), 1, true))
+                local lower = GK.Fold
+                local fits = (not filter.automationId or row.automationId == filter.automationId or hasAutomationId(row, filter.automationId))
+                    and (not filter.data or lower(row.data):find(lower(filter.data), 1, true))
                     and (not filter.name or lower(row.name):find(lower(filter.name), 1, true))
                     and (not filter.text or lower(row.text):find(lower(filter.text), 1, true))
+                    and (not filter.action or row.action == filter.action)
                     and (not filter.any or lower(row.name):find(lower(filter.any), 1, true)
-                         or lower(row.text):find(lower(filter.any), 1, true))
+                         or lower(row.text):find(lower(filter.any), 1, true)
+                         or (row.automationId and lower(row.automationId):find(lower(filter.any), 1, true)))
                 if fits then
                     row.n = #rows + 1
                     row.element = element
@@ -557,7 +668,263 @@ function UI.Controls(name, filter)
         out[i] = copy
     end
     UI.LastControls = rows
+    -- Nothing to press may mean something lies over the widget (the tutorial box over character
+    -- creation): that is said, not answered with an empty list (N7 of the third run).
+    if #rows == 0 and UI.Blocking then
+        local blocking = guard(UI.Blocking)
+        if type(blocking) == "table" and blocking.widget and blocking.widget ~= widgetName(name) then
+            return { ok = false, widget = widgetName(name), controls = out, coveredBy = blocking.window,
+                     error = tostring(widgetName(name)) .. " shows no controls while " .. tostring(blocking.window)
+                         .. " (" .. tostring(blocking.widget) .. ") waits over it; GK.Gui.Resolve() takes it away ("
+                         .. tostring(blocking.choices or "its choices: GK.Gui.Blocking()") .. ")" }
+        end
+    end
     return { ok = true, widget = widgetName(name), controls = out }
+end
+
+local ACTION_NAMES = { "PrototypeID", "PrototypeId", "SpellId", "SpellID", "ActionId", "ActionID", "Id", "ID" }
+
+--- Whether `text` names a spell of the game's stats (a hotbar action is one).
+local function isSpell(text)
+    if type(text) ~= "string" or text == "" or not text:find("_", 1, true) then return false end
+    local stat = guard(function() return Ext.Stats.Get(text) end)
+    return stat ~= nil and guard(function() return stat.SpellType end) ~= nil
+end
+
+--- The spell a control's data stands for: a property of its view model that names one, or of a
+--- view model it holds (a hotbar slot holds its action; D19 of the day run: ls.VMHotBarSlot has
+--- no PrototypeID of its own). Every value offered is checked against the game's spell stats, so a
+--- name is never guessed.
+function UI.ActionOf(context, depth)
+    depth = depth or 0
+    for _, property in ipairs(ACTION_NAMES) do
+        local value = guard(function() return context[property] end)
+        if isSpell(value) then return value end
+    end
+    local ok, properties = pcall(function() return context:GetAllProperties() end)
+    if not ok or type(properties) ~= "table" then return nil end
+    for _, value in pairs(properties) do
+        if isSpell(value) then return value end
+    end
+    if depth < 1 then
+        for _, value in pairs(properties) do
+            if type(value) == "userdata" then
+                local found = UI.ActionOf(value, depth + 1)
+                if found then return found end
+            end
+        end
+    end
+    return nil
+end
+
+-- A slot's item name, as the player reads it (the throw list of the Throw action, items on the bar).
+local function slotItemName(context)
+    local object = guard(function() return context.Object end) or guard(function() return context.Item end)
+        or guard(function() return context.Action.Item end)
+    local name = object and (guard(function() return object.Name end) or guard(function() return object.DisplayName end))
+    return readable(name)
+end
+
+-- The client's targeting now: the spell the controlled character previews (or runs), or nil.
+local function targetingSpell()
+    for _, e in ipairs(GK.Controlled()) do
+        local ic = guard(function() return e.ClientCharacter.InputController end)
+        local task = ic and (guard(function() return ic.PreviewTask end) or guard(function() return ic.RunningTask end))
+        if task then
+            return guard(function() return task.Spell.OriginatorPrototype end) or tostring(guard(function() return task.TaskType end)), task
+        end
+    end
+end
+UI.TargetingSpell = targetingSpell
+
+--- Uses the hotbar slot that holds action `id` (its spell id, e.g. "Throw_Throw", or part of an
+--- item's name - the throw list's items), as a click on the slot does: the hotbar's own
+--- UseSlotCommand with the slot. What follows is the game's targeting, which GK.Gui.Aim points.
+--- Answers what it saw: the targeting of that action began (ok), or nothing changed.
+function UI.UseSlot(id, widget)
+    widget = widget or "HotBar"
+    -- every control, hidden ones included (D26 of the day run: the slot was in the listing and
+    -- not found by the click)
+    local listing = UI.Controls(widget, { data = "HotBarSlot", all = true })
+    if listing.ok == false then return listing end
+    local row, held = nil, {}
+    local wanted = GK.Fold(tostring(id))
+    for _, r in ipairs(UI.LastControls or {}) do
+        if r.action then held[#held + 1] = r.action end
+        if not row and (r.action == id or r.automationId == id) then row = r end
+    end
+    if not row then
+        -- by the game's automation name: "HotBarSlot_Spell_<spell>", "HotBarSlot_Item_<uuid>"
+        -- (the throw list holds the items in reach by their uuid)
+        for _, r in ipairs(UI.LastControls or {}) do
+            for _, auto in ipairs(r.automationIds or { r.automationId }) do
+                if #tostring(id) > 3 and auto:sub(-#tostring(id)) == tostring(id) then row = r; break end
+            end
+            if row then break end
+        end
+    end
+    if not row then
+        for _, r in ipairs(UI.LastControls or {}) do
+            local name = slotItemName(guard(function() return r.element.DataContext end))
+            if name and GK.Fold(name):find(wanted, 1, true) then row = r; row.itemName = name; break end
+        end
+    end
+    if not row then
+        return { ok = false, did = "nothing", error = "no slot of " .. widget .. " holds " .. tostring(id)
+            .. (#held > 0 and ("; it holds " .. table.concat(held, ", ", 1, math.min(#held, 40))) or "; no slot names its action") }
+    end
+    local data = UI.Data(widget)
+    local command = data and guard(function() return data.UseSlotCommand end)
+    local slot = guard(function() return row.element.DataContext end)
+    if not (command and slot) then return { ok = false, did = "nothing", error = widget .. " has no UseSlotCommand or the slot no data" } end
+    local known, can = pcall(function() return command:CanExecute(slot) end)
+    if known and can == false then
+        return { ok = false, did = "nothing", saw = "the slot is disabled: the game's CanExecute says no",
+                 hint = "no resource left (action, slot, charge), not this character's turn, or a cooldown" }
+    end
+    local beforeSpell = targetingSpell()
+    -- what the targeting holds: an item picked from the throw list changes what it aims with
+    local function held()
+        local seen = UI.Aiming and UI.Aiming() or {}
+        local names = {}
+        for _, a in ipairs(seen.affected or {}) do names[#names + 1] = tostring(a.uuid) end
+        return tostring(seen.spell) .. "|" .. tostring(seen.state) .. "|" .. table.concat(names, ",")
+    end
+    local heldBefore = held()
+    local _, problem = guard(function() command:Execute(slot) end)
+    if problem then return { ok = false, did = "nothing", error = problem } end
+    local action = row.action or row.itemName or row.automationIds and row.automationIds[#row.automationIds] or row.automationId
+    local result = { ok = true, did = "used the slot of " .. tostring(action), slot = action }
+    return GK.Observe(result, function(_, final)
+        local spell = targetingSpell()
+        if spell and (spell == row.action and spell ~= beforeSpell or spell ~= beforeSpell) then
+            result.saw = "the targeting of " .. tostring(spell) .. " began"
+            result.targeting = spell
+            return result
+        end
+        if spell and held() ~= heldBefore then
+            result.saw = "the targeting of " .. tostring(spell) .. " took it"
+            result.targeting = spell
+            return result
+        end
+        if spell and spell == row.action then
+            result.saw = "the targeting of " .. tostring(spell) .. " is on"
+            result.targeting = spell
+            return result
+        end
+        if final then
+            return { ok = false, did = result.did, saw = "nothing changed: no targeting began (it shows " .. tostring(spell or "none") .. ")",
+                     hint = "an action that needs no aim casts at once - read the effect; else the slot may need a turn or a resource" }
+        end
+    end, 1200)
+end
+
+-- Effects: what a verb saw, not what it attempted ---------------------------------------------
+--
+-- The generic rule (docs/contracts/lua-api.md, "Observed answers"): an acting verb takes a small
+-- picture of the window before it acts - which widgets are open, the plain values of the widget's
+-- view model (numbers, flags, texts, the counts of its lists), the state of the control it pressed
+-- (enabled, visible, checked, selected) - and looks again every 100 ms after: `ok` only when the
+-- picture changed within the wait (`saw` names what changed), else ok = false with
+-- saw = "nothing changed". A command whose own CanExecute says no is not run at all.
+
+local function scalarsOf(object, out, prefix, depth)
+    local ok, properties = pcall(function() return object:GetAllProperties() end)
+    if not ok or type(properties) ~= "table" then return end
+    local n = 0
+    for key, value in pairs(properties) do
+        n = n + 1
+        if n > 400 then break end
+        local kind, name = type(value), prefix .. tostring(key)
+        if kind == "boolean" or kind == "number" or kind == "string" then
+            out[name] = value
+        elseif kind == "userdata" then
+            local typeName = typeOf(value)
+            if not typeName:find("Command", 1, true) then
+                local count = guard(function() return #value end)
+                if type(count) == "number" then
+                    out[name .. "#"] = count
+                elseif depth > 0 then
+                    scalarsOf(value, out, name .. ".", depth - 1)
+                end
+            end
+        end
+    end
+end
+
+local function controlState(element)
+    if not element then return {} end
+    return { enabled = guard(function() return element.IsEnabled end),
+             visibility = tostring(guard(function() return element.Visibility end)),
+             checked = guard(function() return element.IsChecked end),
+             selected = guard(function() return element.IsSelected end) }
+end
+
+--- A picture of a widget's state, for UI.Changed: { open, data, control, present }.
+function UI.Picture(name, controlName)
+    local open = {}
+    for _, w in ipairs(widgets()) do open[#open + 1] = w.name end
+    local picture = { open = table.concat(open, ","), data = {}, control = {} }
+    local element = name and UI.Widget(name)
+    local data = element and guard(function() return element.DataContext end)
+    if data then scalarsOf(data, picture.data, "", 0) end
+    if element and controlName then picture.control = controlState(findElement(element, controlName)) end
+    picture.present = element ~= nil
+    return picture
+end
+
+local function setOf(text)
+    local out = {}
+    for name in tostring(text):gmatch("[^,]+") do out[name] = (out[name] or 0) + 1 end
+    return out
+end
+
+--- What changed between two pictures: a short list of words ({} = nothing).
+function UI.Changed(before, after)
+    local out = {}
+    if before.present and not after.present then out[#out + 1] = "the window closed" end
+    if before.open ~= after.open then
+        local a, b = setOf(before.open), setOf(after.open)
+        for name in pairs(b) do if not a[name] then out[#out + 1] = name .. " opened" end end
+        for name in pairs(a) do if not b[name] and #out < 6 then out[#out + 1] = name .. " closed" end end
+    end
+    for key, value in pairs(after.data) do
+        if #out >= 6 then break end
+        if before.data[key] ~= value then out[#out + 1] = key .. ": " .. tostring(before.data[key]) .. " -> " .. tostring(value) end
+    end
+    for key, value in pairs(before.data) do
+        if #out >= 6 then break end
+        if after.data[key] == nil and value ~= nil and after.present then out[#out + 1] = key .. " gone" end
+    end
+    for key, value in pairs(after.control) do
+        if before.control[key] ~= value and #out < 8 then
+            out[#out + 1] = "control " .. key .. ": " .. tostring(before.control[key]) .. " -> " .. tostring(value)
+        end
+    end
+    return out
+end
+
+--- Wraps an acting verb's answer so the bridge answers with what it saw (GK.Observe): looks
+--- every third tick for a change of the picture; `within` ms of a running game (default 1500,
+--- longer for a chain with a delayed step) before it says nothing changed.
+function UI.ObserveEffect(result, name, controlName, before, within, hint)
+    if not result.ok then return result end
+    local lastLook = -1000
+    return GK.Observe(result, function(ticks, final)
+        if ticks - lastLook < 3 and not final then return nil end
+        lastLook = ticks
+        local after = UI.Picture(name, controlName)
+        local changed = UI.Changed(before, after)
+        if #changed > 0 then
+            result.saw = table.concat(changed, "; ")
+            return result
+        end
+        if not final then return nil end
+        local out = { ok = false, did = result.did or table.concat(result.steps or {}, "; "), saw = "nothing changed",
+                      hint = hint or "read the window (GK.Gui.Read) or run the window's own command (GK.Cheat.Run)" }
+        for k, v in pairs(result) do if out[k] == nil and k ~= "ok" and k ~= "note" then out[k] = v end end
+        return out
+    end, within or 1500)
 end
 
 --- Clicks a control of an open widget: by name, by part of its text, by a filter table as
@@ -576,14 +943,49 @@ function UI.Click(name, what, which)
     else
         local exact = {}
         for _, r in ipairs(rows) do
-            if r.name == what then exact[#exact + 1] = r end
+            if r.name == what or r.automationId == what or hasAutomationId(r, what) then exact[#exact + 1] = r end
         end
         row = exact[which or 1] or (#exact == 0 and rows[which or 1]) or nil
     end
     if not row then return { ok = false, error = "no control " .. tostring(what) .. " in " .. tostring(name) } end
-    if row.enabled == false then return { ok = false, error = "disabled: " .. tostring(row.name or row.text) } end
+    if row.enabled == false then
+        -- What the control stands for says why it is off (N23 of the third run: "disabled:
+        -- AddAbility" and nothing more - no points left, or a cap): the flags and numbers of its data.
+        local state = {}
+        local context = guard(function() return row.element.DataContext end)
+        local ok, properties = pcall(function() return context:GetAllProperties() end)
+        if ok and properties then
+            local n = 0
+            for key, value in pairs(properties) do
+                local kind = type(value)
+                if n < 40 and (kind == "boolean" or kind == "number" or (kind == "string" and #value < 60)) then
+                    state[tostring(key)] = value
+                    n = n + 1
+                end
+            end
+        end
+        return { ok = false, error = "disabled: " .. tostring(row.name or row.text)
+                     .. (next(state) and " - `state` is what its data holds (a count at 0 or a flag off is usually why)" or ""),
+                 state = next(state) and state or nil, data = row.data }
+    end
     local widget = UI.Widget(name)
     local entry = catalogControl(entryOf(widgetName(name)), row.name)
+    if not (entry and (entry.command or entry.click)) and row.name and UI.XamlChain then
+        -- the chain from the game's own XAML when GK.UICatalog does not have it (D20)
+        entry = UI.XamlChain(widgetName(name), row.name)
+    end
+    -- the control's own command, asked first: a command the game turns down is not pressed
+    local own = guard(function() return row.element.Command end)
+    if own then
+        local parameter = guard(function() return row.element.CommandParameter end)
+        if type(parameter) ~= "userdata" and parameter ~= nil then parameter = guard(function() return Ext.UI.Box(parameter) end) end
+        local known, can = pcall(function() return own:CanExecute(parameter) end)
+        if known and can == false then
+            return { ok = false, did = "nothing", saw = "the button is disabled: its command's CanExecute says no",
+                     control = row.name or row.text, hint = "a choice is missing, or the game does not allow it now" }
+        end
+    end
+    local before = UI.Picture(name, row.name)
     local log = {}
     local delayed = 0
     if entry and (entry.command or entry.click) then
@@ -608,32 +1010,92 @@ function UI.Click(name, what, which)
             return { ok = false, error = "nothing to run on " .. tostring(row.name or row.text) }
         end
     end
-    return { ok = true, control = row.name or row.text, steps = log, delayed = delayed > 0 and delayed or nil }
+    local result = { ok = true, control = row.name or row.text, steps = log, delayed = delayed > 0 and delayed or nil,
+                     chain = entry and (entry.source or "catalog") or nil }
+    if not (entry and (entry.command or entry.click)) then
+        -- D20 of the day run: a control whose click chain is in neither GK.UICatalog nor the
+        -- game's XAML runs only its own Command; the observation below says if that did anything.
+        result.note = "only the control's own Command ran: no click chain was found for it"
+    end
+    return UI.ObserveEffect(result, name, row.name, before, delayed > 0 and (delayed + 1200) or 1500,
+        result.note and "the game's XAML may do more on a click than this control's own command: GK.Cheat.Run(window, command) runs a command of the window" or nil)
+end
+
+-- How many items a collection of the game's UI holds. A view model's list counts with `#`; a
+-- Noesis collection (a ListBox's Items or ItemsSource) has no length operator and answered
+-- "the list has 0" for the races of character creation (N6 of the third run) although indexing
+-- it worked. So: `#`, then Count, then the items themselves, read until the first gap.
+local function length(collection)
+    if collection == nil then return nil end
+    local n = guard(function() return #collection end)
+    if type(n) == "number" then return n end
+    n = guard(function() return collection.Count end)
+    if type(n) == "number" then return n end
+    local i = 0
+    while i < 1024 and guard(function() return collection[i + 1] end) ~= nil do i = i + 1 end
+    return i
 end
 
 --- Selects an item of a list (ListBox, tab strip ...) of an open widget, as a click on the item
---- would: `list` is the list's x:Name, `item` its number (1-based) or part of its text.
+--- would: `list` is the list's x:Name, `item` its number (1-based), part of its text, or the item
+--- itself (a userdata read from the view model, e.g. GK.Gui.Data(w):GetProperty("SelectableRaces")[i]).
 function UI.Select(name, list, item)
     local widget = UI.Widget(name)
     if not widget then return { ok = false, error = "not open: " .. tostring(name) } end
     local box = findElement(widget, list)
     if not box then return { ok = false, error = "no list " .. tostring(list) .. " in " .. tostring(name) } end
-    local items = guard(function() return box.Items end) or guard(function() return box.ItemsSource end)
-    local count = items and guard(function() return #items end) or 0
+    -- The items are wherever a count can be read: a list bound to a view model (the races of
+    -- character creation) may hand out an Items that has no length, while its ItemsSource - the
+    -- same collection GK.Gui.Read counts - has one. The first source that counts more than
+    -- nothing wins; a source with no length at all never hides the next.
+    if type(item) == "userdata" then
+        local _, problem = guard(function() box.SelectedItem = item end)
+        if problem then return { ok = false, error = problem } end
+        if guard(function() return box.SelectedItem end) == nil then
+            return { ok = false, error = "the list did not take that item (it is not one of its items?)" }
+        end
+        return { ok = true, selected = "item" }
+    end
+    local items, count = nil, 0
+    for _, source in ipairs({ "Items", "ItemsSource" }) do
+        local candidate = guard(function() return box[source] end)
+        local n = length(candidate)
+        if type(n) == "number" and (items == nil or n > count) then items, count = candidate, n end
+        if count > 0 then break end
+    end
+    if items == nil then
+        return { ok = false, error = "the list " .. tostring(list) .. " has neither Items nor ItemsSource to read" }
+    end
     local index = type(item) == "number" and item or nil
     if not index and type(item) == "string" then
         for i = 1, count do
             local value = guard(function() return items[i] end)
             local text = value and (guard(function() return value.Name end) or guard(function() return value.Title end)) or nil
-            if type(text) == "string" and text:lower():find(item:lower(), 1, true) then index = i break end
+            text = readable(text)
+            if type(text) == "string" and GK.Fold(text):find(GK.Fold(item), 1, true) then index = i break end
         end
     end
     if not index or index < 1 or index > count then
         return { ok = false, error = "no item " .. tostring(item) .. " (the list has " .. count .. ")" }
     end
     local _, problem = guard(function() box.SelectedIndex = index - 1 end)
-    if problem then return { ok = false, error = problem } end
-    return { ok = true, selected = index, of = count }
+    -- What the list reads afterwards decides, not whether the setter raised: the game's own handler
+    -- of a selection can fail after the selection is made (N22 of the third run: "Param 3: expected a
+    -- light C++ object, got nil" while the origin did change).
+    if guard(function() return box.SelectedIndex end) == index - 1 then
+        return { ok = true, selected = index, of = count, warning = problem }
+    end
+    -- a list that will not take an index may still take the item itself
+    local chosen = guard(function() return items[index] end)
+    if chosen == nil then
+        return { ok = false, error = "item " .. index .. " of " .. count .. " could not be read, and the list did not take the index"
+            .. (problem and (": " .. problem) or "") }
+    end
+    local _, second = guard(function() box.SelectedItem = chosen end)
+    if guard(function() return box.SelectedIndex end) ~= index - 1 and second then
+        return { ok = false, error = problem or second }
+    end
+    return { ok = true, selected = index, of = count, warning = second or problem }
 end
 
 --- What a key does in a widget: runs its input binding for that event ("UIAccept", "UICancel",
@@ -647,26 +1109,91 @@ function UI.Input(name, event)
         if input.event == event and (input.command or input.click) then
             local log = {}
             local control = input.name and findElement(widget, input.name) or nil
+            local before = UI.Picture(name, input.name)
             UI.LastDelayed = {}
-            runChain(input, control, widget, log, widgetName(name), input.name)
-            return { ok = true, steps = log }
+            local _, delayed = runChain(input, control, widget, log, widgetName(name), input.name)
+            return UI.ObserveEffect({ ok = true, steps = log, did = "the " .. tostring(event) .. " binding" }, name, input.name, before,
+                (delayed or 0) > 0 and (delayed + 1200) or 1500)
         end
     end
     return { ok = false, error = tostring(name) .. " has no input binding for " .. tostring(event) }
 end
 
+-- Whether a value of a widget's data is a command (something Run can execute).
+local function isCommand(value)
+    if type(value) ~= "userdata" then return false end
+    if typeOf(value):find("Command", 1, true) then return true end
+    return guard(function() return value.CanExecute end) ~= nil
+end
+
+local function describe(value)
+    if type(value) == "userdata" then return typeOf(value) end
+    return type(value) .. " " .. tostring(value)
+end
+
 --- Runs a command of a widget's data by path ("FinishLevelUp", "CurrentPlayer.SomeCommand");
---- a string, number or boolean parameter is boxed for the game.
-function UI.Run(name, path, parameter)
+--- a string, number or boolean parameter is boxed for the game. A command takes one parameter
+--- (the game's ICommand does); several values go as the one object the command expects. A path that leads to a value
+--- rather than a command is refused, naming GK.Cheat.Set.
+function Cheat.Run(name, path, parameter)
     local data = UI.Data(name)
     if not data then return { ok = false, error = "not open: " .. tostring(name) } end
     local command = follow(data, path)
     if command == nil then return { ok = false, error = "no command " .. tostring(path) } end
+    if not isCommand(command) then
+        return { ok = false, error = tostring(path) .. " is not a command but a value (" .. describe(command)
+            .. "); GK.Cheat.Set(name, path, value) sets a property" }
+    end
     local kind = type(parameter)
     if kind == "string" or kind == "number" or kind == "boolean" then parameter = Ext.UI.Box(parameter) end
+    -- The game's own CanExecute first: a command it turns down ran "ok" and did nothing (N26 of
+    -- the third run, the Combine widget's commands). A command that cannot be asked is run.
+    local known, can = pcall(function() return command:CanExecute(parameter) end)
+    if known and can == false then
+        return { ok = false, error = tostring(path) .. " cannot run now: the game's CanExecute says no for that parameter (nothing was done)" }
+    end
+    local before = UI.Picture(name)
     local _, problem = guard(function() command:Execute(parameter) end)
     if problem then return { ok = false, error = problem } end
-    return { ok = true }
+    -- ran is not did: the answer waits to see the window change
+    return UI.ObserveEffect({ ok = true, ran = path, did = "ran " .. tostring(path), canExecute = known and can or nil },
+        name, nil, before, 1500, "the command ran and the window shows no change: read what it should have changed")
+end
+
+--- Sets a property of a widget's data by path ("FieldOfView", "SelectedRace",
+--- "CurrentPlayer.Something") through the view model's SetProperty, as a binding of the window
+--- would, and reads it back: { ok, before, after }. ok is false when the value read back is not
+--- the one set - the game recomputes some properties from others and keeps its own.
+function Cheat.Set(name, path, value)
+    local data = UI.Data(name)
+    if not data then return { ok = false, error = "not open: " .. tostring(name) } end
+    local parentPath, property = tostring(path):match("^(.*)%.([^%.]+)$")
+    if not property then parentPath, property = "", tostring(path) end
+    local owner = follow(data, parentPath)
+    if owner == nil then return { ok = false, error = "no " .. tostring(parentPath) .. " in " .. tostring(name) } end
+    local before = guard(function() return owner:GetProperty(property) end)
+    if before == nil then before = guard(function() return owner[property] end) end
+    if before == nil then return { ok = false, error = "no property " .. tostring(path) .. " in " .. tostring(name) } end
+    local _, problem = guard(function() owner:SetProperty(property, value) end)
+    if problem and type(value) ~= "userdata" then
+        -- some properties take only a boxed value
+        local boxed = guard(function() return Ext.UI.Box(value) end)
+        if boxed ~= nil then _, problem = guard(function() owner:SetProperty(property, boxed) end) end
+    end
+    if problem then return { ok = false, error = tostring(path) .. ": " .. problem } end
+    local after = guard(function() return owner:GetProperty(property) end)
+    if after == nil then after = guard(function() return owner[property] end) end
+    local same = after == value or (type(after) == "number" and type(value) == "number" and math.abs(after - value) < 1e-4)
+    local function show(v) return type(v) == "userdata" and typeOf(v) or v end
+    if type(value) == "userdata" then
+        -- two handles on one game object need not compare equal in Lua: not checked
+        return { ok = true, before = show(before), after = show(after), checked = false }
+    end
+    if not same then
+        return { ok = false, before = show(before), after = show(after),
+                 error = "set, but " .. tostring(path) .. " reads " .. tostring(show(after)) .. " afterwards: the game keeps its own value" }
+    end
+    return { ok = true, before = show(before), after = show(after) }
 end
 
 -- Reading --------------------------------------------------------------------------------
@@ -741,8 +1268,8 @@ end
 
 -- Steps: windows that ask the player for choices get a `step` function that makes ONE missing
 -- choice (the first allowed option, or what `options.pick` prefers) and says what is left.
--- GK.Gui.Step(window, options) runs it once; GK.Gui.Auto(window, options) repeats it in the game
--- (every options.every ms, default 400) until the window says done, closes, or options.limit
+-- GK.Cheat.Step(window, options) runs it once; GK.Cheat.Auto(window, options) repeats it in the
+-- game (every options.every ms, default 400) until the window says done, closes, or options.limit
 -- steps (default 40) pass. GK.Gui.AutoState[window] tells how far it is.
 
 local function count(collection)
@@ -760,6 +1287,11 @@ W.levelup.step = function(ui, options)
     if not data then return { done = true, did = "closed" } end
     if guard(function() return data.IsLevelUpComplete end) then
         local result = ui.Click("CharacterLevelUp", "finishLevelUpButton")
+        if result.ok and result.note then
+            -- the click's own command is the cosmetic part: the level is finished by FinishLevelUp
+            result = Cheat.Run("CharacterLevelUp", "FinishLevelUp")
+            return { did = "accept (FinishLevelUp: the click chain is not known here)", ok = result.ok, error = result.error, wait = 3000 }
+        end
         return { did = "accept", ok = result.ok, error = result.error, wait = 3000 }
     end
     local details = guard(function() return data.ClassProgressionDetails end)
@@ -788,7 +1320,7 @@ W.levelup.step = function(ui, options)
                 for k = 1, count(available) do
                     local passive = item(available, k)
                     if guard(function() return passive.IsSelected end) ~= true then
-                        local run = ui.Run("CharacterLevelUp", "TogglePassive", passive)
+                        local run = Cheat.Run("CharacterLevelUp", "TogglePassive", passive)
                         return { did = "passive", ok = run.ok, error = run.error }
                     end
                 end
@@ -806,7 +1338,7 @@ W.levelup.step = function(ui, options)
                 local name = guard(function() return feat.Name end) or ""
                 local allowed = guard(function() return feat.IsRequirementsMet end) ~= false
                     and guard(function() return feat.IsAlreadyTaken end) ~= true
-                if allowed and (not options.feat or name:lower():find(options.feat:lower(), 1, true)) then pick = feat break end
+                if allowed and (not options.feat or GK.Fold(name):find(GK.Fold(options.feat), 1, true)) then pick = feat break end
             end
             if pick then
                 local _, problem = guard(function() data.SelectedFeat = pick end)
@@ -830,7 +1362,7 @@ W.levelup.step = function(ui, options)
                 end
             end
             if best then
-                local run = ui.Run("CharacterLevelUp", "SelectAbility", best)
+                local run = Cheat.Run("CharacterLevelUp", "SelectAbility", best)
                 return { did = "ability " .. tostring(guard(function() return best.Ability end)), ok = run.ok, error = run.error }
             end
         end
@@ -838,7 +1370,7 @@ W.levelup.step = function(ui, options)
     return { did = "nothing", stuck = true, error = "level-up not complete and no missing choice found" }
 end
 
-function UI.Step(name, options)
+function Cheat.Step(name, options)
     local window = W[name]
     if not window or not window.step then return { ok = false, error = "no step for " .. tostring(name) } end
     if not UI.IsOpen(window.widget) then return { ok = false, done = true, error = "not open: " .. tostring(name) } end
@@ -850,7 +1382,7 @@ end
 
 UI.AutoState = UI.AutoState or {}
 
-function UI.Auto(name, options)
+function Cheat.Auto(name, options)
     options = options or {}
     local state = { running = true, steps = 0, log = {}, started = Ext.Utils.MonotonicTime() }
     UI.AutoState[name] = state
@@ -858,7 +1390,7 @@ function UI.Auto(name, options)
     local function tick()
         Ext.UI.Defer(function()
             if UI.AutoState[name] ~= state or not state.running then return end
-            local result = UI.Step(name, options)
+            local result = Cheat.Step(name, options)
             state.steps = state.steps + 1
             state.log[#state.log + 1] = tostring(result.did or result.error)
             if result.done or result.stuck or state.steps >= limit then
@@ -866,7 +1398,20 @@ function UI.Auto(name, options)
                 state.result = result
                 return
             end
-            Ext.Timer.WaitFor(result.wait or every, tick)
+            -- The step's `wait` is the longest pause before the next step; a change the attention
+            -- record sees first (the prompt closed, the box went, the dialogue moved to a roll)
+            -- starts the next step at once. Polled every 50 ms of game timers.
+            local mark = GK.Attention and GK.Attention.Seq or nil
+            local deadline = Ext.Utils.MonotonicTime() + (result.wait or every)
+            local function pause()
+                if UI.AutoState[name] ~= state then return end
+                if (mark and GK.Attention.Seq ~= mark) or Ext.Utils.MonotonicTime() >= deadline then
+                    state.early = (state.early or 0) + ((mark and GK.Attention.Seq ~= mark) and 1 or 0)
+                    return tick()
+                end
+                Ext.Timer.WaitFor(50, pause)
+            end
+            Ext.Timer.WaitFor(50, pause)
         end)
     end
     tick()
@@ -876,6 +1421,23 @@ end
 -- Items: what the player does to an item in the inventory, from code. The view model of an item
 -- is found by (part of) its name in the selected character's inventory or equipment, and the
 -- character panel's own command runs with it - the same command a click or a drag runs.
+-- Containers carried in the inventory are looked into (N46 of the third run: herbs, extracts and
+-- arrows live in the alchemy pouch, a container item, and were not found), two levels deep.
+
+local function containerItems(object, out, depth)
+    if depth > 2 or guard(function() return object.IsContainer end) ~= true then return end
+    local inventories = guard(function() return object.Inventories end)
+    for k = 1, count(inventories) do
+        local slots = guard(function() return item(inventories, k).Slots end)
+        for i = 1, count(slots) do
+            local inner = guard(function() return item(slots, i).Object end)
+            if inner then
+                out[#out + 1] = inner
+                containerItems(inner, out, depth + 1)
+            end
+        end
+    end
+end
 
 local function itemVMs(data)
     local out = {}
@@ -883,10 +1445,16 @@ local function itemVMs(data)
     local character = player and guard(function() return player.SelectedCharacter end)
     local inventory = character and guard(function() return character.Inventory end)
     local slots = inventory and guard(function() return inventory.Slots end)
+    local containers = {}
     for i = 1, count(slots) do
         local object = guard(function() return item(slots, i).Object end)
-        if object then out[#out + 1] = object end
+        if object then
+            out[#out + 1] = object
+            containers[#containers + 1] = object
+        end
     end
+    -- what is inside comes after everything the character carries loose, so a loose item wins
+    for _, object in ipairs(containers) do containerItems(object, out, 1) end
     local equipment = character and guard(function() return character.Equipment end)
     if equipment then
         local all = guard(function() return equipment:GetAllProperties() end) or {}
@@ -903,10 +1471,11 @@ end
 function UI.Item(text)
     local data = UI.Data("HotBar")
     if not data then return nil end
-    local wanted = tostring(text):lower()
+    local wanted = GK.Fold(text)
     for _, object in ipairs(itemVMs(data)) do
-        local name = readable(guard(function() return object.Name end)) or ""
-        if name:lower():find(wanted, 1, true) then return object, name end
+        local name = readable(guard(function() return object.Name end))
+            or readable(guard(function() return object.NameAlchemy end)) or ""
+        if GK.Fold(name):find(wanted, 1, true) then return object, name end
     end
 end
 
@@ -916,17 +1485,77 @@ local ITEM_COMMANDS = { equip = "UseGameObject", unequip = "UnequipItemCommand",
                         drop = "DropGameObject" }
 
 --- Does to an item what the player does: "equip", "unequip", "use" (drink, read, open), "drop".
---- The character panel need not be open (the HUD's data carries the same commands).
+--- The character panel need not be open (the HUD's data carries the same commands). ok says the
+--- game's command ran, not what it did: that shows a moment later.
 function UI.ItemDo(action, text)
     local command = ITEM_COMMANDS[action]
     if not command then return { ok = false, error = "unknown action " .. tostring(action) } end
     local object, name = UI.Item(text)
-    if not object then return { ok = false, error = "no item like " .. tostring(text) } end
+    if not object then
+        return { ok = false, error = "no item like " .. tostring(text) .. " in the selected character's inventory, "
+            .. "equipment or the containers it carries" }
+    end
+    -- N48 of the third run: a Combine window left open (in Success) stayed, and a later dye's use
+    -- answered ok with the old window still there - a use starts from no Combine window.
+    local closed
+    if action == "use" and UI.Widget("Combine") then
+        local data = UI.Data("Combine")
+        local state = data and guard(function() return tostring(data.CurrentState) end)
+        local result = UI.Close("Combine")
+        closed = "Combine (" .. tostring(state) .. ")" .. (result.ok and "" or (": not closed - " .. tostring(result.error)))
+    end
     local source = UI.IsOpen("CharacterPanel") and "CharacterPanel" or "HotBar"
-    local result = UI.Run(source, command, object)
+    -- what the item and the windows look like before: an effect is a change of either (N47, D6:
+    -- an arrow's use and a mallet's equip answered ok and did nothing)
+    local itemBefore = {}
+    scalarsOf(object, itemBefore, "", 0)
+    local before = UI.Picture(nil)
+    local result = GK.Unobserved(Cheat.Run(source, command, object))
     result.item = name
     result.via = source .. "." .. command
-    return result
+    result.closedFirst = closed
+    if not result.ok then return result end
+    result.did = "the game ran " .. command .. " on " .. tostring(name)
+    UI.LastItemUse = { action = action, item = name, at = Ext.Utils.MonotonicTime() }
+    local lastLook = -1000
+    return GK.Observe(result, function(ticks, final)
+        if ticks - lastLook < 3 and not final then return nil end
+        lastLook = ticks
+        local again = UI.Item(name)
+        if action == "equip" or action == "unequip" then
+            -- only the item's own equipped state counts: a flag that blinks (IsInUse) is not an equip
+            local state = again and guard(function() return tostring(again.Equipped) end)
+            local equipped = state ~= nil and state ~= "NotEquipped"
+            if again and equipped == (action == "equip") then
+                result.saw = "the item is " .. (equipped and ("equipped (" .. state .. ")") or "not equipped")
+                return result
+            end
+            if not final then return nil end
+            return { ok = false, did = result.did, item = name, via = result.via,
+                     saw = "nothing changed: the item is " .. (equipped and "still equipped" or "not equipped"),
+                     hint = action == "equip" and "the item may not be wearable by this character (proficiency, slot), or in a fight armour cannot change; GK.Cheat.Equip asks the game directly" or nil }
+        end
+        local changed = UI.Changed(before, UI.Picture(nil))
+        if not again then
+            changed[#changed + 1] = "the item is no longer carried (used up, dropped or moved)"
+        else
+            local itemAfter = {}
+            scalarsOf(again, itemAfter, "", 0)
+            for key, value in pairs(itemAfter) do
+                if itemBefore[key] ~= value and #changed < 6 then
+                    changed[#changed + 1] = "item " .. key .. ": " .. tostring(itemBefore[key]) .. " -> " .. tostring(value)
+                end
+            end
+        end
+        if #changed > 0 then
+            result.saw = table.concat(changed, "; ")
+            return result
+        end
+        if not final then return nil end
+        return { ok = false, did = result.did, item = name, via = result.via, saw = "nothing changed",
+                 hint = action == "equip" and "the item may not be wearable by this character (proficiency, slot), or in a fight armour cannot change"
+                     or "nothing the game shows changed: the use may need a target or a window" }
+    end, 2000)
 end
 
 -- Tutorials: off at the source, and whatever still pops up closed as it appears ---------------
@@ -943,7 +1572,7 @@ local function closeTutorials()
         if UI.Widget(tutorial.widget) then
             local done = false
             for _, command in ipairs(tutorial.run) do
-                if not done and UI.Run(tutorial.widget, command).ok then done = true end
+                if not done and Cheat.Run(tutorial.widget, command).ok then done = true end
             end
             if not done then UI.Close(tutorial.widget) end
             closed[#closed + 1] = tutorial.widget
@@ -966,7 +1595,7 @@ UI.QuietState = UI.QuietState or { on = false, closed = 0 }
 --- Tutorials off (on = false turns them back on): the game's own switch (GlobalSwitches
 --- ShowTutorials, what the options menu sets), and every half second whatever tutorial still
 --- shows is closed. GK.Gui.QuietState counts what was closed.
-function UI.Quiet(on)
+function Cheat.Quiet(on)
     local state = UI.QuietState
     state.on = on ~= false
     local switches = Ext.Utils.GetGlobalSwitches()
@@ -990,11 +1619,16 @@ end
 
 -- Game over and the main menu: back into the game ------------------------------------------
 
---- What holds the game outside play: "gameover" (the "party defeated" box), "mainmenu", or nil.
+--- What holds the game outside play: "film", "gameover" (the "party defeated" box), "firstlaunch",
+--- "splash" (the screen before the main menu), "mainmenu", or nil; second result: the screen.
 -- The screens a copy of the game shows on its first way to the main menu, and the button that
--- moves on (the EULA: the user's standing consent of 2026-11-13 covers the stand's copies).
+-- moves on. The owner's standing consent to the game's own agreements covers GateKit's copies
+-- (research/open-items.md, "Decided here").
 local FIRST_LAUNCH = {
     { widget = "Eula", button = "AcceptBtn" },
+    -- Larian's mod policy (terms and privacy): both boxes ticked, then Accept.
+    { widget = "ModBrowserSplashScreen", check = { "LarianModTermsCheckbox", "LarianModPrivacyCheckbox" },
+      button = "AcceptButton", command = "LarianModPolicyAcceptCommand" },
     { widget = "SensitiveSettings", button = "NextButton" },
     -- the calibration screens page through their pictures with "Next"; their last button closes
     -- the widget, which is what is done here at once
@@ -1002,11 +1636,51 @@ local FIRST_LAUNCH = {
     { widget = "GammaCalibration", close = true },
 }
 
+-- The screens every start of the game passes on its way to the main menu, and the game input
+-- event each one's own page raises on a key or a click (Pages/SplashScreen.xaml: any key or
+-- mouse button raises CustomEvent "OpenMainMenu"). No agreement is involved: what a player's
+-- key does, in the installed game as in a copy.
+local PASS_THROUGH = {
+    { widget = "SplashScreen", event = "OpenMainMenu" },
+}
+
+--- Whether the game is playing a recorded film (a video, not an engine scene: the one at a new
+--- game, the one after character creation). Nothing of the UI shows it - the client only sits in
+--- StartLoading - so it is read where the engine keeps it: ecl::GameControl's movie player
+--- (+0x190) and its ls::VideoManager (+0x38), whose playing flag is at +0x10
+--- (ls::VideoManager::SetPlaying, ecl::GameControl::HasMovie). GameControl is reached through the
+--- camera system, which holds it at +0x128 in bg3_dx11.exe (ecl::CameraSystem::SnapFade,
+--- bg3_dx11.exe+0x1E14B40; the Toolkit's build has it at +0x138). Returns true or false, or nil
+--- and why when it cannot be read (no GateKit extender, no client world yet).
+function UI.FilmPlaying()
+    local debug = Ext.Debug or {}
+    if not (debug.GetSystemAddress and debug.ReadMemory) then return nil, "needs GateKit's extender (Ext.Debug.GetSystemAddress)" end
+    local system = guard(function() return debug.GetSystemAddress("ecl::CameraSystem") end)
+    if not (system and system.Address) then return nil, "no ecl::CameraSystem in the client world yet" end
+    local function pointer(address, offset)
+        local bytes = debug.ReadMemory(address + offset, 8)
+        return bytes and string.unpack("<i8", bytes) or nil
+    end
+    local control = pointer(system.Address, 0x128)
+    if not control or control == 0 then return nil, "the camera holds no GameControl" end
+    local player = pointer(control, 0x190)
+    if not player or player == 0 then return false end
+    local video = pointer(player, 0x38)
+    if not video or video == 0 then return false end
+    local flag = debug.ReadMemory(video + 0x10, 1)
+    if not flag then return nil, "the video manager could not be read" end
+    return flag:byte() ~= 0
+end
+
 function UI.Stuck()
+    if UI.FilmPlaying() == true then return "film" end
     local box = UI.Data("Dialog_box")
     if box and guard(function() return box.IsGameOver end) then return "gameover" end
     for _, screen in ipairs(FIRST_LAUNCH) do
         if UI.Widget(screen.widget) then return "firstlaunch", screen end
+    end
+    for _, screen in ipairs(PASS_THROUGH) do
+        if UI.Widget(screen.widget) then return "splash", screen end
     end
     if UI.Widget("MainMenu") then return "mainmenu" end
     return nil
@@ -1031,12 +1705,50 @@ UI.PressBox = pressBox
 
 --- One step out of a dead end without restarting the game. On "game over" the server is paused
 --- and nothing can be raised; the way out is the game's own: "Load game", then the newest save
---- (the stand's checkpoint). From the main menu: "Continue"; first-launch screens are clicked through. Returns what it did; call again until GK.Gui.Stuck()
+--- (the copy's checkpoint). From the main menu: "Continue"; first-launch screens are clicked through. Returns what it did; call again until GK.Gui.Stuck()
 --- is nil and the game state is Running (a load takes seconds).
-function UI.Recover()
+function Cheat.Recover()
     local stuck, screen = UI.Stuck()
-    if stuck == "firstlaunch" then
+    if stuck == "film" then
+        -- The game's own skip: Escape (as a player would). A film whose end is held by GK.Pause
+        -- (bg3_pause) does not end at all - its fade waits for game time - so the answer says so.
+        local _, problem = guard(function() return GK.Key("ESCAPE") end)
+        return { ok = problem == nil, error = problem, did = "film: Escape pressed to skip it",
+                 note = "if bg3_pause holds the game, unpause it: the film's end waits for game time; ask GK.Gui.Stuck() again" }
+    elseif stuck == "splash" then
+        local result = UI.Event(screen.event, screen.widget)
+        result.did = "splash screen: " .. screen.widget .. " raised " .. screen.event .. ", as its key does"
+        return result
+    elseif stuck == "firstlaunch" then
+        -- Boxes that must be ticked before the button means anything: ticked, never unticked.
+        local ticked = {}
+        for _, name in ipairs(screen.check or {}) do
+            local box = UI.Find(screen.widget, name)
+            if not box then
+                return { ok = false, error = "first launch: " .. screen.widget .. " has no " .. name, did = "first launch: " .. screen.widget }
+            end
+            if guard(function() return box.IsChecked end) ~= true then
+                local command = guard(function() return box.Command end)
+                if command then
+                    local parameter = guard(function() return box.CommandParameter end)
+                    if type(parameter) ~= "userdata" and parameter ~= nil then parameter = Ext.UI.Box(parameter) end
+                    guard(function() command:Execute(parameter) end)
+                end
+                if guard(function() return box.IsChecked end) ~= true then guard(function() box.IsChecked = true end) end
+            end
+            ticked[#ticked + 1] = name .. (guard(function() return box.IsChecked end) == true and "" or " (did not take)")
+        end
         local result = screen.close and UI.Close(screen.widget) or UI.Click(screen.widget, screen.button)
+        if not result.ok and screen.command then
+            -- the button's own command, read off the widget's view model
+            local widget = UI.Widget(screen.widget)
+            local command = widget and guard(function() return widget.DataContext[screen.command] end)
+            local _, problem = guard(function() command:Execute(nil) end)
+            if command and not problem then
+                result = { ok = true, control = screen.command, steps = { "ran " .. screen.command } }
+            end
+        end
+        result.ticked = #ticked > 0 and ticked or nil
         result.did = "first launch: " .. screen.widget
         return result
     elseif stuck == "gameover" then
@@ -1059,6 +1771,60 @@ function UI.Recover()
         return { ok = problem == nil, error = problem, did = "main menu: continue (latest save)" }
     end
     return { ok = true, did = "nothing holds the game" }
+end
+
+local function clientState()
+    local ok, state = pcall(function() return tostring(Ext.Utils.GetGameState()) end)
+    return ok and state or nil
+end
+
+-- The new-game settings: the page NewGameSettings.xaml, whose widget is named DMSettings.
+local function newGameSettings()
+    return UI.Widget("DMSettings") or UI.Widget("NewGameSettings")
+end
+
+--- A new game from the main menu, the way a player starts one: the main menu's New Game button
+--- (StartGameCommand) opens the new-game settings, whose Confirm runs StartNewGame with the preset
+--- selected in its list. One step per call, and each answers what it saw: ok once the settings
+--- are open, then ok once the game has left the menu (character creation loads); otherwise
+--- ok = false with what was seen. Commands run here, in the UI's context: run from a timer they
+--- do nothing at all.
+function UI.NewGame()
+    local settings = newGameSettings()
+    if settings then
+        local confirm = findElement(settings, "ConfirmBtn")
+        if not confirm then return { ok = false, error = "the new-game settings have no ConfirmBtn" } end
+        local command = guard(function() return confirm.Command end)
+        local parameter = guard(function() return confirm.CommandParameter end)
+        if not command then return { ok = false, error = "ConfirmBtn has no command" } end
+        if parameter == nil then return { ok = false, error = "no preset is selected in the new-game settings" } end
+        local _, problem = guard(function() command:Execute(parameter) end)
+        if problem then return { ok = false, error = "Confirm failed: " .. problem } end
+        return GK.Observe({ ok = true, did = "new game: settings confirmed" }, function(_, final)
+            local state = clientState()
+            if state and state ~= "Menu" then
+                return { ok = true, did = "new game: settings confirmed; the game left the menu (" .. state .. ")", state = state }
+            end
+            if final then
+                return { ok = false, error = "Confirm was pressed and the game stayed in the menu", state = state,
+                         settings = newGameSettings() ~= nil }
+            end
+        end, 3000)
+    end
+    local menu = UI.Data("MainMenu")
+    if not menu then return { ok = false, error = "neither the main menu nor the new-game settings are open" } end
+    local start = guard(function() return menu.StartGameCommand end)
+    if not start then return { ok = false, error = "the main menu has no StartGameCommand" } end
+    local _, problem = guard(function() start:Execute(nil) end)
+    if problem then return { ok = false, error = "New Game failed: " .. problem } end
+    return GK.Observe({ ok = true, did = "new game: main menu's New Game" }, function(_, final)
+        if newGameSettings() then
+            return { ok = true, did = "new game: main menu's New Game; the settings are open (call again to confirm)" }
+        end
+        if final then
+            return { ok = false, error = "New Game was pressed and the new-game settings did not open", state = clientState() }
+        end
+    end, 3000)
 end
 
 --- The named windows and whether each is open.

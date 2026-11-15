@@ -1,6 +1,6 @@
 -- Popups: the windows that stop the game until the player answers - a dialogue, a dice roll, a
 -- reaction prompt, a message box, a tutorial, loot, trade, rest, rewards ... - read and resolved
--- from code through GK.Gui (Client/Windows.lua). UI side (`ui` in the stand).
+-- from code through GK.Gui (Client/Windows.lua). UI side (`ui` in `gatekit`).
 --
 --   GK.Gui.Windows.<name>        registry entries (widget, read, step, close, blocking = true)
 --   GK.Gui.Blocking()            the top-most window that waits for the player right now, with its
@@ -29,6 +29,7 @@
 local UI = GK.Gui
 if not UI or not UI.Windows then return false end
 local W = UI.Windows
+local Cheat = GK.Cheat
 
 local UNKNOWN = "ls::TranslatedStringRepository::s_HandleUnknown"
 local CAP = 40
@@ -151,6 +152,11 @@ local function run(command, parameter, label)
         local boxed = guard(function() return Ext.UI.Box(parameter) end)
         parameter = boxed
     end
+    -- as GK.Cheat.Run: a command the game's CanExecute turns down is said, not run "ok" (N26)
+    local known, can = pcall(function() return command:CanExecute(parameter) end)
+    if known and can == false then
+        return { ok = false, error = tostring(label) .. " cannot run now: the game's CanExecute says no (nothing was done)" }
+    end
     local _, problem = guard(function() command:Execute(parameter) end)
     if problem then return { ok = false, error = tostring(label) .. ": " .. problem } end
     return { ok = true, ran = label }
@@ -172,7 +178,7 @@ local function pressLive(widget, name)
     return run(command, parameter, name)
 end
 
-local function lower(value) return tostring(value or ""):lower() end
+local function lower(value) return GK.Fold(value) end
 
 local function characterName(character)
     local name = text(get(character, "Name"))
@@ -319,6 +325,22 @@ W.dialogue.read = reader(function(data)
     return out
 end)
 
+--- Where the dialogue on screen stands for the player: { phase = "choice" | "continue" | "line",
+--- answers, speaker, text, instance, canTrade, set } or nil. `set` names the answers on offer, so
+--- a new set in the same dialogue reads as a new choice. GK.Attention records each choice.
+function UI.DialoguePhase()
+    local data = UI.Data("Dialogue")
+    if not data then return nil end
+    local r = W.dialogue.read(data, UI)
+    if type(r) ~= "table" then return nil end
+    local phase = r.state == "answers" and "choice" or (r.state == "continue" and "continue" or "line")
+    local texts = {}
+    for _, a in ipairs(r.answers or {}) do texts[#texts + 1] = tostring(a.n) .. ":" .. tostring(a.text) end
+    return { phase = phase, answers = phase == "choice" and r.answers or nil, speaker = r.speaker, text = r.text,
+             instance = r.instance, canTrade = r.canTrade,
+             set = tostring(r.instance) .. "|" .. phase .. "|" .. table.concat(texts, "|") .. (phase == "continue" and ("|" .. tostring(r.text)) or "") }
+end
+
 -- Which answer: options.answer (a number as shown, or part of the text), else options.choice /
 -- pick ("first", "last", "second", "third", a number, or part of the text); default "last".
 local function pickAnswer(answers, options)
@@ -376,10 +398,16 @@ W.dialogue.step = stepper(function(ui, options)
             return result
         end
     end
+    -- answers already in the list but not shown yet: they come in a moment - a skip now would be
+    -- reported as progress while a choice is what is pending
+    if not showAnswers and #dialogueAnswers(ad) > 0 then
+        return { did = "waiting for the answers to show", pending = "choice", wait = 200 }
+    end
     -- a line being spoken (or a cinematic moment): skip it as the continue key does
-    if options.skip == false then return { did = "waiting for the line", wait = 500 } end
+    if options.skip == false then return { did = "waiting for the line", pending = "line", wait = 500 } end
     local result = runOn(data, "SelectorSkipCommand", num(get(data, "PlayerId")) or 1)
     result.did = "skip line"
+    result.pending = "line"
     result.wait = 400
     return result
 end)
@@ -404,8 +432,34 @@ local function rollList(collection)
     end, 12))
 end
 
+-- One offered or added bonus (an ls.VMBoostModifier): the spell or item that gives it
+-- (BoostModifier: its Name, PrototypeID), its die (DiceTypeSet.Str), the range it adds
+-- (MinBonusValue..MaxBonusValue - one value once its die is rolled), who gives it (Owner, a
+-- character's view model), IsSelected.
+local function bonusOf(vm)
+    local source = get(vm, "BoostModifier")
+    local owner = get(vm, "Owner")
+    local low, high = num(get(vm, "MinBonusValue")), num(get(vm, "MaxBonusValue"))
+    local name = clean(get(vm, "Name")) or clean(get(vm, "Description")) or clean(get(vm, "Title")) or clean(get(source, "Name"))
+    local value = get(vm, "Value")
+    if type(value) ~= "number" and low and high then value = (low == high) and low or { low, high } end
+    return { name = name, spell = plain(get(source, "PrototypeID")), dice = clean(get(get(vm, "DiceTypeSet"), "Str")),
+             value = type(value) == "number" and num(value) or value, by = plain(get(owner, "EntityUUID")),
+             selected = get(vm, "IsSelected") == true or nil, off = get(vm, "IsDisabled") == true or nil }
+end
+
 local function rollRead(data)
     local out = { state = plain(get(data, "RollState")) or "?" }
+    -- the bonuses added to this roll (SelectedBoostModifierList): their die's value once thrown
+    local selected = get(data, "SelectedBoostModifierList")
+    for i = 1, count(selected) do
+        local vm = at(selected, i)
+        if vm ~= nil then
+            out.added = out.added or {}
+            local b = bonusOf(vm)
+            out.added[#out.added + 1] = { name = b.name, spell = b.spell, dice = b.dice, value = b.value, by = b.by }
+        end
+    end
     out.check = clean(get(data, "AbilityCheckText")) or clean(get(data, "SkillOrAbility"))
     out.skill = clean(get(data, "SkillOrAbility"))
     out.context = plain(get(data, "RollContext"))
@@ -423,10 +477,27 @@ local function rollRead(data)
     out.inspiration = num(get(data, "InspirationPoints"))
     local low, high = num(get(data, "MinBonusValue")), num(get(data, "MaxBonusValue"))
     if low then out.bonus = (low == high) and low or { low, high } end
+    -- who rolls: the window's SourceObject is the roller's character view model
+    local source = get(data, "SourceObject")
+    local who = source and get(source, "EntityUUID")
+    out.who = type(who) == "string" and who ~= "" and who or nil
+    if get(data, "IsPureAbilityRoll") == true then out.pure = true end
+    -- the natural die a roll needs to pass (the difficulty less the bonus)
+    local target = num(get(data, "TargetNumber"))
+    if target and target > 0 then out.target = target end
+    -- the dice show from StartRoll on: RolledNumber1 (and RolledNumber2 with advantage or
+    -- disadvantage) are the natural dice, FinalResult the die that counts. ResultNumber counts up
+    -- to the total while the window animates, so the total is the die and the listed bonus.
+    local first, second = num(get(data, "RolledNumber1")), num(get(data, "RolledNumber2"))
+    if first and first > 0 then out.dice = (second and second > 0) and { first, second } or { first } end
     if out.state == "ResultReady" or out.state == "WaitForReRoll" then
         out.result = num(get(data, "FinalResult"))
+        out.natural = out.result
+        if out.natural and type(out.bonus) == "number" then out.total = out.natural + out.bonus end
         out.success = get(data, "Success")
         if type(out.success) ~= "boolean" then out.success = nil end
+        -- a natural 20 or 1 on the d20 decides the check whatever the total (the game's rule)
+        if out.natural == 20 then out.critical = "success" elseif out.natural == 1 then out.critical = "failure" end
     end
     return out
 end
@@ -455,16 +526,90 @@ W.roll.step = stepper(function(ui, options)
             result.wait = 1200
             return result
         end
+        -- what the roll came to, read back before the window goes: the total, the DC, the bonuses
+        local read = rollRead(data)
         local result = runOn(data, "ContinueCommand")
         if not result.ok then result = runOn(data, "UserTriggeredNextPhaseCommand", true) end
+        result.result, result.success, result.dc = read.result, read.success, read.dc
+        result.check, result.modifiers, result.boosts, result.advantage = read.check, read.modifiers, read.boosts, read.advantage
         result.did = "continue (result " .. tostring(num(get(data, "FinalResult"))) .. ", "
             .. (get(data, "Success") == true and "success" or "failure") .. ")"
         result.wait = 800
         return result
     end
-    -- IntroductionAnimation, StartRoll, StopRoll: the dice are moving
+    -- IntroductionAnimation, StartRoll, StopRoll: the dice are moving. A player's click (UIAccept)
+    -- skips the animation: ActiveRoll.xaml binds it to UserTriggeredNextPhaseCommand(true) ("Skip
+    -- on Click"), and the result shows at once with the game's own "_Skipped" sound - the roll is
+    -- the game's, only the animation is cut. The binding is off for 0.2 s after each state change,
+    -- as for a player. options.watch = true lets the animation play.
+    if not options.watch and (state == "StartRoll" or state == "StopRoll" or state == "IntroductionAnimation") then
+        local result = runOn(data, "UserTriggeredNextPhaseCommand", true)
+        result.did = "skip the animation (" .. state .. ")"
+        result.wait = 250
+        return result
+    end
     return { did = "waiting (" .. state .. ")", wait = 500 }
 end)
+--- The bonuses the roll window offers to add (Guidance, Bardic Inspiration ...): the roller's own
+--- (BoostModifierList) and each nearby party member's (NearbyPartyCharacters[i].BoostModifierList;
+--- the roller is one of them). The window's AddBonusButton has no command of its own; what adds
+--- one is the window's AddModifierCommand with the offered modifier. Rows: { n, name, spell, dice,
+--- value, by, from, selected, off }.
+local function rollOffers(data)
+    local out = {}
+    local function add(list, from)
+        for i = 1, count(list) do
+            local vm = at(list, i)
+            if vm ~= nil then
+                local row = bonusOf(vm)
+                row.n, row.from, row.vm = #out + 1, from, vm
+                out[#out + 1] = row
+            end
+        end
+    end
+    add(get(data, "BoostModifierList"), "the roller")
+    local nearby = get(data, "NearbyPartyCharacters")
+    for i = 1, count(nearby) do
+        local character = at(nearby, i)
+        add(get(character, "BoostModifierList"), clean(get(character, "Name")) or ("party member " .. i))
+    end
+    return out
+end
+
+function UI.RollBonuses()
+    local data = UI.Data("ActiveRoll")
+    if not data then return { ok = false, error = "no roll window is open" } end
+    local rows = {}
+    for _, row in ipairs(rollOffers(data)) do
+        rows[#rows + 1] = { n = row.n, name = row.name, spell = row.spell, dice = row.dice, value = row.value, by = row.by,
+                            from = row.from, selected = row.selected, off = row.off }
+    end
+    return { ok = true, bonuses = rows }
+end
+
+--- Adds offered bonus `which` (its n in GK.Gui.RollBonuses, or part of its name) to the roll.
+function UI.AddRollBonus(which)
+    local data = UI.Data("ActiveRoll")
+    if not data then return { ok = false, error = "no roll window is open" } end
+    local offers = rollOffers(data)
+    local chosen
+    for _, row in ipairs(offers) do
+        if row.n == which or (type(which) == "string" and ((row.name and row.name:lower():find(which:lower(), 1, true)) or row.spell == which)) then
+            chosen = row
+            break
+        end
+    end
+    if not chosen then
+        local names = {}
+        for _, row in ipairs(offers) do names[#names + 1] = row.n .. " " .. tostring(row.name) end
+        return { ok = false, error = "no offered bonus " .. tostring(which) .. "; offered: " .. (#names > 0 and table.concat(names, ", ") or "none") }
+    end
+    local result = runOn(data, "AddModifierCommand", chosen.vm)
+    result.added = chosen.name
+    result.from = chosen.from
+    return result
+end
+
 W.roll.close = function(ui)
     local data = ui.Data("ActiveRoll")
     local result = runOn(data, "CancelCommand")
@@ -776,10 +921,14 @@ end
 -- trade: Trade.xaml (gui::DCTrade) ------------------------------------------------------------
 -- Commands: MoveTradeItem(item), BalanceTrade, FinishTrade, FinishBarter, SetTradeMode, SellWares;
 -- the window closes with CustomEvent("CloseWidget"). The sides are read from the view model
--- (names found live; see the reader).
+-- (names found live; see the reader). The player's side is PlayerTraderCharacter.Inventory, read
+-- live with Dammon in WLD_Main_A; the three names after it were guesses that the Trade data does
+-- not have, and the player side could not be read at all while they were the only ones.
+-- Finishing presses the window's own TradeButton, as the player does: the view model's
+-- FinishTrade ran without error and committed nothing.
 
 local TRADE_LISTS = {
-    player = { "PlayerInventory", "CharacterInventory", "PartyInventory" },
+    player = { "PlayerTraderCharacter.Inventory", "PlayerInventory", "CharacterInventory", "PartyInventory" },
     trader = { "TraderInventory", "CurrentTradingCharacter.Inventory", "TraderCharacter.Inventory" },
     playerOffer = { "CharacterOffer", "PlayerOffer" },
     traderOffer = { "TraderOffer" },
@@ -800,10 +949,11 @@ W.trade.policy = "trade"
 W.trade.about = "trading or bartering with a trader"
 W.trade.read = reader(function(data)
     local out = { mode = plain(property(data, "Mode")) or plain(get(data, "Mode")) }
-    out.trader = characterName(get(data, "CurrentTradingCharacter")) or characterName(get(data, "TraderCharacter"))
+    out.trader = characterName(get(data, "Trader")) or characterName(get(data, "CurrentTradingCharacter")) or characterName(get(data, "TraderCharacter"))
     out.character = characterName(get(data, "PlayerTraderCharacter"))
     out.playerGold = num(path(data, "PlayerTraderCharacter.Inventory.Gold"))
-    out.traderGold = num(path(data, "CurrentTradingCharacter.Inventory.Gold"))
+    -- the trader is `Trader`; CurrentTradingCharacter is the party member trading (seen 2026-11-14)
+    out.traderGold = num(path(data, "Trader.Inventory.Gold")) or num(path(data, "CurrentTradingCharacter.Inventory.Gold"))
     out.offerGold = num(get(data, "CharacterOfferGold"))
     out.traderOfferGold = num(get(data, "TraderOfferGold"))
     out.priceModifier = num(get(data, "PriceModifierPercentage"))
@@ -826,27 +976,108 @@ W.trade.close = function(ui)
     return result.ok, result.error
 end
 
---- Trade actions: { move = n | "name", side = "player" (default) | "trader" | "playerOffer" |
---- "traderOffer" } moves one item across; { balance = true }; { finish = true } (trade, or barter
---- when options.barter); several in one call run in that order: move, balance, finish.
+-- The numbers and flags of the trade's view model, for saying why it will not finish.
+local function tradeState(data)
+    local out = {}
+    local ok, properties = pcall(function() return data:GetAllProperties() end)
+    if not ok or properties == nil then return { error = "the trade's properties cannot be read" } end
+    for key, value in pairs(properties) do
+        local kind = type(value)
+        if kind == "boolean" or kind == "number" or (kind == "string" and #value < 80) then out[tostring(key)] = value end
+    end
+    out.playerGold = num(path(data, "PlayerTraderCharacter.Inventory.Gold"))
+    -- the trader is `Trader`; CurrentTradingCharacter is the party member trading (seen 2026-11-14)
+    out.traderGold = num(path(data, "Trader.Inventory.Gold")) or num(path(data, "CurrentTradingCharacter.Inventory.Gold"))
+    return out
+end
+
+-- How many of an item (by its name as the window shows it) a side holds: stacks counted by Count.
+local function heldOf(data, from, name)
+    local total = 0
+    local _, objects = slotsOf(path(data, from))
+    for _, object in ipairs(objects or {}) do
+        if text(get(object, "Name")) == name then total = total + (num(get(object, "Count")) or 1) end
+    end
+    return total
+end
+
+-- A move shows in the window when the game's frames get to it: seen live (N43 of the third run)
+-- about 3 s later at a frame cap of 10. Until this long after the move, an item still on its side
+-- is "not shown yet", not "refused".
+local TRADE_SHOW_MS = 8000
+local TRADE_MODES = { trade = 0, barter = 1 }
+
+--- Trade actions: { mode = "trade" | "barter" } sets the window's mode (the view model's
+--- SetTradeMode: 0 Trade, 1 Barter - seen live, N42); { move = n | "name", side = "player"
+--- (default) | "trader" | "playerOffer" | "traderOffer" } moves one item across; { balance = true };
+--- { finish = true } presses the button the window shows, as the player does - TradeButton, or
+--- BarterBtn in barter mode (options.barter forces it) - and when the game keeps it disabled says
+--- so with the window's numbers and flags in `state`; several in one call run in that order: mode,
+--- move, balance, finish.
 function UI.Trade(options)
     options = options or {}
     local data = UI.Data("Trade")
     if not data then return { ok = false, error = "no trade window" } end
     local log = {}
+    -- Whether the last move reached the other side. A move shows in the window only when the game
+    -- gets to it (seconds at a low frame rate), so a later call tells; an item the trader will not
+    -- take (seen live: a healing potion) answered ok and stayed where it was, and a stack opens the
+    -- game's SplitItem box (how many?) and moves nothing until that box is answered (N41).
+    local lastMove
+    if UI.PendingTradeMove then
+        local pending = UI.PendingTradeMove
+        local waited = Ext.Utils.MonotonicTime() - pending.at
+        lastMove = { item = pending.name, waitedMs = waited }
+        if heldOf(data, pending.from, pending.name) < pending.count then
+            lastMove.reached = true
+            UI.PendingTradeMove = nil
+        elseif UI.IsOpen("SplitItem") then
+            lastMove.reached = false
+            lastMove.waiting = "SplitItem"
+            lastMove.why = "the game's SplitItem box asks how many of the stack to move; nothing moves until it is "
+                .. "answered: GK.Gui.Resolve{ split = { amount = n } } - or { split = \"cancel\" }"
+        elseif waited < TRADE_SHOW_MS then
+            lastMove.reached = "not shown yet"
+            lastMove.why = "the window has not shown the move yet (seen live: about 3 s at 10 fps); call GK.Gui.Trade{} again"
+        else
+            lastMove.reached = false
+            lastMove.why = "it is still on its side " .. math.floor(waited / 1000) .. " s later: the other party does not "
+                .. "take it (or it is not tradable)"
+            UI.PendingTradeMove = nil
+        end
+    end
+    if options.mode ~= nil then
+        local mode = TRADE_MODES[lower(tostring(options.mode))]
+        if mode == nil and (options.mode == 0 or options.mode == 1) then mode = options.mode end
+        if mode == nil then
+            return { ok = false, error = "no trade mode " .. tostring(options.mode) .. ": \"trade\" or \"barter\"", lastMove = lastMove }
+        end
+        local result = runOn(data, "SetTradeMode", mode)
+        result.mode = mode == 1 and "barter" or "trade"
+        result.check = "the window shows the mode a moment later: GK.Gui.Read(\"trade\").mode"
+        log[#log + 1] = result
+        if not result.ok then return { ok = false, error = result.error, log = log, lastMove = lastMove } end
+    end
     if options.move ~= nil then
+        if UI.PendingTradeMove and lastMove and lastMove.reached ~= true then
+            return { ok = false, lastMove = lastMove, error = "the last move (" .. tostring(lastMove.item)
+                .. ") is not settled, nothing new was moved: " .. tostring(lastMove.why) }
+        end
         local names = TRADE_LISTS[options.side or "player"]
         if not names then return { ok = false, error = "no side " .. tostring(options.side) } end
-        local objects
+        local objects, from
         for _, name in ipairs(names) do
             local inventory = path(data, name)
             if inventory and get(inventory, "Slots") then
                 local _, list = slotsOf(inventory)
-                objects = list
+                objects, from = list, name
                 break
             end
         end
-        if not objects then return { ok = false, error = "cannot read the " .. tostring(options.side or "player") .. " side" } end
+        if not objects then
+            return { ok = false, error = "cannot read the " .. tostring(options.side or "player") .. " side: none of "
+                .. table.concat(names, ", ") .. " has Slots in this Trade window" }
+        end
         local index = options.move
         if type(index) == "string" then
             for i, object in ipairs(objects) do
@@ -855,23 +1086,154 @@ function UI.Trade(options)
         end
         local object = type(index) == "number" and objects[index] or nil
         if not object then return { ok = false, error = "no item " .. tostring(options.move) } end
+        local name = text(get(object, "Name"))
+        local stack = num(get(object, "Count")) or 1
+        local held = heldOf(data, from, name)
         local result = runOn(data, "MoveTradeItem", object)
         log[#log + 1] = result
-        if not result.ok then return { ok = false, error = result.error, log = log } end
+        if not result.ok then return { ok = false, error = result.error, log = log, lastMove = lastMove } end
+        UI.PendingTradeMove = { name = name, count = held, from = from, at = Ext.Utils.MonotonicTime() }
+        result.item = name
+        result.moved = false  -- not yet: the window shows a move later, if at all
+        if UI.IsOpen("SplitItem") or stack > 1 then
+            -- N41: a stack does not move - the game asks how many in its SplitItem box (seen live)
+            result.box = "SplitItem"
+            result.stack = stack
+            result.next = "a stack of " .. stack .. ": the game " .. (UI.IsOpen("SplitItem") and "opened" or "opens")
+                .. " its SplitItem box to ask how many, and nothing is in the offer until it is answered: "
+                .. "GK.Gui.Resolve{ split = { amount = n } } (or { split = \"cancel\" }), then GK.Gui.Trade{} reports lastMove"
+        else
+            result.reached = "not shown yet: the window shows a move when the game gets to it (seconds at a low frame "
+                .. "rate); call GK.Gui.Trade{} until lastMove.reached is true or false"
+        end
     end
     if options.balance then log[#log + 1] = runOn(UI.Data("Trade"), "BalanceTrade") end
     if options.finish then
+        -- The window shows one of two buttons: TradeButton in trade mode, BarterBtn (FinishBarter)
+        -- in barter mode - which is what RequestTrade opens. Pressing the hidden TradeButton ran
+        -- "ok" and traded nothing (N3 of the third run, seen live at 03:30); the button the window
+        -- SHOWS is pressed, as a click, its chain from the catalogue included.
         local d = UI.Data("Trade")
-        if options.barter then
-            log[#log + 1] = runOn(d, "FinishBarter")
-        else
-            log[#log + 1] = runOn(d, "FinishTrade")
+        UI.Controls("Trade")
+        local shown = {}
+        for _, row in ipairs(UI.LastControls or {}) do
+            if row.name == "TradeButton" or row.name == "BarterBtn" then shown[row.name] = row end
         end
+        local name = options.barter and "BarterBtn" or (shown.TradeButton and "TradeButton") or (shown.BarterBtn and "BarterBtn") or nil
+        local before = num(path(d, "PlayerTraderCharacter.Inventory.Gold"))
+        local pressed
+        if name then
+            pressed = UI.Click("Trade", name)
+            if not pressed.ok and pressed.state == nil and tostring(pressed.error):find("^disabled") then pressed.state = tradeState(d) end
+            if not pressed.ok and tostring(pressed.error):find("^disabled") then
+                if options.move ~= nil or options.balance then
+                    -- seen live: the window enables its button only once it shows the move or the
+                    -- balance (seconds at a low frame rate, N43)
+                    pressed.error = name .. " is still disabled in the call of the move/balance - nothing was traded; "
+                        .. "call GK.Gui.Trade{} until lastMove.reached is true, then GK.Gui.Trade{ finish = true } on its own"
+                else
+                    pressed.error = "the game keeps its " .. name .. " disabled, so nothing was traded; `state` is the window's "
+                        .. "own numbers and flags (TradeButtonsEnabled, the offers' gold - an empty offer keeps it off)"
+                end
+            end
+        else
+            pressed = runOn(d, "FinishTrade")
+            pressed.note = "neither TradeButton nor BarterBtn is on screen: ran the view model's FinishTrade, which has been "
+                .. "seen to commit nothing"
+        end
+        pressed.goldBefore = before
+        pressed.check = "the trade commits a moment later: GK.Gui.Read('trade').playerGold, or Osi.GetGold on the server"
+        log[#log + 1] = pressed
     end
     for _, entry in ipairs(log) do
-        if not entry.ok then return { ok = false, error = entry.error, log = log } end
+        if not entry.ok then return { ok = false, error = entry.error, log = log, lastMove = lastMove } end
     end
-    return { ok = true, log = log }
+    if lastMove and lastMove.reached == false and options.move == nil and options.mode == nil and not options.balance
+        and not options.finish then
+        return { ok = false, error = tostring(lastMove.item) .. " did not reach the offer: " .. lastMove.why, lastMove = lastMove }
+    end
+    return { ok = true, log = log, lastMove = lastMove }
+end
+
+-- combine: the game's Combine widget (dyeing, and combining two items) ------------------------
+-- Opened by using the first item (GK.Gui.ItemDo("use", <dye>): HotBar.UseGameObject). Its data:
+-- BaseItem, Ingredients (slots), CharacterInventory (the items it offers), CurrentState
+-- (Preparing -> Ready -> Success), FailReason, ResultItem; ToggleItemCommand(item of
+-- CharacterInventory) puts an item into the free slot, StartActionCommand combines. Seen live on
+-- 2026-11-14 (N21, N26 of the third coverage run): a cobalt dye on leather armour went Preparing
+-- -> Ready -> Success and the dye left the inventory. The HotBar's drag and drop commands, and
+-- the widget's own drop commands run with the HotBar's item, answer ok and fill nothing.
+
+-- The ingredients' slots are not read: the path to their item was not found live, and a slot read
+-- as empty while it was filled would say something false. The state says it: Ready = filled.
+local function combineState(data)
+    return { base = text(path(data, "BaseItem.Name")), slots = count(get(data, "Ingredients")),
+             state = plain(get(data, "CurrentState")), fail = plain(get(data, "FailReason")),
+             result = text(path(data, "ResultItem.Name")) }
+end
+
+W.combine = W.combine or {}
+W.combine.widget = "Combine"
+W.combine.about = "combining two items, or dyeing one"
+W.combine.read = reader(function(data) return combineState(data) end)
+
+--- The Combine widget: { with = n | "name" } puts an item of its list into the free slot (as a click
+--- in it does); { start = true } combines, only when the widget says Ready. Several in one call run
+--- in that order, but the widget reads Ready only a frame after an item went in - so start in a call
+--- of its own. No options: what the widget holds. A step is ok only when the widget's state moved:
+--- `with` answers the state it leaves, the next call tells whether the slot took it.
+function UI.Combine(options)
+    options = options or {}
+    local data = UI.Data("Combine")
+    if not data then
+        local last = UI.LastItemUse
+        local since = last and (Ext.Utils.MonotonicTime() - last.at) or nil
+        if last and last.action == "use" and since > 5000 then
+            -- N47: the use of an arrow ran ok and opened no window - say so instead of "call again"
+            return { ok = false, error = "no Combine window " .. math.floor(since / 1000) .. " s after GK.Gui.ItemDo(\"use\", \""
+                .. tostring(last.item) .. "\"): its use opened none, so it is not an item whose use combines (a dye is; "
+                .. "an arrow, seen live, is not)" }
+        end
+        return { ok = false, error = "no Combine window: use the first item - GK.Gui.ItemDo(\"use\", <dye or item>) - and call again a moment later" }
+    end
+    local log = {}
+    if options.with ~= nil then
+        local _, objects = slotsOf(get(data, "CharacterInventory"))
+        local index = options.with
+        if type(index) == "string" then
+            for i, object in ipairs(objects or {}) do
+                if lower(text(get(object, "Name"))):find(lower(options.with), 1, true) then index = i break end
+            end
+        end
+        local object = type(index) == "number" and objects and objects[index] or nil
+        if not object then
+            local names = {}
+            for i, o in ipairs(objects or {}) do names[i] = text(get(o, "Name")) end
+            return { ok = false, error = "no item " .. tostring(options.with) .. " in the Combine list", items = names }
+        end
+        local result = runOn(data, "ToggleItemCommand", object)
+        result.item = text(get(object, "Name"))
+        log[#log + 1] = result
+        if not result.ok then return { ok = false, error = result.error, log = log } end
+    end
+    if options.start then
+        local now = plain(get(data, "CurrentState"))
+        if now ~= "Ready" then
+            local state = combineState(data)
+            return { ok = false, log = log, combine = state,
+                     error = "the Combine window is " .. tostring(now) .. ", not Ready (FailReason " .. tostring(state.fail)
+                         .. "): put the second item in with { with = ... } and start in a call of its own" }
+        end
+        local result = runOn(data, "StartActionCommand")
+        result.check = "the window reads Success a moment later and the used item leaves the inventory: GK.Gui.Combine{}"
+        log[#log + 1] = result
+        if not result.ok then return { ok = false, error = result.error, log = log } end
+    end
+    local state = combineState(data)
+    if options.with == nil and not options.start and state.state == "Failed" then
+        return { ok = false, error = "the combination failed: " .. tostring(state.fail), combine = state }
+    end
+    return { ok = true, log = log, combine = state }
 end
 
 -- pickpocket: Pickpocket.xaml -----------------------------------------------------------------
@@ -1002,11 +1364,42 @@ W.resting.read = reader(function() return { resting = true } end)
 
 --- Asks for a long rest as the HUD's Long Rest button does (CampTravel): the supplies screen,
 --- or an "End the day?" box first.
+--- When the game holds the rest back (EndTheDayState "Unavailable") the answer is a failure with
+--- what the HUD itself shows about resting and the camp under `shown` (wish 24: "Unavailable",
+--- always, and no reason); the game's own reason is one of those, or outside the HUD (a fight,
+--- a dialogue, a level without a camp).
 function UI.LongRest()
     local hotbar = UI.Data("HotBar")
     if not hotbar then return { ok = false, error = "no HotBar" } end
+    local state = plain(path(hotbar, "CurrentPlayer.EndTheDayState"))
     local out = runOn(hotbar, "CampTravel")
     out.endTheDay = plain(path(hotbar, "CurrentPlayer.EndTheDayState"))
+    if out.endTheDay == "Unavailable" then
+        local shown = {}
+        for _, owner in ipairs({ { hotbar, "" }, { get(hotbar, "CurrentPlayer"), "CurrentPlayer." } }) do
+            local ok, properties = pcall(function() return owner[1]:GetAllProperties() end)
+            if ok and properties then
+                for key, value in pairs(properties) do
+                    local name = tostring(key)
+                    local kind = type(value)
+                    if (name:find("Rest") or name:find("Camp") or name:find("Day") or name:find("Combat") or name:find("Dialog"))
+                        and (kind == "boolean" or kind == "number" or kind == "string") then
+                        shown[owner[2] .. name] = value
+                    end
+                end
+            end
+        end
+        out.ok = false
+        out.shown = shown
+        out.error = "the game holds the long rest back (End the Day: Unavailable, before the call: " .. tostring(state) .. ") - CampTravel ran; "
+            .. "`shown` is what the HUD says about resting, the camp, fights and dialogues. A fight, a dialogue or a "
+            .. "level without a camp also keeps it, and GK.Stage.State() on the server reads the first two"
+    end
+    if out.ok then
+        -- N38 of the third run: "ok" right after a rest, and no screen or box opened. What opens
+        -- comes a frame or more later; ok says CampTravel ran, not that anything opened.
+        out.opens = "a frame later, if at all: GK.Gui.Blocking() names the rest screen (rest) or the End the Day box (box)"
+    end
     return out
 end
 
@@ -1238,27 +1631,61 @@ end
 function UI.QuickSave() return gameCommand("QuickSaveCommand") end
 function UI.QuickLoad() return gameCommand("QuickLoadCommand") end
 
---- A named save: opens the save window's name box (OpenNewSaveDialog) when it is not open yet;
---- call again when the box is up ({ ok, waiting = true } until then).
+-- The client's game state passes through "Save" while the game writes a save, and comes back
+-- when the save is written: counted here, so that a save is reported once it has been seen to end.
+UI.Saves = UI.Saves or { begun = 0, ended = 0 }
+if not UI.SavesHooked then
+    UI.SavesHooked = true
+    Ext.Events.GameStateChanged:Subscribe(function(e)
+        if tostring(e.ToState) == "Save" then UI.Saves.begun = UI.Saves.begun + 1
+        elseif tostring(e.FromState) == "Save" then UI.Saves.ended = UI.Saves.ended + 1 end
+    end)
+end
+
+-- An attempted step of a verb, answered once `seen()` names what it led to, or after `within` ms
+-- with ok = false and `missing`.
+local function observed(attempt, within, seen, missing)
+    if not attempt.ok then return attempt end
+    return GK.Observe(attempt, function(_, final)
+        local result = seen()
+        if result then return result end
+        if final then return { ok = false, error = missing, attempted = attempt } end
+    end, within)
+end
+
+--- A named save, one step per call, each answered by what it saw: the save window opened, then
+--- its name box opened, then { ok, saved = name } once the game has gone through its Save state
+--- and back (the save is written). A step whose effect does not show answers ok = false.
 function UI.SaveAs(name)
     name = tostring(name or "GateKit")
     local data = UI.Data("SaveGamePopup")
     if data then
-        local result = runOn(data, "DoSaveWithName", name)
-        result.saved = name
-        return result
+        local begun, ended = UI.Saves.begun, UI.Saves.ended
+        local attempt = runOn(data, "DoSaveWithName", name)
+        if not attempt.ok then return attempt end
+        return GK.Observe(attempt, function(_, final)
+            if UI.Saves.ended > ended then return { ok = true, saved = name, did = "saved: the game wrote the save and is back in play" } end
+            if final then
+                return { ok = false, name = name, attempted = attempt,
+                         error = UI.Saves.begun > begun and "the save began and had not ended in 15 s"
+                             or "DoSaveWithName ran and the game did not begin to save" }
+            end
+        end, 15000)
     end
     if not UI.IsOpen("SaveGame") then
         local opened = gameCommand("OpenSaveGameDialogCommand")
         if not opened.ok then opened = UI.Event("OpenNewSaveDialog") end
-        opened.waiting = true
-        opened.next = "the save window opens; call SaveAs again"
-        return opened
+        return observed(opened, 3000, function()
+            if UI.IsOpen("SaveGame") or UI.Data("SaveGamePopup") then
+                return { ok = true, waiting = true, did = "the save window is open", next = "call SaveAs again" }
+            end
+        end, "the save window did not open")
     end
-    local result = UI.Event("OpenNewSaveDialog", "SaveGame")
-    result.waiting = true
-    result.next = "the name box opens; call SaveAs again"
-    return result
+    return observed(UI.Event("OpenNewSaveDialog", "SaveGame"), 3000, function()
+        if UI.Data("SaveGamePopup") then
+            return { ok = true, waiting = true, did = "the name box is open", next = "call SaveAs again" }
+        end
+    end, "the name box did not open")
 end
 
 --- Loads the newest save: opens the load window first ({ waiting = true }), then selects the
@@ -1339,6 +1766,9 @@ local CHOICES = {
     save = "close", load = "close", savename = "name = '...' or cancel",
 }
 
+UI.BlockingWindows = blockingWindows
+UI.BlockingChoices = CHOICES
+
 --- The top-most window that waits for the player right now (see the head of this file).
 function UI.Blocking()
     local found = blockingWindows()
@@ -1377,7 +1807,8 @@ function UI.Resolve(policy)
     if wanted == "skip" or wanted == "leave" then
         return { ok = true, window = top.window, did = "left for the caller (policy " .. tostring(wanted) .. ")", stuck = true }
     end
-    local result = UI.Step(top.window, options)
+    -- a blocking window's step answers it by its own commands only
+    local result = Cheat.Step(top.window, options)
     result.window = top.window
     result.widget = top.widget
     return result

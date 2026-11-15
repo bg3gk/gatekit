@@ -865,7 +865,7 @@ end
 
 --- Restarts Lua on both sides, as the Script Extender console's `reset` does. Files are read
 --- again from where the game loads them; to pick up edits in a linked mod folder use
---- `gatekit.py reload` (it copies the files first).
+--- `gatekit reload` (it copies the files first).
 function GK.ConsoleReload()
     saveSettings()
     saveLog()
@@ -880,7 +880,7 @@ function GK.ConsoleReload()
     return true
 end
 actions[#actions + 1] = { group = "Do", label = "Reload Lua (both sides)", run = function() GK.ConsoleReload() end,
-    tip = "Restarts Lua in place. For a linked mod folder use `gatekit.py reload`: it copies the files first." }
+    tip = "Restarts Lua in place. For a linked mod folder use `gatekit reload`: it copies the files first." }
 
 Ext.Events.Shutdown:Subscribe(function()
     pcall(saveSettings)
@@ -1240,7 +1240,7 @@ build = function()
             or "It cannot show what Script Extender itself writes (a Lua error inside another mod's event",
         can.consoleMessages
             and "handler, Osiris errors): they are in the log as source \"Script Extender\" / \"Osiris\"."
-            or "handler, Osiris errors): for those see the Script Extender console or `gatekit.py logs`.",
+            or "handler, Osiris errors): for those see the Script Extender console or `gatekit logs`.",
         "",
         "Files, under %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3\\Script Extender\\" .. DIR:gsub("/", "\\") .. ":",
         "  console.json            filters, history, watches, the window's place",

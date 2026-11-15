@@ -1,55 +1,65 @@
--- GK.Act: what a player can do, and nothing more. Server side.
+-- GK.Act: what a player does for the party, and nothing that bends a rule; and GK.Cheat's scripted
+-- forms of the same actions, under the same names. Server side.
 --
--- Every command is something the player could do with the mouse and the hotbar, under the same
--- rules: the character walks (no teleport), a target must be perceived by the party (GK.See), a
--- fight allows a character to act only on its own turn, attacks and spells roll their dice and
--- spend their action, bonus action, movement and spell slot. Anything that bypasses the rules
--- (teleport, kill, heal, add items or gold, unlock without a key, start a dialogue from afar) is
--- not here: it is GK.Cheat (Server/Cheat.lua), for setting up tests only.
+-- Every verb of GK.Act is fair or an observation (Shared/VerbClasses.json; a unit test holds the
+-- namespace to it): it goes the player's own path - it rolls, pays its costs and passes the game's
+-- own checks. An action that has no such form here yet answers { ok = false, error } naming the
+-- player's route (GK.Gui.UseSlot, Aim and Confirm on the UI side, a click with GK.Gui.Click) and
+-- its scripted twin, GK.Cheat.<same name>.
+--
+-- The scripted forms (GK.Cheat.Move, Cast, Attack, Use, Talk ...) ask what a player would be asked
+-- first - the character may act (its turn in a fight, not in a dialogue), the target is perceived
+-- by the party (GK.See), the walk has a path - and then do it through Osiris: an Osiris cast
+-- (Osi.UseSpell) skips the spell's rolls, cast checks and costs, a walk provokes no opportunity
+-- attack, and what the engine did not charge is taken afterwards by GK.Cheat.Charge. Every call is
+-- recorded in GK.Cheat.Log (Server/Cheat.lua).
 --
 -- Commands start a job and return at once: { job = n, ... } or { ok = false, error = "..." } when
 -- a player could not do it (out of range, not your turn, no path, no action left - the reason a
 -- player would see). GK.Act.Job(n) tells how it went: { status = "running" | "done" | "failed",
--- result, error, seconds }. The Python side (stand/situation.py) waits for you.
+-- result, error, seconds }; GK.Act.Jobs() the recent ones.
 --
---   GK.Act.Move(who, to, options)        walk to a point {x,y,z} or next to an object (uuid); in a
+-- Fair here: Select (a click on the portrait), EndTurn, TurnBased, Lockpick (the engine's own
+-- request, which rolls in the dice window). Attack, Cast, Draw and Sheathe are the UI side's
+-- (Client/Act.lua); their scripted forms are here.
+--
+-- Scripted, in GK.Cheat:
+--   GK.Cheat.Move(who, to, options)      walk to a point {x,y,z} or next to an object (uuid); in a
 --                                        fight within the movement left (options.partial = walk
 --                                        as far as it goes); options.speed "Run" | "Walk" | "Sprint"
---   GK.Act.Cast(who, spell, target, options)   a spell or action from the character's spell book
+--   GK.Cheat.Cast(who, spell, target, options)   a spell or action from the character's spell book
 --                                        at a uuid or {x,y,z}; options.upcast = slot level,
 --                                        options.target2 (a second target), options.walk = walk
 --                                        into range first (out of combat)
---   GK.Act.Attack(who, target)           the main-hand weapon attack (melee or ranged by weapon)
---   GK.Act.Jump(who, point) / Shove(who, target) / Hide(who) / Dash(who) / Disengage(who) /
---   GK.Act.Throw(who, item, target)      the common actions, as casts
---   GK.Act.Use(who, item)                walk up and use: open/close a door or chest, pull a
+--   GK.Cheat.Attack(who, target)         the main-hand weapon attack (melee or ranged by weapon)
+--   GK.Cheat.Jump(who, point) / Shove(who, target) / Hide(who) / Dash(who) / Disengage(who) /
+--   GK.Cheat.Help(who, target) / Throw(who, item, target)   the common actions, as casts
+--   GK.Cheat.Use(who, item)              walk up and use: open/close a door or chest, pull a
 --                                        lever, climb a ladder, read, drink
---   GK.Act.PickUp(who, item)             walk up and take it
---   GK.Act.Loot(who, corpse)             walk up and open its loot window
---   GK.Act.Take(who, container, item)    take one item (or all, item = nil) from an open container
---   GK.Act.Talk(who, npc)                walk up and ask to talk, as clicking on the NPC does
---   GK.Act.EndTurn(who)                  end the character's turn
---   GK.Act.TurnBased(on, who)            the turn-based mode button (also outside a fight)
---   GK.Act.Sneak(on, who)                hide / stop hiding
---   GK.Act.Equip(who, item) / Unequip(who, item)
---   GK.Act.Stop(who)                     stops what the character is doing (walk, cast queue)
---   GK.Act.Job(n) / GK.Act.Jobs()        a job's state / the recent ones
+--   GK.Cheat.PickUp(who, item) / Loot(who, corpse) / Take(who, container, item)
+--   GK.Cheat.Talk(who, npc) / Trade(who, trader)   walk up and start the dialogue or the trade
+--   GK.Cheat.Sneak(on, who) / Equip(who, item) / Unequip(who, item) / Disarm(who, trap) / Stop(who)
+--   GK.Cheat.Charge, Unstick, Say
 --
 -- Dialogue answers, dice rolls, reactions, rests and level-ups are the UI's: GK.Dialog/GK.Answer,
--- GK.Blocking/GK.RollNext, GK.Gui (client side; stand/situation.py wraps them).
+-- GK.Blocking/GK.RollNext, GK.Gui (client side).
 --
--- How the rules are kept (bg3-agent-harness found these the hard way, re-checked live here):
+-- What the scripted forms do about the rules:
 --   * Osiris walks (CharacterMoveTo) teleport when there is no path; so a walk goes to a point the
 --     pathfinder proved reachable, with CharacterMoveToPosition, and a jump of more than 3 m in a
 --     tick marks the job `teleported`.
---   * Osiris casts carry IgnoreSpellRolls/IgnoreCastChecks/IgnoreTargetChecks; the cast's state is
---     caught when it is created and those flags are taken off, so the attack rolls against AC and
---     the target rolls its save.
+--   * Osiris casts carry IgnoreSpellRolls/IgnoreCastChecks/IgnoreTargetChecks: a raw Osi.UseSpell
+--     attack hits whatever the armour class and the die, and spends no action. The cast's state is
+--     caught when it is created and those flags are taken off, and then the attack rolls and the
+--     game spends the action. What stays scripted: the
+--     order skips the player's targeting (the cursor's checks of reach and sight).
 --   * Whatever an Osiris walk, cast or use did not charge (movement, action, bonus action, slot) is
---     charged after it, as the game charges a player.
+--     charged after it with GK.Cheat.Charge.
 
 GK.Act = GK.Act or {}
 local Act = GK.Act
+GK.Cheat = GK.Cheat or {}
+local Cheat = GK.Cheat
 local See = GK.See
 
 local function try(fn, ...)
@@ -59,7 +69,10 @@ local function try(fn, ...)
 end
 
 local function bool(v) return v == 1 or v == true end
-local function now() return Ext.Utils.MonotonicTime() / 1000 end
+-- The jobs' clock: seconds of a running game counted in the server's ticks at the nominal rate
+-- (GK.Ticks, GK.TickMs), so that a limit is the same at any game speed and a game that stands
+-- still eats nothing of it.
+local function now() return GK.Ticks() * GK.TickMs / 1000 end
 
 local function entityOf(id) return type(id) == "string" and try(Ext.Entity.Get, id) or id end
 local function posOf(id) return See.Position(id) end
@@ -86,10 +99,12 @@ Act.NextJob = Act.NextJob or 1
 Act.Reach = 1.6        -- metres from an object's centre a character interacts from (use, pick up)
 Act.TalkReach = 2.5
 
-local function newJob(kind, who, data)
+-- `class`: the class of the verb that made the job (fair for GK.Act's own; cheat by default, for
+-- GK.Cheat's scripted actions): the job_done row carries it.
+local function newJob(kind, who, data, class)
     local n = Act.NextJob
     Act.NextJob = n + 1
-    local job = { n = n, kind = kind, who = who, status = "running", started = now(), data = data or {} }
+    local job = { n = n, kind = kind, who = who, status = "running", started = now(), data = data or {}, class = class or "cheat" }
     Act.JobList[n] = job
     -- keep the last 50
     if Act.JobList[n - 50] then Act.JobList[n - 50] = nil end
@@ -104,7 +119,7 @@ local function finish(job, status, result, err)
     job.seconds = math.floor((now() - job.started) * 10 + 0.5) / 10
     if job.onFinish then try(job.onFinish, job) end
     if GK.Focus and GK.Focus.JobFinished then try(GK.Focus.JobFinished, job) end
-    GK.Note("Act" .. job.kind, { job = job.n, status = status, error = err })
+    if GK.Attention then GK.Attention.Push("job_done", { job = job.n, kind = job.kind, status = status, error = err }, { class = job.class }) end
 end
 
 local function view(job)
@@ -126,7 +141,7 @@ function Act.Jobs()
 end
 
 -- A job made of steps: each step is function(job) -> nil (wait), true (next step), or false, msg (fail).
--- The ticker calls the current step every 100 ms until it moves on.
+-- The bridge's tick calls the current step once a tick while a job runs, until it moves on.
 local function stepJob(job)
     local step = job.steps and job.steps[job.stepIndex]
     if not step then return end
@@ -160,20 +175,26 @@ end
 -- late-bound: a reloaded Act.lua takes over the running ticker
 Act.Tick = tick
 
-local function startTicker()
-    if Act.Ticker then return end
-    Act.Ticker = Ext.Timer.WaitFor(100, function() Act.Tick() end, 100)
+-- The jobs are looked at from the bridge's one tick (GK.Attention.Pollers), only while one runs.
+local function running()
+    for _, job in pairs(Act.JobList) do if job.status == "running" then return true end end
+    return false
 end
+local function startTicker()
+    if not (GK.Attention and GK.Attention.Pollers) then return end
+    GK.Attention.Pollers.actJobs = function()
+        Act.Tick()
+        if not running() then GK.Attention.Pollers.actJobs = nil end
+    end
+end
+Act.StartTicker = startTicker
 
 -- ---------------------------------------------------------------------------------------
 -- Who may act
 
 local function inCombat(who) return bool(try(Osi.IsInCombat, who)) end
 
-local function inDialog(who)
-    local e = entityOf(who)
-    return bool(try(function() return e.ServerCharacter.InDialog end))
-end
+local function inDialog(who) return GK.InDialog(who) == true end
 
 --- Whether a character ended its turn this round through GK.Act.EndTurn (the engine does not show
 --- it while the rest of a party turn group still acts).
@@ -183,7 +204,9 @@ function Act.HasEnded(who)
     local e = entityOf(who)
     local round = try(function() return e.CombatParticipant.CombatHandle.TurnOrder.Round end)
     local tb = e and try(function() return e.TurnBased end)
-    if round ~= ended.round or not (tb and tb.IsActiveCombatTurn) then
+    -- the fight too: a new fight starts at round 1 again, and a turn ended in round 1 of the last
+    -- one read as ended in the new one (seen 2026-11-14: "not its turn" on the member's first turn)
+    if round ~= ended.round or try(Osi.CombatGetGuidFor, who) ~= ended.combat or not (tb and tb.IsActiveCombatTurn) then
         Act.Ended[who] = nil
         return false
     end
@@ -202,11 +225,18 @@ function Act.CannotAct(who, anyTime)
     if not who then return "nobody" end
     local e = entityOf(who)
     if not e then return "no such character" end
-    if not See.IsMember(who) then return "not a party member" end
+    if not See.IsMember(who) then return "not a party member (GK.Act acts for the player's party only, checked with GK.See.IsMember; a spawned or summoned creature is not in it - give it things with GK.Stage.Outfit, GK.Stage.Cast, GK.Stage.Use)" end
     if bool(try(Osi.IsDead, who)) then return "dead" end
     local hp = try(function() return e.Health.Hp end)
     if hp == 0 then return "downed" end
-    if inDialog(who) then return "in a dialogue" end
+    if inDialog(who) then
+        -- which one: a dialogue a script started (a teleport's, a level's) holds a character as
+        -- surely as one it asked for, and "in a dialogue" alone sent a runner looking for the
+        -- wrong one (D13 of the day run)
+        local dialog = try(Osi.SpeakerGetDialog, who, 0)
+        return "in a dialogue" .. (dialog and dialog ~= "" and (" (" .. tostring(dialog) .. ")") or "")
+            .. ": answer it (GK.Answer on the UI side) or let it end - a dialogue a script started counts too"
+    end
     -- a player commands the character it has selected (a click on the portrait first: Act.Select)
     if Act.SelectedOnly and not bool(try(Osi.IsControlled, who)) then return "not selected (select it first)" end
     if not anyTime and inCombat(who) and not hisTurn(who) then return "not its turn" end
@@ -226,14 +256,20 @@ end
 
 local function resolveWho(who) return who or Act.Selected() end
 
-local function needPerceived(target)
+local function needPerceived(target, who)
     if type(target) ~= "string" then return nil end
     if See.IsMember(target) then return nil end
     if not try(Ext.Entity.Get, target) then return "no such object" end
     if See.PartyPerceives(target) then return nil end
     -- seen earlier on this level: a player clicks where it was (GK.See scope "known")
     if See.Remembers(target) then return nil end
-    return "the party does not see it (and has not seen it)"
+    -- N45 of the third run: from ~360 m this was all the answer said. GK.Act does not walk to what
+    -- the party has not seen (a player cannot click it); say how far it is and what does.
+    local tp, mp = posOf(target), who and posOf(who)
+    local far = (tp and mp) and string.format(" - it is %.0f m away", dist(tp, mp)) or ""
+    return "the party does not see it (and has not seen it)" .. far .. ": GK.Act walks only to what the party sees; "
+        .. "walk towards it first (GK.Cheat.Move(who, {x, y, z}) is the scripted walk) until GK.See lists it, or put the party next to it "
+        .. "with a cheat (GK.Stage.Visit)"
 end
 
 -- ---------------------------------------------------------------------------------------
@@ -251,7 +287,7 @@ end
 
 --- Takes `amount` of a resource (by name: "Movement", "ActionPoint", "SpellSlot" with `level`).
 --- Returns how much was taken.
-function Act.Charge(who, name, amount, level)
+function Cheat.Charge(who, name, amount, level)
     local e = entityOf(who)
     local guid = resourceId(name)
     local list = e and guid and try(function() return e.ActionResources.Resources[guid] end)
@@ -369,7 +405,7 @@ local function walkSteps(job, who, goal, length, options)
                 local charged = before.movement - after
                 local owed = math.min(j.walked, length or j.walked) - charged
                 if owed > 0.2 then
-                    j.chargedByAct = (j.chargedByAct or 0) + Act.Charge(who, "Movement", owed)
+                    j.chargedByAct = (j.chargedByAct or 0) + Cheat.Charge(who, "Movement", owed)
                 end
             end
             j.result = { pos = p and { math.floor(p[1] * 10 + 0.5) / 10, math.floor(p[2] * 10 + 0.5) / 10, math.floor(p[3] * 10 + 0.5) / 10 }, walked = math.floor(j.walked * 10 + 0.5) / 10, teleported = j.teleported,
@@ -485,7 +521,7 @@ end
 
 --- A short step (at most 3 m) onto the nearest free tile, without a proven path - what a player's
 --- click next to the character does. Used only when the character is stuck (Act.Stuck).
-function Act.Unstick(who)
+function Cheat.Unstick(who)
     who = resolveWho(who)
     local p = posOf(who)
     if not p then return fail("no position") end
@@ -514,13 +550,13 @@ local function planWalk(who, to, options)
     options = options or {}
     local goal, length
     if type(to) == "string" then
-        local why = needPerceived(to)
+        local why = needPerceived(to, who)
         if why then return nil, why end
         goal, length = Act.ApproachPoint(who, to, options.within)
         if not goal then return nil, "no path to it" end
         if length == 0 then return goal, 0, true end
-    elseif type(to) == "table" and #to == 3 then
-        goal = to
+    elseif type(to) == "table" and GK.Pos(to) then
+        goal = GK.Pos(to)
         local p = See.Path(who, goal)
         if not p.reachable or not p.ends or flat(p.ends, goal) > 3.0 then
             return nil, "no path there" .. (p.ends and " (the path ends " .. string.format("%.1f", flat(p.ends, goal)) .. " m away)" or "")
@@ -529,7 +565,7 @@ local function planWalk(who, to, options)
         goal = p.ends
         length = p.length
     else
-        return nil, "a point {x,y,z} or an object's uuid"
+        return nil, "a point { x, y, z } or { x = .., y = .., z = .. }, or an object's uuid"
     end
     if inCombat(who) then
         local left = (See.Resources(who).movement or { 0 })[1]
@@ -622,7 +658,7 @@ local function threatNote(who, goal)
 end
 Act.ThreatNote = threatNote
 
-function Act.Move(who, to, options)
+function Cheat.Move(who, to, options)
     options = options or {}
     who = resolveWho(who)
     local why = Act.CannotAct(who)
@@ -631,7 +667,7 @@ function Act.Move(who, to, options)
     if not goal then
         -- not walkable: say how close walking gets and what could cross the rest; with
         -- options.partial walk to that nearest point (a click towards an unreachable spot)
-        local target = type(to) == "table" and to or posOf(to)
+        local target = type(to) == "table" and GK.Pos(to) or (type(to) == "string" and posOf(to)) or nil
         local alt = target and Act.Alternatives(who, target) or nil
         if options.partial and alt and alt.nearest and alt.nearest.pos then
             local g2, l2 = planWalk(who, alt.nearest.pos, { partial = true })
@@ -706,6 +742,52 @@ if not Act.CastHook then
     Act.CastHook = Ext.Entity.OnCreate("SpellCastState", function(entity) pcall(stripCastOptions, entity) end)
 end
 
+-- Every hit the game resolves, as a `game_hit` row: the outcome of an attack roll (a miss writes
+-- no damage and no Osiris event, so this row is the only place it shows), the damage, the spell,
+-- the saving throws the hit asked for.
+-- From the game's own one-frame event esv::hit::HitResultEventOneFrameComponent, created once per
+-- target of a hit, misses included; nothing runs while nobody is hit.
+local function uuidOfHandle(handle)
+    return handle and try(function() return handle.Uuid.EntityUuid end) or nil
+end
+
+-- The row's payload is made by GK.HitRow (Shared/Bridge.lua), with the attack roll and the saving
+-- throws read from the hit's ConditionRolls (GK.HitAttack, GK.HitSaves).
+local function writeHit(entity)
+    local event = entity.HitResultEvent
+    local hit = event.Hit
+    local target = uuidOfHandle(event.Target)
+    local by = uuidOfHandle(hit.Inflicter) or uuidOfHandle(hit.InflicterOwner)
+    local payload = GK.HitRow(hit, target, by, See.Name)
+    local seen = false
+    for _, id in ipairs({ target, by }) do
+        if id and try(See.PartyPerceives, id) then seen = true end
+    end
+    GK.EventLog.Append("game_hit", payload, { knows = not seen and "omniscient" or nil })
+end
+
+-- Every change of a creature's weapon state, as a `weapon_state` row: the game's own one-frame
+-- event esv::unsheath::StateChangedEventOneFrameComponent, created in the tick the resolved state
+-- (eoc::unsheath::StateComponent.State) changes - drawn by a fight's start or an attack, put away
+-- when a fight's leaving timer or an attack's animation ends, or by the player's request.
+local function writeWeaponState(entity)
+    local event = entity.ServerUnsheathStateChangedEvent
+    local who = uuidOfHandle(entity)
+    local from, to = tostring(event.OldState), tostring(event.NewState)
+    GK.EventLog.Append("weapon_state", { text = string.format("%s: weapon %s -> %s", who and See.Name(who) or "?", from, to),
+                                         who = who, from = from, to = to },
+                       { knows = not (who and (See.IsMember(who) or try(See.PartyPerceives, who))) and "omniscient" or nil })
+    if GK.Stage and GK.Stage.WeaponStateChanged then GK.Stage.WeaponStateChanged(who, to) end
+end
+
+if not Act.WeaponHook then
+    Act.WeaponHook = Ext.Entity.OnCreateDeferred("ServerUnsheathStateChangedEvent", function(entity) pcall(writeWeaponState, entity) end)
+end
+
+if not Act.HitHook then
+    Act.HitHook = Ext.Entity.OnCreateDeferred("HitResultEvent", function(entity) pcall(writeHit, entity) end)
+end
+
 local function spellRow(who, spell)
     for _, row in ipairs(See.Actions(who, nil, { all = true })) do
         if row.id == spell then return row end
@@ -724,7 +806,7 @@ end
 
 local MELEE_SLACK = 0.6   -- the two characters' radii: a 1.5 m reach is measured edge to edge
 
-function Act.Cast(who, spell, target, options)
+function Cheat.Cast(who, spell, target, options)
     options = options or {}
     who = resolveWho(who)
     local why = Act.CannotAct(who)
@@ -746,11 +828,14 @@ function Act.Cast(who, spell, target, options)
     target = target or who
     local tpos
     if type(target) == "string" then
-        local bad = needPerceived(target)
+        local bad = needPerceived(target, who)
         if bad then return fail(bad) end
         tpos = posOf(target)
     elseif type(target) == "table" then
-        tpos = target
+        local why
+        tpos, why = GK.Pos(target)
+        if not tpos then return fail(why) end
+        target = tpos
     end
     if not tpos then return fail("no target") end
     local mp = posOf(who)
@@ -844,6 +929,26 @@ function Act.Cast(who, spell, target, options)
                 refusal = refusal .. " (and this build of Osiris has no cast-at-a-point that carries an "
                     .. "item, so the thing being thrown could not be named)"
             end
+            -- What actually failed, where it can be found, before the list of everything the spell
+            -- checks (wish a of the day run: every refused throw read "its conditions: target not
+            -- Self()", whatever the cause - weight, a character target, no action left).
+            local found = {}
+            local check = GK.Conditions and GK.Conditions.Check and try(GK.Conditions.Check, who, castName, target)
+            if type(check) == "table" and check.ok == false then found[#found + 1] = "the condition that fails: " .. tostring(check.failed) end
+            local left = snapshot(who)
+            local costs = row.costs or {}
+            for _, k in ipairs({ "action", "bonus", "reaction" }) do
+                if costs[k] and left[k] and left[k] < costs[k] then found[#found + 1] = "no " .. k .. " left (" .. tostring(left[k]) .. ")" end
+            end
+            if costs.slot then
+                local level = options.upcast or costs.slot
+                if (left.slots[level] or 0) <= 0 then found[#found + 1] = "no level-" .. tostring(level) .. " spell slot left" end
+            end
+            if options.target2 then
+                local weight = try(function() return Ext.Entity.Get(options.target2).Data.Weight end)
+                if weight then found[#found + 1] = "the thrown thing weighs " .. tostring(weight) end
+            end
+            if #found > 0 then refusal = refusal .. ": " .. table.concat(found, "; ") end
             if req ~= "" or tc ~= "" then
                 refusal = refusal .. " - its conditions: " .. (req ~= "" and ("requires " .. req) or "")
                     .. (req ~= "" and tc ~= "" and "; " or "") .. (tc ~= "" and ("target " .. tc) or "")
@@ -870,7 +975,7 @@ function Act.Cast(who, spell, target, options)
                 local need = costs[k]
                 if need and before[k] and after[k] and before[k] - after[k] < need then
                     local name = k == "action" and "ActionPoint" or k == "bonus" and "BonusActionPoint" or "ReactionActionPoint"
-                    charged[k] = Act.Charge(who, name, need - (before[k] - after[k]))
+                    charged[k] = Cheat.Charge(who, name, need - (before[k] - after[k]))
                 end
             end
         end
@@ -881,8 +986,8 @@ function Act.Cast(who, spell, target, options)
                 if (after.slots[l] or v) < v then spent = true end
             end
             if not spent then
-                charged.slot = Act.Charge(who, "SpellSlot", 1, level)
-                if charged.slot == 0 then charged.slot = Act.Charge(who, "WarlockSpellSlot", 1, level) end
+                charged.slot = Cheat.Charge(who, "SpellSlot", 1, level)
+                if charged.slot == 0 then charged.slot = Cheat.Charge(who, "WarlockSpellSlot", 1, level) end
             end
         end
         local order = Act.Ordered[who]
@@ -900,12 +1005,10 @@ function Act.Cast(who, spell, target, options)
     return { job = job.n, spell = castName, distance = math.floor(d * 10 + 0.5) / 10, range = range }
 end
 
---- The main-hand attack: melee when the target is within reach (or with a melee weapon only),
---- ranged otherwise.
---- The weapon attack. options.mode = "melee" | "ranged"; without it: melee when the target is in
---- reach or the walk to it fits the movement left (a melee weapon usually hits harder), the
---- ranged weapon otherwise.
-function Act.Attack(who, target, options)
+--- The weapon attack, scripted. options.mode = "melee" | "ranged"; without it: melee when the
+--- target is in reach or the walk to it fits the movement left (a melee weapon usually hits
+--- harder), the ranged weapon otherwise.
+function Cheat.Attack(who, target, options)
     options = options or {}
     who = resolveWho(who)
     local ranged = try(Osi.GetEquippedItem, who, "Ranged Main Weapon")
@@ -924,16 +1027,84 @@ function Act.Attack(who, target, options)
         end
     end
     if mode == "ranged" and not ranged then return fail("no ranged weapon equipped") end
-    return Act.Cast(who, mode == "melee" and "Target_MainHandAttack" or "Projectile_MainHandAttack", target, options)
+    return Cheat.Cast(who, mode == "melee" and "Target_MainHandAttack" or "Projectile_MainHandAttack", target, options)
 end
 
-function Act.Jump(who, point) return Act.Cast(who, "Projectile_Jump", point) end
-function Act.Shove(who, target) return Act.Cast(who, "Target_Shove", target) end
-function Act.Hide(who) return Act.Cast(who, "Shout_Hide", resolveWho(who)) end
-function Act.Dash(who) return Act.Cast(who, "Shout_Dash", resolveWho(who)) end
-function Act.Disengage(who) return Act.Cast(who, "Shout_Disengage", resolveWho(who)) end
-function Act.Help(who, target) return Act.Cast(who, "Target_Help", target) end
-function Act.Throw(who, item, target) return Act.Cast(who, "Throw_Throw", target, { target2 = item }) end
+function Cheat.Jump(who, point) return Cheat.Cast(who, "Projectile_Jump", point) end
+function Cheat.Shove(who, target) return Cheat.Cast(who, "Target_Shove", target) end
+function Cheat.Hide(who) return Cheat.Cast(who, "Shout_Hide", resolveWho(who)) end
+function Cheat.Dash(who) return Cheat.Cast(who, "Shout_Dash", resolveWho(who)) end
+function Cheat.Disengage(who) return Cheat.Cast(who, "Shout_Disengage", resolveWho(who)) end
+function Cheat.Help(who, target) return Cheat.Cast(who, "Target_Help", target) end
+function Cheat.Throw(who, item, target) return Cheat.Cast(who, "Throw_Throw", target, { target2 = item }) end
+
+-- ---------------------------------------------------------------------------------------
+-- The actions whose player's path is not built here: an honest refusal, naming the route and the
+-- scripted twin. Nothing is done.
+
+local ROUTES = {
+    Attack = "it is GK.Act.Attack(target, options) on the UI side: GK.Gui.UseSlot, Aim and Confirm, answered when the game has finished the attack",
+    Cast = "it is GK.Act.Cast(spell, target, options) on the UI side: GK.Gui.UseSlot, Aim and Confirm, answered when the game has finished the cast",
+    Draw = "it is GK.Act.Draw() on the UI side: the key bound to the game's weapon toggle (ToggleCombatMode), answered when the weapon state changes",
+    Sheathe = "it is GK.Act.Sheathe() on the UI side: the key bound to the game's weapon toggle (ToggleCombatMode), answered when the weapon state changes",
+    Jump = "on the UI side, GK.Gui.UseSlot(\"Projectile_Jump\"), GK.Gui.Aim(point), GK.Gui.Confirm()",
+    Shove = "on the UI side, GK.Gui.UseSlot(\"Target_Shove\"), GK.Gui.Aim(target), GK.Gui.Confirm()",
+    Hide = "on the UI side, GK.Gui.UseSlot(\"Shout_Hide\")",
+    Dash = "on the UI side, GK.Gui.UseSlot(\"Shout_Dash\")",
+    Disengage = "on the UI side, GK.Gui.UseSlot(\"Shout_Disengage\")",
+    Help = "on the UI side, GK.Gui.UseSlot(\"Target_Help\"), GK.Gui.Aim(target), GK.Gui.Confirm()",
+    Throw = "on the UI side, GK.Gui.UseSlot(\"Throw_Throw\"), the item, GK.Gui.Aim(target), GK.Gui.Confirm()",
+    Move = "no player's walk is built yet",
+    Use = "on the UI side, GK.Gui.ItemDo(\"use\", name) for a carried item; for a door or a chest no player's click is built yet",
+    UseCarried = "on the UI side, GK.Gui.ItemDo(\"use\", name)",
+    PickUp = "no player's click on an item is built yet",
+    Loot = "no player's click on a corpse is built yet; an open loot window is taken with GK.Gui.Resolve{ loot = \"takeall\" }",
+    Take = "on the UI side, GK.Gui.Resolve{ loot = \"takeall\" } or GK.Gui.Click on the loot window's item",
+    Talk = "no player's click on a character is built yet",
+    Trade = "the dialogue's trade answer (GK.Answer) where it offers one",
+    Equip = "on the UI side, GK.Gui.ItemDo(\"equip\", name)",
+    Unequip = "on the UI side, GK.Gui.ItemDo(\"unequip\", name)",
+    Sneak = "on the UI side, GK.Gui.UseSlot(\"Shout_Hide\")",
+    Disarm = "no player's request is proven yet",
+    Stop = "no player's stop is built yet",
+}
+
+local function refuse(name)
+    return fail("GK.Act." .. name .. " is not built on the player's own path yet - " .. ROUTES[name]
+        .. "; the scripted form, which skips rolls, costs or checks, is GK.Cheat." .. name,
+        { fair = ROUTES[name], cheat = "GK.Cheat." .. name })
+end
+
+-- The player's path of these runs on the UI side (Client/Act.lua): the server's form says where.
+local function onTheUiSide(name)
+    return fail("GK.Act." .. name .. " is the UI side's - " .. ROUTES[name] .. "; the scripted form is GK.Cheat." .. name,
+        { fair = ROUTES[name], cheat = "GK.Cheat." .. name })
+end
+
+--- Answers where the fair attack is (GK.Act.Attack on the UI side) and names GK.Cheat.Attack.
+function Act.Attack() return onTheUiSide("Attack") end
+--- Answers where the fair cast is (GK.Act.Cast on the UI side) and names GK.Cheat.Cast.
+function Act.Cast() return onTheUiSide("Cast") end
+function Act.Jump() return refuse("Jump") end
+function Act.Shove() return refuse("Shove") end
+function Act.Hide() return refuse("Hide") end
+function Act.Dash() return refuse("Dash") end
+function Act.Disengage() return refuse("Disengage") end
+function Act.Help() return refuse("Help") end
+function Act.Throw() return refuse("Throw") end
+function Act.Move() return refuse("Move") end
+function Act.Use() return refuse("Use") end
+function Act.UseCarried() return refuse("UseCarried") end
+function Act.PickUp() return refuse("PickUp") end
+function Act.Loot() return refuse("Loot") end
+function Act.Take() return refuse("Take") end
+function Act.Talk() return refuse("Talk") end
+function Act.Trade() return refuse("Trade") end
+function Act.Equip() return refuse("Equip") end
+function Act.Unequip() return refuse("Unequip") end
+function Act.Sneak() return refuse("Sneak") end
+function Act.Disarm() return refuse("Disarm") end
+function Act.Stop() return refuse("Stop") end
 
 -- ---------------------------------------------------------------------------------------
 -- Objects
@@ -942,7 +1113,7 @@ local function approachThen(kind, who, target, within, action, done, timeout, lo
     who = resolveWho(who)
     local why = Act.CannotAct(who)
     if why then return fail(why) end
-    local bad = needPerceived(target)
+    local bad = needPerceived(target, who)
     if bad then return fail(bad) end
     local goal, length = Act.ApproachPoint(who, target, within, loose)
     if not goal then return fail("cannot get to it") end
@@ -1025,7 +1196,7 @@ Act.CarriedBy = carriedBy
 
 --- Using an item the party carries (a potion, a scroll, a note): no walking - the character
 --- whose inventory holds it uses it, as a click in the inventory does.
-function Act.UseCarried(who, item)
+function Cheat.UseCarried(who, item)
     who = resolveWho(who)
     local why = Act.CannotAct(who)
     if why then return fail(why) end
@@ -1060,8 +1231,8 @@ function Act.UseCarried(who, item)
     return { job = job.n, carried = true }
 end
 
-function Act.Use(who, item)
-    if carriedBy(item) then return Act.UseCarried(who, item) end
+function Cheat.Use(who, item)
+    if carriedBy(item) then return Cheat.UseCarried(who, item) end
     local before = { opened = bool(try(Osi.IsOpened, item)) }
     return approachThen("Use", who, item, Act.Reach, function(j)
         j.startPos = posOf(j.who)
@@ -1159,7 +1330,7 @@ function Act.Use(who, item)
     end, 12, true)
 end
 
-function Act.PickUp(who, item)
+function Cheat.PickUp(who, item)
     return approachThen("PickUp", who, item, Act.Reach, function(j)
         if not bool(try(Osi.GetCanPickUp, item)) then return false, "cannot be picked up" end
         Osi.Pickup(j.who, item, "GK_Act_" .. j.n, 0)
@@ -1175,10 +1346,10 @@ function Act.PickUp(who, item)
     end)
 end
 
-function Act.Loot(who, corpse)
+function Cheat.Loot(who, corpse)
     -- a container (a chest, a backpack) is looted by opening it: the same as Use
     local e = entityOf(corpse)
-    if e and try(function() return e.ServerItem end) ~= nil then return Act.Use(who, corpse) end
+    if e and try(function() return e.ServerItem end) ~= nil then return Cheat.Use(who, corpse) end
     return approachThen("Loot", who, corpse, Act.Reach, function(j)
         if not bool(try(Osi.IsDead, corpse)) then return false, "it is not dead" end
         Osi.OpenCharacterLootUI(j.who, corpse)
@@ -1210,7 +1381,7 @@ function Act.Contents(who, container)
 end
 
 --- Takes one item (or everything, item = nil) out of a container or corpse the character stands at.
-function Act.Take(who, container, item)
+function Cheat.Take(who, container, item)
     who = resolveWho(who)
     local why = Act.CannotAct(who, true)
     if why then return fail(why) end
@@ -1223,14 +1394,21 @@ function Act.Take(who, container, item)
             taken[#taken + 1] = row.name or row.id
         end
     end
-    if #taken == 0 then return fail("not in there") end
+    if #taken == 0 then
+        -- say where it looked and what was there, so a wrong container or a swapped argument
+        -- shows itself instead of reading as "the item does not exist"
+        return fail("not in there: " .. tostring(item) .. " is not among the " .. #listed
+            .. " items of " .. tostring(See.Name(container) or container), {
+            looked_in = container, who = who, contents = listed,
+        })
+    end
     return { ok = true, taken = taken }
 end
 
 -- ---------------------------------------------------------------------------------------
 -- Talking
 
-function Act.Talk(who, npc)
+function Cheat.Talk(who, npc)
     return approachThen("Talk", who, npc, Act.TalkReach, function(j)
         if See.Relation(npc) == "hostile" then return false, "hostile" end
         if bool(try(Osi.IsDead, npc)) then return false, "dead" end
@@ -1248,40 +1426,75 @@ function Act.Talk(who, npc)
     end, 6)
 end
 
+--- Opens the trade window with a trader, as the player's Trade does: walks up to it, then asks the
+--- game (Osi.RequestTrade), and is done when the character carries CharacterTrading - the window
+--- is then open on the client (GK.Gui.Trade moves, balances and finishes). Refused, with the
+--- reason, for a trader that is dead, hostile, or not trading (Osi.CanTrade). N28 of the third
+--- run: RequestTrade from 360 m away opened nothing; from beside the trader it opened the window
+--- (in barter mode), seen live with Dammon in WLD_Main_A.
+function Cheat.Trade(who, trader)
+    if type(trader) ~= "string" then return fail("GK.Cheat.Trade(who, trader): trader is a character uuid, got " .. tostring(trader)) end
+    if bool(try(Osi.IsDead, trader)) then return fail("the trader is dead") end
+    if See.Relation(trader) == "hostile" then return fail("the trader is hostile") end
+    if try(Osi.CanTrade, trader) ~= 1 then
+        return fail("does not trade (Osi.CanTrade is not 1); GK.Stage.Scout{kind = \"traders\"} lists those that do")
+    end
+    return approachThen("Trade", who, trader, Act.TalkReach, function(j)
+        if inDialog(j.who) then return false, "in a dialogue: end it first" end
+        Osi.RequestTrade(j.who, trader, 0, "")
+    end, function(j)
+        local e = entityOf(j.who)
+        if try(function() return e.CharacterTrading end) ~= nil then
+            j.result = { trading = true, ui = "Trade" }
+            return true
+        end
+        return nil
+    end, 6)
+end
+
 -- ---------------------------------------------------------------------------------------
 -- Turns and modes
 
 --- Makes a party member the one the player controls - a click on its portrait.
 function Act.Select(who)
     who = resolveWho(who)
-    if not See.IsMember(who) then return fail("not a party member") end
+    if not See.IsMember(who) then return fail("not a party member (GK.Act acts for the player's party only, checked with GK.See.IsMember; a spawned or summoned creature is not in it - give it things with GK.Stage.Outfit, GK.Stage.Cast, GK.Stage.Use)") end
     Osi.MakePlayerActive(who)
-    return { ok = true, controlled = bool(try(Osi.IsControlled, who)) }
+    return GK.Observe({ ok = true, did = "asked to select" }, function(_, final)
+        if bool(try(Osi.IsControlled, who)) then return { ok = true, controlled = true, saw = "the character is controlled" } end
+        if final then return { ok = false, controlled = false, did = "asked to select", saw = "nothing changed: not controlled" } end
+    end, 2000)
 end
 
 --- Ends the selected character's turn. The player's way is the UI's End Turn button: the bridge's
---- client runs it (GK.Command("EndTurn") on the UI side; stand/situation.py does that after this
---- check). Osi.EndTurn was dropped by the game for members of a party turn group (2026-11-13), so
+--- client runs it (GK.Command("EndTurn") on the UI side, after
+--- this check). Osi.EndTurn was dropped by the game for members of a party turn group (2026-11-13), so
 --- this server call is only the fallback for a character alone in its turn.
 function Act.EndTurn(who, viaUi)
     who = resolveWho(who)
     if not inCombat(who) then return fail("not in a fight") end
     if not hisTurn(who) then return fail("not its turn") end
     if not bool(try(Osi.IsControlled, who)) then return fail("not selected (select it first)") end
-    if viaUi then return { ok = true, ui = "EndTurn" } end
+    if viaUi then return { ok = true, ui = "EndTurn", did = "checked only: the UI's End Turn is the player's way" } end
     Osi.EndTurn(who)
     -- in a party turn group the engine marks the end only when the whole group has ended:
     -- remember it here, so the reader does not offer this character's turn again
     Act.Ended = Act.Ended or {}
     local e = entityOf(who)
     local combat = try(function() return e.CombatParticipant.CombatHandle end)
-    Act.Ended[who] = { round = combat and try(function() return combat.TurnOrder.Round end), t = now() }
-    return { ok = true }
+    Act.Ended[who] = { round = combat and try(function() return combat.TurnOrder.Round end), combat = try(Osi.CombatGetGuidFor, who), t = now() }
+    return GK.Observe({ ok = true, did = "asked to end the turn" }, function(_, final)
+        if not hisTurn(who) or not inCombat(who) then return { ok = true, did = "ended the turn", saw = "it is no longer its turn" } end
+        if final then
+            return { ok = false, did = "asked to end the turn", saw = "nothing changed: still its turn",
+                     hint = "in a party turn group the game ends the turn when the whole group has ended" }
+        end
+    end, 3000)
 end
 
 --- Fleeing the fight: the hot bar's Flee button for the selected character, when the game allows
 --- it (GK.See.Flee: no enemy within the distance the game wants, no blocking status, a place that
---- allows it). The check is here; the Python side presses the button (GK.Command("Flee") on the UI).
+--- allows it). The check is here; the caller presses the button (GK.Command("Flee") on the UI).
 function Act.Flee(who)
     who = resolveWho(who)
     if not inCombat(who) then return fail("not in a fight") end
@@ -1294,44 +1507,89 @@ function Act.Flee(who)
         for _, w in ipairs(f.why or {}) do text[#text + 1] = reasons[w] or w end
         return fail("cannot flee: " .. table.concat(text, "; "), { flee = f })
     end
-    return { ok = true, ui = "Flee" }
+    -- Only allowed, not done: the button is pressed on the UI side, and the game can still keep
+    -- the fight after it (N9 of the third run: ok, twice, and IsInCombat stayed 1).
+    return { ok = true, allowed = true, fled = false, ui = "Flee",
+             note = "nothing was done here: GK.Command(\"Flee\") on the UI side presses the button; "
+                 .. "then read Osi.IsInCombat - the game may keep the fight" }
 end
 
 --- The turn-based mode button: a fight-like turn order outside a fight, for careful moves.
 function Act.TurnBased(on, who)
     who = resolveWho(who)
     if inCombat(who) then return fail("in a fight already") end
-    Osi.ForceTurnBasedMode(who, on == false and 0 or 1)
-    return { ok = true }
+    local wanted = on ~= false
+    Osi.ForceTurnBasedMode(who, wanted and 1 or 0)
+    return GK.Observe({ ok = true, did = "asked for turn-based mode " .. (wanted and "on" or "off") }, function(_, final)
+        local now = bool(try(Osi.IsInForceTurnBasedMode, who))
+        if now == wanted then return { ok = true, did = "turn-based mode " .. (wanted and "on" or "off"), saw = "the mode is " .. (wanted and "on" or "off") } end
+        if final then return { ok = false, did = "asked for turn-based mode", saw = "nothing changed" } end
+    end, 2000)
 end
 
-function Act.Sneak(on, who)
+function Cheat.Sneak(on, who)
     who = resolveWho(who)
     if on == false then
         -- the hotbar's sneak toggle: leaving stealth is free
+        if not bool(try(Osi.HasActiveStatus, who, "SNEAKING")) then return { ok = true, did = "nothing", already = true } end
         Osi.RemoveStatus(who, "SNEAKING", "")
-        return { ok = true }
+        return GK.Observe({ ok = true, did = "asked to stop sneaking" }, function(_, final)
+            if not bool(try(Osi.HasActiveStatus, who, "SNEAKING")) then return { ok = true, did = "stopped sneaking", saw = "SNEAKING is gone" } end
+            if final then return { ok = false, did = "asked to stop sneaking", saw = "nothing changed: still SNEAKING" } end
+        end, 1500)
     end
-    return Act.Hide(who)
+    return Cheat.Hide(who)
 end
 
-function Act.Equip(who, item)
+function Cheat.Equip(who, item)
     who = resolveWho(who)
     local why = Act.CannotAct(who)
     if why then return fail(why) end
     local owner = try(Osi.GetInventoryOwner, item)
     if owner ~= who then return fail("not in its inventory") end
     if inCombat(who) and not bool(try(Osi.IsWeapon, item)) then return fail("armour cannot be changed in a fight") end
-    Osi.Equip(who, item)
-    return { ok = true }
+    -- Wish b of the day run: Equip answered ok for a mallet and nothing was equipped. Osi.Equip
+    -- quietly does nothing with an item that is not worn or wielded, so that is said first, and
+    -- the answer is a job that ends when the game shows the item equipped - or says it did not.
+    local entity = entityOf(item)
+    if entity and try(function() return entity.Equipable end) == nil then
+        return fail("not something that is worn or wielded (the item has no Equipable component): Osi.Equip ignores it")
+    end
+    local job = newJob("Equip", who, { target = item })
+    job.steps = {
+        function()
+            Osi.Equip(who, item)
+            return true
+        end,
+        function(j)
+            if bool(try(Osi.IsEquipped, item)) then
+                j.result = { equipped = true }
+                return true
+            end
+            if now() - (j.stepStarted or j.started) > 3 then
+                return false, "the game did not equip it in 3 s (a requirement of the item - proficiency, strength - or a slot it cannot take)"
+            end
+            return nil
+        end,
+    }
+    job.stepIndex = 1
+    job.stepStarted = now()
+    job.timeout = 10
+    startTicker()
+    return view(job)
 end
 
-function Act.Unequip(who, item)
+function Cheat.Unequip(who, item)
     who = resolveWho(who)
     local why = Act.CannotAct(who)
     if why then return fail(why) end
+    if not bool(try(Osi.IsEquipped, item)) then return fail("not equipped") end
     Osi.Unequip(who, item)
-    return { ok = true }
+    -- the answer is what the game shows a moment later, not the request (wish b of the day run)
+    return GK.Observe({ ok = true, did = "asked to unequip" }, function(_, final)
+        if not bool(try(Osi.IsEquipped, item)) then return { ok = true, did = "unequipped", saw = "the item is no longer equipped" } end
+        if final then return { ok = false, did = "asked to unequip", saw = "nothing changed: the item is still equipped" } end
+    end, 3000)
 end
 
 -- ---------------------------------------------------------------------------------------
@@ -1400,12 +1658,29 @@ local function attemptStep(who, done, o)
             j.heldSince = t
             j.stepStarted = t
             j.patience = nil
+            j.wasBusy = true
             return nil
         end
-        -- The engine has let go. Give the world a moment to catch up, then judge.
-        j.step, j.heldSince = nil, nil
+        -- The engine has let go - or never took it up. Give the world a moment to catch up, then
+        -- judge, and say which it is (N40 of the third run: a lockpick job with no dice window and
+        -- no outcome said nothing of what it waited for).
+        j.heldSince = nil
         j.patience = j.patience or now()
-        if now() - j.patience > o.patience then return false, o.failure end
+        local waited = now() - j.patience
+        if j.wasBusy then
+            j.step = string.format("the engine let the attempt go; waiting %.0f of %d s for the world to show it", waited, o.patience)
+        else
+            j.step = string.format("waiting for the engine to take the attempt up (%s on the character: the walk there, "
+                .. "then the dice window on the client) - none yet after %.0f of %d s", table.concat(o.busy, " or "), waited, o.patience)
+        end
+        if waited > o.patience then
+            if not j.wasBusy then
+                return false, o.failure .. " - the engine had not taken the attempt up in " .. o.patience .. " s (no "
+                    .. table.concat(o.busy, "/") .. " on the character, so no dice window): the game dropped the request, "
+                    .. "or the walk there is longer - walk next to it first and ask again"
+            end
+            return false, o.failure
+        end
         return nil
     end
 end
@@ -1417,7 +1692,7 @@ function Act.Lockpick(who, item)
     who = resolveWho(who)
     local why = Act.CannotAct(who)
     if why then return fail(why) end
-    local bad = needPerceived(item)
+    local bad = needPerceived(item, who)
     if bad then return fail(bad) end
     if not bool(try(Osi.IsLocked, item)) then return fail("it is not locked") end
     if not Act.CanPickLocks() then return fail("this Script Extender build cannot start lock picking (restart with the current GateKit build)") end
@@ -1425,7 +1700,7 @@ function Act.Lockpick(who, item)
     if not tool then return fail("no thieves' tools in its inventory") end
     local ok, err = GK.Stage.PickLock(item, who, tool)
     if not ok then return fail(err or "the game did not take the request") end
-    local job = newJob("Lockpick", who, { target = item })
+    local job = newJob("Lockpick", who, { target = item }, "fair")
     job.steps = { attemptStep(who, function() return not bool(try(Osi.IsLocked, item)) end, {
         effect = "unlocked",
         busy = { "LockpickingState", "LockPicking" },
@@ -1436,15 +1711,18 @@ function Act.Lockpick(who, item)
     job.stepStarted = now()
     job.timeout = 40
     startTicker()
-    return { job = job.n, tool = See.Name(tool) }
+    return { job = job.n, tool = See.Name(tool),
+             waits = "the engine walks the character to the lock and opens the Sleight of Hand dice window on the client "
+                 .. "(GK.Gui.Blocking() names it; answer it there); the job ends with effect = \"unlocked\", or fails "
+                 .. "saying whether the engine ever took the attempt up - GK.Act.Job(n).step says what it waits for now" }
 end
 
 --- Disarms a discovered trap with a Trap Disarm Toolkit, as the context menu's Disarm does.
-function Act.Disarm(who, trap)
+function Cheat.Disarm(who, trap)
     who = resolveWho(who)
     local why = Act.CannotAct(who)
     if why then return fail(why) end
-    local bad = needPerceived(trap)
+    local bad = needPerceived(trap, who)
     if bad then return fail(bad) end
     if not (bool(try(Osi.IsTrap, trap)) and bool(try(Osi.IsTrapDiscovered, trap))) then return fail("no discovered trap there") end
     if not bool(try(Osi.IsTrapArmed, trap)) then return fail("the trap is not armed") end
@@ -1466,7 +1744,9 @@ function Act.Disarm(who, trap)
     job.stepStarted = now()
     job.timeout = 40
     startTicker()
-    return { job = job.n, tool = See.Name(tool) }
+    return { job = job.n, tool = See.Name(tool),
+             waits = "the engine walks the character to the trap and opens the dice window on the client; the job ends "
+                 .. "with effect = \"disarmed\" or fails - GK.Act.Job(n).step says what it waits for now" }
 end
 
 -- ---------------------------------------------------------------------------------------
@@ -1483,9 +1763,8 @@ end
 --- If the game has not come round within the patience, it fails and says that plainly - which is
 --- a fact about the engine worth having, not a thing to paper over.
 ---
---- The player's own way is the hotbar's weapon toggle, and the bridge cannot press it:
---- `LSToggleButton.IsChecked` is a Nullable<Bool>, which Script Extender does not read today.
---- Until the fork can, this is the honest way to reach the same state.
+--- A cheat: Osi.SetWeaponUnsheathed is a server order. The player's own way is the toggle's key,
+--- GK.Act.Draw / Sheathe on the UI side (Client/Act.lua).
 local function unsheathJob(who, drawn, kind)
     who = resolveWho(who)
     local why = Act.CannotAct(who)
@@ -1494,7 +1773,7 @@ local function unsheathJob(who, drawn, kind)
         return { effect = drawn and "already drawn" or "already sheathed" }
     end
     Osi.SetWeaponUnsheathed(who, drawn and 1 or 0, 1)
-    local job = newJob(kind, who, { drawn = drawn })
+    local job = newJob(kind, who, { drawn = drawn }, "cheat")
     job.steps = { function(j)
         if bool(try(Osi.IsWeaponUnsheathed, who)) == drawn then
             j.result = { effect = drawn and "drawn" or "sheathed" }
@@ -1514,16 +1793,21 @@ local function unsheathJob(who, drawn, kind)
     return { job = job.n }
 end
 
---- Takes the character's weapons out, as the hotbar's weapon toggle does. Waits for the game.
-function Act.Draw(who) return unsheathJob(who, true, "Draw") end
+--- Takes the character's weapons out by a server order. Waits for the game.
+function Cheat.Draw(who) return unsheathJob(who, true, "Draw") end
 
---- Puts the character's weapons away. Waits for the game, and says so if it does not come round.
-function Act.Sheathe(who) return unsheathJob(who, false, "Sheathe") end
+--- Puts the character's weapons away by a server order. Waits for the game, and says so if it does not come round.
+function Cheat.Sheathe(who) return unsheathJob(who, false, "Sheathe") end
 
---- Immersive mode (docs/agent-immersive.md): a line the acting character says, shown in the game
+--- Answers where the fair draw is (GK.Act.Draw on the UI side) and names GK.Cheat.Draw.
+function Act.Draw() return onTheUiSide("Draw") end
+--- Answers where the fair sheathing is (GK.Act.Sheathe on the UI side) and names GK.Cheat.Sheathe.
+function Act.Sheathe() return onTheUiSide("Sheathe") end
+
+--- Immersive mode: a line the acting character says, shown in the game
 --- as a notification, and a plain reason; both kept in GK.Act.Narration. Changes nothing in the world.
 Act.Narration = Act.Narration or {}
-function Act.Say(text, why, who)
+function Cheat.Say(text, why, who)
     who = resolveWho(who)
     if not text or text == "" then return fail("nothing to say") end
     local name = See.Name(who) or "?"
@@ -1534,7 +1818,7 @@ function Act.Say(text, why, who)
     return { ok = true, said = name .. ": " .. text }
 end
 
-function Act.Stop(who)
+function Cheat.Stop(who)
     who = resolveWho(who)
     try(Osi.PurgeOsirisQueue, who)
     for _, job in pairs(Act.JobList) do

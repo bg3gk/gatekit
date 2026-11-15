@@ -1,14 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/bg3gk/gatekit/schemas/bridge/tell.schema.json",
+  "$id": "bridge/tell/1",
   "title": "The host's answer to a question (tell_<side>_<id>.json)",
+  "description": "docs/contracts/bridge-protocol.md, the other direction.",
   "type": "object",
   "required": ["id", "ok"],
+  "additionalProperties": false,
   "properties": {
-    "id": { "type": "string" },
-    "ok": { "type": "boolean" },
-    "result": { "description": "The answer, defined per kind. Absent when ok is false." },
-    "error": { "type": "string", "description": "Present when ok is false: why the host could not answer." }
-  },
-  "additionalProperties": true
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "ok": {"type": "boolean"},
+    "result": {"description": "The answer, defined per kind. Absent when ok is false."},
+    "error": {"type": "string", "description": "Present when ok is false: why the host could not answer."}
+  }
 }

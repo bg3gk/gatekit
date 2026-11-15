@@ -2,7 +2,7 @@
 -- in the visual tree and reads or drives them, so a test can follow a dialogue or press a
 -- game command without the mouse and without looking at the screen.
 --
--- Everything here must run in the UI's context: `gatekit.py exec ui ...`, the MCP tool with
+-- Everything here must run in the UI's context: `gatekit exec ui ...`, the MCP tool with
 -- side "ui", or inside Ext.UI.Defer(function() ... end).
 
 local function typeName(object)
@@ -133,11 +133,56 @@ local function commandSource(wanted)
     return found
 end
 
+-- Why there is no view model to take commands from: said, not a bare nil (wish 13: a command
+-- name given as `wanted` answered null, which read as "no such command").
+local function noSource(wanted)
+    if wanted then
+        return "no view model " .. tostring(wanted) .. " in the UI now; `wanted` is a view-model type "
+            .. "(GK.ViewModels() lists those on screen), not a command name - GK.Commands() lists the commands"
+    end
+    return "no gui::DC* data context in the UI yet (is the game past its loading screen?)"
+end
+
+--- Text in lower case for matching, beyond ASCII: Latin-1, Greek and Cyrillic capitals too. The
+--- game shows names in the player's language, and string.lower leaves "Зелье" as it is, so a name
+--- typed in another case never matched (the third coverage run). Bytes that are not such a
+--- character are kept as they are.
+function GK.Fold(text)
+    text = tostring(text or "")
+    if not text:find("[\128-\255]") then return text:lower() end
+    -- no utf8 library in the game's Lua: the two-byte sequences (U+0080..U+07FF, where all these
+    -- capitals are) are read by hand, anything else is kept as it is
+    local out, i, n = {}, 1, #text
+    while i <= n do
+        local b1 = text:byte(i)
+        local b2 = i < n and text:byte(i + 1) or nil
+        if b1 >= 0xC2 and b1 <= 0xDF and b2 and b2 >= 0x80 and b2 <= 0xBF then
+            local c = (b1 - 0xC0) * 64 + (b2 - 0x80)
+            if (c >= 0xC0 and c <= 0xDE and c ~= 0xD7) or (c >= 0x391 and c <= 0x3AB and c ~= 0x3A2)
+                or (c >= 0x410 and c <= 0x42F) then
+                c = c + 0x20
+            elseif c >= 0x400 and c <= 0x40F then
+                c = c + 0x50
+            end
+            out[#out + 1] = string.char(0xC0 + c // 64, 0x80 + c % 64)
+            i = i + 2
+        elseif b1 < 0x80 then
+            out[#out + 1] = string.char(b1):lower()
+            i = i + 1
+        else
+            out[#out + 1] = string.char(b1)
+            i = i + 1
+        end
+    end
+    return table.concat(out)
+end
+
 --- Names of the game commands available (QuickSaveCommand, SwitchWeaponSetCommand, ShortRest,
---- GoToCamp, TogglePhotoModeCommand, ...). `wanted` narrows it to one view-model type.
+--- GoToCamp, TogglePhotoModeCommand, ...). `wanted` narrows it to one view-model type; a type that
+--- is not on screen is an error saying so.
 function GK.Commands(wanted)
     local model = commandSource(wanted)
-    if not model then return nil end
+    if not model then error(noSource(wanted), 2) end
     local out = {}
     for key, value in pairs(model:GetAllProperties()) do
         if type(value) == "userdata" and typeName(value):find("Command", 1, true) then out[#out + 1] = tostring(key) end
@@ -147,11 +192,25 @@ function GK.Commands(wanted)
 end
 
 --- Executes a game command by name, with an optional parameter, e.g. GK.Command("QuickSaveCommand").
+--- Refused when the command is not there or the game's own CanExecute says no. The answer says
+--- the command RAN, which is not that it did anything (wishes 13, 16: ShortRest and
+--- TogglePhotoModeCommand ran and nothing happened) - read the effect.
 function GK.Command(name, parameter, wanted)
     local model = commandSource(wanted)
-    if not model then error("view model not in the UI: " .. tostring(wanted or "gui::DC*")) end
+    if not model then error(noSource(wanted), 2) end
     local command = model:GetAllProperties()[name]
-    if not command then error("no command " .. tostring(name)) end
+    if not command or not typeName(command):find("Command", 1, true) then
+        error("no command " .. tostring(name) .. " on " .. typeName(model) .. "; GK.Commands("
+            .. (wanted and string.format("%q", wanted) or "") .. ") lists those there", 2)
+    end
+    -- a plain Lua value is boxed for the game, as GK.Gui.Click does (D19 of the day run:
+    -- GK.Command("TogglePhotoModeCommand", false) failed "expected a light C++ object, got boolean")
+    if parameter ~= nil and type(parameter) ~= "userdata" then parameter = Ext.UI.Box(parameter) end
+    local known, can = pcall(function() return command:CanExecute(parameter) end)
+    if known and can == false then
+        error(tostring(name) .. " cannot run now: the game's CanExecute says no (nothing was done)", 2)
+    end
     command:Execute(parameter)
-    return true
+    return { ran = name, canExecute = known and can or nil,
+             note = "ran is not did: the game may ignore it (a gate on the player, a window, combat) - read the effect" }
 end

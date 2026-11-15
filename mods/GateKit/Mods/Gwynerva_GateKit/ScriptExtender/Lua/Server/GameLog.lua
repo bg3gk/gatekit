@@ -1,23 +1,24 @@
 -- GK.GameLog: what happened, as a player would have noticed it - the combat log and the event
 -- toasts in one feed: damage, healing, statuses gained and lost (curses, poison, blessings),
 -- downs and deaths, spells cast, fights and turns, items and gold gained or lost, journal
--- updates, dice results, companions' approval, level-ups. Server side.
+-- updates, dice results, companions' approval, level-ups. Server side. The entries are rows of
+-- the event log, family `game` (kinds game_<kind>); this file writes them and reads them back.
 --
---   GK.GameLog.Since(n, options)  { last, entries = { { n, t, kind, text, ... } } } after entry n;
---                                 options.all = also what the party did not perceive
+--   GK.GameLog.Since(n, options)  { last, entries = { { n, t, kind, text, ... } } } after entry n
+--                                 (n is the row's seq); options.all = also what the party did not
+--                                 perceive; options.kinds = { kind = true }
 --   GK.GameLog.Kinds              the kinds: damage, heal, status, unstatus, down, death, revive,
 --                                 cast, fight, turn, item, lost, gold, quest, roll, approval, level
 --
--- Fair: an entry is kept when a party member is involved, or the party perceives the one it
--- happened to (GK.See.PartyPerceives at that moment). Statuses are those a player sees (shown on
--- portraits or in Examine). Texts are English; names are the game's own (its language).
+-- Fair: an entry is a `player` row when a party member is involved, or the party perceives the
+-- one it happened to (GK.See.PartyPerceives at that moment); else the row is `omniscient`.
+-- Statuses are those a player sees (shown on portraits or in Examine). Texts are English; names
+-- are the game's own (its language).
 
 GK.GameLog = GK.GameLog or {}
 local Log = GK.GameLog
-Log.Entries = Log.Entries or {}
-Log.Next = Log.Next or 1
-Log.Keep = 500
 Log.Hp = Log.Hp or {}   -- last hit points seen per entity, to tell healing from damage
+Log.Saved = Log.Saved or {}   -- the entries a loaded save carried (GK.SaveState), before this boot's rows
 
 local function try(fn, ...)
     local ok, a, b = pcall(fn, ...)
@@ -54,12 +55,9 @@ end
 
 local function add(kind, text, data, ...)
     local fair = perceived(...)
-    local n = Log.Next
-    Log.Next = n + 1
-    local entry = { n = n, t = math.floor(Ext.Utils.MonotonicTime() / 100) / 10, kind = kind, text = text, fair = fair }
-    for k, v in pairs(data or {}) do entry[k] = v end
-    Log.Entries[n] = entry
-    Log.Entries[n - Log.Keep] = nil
+    local payload = { text = text }
+    for k, v in pairs(data or {}) do payload[k] = v end
+    GK.EventLog.Append("game_" .. kind, payload, { knows = not fair and "omniscient" or nil })
 end
 
 local function statusName(id)
@@ -235,13 +233,22 @@ Log.On = {
     RollResult = function(_event, roller, _subject, resultType, isActive, criticality)
         -- a passive roll's subject is not named: the game does not show what was noticed
         local verdict = resultType == 1 and "succeeds" or "fails"
-        -- criticality arrives as a number (0 = none) or a name; only a real critical is worth saying.
-        -- The event carries no dice: an active roll's numbers are in `roll` (the roll window).
+        -- criticality arrives as a number (0 = none) or a name; only a real critical is worth saying
         local crit = tostring(criticality)
-        local critText = (crit == "1" or crit:find("Success")) and " (natural 20)"
-            or (crit == "2" or crit:find("Fail")) and " (natural 1)" or ""
-        add("roll", string.format("%s's %s check %s%s", name(roller), isActive == 1 and "active" or "passive", verdict, critText),
-            { who = bare(roller), success = resultType == 1, active = isActive == 1 }, roller)
+        local critical = (crit == "1" or crit:find("Success")) and "success" or (crit == "2" or crit:find("Fail")) and "failure" or nil
+        local critText = critical == "success" and " (natural 20)" or critical == "failure" and " (natural 1)" or ""
+        -- what was rolled: the roll the game finished a tick before (GK.Rolls.Finished)
+        local r = GK.Rolls and GK.Rolls.Finished and GK.Rolls.Finished(roller, true) or {}
+        local data = { who = bare(roller), success = resultType == 1, active = isActive == 1, critical = critical,
+                       kind = r.kind, ability = r.ability, skill = r.skill, dc = r.dc, advantage = r.advantage,
+                       modifiers = r.modifiers, bonus = r.bonus, natural = r.natural, discarded = r.discarded, total = r.total, pinned = r.pinned,
+                       inspired = r.inspired }
+        local what = r.skill or r.ability or "check"
+        local numbers = r.natural and string.format(" (%s%s%s)", tostring(r.natural),
+            r.bonus and r.bonus ~= 0 and string.format(" %+d = %s", r.bonus, tostring(r.total)) or "",
+            r.dc and r.dc > 0 and (" vs " .. r.dc) or "") or ""
+        add("roll", string.format("%s's %s %s %s%s%s", name(roller), isActive == 1 and "active" or "passive", what, verdict, numbers, critText),
+            data, roller)
     end,
     ApprovalRatingChanged = function(owner, rated, value)
         if not GK.See.IsMember(bare(owner)) then return end
@@ -272,15 +279,29 @@ end
 Log.Kinds = { "damage", "heal", "status", "unstatus", "down", "death", "revive", "cast", "fight", "turn", "item", "lost",
               "gold", "quest", "roll", "approval", "level" }
 
+--- A game row as an entry: { n = seq, t (seconds), kind, text, fair, ...payload }.
+local function entry(row)
+    local e = { n = row.seq, t = math.floor(row.t / 100) / 10, kind = row.kind:sub(6), fair = row.knows == "player" }
+    for k, v in pairs(row.payload or {}) do e[k] = v end
+    return e
+end
+Log.Entry = entry
+
 function Log.Since(n, options)
     options = options or {}
     n = n or 0
     local out = {}
-    for i = math.max(n + 1, Log.Next - Log.Keep), Log.Next - 1 do
-        local e = Log.Entries[i]
-        if e and (e.fair or options.all) and (not options.kinds or options.kinds[e.kind]) then out[#out + 1] = e end
+    if n == 0 then
+        for _, e in ipairs(Log.Saved) do
+            if (e.fair or options.all) and (not options.kinds or options.kinds[e.kind]) then out[#out + 1] = e end
+        end
     end
-    return { last = Log.Next - 1, entries = out }
+    local got = GK.EventLog.Since(n, { family = "game" })
+    for _, row in ipairs(got.rows) do
+        local e = entry(row)
+        if (e.fair or options.all) and (not options.kinds or options.kinds[e.kind]) then out[#out + 1] = e end
+    end
+    return { last = GK.EventLog.Seq, entries = out, dropped = got.dropped }
 end
 
 return Log

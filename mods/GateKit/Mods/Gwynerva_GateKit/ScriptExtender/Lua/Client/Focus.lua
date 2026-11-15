@@ -97,7 +97,8 @@ local function onTick()
         Focus.Yielded = false
         setCursorText(false)
     end
-    setPicking(false)
+    -- an aim of GK.Gui.Aim needs the picking on: it writes where the pointer's pick lands
+    if not (GK.Gui and GK.Gui.AimState and GK.Gui.AimState.active) then setPicking(false) end
     -- the widget may be rebuilt (a loading screen, a menu): collapse it again now and then
     local t = now()
     if not Focus.TextCheckedAt or t - Focus.TextCheckedAt > 2 then
@@ -219,5 +220,75 @@ Ext.Net.CreateChannel(ModuleUUID, "GK_Focus", function(msg)
     if msg.clear then GK.Focus.ClearOutlines() end
     if msg.id then GK.Focus.Outline(msg.id, msg.on) end
 end)
+
+-- Aiming without a mouse ------------------------------------------------------------------------
+--
+-- D16 of the 2026-11-14 day run: injected mouse moves left the picking position where it was. The
+-- first answer here wrote ecl::PickingHelper's TargetOverride; the decompiled picking
+-- (PickingHelper::DoPick) and spell targeting (CharacterTask_Spell) never read it, so it aimed at
+-- nothing. GK.Gui.Aim (Client/Aim.lua) is the working way: it writes the pick where the pointer's
+-- pick lands, after the game's picking ran. GK.Focus.Aim stays as a name that says so.
+
+--- Replaced by GK.Gui.Aim(target): answers ok = false and names it.
+function Focus.Aim(target, player)
+    return { ok = false, error = "GK.Focus.Aim is replaced by GK.Gui.Aim(target) (then GK.Gui.Confirm()): "
+        .. "the picking helper's TargetOverride is read by neither the picking nor the spell targeting" }
+end
+
+--- The spell the client is targeting now (the hotbar's active task), or nil and why.
+local function pendingSpell()
+    local data = GK.Gui and GK.Gui.Data and GK.Gui.Data("HotBar")
+    local task = data and try(function() return data.CurrentPlayer.UIData.ActiveTask end)
+    local spell = task and GK.Gui.ActionOf and GK.Gui.ActionOf(task)
+    if spell then return spell end
+    local slot = data and try(function() return data.CurrentActiveSlot end)
+    spell = slot and GK.Gui.ActionOf and GK.Gui.ActionOf(slot)
+    if spell then return spell end
+    return nil, "no spell is being targeted (the hotbar has no active task naming one)"
+end
+
+--- Confirms the pending targeting (D26 of the day run: injected mouse input reaches neither the
+--- game's buttons nor a world pick, so a targeting opened by a hotbar slot could never be
+--- confirmed). The confirm is the scripted cast, GK.Cheat.Cast on the server - the spell the
+--- hotbar is targeting, at `target` (an entity uuid or {x, y, z}), else at the aim (GK.Focus.Aim's
+--- override), else at what the pointer picks - and the client's targeting is then left with
+--- Escape. { ok, sent = { spell, target } }; how the cast went is its job (GK.Act.Jobs). The
+--- player's own confirm is GK.Gui.Confirm.
+function Focus.Confirm(target, spell)
+    local why
+    if not spell then spell, why = pendingSpell() end
+    if not spell then return { ok = false, error = why } end
+    if target == nil then
+        local helper = try(Ext.UI.GetPickingHelper, 1)
+        local override = helper and try(function() return helper.TargetOverride end)
+        local picked = helper and try(function() return helper.Inner.WorldPosition end)
+        local at = override or picked
+        if at then target = { at[1], at[2], at[3] } end
+    end
+    if target == nil then return { ok = false, error = "no target: give one, or aim first (GK.Focus.Aim)" } end
+    local literal = type(target) == "table" and string.format("{ %f, %f, %f }", target[1], target[2], target[3])
+        or string.format("%q", tostring(target))
+    local code = string.format("return GK.Cheat.Cast(nil, %q, %s)", spell, literal)
+    local channel = Focus.RunChannel
+    if not channel then
+        local ok, made = pcall(Ext.Net.CreateChannel, ModuleUUID, "GK_Run")
+        if not ok then return { ok = false, error = "no channel to the server: " .. tostring(made) } end
+        channel = made
+        Focus.RunChannel = made
+    end
+    local sent, problem = pcall(function() channel:SendToServer({ ticket = -1, kind = "ask", code = code }) end)
+    if not sent then return { ok = false, error = "could not ask the server: " .. tostring(problem) } end
+    Ext.Timer.WaitFor(200, function() try(GK.Key, "ESCAPE") end)
+    return { ok = true, sent = { spell = spell, target = target },
+             note = "the cast is GK.Cheat.Cast on the server: scripted, it skips rolls and costs; GK.Act.Jobs() says how it went" }
+end
+
+--- Lets the pointer aim again.
+function Focus.ClearAim(player)
+    local helper = try(Ext.UI.GetPickingHelper, player or 1)
+    if not helper then return { ok = false, error = "no picking helper" } end
+    local ok, problem = pcall(function() helper.TargetOverride = nil end)
+    return { ok = ok, error = not ok and tostring(problem) or nil }
+end
 
 return Focus

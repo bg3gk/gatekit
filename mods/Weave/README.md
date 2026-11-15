@@ -49,7 +49,6 @@ Instead of `RegisterComponent`, put `hello.weave` into your mod and call
   One file, no pictures of its own; a worked example of a real-looking window.
 - **Your copies win:** `Weave.Eject("theme.css")` writes an editable copy to
   `Script Extender/Gwynerva_Weave/ui/`; files there override the built-in ones.
-  (Before Weave was its own mod, that folder was `Gwynerva_GateKit/ui/`; move old copies over.)
 
 The Lua API with types: `lua-types/Weave.lua`. Layout: `ScriptExtender/Lua/Client/*.lua` (the
 kit, load order in `BootstrapClient.lua`), `ScriptExtender/Lua/ui/` (built-in components and sheets).

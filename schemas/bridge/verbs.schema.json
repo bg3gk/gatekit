@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/verbs/1",
+  "title": "The class of every verb of the bridge (Shared/VerbClasses.json in the bridge mod)",
+  "description": "One place for what each GK.* function is: fair (a player could do it through the game itself), cheat (it sets the world, bends a rule, or cannot be shown to do neither) or observation (it reads). The mod reads it to refuse a verb a step's class does not allow; the host reads it for bg3_api and holds it to the functions the mod defines. docs/contracts/lua-api.md, \"The class of a verb\".",
+  "type": "object",
+  "required": ["schema", "verbs"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "bridge/verbs/1"},
+    "about": {"type": "string", "minLength": 1},
+    "namespaces": {
+      "type": "object",
+      "description": "A class for every function of a GK table that `verbs` does not name, those made at run time included (GK.Cheat's catalogue).",
+      "additionalProperties": {"$ref": "#/$defs/entry"}
+    },
+    "verbs": {
+      "type": "object",
+      "description": "The path under GK (Act.Attack, Key) and its class.",
+      "additionalProperties": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "required": ["class"],
+      "additionalProperties": false,
+      "properties": {
+        "class": {"enum": ["fair", "cheat", "observation"]},
+        "why": {"type": "string", "minLength": 1, "description": "What the verb does that makes it this class, where its name does not say."}
+      }
+    }
+  }
+}

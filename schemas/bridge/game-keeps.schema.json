@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/game-keeps/1",
+  "title": "Components the engine keeps or removes by itself (Server/GameKeeps.json in the bridge mod)",
+  "description": "What GK.Stage.Verify does not count as dirt on a creature, and why: a component the engine creates at a first use and keeps while it holds its default (kept), and one it removes by itself a moment later (passing). docs/contracts/lua-api.md 14.",
+  "type": "object",
+  "required": ["schema", "kept", "passing"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "bridge/game-keeps/1"},
+    "about": {"type": "string", "minLength": 1},
+    "kept": {
+      "type": "object",
+      "description": "By the component's engine name: how to read it and what it holds when it is not dirt.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["lua", "why"],
+        "additionalProperties": false,
+        "properties": {
+          "lua": {"type": "string", "minLength": 1, "description": "The component's name as Script Extender reads it on an entity."},
+          "empty": {"type": "string", "minLength": 1, "description": "A list field that is empty when the component holds nothing."},
+          "default": {
+            "type": "object",
+            "description": "Fields and the value each holds by default.",
+            "additionalProperties": {"type": ["number", "boolean", "string"]}
+          },
+          "any": {"const": true, "description": "The component holds the game's record of its last request: not dirt whatever it holds."},
+          "why": {"type": "string", "minLength": 1, "description": "Who creates it, when, and what was read to know its default."}
+        }
+      }
+    },
+    "passing": {
+      "type": "object",
+      "description": "By the component's engine name: why the engine removes it by itself.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["why"],
+        "additionalProperties": false,
+        "properties": {
+          "why": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
