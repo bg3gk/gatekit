@@ -3260,3 +3260,36 @@ function GK.Rolls.CanRig() end
 ---The causes of a roll known for each executable. Server. Observation.
 ---@return table<string, { id: string, cause: string, rva: integer, size: integer }[]>
 function GK.RollLog.Causes() end
+
+---Data of any shape that a mod keeps inside the game's save. Server.
+GK.Store = {}
+
+---Declares a store: its version, defaults, migration and whose mod's variable it is. Server. Observation.
+---@param name string
+---@param options { version: integer?, defaults: table?, migrate: (fun(data: table, from: integer, to: integer): table)?, mod: string? }?
+---@return { ok: boolean, name: string, version: integer, saved: boolean }
+function GK.Store.Open(name, options) end
+
+---A copy of the value at a path of a store (the whole store without a path), or nil. Server. Observation.
+---@param name string
+---@param path (string|(string|integer)[])?
+---@param mod string?
+---@return any
+function GK.Store.Get(name, path, mod) end
+
+---Writes a value at a path of a store; nil takes the key out. Checked first: nothing is written when it cannot be kept. Server. Cheat.
+---@param name string
+---@param path (string|(string|integer)[])?
+---@param value any
+---@param mod string?
+---@return { ok: boolean, name: string?, error: string?, at: string? }
+function GK.Store.Set(name, path, value, mod) end
+
+---The stores of GateKit's own mod that the save holds. Server. Observation.
+---@return { name: string, version: integer? }[]
+function GK.Store.Names() end
+
+---Whether a value can be kept in a store. Server. Observation.
+---@param value any
+---@return { ok: boolean, error: string?, at: string? }
+function GK.Store.Check(value) end

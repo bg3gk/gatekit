@@ -25,6 +25,7 @@ Ext.Require("Server/Fixtures.lua")
 Ext.Require("Server/Rolls.lua")
 Ext.Require("Server/RollGenerator.lua")
 Ext.Require("Server/RollLog.lua")
+Ext.Require("Server/Store.lua")
 GK.Verbs.Guard()
 GK.Start("server")
 

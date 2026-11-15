@@ -1,0 +1,55 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ExecuteAttackPositionFunctor",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Executes one stats functor in an attack-position context (called per functor by esv::ExecuteStatsFunctor_AttackPositionContext); its DealDamage case reaches unplaced::DealDamageFunctorAtPosition.",
+  "fingerprint": {
+    "calls": [
+      "fp:04ab8f2d356f36e5",
+      "fp:123b79ba6c390bab",
+      "fp:14f37206ec1c9cc1",
+      "fp:175ac60533e9dfb9",
+      "fp:24c801b0780dfd1d",
+      "fp:2e11dab32a025d84",
+      "fp:446055cb3c8d3d53",
+      "fp:4cd438bb2af98bd4",
+      "fp:5227b96c8688ff31",
+      "fp:5d17a70e50dafa51",
+      "fp:5d864bc42ee4f230",
+      "fp:72b4801e8e903ffc",
+      "fp:73b6437b8a0b46c5",
+      "fp:77b26de95fac76d5",
+      "fp:85ff8b6f975d2193",
+      "fp:867b063cbc232207",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:d649436bbbe7d47a",
+      "fp:e4d053ad9455ea7c",
+      "fp:f56cfda99ef7ffa7",
+      "fp:fc4508fec29e9c21",
+      "import:90f37ce9f6d89ffa",
+      "import:9c9aac12eb379696",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::BuildConditionContextWithProxies",
+      "unplaced::DealDamageFunctorAtPosition",
+      "unplaced::ExecuteAttackTargetFunctor"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "the second damage roll of a goblin's weapon hit (Target_MainHandAttack's SpellProperties in the AttackPosition context) runs RollDamageDice <- 0x36E8A80 <- DealDamageFunctorAtPosition (+0x36EC3FC) <- this (+0x36DAE1C / +0x36DAF1C) <- esv::ExecuteStatsFunctor_AttackPositionContext (+0x36DB958)"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Read its switch to confirm it mirrors unplaced::ExecuteAttackTargetFunctor (type byte at +0x45).",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

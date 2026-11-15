@@ -3,7 +3,7 @@
   "id": "esv::combat::System::NewInitiativeRoll",
   "state": "described",
   "rung": "confirmed",
-  "does": "Gives a combatant its initiative: returns the value already stored for it in the combat if there is one, otherwise asks the combat helper whether it may roll and rolls with the StatsComponent InitiativeBonus, returning -20 when it may not.",
+  "does": "Gives a combatant its initiative: returns the value already stored for it in the combat if there is one, otherwise asks the combat helper whether it may roll and rolls with the StatsComponent InitiativeBonus (esv::combat::SystemHelper::RollDie), returning -20 when it may not. The fourth argument (R9) points at the combatant's EntityHandle: the frame that knows who rolls initiative.",
   "fingerprint": {
     "calls": [
       "fp:5227b96c8688ff31",
@@ -20,6 +20,14 @@
     {
       "kind": "watch",
       "says": "A counter on every function over a play of the prologue shows it called only while a fight was on (6 of the 14 fight segments), from 2 places, at +0x32041B8 and +0x320A2C9; its callee esv::combat::SystemHelper::RollDie runs in the same fight-start segments"
+    },
+    {
+      "kind": "read",
+      "says": "looks the entity up in the combat's initiative map first; else calls helper vtable +0x20 (eligibility) and +0x18 (the roll) with eoc::StatsComponent InitiativeBonus read from the entity *R9; 0xFFFFFFEC on refusal"
+    },
+    {
+      "kind": "watch",
+      "says": "when a newly spawned goblin joined a running fight, the initiative roll (type None, no roller) happened inside an open call of this function from +0x32041B8, whose R9 pointed at that goblin's handle; the roll's chain is RollDice <- RollDie (+0x32019E1) <- this (+0x3204281) <- unplaced::GetStoredOrRollInitiative (+0x32041B8) <- 0x3206B50 (+0x320A3BC) <- 0x3203050 <- esv::combat::System's update"
     }
   ]
 }

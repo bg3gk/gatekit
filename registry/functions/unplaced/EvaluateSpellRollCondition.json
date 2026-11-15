@@ -3,7 +3,7 @@
   "id": "unplaced::EvaluateSpellRollCondition",
   "state": "described",
   "rung": "confirmed",
-  "does": "Evaluates a spell's SpellRoll condition for one target: takes the spell's roll condition string, applies the cast's spell modifications to it (eoc::spell::ModifySpellRoll::Apply) and evaluates it, recompiled or as compiled; the frame every spell's attack roll and spell save passes on the way to the roll.",
+  "does": "Evaluates a spell's SpellRoll condition for one target, applying the cast's spell modifications to the condition string first when there are any for this spell; every spell's attack roll and spell save, and a creature's weapon attack, passes it. Arguments: RCX the spell's condition, RDX the ls::thoth::shared::ContextData (caster +0x0, target +0x10), R8 a pointer to the spell's FixedString (the first 4 bytes of a SpellId), R9 the cast's spell-modification container (may be null), then the stats and the condition machine on the stack.",
   "fingerprint": {
     "calls": [
       "fp:123b79ba6c390bab",
@@ -31,6 +31,25 @@
     {
       "kind": "watch",
       "says": "one call per Sacred Flame cast, from +0x3726D47; the caller chains of Sacred Flame's save, Hold Person's save and a goblin's weapon attack pass it at +0xFCE3CF"
+    },
+    {
+      "kind": "read",
+      "says": "hashes the FixedString R8 points to and looks it up in the container R9 points to (its +0x30 holds the modifications per spell); calls eoc::GetSpellConditionString with RCX and eoc::spell::ModifySpellRoll::Apply, then evaluates with RDX as the context through unplaced::EvaluateConditionList"
+    },
+    {
+      "kind": "watch",
+      "says": "at the moment of the roll R8 points at Target_SacredFlame's FixedString (0x4DC000B0) for Sacred Flame, Projectile_FireBolt's (0x4E4000B0) for Fire Bolt and Target_MainHandAttack's (0x20300011) for a goblin's weapon attack (each compared with GetPropertyAddress of the SpellBook entry's Prototype); RDX is the same address that unplaced::EvaluateStatsCondition receives in R9 next"
+    },
+    {
+      "kind": "game-name",
+      "says": "the argument list fits eoc::spell::CheckModifiableSpellRollCondition(Condition const&, ContextData&, FixedString const&, ModificationContainerComponent const*, RPGStats const&, Machine&) of the builds with symbols"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Rename to eoc::spell::CheckModifiableSpellRollCondition once its callees are compared with that build.",
+      "about": "reach",
+      "state": "open"
     }
   ]
 }

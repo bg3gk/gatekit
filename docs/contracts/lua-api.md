@@ -995,3 +995,27 @@ A test (src/GateKit.Testing) names its steps:
 | `need(condition, why)` | answers `condition` when it holds; otherwise the test ends as **unmet: why** - neither a pass nor a failure of the thing tested (cli.md, `test`) |
 
 A test that calls neither runs with nothing held.
+
+## 20. `GK.Store`: data kept in the save (Server/Store.lua)
+
+A store is a named table of any shape that travels inside the game's save: what is set before a
+save is there after that save is loaded; a load returns the store to the save's state; a save
+made before the store existed gives the store's defaults. It stands on the Script Extender's mod
+variables (`Ext.Vars`), one variable in the extender's own region of the save; nothing of the
+game's is touched. Server side. Study: `research/studies/save-kept-data.md`.
+
+| Verb | Class | What it does |
+|---|---|---|
+| `GK.Store.Open(name, options)` | observation | declares a store: `version` (a whole number, default 1), `defaults` (what a save without the store gives), `migrate(data, from, to)` (run once on a save that holds an older version), `mod` (the uuid of the mod whose variable it is; default GateKit's own, whose stores need no declaration). Another mod's store must be opened while that mod's bootstrap script runs, on every start: the extender restores only variables registered by then. `{ ok, name, version, saved }` |
+| `GK.Store.Get(name, path, mod)` | observation | a copy of the value at `path` (the whole store without one), or nil. A path is a list of keys (`{ "books", 2, "at" }`) or a dotted text (`"books.2.at"`; a part of digits only is a list index) |
+| `GK.Store.Set(name, path, value, mod)` | cheat | writes `value` at `path` (nil takes the key out; without a path the whole store is replaced and must be a table); tables on the way are made. The whole store is checked first and nothing is written when it cannot be kept: `{ ok = false, error, at }`. `{ ok, name }`. A write is not undone by `GK.Stage.Clean`: a store outlives a scope by its purpose - a test takes out what it put in |
+| `GK.Store.Names()` | observation | the stores of GateKit's own mod that the save holds: `{ { name, version } }` |
+| `GK.Store.Check(value)` | observation | whether a value can be kept: `{ ok = true }`, or `{ ok = false, error, at }` with the path of the first part that cannot |
+
+What can be kept: nil, booleans, finite numbers, texts, and tables of them nested to 64 levels,
+each either a plain list (keys 1..n) or keyed by texts. Refused, because the extender would lose
+it in silence: a function or a userdata (the whole variable is saved as nothing), a number key in
+a table that is no plain list (it comes back as a text), a table that holds itself.
+
+What cannot be had: a read before the session has loaded (`Ext.Events.SessionLoaded` is the
+first safe moment); the data of a mod that is no longer loaded, past the next save.

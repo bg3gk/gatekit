@@ -1,0 +1,48 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ExecuteRegainHitPointsFunctor",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Executes a heal functor (RegainHitPoints) on a target, rolling its dice expression.",
+  "fingerprint": {
+    "calls": [
+      "fp:07fdd00e8710fd31",
+      "fp:123b79ba6c390bab",
+      "fp:1e0dbec700a1058f",
+      "fp:2257dbe0376fc9b1",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:5d17a70e50dafa51",
+      "fp:72b4801e8e903ffc",
+      "fp:73b6437b8a0b46c5",
+      "fp:77b26de95fac76d5",
+      "fp:82d9ce3d09290b77",
+      "fp:85ff8b6f975d2193",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:a4fcd6458dbd5380",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "ls::thoth::shared::ContextData::ContextData"
+    ],
+    "components": ["esv::PassiveSystem", "esv::StatsSystem", "esv::combat_log::CombatLogSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "POTION_OF_HEALING's heal roll (roll type Sentinel, the host the roller) comes through RollDamageExpressionDice <- 0x11939E0 <- 0x1052940 <- this (+0x37DCE12) <- unplaced::ExecuteAttackTargetFunctor (+0x36D8AD4) <- esv::ExecuteStatsFunctor_AttackTargetContext <- esv::Status::OnStatusEvent (+0x2FFBC68) <- esv::StatusBoost::OnStatusEvent <- RaiseStatusEvent <- esv::Status::Enter; the functor list is POTION_OF_HEALING_OnApplyFunctors_Default"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Read the function and its case in unplaced::ExecuteAttackTargetFunctor's switch to confirm the functor type.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

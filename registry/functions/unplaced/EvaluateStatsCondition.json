@@ -3,7 +3,7 @@
   "id": "unplaced::EvaluateStatsCondition",
   "state": "described",
   "rung": "confirmed",
-  "does": "Evaluates one compiled stats condition by its index in the condition manager (index -1 is true) against a condition context, through the Lua condition runtime; the result is the verdict and the rolls the condition made. The common frame of every roll asked by a stats condition: a spell's SpellRoll, a status's RemoveConditions or OnApplyRoll.",
+  "does": "Evaluates one compiled stats condition by its index (index -1 is true) against a condition context, through the Lua condition runtime; the common frame of every roll asked by a stats condition: a spell's SpellRoll, a status's RemoveConditions or OnApplyRoll. Arguments: RCX the server's condition machine (EoCServer +0x2C8), RDX the result written back, R8D the condition index, R9 the ls::thoth::shared::ContextData (source +0x0, target +0x10, HitDesc* +0x68, status id +0xD4).",
   "fingerprint": {
     "calls": [
       "fp:123b79ba6c390bab",
@@ -28,6 +28,21 @@
     {
       "kind": "watch",
       "says": "the caller chains of Sacred Flame's save, a goblin's weapon attack, HOLD_PERSON's repeat save and See Invisibility's save all pass it at +0xEFFBA1"
+    },
+    {
+      "kind": "read",
+      "says": "its callers build an ls::thoth::shared::ContextData on their stack and pass it as the fourth argument (unplaced::EvaluateStatusCondition passes the context from 0x1057860; eoc::spell's roll evaluator 0xFCDD50 passes its own second argument); the index is looked up through RCX +0x30, +0x98"
+    },
+    {
+      "kind": "watch",
+      "says": "read at the moment of each roll through Ext.Events.Roll with entry and return probes (the frame still open): Sacred Flame's save, Fire Bolt's attack, a goblin's weapon attack and HOLD_PERSON's repeat save each roll inside an open call whose R9 holds the caster or attacker at +0x0 and the target at +0x10; the damage rolls of those hits are not inside it"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Its argument list fits ls::thoth::shared::Machine::CheckStaticCondition(int, ContextData&, EnumFlags<EConditionCategory> const&) of the builds with symbols (the result returned through RDX): compare callees with that build to give it the game's name.",
+      "about": "reach",
+      "state": "open"
     }
   ]
 }

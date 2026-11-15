@@ -1,0 +1,71 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ExecuteAttackTargetFunctor",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Executes one stats functor in an attack-target context (called per functor by esv::ExecuteStatsFunctor_AttackTargetContext): copies the context's HitDesc (+0x140) and AttackDesc (+0x300), checks the functor's conditions, then dispatches on the functor's type byte (+0x45): ApplyStatus to 0x377B460, DealDamage to stats::DealDamageFunctor::ApplyDamage, a heal to 0x37DC450, and so on.",
+  "fingerprint": {
+    "calls": [
+      "fp:04ab8f2d356f36e5",
+      "fp:08b104754cef3fb2",
+      "fp:123b79ba6c390bab",
+      "fp:175ac60533e9dfb9",
+      "fp:1c1ca237bb8f9232",
+      "fp:233f03776bcfab16",
+      "fp:24c801b0780dfd1d",
+      "fp:2e11dab32a025d84",
+      "fp:3620e51d0661a182",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3d451a94fd5e4e73",
+      "fp:3dc70372a826ba29",
+      "fp:3faa1dc32d782f63",
+      "fp:4cd438bb2af98bd4",
+      "fp:5113cca4a1021a2f",
+      "fp:5227b96c8688ff31",
+      "fp:5d864bc42ee4f230",
+      "fp:62ace37632f4a901",
+      "fp:62f004f3de547120",
+      "fp:72b4801e8e903ffc",
+      "fp:76f0057ce141e772",
+      "fp:867b063cbc232207",
+      "fp:91c3d48dff57ab4c",
+      "fp:91d6cca63bdf9aef",
+      "fp:9e24d4c02110e384",
+      "fp:abf795bd3641af85",
+      "fp:af15ffd95e7ad2c8",
+      "fp:b8163b0188139e8c",
+      "fp:b9a18e1f1379aafa",
+      "fp:c3f3cde34f44e692",
+      "fp:c6a4b104fa4dbcbe",
+      "fp:d1045bdeed38dbc1",
+      "fp:d649436bbbe7d47a",
+      "fp:d95eb5e8da90a0cd",
+      "fp:e0b86cbefa371bdc",
+      "fp:e4d053ad9455ea7c",
+      "fp:fc4508fec29e9c21",
+      "import:90f37ce9f6d89ffa",
+      "import:9c9aac12eb379696",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::ExecuteApplyStatusFunctor",
+      "unplaced::ExecuteRegainHitPointsFunctor"
+    ],
+    "components": [
+      "esv::concentration::ConcentrationSystem",
+      "esv::inventory::InteractionRequestSystem",
+      "esv::spell_cast::random::ValidationSystem",
+      "esv::swap_places::RequestSystem"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "a switch on the byte at +0x45 of its second argument; case 1 calls 0x377B460, case 2 reaches the level manager's surfaces, case 5 a summon"
+    },
+    {
+      "kind": "watch",
+      "says": "the call chains of a goblin weapon hit's first damage roll (via ApplyDamage), of the None roll between its attack and damage (via 0x377B460) and of POTION_OF_HEALING's heal roll (via 0x37DC450) all pass it, called from +0x36D97D2 inside esv::ExecuteStatsFunctor_AttackTargetContext"
+    }
+  ]
+}

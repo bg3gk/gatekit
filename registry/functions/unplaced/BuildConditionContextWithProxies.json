@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::BuildConditionContextWithProxies",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Builds a condition context like ls::thoth::shared::ContextData::ContextData at 0x1057860 but from four entities written at +0x0, +0x8, +0x10 and +0x18 (source, source proxy, target, target proxy) and two extra flags at +0x140 and +0x141.",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "same field writes as 0x1057860 with its four first handle arguments stored at +0x0..+0x18"
+    },
+    {
+      "kind": "game-name",
+      "says": "the builds with symbols carry a ContextData constructor taking four EntityHandles and two Vector3f, which fits this one"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Which callers use it (spell casts with proxies?): probe it with a Fire Bolt and a weapon attack and compare +0x8/+0x18 with the creatures' handles.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}
