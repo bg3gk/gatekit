@@ -1,0 +1,17 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::StatusMachine::Tick",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Ticks every active status of one status list of a status machine whose tick type matches (or that ticks always), calling each status's Tick through its vtable (+0x78).",
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "esv::StatusMachine::Tick(PrimitiveSet<Status*>&, Guid, float, EStatusTickType, bool) - the same five arguments: the list, the guid, the time, the tick type compared to the status's +0x180, and the bool compared to whether +0xD0 holds a handle"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe shows 11016 calls in 15 s from the per-frame status update 0x2C54890 (eight sites); HOLD_PERSON's repeat save chain passes it at +0x2F73B34"
+    }
+  ]
+}

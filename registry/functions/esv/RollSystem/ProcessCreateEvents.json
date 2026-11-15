@@ -1,0 +1,36 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::RollSystem::ProcessCreateEvents",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Rolls every roll request created since the last frame: walks the eoc::RequestedRollComponent entities just added and calls esv::RollSystem::RollDice on each that is not waiting for the player; the frame every roll of the roll system (concentration, dialogue window, story passive check) passes.",
+  "fingerprint": {
+    "calls": [
+      "esv::RollSystem::RollDice",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:d7195fa7c17f322c",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::RequestedRollComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::RequestedRollComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "a query with the added tag over a component of 0x1F0 bytes (eoc::RequestedRollComponent), then esv::RollSystem::RollDice per entity; called from the system's update 0x3293560 between ProcessConcentrationDamageRolls and ProcessCreateRollCallRequests"
+    },
+    {
+      "kind": "watch",
+      "says": "the chains of a concentration save, a story passive Perception check and the first roll of a dialogue check pass it at +0x32981CF; the RequestedRoll created each time is read in the same tick"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the name is the game's by its job only (the symbol list of the macOS build has ProcessCreateEvents among the RollSystem members); confirm against the macOS build's code",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

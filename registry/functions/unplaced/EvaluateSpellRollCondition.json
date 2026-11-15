@@ -1,0 +1,36 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::EvaluateSpellRollCondition",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Evaluates a spell's SpellRoll condition for one target: takes the spell's roll condition string, applies the cast's spell modifications to it (eoc::spell::ModifySpellRoll::Apply) and evaluates it, recompiled or as compiled; the frame every spell's attack roll and spell save passes on the way to the roll.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:1613a1d748e711ef",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f136df2e218cacd4",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::EvaluateConditionList"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "calls eoc::GetSpellConditionString and eoc::spell::ModifySpellRoll::Apply, then evaluates through 0xF00090 or 0xFD9FD0"
+    },
+    {
+      "kind": "watch",
+      "says": "one call per Sacred Flame cast, from +0x3726D47; the caller chains of Sacred Flame's save, Hold Person's save and a goblin's weapon attack pass it at +0xFCE3CF"
+    }
+  ]
+}

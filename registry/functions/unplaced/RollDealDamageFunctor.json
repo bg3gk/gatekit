@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RollDealDamageFunctor",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Rolls the damage of a DealDamage functor: builds the damage expression of the functor for the caster (weapon or spell damage) and throws its dice through unplaced::RollDamageDice; shared by the functor's execution on a target (stats::DealDamageFunctor::ApplyDamage) and at a position (0x36EBCB0).",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:73b6437b8a0b46c5",
+      "fp:85ff8b6f975d2193",
+      "fp:c65e3408d5f2b808",
+      "fp:e4d053ad9455ea7c",
+      "fp:ebc9e39819ba8149",
+      "fp:f8d99f5891680858",
+      "import:196f87dd222b4c83",
+      "unplaced::RollDamageDice"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "called by stats::DealDamageFunctor::ApplyDamage and by 0x36EBCB0; calls unplaced::RollDamageDice"
+    },
+    {
+      "kind": "watch",
+      "says": "Sacred Flame's damage chain passes it at +0x36E9347 under +0x36EA93B; a goblin's weapon damage chain passes it at +0x36E9347 under +0x36EC3FC"
+    }
+  ]
+}

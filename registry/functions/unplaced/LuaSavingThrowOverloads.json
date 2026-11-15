@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::LuaSavingThrowOverloads",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Chooses the Lua binding of SavingThrow() by the number of arguments given (2 to 5) and returns its result.",
+  "fingerprint": {
+    "calls": [
+      "fp:5227b96c8688ff31",
+      "fp:c727a01ebc8d49f9",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::LuaSavingThrowWithAbility"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "branches on the argument count to 0x10EDBC0, 0x10ED890, 0x10ED550 or 0x10ED1F0 and raises an error outside 2..5"
+    },
+    {
+      "kind": "watch",
+      "says": "every stats-condition save in the chains passes it at +0x10B9821; attacks pass the sibling 0x10B9650 at +0x10B972D"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ConditionSavingThrow",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "The SavingThrow() function of stats conditions: takes the current condition context (the top of the Lua state's context stack), adds a new ConditionRoll to the context's HitDesc (its ConditionRolls at +0x50), resolves the spell for the DC (the HitDesc's +0x150, else the context's +0xE0) and rolls the save through unplaced::RollSavingThrow; returns 1.0 or 0.0 with the verdict.",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::RollSavingThrow"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads the context frame at the top of the stack (+0x88 array, +0x94 count of its second argument); frame +0x0 is the source entity, +0x10 the target used when none is given, +0x68 the HitDesc; calls eoc::ConditionRolls::AddNew and unplaced::RollSavingThrow"
+    },
+    {
+      "kind": "watch",
+      "says": "the chains of Sacred Flame's save, Hold Person's save and repeat save and See Invisibility's save all pass it at +0x116BC47; one call per Sacred Flame cast in a probe, from +0x10EDD97"
+    }
+  ]
+}

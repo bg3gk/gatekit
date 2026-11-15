@@ -1,0 +1,27 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::Status::Enter",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Enters a status on its owner: marks it entered, lets statuses it replaces exit, raises the applied status event (0x10) - where the status's OnApplyRoll is evaluated - and then applies the prototype's settings.",
+  "fingerprint": {
+    "calls": [
+      "fp:07fdd00e8710fd31",
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::RaiseStatusEvent"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "esv::Status::Enter is a virtual of the server's status in the builds that carried symbols; this one calls esv::Status::IsOnSourceSurface and GetStatusMachine and is called by esv::StatusBoost::Enter and esv::StatusKnockedDown::Enter"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe during Osi.ApplyStatus of HOLD_PERSON shows 1 call from esv::StatusBoost::Enter (+0x370DE4C); See Invisibility's save chain passes it at +0x2FFA091"
+    }
+  ]
+}

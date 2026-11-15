@@ -1,0 +1,53 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::RollSystem::Update",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The roll system's work of one frame: processes concentration damage rolls, rolls the new requests, creates rolls asked by calls and one-frame requests, applies active-roll modifiers and cancels, and throws the active rolls the player threw (0x3295250).",
+  "fingerprint": {
+    "calls": [
+      "esv::RollSystem::ProcessCreateEvents",
+      "fp:078ab1597615d7c1",
+      "fp:123b79ba6c390bab",
+      "fp:22779a94550dfb63",
+      "fp:5227b96c8688ff31",
+      "fp:5484a76c19bbd873",
+      "fp:67e6320f5ae8f495",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:997a86f5ef5025ad",
+      "fp:9d3cd2c7b627131f",
+      "fp:b2e1c2683d667e92",
+      "fp:b80129b10dc06696",
+      "fp:cb7cd990bc47e1d1",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f6257d1edc77e89d",
+      "unplaced::ThrowActiveRoll"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::RequestedRollComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<esv::active_roll::StartRequestOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<esv::roll::DeathSavingThrowFinishedEventOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "eoc::active_roll::InProgressComponent",
+      "esv::active_roll::InProgressComponent"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its one caller is SystemUpdate<esv::RollSystem> (0x2390B70); it calls 0x3297330, 0x3297ED0, 0x3298220 (ProcessCreateRollCallRequests), 0x3298EA0 (ProcessCreateRollOneFrameRequests), 0x329A760 (ProcessActiveRollCancels)"
+    },
+    {
+      "kind": "watch",
+      "says": "the chains of every roll-system roll pass it, at +0x32937EF for new requests and at +0x32939C3 for a dialogue check the player threw"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the game's member name of this body (the update of the system is a virtual; read the RollSystem vtable)",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

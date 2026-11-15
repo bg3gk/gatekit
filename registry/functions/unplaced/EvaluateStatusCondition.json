@@ -1,0 +1,27 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::EvaluateStatusCondition",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Evaluates one stats condition of a status (its RemoveConditions, or the OnApplyRoll / OnTickRoll / OnRemoveRoll of the event): builds the condition context from the status - its Target (+0x90) and StatusCause (+0xA8) entities and their positions - and evaluates the condition by index through the server's condition manager; returns the verdict.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:24c801b0780dfd1d",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::EvaluateStatsCondition"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its one caller is esv::Status::OnStatusEvent (two sites); it reads the status at +0x90 and +0xA8 and calls the condition evaluator at 0xEFFB50 with the condition index it is given (the status's +0xF8 at one site, the prototype's per-event roll condition at the other)"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe while HOLD_PERSON's repeat save was rolled shows 2 calls, both from +0x2FFC27F; the caller chain of See Invisibility's save on the revealed creature (SEE_INVISIBILITY_SEEN's OnApplyRoll, a Dexterity save) passes it from +0x2FFBE61"
+    }
+  ]
+}

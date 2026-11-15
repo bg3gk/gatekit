@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ThrowActiveRoll",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Throws an active roll the player has thrown in the roll window (dialogue checks): reads the request, spends the reroll resource the player chose (none, inspiration, a consumable, a disarm kit - its fourth argument 0..3) and rolls the request through esv::RollSystem::RollDice on the Dialog stream.",
+  "fingerprint": {
+    "calls": [
+      "esv::RollSystem::RollDice",
+      "fp:175ac60533e9dfb9",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:98e8cd112d6c5a47",
+      "fp:997a86f5ef5025ad",
+      "fp:c1eeba68f3fe6fda",
+      "fp:c482f3b0e67a95a1",
+      "fp:d649436bbbe7d47a",
+      "fp:d7195fa7c17f322c",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "branches on its fourth argument 1/2/3 to 0x32966E0, an item amount decrement through 0x1430C3590, and 0x329B7D0, then calls esv::RollSystem::RollDice"
+    },
+    {
+      "kind": "watch",
+      "says": "the throw of a dialogue Persuasion check on the Dialog stream passes it at +0x32954F2, called from 0x3293560 at +0x32939C3"
+    }
+  ]
+}

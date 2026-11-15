@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::EvaluateConditionList",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Evaluates a list of stats conditions joined by and/or (a first index, then pairs of index and operator) through a condition evaluator object (vtable +0x28) and combines the verdicts.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads the first index at +0, the count at +0x14 and the list at +0x8 of its second argument, calls the evaluator's +0x28 for each and stops on the first decisive verdict"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe during a Sacred Flame cast shows 14 calls: 6 from spell target validation (+0x110875E), 5 from +0xF0CE64, 2 from +0xEFC912 and 1 from the spell-roll evaluation (+0xFCE3CF)"
+    }
+  ]
+}
