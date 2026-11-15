@@ -3298,3 +3298,13 @@ function GK.Store.Check(value) end
 ---@param name string
 ---@return { ok: boolean, dropped: boolean }
 function GK.Store.Drop(name) end
+
+---The chance (0..1) that a spell's roll succeeds for a caster against a target, as the game itself works it out. Nothing is rolled. Server. Observation.
+---@param spec { who: string?, spell: string, target: string, set: ("Melee"|"Ranged")? }
+---@return { ok: boolean, chance: number?, set: string?, was: string?, error: string?, needs: string? }
+function GK.Rolls.Chance(spec) end
+
+---Whether this Script Extender build has what a path under Ext names: a function ("Debug.AddProbe") or an event ("Events.Roll"). Both sides. Observation.
+---@param path string
+---@return boolean
+function GK.Verbs.Has(path) end

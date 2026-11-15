@@ -775,6 +775,46 @@ local function onRigRoll(e)
     stopRigging()
 end
 
+-- ---------------------------------------------------------------------------------------
+-- The game's own chance
+
+-- Which weapon set a spell's roll is made with, from the spell's own roll text.
+local function setOf(spell)
+    local roll = try(function() return Ext.Stats.Get(spell).SpellRoll end)
+    local text = type(roll) == "table" and tostring(roll.Default or "") or tostring(roll or "")
+    if text:find("RangedWeaponAttack", 1, true) or text:find("RangedOffHandWeaponAttack", 1, true) then return "Ranged" end
+    if text:find("MeleeWeaponAttack", 1, true) or text:find("MeleeOffHandWeaponAttack", 1, true) then return "Melee" end
+    return nil
+end
+
+--- The chance, from 0 to 1, that the roll of `spell` cast by `who` (default the host) at `target`
+--- succeeds, as the game itself works it out - the number its combat AI weighs and its cursor
+--- shows, advantage and disadvantage folded in. Nothing is rolled. The game counts the weapons of
+--- the caster's active weapon set, and switches the set only when an attack is really made; so
+--- for a weapon attack the set the attack would be made with (`set`: "Melee" or "Ranged"; default:
+--- read from the spell's roll) is put on for the length of the question and put back.
+--- { ok, chance, set, was }, or { ok = false, error }.
+function Rolls.Chance(spec)
+    if type(spec) ~= "table" or type(spec.spell) ~= "string" or spec.target == nil then
+        error("GK.Rolls.Chance{ who, spell, target, set }: a table with a spell and a target, got " .. tostring(spec), 2)
+    end
+    local who = bare(spec.who or Osi.GetHostCharacter())
+    local caster, target = try(Ext.Entity.Get, who), try(Ext.Entity.Get, bare(spec.target))
+    if not caster or not target then return { ok = false, error = "the caster or the target is no entity of the game" } end
+    local want = spec.set or setOf(spec.spell)
+    local was = try(function() return tostring(caster.WeaponSet.WeaponSet) end)
+    local switched = false
+    if want and was and want ~= was then
+        switched = pcall(function() caster.WeaponSet.WeaponSet = want end)
+    end
+    local ok, chance = pcall(Ext.Stats.GetSpellRollChance, caster, spec.spell, target)
+    if switched then pcall(function() caster.WeaponSet.WeaponSet = was end) end
+    if not ok or type(chance) ~= "number" then
+        return { ok = false, error = "the game did not work out a chance for " .. spec.spell .. (ok and "" or (": " .. tostring(chance))) }
+    end
+    return { ok = true, chance = chance, set = switched and want or was, was = was }
+end
+
 --- Whether this Script Extender build raises the roll event a rig acts through.
 function Rolls.CanRig()
     -- Ext.Events answers for any name: the event is there when its parameters' type is (GK.Verbs.Has)

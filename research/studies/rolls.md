@@ -801,3 +801,19 @@ What a creature is about to do: nothing says it before the cast's own state appe
 ticks after its turn starts, about 20 ticks before the attack roll. The move the AI is about to
 make is inside that same state (where the caster stands and where it will cast from). The AI's
 own planning components never appeared for a single enemy.
+
+## 22. The chance, built and proven
+
+`Ext.Stats.GetSpellRollChance(caster, spell, target)` in the fork calls the game's function by
+the recipe of section 19, and `GK.Rolls.Chance` asks through it. Proven against the dice
+(`tests/rolls/chance/agrees_with_dice`): 0.65 asked, and the attack then thrown had a
+difficulty of 13 and a bonus of 5 - thirteen faces of twenty - for a melee and for a ranged
+attack.
+
+One thing a caller must know: the game works a weapon attack out with the weapons of the
+caster's active weapon set, and switches the set only as an attack is really made. A melee
+attack asked while the bow is in hand is counted without the melee weapon (0.45 for the same
+attack: Strength in place of the dagger's Dexterity). The condition reads the set from the
+caster's own component; nothing in the context changes it. `GK.Rolls.Chance` puts the right set
+on for the length of the question and puts it back. Whether the game's AI weighs the wrong
+number for a creature standing in its ranged set is being watched.
