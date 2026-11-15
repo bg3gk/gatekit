@@ -401,3 +401,20 @@ inside `code:unplaced::RollAttackAgainstArmourClass`, weapon damage from inside
 `code:unplaced::RollDamageDice`. Replacing the roller of a check with another creature did not
 stop the game; the bonus stayed the first roller's, since the caller computes it before the
 throw, and whether the other creature's boosts act is not seen.
+
+### The combat log's own account
+
+Read in the game's names; nothing of it is watched yet. The log is not written by the thrower.
+`esv::combat_log::CombatLogSystem` builds typed entries in its own passes, each from the records
+another system left: `ProcessHitEvents` (a `HitEntry`, made from the hit's description - which
+carries the attack roll and the saves in its condition rolls), `ProcessSkillCheckRequests` (a
+`RollFinishedEntry`), `ProcessRandomCastRequests`, `ProcessHealedRequests`,
+`ProcessInterruptsUsedRequests`, `ProcessStatusAddedRequests`, `ProcessStealthSpottedRequests`
+and others, and sends them to the clients. So a roll is in the log when it ends as a hit or as a
+finished roll that a request names, and a roll that ends as neither - a die of a stats
+expression, such as the Perception roll that sets a Stealth check's difficulty - has no entry to
+appear in. The entry types: AutomaticDialog, CampSuppliesUsed, CombatInitiated, CombatJoined,
+CombatLeft, CombatMultipleEncounters, CombatNextRound, ConcentrationCleared, Death, DialogStart,
+EntityDropped, EntityPickup, EquipStatus, Healed, Hit, Inspiration, Interrupt, ItemConsume,
+ItemLockpick, LevelChange, Ping, RandomCast, Resurrect, RollFinished, Spell, StatusAdded,
+StatusRemoved.

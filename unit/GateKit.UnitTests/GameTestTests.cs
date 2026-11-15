@@ -795,7 +795,7 @@ public sealed class BridgeLuaSyntaxTests
         var folder = LuaBindingTests.Repository(Path.Combine("mods", "GateKit", "Mods", "Gwynerva_GateKit", "ScriptExtender", "Lua"));
         var broken = new List<string>();
         // Lua 5.3's integer operators (`//`, `|`), which the game's Lua has and MoonSharp (5.2) does not.
-        string[] newer = ["UI.lua", "Situation.lua"];
+        string[] newer = ["UI.lua", "Situation.lua", "RollGenerator.lua"];
         foreach (var file in Directory.EnumerateFiles(folder, "*.lua", SearchOption.AllDirectories))
         {
             if (newer.Contains(Path.GetFileName(file))) continue;

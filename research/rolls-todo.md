@@ -25,6 +25,13 @@ The work on rolls, in order. An item leaves this file when it is done; what it f
   dice on the board in a roll window (dialogue, lock, trap) - told apart from the calls that
   decide the number: a watch says whether each moves a stream's count.
 
+- The combat log's own account of rolls: where a line's roller, target, terms and total come
+  from (the hit's `ConditionRolls`, the finished-roll event, the analytics roll component, the
+  requests of `esv::combat_log::CombatLogSystem`), read with probes on the log system's functions
+  over an attack, a save and a hidden roll - so that the roll log can take who, what and against
+  what from the game's records instead of rebuilding them from asking addresses, and so that a
+  roll kept out of the log is told from one that is shown.
+
 ## Demonstrations of control
 
 Scenes that show the process is held end to end, made once the interception is proven:

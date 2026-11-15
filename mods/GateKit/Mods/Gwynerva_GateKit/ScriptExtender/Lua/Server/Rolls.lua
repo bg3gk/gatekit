@@ -640,37 +640,10 @@ function Rolls.WriteStreams(list)
     end
 end
 
--- The outputs 0..upto of the game's generator for a stream: the standard 64-bit Mersenne Twister
--- seeded with the stream's seed (code:eoc::roll::stream::RollManager::InternalRollDice).
-local function outputs(seed, upto)
-    local mt = { [0] = seed }
-    for i = 1, 311 do local p = mt[i - 1]; mt[i] = (p ~ (p >> 62)) * 6364136223846793005 + i end
-    local at, out = 312, {}
-    for k = 0, upto do
-        if at >= 312 then
-            for i = 0, 311 do
-                local x = (mt[i] & ~0x7FFFFFFF) | (mt[(i + 1) % 312] & 0x7FFFFFFF)
-                local v = mt[(i + 156) % 312] ~ (x >> 1)
-                if x & 1 ~= 0 then v = v ~ 0xB5026F5AA96619E9 end
-                mt[i] = v
-            end
-            at = 0
-        end
-        local x = mt[at]; at = at + 1
-        x = x ~ ((x >> 29) & 0x5555555555555555)
-        x = x ~ ((x << 17) & 0x71D67FFFEDA60000)
-        x = x ~ ((x << 37) & 0xFFF7EEE000000000)
-        out[k] = x ~ (x >> 43)
-    end
-    return out
-end
-
--- One die of `faces` from an output, the output taken as unsigned.
-local function face(x, faces) return 1 + (((x >> 1) % faces) * 2 + (x & 1)) % faces end
-
--- The output a call's die number k (from 0) is drawn at, the stream's count being `count` when the
--- call begins: the generator is seeded once for the call and each die discards the count again.
-local function drawnAt(count, k) return (k + 1) * count + (k * (k + 3)) // 2 end
+-- The game's generator (Server/RollGenerator.lua, loaded after this file).
+local function outputs(seed, upto) return Rolls.Generator.Outputs(seed, upto) end
+local function face(x, faces) return Rolls.Generator.Face(x, faces) end
+local function drawnAt(count, k) return Rolls.Generator.DrawnAt(count, k) end
 
 local function oneStream(spec, verb)
     if type(spec) ~= "table" or type(spec.type) ~= "string" then
