@@ -693,3 +693,35 @@ rolls/
 
 Not proposed, and why: a death saving throw (not stageable in the test level: open items); the
 order of initiative with equal rolls (belongs to `combat/turn/order`).
+
+### Proposed: tests that hold a known fault of the game as it is
+
+The sweeps of the night (`research/studies/rolls.md`, sections 20 and 23) found places where
+the game does not do what its text or the wiki says, each reproduced with rigged dice. A test
+that states the fault as found - its rule is "the game does this, and the wiki says that" -
+turns a patch that mends it into a failing test, which is how a tool that leans on the fault
+(a damage preview, a log reader) learns of the change. Proposed as a tree of its own, so that
+its failures are read as news of the game and not as faults of the toolkit:
+
+```
+quirks/
+  damage/
+    resistance_floor        fire_bolt_of_one, weapon_of_one          (1 stays 1; the wiki rounds down to 0)
+    unlisted_dice           sneak_attack, divine_smite, colossus_slayer   (dice of a stats expression are not in the hit's list)
+    bonus_not_doubled       damage_bonus_boost_on_a_critical         (CharacterWeaponDamage is doubled, DamageBonus is not)
+    ground_row              a_miss_still_throws_it                   (thrown on every weapon attack, never takes hit points)
+  attack/
+    weapon_set_in_hand      melee_asked_with_the_bow, sand_toss      (Strength used in place of the weapon's ability)
+    ai_weighs_the_set       goblin_in_its_ranged_set                 (the scorer's number against the dice)
+  karmic/
+    forced_shows_a_die      attack                                   (a natural die shown that no one threw)
+  saves/
+    second_die_always       plain_save                               (two d20 drawn with neither advantage nor disadvantage)
+  spells/
+    wiki_list               firewine_explosion, cinderous_swipe_wildshape, gargantuan_cleave, gossamer_tomb,
+                            sand_toss_great_weapon_master            (the wiki's "List of bugged actions", each still true)
+```
+
+Each case names its source (the wiki page and section, or the night's study) in its leading
+comment and asserts the numbers found. Where the game's data alone shows the fault (a formula
+in a spell's fields), the case reads the data and does not stage a fight: `data` tests, fast.
