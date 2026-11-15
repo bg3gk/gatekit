@@ -149,3 +149,32 @@ between them. The gain is time (the roll log's origins test stages a fight for e
 cases: 93 s at speed 1). The risk is cases that lean on each other - a case that fails leaves
 the fight in a state the next one did not expect, and a verdict stops meaning one thing. To try
 on one test first (origins), measuring the time won and whether each case can still fail alone.
+
+### The experiment's result (`tests/rolls/log/origins_one_fight.lua`)
+
+Measured on the five fight cases of the origins test, three runs each: one staged fight takes
+about 30 s at speed 1 against 64 s (2.1 times faster), and 20 s against 30 s at the working
+speed (1.5 times); most of what is saved is the clean after each fight. The file is no longer
+than the five cases it replaces, with about fifteen lines of guards.
+
+What it costs, each seen:
+
+- The order of the cases is part of the test. A cast asked after the player's own weapon attack
+  was refused (the host stays "casting" for a while after `GK.Act.Attack` answers, and the
+  refusal names only the spell's own conditions): casts first, then the weapon attack, then the
+  creature's attack.
+- A guard between cases written with `need` hides a broken fight: a case that is unmet does not
+  fail the test, so a turn passed by mistake gave a PASS. Guards are `check`.
+- `reset = "none"` shares the scene between the cases and also drops the clean before the
+  test: run after another fight test, every case is unmet. The format has no way to say "clean
+  before the test, not between its cases".
+- Each case still fails alone: a wrong spell wanted on purpose failed that case only, the later
+  ones ran and passed.
+
+The owner's "same initiative": creatures of the same player with the same initiative share one
+turn and both can act in it (the host and a summoned familiar, both pinned). A hostile creature
+is another team's and acts on its own turn, so the creature's attack still needs the turn passed.
+
+Proposed: adopt for fight-heavy tests once the test format can clean before a test and not
+between its cases, and can say that cases depend on their order; until then such a test is run
+on its own.

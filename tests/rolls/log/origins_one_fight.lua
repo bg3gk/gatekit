@@ -10,12 +10,15 @@
 -- can still run alone with -k - and before every later case checks that the fight goes on as the
 -- case needs (the goblin alive and in the fight, the host's turn) and gives the host its turn's
 -- resources back (GK.Stage.Refill) instead of a new scene. A case that leaves the fight otherwise
--- makes the cases after it unmet, naming what is wrong. The hostile creature's attack needs the
--- goblin's turn, so its case is the last: it passes the host's turn.
+-- makes the next case fail, naming what is wrong. The order is part of the test: the casts first,
+-- then the player's attack (which leaves the host casting for a minute and more, so that a cast
+-- after it is refused), then the hostile creature's attack, which needs the goblin's turn and so
+-- passes the host's.
 -- Staging (cheat): the roll log's family, a hostile goblin kept alive, the three spells taught and
 -- their slots, the host first, the fight, the pins, the casts (GK.Cheat.Cast), the turn passed,
 -- the resources given back. The weapon attack is the player's own path (fair). Reading: observation.
--- A limit of its own: about 25 s at speed 1 (one fight staged, five acts in it, one enemy turn).
+-- A limit of its own: about 30 s at speed 1, 20 s at the working speed (one fight staged, five
+-- acts in it, one enemy turn); the five cases of test:rolls/log/origins take about 64 s and 33 s.
 -- reset = "none" also means the world is not cleaned before the test: after a test that leaves a
 -- fight, `stage` finds the host in it and the test is unmet, saying so.
 -- Run: gatekit --instance <copy> test tests -k rolls/log/origins_one_fight
@@ -36,8 +39,10 @@ function stage(game)
                 local c = GK.Stage.Combat()
                 return { active = c and c.active, goblin = Osi.IsDead(%q) ~= 1 and Osi.IsInCombat(%q) == 1 }
             ]], goblin, goblin))
-            need(s.goblin, "the goblin is alive and in the fight (a case before left it otherwise)")
-            need(uuid(s.active) == host, "the host's turn goes on (a case before passed it): " .. tostring(s.active))
+            -- a fail, not an unmet: a test with an unmet case and none failed passes, and the
+            -- fight left wrong is a fault of this test, not a precondition of the game
+            check(s.goblin, "the goblin is alive and in the fight (a case before left it otherwise)")
+            check(uuid(s.active) == host, "the host's turn goes on (a case before passed it)", s.active)
             check(game.server("return GK.Stage.Refill{}").ok, "the host's action, bonus action, movement and reaction are back")
             game.server("return GK.EventLog.On('dice', { seconds = 600 })")
         end)
@@ -106,21 +111,13 @@ local function cast(game, spell, target)
     step("cast " .. spell, "cheat", function()
         local c = game.server(string.format("return GK.Cheat.Cast(%q, %q, %q)", host, spell, target))
         check(c and c.job, "the cast is asked", c)
+        -- in one fight a cast can meet what an earlier act left (the host still casting): the
+        -- game's refusal is said here, not as a row that never comes
+        local j = game.wait("server", string.format("GK.Act.Job(%d).status ~= 'running' and GK.Act.Job(%d)", c.job, c.job), 30)
+        check(j.status == "done", "the game carried out the cast", j)
     end)
     return mark
 end
-
-case("weapon attack", function(game)
-    local mark = game.mark()
-    step("attack the goblin", "fair", function()
-        check(game.ui(string.format("return GK.Act.Attack(%q)", goblin), 120).ok, "the game finished the attack")
-    end)
-    step("the row", "observation", function()
-        local p = thrown(mark, function(p) return uuid(p.who) == host and string.match(p.kind or "", "Attack$") end)
-        says(p, { who = host, pattern = "WeaponAttack$", stream = stream_of(game, host, "Spell"),
-                  origin = "unplaced::RollAttackAgainstArmourClass", cause = "spell", source = host, target = goblin })
-    end)
-end)
 
 case("spell attack and damage", function(game)
     step("the attack hits", "cheat", function()
@@ -166,6 +163,20 @@ case("three rays", function(game)
                       origin = "unplaced::RollSpellAttackAgainstArmourClass", cause = "spell",
                       source = host, target = goblin, spell = "Projectile_ScorchingRay" })
         end
+    end)
+end)
+
+-- after the casts: the player's attack leaves the host casting (IsCastingComponent) for a minute
+-- and more, and a cast asked meanwhile is refused by the game
+case("weapon attack", function(game)
+    local mark = game.mark()
+    step("attack the goblin", "fair", function()
+        check(game.ui(string.format("return GK.Act.Attack(%q)", goblin), 120).ok, "the game finished the attack")
+    end)
+    step("the row", "observation", function()
+        local p = thrown(mark, function(p) return uuid(p.who) == host and string.match(p.kind or "", "Attack$") end)
+        says(p, { who = host, pattern = "WeaponAttack$", stream = stream_of(game, host, "Spell"),
+                  origin = "unplaced::RollAttackAgainstArmourClass", cause = "spell", source = host, target = goblin })
     end)
 end)
 
