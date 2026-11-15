@@ -1,0 +1,24 @@
+{
+ "about": [
+  "Where a dialogue stops for the player, each ended by a bg3_wait started before it, at GK.Speed ${SPEED}: the dialogue opens (its first",
+  "line is spoken: nothing to answer yet), the first choice shows its answers (dialogue_choice, with the game's tags), and answer 1 - a",
+  "Persuasion check, d20 + modifier against the DC - opens the roll window.",
+  "Run: gatekit --instance <copy> mcp sequence tests/_selftest/attention/dialogue_phases.json --set SPEED=1  (and 10) in GustavX:Basic_Level_A."
+ ],
+ "steps": [
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if not b.window then return true end GK.Gui.Resolve({ roll = 'throw', dialogue = 'last', reaction = 'decline', box = 'affirmative' }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.Fixture.Clear() GK.Speed.Set(${SPEED}) GK.FixtureT = GK.Fixture.Talker{ dialog = 'roll' } return GK.Speed.Get()" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "GK.Fixture.Ready('Talker')", "until_attention": false, "timeout": 15 } },
+  { "id": "w1", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "talk", "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Cheat.Talk(nil, GK.FixtureT.entities[1].id)" } },
+  { "await": "w1", "since": "talk", "until": ["dialogue"] },
+  { "id": "w2", "tool": "bg3_wait", "arguments": { "timeout": 40 }, "background": true },
+  { "await": "w2", "until": ["dialogue_choice"] },
+  { "tool": "bg3_lua", "arguments": { "side": "ui", "code": "local p = GK.Gui.DialoguePhase() return p and { phase = p.phase, answers = p.answers }" }, "expect": "choice" },
+  { "id": "w3", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "answer", "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Answer(1)" } },
+  { "await": "w3", "since": "answer", "until": ["roll"] },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if not b.window then return true end GK.Gui.Resolve({ roll = 'throw', dialogue = 'last' }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "local c = GK.Fixture.Clear() GK.Speed.Set(1) return c" } }
+ ]
+}

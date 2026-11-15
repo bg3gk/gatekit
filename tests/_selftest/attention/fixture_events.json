@@ -1,0 +1,77 @@
+{
+ "about": [
+  "Every attention event of the GK.Fixture scenes, each ended by a bg3_wait that was started before its trigger, at GK.Speed ${SPEED}.",
+  "A hostile that sees the party starts a fight; a creature leaving a melee wielder's reach without Disengage provokes an opportunity attack",
+  "(the reaction set to ask opens the prompt); at 0 hit points a character is downed; an NPC's own dialogue starts on the player's click,",
+  "a skill check rolls d20 + modifier against the DC; trade, loot and a message box wait for the player.",
+  "Run: gatekit --instance <copy> mcp sequence tests/_selftest/attention/fixture_events.json --set SPEED=1  (also 4, 10) in GustavX:Basic_Level_A.",
+  "Each await line: rounds[].ms = trigger to the wait's end (host clock); since_ms / since_ticks = event to the host's read."
+ ],
+ "steps": [
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if not b.window then return true end GK.Gui.Resolve({ roll = 'throw', dialogue = 'last', reaction = 'decline', box = 'affirmative' }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.Fixture.Clear() GK.Speed.Set(${SPEED}) return GK.Speed.Get()" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "Osi.IsInCombat(Osi.GetHostCharacter()) == 0", "until_attention": false, "timeout": 20 } },
+
+  { "id": "w1", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "fight", "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.FixtureF = GK.Fixture.Fight{} return #GK.FixtureF.entities" } },
+  { "await": "w1", "since": "fight", "until": ["combat_started"] },
+  { "id": "w2", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "kill", "tool": "bg3_lua", "arguments": { "side": "server", "code": "Osi.Die(GK.FixtureF.entities[1].id, 0, 'NULL_00000000-0000-0000-0000-000000000000', 0, 0) return true" } },
+  { "await": "w2", "since": "kill", "until": ["combat_ended"] },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Fixture.Clear().undone" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "Osi.IsInCombat(Osi.GetHostCharacter()) == 0", "until_attention": false, "timeout": 20 } },
+
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.FixtureF = GK.Fixture.Fight{ provoke = true } return true" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "(function() local r, why = GK.Fixture.ProvokeReady() if r == false then error(why) end return r end)()", "until_attention": false, "timeout": 20 }, "expect": "true" },
+  { "id": "w3", "tool": "bg3_wait", "arguments": { "timeout": 40 }, "background": true }, { "sleep": 0.5 },
+  { "id": "end", "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Act.EndTurn(nil)" } },
+  { "await": "w3", "since": "end", "until": ["reaction"] },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "return 'another tool while the prompt waits: its answer carries the attention block'" }, "expect": "attention" },
+  { "id": "w4", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "react", "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Gui.Resolve({ reaction = 'react' })" } },
+  { "await": "w4", "since": "react", "until": ["reaction_ended"] },
+  { "sleep": 1.0 },
+  { "id": "w5", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "clear", "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Fixture.Clear().undone" } },
+  { "await": "w5", "since": "clear", "until": ["combat_ended"] },
+
+  { "id": "w6", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "down", "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Fixture.Down{}.raised" } },
+  { "await": "w6", "since": "down", "until": ["downed"] },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "Osi.GetHitpoints(Osi.GetHostCharacter()) > 0", "until_attention": false, "timeout": 10 } },
+
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.FixtureT = GK.Fixture.Talker{ dialog = 'roll' } return true" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "GK.Fixture.Ready('Talker')", "until_attention": false, "timeout": 15 } },
+  { "id": "w7", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "talk", "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Cheat.Talk(nil, GK.FixtureT.entities[1].id)" } },
+  { "await": "w7", "since": "talk", "until": ["dialogue", "dialogue_choice"] },
+  { "id": "w8", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "answer", "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Answer(1)" } },
+  { "await": "w8", "since": "answer", "until": ["roll"] },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if not b.window then return true end GK.Gui.Resolve({ roll = 'throw', dialogue = 'last' }) return false end)()", "until_attention": false, "timeout": 60 } },
+
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.FixtureTr = GK.Fixture.Trader{} return true" } },
+  { "sleep": 1.0 },
+  { "id": "w9", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "trade", "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Cheat.Trade(nil, GK.FixtureTr.entities[1].id)" } },
+  { "await": "w9", "since": "trade", "until": ["trade"] },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local s = GK.Gui.Blocking().summary return s and s.trader and #s.trader.items > 0 and (s.traderGold or 0) > 0 and (s.playerGold or 0) > 0 and { goods = #s.trader.items, traderGold = s.traderGold, playerGold = s.playerGold } end)()", "until_attention": false, "timeout": 15 }, "expect": "goods" },
+  { "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Gui.Close('Trade')" } },
+
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.FixtureL = GK.Fixture.Loot{} return true" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "GK.Fixture.Ready('Loot')", "until_attention": false, "timeout": 10 } },
+  { "id": "w10", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "loot", "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Cheat.Use(nil, GK.FixtureL.entities[1].id)" } },
+  { "await": "w10", "since": "loot", "until": ["loot"] },
+  { "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Gui.Close('ContainerWidget')" } },
+
+  { "id": "w11", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "box", "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Fixture.Box('GateKit').fixture" } },
+  { "await": "w11", "since": "box", "until": ["box"] },
+  { "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Gui.Resolve({ box = 'affirmative' })" } },
+
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "local c = GK.Fixture.Clear() GK.Speed.Set(1) return c" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "(function() local h = Osi.GetHostCharacter() return Osi.IsInCombat(h) == 0 and #GK.Fixture.Made() == 0 and Osi.IsImmortal(h) == 0 and { chars = #Ext.Entity.GetAllEntitiesWithComponent('ServerCharacter'), items = #Ext.Entity.GetAllEntitiesWithComponent('ServerItem') } end)()", "until_attention": false, "timeout": 15 }, "expect": "chars" },
+  { "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Gui.Blocking().window == nil" }, "expect": "true" }
+ ]
+}

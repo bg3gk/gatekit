@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tests/suite/1",
+  "title": "A folder of tests (_suite.json)",
+  "description": "What a folder of the test tree answers for. `gatekit test` reads it when it walks the tree. docs/contracts/cli.md, \"test\".",
+  "type": "object",
+  "required": ["schema", "about"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "tests/suite/1"},
+    "about": {"type": "string", "minLength": 1, "description": "What the tests of this folder answer for."},
+    "read": {"enum": ["always", "named"], "description": "always (the default): read with the folder above it; named: read only when this folder is the one given to `gatekit test`."},
+    "surprises": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "Surprises of the event log allowed to every test under this folder: a kind of a blocking state (`combat_started`), or `participants` for creatures outside the cast."}
+  }
+}

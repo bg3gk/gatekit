@@ -1,0 +1,63 @@
+{
+ "about": [
+  "How fast a dice roll gets through, on the talker fixture's Persuasion check (d20 + modifier against the DC; the game rolls, nothing sets the outcome).",
+  "Each round: the talker's dialogue, answer 1 (the check), the roll window, then one way of getting through it, timed from the moment the",
+  "window is open to the moment it is gone and the dialogue goes on (the step's ms; the expression is asked every 0.3 s, so +-0.3 s).",
+  "  watch  : throw, let the dice animation play, continue (GK.Cheat.Step('roll', {watch = true}); what GK.Gui.Resolve{roll='throw'} did before 2026-11-14)",
+  "  skip   : throw, then the player's click during the animation (UserTriggeredNextPhaseCommand(true), ActiveRoll.xaml's 'Skip on Click'), continue",
+  "  speed  : as watch, with GK.Speed ${FAST} for the length of the roll only",
+  "  idle   : nothing at all for 8 s: the window waits for the player's throw",
+  "Run: gatekit --instance <copy> mcp sequence tests/_selftest/attention/roll_speed.json --set FAST=10  (GustavX:Basic_Level_A)."
+ ],
+ "steps": [
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if not b.window then return true end GK.Gui.Resolve({ roll = 'throw', dialogue = 'last', reaction = 'decline', box = 'affirmative' }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.Fixture.Clear() GK.Speed.Set(1) return true" } },
+
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.FixtureT = GK.Fixture.Talker{ dialog = 'roll' } return true" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "GK.Fixture.Ready('Talker')", "until_attention": false, "timeout": 15 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Cheat.Talk(nil, GK.FixtureT.entities[1].id)" } },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(GK.Gui.DialoguePhase() or {}).phase == 'choice'", "until_attention": false, "timeout": 40 } },
+  { "id": "r1", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "a1", "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Answer(1)" } },
+  { "await": "r1", "since": "a1", "until": ["roll"] },
+  { "id": "watch", "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if b.window ~= 'roll' then return { after = b.window or 'none' } end GK.Cheat.Step('roll', { watch = true }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if not b.window then return true end GK.Gui.Resolve({ dialogue = 'last' }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Fixture.Clear().undone" } },
+
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.FixtureT = GK.Fixture.Talker{ dialog = 'roll' } return true" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "GK.Fixture.Ready('Talker')", "until_attention": false, "timeout": 15 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Cheat.Talk(nil, GK.FixtureT.entities[1].id)" } },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(GK.Gui.DialoguePhase() or {}).phase == 'choice'", "until_attention": false, "timeout": 40 } },
+  { "id": "r2", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "a2", "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Answer(1)" } },
+  { "await": "r2", "since": "a2", "until": ["roll"] },
+  { "id": "skip", "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if b.window ~= 'roll' then return { after = b.window or 'none', last = GK.FixtureRoll } end local r = GK.Gui.Resolve({ roll = 'throw' }) if r.result then GK.FixtureRoll = r end return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if not b.window then return true end GK.Gui.Resolve({ dialogue = 'last' }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Fixture.Clear().undone" } },
+
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.FixtureT = GK.Fixture.Talker{ dialog = 'roll' } return true" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "GK.Fixture.Ready('Talker')", "until_attention": false, "timeout": 15 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Cheat.Talk(nil, GK.FixtureT.entities[1].id)" } },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(GK.Gui.DialoguePhase() or {}).phase == 'choice'", "until_attention": false, "timeout": 40 } },
+  { "id": "r3", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "a3", "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Answer(1)" } },
+  { "await": "r3", "since": "a3", "until": ["roll"] },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.Speed.Set(${FAST}) return GK.Speed.Get()" } },
+  { "id": "speed", "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if b.window ~= 'roll' then return { after = b.window or 'none' } end GK.Cheat.Step('roll', { watch = true }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.Speed.Set(1) return GK.Speed.Get()" } },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if not b.window then return true end GK.Gui.Resolve({ dialogue = 'last' }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Fixture.Clear().undone" } },
+
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.FixtureT = GK.Fixture.Talker{ dialog = 'roll' } return true" } },
+  { "tool": "bg3_wait", "arguments": { "side": "server", "expression": "GK.Fixture.Ready('Talker')", "until_attention": false, "timeout": 15 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "return GK.Cheat.Talk(nil, GK.FixtureT.entities[1].id)" } },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(GK.Gui.DialoguePhase() or {}).phase == 'choice'", "until_attention": false, "timeout": 40 } },
+  { "id": "r4", "tool": "bg3_wait", "arguments": { "timeout": 30 }, "background": true }, { "sleep": 0.5 },
+  { "id": "a4", "tool": "bg3_lua", "arguments": { "side": "ui", "code": "return GK.Answer(1)" } },
+  { "await": "r4", "since": "a4", "until": ["roll"] },
+  { "sleep": 8 },
+  { "id": "idle", "tool": "bg3_lua", "arguments": { "side": "ui", "code": "local s = GK.Gui.Blocking().summary return { window = GK.Gui.Blocking().window, state = s and s.state }" } },
+  { "tool": "bg3_wait", "arguments": { "side": "ui", "expression": "(function() local b = GK.Gui.Blocking() if not b.window then return true end GK.Gui.Resolve({ roll = 'throw', dialogue = 'last' }) return false end)()", "until_attention": false, "timeout": 60 } },
+  { "tool": "bg3_lua", "arguments": { "side": "server", "code": "GK.Speed.Set(1) return GK.Fixture.Clear().undone" } }
+ ]
+}
