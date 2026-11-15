@@ -712,3 +712,25 @@ Dice on the weighted path never ran.
 
 Not staged: a death saving throw. Every way tried of downing a party member in the test level
 ended the game at once or killed the creature outright; a save with a real companion is needed.
+
+## 19. Asking the game for a chance: the recipe
+
+Read from the server's own caller (an AI scorer) and watched on it. Not built yet.
+
+- No function of the game takes just a caster, a spell and a target. The one to call is
+  `eoc::spell::CalculateModifiableSpellRollChance`: the spell's roll condition, a condition
+  context, the spell's name, the caster's spell modifications (may be none), the stats and the
+  server's condition machine in; a chance from 0 to 1 out, advantage folded in. When the caster
+  has no modifications `eoc::CalculateStaticSpellConditionChance` gives the same number.
+- The condition comes from the spell's prototype (`eoc::SpellPrototype::GetSpellConditions`,
+  the kind "spell roll", by the spell's text key). The context is built as the scorer builds
+  it: the caster, the target, their positions, a fresh hit description and attack description,
+  no status. The machine is a field of the server's object.
+- Watched: a goblin's weapon attack 0.5 with a difficulty of 14 and a bonus of 3 (ten faces of
+  twenty), its Shove 0.3; with advantage on its attack rolls 0.75, and the roll showed advantage.
+- The server has no cheap damage answer for a target: its estimates take the caster alone and
+  no resistance (4 for 1d6+1: the average rounded down). The target-aware number is the
+  client's preview.
+- The roll of no dice seen after casts is the duration of a status that a weapon attack's own
+  properties give to a creature that is no player (an AI helper for its extra attack). The
+  "second damage row" of a weapon attack is a ground damage of the same properties.

@@ -2,13 +2,21 @@
   "schema": "registry/function/1",
   "id": "unplaced::RollExpressionPlainDice",
   "state": "described",
-  "rung": "inferred",
-  "does": "Rolls the dice of an expression on the Generic stream through the plain dice roll, or returns their average.",
+  "rung": "confirmed",
+  "does": "Evaluates the dice of an expression (RCX a RollDefinition: +0x0 the die, +0x1 the count, +0x4 the modifier, +0x8 negative): with R8 zero it rolls them through RollManager::RollDice on the stream of the context at +0x50; with R8 set it returns the whole-number average, (faces+1) times count halved and rounded down, plus the modifier.",
   "fingerprint": {"calls": ["eoc::roll::stream::RollManager::RollDice"]},
   "evidence": [
     {
       "kind": "read",
       "says": "It calls the roll manager's plain dice roll with the context's maximise flag"
+    },
+    {
+      "kind": "read",
+      "says": "the two branches on R8; the average branch shifts (faces+1)*count right by one"
+    },
+    {
+      "kind": "watch",
+      "says": "in goblins' turns it is called with R8 set from esv::AiHelpers::CalculateAiScoreStatsFunctors (+0x3112475), and with R8 zero from unplaced::ExecuteApplyStatusFunctor (+0x377BF00) for a RollDefinition of no dice and modifier 1: the duration of IF(not Player(context.Source)):ApplyStatus(SELF,AI_HELPER_EXTRAATTACK,100,1) in Target_MainHandAttack's SpellProperties, which is the roll of no dice on the Generic stream after a creature's attack"
     }
   ],
   "questions": [

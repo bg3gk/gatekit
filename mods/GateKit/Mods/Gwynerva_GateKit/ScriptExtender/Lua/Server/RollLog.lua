@@ -202,6 +202,22 @@ local function write(e)
     GK.EventLog.Append("dice_thrown", payload)
 end
 
+-- A roll changed after the throw - an interrupt set it, adjusted it or rerolled it - is a row of
+-- its own: the row of the throw says what was thrown, this one what the game goes on with. From
+-- the extender's RollAdjusted event, on a build that has it.
+local function adjusted(e)
+    local payload = {
+        roll = tostring(e.RollUuid), dc = e.DC, natural = e.Natural, total = e.Total, critical = tostring(e.Critical),
+        was = { natural = e.OldNatural, total = e.OldTotal, critical = tostring(e.OldCritical) },
+        outcomeChanged = e.OutcomeChanged or nil,
+    }
+    payload.text = string.format("a roll of %s (natural %s) became %s (natural %s) after the throw", tostring(e.OldTotal),
+        tostring(e.OldNatural), tostring(e.Total), tostring(e.Natural))
+    GK.EventLog.Append("dice_adjusted", payload)
+end
+
+local subscribedAdjusted
+
 local subscribed
 
 GK.EventLog.Hooks = GK.EventLog.Hooks or {}
@@ -211,10 +227,14 @@ GK.EventLog.Hooks.dice = {
         if GK.Rolls then GK.Rolls.JustRigged = nil end
         -- the lowest priority: heard after every other listener, so the row is what they left
         subscribed = Ext.Events.Roll:Subscribe(function(e) pcall(write, e) end, { Priority = 1 })
+        local ok, event = pcall(function() return Ext.Events.RollAdjusted end)
+        if ok and event then subscribedAdjusted = event:Subscribe(function(e) pcall(adjusted, e) end, { Priority = 1 }) end
     end,
     off = function()
         if subscribed then pcall(function() Ext.Events.Roll:Unsubscribe(subscribed) end) end
         subscribed = nil
+        if subscribedAdjusted then pcall(function() Ext.Events.RollAdjusted:Unsubscribe(subscribedAdjusted) end) end
+        subscribedAdjusted = nil
         forgotten = {}
     end,
 }

@@ -3,7 +3,7 @@
   "id": "esv::AiHelpers::GetAverageDamageForCharacterNoCache",
   "state": "described",
   "rung": "confirmed",
-  "does": "Computes the average damage a character can deal, as the AI estimates it, from its spell book, stats and classes, without the cache GetAverageDamageForCharacter keeps.",
+  "does": "Computes the average damage a character can deal, as the AI estimates it: for each spell of its spell book unplaced::EstimateSpellDamage fills the damage list of a context with no target, and the result is the largest sum over the spells divided by a global count; no target, no resistance. RCX the helper, RDX a pointer to the entity, R8 the class descriptions; the float in XMM0.",
   "fingerprint": {
     "calls": [
       "fp:123b79ba6c390bab",
@@ -27,6 +27,29 @@
     {
       "kind": "watch",
       "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, GetAverageDamageForCharacter on a cache miss (91 calls against about 48 000 of the cached one)"
+    },
+    {
+      "kind": "read",
+      "says": "reads eoc::spell::BookComponent, StatsComponent and ClassesComponent, builds eoc::AttackDesc and calls unplaced::EstimateSpellDamage per spell"
+    },
+    {
+      "kind": "watch",
+      "says": "in goblins' turns it runs 7 times per goblin, once per turn of the cache, each with seven calls of unplaced::EstimateSpellDamage, and gives 4.0 for a goblin whose Target_MainHandAttack deals 1d6+1 (the dice' average 4.5; the whole-number average of unplaced::RollExpressionPlainDice gives 3+1)"
+    },
+    {
+      "kind": "read",
+      "says": "reads eoc::spell::BookComponent, StatsComponent and ClassesComponent, builds eoc::AttackDesc and calls unplaced::EstimateSpellDamage per spell"
+    },
+    {
+      "kind": "watch",
+      "says": "over one round of three goblins it ran 21 times, 7 per goblin, each run with seven calls of unplaced::EstimateSpellDamage, and gave 4.0 for goblins whose Target_MainHandAttack deals 1d6+1 (the dice' average 4.5; the whole-number average of unplaced::RollExpressionPlainDice gives 3+1)"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "whether the 4.0 comes from the whole-number average or from a missing modifier: the same probe for a creature whose weapon die is even-faced plus an odd modifier",
+      "about": "reach",
+      "state": "open"
     }
   ]
 }

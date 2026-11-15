@@ -1,0 +1,45 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CalculateAiScoreSpellRollOnTarget",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Scores for the combat AI one spell against one target: builds a condition context in place (source the caster, target the AI target, proxies none, the two positions, a fresh HitDesc and AttackDesc, status none, remove cause 3, skill 0x13), takes the spell's roll condition for the text key from the action's map at +0xB8, asks eoc::spell::CalculateModifiableSpellRollChance and passes the chance with the functors to esv::AiHelpers::CalculateAiScoreSpellStatsFunctors.",
+  "fingerprint": {
+    "calls": [
+      "eoc::spell::CalculateModifiableSpellRollChance",
+      "esv::AiHelpers::CalculateAiScoreSpellStatsFunctors",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3dc70372a826ba29",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:7c6f6a52d0f820ca",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::CreateAiScoreScratchBlock",
+      "unplaced::FindConditionByTextKey",
+      "unplaced::ReleaseAiScore",
+      "unplaced::ReleaseAiScoreScratchBlock"
+    ],
+    "components": ["esv::AiHelpers"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the context's fields are written with the same offsets and defaults as unplaced::BuildConditionContextWithProxies; the chance call takes the caster's eoc::spell::ModificationContainerComponent, gRPGStats and its third argument as the machine"
+    },
+    {
+      "kind": "watch",
+      "says": "in a goblin's turn it calls the chance from +0x3752C28 with the goblin at context +0x0 and the host at +0x10, gRPGStats and the machine at EoCServer+0x2C8; it returns 0.5 for Target_MainHandAttack at difficulty 14 and bonus 3, and 0.75 once the goblin has Advantage(AttackRoll)"
+    }
+  ]
+}

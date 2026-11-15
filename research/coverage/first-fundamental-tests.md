@@ -614,3 +614,82 @@ Statements from his play are hypotheses with their source, checked like any othe
   and the subject will be deepened then. For now only the most basic: no reader of the package;
   `saveload/second_save` compares what the listing and the sizes give.
 - **Speeds that break (11).** Yes: the game is to be tried at 16 and 24 on purpose, in a copy.
+
+## Revision after the real coverage of rolls
+
+A proposal, as the rest of this document is. The stage that read the roll machinery
+(`research/studies/rolls.md`, sections 8-18) left instruments the tree above did not have, and
+six tests that stand. This section says what that changes.
+
+### What stands (in `tests/rolls`, each passing at `--speed 1` and `--speed working`)
+
+```
+rolls/
+  log/
+    origins                 passive check, dialogue check, status applied, status on its turn, weapon attack,
+                            spell attack and damage, target's save, three rays, creature's attack
+    unknown                 (one run) an asker the log is told to forget: the row is written, marked unknown
+    adjusted                (one run) an interrupt sets the roll after the throw: thrown 15, kept 1
+  rig/
+    one_of_several          (one run) four checks in one tick, the third decided, three the stream's own
+  streams/
+    chosen_die              passive check, attack 20, attack 1
+store/
+  kept/
+    round_trip              (one run) what a store holds at a save is what it holds after the load
+    refused                 a function, a userdata, a number key, itself, deeper than 64, infinite, not a number
+    three_books             (one run) three books placed again from the store alone, on their markers
+```
+
+### What the new instruments change in the proposed tests
+
+- **The roll log is the row to read.** Where a proposed test read `event:game_roll` or
+  `event:game_hit` and could not see a die that was thrown and not kept, `dice_thrown` gives
+  every die, the stream, who asked and what for. `rolls/advantage/kept_die` becomes one roll a
+  case: both dice are in the row, kept and discarded, whatever the verdict. `rolls/damage/dice`
+  reads the dice of a damage roll directly. `rolls/streams/which_stream` is the cases of
+  `rolls/log/origins` and is not needed as a test of its own.
+- **One throw is decided by the rig, not by a pin.** `rolls/verdict/natural_extremes`,
+  `total_against_dc` and `critical/threshold` want "this roll is a 20": a rig names the roll by
+  who, kind and stream and leaves every other roll alone, so a case no longer needs Karmic Dice
+  off for the whole scope nor a pin taken off afterwards. The pin stays for a standing rule
+  ("every check of this creature") and for stock Script Extender.
+- **`rolls/pin/binding` loses its reason.** "Once" was the pin's way to one roll; with the rig
+  the cases `once_check` and `once_save` are the rig's `times = 1`. What stays of the test is
+  one case: a pin asked before the boost of an earlier pin has left.
+- **`rolls/karmic/forced_success` can say "forced" from the row** (`forced = true`, no dice
+  drawn), and `karmic/debt` can read the debts of a stream beside it.
+- **The verdict has a second chapter.** An interrupt may change a roll after the throw; a test
+  of a verdict on an attack or a save states which it reads - the throw (`dice_thrown`) or what
+  the game goes on with (`dice_adjusted`, the hit).
+
+### Proposed next, in the order of what they would catch
+
+```
+rolls/
+  log/
+    hidden                  failed_perception_shown, failed_perception_hidden, stealth_check, athletics_shown
+    after_the_throw         set_roll, adjust_roll (Bardic), reroll (Lucky), boost_reroll (Halfling Luck: inside the throw)
+    one_action_many_rolls   extra_attack, off_hand, scorching_ray, concentration_after_damage
+  rig/
+    by_cause                a save against this spell only, a save of this status only (the rig told by `spell` / `status`)
+  generator/
+    predicted               the next die of a stream said before it is thrown: check, attack, damage (Karmic off)
+  verdict/
+    natural_extremes        ... the proposed cases, each with a rig
+```
+
+- `rolls/log/hidden` - "The combat log leaves out what the ruleset says to hide, and the roll
+  log does not." Source: the ruleset modifier `HIDE_FAILED_PERCEPTION_ROLLS` (study, section
+  14); the combat log's entry counted through the game's own table of entry types. It would
+  catch a roll that is thrown and shown nowhere.
+- `rolls/log/after_the_throw` - "Each way an interrupt changes a roll is in the log as thrown
+  and as kept." It would catch a kind of change that does not pass the one function hooked.
+- `rolls/rig/by_cause` needs the rig to take `spell`, `status`, `source`, `target`: the row has
+  them, the rig does not match by them yet.
+- `rolls/generator/predicted` - "The die a stream gives next is the generator's" (study,
+  section 8): `GK.Rolls.Next` against the row. It would catch a patch that changes the
+  generator, which every rewind of a stream depends on.
+
+Not proposed, and why: a death saving throw (not stageable in the test level: open items); the
+order of initiative with equal rolls (belongs to `combat/turn/order`).

@@ -1,0 +1,35 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::SpellPrototype::GetRollSpellConditionsPerTextKey",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Gives a map from text key to condition for one kind of a spell prototype's conditions (RCX the prototype, RDX the map written, R8 the condition kind): the default text key first, then each further key.",
+  "fingerprint": {
+    "calls": [
+      "eoc::SpellPrototype::GetSpellConditions",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::GetSpellDefaultTextKey"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "calls eoc::SpellPrototype::GetSpellConditions with the key from 0x1050590 and inserts each result into a FixedString-keyed map; fits GetRollSpellConditionsPerTextKey(ESpellConditionsType) of the builds with symbols"
+    },
+    {
+      "kind": "watch",
+      "says": "in a goblin's turn its calls of GetSpellConditions at +0x104CB54 (type 1) return the conditions the AI scorers then look up and pass to the chance"
+    }
+  ]
+}

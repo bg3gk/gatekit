@@ -246,6 +246,63 @@ attack.
   quiet machine. Not verified at speed: a projectile spell, dialogue and sound, the window in
   front.
 
+### The real coverage of rolls: not yet, and why
+
+What the stage of rolls reached is in `research/studies/rolls.md` (sections 8-18) and proved by
+`tests/rolls`. What it did not reach:
+
+- **A death saving throw was not staged.** In the test level every way tried of downing a party
+  member ended the game at once (the only party member down) or killed the creature outright
+  (a spawned or recruited one dies instead of being downed). It needs a save with a real
+  companion in the party.
+- **The roller of an initiative roll is not in the roll event.** The function that holds the
+  combatant (`esv::combat::System::NewInitiativeRoll`) takes arguments on the stack whose count
+  is not read; wrapping it blind was not risked. The row has the roll and no `who`.
+- **Which interrupt changed a roll is not in `RollAdjusted`.** It is not among the arguments of
+  the function hooked; the game's own log reads it from a component of the same tick
+  (`esv::interrupt::UsedOneFrameComponent`). Not read yet.
+- **A change after the throw is not tied to the row of its throw by an id.** The roll event has
+  no id of the roll; the change carries the condition roll's. A reader pairs them by order.
+- **A reroll by an interrupt (Lucky) throws no roll event**: only the change is seen, not the
+  new dice.
+- **A heal's roll has the type `Sentinel`** and initiative `None`: neither can be named by kind
+  in a pin or a rig.
+- **The second executable (`bg3.exe`, Vulkan) was never run.** Its places are in the registry
+  (moved by `registry reanchor`) and the byte patterns of the hooks are found once in it; no
+  game was started on it.
+- **The pin was judged and not changed.** Kept as the standing rule on stock Script Extender;
+  the condition in the game's boost words (`when`) is proposed and not built; one throw is the
+  rig's business, on the fork.
+- **A verb does not say which Script Extender it needs.** The rig and the roll log need the
+  fork's roll events and answer so at run time; the field `needs` in the table of verbs, one
+  refusal in one place and a `needs` in a test's header are proposed and not built.
+- **The cause of a roll asked by the story or by a dialogue** is the request's own record
+  (`request`): the parties and the spell are empty, by the game's own account.
+- **What the rolls of no dice evaluate** (seen after nearly every cast, from the plain dice of
+  a stats expression) is not known.
+- **Karmic Dice on damage** was watched once: the dice were not the generator's own. The rule
+  of that draw is read in the code and not confirmed by a test.
+- **The game's own hit chance for a caster, a spell and a target of a mod's choosing** has a
+  function in the game and no call from Lua yet (section 13).
+- **The freshness of the generated files is not checked by itself**: after a `registry commit`
+  the build table of `bg3.exe` and `Server/RollOrigins.json` are refreshed by hand
+  (`registry reanchor --target bg3.exe`, `registry places`).
+
+Found on the way, about tests and tools:
+
+- `game.checkpoint()` in a test overwrites the copy's own checkpoint; a test that saves and loads
+  needs a named save of its own. `game.reset()` does not open the stage scope again, does not
+  put the run's speed back, and its loading screen counts as a surprise.
+- The family `dice` asked for ten hours was switched off after about forty minutes.
+- The roll log's writing is under `pcall`: an error in it would be silent.
+- A probe's snapshot is at most 64 bytes behind one pointer; a rule "this pointer, this offset,
+  read there" is wanted. No Lua call turns the index of a game string into its text.
+- Windows that block and are not handled by themselves (candidates for the attention system):
+  the tutorial "Attack of Opportunity" (closed by `GK.Gui.Resolve{ tutorial = 'close' }`; no
+  row in the server's attention log); the reaction window of an interrupt that asks (it held
+  `GK.Act.Attack` for 50 s; closed by `GK.Gui.Resolve{ reaction = ... }`); the game-over
+  screen (closed only by a reset; `GK.Stage.Clean` gives the hit points back and leaves it).
+
 ### Tests and the event log
 
 - Not checked for the guide: whether the limits of `game.server`/`ui`/`lua` count ticks or real

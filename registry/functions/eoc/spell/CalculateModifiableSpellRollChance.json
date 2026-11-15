@@ -3,9 +3,10 @@
   "id": "eoc::spell::CalculateModifiableSpellRollChance",
   "state": "described",
   "rung": "confirmed",
-  "does": "Returns, as a float 0..1, the chance that a spell's roll conditions pass for the context data's caster and target, after the spell's modifications; the same function serves the client preview and the server AI scorers.",
+  "does": "Returns, as a float 0..1, the chance that a spell's roll condition passes for a condition context, after the caster's spell modifications; advantage and disadvantage are folded in. Arguments: RCX the eoc::spell::Condition, RDX the ls::thoth::shared::ContextData, R8 a pointer to the spell's FixedString (SpellPrototype+0x8), R9 the caster's eoc::spell::ModificationContainerComponent or null, [rsp+0x28] RPGStats, [rsp+0x30] the ls::thoth::shared::Machine. Without a modification for the spell it is eoc::CalculateStaticSpellConditionChance(RCX, RDX, machine).",
   "fingerprint": {
     "calls": [
+      "eoc::CalculateStaticSpellConditionChance",
       "fp:123b79ba6c390bab",
       "fp:1613a1d748e711ef",
       "fp:2e11dab32a025d84",
@@ -30,6 +31,14 @@
     {
       "kind": "watch",
       "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    },
+    {
+      "kind": "read",
+      "says": "same callers as EoCShared+0xFD1700: GetTaskInfo and 14 server AI scorers 0x37466E0-0x3767D90; with no modification for the spell it tail-calls 0xFDA770 with the condition, the context and the sixth argument"
+    },
+    {
+      "kind": "watch",
+      "says": "in a goblin's turn the calls from +0x3752C28 carry the goblin at context +0x0 and the host at +0x10, R9 null, the fifth argument the pointer at gRPGStats and the sixth the pointer at EoCServer+0x2C8; it returns 0.5 for Target_MainHandAttack where the attack roll that follows has difficulty 14 and bonus 3 (10 faces of 20), and 0.75 with Advantage(AttackRoll) on the goblin (1 - 0.5 squared); all on the server's main thread"
     }
   ]
 }
