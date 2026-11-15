@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/sightings/1",
+  "title": "A sighting (one row of research/coverage/record/sightings.jsonl)",
+  "description": "A component type seen alive on one side: first in the record (sighted), or again in a later capture of a run (repeated). Written by RecordBook.Sightings and the replays.",
+  "type": "object",
+  "required": ["type", "side", "time", "instance", "role", "run", "stretch", "source", "state"],
+  "additionalProperties": false,
+  "properties": {
+    "type": {"type": "string", "pattern": "^\\S+$", "description": "The engine's full type name."},
+    "side": {"enum": ["client", "server"]},
+    "time": {"type": "string", "format": "time"},
+    "instance": {"type": "string", "minLength": 1, "description": "The game copy; `installed` for the installed game."},
+    "role": {"type": "string", "minLength": 1, "description": "Who wrote it; `unknown` when nobody said."},
+    "run": {"type": "string", "minLength": 1, "description": "The run; `unknown` when nobody said."},
+    "stretch": {"type": "string", "minLength": 1, "description": "The stretch of the run; `unknown` when nobody said."},
+    "level": {"type": "string", "minLength": 1, "description": "The level it was seen in; absent when not known."},
+    "label": {"type": "string", "minLength": 1, "description": "The capture's label; absent when it had none."},
+    "source": {"enum": ["tick", "trace"]},
+    "state": {"enum": ["sighted", "repeated"]},
+    "capture": {"type": "string", "pattern": "^([^@]+@([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z(#[0-9a-f]{6})?|unstarted)|replay)$", "description": "instance@start#tag of the capture that wrote it; `replay` for a row written by a passing replay."}
+  }
+}

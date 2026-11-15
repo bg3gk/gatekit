@@ -38,16 +38,24 @@ public static partial class Steam
     /// <summary>Baldur's Gate 3 in this library (a folder holding steamapps), or null.</summary>
     public static string? GameFolderIn(string library)
     {
+        var folder = AppFolderIn(library, GamePlatform.AppId, GamePlatform.DefaultInstallDir);
+        return folder is not null && Directory.Exists(Path.Combine(folder, "bin")) ? folder : null;
+    }
+
+    /// <summary>An app's folder in this library: the installdir its manifest names, else
+    /// <paramref name="defaultDir"/>; null when the folder is not there.</summary>
+    public static string? AppFolderIn(string library, string appId, string defaultDir)
+    {
         var steamapps = Path.Combine(library, "steamapps");
-        var dir = GamePlatform.DefaultInstallDir;
-        var manifest = Path.Combine(steamapps, $"appmanifest_{GamePlatform.AppId}.acf");
+        var dir = defaultDir;
+        var manifest = Path.Combine(steamapps, $"appmanifest_{appId}.acf");
         if (File.Exists(manifest))
         {
             try { dir = ManifestValue(File.ReadAllText(manifest), "installdir") ?? dir; }
             catch (IOException) { }
         }
         var folder = Path.Combine(steamapps, "common", dir);
-        return Directory.Exists(Path.Combine(folder, "bin")) ? folder : null;
+        return Directory.Exists(folder) ? folder : null;
     }
 
     /// <summary>Steam's cloud folders for the game, one per Steam account (userdata/*/1086940/remote).</summary>

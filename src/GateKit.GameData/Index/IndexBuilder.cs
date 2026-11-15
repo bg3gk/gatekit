@@ -22,6 +22,13 @@ public sealed class IndexBuildOptions
     /// <summary>Localizations to index (folders under Data/Localization).</summary>
     public IReadOnlyList<string> Languages { get; init; } = ["English"];
 
+    /// <summary>
+    /// More folders that hold language packs, each shaped like <c>Data/Localization</c>: a
+    /// language the installation does not have can be read from a depot downloaded on its own,
+    /// without touching the game.
+    /// </summary>
+    public IReadOnlyList<string> Localization { get; init; } = [];
+
     /// <summary>Files read at the same time.</summary>
     public int Jobs { get; init; } = Math.Max(1, Environment.ProcessorCount - 1);
 
@@ -68,7 +75,7 @@ public static class IndexBuilder
         + "|languages=" + string.Join(",", o.Languages) + "|scenes-only=" + o.ScenesOnly + "|all-keys=" + o.AllKeys + "|schema=1";
 
     /// <summary>The Toolkit leaves the Osiris header as a loose file next to the packages; the largest one wins.</summary>
-    private static string? FindStoryHeader(string data)
+    internal static string? FindStoryHeader(string data)
     {
         var mods = Path.Combine(data, "Mods");
         if (!Directory.Exists(mods))
@@ -84,14 +91,13 @@ public static class IndexBuilder
 
     private static string? StoredInputs(string database)
     {
-        if (!File.Exists(database))
+        if (!GateKit.Home.HomeDatabase.Usable(database))
         {
             return null;
         }
         try
         {
-            using var db = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = database, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString());
-            db.Open();
+            using var db = GateKit.Home.HomeDatabase.OpenReadOnly(database);
             return Sql.Scalar(db, "SELECT value FROM meta WHERE key = 'inputs'") as string;
         }
         catch (SqliteException)
@@ -106,7 +112,7 @@ public static class IndexBuilder
         var timing = new Dictionary<string, double>();
         var log = o.Log;
         using var packages = new GamePackages(o.DataFolder);
-        var paks = packages.Find(o.Languages);
+        var paks = packages.Find(o.Languages, o.Localization);
         var header = FindStoryHeader(o.DataFolder);
         var inputs = Inputs(paks.Values, header, o);
         if (!o.Force && StoredInputs(o.Database) == inputs)
@@ -189,6 +195,7 @@ public static class IndexBuilder
         log.WriteLine($"reading {list.Count} files with {o.Jobs} threads ...");
 
         var full = Path.GetFullPath(o.Database);
+        log.WriteLine(File.Exists(full) ? $"rebuilding {full}" : $"creating {full} (BG3_INDEX_DB or the home moves it; `gatekit doctor` shows the source)");
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
         var tmp = Path.ChangeExtension(full, ".building");
         if (File.Exists(tmp))
@@ -253,6 +260,7 @@ public static class IndexBuilder
                 ("builder", "GateKit.GameData (LSLib " + typeof(Package).Assembly.GetName().Version + ")"),
                 ("inputs", inputs),
             };
+            meta.AddRange(GateKit.Platform.GameFingerprint.BuildMetadata(Path.GetFullPath(Path.Combine(o.DataFolder, ".."))));
             using (var insert = new Insert(db, null, Sql.Positional("INSERT INTO meta VALUES (?,?)"), 2))
             {
                 foreach (var (k, v) in meta)

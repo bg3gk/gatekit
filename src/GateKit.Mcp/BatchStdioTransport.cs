@@ -8,16 +8,15 @@ using ModelContextProtocol.Protocol;
 namespace GateKit.Mcp;
 
 /// <summary>
-/// The server's end of a stdio connection: one JSON message per line, as the old Python server
-/// spoke it, with the two things it got wrong fixed (docs/contracts/mcp.md, section 3):
+/// The server's end of a stdio connection: one JSON message per line (docs/contracts/mcp.md,
+/// section 2.2):
 ///
 /// <list type="bullet">
-/// <item>A JSON-RPC <b>batch</b> (an array on one line) killed the Python server. Here every
-/// element is handed to the session on its own and the answers are collected back into one array,
+/// <item>A JSON-RPC <b>batch</b> (an array on one line): every element is handed to the session on its own and the answers are collected back into one array,
 /// written when the last one is ready - the order of the requests, as JSON-RPC asks. A batch of
 /// notifications alone is answered with nothing at all.</item>
 /// <item>Answers are written as they come, from whichever thread finishes first, so a long tool
-/// (bg3_up, bg3_reset) no longer holds up `ping`, `tools/list` or another tool.</item>
+/// (bg3_up, bg3_reset) does not hold up `ping`, `tools/list` or another tool.</item>
 /// </list>
 ///
 /// A line that is not JSON at all is skipped when it cannot be a message (build output, a stray

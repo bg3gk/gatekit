@@ -5,7 +5,7 @@ namespace GateKit.Platform;
 /// <summary>Reads a picture file into a <see cref="Screenshot"/>.</summary>
 public static class ImageReader
 {
-    /// <summary>The pixels of a PNG (or any other format stb reads), as the stand's BGRA.</summary>
+    /// <summary>The pixels of a PNG (or any other format stb reads), as GateKit's BGRA.</summary>
     public static Screenshot Read(byte[] file)
     {
         var image = StbImageSharp.ImageResult.FromMemory(file, StbImageSharp.ColorComponents.RedGreenBlueAlpha);
@@ -15,7 +15,7 @@ public static class ImageReader
     }
 }
 
-/// <summary>Writes a <see cref="Screenshot"/> as JPEG (quality 82, as the old stand) or PNG, scaled down to a width.</summary>
+/// <summary>Writes a <see cref="Screenshot"/> as JPEG (quality 82) or PNG, scaled down to a width.</summary>
 public static class ImageFiles
 {
     /// <summary>Saves the picture; the format follows the extension (.png, else JPEG).

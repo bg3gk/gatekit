@@ -40,25 +40,31 @@ public sealed class ReadOnlyDb : IDisposable
 
     public string Path { get; }
 
-    private ReadOnlyDb(string path)
+    private ReadOnlyDb(string path, SqliteConnection db)
     {
         Path = path;
-        _db = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString());
-        _db.Open();
+        _db = db;
     }
 
-    /// <summary>Opens a database that must exist, or explains how to build it.</summary>
-    public static ReadOnlyDb Open(string path, string missing)
+    /// <summary>Opens a database that must be there (<see cref="GateKit.Home.HomeDatabase"/>): a missing,
+    /// empty or table-less file is a <see cref="DataQueryException"/> naming the path, the setting
+    /// that moves it, what makes it and `gatekit doctor`.</summary>
+    public static ReadOnlyDb Open(string path)
     {
-        if (!File.Exists(path))
+        try
         {
-            throw new DataQueryException(missing);
+            return new ReadOnlyDb(path, GateKit.Home.HomeDatabase.OpenReadOnly(path));
         }
-        return new ReadOnlyDb(path);
+        catch (GateKit.Home.MissingDatabaseException e)
+        {
+            throw new DataQueryException(e.Message);
+        }
     }
 
-    /// <summary>Opens a database when it exists; null otherwise.</summary>
-    public static ReadOnlyDb? TryOpen(string path) => File.Exists(path) ? new ReadOnlyDb(path) : null;
+    /// <summary>Opens a database when it can be read; null otherwise, and then <see cref="GateKit.Home.HomeDatabase.Problem"/>
+    /// says why. Only for databases that enrich an answer: the caller must say what it left out.</summary>
+    public static ReadOnlyDb? TryOpen(string path) =>
+        GateKit.Home.HomeDatabase.Usable(path) ? new ReadOnlyDb(path, GateKit.Home.HomeDatabase.OpenReadOnly(path)) : null;
 
     public SqliteCommand Command(string sql, IReadOnlyList<object?> args)
     {

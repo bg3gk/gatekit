@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/lead/1",
+  "title": "A lead (one row of research/coverage/leads.jsonl)",
+  "description": "What to try next for a type never seen alive. Built by `gatekit leads build` (GateKit.Leads.Builder), kept by Lead.Merge; keys in the order of Lead.FieldOrder.",
+  "type": "object",
+  "required": ["type", "side", "one_frame", "class", "reachable", "creators", "entry", "data", "how", "instrument", "score", "state", "attempts"],
+  "additionalProperties": false,
+  "properties": {
+    "type": {"type": "string", "pattern": "^\\S+::\\S+$"},
+    "side": {"enum": ["client", "server", "both"]},
+    "one_frame": {"type": "boolean"},
+    "class": {"enum": ["gameplay_event", "gameplay_state", "boost", "lifecycle", "cinematic", "multiplayer", "split_screen_controller", "online_ugc", "editor_debug"]},
+    "reachable": {"enum": ["solo", "needs_pad", "needs_two_copies", "needs_network", "not_in_shipping_game", "unknown"]},
+    "index_users": {"type": "integer", "minimum": 0},
+    "creators": {"type": "array", "items": {"$ref": "#/$defs/creator"}},
+    "creators_more": {"type": "integer", "minimum": 1},
+    "entry": {"$ref": "#/$defs/entry"},
+    "data": {"type": "array", "items": {"$ref": "#/$defs/data"}},
+    "wiki": {"type": "string", "minLength": 1},
+    "how": {"type": "string", "minLength": 1},
+    "instrument": {"$ref": "#/$defs/instrument"},
+    "score": {"type": "integer", "minimum": 0},
+    "state": {"enum": ["open", "in_work", "lit", "parked", "unreachable"]},
+    "parked": {"type": "string", "minLength": 1},
+    "claimed": {
+      "type": "object",
+      "required": ["instance", "time", "run"],
+      "additionalProperties": false,
+      "properties": {
+        "instance": {"type": "string", "minLength": 1},
+        "time": {"type": "string", "format": "time"},
+        "run": {"type": "string", "minLength": 1}
+      }
+    },
+    "attempts": {"type": "array", "items": {"$ref": "#/$defs/attempt"}},
+    "note": {"type": "string", "minLength": 1},
+    "hand": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "Fields set by hand, kept by a rebuild."}
+  },
+  "$defs": {
+    "instrument": {"enum": ["play", "gui", "stage", "osiris", "sweep", "two_copies", "split_screen", "network", "none"]},
+    "creator": {
+      "type": "object",
+      "required": ["function", "binary", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "system": {"type": "string", "minLength": 1},
+        "function": {"type": "string", "pattern": "^\\S+\\+0x[0-9A-F]+$"},
+        "name": {"type": "string", "minLength": 1},
+        "binary": {"type": "string", "minLength": 1},
+        "site": {"type": "string", "minLength": 1},
+        "depth": {"type": "integer", "minimum": 0},
+        "confidence": {"enum": ["high", "medium", "name", "unknown"], "description": "The ECS helper classifier's (high, medium), `name` for a creator found by its name in the macOS build, `unknown` when nothing said."}
+      }
+    },
+    "entry": {
+      "type": "object",
+      "required": ["kind", "detail"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"enum": ["osiris", "message_handler", "functor", "status", "boost", "system_update", "load_save", "replication", "unknown"]},
+        "detail": {"type": "string"},
+        "depth": {"type": "integer", "minimum": 0},
+        "function": {"type": "string", "minLength": 1},
+        "basis": {"enum": ["calls", "queue", "facts", "none"]},
+        "guard": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "condition": {"type": "string", "minLength": 1}
+      }
+    },
+    "data": {
+      "type": "object",
+      "required": ["what", "where"],
+      "additionalProperties": false,
+      "properties": {
+        "what": {"type": "string", "minLength": 1},
+        "where": {"type": "string", "minLength": 1}
+      }
+    },
+    "attempt": {
+      "type": "object",
+      "required": ["time", "run", "instance", "instrument", "outcome", "note", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "time": {"type": "string", "format": "time"},
+        "run": {"type": "string", "minLength": 1},
+        "instance": {"type": "string", "minLength": 1},
+        "instrument": {"$ref": "#/$defs/instrument"},
+        "outcome": {"enum": ["lit", "empty", "blocked"]},
+        "note": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1, "description": "report, or `import <file>` for tries read from older records."}
+      }
+    }
+  }
+}

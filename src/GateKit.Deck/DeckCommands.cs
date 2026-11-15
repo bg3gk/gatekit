@@ -2,7 +2,7 @@ using System.CommandLine;
 using System.Runtime.Versioning;
 using GateKit.Deck.Windows;
 using GateKit.Platform;
-using GateKit.Stand;
+using GateKit.Copies;
 
 namespace GateKit.Deck;
 
@@ -13,7 +13,7 @@ public static class DeckCommands
     {
         var all = new Option<bool>("--all")
         {
-            Description = "take hold of every copy running on this machine, not only the ones this stand started "
+            Description = "take hold of every copy running on this machine, not only the ones this home started "
                 + "(also GATEKIT_DECK_ADOPT=all). Without it a game somebody else started is listed and left alone.",
         };
         var command = new Command("deck", "one window that holds every running game: tiles, names, and no window thrown over your work") { all };
@@ -27,7 +27,7 @@ public static class DeckCommands
     static int Run(bool all) => Run(settings =>
     {
         var platform = GamePlatform.Current;
-        if (!platform.CanHostWindows) throw new StandException(platform.WhyNot("deck"));
+        if (!platform.CanHostWindows) throw new CopyException(platform.WhyNot("deck"));
         // Out of the build output and into a copy of its own, so the repository can be rebuilt
         // while the deck is up (RunCopy says why). The copy is a window program with no console
         // at all - a console appearing would take the keyboard, which is the thing the deck is
@@ -40,14 +40,14 @@ public static class DeckCommands
         Open(all ? settings with { DeckAdopt = "all" } : settings, platform, Console.Out);
     });
 
-    static int Run(Action<StandSettings> action)
+    static int Run(Action<CopySettings> action)
     {
         try
         {
-            action(StandSettings.Resolve(GamePlatform.Current));
+            action(CopySettings.Resolve(GamePlatform.Current));
             return 0;
         }
-        catch (StandException e)
+        catch (CopyException e)
         {
             Console.Error.WriteLine("ERROR: " + e.Message);
             return 1;
@@ -60,9 +60,9 @@ public static class DeckCommands
     }
 
     /// <summary>Opens the deck of this machine and serves it until its window closes.</summary>
-    static void Open(StandSettings settings, IGamePlatform platform, TextWriter output)
+    static void Open(CopySettings settings, IGamePlatform platform, TextWriter output)
     {
-        if (!OperatingSystem.IsWindows()) throw new StandException(platform.WhyNot("deck"));
+        if (!OperatingSystem.IsWindows()) throw new CopyException(platform.WhyNot("deck"));
         using var log = OwnConsole(settings, ref output);
         new DeckWindow(settings, platform, output).Run();
     }
@@ -78,7 +78,7 @@ public static class DeckCommands
     /// the terminal was there first, it is the person's, and the deck writes to it as before.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    static TextWriter? OwnConsole(StandSettings settings, ref TextWriter output)
+    static TextWriter? OwnConsole(CopySettings settings, ref TextWriter output)
     {
         uint count;
         unsafe

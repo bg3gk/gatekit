@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/runs/1",
+  "title": "A run's hand-over (one row of research/coverage/runs.jsonl)",
+  "description": "What a run writes when it ends, for the next one to read. Written by bg3_run_report (CoverageTools).",
+  "type": "object",
+  "required": ["ended", "run", "half", "found", "open", "wishes"],
+  "additionalProperties": false,
+  "properties": {
+    "ended": {"type": "string", "format": "time"},
+    "run": {"type": "string", "minLength": 1},
+    "stretch": {"type": "string", "minLength": 1},
+    "role": {"type": "string", "minLength": 1},
+    "name": {"type": "string", "minLength": 1, "description": "The run's own short name for what it did."},
+    "half": {"enum": ["world", "interface"]},
+    "aim": {"type": "string", "minLength": 1},
+    "found": {"type": "string", "minLength": 1},
+    "open": {"type": "string", "minLength": 1},
+    "wishes": {"type": "string", "minLength": 1},
+    "cost": {"type": "string", "minLength": 1},
+    "api_version": {"type": "string", "minLength": 1}
+  }
+}

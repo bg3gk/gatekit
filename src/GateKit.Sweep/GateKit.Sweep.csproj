@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- `gatekit sweep`: plans built from the game's own data (every boost, status type, status flag,
+       functor and spell flag the shipping stats use) and run against a game copy with the standing
+       capture on, step after step, with no model in the loop. -->
+  <PropertyGroup>
+    <RootNamespace>GateKit.Sweep</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../GateKit.Copies/GateKit.Copies.csproj" />
+    <ProjectReference Include="../GateKit.GameData/GateKit.GameData.csproj" />
+    <ProjectReference Include="../GateKit.Mcp/GateKit.Mcp.csproj" />
+    <ProjectReference Include="../GateKit.Testing/GateKit.Testing.csproj" />
+    <ProjectReference Include="../GateKit.Leads/GateKit.Leads.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.15" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="GateKit.UnitTests" />
+  </ItemGroup>
+</Project>

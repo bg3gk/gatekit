@@ -52,6 +52,32 @@ public static class RunCopy
     }
 
     /// <summary>
+    /// The command a command line runs: its first word after the global options that come before
+    /// it (<c>--instance NAME</c>, <c>--instance=NAME</c>). Every runner of the third run wrote
+    /// <c>gatekit --instance &lt;copy&gt; mcp call ...</c>, and a check on the first word alone kept
+    /// all of those in <c>bin</c>, holding the build output, so a C# fix waited for every game to
+    /// close. Null when there is no command (only options, or an option this does not know).
+    /// </summary>
+    public static string? Verb(IReadOnlyList<string> args, IReadOnlyCollection<string>? valued = null) =>
+        VerbAt(args, valued) is var at && at >= 0 ? args[at] : null;
+
+    /// <summary>Where <see cref="Verb"/> stands in <paramref name="args"/>; -1 when there is none.</summary>
+    public static int VerbAt(IReadOnlyList<string> args, IReadOnlyCollection<string>? valued = null)
+    {
+        valued ??= ["--instance"];
+        for (var i = 0; i < args.Count; i++)
+        {
+            var word = args[i];
+            if (!word.StartsWith('-')) return i;
+            var equals = word.IndexOf('=', StringComparison.Ordinal);
+            var name = equals < 0 ? word : word[..equals];
+            if (!valued.Contains(name)) return -1;  // --help, --version, anything unknown: not ours to guess
+            if (equals < 0) i++;                    // its value is the next word
+        }
+        return -1;
+    }
+
+    /// <summary>
     /// Null to carry on in this process. Otherwise the exit code to leave with.
     ///
     /// <paramref name="wait"/> false lets this process go as soon as the copy is up, which leaves
@@ -65,12 +91,20 @@ public static class RunCopy
     {
         if (!ShouldCopy()) return null;
         var from = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
-        var to = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "GateKit", "run", name);
+        string runs;
+        try { runs = GateKit.Home.GateKitHome.Current.RunCache.Path!; }
+        catch (GateKit.Home.HomeException e)
+        {
+            say?.WriteLine($"could not run from a copy ({e.Message}); the repository cannot be rebuilt while this is up");
+            return null;
+        }
+        string to;
         string program;
         try
         {
-            Mirror(from, to);
+            to = Path.Combine(runs, CopyName(name, from));
+            Place(from, to);
+            Sweep(runs, name, from, to);
             program = Path.Combine(to, Path.GetFileName(Environment.ProcessPath!));
             if (!File.Exists(program)) return null;     // not laid out as expected: carry on in place
         }
@@ -89,15 +123,18 @@ public static class RunCopy
         // standard handles does not help: every inheritable handle goes across, not only those.
         // So it is started the way the game is - detached, in a process group of its own, with
         // inheritance off - and it writes to its log rather than to anybody's console.
+        // The copy is told where it was copied from, so it reads the same gatekit.json and finds
+        // the same checkout as the program it stands in for (GateKitHome.ProgramFolder).
+        var set = new Dictionary<string, string> { [Marker] = to, [GateKit.Home.GateKitHome.ProgramFolderVariable] = from };
         if (!wait && OperatingSystem.IsWindows())
         {
-            Windows.DetachedStart.Run(program, args, to);
+            Windows.DetachedStart.Run(program, args, set);
             return 0;
         }
 
         var start = new ProcessStartInfo(program) { UseShellExecute = false, WorkingDirectory = Environment.CurrentDirectory };
         foreach (var argument in args) start.ArgumentList.Add(argument);
-        start.Environment[Marker] = to;
+        foreach (var (variable, value) in set) start.Environment[variable] = value;
         using var child = Process.Start(start);
         if (child is null) return null;
         if (!wait) return 0;
@@ -119,12 +156,71 @@ public static class RunCopy
                 || p.Equals("Release", StringComparison.OrdinalIgnoreCase));
     }
 
+    /// <summary>
+    /// The copy's folder: <c>&lt;name&gt;-&lt;checkout&gt;-&lt;build&gt;</c>. One folder for every
+    /// checkout and every build used to be shared - a worktree's `mcp` and the main checkout's
+    /// mirrored into the same <c>run/mcp</c>, and after a rebuild the next call tried to overwrite
+    /// assemblies a server of the last build still held, failed, and ran in place, holding the build
+    /// output again. Now a build gets a copy of its own, and a copy in use is never written over.
+    /// </summary>
+    public static string CopyName(string name, string from)
+    {
+        var newest = 0L;
+        var count = 0;
+        foreach (var file in Directory.EnumerateFiles(from, "*", SearchOption.AllDirectories))
+        {
+            if (file.EndsWith(".locked", StringComparison.OrdinalIgnoreCase)) continue;
+            count++;
+            var at = File.GetLastWriteTimeUtc(file).Ticks;
+            if (at > newest) newest = at;
+        }
+        return $"{name}-{Hash(Path.GetFullPath(from).ToUpperInvariant())}-{Hash($"{newest}/{count}")}";
+    }
+
+    static string Hash(string text) =>
+        Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text)))[..8];
+
+    /// <summary>Removes this checkout's older copies of <paramref name="name"/>; one still running
+    /// holds its files and stays until a later start finds it free.</summary>
+    static void Sweep(string runs, string name, string from, string keep)
+    {
+        var mine = $"{name}-{Hash(Path.GetFullPath(from).ToUpperInvariant())}-";
+        foreach (var old in Directory.EnumerateDirectories(runs, mine + "*"))
+        {
+            if (string.Equals(Path.GetFullPath(old), Path.GetFullPath(keep), StringComparison.OrdinalIgnoreCase)) continue;
+            // Moved aside first: a folder whose assemblies a running copy has loaded cannot be
+            // renamed, so it is left whole - deleting file by file would take from a running server
+            // the assemblies it has not loaded yet.
+            var gone = old + ".gone";
+            try { Directory.Move(old, gone); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { continue; }
+            try { Directory.Delete(gone, recursive: true); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        }
+    }
+
+    /// <summary>Makes the copy at <paramref name="to"/> once: built beside it and moved into place, so
+    /// two starts at the same moment never write over files the other has already loaded.</summary>
+    public static void Place(string from, string to)
+    {
+        if (Directory.Exists(to)) return;
+        var building = $"{to}.{Environment.ProcessId}.tmp";
+        Mirror(from, building);
+        try { Directory.Move(building, to); }
+        catch (IOException) when (Directory.Exists(to))
+        {
+            try { Directory.Delete(building, recursive: true); } catch (IOException) { }
+        }
+    }
+
     /// <summary>Copies what has changed. A build that only touched one assembly costs one file.</summary>
     static void Mirror(string from, string to)
     {
         Directory.CreateDirectory(to);
         foreach (var source in Directory.EnumerateFiles(from, "*", SearchOption.AllDirectories))
         {
+            // what a build moved aside because it was in use (Directory.Build.targets) is not the program
+            if (source.EndsWith(".locked", StringComparison.OrdinalIgnoreCase)) continue;
             var relative = Path.GetRelativePath(from, source);
             var target = Path.Combine(to, relative);
             var old = new FileInfo(target);

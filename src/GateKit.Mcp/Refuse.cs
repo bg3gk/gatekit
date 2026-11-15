@@ -1,5 +1,5 @@
 using System.Text.Json;
-using GateKit.Stand;
+using GateKit.Copies;
 
 namespace GateKit.Mcp;
 
@@ -15,6 +15,29 @@ namespace GateKit.Mcp;
 /// </summary>
 static class Refuse
 {
+    /// <summary>What the schema lists as required and the call left out, refused before the tool runs.</summary>
+    public static void MissingArguments(GateKitTool tool, Args args)
+    {
+        var schema = tool.Definition.InputSchema;
+        if (schema.ValueKind != JsonValueKind.Object
+            || !schema.TryGetProperty("required", out var required)
+            || required.ValueKind != JsonValueKind.Array) return;
+        var missing = required.EnumerateArray().Where(r => r.ValueKind == JsonValueKind.String)
+            .Select(r => r.GetString()!).Where(n => !args.Has(n)).ToList();
+        if (missing.Count > 0) throw Missing(tool, missing);
+    }
+
+    /// <summary>The refusal for arguments a tool needs and was not given: what it needs, and all it takes.</summary>
+    public static CopyException Missing(GateKitTool tool, IReadOnlyList<string> missing)
+    {
+        var schema = tool.Definition.InputSchema;
+        var known = schema.ValueKind == JsonValueKind.Object && schema.TryGetProperty("properties", out var properties)
+            && properties.ValueKind == JsonValueKind.Object ? properties.EnumerateObject().Select(p => p.Name).ToList() : [];
+        return new CopyException($"{tool.Name} needs {string.Join(", ", missing.Select(m => $"'{m}'"))}, which the call did not give. "
+            + (known.Count > 0 ? $"It takes: {string.Join(", ", known)}. " : "")
+            + "Nothing was done.");
+    }
+
     public static void UnknownArguments(GateKitTool tool, Args args)
     {
         var schema = tool.Definition.InputSchema;
@@ -39,7 +62,7 @@ static class Refuse
                 || stranger.StartsWith(k, StringComparison.OrdinalIgnoreCase));
             said.Add(near is null ? $"'{stranger}'" : $"'{stranger}' (did you mean '{near}'?)");
         }
-        throw new StandException($"{tool.Name} does not take {string.Join(", ", said)}. "
+        throw new CopyException($"{tool.Name} does not take {string.Join(", ", said)}. "
             + $"It takes: {string.Join(", ", known)}. Nothing was done, because an argument that is "
             + "quietly ignored reads as an answer to the question you asked.");
     }

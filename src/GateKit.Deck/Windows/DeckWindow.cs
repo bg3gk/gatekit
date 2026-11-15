@@ -3,13 +3,13 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using GateKit.Bridge;
 using GateKit.Platform;
-using GateKit.Stand;
+using GateKit.Copies;
 
 namespace GateKit.Deck.Windows;
 
 /// <summary>
-/// The deck itself: one window that holds every running game. It finds the games by itself (the
-/// stand starts them whether a deck runs or not), adopts each one's window into a tile, and gives
+/// The deck itself: one window that holds every running game. It finds the games by itself (`gatekit`
+/// starts them whether a deck runs or not), adopts each one's window into a tile, and gives
 /// every window back when it closes.
 ///
 /// It is a plain Win32 window - a class, a message loop and a few lines of GDI for the captions -
@@ -28,7 +28,7 @@ public sealed unsafe class DeckWindow
 
     static DeckWindow? _running;
 
-    readonly StandSettings _settings;
+    readonly CopySettings _settings;
     readonly IGamePlatform _platform;
     readonly DeckRecord _record;
     readonly TextWriter _out;
@@ -61,7 +61,7 @@ public sealed unsafe class DeckWindow
     int _ticks;
     string _title = "";
 
-    public DeckWindow(StandSettings settings, IGamePlatform platform, TextWriter output)
+    public DeckWindow(CopySettings settings, IGamePlatform platform, TextWriter output)
     {
         _settings = settings;
         _platform = platform;
@@ -70,7 +70,7 @@ public sealed unsafe class DeckWindow
         // Two backings, chosen per tile and switchable at run time (`window mirror|adopt`):
         // `adopt` takes the game's own window into the tile, `mirror` draws the frames the game
         // copies into a shared texture and needs no window to be seen at all. docs/design/deck.md
-        // has what each costs and why adopt is still the default.
+        // says why adopt is the default.
         _backings = new Dictionary<string, ITileBacking>(StringComparer.OrdinalIgnoreCase)
         {
             ["adopt"] = new AdoptBacking(platform),
@@ -89,7 +89,7 @@ public sealed unsafe class DeckWindow
     public void Run()
     {
         if (_record.Running() is { } other)
-            throw new StandException($"a deck is already running (pid {other.Pid}); one deck holds every game");
+            throw new CopyException($"a deck is already running (pid {other.Pid}); one deck holds every game");
 
         Native.SetThreadDpiAwarenessContext(Native.DpiAwarenessPerMonitorV2);
         _background = Native.CreateSolidBrush(Native.Colour(22, 22, 26));
@@ -110,7 +110,7 @@ public sealed unsafe class DeckWindow
         _window = Native.CreateWindowEx(Native.WsExNoActivate | Native.WsExAppWindow, ClassName, "GateKit deck",
             Native.WsOverlappedWindow | Native.WsClipChildren,
             Native.CwUseDefault, Native.CwUseDefault, 1360, 840, 0, 0, Native.GetModuleHandle(null), 0);
-        if (_window == 0) throw new StandException($"the deck window could not be created: Win32 error {Marshal.GetLastPInvokeError()}");
+        if (_window == 0) throw new CopyException($"the deck window could not be created: Win32 error {Marshal.GetLastPInvokeError()}");
 
         var wasInFront = Native.GetForegroundWindow();
         Native.ShowWindow(_window, Native.SwShowNoActivate);
@@ -131,8 +131,8 @@ public sealed unsafe class DeckWindow
         _out.WriteLine($"frame budget: {_budget} (GATEKIT_DECK_FPS; `gatekit window fps` overrides one copy)");
         _out.WriteLine($"sound: {_sound} (GATEKIT_DECK_SOUND; a tile's own mute pins it)");
         _out.WriteLine(_adoptAll
-            ? "taking hold of every copy on this machine, including ones this stand did not start (--all)"
-            : "taking hold of the copies this stand started; anything else is listed and left alone (--all takes them too)");
+            ? "taking hold of every copy on this machine, including ones this home did not start (--all)"
+            : "taking hold of the copies this home started; anything else is listed and left alone (--all takes them too)");
 
         // Ctrl+C in the terminal that started it closes the deck the same way its own button does,
         // so the games get their windows back.
@@ -182,7 +182,7 @@ public sealed unsafe class DeckWindow
                 ClassName = (nint)name,
             };
             if (Native.RegisterClassEx(&windowClass) == 0 && Marshal.GetLastPInvokeError() != 1410) // already registered
-                throw new StandException($"the deck window class could not be registered: Win32 error {Marshal.GetLastPInvokeError()}");
+                throw new CopyException($"the deck window class could not be registered: Win32 error {Marshal.GetLastPInvokeError()}");
         }
     }
 
@@ -191,7 +191,7 @@ public sealed unsafe class DeckWindow
     /// system's default icon.</summary>
     static nint Logo(int size)
     {
-        if (StandSettings.RepositoryRoot() is not { } repository) return 0;
+        if (CopySettings.RepositoryRoot() is not { } repository) return 0;
         // The medallion, transparent outside its gold ring: what belongs on a window and in a
         // taskbar. assets/brand/logo.ico is the square mark on the brand field, for other places.
         var file = Path.Combine(repository, "assets", "brand", "logo-round.ico");
@@ -299,18 +299,18 @@ public sealed unsafe class DeckWindow
     /// <summary>The copies this deck may take hold of. A deck adopts a window, caps a frame rate
     /// and mutes the sound, and doing all three to a game somebody else started - another person,
     /// another session, a copy of the installed game being played - is not something to do by
-    /// accident. So by default it takes only what this stand started
-    /// (<see cref="GameCopy.Mine"/>), says once what it is leaving alone, and does nothing to it.
+    /// accident. So by default it takes only what this home started
+    /// (<see cref="RunningCopy.Mine"/>), says once what it is leaving alone, and does nothing to it.
     ///
     /// Two ways past that, both of them someone asking: `gatekit deck --all`, and naming a copy
     /// with `window maximize|mirror|adopt`, which is as plain an ask as there is.</summary>
-    IReadOnlyList<GameCopy> Ours(IReadOnlyList<GameCopy> copies)
+    IReadOnlyList<RunningCopy> Ours(IReadOnlyList<RunningCopy> copies)
     {
         var rule = new Adoption(_adoptAll) { Invited = _invited };
         foreach (var copy in rule.NotOurs(copies))
         {
             if (!_announced.Add(copy.Instance)) continue;
-            _out.WriteLine($"{copy.Instance}: pid {copy.Pid} is running but this stand did not start it, "
+            _out.WriteLine($"{copy.Instance}: pid {copy.Pid} is running but this home did not start it, "
                 + "so the deck is leaving it alone - its window, its frame rate and its sound. "
                 + $"`gatekit window maximize {copy.Instance}` takes it anyway, and `gatekit deck --all` takes everything.");
         }
@@ -344,7 +344,7 @@ public sealed unsafe class DeckWindow
         }
     }
 
-    /// <summary>Someone has named a copy this stand did not start, which is them asking for it.
+    /// <summary>Someone has named a copy this home did not start, which is them asking for it.
     /// Said out loud, because the deck is about to do three things to that game.</summary>
     void Invite(string instance)
     {
@@ -352,7 +352,7 @@ public sealed unsafe class DeckWindow
         if (DeckRecord.Copies(_settings, _platform).Any(c =>
                 string.Equals(c.Instance, instance, StringComparison.OrdinalIgnoreCase) && !c.Mine))
         {
-            _out.WriteLine($"{instance}: this stand did not start it, and you asked for it by name, so the deck "
+            _out.WriteLine($"{instance}: this home did not start it, and you asked for it by name, so the deck "
                 + $"is taking its window, its frame rate and its sound. `gatekit window release {instance}` gives all three back.");
         }
     }
@@ -516,7 +516,7 @@ public sealed unsafe class DeckWindow
             var sound = new SoundControl(SessionFor(instance));
             (heard ? sound.UnmuteAsync(null) : sound.MuteAsync(null)).GetAwaiter().GetResult();
         }
-        catch (Exception e) when (e is StandException or IOException or TimeoutException or BridgeTimeoutException or BridgeLuaException)
+        catch (Exception e) when (e is CopyException or IOException or TimeoutException or BridgeTimeoutException or BridgeLuaException)
         {
             // A copy that is loading or closing keeps the sound it has and is asked again; one
             // that has settled and still cannot be reached is worth saying out loud, because a
@@ -542,7 +542,7 @@ public sealed unsafe class DeckWindow
             {
                 new SoundControl(SessionFor(instance)).SetAsync(null, value).GetAwaiter().GetResult();
             }
-            catch (Exception e) when (e is StandException or IOException or TimeoutException) { }
+            catch (Exception e) when (e is CopyException or IOException or TimeoutException) { }
         });
     }
 
@@ -556,7 +556,7 @@ public sealed unsafe class DeckWindow
             {
                 new SoundControl(SessionFor(instance)).UnmuteAsync(null).GetAwaiter().GetResult();
             }
-            catch (Exception e) when (e is StandException or IOException or TimeoutException) { }
+            catch (Exception e) when (e is CopyException or IOException or TimeoutException) { }
         });
     }
 
@@ -578,7 +578,7 @@ public sealed unsafe class DeckWindow
         _out.WriteLine($"{instance}: this copy {what}");
     }
 
-    GameSession SessionFor(string instance) => new Stand.Stand(
+    GameSession SessionFor(string instance) => new Copies.GameCopy(
         _settings with { Instance = instance == DeckRecord.InstalledGame ? null : instance },
         _platform, TextWriter.Null).Session();
 

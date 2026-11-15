@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/findings/1",
+  "title": "A finding or a lead (one row of research/coverage/findings.jsonl)",
+  "description": "What makes a component type appear, with its recipe and evidence. Written by bg3_record_recipe (CoverageTools) and the sweep (SweepRecipes).",
+  "type": "object",
+  "required": ["date", "component", "evidence", "reached_by", "kind"],
+  "additionalProperties": false,
+  "properties": {
+    "date": {"type": "string", "format": "time", "description": "When it was recorded."},
+    "component": {"type": "string", "pattern": "^\\S+::\\S+$"},
+    "recipe": {"type": "string", "pattern": "^tests/_coverage/[^/]+\\.lua$", "description": "Absent only when `moved_to` says where its text went."},
+    "moved_to": {"type": "string", "minLength": 1},
+    "claim": {"type": "string", "minLength": 1},
+    "evidence": {"enum": ["sighting", "repeated", "replayed", "field_value"]},
+    "reached_by": {"enum": ["play", "cheat", "play_with_cheat_setup"]},
+    "level": {"type": "string", "minLength": 1},
+    "fields": {"type": "object", "additionalProperties": {"type": "string"}, "description": "Offset -> what it is believed to be."},
+    "open": {"type": "string", "minLength": 1, "description": "What is still unresolved."},
+    "note": {"type": "string", "minLength": 1},
+    "kind": {"enum": ["finding", "lead"]}
+  }
+}

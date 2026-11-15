@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "settings/gatekit/1",
+  "title": "GateKit's one settings file (gatekit.json)",
+  "description": "Where things are and how GateKit behaves; each value may also come from an environment variable (CopySettings). Paths are absolute or relative to the file's folder. `home`, `seFork` and `toolkit` are the locations of the one home (docs/design/home.md).",
+  "type": "object",
+  "required": ["schema"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "settings/gatekit/1"},
+    "about": {"type": "string", "minLength": 1, "description": "What this file is for, in words: a field, not a comment."},
+    "home": {"type": "string", "minLength": 1, "description": "The home folder: databases, tools, builds, state, caches."},
+    "seFork": {"type": "string", "minLength": 1, "description": "The checkout of GateKit's Script Extender fork."},
+    "game": {"type": "string", "minLength": 1, "description": "The installed game's folder (BG3_GAME)."},
+    "toolkit": {"type": "string", "minLength": 1, "description": "The checkout of the toolkit itself."},
+    "exe": {"type": "string", "minLength": 1, "description": "The game's executable in bin (GATEKIT_EXE)."},
+    "profile": {"type": "string", "minLength": 1, "description": "The real profile of the installed game (GATEKIT_PROFILE)."},
+    "instances": {"type": "string", "minLength": 1, "description": "The folder of the game copies (GATEKIT_INSTANCES)."},
+    "state": {"type": "string", "minLength": 1, "description": "The state folder of the copies (GATEKIT_STATE)."},
+    "scriptExtender": {"type": "string", "minLength": 1, "description": "A Script Extender build folder, or `stock` (GATEKIT_SE)."},
+    "packer": {"enum": ["builtin", "divine"], "description": "How mods are packed (GATEKIT_PACKER)."},
+    "divine": {"type": "string", "minLength": 1, "description": "LSLib's Divine tool (GATEKIT_DIVINE)."},
+    "dotnetRoot": {"type": "string", "minLength": 1, "description": ".NET for Divine (GATEKIT_DOTNET_ROOT)."},
+    "startTimeout": {"type": "integer", "minimum": 1, "description": "Seconds to the bridge's first heartbeat (GATEKIT_START_TIMEOUT)."},
+    "bridge": {"type": "string", "minLength": 1, "description": "The folder of the bridge mods (GATEKIT_BRIDGE)."},
+    "instance": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,32}$", "description": "The game copy used when none is named (GATEKIT_INSTANCE)."},
+    "deckBacking": {"enum": ["adopt", "mirror"], "description": "GATEKIT_DECK_BACKING."},
+    "deckConceal": {"enum": ["offscreen", "hidden", "none"], "description": "GATEKIT_DECK_CONCEAL."},
+    "simpleLevelCharacters": {"type": "integer", "minimum": 0, "description": "GATEKIT_SIMPLE_LEVEL_CHARACTERS."},
+    "simpleLevels": {"type": "string", "minLength": 1, "description": "Comma-separated levels taken as simple (GATEKIT_SIMPLE_LEVELS)."}
+  }
+}

@@ -1,4 +1,4 @@
-using GateKit.Stand;
+using GateKit.Copies;
 
 namespace GateKit.Deck;
 
@@ -101,7 +101,7 @@ public sealed class TileSet
     public Tile? Find(string instance) => _tiles.FirstOrDefault(t => string.Equals(t.Instance, instance, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Brings the tiles up to date with the games that are running now.</summary>
-    public TileChanges Observe(IReadOnlyList<GameCopy> copies, IReadOnlyDictionary<string, string> labels, DateTime now)
+    public TileChanges Observe(IReadOnlyList<RunningCopy> copies, IReadOnlyDictionary<string, string> labels, DateTime now)
     {
         var show = new List<Tile>();
         var drop = new List<Tile>();

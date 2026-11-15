@@ -15,6 +15,7 @@ internal sealed class Writer(SqliteConnection db) : IDisposable
     private readonly Dictionary<string, List<(int ActorType, string? Template)>> _scenes = new(StringComparer.Ordinal);
     private readonly List<(long Id, string Rel)> _timelines = [];
     private long _objectId, _sourceId, _textId, _statId, _trackId, _actorId, _timelineId, _dialogId;
+    private readonly HashSet<(string, int)> _storyFunctions = [];
 
     public long NestedComponents { get; private set; }
 
@@ -235,6 +236,13 @@ internal sealed class Writer(SqliteConnection db) : IDisposable
                 foreach (var ((name, role), n) in TextParsers.ReadGoal(content))
                 {
                     this["osiris_use"].Run(_textId, name, role, n);
+                }
+                // A procedure or query a goal defines: one row per name and arity over all goals (a
+                // built-in of the header never shares a name and an arity with one).
+                foreach (var f in TextParsers.ReadGoalDefinitions(content))
+                {
+                    if (_storyFunctions.Add((f.Name, f.Arity)))
+                        this["osiris_function"].Run(f.Name, f.Kind, f.Params, f.Ids, f.Arity);
                 }
                 break;
             case "osiris header":

@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Runtime.Versioning;
 using GateKit.Bridge;
 using GateKit.Platform;
-using GateKit.Stand;
+using GateKit.Copies;
 
 namespace GateKit.Deck.Windows;
 
@@ -42,7 +42,7 @@ public sealed unsafe class MirrorBacking : ITileBacking, IDisposable
     /// needs more, and every frame beyond this would be work thrown away.</summary>
     const double TileFramesPerSecond = 60.0;
 
-    readonly StandSettings _settings;
+    readonly CopySettings _settings;
     readonly IGamePlatform _platform;
     readonly TextWriter _out;
     readonly DeckConceal _conceal;
@@ -56,7 +56,7 @@ public sealed unsafe class MirrorBacking : ITileBacking, IDisposable
     volatile bool _stopping;
     static bool _classRegistered;
 
-    public MirrorBacking(StandSettings settings, IGamePlatform platform, TextWriter output, DeckConceal conceal)
+    public MirrorBacking(CopySettings settings, IGamePlatform platform, TextWriter output, DeckConceal conceal)
     {
         _settings = settings;
         _platform = platform;
@@ -247,7 +247,7 @@ public sealed unsafe class MirrorBacking : ITileBacking, IDisposable
         }
         // A question that timed out or could not be delivered is about this moment, not about the
         // copy: the game may be loading a level, saving, or still starting. Ask again.
-        catch (Exception e) when (e is StandException or IOException or TimeoutException)
+        catch (Exception e) when (e is CopyException or IOException or TimeoutException)
         {
             return new NotMirroring(e.Message, Temporary: true);
         }
@@ -262,10 +262,10 @@ public sealed unsafe class MirrorBacking : ITileBacking, IDisposable
             session.ClientAsync("return Ext.ClientRender.MirrorEnable(false)", TimeSpan.FromSeconds(5))
                 .GetAwaiter().GetResult();
         }
-        catch (Exception e) when (e is StandException or IOException or TimeoutException) { }
+        catch (Exception e) when (e is CopyException or IOException or TimeoutException) { }
     }
 
-    GameSession SessionFor(string instance) => new GateKit.Stand.Stand(
+    GameSession SessionFor(string instance) => new GateKit.Copies.GameCopy(
         _settings with { Instance = instance == DeckRecord.InstalledGame ? null : instance },
         _platform, TextWriter.Null).Session();
 
@@ -416,8 +416,8 @@ public sealed unsafe class MirrorBacking : ITileBacking, IDisposable
     }
 
     /// <summary>What mirroring is costing and reaching, said once every ten seconds while it runs.
-    /// The numbers are what <c>docs/design/deck.md</c> asks to be measured, taken where they
-    /// actually happen rather than guessed at.</summary>
+    /// These are the numbers behind the cost <c>docs/design/deck.md</c> claims for mirroring, taken
+    /// where they actually happen.</summary>
     void Report()
     {
         foreach (var (instance, held) in _held)

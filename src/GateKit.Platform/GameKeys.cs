@@ -1,6 +1,6 @@
 namespace GateKit.Platform;
 
-/// <summary>Key names the stand understands, as Windows virtual-key codes (Wine uses the same codes).</summary>
+/// <summary>Key names `gatekit` understands, as Windows virtual-key codes (Wine uses the same codes).</summary>
 public static class GameKeys
 {
     public static readonly IReadOnlyDictionary<string, int> Named = BuildNamed();

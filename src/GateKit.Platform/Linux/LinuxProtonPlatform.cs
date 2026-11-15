@@ -88,7 +88,7 @@ public sealed partial class LinuxProtonPlatform : IGamePlatform
             ["SteamGameId"] = GamePlatform.AppId,
         };
         if (SteamRoot() is { } steam) environment["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steam;
-        // What the stand asked for, last, so it means what it says. SDL's own hints travel this
+        // What `gatekit` asked for, last, so it means what it says. SDL's own hints travel this
         // way under Proton as well: the X11 backend reads the same variable the Windows one does.
         // (Wayland natively cannot honour the no-activation hint; SDL says so, not us.)
         foreach (var (key, value) in launch.Environment ?? new Dictionary<string, string>()) environment[key] = value;

@@ -7,7 +7,8 @@ namespace GateKit.Mcp;
 /// <summary>
 /// A tool call's arguments. The JSON schemas of the tools are advisory, as they were in the old
 /// server: what is missing is null and what is required is asked for by name, which fails with
-/// <c>KeyError: 'side'</c> - the same text the Python server produced.
+/// <see cref="MissingArgumentException"/>; the server turns that into a refusal naming what the
+/// tool needs and takes.
 /// </summary>
 public sealed class Args
 {
@@ -33,7 +34,7 @@ public sealed class Args
         ? e.ValueKind == JsonValueKind.String ? e.GetString() : e.GetRawText()
         : null;
 
-    public string Need(string name) => Str(name) ?? throw new KeyNotFoundException($"'{name}'");
+    public string Need(string name) => Str(name) ?? throw new MissingArgumentException(name);
 
     public double? Num(string name) => Raw(name) is { } e
         ? e.ValueKind switch
@@ -65,4 +66,10 @@ public sealed class Args
     }
 
     public TimeSpan Seconds(string name, double fallback) => TimeSpan.FromSeconds(Num(name) ?? fallback);
+}
+
+/// <summary>A tool asked for an argument the call did not carry.</summary>
+public sealed class MissingArgumentException(string name) : KeyNotFoundException($"'{name}'")
+{
+    public string Name { get; } = name;
 }

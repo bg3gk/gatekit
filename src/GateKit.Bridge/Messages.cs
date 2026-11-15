@@ -25,6 +25,8 @@ public sealed record Command
     [JsonPropertyName("id")] public required string Id { get; init; }
     [JsonPropertyName("code")] public required string Code { get; init; }
     [JsonPropertyName("ui")] public bool Ui { get; init; }
+    /// <summary>The class the chunk's verbs are held to (a test's step); null: none.</summary>
+    [JsonPropertyName("class")][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Class { get; init; }
     [JsonPropertyName("t")] public double T { get; init; }
 }
 
@@ -48,6 +50,8 @@ public sealed record Heartbeat
     [JsonPropertyName("gameState")] public string? GameState { get; init; }
     [JsonPropertyName("queue")] public int Queue { get; init; }
     [JsonPropertyName("done")] public long Done { get; init; }
+    /// <summary>The side's tick count at the beat; null from a bridge that does not say it.</summary>
+    [JsonPropertyName("tick")] public double? Tick { get; init; }
 }
 
 [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

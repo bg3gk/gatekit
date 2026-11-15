@@ -1,0 +1,115 @@
+{
+  "schema": "registry/json-sites/1",
+  "about": "Files of src/ that still parse or write JSON on their own, outside GateKit.Json. GuardTests holds src/ to this list exactly: a new site fails, and so does an entry whose sites are gone. Migrate a file, then lower or remove its entry.",
+  "patterns": [
+    "JsonNode\\.Parse\\(",
+    "JsonSerializer\\.",
+    "JsonDocument\\.Parse\\(",
+    "\\.ToJsonString\\("
+  ],
+  "sites": [
+    {"file": "src/GateKit.Bridge/BridgeClient.cs", "count": 5, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Cli/CopyCommands.cs", "count": 4, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Deck/WindowCommands.cs", "count": 1, "reason": "not migrated yet"},
+    {
+      "file": "src/GateKit.GameData/Query/OfflineQueries.cs",
+      "count": 1,
+      "reason": "not migrated yet"
+    },
+    {"file": "src/GateKit.Home/GateKitHome.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Home/SharedFile.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Leads/Builder.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Leads/History.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Leads/Lead.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Leads/LeadsCommands.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Leads/SystemFacts.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/Args.cs", "count": 3, "reason": "not migrated yet"},
+    {
+      "file": "src/GateKit.Mcp/BatchStdioTransport.cs",
+      "count": 4,
+      "reason": "MCP SDK framing: JSON-RPC messages through the SDK's own serializer options"
+    },
+    {"file": "src/GateKit.Mcp/CoreTools.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/CoverageTools.cs", "count": 7, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/DeckTools.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/LayoutCheck.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/LeadTools.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/Ledger.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/McpCommand.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/McpSequence.cs", "count": 6, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/NamesTools.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/PluginTools.cs", "count": 5, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/RecordBook.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/RecordTools.cs", "count": 8, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/Survey.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/ToolHost.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mcp/WikiTools.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Mods/ModCommands.cs", "count": 5, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Names/Declarations.cs", "count": 3, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Names/Demand/DemandFile.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Names/Demand/RecordState.cs", "count": 3, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Names/FieldNames.cs", "count": 3, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Names/Intake.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Names/LayoutStore.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Names/NamesCommands.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Release/DatabaseInstall.cs", "count": 3, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Release/DatabaseManifest.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Testing/GameApi.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Testing/LuaValues.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Testing/ResetLadder.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Testing/SystemClaims.cs", "count": 4, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Copies/Deck.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Copies/HomeReport.cs", "count": 1, "reason": "not migrated yet"},
+    {
+      "file": "src/GateKit.Copies/JsonFiles.cs",
+      "count": 2,
+      "reason": "not migrated yet: reads the game's and Script Extender's own settings leniently, which the strict reader would refuse"
+    },
+    {"file": "src/GateKit.Copies/LayoutData.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Copies/Record.cs", "count": 3, "reason": "not migrated yet"},
+    {
+      "file": "src/GateKit.Copies/ScriptExtenderRelease.cs",
+      "count": 1,
+      "reason": "not migrated yet"
+    },
+    {"file": "src/GateKit.Sweep/SweepCommands.cs", "count": 3, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Sweep/SweepGame.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Sweep/SweepPlan.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Sweep/SweepRunner.cs", "count": 3, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Sweep/SweepTour.cs", "count": 1, "reason": "not migrated yet"},
+    {
+      "file": "src/GateKit.Symbols/Decomp/FunctionWriter.cs",
+      "count": 1,
+      "reason": "not migrated yet"
+    },
+    {"file": "src/GateKit.Symbols/Decomp/LoadCommand.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Symbols/Decomp/NameAtCommand.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Symbols/Decomp/QueriesCommand.cs", "count": 5, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Symbols/Decomp/QueryMap.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Symbols/Decomp/QueryReading.cs", "count": 1, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Symbols/Decomp/RecordTypes.cs", "count": 2, "reason": "not migrated yet"},
+    {
+      "file": "src/GateKit.Symbols/Decomp/TallyCommand.cs",
+      "count": 3,
+      "reason": "not migrated yet"
+    },
+    {"file": "src/GateKit.Symbols/Queries/SeLayouts.cs", "count": 3, "reason": "not migrated yet"},
+    {
+      "file": "src/GateKit.Symbols/Queries/SymbolText.Systems.cs",
+      "count": 2,
+      "reason": "not migrated yet"
+    },
+    {
+      "file": "src/GateKit.Symbols/Queries/SystemDigest.cs",
+      "count": 2,
+      "reason": "not migrated yet"
+    },
+    {
+      "file": "src/GateKit.Symbols/Queries/SystemFiles.cs",
+      "count": 3,
+      "reason": "not migrated yet"
+    },
+    {"file": "src/GateKit.Wiki/WikiCommands.cs", "count": 2, "reason": "not migrated yet"},
+    {"file": "src/GateKit.Wiki/WikiReader.cs", "count": 3, "reason": "not migrated yet"}
+  ]
+}

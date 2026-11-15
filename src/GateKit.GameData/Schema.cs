@@ -101,8 +101,10 @@ CREATE VIRTUAL TABLE texts_fts USING fts5(content, tokenize = "unicode61 tokench
 CREATE TABLE stats (id INTEGER PRIMARY KEY, name TEXT, type TEXT, parent TEXT, package TEXT, mod TEXT, file TEXT);
 CREATE TABLE stat_fields (stat_id INTEGER, field TEXT, value TEXT);
 
--- Osiris (story scripting): the functions the engine offers and where the story uses them.
-CREATE TABLE osiris_functions (name TEXT, kind TEXT, params TEXT, ids TEXT, arity INTEGER);  -- kind: event, call, query, ...
+-- Osiris (story scripting): the functions the engine offers and where the story uses them. One row
+-- per name and arity: a name has several (ApplyStatus/3, /4, /5), and a call is matched by its arity.
+-- kind: event, call, query, ... from the story header; proc, userquery for the PROC and QRY the goals define.
+CREATE TABLE osiris_functions (name TEXT, kind TEXT, params TEXT, ids TEXT, arity INTEGER);
 CREATE TABLE osiris_types (name TEXT, kind TEXT, definition TEXT);
 -- role: trigger (first line of an IF), condition, action, define (PROC/QRY header), init, exit.
 CREATE TABLE osiris_uses (text_id INTEGER, name TEXT, role TEXT, uses INTEGER);

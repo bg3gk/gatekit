@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/structs/1",
+  "title": "A named field of a structure that is no component's (one row of research/coverage/structs.jsonl)",
+  "description": "The name of the field at an offset of a structure the layouts do not hold: a system's manager, an element of its array, a task of the cursor. Written by `gatekit decomp field`, shown by `gatekit decomp struct` and above the pseudo-code of a function whose variable points at the structure. docs/contracts/cli.md, \"decomp name\".",
+  "type": "object",
+  "required": ["struct", "offset", "name", "source", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "struct": {"type": "string", "pattern": "^\\S+$", "description": "The structure, with :: between its parts."},
+    "offset": {"type": "string", "pattern": "^0x[0-9A-F]+$"},
+    "name": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+    "type": {"type": "string", "minLength": 1, "description": "The field's type, when known."},
+    "source": {"enum": ["game", "toolkit", "inferred", "extender", "unknown"]},
+    "evidence": {"type": "string", "description": "What backs the name: what an instrument read, forced or repeated, and where."}
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events/head/1",
+  "title": "The head of a side's event log (events_<side>.json)",
+  "description": "Which boot of the side's Lua state writes the log, which segments it keeps, what still waits for an answer, and how much each family wrote. Rewritten in every tick the log changed. docs/contracts/bridge-protocol.md, \"The event log\".",
+  "type": "object",
+  "required": ["side", "boot", "segment", "seq", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "side": {"enum": ["server", "client"]},
+    "boot": {"type": "integer", "minimum": 1, "description": "One above the side's previous boot on this game copy."},
+    "segment": {"type": "integer", "minimum": 1, "description": "The last segment file of this boot."},
+    "first": {"type": "integer", "minimum": 1, "description": "The oldest segment kept; older ones were dropped (their files are empty)."},
+    "seq": {"type": "integer", "minimum": 0, "description": "The last seq when the head was written."},
+    "rows": {"type": "integer", "minimum": 1, "description": "Rows per segment."},
+    "started": {"type": "number", "minimum": 0, "description": "The game's monotonic milliseconds when the boot started."},
+    "tick": {"type": "integer", "minimum": 0, "description": "The side's tick count when the head was written."},
+    "process": {"type": "string", "description": "The start of the game process the boot runs in, as the host named it (process.txt in the channel, written by `up`). A boot does not carry what a boot of another process left open."},
+    "open": {"type": "array", "items": {"$ref": "events/row"}, "description": "The rows that still wait for an answer: kept here whatever was dropped."},
+    "counts": {
+      "type": "object",
+      "description": "Per family: rows and bytes written in this boot, rows dropped.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["rows", "bytes", "dropped"],
+        "additionalProperties": false,
+        "properties": {
+          "rows": {"type": "integer", "minimum": 0},
+          "bytes": {"type": "integer", "minimum": 0},
+          "dropped": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "on": {"type": "array", "items": {"type": "string"}, "description": "The switchable families on now."}
+  }
+}

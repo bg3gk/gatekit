@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/replays/1",
+  "title": "A replay (one row of research/coverage/record/replays.jsonl)",
+  "description": "One recipe of tests/_coverage run again, and its verdict. Written by GateKit.Testing.Replays.",
+  "type": "object",
+  "required": ["recipe", "time", "instance", "by", "ok"],
+  "additionalProperties": false,
+  "properties": {
+    "recipe": {"type": "string", "pattern": "^tests/_coverage/[^/]+\\.lua$"},
+    "time": {"type": "string", "format": "time"},
+    "instance": {"type": "string", "minLength": 1},
+    "by": {"type": "string", "minLength": 1, "description": "The role; `unknown` when nobody said."},
+    "run": {"type": "string", "minLength": 1},
+    "game": {"type": "string", "minLength": 1, "description": "The game's version."},
+    "gatekit": {"type": "string", "minLength": 1, "description": "GateKit's informational version."},
+    "ok": {"type": "boolean"},
+    "before": {"type": "integer", "minimum": 0, "description": "Holders of the type before the steps."},
+    "most": {"type": "integer", "minimum": 0, "description": "The most holders seen during the steps."},
+    "seconds": {"type": "number", "minimum": 0},
+    "via": {"enum": ["test", "systems check"]}
+  }
+}

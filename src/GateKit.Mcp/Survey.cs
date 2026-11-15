@@ -7,8 +7,7 @@ namespace GateKit.Mcp;
 
 /// <summary>
 /// What every part of a component's memory holds, across the live instances of it - the
-/// starting point for a layout hypothesis. A port of the survey and the printing of
-/// <c>research/coverage/probe.py</c>; the reading itself is done in the game by
+/// starting point for a layout hypothesis. The reading itself is done in the game by
 /// <c>GK.Probe.Dump</c>.
 ///
 /// Per 8-byte slot it says what the values look like (a live entity handle, a pointer into the
@@ -20,7 +19,7 @@ namespace GateKit.Mcp;
 public static class Survey
 {
     /// <summary>
-    /// The binary an offset into the executable belongs to. The stand starts
+    /// The binary an offset into the executable belongs to. A copy starts
     /// <c>bin/bg3_dx11.exe</c>, and an address read from the running game is an offset into
     /// <b>that</b> one - not into <c>bg3.exe</c>, which the symbol database also holds. The two
     /// are different builds with different addresses (the sound session measured one global at
@@ -38,6 +37,11 @@ public static class Survey
         if (instances.Count == 0)
             return $"{component}: nothing alive carries it. It may need a situation that creates it - "
                 + "bg3_coverage_todo tells you where it has been seen before, if anywhere.";
+        if (instances.All(i => i.Bytes.Length == 0))
+            return $"{component}: {instances.Count} entit{(instances.Count == 1 ? "y carries" : "ies carry")} it "
+                + $"({string.Join(", ", instances.Take(8).Select(i => i.Entity))}), and it has no memory of its own to read "
+                + "(GetComponentAddress gives none): its presence is all there is. bg3_seen_drain records it as verified when "
+                + "Script Extender gives it too.";
 
         var lines = new StringBuilder()
             .Append(component).Append(": ").Append(instances.Count).Append(" instances, ")
@@ -111,8 +115,7 @@ public static class Survey
 
     /// <summary>
     /// The raw bytes of each instance beside what Script Extender returned for the same
-    /// instance's named fields, read in the same call. The port of
-    /// <c>research/coverage/author_check.py</c>: the reader sees for themselves whether a
+    /// instance's named fields, read in the same call: the reader sees for themselves whether a
     /// field's value is where the layout claims it is.
     /// </summary>
     public static string RenderFields(JsonNode? rows)

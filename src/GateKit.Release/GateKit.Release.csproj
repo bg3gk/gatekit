@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Turning a built database into release assets, and installing one back from a release.
-       Depends on nothing else of GateKit, so the index, the symbols and the stand can all use it. -->
+       Depends on nothing else of GateKit, so the index, the symbols and the copies can all use it. -->
   <PropertyGroup>
     <RootNamespace>GateKit.Release</RootNamespace>
   </PropertyGroup>
@@ -12,6 +12,9 @@
     <PackageReference Include="ZstdSharp.Port" Version="0.8.5" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="GateKit.Release.Tests" />
+    <ProjectReference Include="../GateKit.Home/GateKit.Home.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="GateKit.Release.UnitTests" />
   </ItemGroup>
 </Project>

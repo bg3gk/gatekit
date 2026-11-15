@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events/kinds/1",
+  "title": "The registry of the event log's families and kinds (Shared/EventKinds.json in the bridge mod)",
+  "description": "One place for the vocabulary: the mod reads it to refuse a row of any other kind, the host reads it to check, merge and filter. docs/contracts/bridge-protocol.md, \"The event log\".",
+  "type": "object",
+  "required": ["schema", "families", "kinds"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "events/kinds/1"},
+    "about": {"type": "string", "minLength": 1},
+    "families": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["about"],
+        "additionalProperties": false,
+        "properties": {
+          "always": {"type": "boolean", "description": "Written whatever is switched; cannot be switched off."},
+          "default": {"type": "boolean", "description": "On when a boot starts; can be switched off."},
+          "about": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "kinds": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["family", "class", "knows", "payload"],
+        "additionalProperties": false,
+        "properties": {
+          "family": {"type": "string", "minLength": 1},
+          "class": {"enum": ["fair", "cheat", "observation"], "description": "What made the row: a player's own action, staging, or a reading of the game."},
+          "knows": {"enum": ["player", "omniscient"], "description": "Who could know it."},
+          "knowsPerRow": {"type": "boolean", "description": "A row may say omniscient where the party did not perceive it."},
+          "classPerRow": {"type": "boolean", "description": "A row may carry a class of its own: the class of the verb that made it. `class` is the class of a row that carries none."},
+          "attention": {"enum": ["begin", "hold", "end", "release", "news"], "description": "Its class for the attention view; begin and hold wait for an answer."},
+          "ends": {"type": "string", "minLength": 1, "description": "The kind that closes a begin or hold."},
+          "payload": {"type": "object", "additionalProperties": {"type": "string"}, "description": "The payload's fields, each with what it holds."}
+        }
+      }
+    }
+  }
+}

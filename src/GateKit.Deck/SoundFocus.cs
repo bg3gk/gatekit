@@ -1,4 +1,4 @@
-using GateKit.Stand;
+using GateKit.Copies;
 
 namespace GateKit.Deck;
 
@@ -55,7 +55,7 @@ public sealed record SoundFocus(bool Enabled = true)
     {
         null or "" or "watched" => new SoundFocus(),
         "off" or "all" => Off,
-        _ => throw new StandException($"GATEKIT_DECK_SOUND is \"{value}\"; it must be \"watched\" or \"off\""),
+        _ => throw new CopyException($"GATEKIT_DECK_SOUND is \"{value}\"; it must be \"watched\" or \"off\""),
     };
 
     public override string ToString() =>

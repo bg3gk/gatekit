@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/test-run/1",
+  "title": "The outcome of every test of one run (<run folder>/results.json)",
+  "description": "Written by `gatekit test` at the end of a run and printed by `test --json`. docs/contracts/cli.md, \"test\".",
+  "type": "object",
+  "required": ["schema", "exit", "seconds", "tests"],
+  "additionalProperties": false,
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["name", "class", "outcome", "seconds"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "class": {"enum": ["fair", "cheat", "observation"]},
+        "outcome": {"enum": ["pass", "fail", "unmet"]},
+        "seconds": {"type": "number", "minimum": 0},
+        "waits": {"type": "number", "minimum": 0},
+        "answers": {"type": "number", "minimum": 0},
+        "error": {"type": "string"}
+      }
+    },
+    "surprise": {
+      "type": "object",
+      "required": ["sort", "what", "rows", "detail"],
+      "additionalProperties": false,
+      "properties": {
+        "sort": {"enum": ["blocking", "participant", "unplaced"], "description": "blocking: a state that waits for the player, neither asked for nor allowed; participant: a creature that is not of the cast; unplaced: a row no registry places."},
+        "what": {"type": "string", "description": "The kind of the rows, or the creature's uuid."},
+        "rows": {"type": "integer", "minimum": 0},
+        "detail": {"type": "string"}
+      }
+    },
+    "waits": {
+      "type": "object",
+      "description": "Seconds inside each kind of wait of `game`: wait, wait_row, wait_attention, answer, wait_state, sleep.",
+      "additionalProperties": {"type": "number", "minimum": 0}
+    }
+  },
+  "properties": {
+    "schema": {"const": "record/test-run/1"},
+    "exit": {"type": "integer", "minimum": 0, "maximum": 2, "description": "The exit code: 0 all passed, 1 a failure or a test not run, 2 none failed and a precondition unmet."},
+    "seconds": {"type": "number", "minimum": 0},
+    "slowest": {
+      "type": "array",
+      "description": "The slowest steps of the run, slowest first.",
+      "items": {
+        "type": "object",
+        "required": ["step", "seconds", "waits", "answers"],
+        "additionalProperties": false,
+        "properties": {
+          "step": {"type": "string", "minLength": 1, "description": "The step's address: <test id>/<step name>."},
+          "seconds": {"type": "number", "minimum": 0},
+          "waits": {"type": "number", "minimum": 0, "description": "Seconds of it inside waits of `game`."},
+          "answers": {"type": "number", "minimum": 0, "description": "Seconds of it in the game's own answers to its chunks, outside any wait."}
+        }
+      }
+    },
+    "waits": {"$ref": "#/$defs/waits"},
+    "answers": {"type": "number", "minimum": 0, "description": "Seconds of the run in the game's own answers to the tests' chunks, outside any wait."},
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["test", "outcome", "verdict", "seconds", "steps"],
+        "additionalProperties": false,
+        "properties": {
+          "test": {"type": "string", "minLength": 1, "description": "The test's id: its path under the folder given, without .lua."},
+          "outcome": {"enum": ["pass", "fail", "unmet", "not run"]},
+          "verdict": {"type": "string", "minLength": 1},
+          "seconds": {"type": "number", "minimum": 0},
+          "waits": {"$ref": "#/$defs/waits"},
+          "answers": {"type": "number", "minimum": 0},
+          "steps": {"type": "array", "items": {"$ref": "#/$defs/step"}, "description": "Its steps; empty for a test with cases, whose steps are under its cases."},
+          "cases": {
+            "type": "array",
+            "description": "Its cases, in order: variations of its rule, each run from a clean scene. Empty for a test without.",
+            "items": {
+              "type": "object",
+              "required": ["name", "outcome", "seconds", "steps"],
+              "additionalProperties": false,
+              "properties": {
+                "name": {"type": "string", "minLength": 1, "description": "The case's name: its address is <test>/<name>."},
+                "outcome": {"enum": ["pass", "fail", "unmet"]},
+                "seconds": {"type": "number", "minimum": 0},
+                "error": {"type": "string"},
+                "reset": {"type": "string", "description": "What the reset ladder did before it."},
+                "steps": {"type": "array", "items": {"$ref": "#/$defs/step"}},
+                "surprises": {"type": "array", "items": {"$ref": "#/$defs/surprise"}}
+              }
+            }
+          },
+          "surprises": {
+            "type": "array",
+            "description": "What the event log holds that the test did not ask for. A report, not part of the outcome.",
+            "items": {"$ref": "#/$defs/surprise"}
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 namespace GateKit.Platform;
 
 /// <summary>
-/// File operations the stand needs that work the same on every system: copies that keep the
+/// File operations `gatekit` needs that work the same on every system: copies that keep the
 /// modification time (like Python's copy2), and deletes that never go through a link.
 /// </summary>
 public static class FileTree
@@ -56,12 +56,24 @@ public static class FileTree
         catch (UnauthorizedAccessException) { }
     }
 
-    /// <summary>Copies a file with its modification time; creates the target's folder.</summary>
+    /// <summary>Copies a file with its modification time; creates the target's folder. The copy is
+    /// made beside the target and moved over it, so a reader sees the old file or the new one,
+    /// never part of one, and a target that is a hard link is replaced, not written through.</summary>
     public static void CopyFile(string source, string target)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(target))!);
-        File.Copy(source, target, overwrite: true);
-        File.SetLastWriteTimeUtc(target, File.GetLastWriteTimeUtc(source));
+        var full = Path.GetFullPath(target);
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        var temporary = $"{full}.{Environment.ProcessId}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            File.Copy(source, temporary, overwrite: true);
+            File.SetLastWriteTimeUtc(temporary, File.GetLastWriteTimeUtc(source));
+            File.Move(temporary, full, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporary)) try { File.Delete(temporary); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+        }
     }
 
     /// <summary>Copies a file unless the target has the same size and modification time (whole seconds).</summary>

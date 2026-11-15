@@ -1,5 +1,5 @@
 using System.Text.Json;
-using GateKit.Stand;
+using GateKit.Copies;
 using ModelContextProtocol.Protocol;
 
 namespace GateKit.Mcp;
@@ -23,8 +23,8 @@ public static class DeckTools
                 Empty),
             (_, _) =>
             {
-                var (stand, _) = host.Begin();
-                return Task.FromResult(Results.Text(DeckApi.Report(stand.Settings, stand.Platform)));
+                var (copy, _) = host.Begin();
+                return Task.FromResult(Results.Text(DeckApi.Report(copy.Settings, copy.Platform)));
             }),
 
         new(Define("bg3_window",
@@ -49,33 +49,33 @@ public static class DeckTools
                 """),
             (args, _) =>
             {
-                var (stand, _) = host.Begin();
+                var (copy, _) = host.Begin();
                 var action = args.Need("action");
                 var instance = action == "grid" ? "" : args.Need("instance");
                 return Task.FromResult(Results.Text(action switch
                 {
-                    "maximize" => DeckApi.Maximize(stand.Settings, instance),
-                    "grid" => DeckApi.Grid(stand.Settings),
-                    "label" => DeckApi.Label(stand.Settings, instance, args.Str("label")),
-                    "release" => DeckApi.Release(stand.Settings, instance),
-                    "mirror" or "adopt" => DeckApi.Backing(stand.Settings, instance, action),
-                    "fps" => Fps(stand, instance, args.Int("fps")),
-                    _ => throw new StandException($"unknown action '{action}'; one of maximize, grid, label, release, mirror, adopt, fps"),
+                    "maximize" => DeckApi.Maximize(copy.Settings, instance),
+                    "grid" => DeckApi.Grid(copy.Settings),
+                    "label" => DeckApi.Label(copy.Settings, instance, args.Str("label")),
+                    "release" => DeckApi.Release(copy.Settings, instance),
+                    "mirror" or "adopt" => DeckApi.Backing(copy.Settings, instance, action),
+                    "fps" => Fps(copy, instance, args.Int("fps")),
+                    _ => throw new CopyException($"unknown action '{action}'; one of maximize, grid, label, release, mirror, adopt, fps"),
                 }));
             }),
     ];
 
     /// <summary>`fps` with a number sets the cap, without one reads it.</summary>
-    static string Fps(Stand.Stand stand, string instance, int? fps)
+    static string Fps(Copies.GameCopy copy, string instance, int? fps)
     {
         if (fps is null)
         {
-            var state = FrameCap.Read(stand.Settings, stand.Platform, instance);
+            var state = FrameCap.Read(copy.Settings, copy.Platform, instance);
             return state is null
                 ? $"{instance}: this copy cannot say what its frame cap is (it needs GateKit's Script Extender build)"
                 : $"{instance}: {state}";
         }
-        return FrameCap.Set(stand.Settings, stand.Platform, instance, fps.Value)
+        return FrameCap.Set(copy.Settings, copy.Platform, instance, fps.Value)
             ? fps.Value == 0
                 ? $"{instance} draws as fast as it can, in front or not"
                 : $"{instance} draws at most {fps.Value} frames a second, in front or not"

@@ -10,7 +10,7 @@ namespace GateKit.GameData.Query;
 /// <summary>Where the three offline databases are. Only the index is required; the others add answers when present.</summary>
 public sealed record OfflineDatabases(string Index, string Symbols, string Decomp)
 {
-    /// <summary>The locations from the environment (BG3_INDEX_DB, BG3_SYMBOLS_DB, BG3_DECOMP_WORK) or the defaults.</summary>
+    /// <summary>The locations from the home (each overridden by BG3_INDEX_DB, BG3_SYMBOLS_DB, BG3_DECOMP_WORK).</summary>
     public static OfflineDatabases FromEnvironment() => new(DataPaths.IndexDatabase, DataPaths.SymbolsDatabase, DataPaths.DecompDatabase);
 
     public string? PathOf(string name) => name switch { "index" => Index, "symbols" => Symbols, "decomp" => Decomp, _ => null };
@@ -39,27 +39,46 @@ public sealed partial class OfflineQueries(OfflineDatabases paths) : IDisposable
     [GeneratedRegex(@"^(class|struct) ")]
     private static partial Regex ClassPrefix();
 
-    /// <summary>A database by name; a missing required one raises an error that says how to build it.</summary>
+    private readonly List<string> _missing = [];
+
+    /// <summary>
+    /// What an answer left out because a database it would have drawn on is not there: one sentence
+    /// per database, naming its path, its setting and `gatekit doctor`. An answer with notes here
+    /// is incomplete, not empty; the command prints them, so nothing is left out in silence.
+    /// </summary>
+    public IReadOnlyList<string> Missing => _missing;
+
+    /// <summary>A database by name. A required one that is not there fails with the sentence of
+    /// <see cref="GateKit.Home.HomeDatabase"/>; an optional one is noted in <see cref="Missing"/>.</summary>
     private ReadOnlyDb? Db(string name, bool required = true)
     {
+        var path = Paths.PathOf(name) ?? throw new KeyNotFoundException($"'{name}'");
         if (!_open.TryGetValue(name, out var db))
         {
-            var path = Paths.PathOf(name) ?? throw new KeyNotFoundException($"'{name}'");
             db = ReadOnlyDb.TryOpen(path);
-            if (db == null && required)
-            {
-                throw new DataQueryException($"{path} does not exist; build it first (see the README of the {name} tool)");
-            }
             _open[name] = db;
         }
-        if (db == null && required)
+        if (db == null)
         {
-            throw new DataQueryException($"{Paths.PathOf(name)} does not exist; build it first (see the README of the {name} tool)");
+            var problem = GateKit.Home.HomeDatabase.Problem(path) ?? "cannot be read";
+            if (required) throw new DataQueryException(GateKit.Home.HomeDatabase.Explain(path, problem));
+            var note = $"the {name} database's part of the answer is left out: " + GateKit.Home.HomeDatabase.Explain(path, problem);
+            if (!_missing.Contains(note)) _missing.Add(note);
         }
         return db;
     }
 
     private bool Has(string name) => Db(name, false) != null;
+
+    /// <summary>An answer that draws on several databases needs one of them at least: with none
+    /// there is nothing to answer from, and "nothing found" would be untrue. The error names every
+    /// path, as a single missing database does.</summary>
+    private void RequireAny(params string[] names)
+    {
+        if (names.Count(Has) > 0) return;
+        throw new DataQueryException("none of the databases this answer draws on can be read:\n  "
+            + string.Join("\n  ", names.Select(n => Paths.PathOf(n)!).Select(p => GateKit.Home.HomeDatabase.Explain(p, GateKit.Home.HomeDatabase.Problem(p) ?? "cannot be read"))));
+    }
 
     private List<Row> Rows(string name, string sql, params object?[] args)
     {
@@ -77,6 +96,7 @@ public sealed partial class OfflineQueries(OfflineDatabases paths) : IDisposable
     /// <summary>Everything whose name contains the text, grouped by kind, with the command that tells more.</summary>
     public List<Row> Search(string text, int limit = 10)
     {
+        RequireAny("index", "symbols");
         var pat = Q.Like(text);
         var output = new List<Row>();
 
@@ -497,10 +517,12 @@ public sealed partial class OfflineQueries(OfflineDatabases paths) : IDisposable
     public Dictionary<string, object?> Schema(string? name = null)
     {
         var output = new Dictionary<string, object?>();
+        if (name is null) RequireAny(OfflineDatabases.Names);
         foreach (var key in name != null ? [name] : OfflineDatabases.Names)
         {
             var path = Paths.PathOf(key) ?? throw new KeyNotFoundException($"'{key}'");
-            var db = Db(key, false);
+            // one database asked for by name must be there; of all three, the missing ones are said
+            var db = Db(key, required: name != null);
             if (db == null)
             {
                 output[key] = new Dictionary<string, object?> { ["missing"] = path };

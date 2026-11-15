@@ -3,15 +3,15 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using GateKit.Bridge;
-using GateKit.Stand;
+using GateKit.Json;
+using GateKit.Copies;
 using ModelContextProtocol.Protocol;
 
 namespace GateKit.Mcp;
 
 /// <summary>
-/// The tools of the old `bg3` server (docs/contracts/mcp.md, section 1.6), on the C# stand.
-/// Names, schemas and result texts are the old ones; the gaps the contract lists are filled and
-/// each fix is noted there.
+/// The core tools of the server (docs/contracts/mcp.md, section 1). The contract holds their
+/// names, schemas and result texts.
 /// </summary>
 public static partial class CoreTools
 {
@@ -24,42 +24,52 @@ public static partial class CoreTools
                 {
                  "type": "object",
                  "properties": {
-                  "level": {"type": "string", "description": "MODULE:LEVEL, e.g. GustavX:TUT_Avernus_C. Starts a fresh test game straight in that level (about 40 s) instead of the last save; only the base game, the bridge and `mods` are loaded."},
+                  "level": {"type": "string", "description": "MODULE:LEVEL, e.g. GustavX:TUT_Avernus_C. Starts a fresh test game straight in that level (about 40 s) instead of the last save; only the base game, the bridge and `mods` are loaded. A level without its module is refused before the game starts; a start the main menu holds for 60 s fails, naming what holds it (first-launch screens are gone through in an instance)."},
                   "save": {"type": "string", "description": "Load this save (its folder name under Savegames/Story) instead of the last one."},
-                  "mods": {"type": "array", "items": {"type": "string"}, "description": "Mod folder names to load besides the base game. Omit without `level` to keep the player's own mod list."},
+                  "mods": {"type": "array", "items": {"type": "string"}, "description": "Mod folder names to load besides the base game. Omitted: none in an instance or with `level` (a bare start); the installed game without `level` keeps the player's own mod list."},
                   "story_log": {"type": "boolean", "description": "Also record the Osiris trace for bg3_logs story=true."},
+                  "main_menu": {"type": "boolean", "description": "Stop in the main menu instead of loading a save (no level, no save); the splash screen is passed, first-launch screens are gone through in an instance; answers once GK.Gui.Stuck() names the main menu."},
                   "game_args": {"type": "array", "items": {"type": "string"}, "description": "Extra game arguments."}
                  }
                 }
                 """),
             async (args, cancel) =>
             {
-                var (stand, log) = host.Begin();
-                await stand.UpAsync(new UpOptions(args.Str("level"), args.Str("save"), args.Strings("mods"),
-                    args.Flag("story_log"), args.Strings("game_args")), cancel);
+                var (copy, log) = host.Begin();
+                await copy.UpAsync(new UpOptions(args.Str("level"), args.Str("save"), args.Strings("mods"),
+                    args.Flag("story_log"), args.Strings("game_args"), args.Flag("main_menu")), cancel);
                 return Results.Text(log.ToString().Trim() is { Length: > 0 } printed ? printed : "playable");
             }),
 
         new(Define("bg3_down", "Close the game and restore the saves and mod list to what they were before bg3_up.", Empty),
             (_, _) =>
             {
-                var (stand, _) = host.Begin();
-                return Task.FromResult(Results.Text(stand.Down()));
+                var (copy, _) = host.Begin();
+                return Task.FromResult(Results.Text(copy.Down()));
             }),
 
-        new(Define("bg3_status", "Whether the game runs and what state each side (client, server) last reported (Menu, LoadLevel, Running, ...).", Empty),
-            (_, _) =>
+        new(Define("bg3_status", "Which game copy this server drives (`instance`; null is the installed game), whether the game runs, and what "
+                + "state each side (client, server) last reported (Menu, LoadLevel, Running, ...). When several agents each drive a copy, "
+                + "this is how one checks that its tools reach its own copy and no other.", Empty),
+            async (_, _) =>
             {
-                var (stand, _) = host.Begin();
-                var session = stand.Session();
-                var any = TimeSpan.FromDays(365);
-                return Task.FromResult(Results.Text(new JsonObject
+                var (copy, _) = host.Begin();
+                var session = copy.Session();
+                var pids = copy.GamePids();
+                // A heartbeat is only what a running game says now. The installed game's channel
+                // still held a "Running" written two days before, and with no process up that read
+                // as a live game - a runner whose --instance was dropped took it for its copy.
+                return Results.Text(new JsonObject
                 {
-                    ["processes"] = new JsonArray([.. stand.GamePids().Select(p => (JsonNode)JsonValue.Create(p))]),
-                    ["client"] = Beat(session.State(Side.Client, any)),
-                    ["server"] = Beat(session.State(Side.Server, any)),
-                    ["client_alive"] = session.State(Side.Client) is not null,
-                }));
+                    ["instance"] = host.Instance,
+                    ["drives"] = session.Target,
+                    ["channel"] = copy.Layout.Channel,
+                    ["processes"] = new JsonArray([.. pids.Select(p => (JsonNode)JsonValue.Create(p))]),
+                    ["client"] = Beat(session, Side.Client, pids.Count > 0),
+                    ["server"] = Beat(session, Side.Server, pids.Count > 0),
+                    ["client_alive"] = pids.Count > 0 && session.State(Side.Client) is not null,
+                    ["film"] = await Film(session, pids.Count > 0),
+                });
             }),
 
         new(Define("bg3_lua",
@@ -85,37 +95,57 @@ public static partial class CoreTools
                 """),
             async (args, cancel) =>
             {
-                var (stand, log) = host.Begin();
-                var result = await stand.Session().LuaAsync(args.Need("side"), args.Need("code"), args.Seconds("timeout", 20), cancel);
+                var (copy, log) = host.Begin();
+                var result = await copy.Session().LuaAsync(args.Need("side"), args.Need("code"), args.Seconds("timeout", 20), cancel);
                 var printed = log.ToString().TrimEnd('\r', '\n');
                 return Results.Text((printed.Length > 0 ? printed + "\n" : "") + Results.Json(result));
             }),
 
-        new(Define("bg3_wait", "Poll a Lua expression on one side until it is truthy; returns its value. Fails on timeout.",
+        new(Define("bg3_wait",
+                "Wait until something happens in the game, and say what ended the wait. Ends the moment an attention item appears "
+                + "(a dialogue, a roll, a reaction prompt, a message box, a trade, loot, a death, a fight starting or ending, a film, "
+                + "a load, a GK.Act job ending - read from the bridge's event log, no polling of the game), or when `expression` "
+                + "(Lua, on `side`) is truthy, whichever comes first; the timeout is the last resort. With an expression that comes true "
+                + "the answer is its value, as before; otherwise {endedBy: attention|timeout, attention: [...], waitedMs}. "
+                + "An event that happened after the caller's previous call (and was not told yet) ends the wait at once. "
+                + "until_attention = false waits for the expression alone.",
                 """
                 {
                  "type": "object",
-                 "required": ["side", "expression"],
                  "properties": {
-                  "side": {"type": "string", "enum": ["client", "server", "ui"]},
+                  "side": {"type": "string", "enum": ["client", "server", "ui"], "description": "Where the expression runs (default client)."},
                   "expression": {"type": "string"},
+                  "until_attention": {"type": "boolean", "description": "End on any new attention item (default true)."},
                   "timeout": {"type": "number", "description": "Seconds (default 30)."}
                  }
                 }
                 """),
             async (args, cancel) =>
             {
-                var (stand, _) = host.Begin();
-                var side = args.Need("side");
-                var expression = args.Need("expression");
-                var deadline = DateTime.UtcNow + args.Seconds("timeout", 30);
-                while (true)
+                var (copy, _) = host.Begin();
+                var side = args.Str("side") ?? "client";
+                var expression = args.Str("expression");
+                var onAttention = !args.Has("until_attention") || args.Flag("until_attention");
+                if (expression is null && !onAttention) throw new ArgumentException("nothing to wait for: give an expression, or leave until_attention on");
+                var timeout = args.Seconds("timeout", 30);
+                var reader = host.AttentionOf(copy.Layout.Channel);
+                var started = DateTime.UtcNow;
+                var result = await AttentionWait.RunAsync(reader, onAttention,
+                    expression is null ? null : async c => await copy.Session().LuaAsync(side, $"return ({expression})", TimeSpan.FromSeconds(20), c),
+                    timeout, cancel, from: host.Attention,
+                    guard: new TickGuard(copy.Session().Bridge, timeout, log: reader.Log));
+                if (result.EndedBy == "condition") return Results.Text(result.Value);
+                if (result.EndedBy == "timeout" && expression is not null) throw new CopyException($"timed out waiting on {side} for: {expression}");
+                // the caller has now been told these
+                reader.Report(host.Attention);
+                if (SchemaCheck.Misfits("common/attention", result.Items) is { Count: > 0 } misfits)
+                    throw new CopyException("bg3_wait: the attention items do not fit common/attention: " + string.Join("; ", misfits.Take(10)));
+                return Results.Text(new JsonObject
                 {
-                    var value = await stand.Session().LuaAsync(side, $"return ({expression})", TimeSpan.FromSeconds(20), cancel);
-                    if (Truthy(value)) return Results.Text(value);
-                    if (DateTime.UtcNow > deadline) throw new StandException($"timed out waiting on {side} for: {expression}");
-                    await Task.Delay(300, cancel);
-                }
+                    ["endedBy"] = result.EndedBy,
+                    ["attention"] = result.Items,
+                    ["waitedMs"] = (long)(DateTime.UtcNow - started).TotalMilliseconds,
+                });
             }),
 
         new(Define("bg3_state",
@@ -124,8 +154,8 @@ public static partial class CoreTools
                 + "drawn, equipment by slot).", Empty),
             async (_, cancel) =>
             {
-                var (stand, _) = host.Begin();
-                var session = stand.Session();
+                var (copy, _) = host.Begin();
+                var session = copy.Session();
                 var client = await session.LuaAsync("client", "return { client = GK.Client(), scenes = GK.Scenes() }", TimeSpan.FromSeconds(20), cancel);
                 var party = await session.LuaAsync("server", "return GK.Party()", TimeSpan.FromSeconds(20), cancel);
                 var state = client as JsonObject ?? new JsonObject { ["client"] = client };
@@ -134,27 +164,46 @@ public static partial class CoreTools
             }),
 
         new(Define("bg3_events",
-                "What happened in the game since event number `since` (0: everything kept, up to 500 per side): game state changes and "
-                + "Osiris events such as DialogStarted, DialogEnded, Equipped, Unequipped, TemplateAddedTo, CombatStarted, EnteredLevel. "
-                + "Returns `last` to pass as `since` next time. More events: bg3_lua server `GK.Watch(\"EventName\", arity)`.",
+                "Observation. What happened in the game, as ONE stream: the event log of both sides merged by the game's clock, each "
+                + "row {seq, tick, t, kind, side, key?, attention?, scope?, payload?} (schemas/events/row). Kinds: game_state, osiris "
+                + "(GK.Watch), note, the attention kinds (dialogue, roll, reaction, trade, combat_started, death, job_done ...), the game "
+                + "log (game_damage, game_status ...), scope rows (scope_begin, scope_track, scope_clean, scope_verify), the log's own "
+                + "(family_on, family_off, dropped) and the detailed families status, entity, surface, component while switched on "
+                + "(GK.EventLog.On). `dropped` says where `since` is behind the oldest row kept; `counts` gives rows, bytes and drops per "
+                + "family. Rows are placed by the registry of the running game; one no registry places is kept with `unplaced` "
+                + "(why) and listed per kind in `unplaced`. A server started with GATEKIT_FAIR=1 gives only rows a player could "
+                + "know (knows = player; an unplaced row counts as omniscient, and `unplaced` says it was withheld). Pass `next` as "
+                + "`since` to read on. Reads the log's files; asks nothing of the game.",
                 """
                 {
                  "type": "object",
                  "properties": {
-                  "since_client": {"type": "integer"},
-                  "since_server": {"type": "integer"}
+                  "since": {"type": "string", "description": "The `next` of an earlier answer; absent: from the start of each side's boot."},
+                  "kinds": {"type": "array", "items": {"type": "string"}, "description": "Only these kinds."},
+                  "family": {"type": "string", "description": "Only this family: state, osiris, note, attention, game, scope, detail."},
+                  "limit": {"type": "integer", "description": "At most this many rows (default 200); `more` says there are more."}
                  }
                 }
                 """),
-            async (args, cancel) =>
+            (args, cancel) =>
             {
-                var (stand, _) = host.Begin();
-                var session = stand.Session();
-                return Results.Text(new JsonObject
-                {
-                    ["client"] = await session.LuaAsync("client", $"return GK.Events({args.Int("since_client") ?? 0})", TimeSpan.FromSeconds(20), cancel),
-                    ["server"] = await session.LuaAsync("server", $"return GK.Events({args.Int("since_server") ?? 0})", TimeSpan.FromSeconds(20), cancel),
-                });
+                var (copy, _) = host.Begin();
+                var reader = host.AttentionOf(copy.Layout.Channel);
+                var kinds = args.Strings("kinds")?.ToHashSet(StringComparer.Ordinal);
+                var family = args.Str("family");
+                var limit = Math.Max(1, args.Int("limit") ?? 200);
+                bool Keep(JsonObject row) =>
+                    (kinds is null || kinds.Contains((string)row["kind"]!)) && (family is null || reader.Log.FamilyOf((string)row["kind"]!) == family);
+                var (rows, next) = reader.Stream.Since(args.Str("since"), Keep, limit);
+                var more = reader.Stream.Since(next, Keep, 1).Rows.Count > 0;
+                var answer = new JsonObject { ["rows"] = new JsonArray([.. rows]), ["next"] = next };
+                if (more) answer["more"] = true;
+                if (reader.Stream.Dropped(args.Str("since")) is { Count: > 0 } dropped) answer["dropped"] = dropped;
+                if (reader.Stream.Unplaced(args.Str("since"), next) is { Count: > 0 } unplaced) answer["unplaced"] = unplaced;
+                answer["counts"] = reader.Stream.Counts();
+                answer["on"] = reader.Stream.On();
+                SchemaCheck.Answer("bg3_events", answer);
+                return Task.FromResult(Results.Text(answer));
             }),
 
         new(Define("bg3_logs",
@@ -172,8 +221,8 @@ public static partial class CoreTools
                 """),
             (args, _) =>
             {
-                var (stand, _) = host.Begin();
-                var lines = stand.Logs(args.Flag("story"), args.Int("lines") ?? 60, args.Str("grep"));
+                var (copy, _) = host.Begin();
+                var lines = copy.Logs(args.Flag("story"), args.Int("lines") ?? 60, args.Str("grep"));
                 return Task.FromResult(Results.Text(lines.Count > 0 ? string.Join("\n", lines) : "(nothing)"));
             }),
 
@@ -189,9 +238,9 @@ public static partial class CoreTools
                 """),
             async (args, _) =>
             {
-                var (stand, _) = host.Begin();
-                var linked = args.Str("mod_root") is { Length: > 0 } root ? stand.Link(root) : [.. stand.LooseSources().Keys];
-                var took = await stand.ReloadAsync();
+                var (copy, _) = host.Begin();
+                var linked = args.Str("mod_root") is { Length: > 0 } root ? copy.Link(root) : [.. copy.LooseSources().Keys];
+                var took = await copy.ReloadAsync();
                 return Results.Text(string.Create(CultureInfo.InvariantCulture,
                     $"reloaded {string.Join(", ", linked)} in {took.TotalSeconds:0.0} s"));
             }),
@@ -208,8 +257,8 @@ public static partial class CoreTools
                 """),
             async (args, cancel) =>
             {
-                var (stand, _) = host.Begin();
-                var session = stand.Session();
+                var (copy, _) = host.Begin();
+                var session = copy.Session();
                 Task<JsonNode?> Dialog() => session.UiAsync("return GK.Dialog()");
                 if (args.Int("answer") is { } n && n != 0)
                 {
@@ -221,7 +270,7 @@ public static partial class CoreTools
                         var now = await Dialog();
                         if (!JsonNode.DeepEquals(before, now)) return Results.Text(now is null ? "no dialogue" : Results.Render(now));
                         if (DateTime.UtcNow > deadline)
-                            throw new StandException($"the dialogue did not change after answer {n}: {Results.Json(before)}");
+                            throw new CopyException($"the dialogue did not change after answer {n}: {Results.Json(before)}");
                         await Task.Delay(300, cancel);
                     }
                 }
@@ -240,19 +289,19 @@ public static partial class CoreTools
                 """),
             async (args, _) =>
             {
-                var (stand, _) = host.Begin();
+                var (copy, _) = host.Begin();
                 var speed = args.Num("speed") ?? 20;
-                await stand.Session().ClientAsync(string.Create(CultureInfo.InvariantCulture, $"return GK.FastScenes({speed})"));
+                await copy.Session().ClientAsync(string.Create(CultureInfo.InvariantCulture, $"return GK.FastScenes({speed})"));
                 return Results.Text(string.Create(CultureInfo.InvariantCulture, $"scenes now play at x{speed:0.######}"));
             }),
 
         new(Define("bg3_checkpoint",
                 "Save the running game's world as it is now, so bg3_reset can return to it. Use right after bg3_up, before changing "
-                + "anything. The save is the stand's own and disappears with bg3_down.", Empty),
+                + "anything. The save is GateKit's own and disappears with bg3_down.", Empty),
             async (_, _) =>
             {
-                var (stand, _) = host.Begin();
-                return Results.Text("checkpoint saved: " + await stand.Session().CheckpointAsync());
+                var (copy, _) = host.Begin();
+                return Results.Text("checkpoint saved: " + await copy.Session().CheckpointAsync());
             }),
 
         new(Define("bg3_reset",
@@ -260,27 +309,38 @@ public static partial class CoreTools
                 + "Positions, items, gold, flags and story state return to the checkpoint; Lua state of mods is restarted.", Empty),
             async (_, _) =>
             {
-                var (stand, _) = host.Begin();
-                var took = await stand.Session().ResetAsync();
-                return Results.Text(string.Create(CultureInfo.InvariantCulture, $"world reset in {took.TotalSeconds:0.0} s"));
+                var (copy, _) = host.Begin();
+                var took = await copy.Session().ResetAsync();
+                return Results.Text(string.Create(CultureInfo.InvariantCulture, $"world reset in {took.TotalSeconds:0.0} s; a standing capture (bg3_seen_start) does not survive it - start it again if one was running"));
             }),
 
         new(Define("bg3_key",
                 "Press a key in the game; works while the game window is in the background. Names: escape, enter, space, tab, backspace, "
-                + "left, up, right, down, f1..f12, or one letter or digit. Mouse clicks cannot be sent this way - drive the UI with bg3_lua.",
+                + "left, up, right, down, f1..f12, or one letter or digit. Mouse clicks cannot be sent this way - drive the UI with bg3_lua. "
+                + "A press is a tap; `hold` keeps the key down for that many seconds - moving or turning the camera (w a s d, q e) needs "
+                + "it - and the call returns once the key is up again.",
                 """
                 {
                  "type": "object",
                  "required": ["key"],
-                 "properties": {"key": {"type": "string"}}
+                 "properties": {
+                  "key": {"type": "string"},
+                  "hold": {"type": "number", "description": "Seconds to hold the key down (0 to 30). Omitted: a tap."}
+                 }
                 }
                 """),
-            (args, _) =>
+            async (args, _) =>
             {
-                var (stand, _) = host.Begin();
+                var (copy, _) = host.Begin();
                 var key = args.Need("key");
-                stand.Key(key);
-                return Task.FromResult(Results.Text("pressed " + key));
+                var hold = args.Num("hold");
+                if (hold is > 0)
+                {
+                    await Task.Run(() => copy.Key(key, hold));
+                    return Results.Text(string.Create(CultureInfo.InvariantCulture, $"held {key} for {hold:0.###} s, released"));
+                }
+                copy.Key(key);
+                return Results.Text("pressed " + key);
             }),
 
         new(Define("bg3_sound",
@@ -305,8 +365,8 @@ public static partial class CoreTools
                 """),
             async (args, _) =>
             {
-                var (stand, _) = host.Begin();
-                var sound = stand.Sound();
+                var (copy, _) = host.Begin();
+                var sound = copy.Sound();
                 var category = SoundControl.Category(args.Str("category"));
                 switch ((args.Str("action") ?? "list").ToLowerInvariant())
                 {
@@ -314,17 +374,25 @@ public static partial class CoreTools
                         var flag = await sound.WhenUnfocusedAsync(null);
                         return Results.Text(string.Join("\n", SoundControl.Lines(await sound.ListAsync(), flag?.GetValue<bool>())));
                     case "set":
-                        var volume = args.Num("volume") ?? throw new KeyNotFoundException("'volume'");
-                        return Results.Text(await sound.SetAsync(category, SoundControl.Volume(volume)));
+                        var volume = args.Num("volume") ?? throw new MissingArgumentException("volume");
+                        var set = await sound.SetAsync(category, SoundControl.Volume(volume));
+                        return Results.Text($"{category ?? "MasterVolume"} set to {Results.Render(set)}");
+                    // Wish 11: mute answered a bare `59.0` - the volume it remembered, with nothing
+                    // to say so. Each answer now says what was done.
                     case "mute":
-                        return Results.Text(await sound.MuteAsync(category));
+                        var was = await sound.MuteAsync(category);
+                        return Results.Text($"muted {category ?? "MasterVolume (this copy is silent)"}; it was at {Results.Render(was)}, "
+                            + "which unmute puts back");
                     case "unmute":
-                        return Results.Text(await sound.UnmuteAsync(category));
+                        var restored = await sound.UnmuteAsync(category);
+                        return Results.Text(restored is JsonArray { Count: > 0 } keys
+                            ? "unmuted " + string.Join(", ", keys.Select(k => k?.GetValue<string>())) + " (back to the volume each had)"
+                            : $"nothing to unmute: {category ?? "no category"} was not muted by bg3_sound (a Lua reset forgets what was)");
                     case "unfocused":
                         var now = await sound.WhenUnfocusedAsync(args.Has("on") ? args.Flag("on") : null);
                         return Results.Text("mute when the window is not in front: " + (now?.GetValue<bool>() == true ? "on" : "off"));
                     default:
-                        throw new StandException($"bg3_sound: unknown action '{args.Str("action")}'; one of list, set, mute, unmute, unfocused");
+                        throw new CopyException($"bg3_sound: unknown action '{args.Str("action")}'; one of list, set, mute, unmute, unfocused");
                 }
             }),
 
@@ -339,11 +407,16 @@ public static partial class CoreTools
                 """),
             (args, _) =>
             {
-                var (stand, _) = host.Begin();
-                var file = Path.Combine(stand.Layout.State, "shots",
+                var (copy, _) = host.Begin();
+                var file = Path.Combine(copy.Layout.State, "shots",
                     $"mcp-{DateTime.Now.ToString("HHmmss", CultureInfo.InvariantCulture)}.jpg");
                 Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-                return Task.FromResult(Results.Image(File.ReadAllBytes(stand.Shot(file, args.Int("width") ?? 1150)), "image/jpeg"));
+                // The picture, and where it was saved: `gatekit mcp call` prints text only, and a
+                // screenshot answered nothing there (N33 of the third run); a file can be read by anyone.
+                var shot = copy.Shot(file, args.Int("width") ?? 1150);
+                var result = Results.Image(File.ReadAllBytes(shot), "image/jpeg");
+                result.Content.Add(new TextContentBlock { Text = "saved: " + Path.GetFullPath(shot) });
+                return Task.FromResult(result);
             }),
 
         new(Define("bg3_call",
@@ -364,16 +437,20 @@ public static partial class CoreTools
                 """),
             async (args, cancel) =>
             {
-                var (stand, _) = host.Begin();
+                var (copy, _) = host.Begin();
                 var values = args.Node("args") as JsonArray ?? [];
-                var result = await CallFunctionAsync(stand.Session(), args.Need("side"), args.Need("function"),
+                var result = await CallFunctionAsync(copy.Session(), args.Need("side"), args.Need("function"),
                     values, args.Seconds("timeout", 20), cancel);
                 return Results.Text(result);
             }),
 
         new(Define("bg3_api",
-                "The bridge's functions (GK.*) as written in its Lua source: name, parameters, the comment above each, and the file (its "
-                + "folder tells the side: Server, Client, Shared). Works without a running game. `filter` narrows by any text.",
+                "The bridge's functions (GK.*) as written in its Lua source: name, parameters, the comment above each, the file, and "
+                + "`side` - where to call it: server, client, ui (client code run in the UI context), or client or server (a shared "
+                + "file: each side has its own copy). A function called on another side is nil there. `class`: fair (a player could "
+                + "do it through the game itself), cheat or observation, with `why` where the name does not say; inside a test's step "
+                + "of class fair a cheat is refused, inside observation anything but an observation. Works without a running game. "
+                + "`filter` narrows by any text.",
                 """
                 {
                  "type": "object",
@@ -382,8 +459,8 @@ public static partial class CoreTools
                 """),
             (args, _) =>
             {
-                var (stand, _) = host.Begin();
-                return Task.FromResult(Results.Text(BridgeApi(stand, args.Str("filter"))));
+                var (copy, _) = host.Begin();
+                return Task.FromResult(Results.Text(BridgeApi(copy, args.Str("filter"))));
             }),
     ];
 
@@ -391,6 +468,35 @@ public static partial class CoreTools
 
     static Tool Define(string name, string description, string schema) =>
         new() { Name = name, Description = description, InputSchema = JsonDocument.Parse(schema).RootElement };
+
+    /// <summary>Whether a recorded film plays (D15 of the day run: it read as an endless
+    /// StartLoading); null when the client cannot say.</summary>
+    static async Task<JsonNode?> Film(GameSession session, bool running)
+    {
+        if (!running || session.State(Side.Client) is null) return null;
+        try
+        {
+            return await session.LuaAsync("client", "return GK.Gui.FilmPlaying and GK.Gui.FilmPlaying()", TimeSpan.FromSeconds(5));
+        }
+        catch (CopyException) { return null; }
+    }
+
+    /// <summary>A side's heartbeat as bg3_status shows it: what it says only when it is fresh and a game
+    /// of this copy runs; otherwise when it was written and that nothing is answering.</summary>
+    static JsonNode? Beat(GameSession session, Side side, bool running)
+    {
+        var path = session.Bridge.StatePath(side);
+        if (!File.Exists(path)) return null;
+        var fresh = running ? session.State(side) : null;
+        if (fresh is not null) return Beat(fresh);
+        var written = File.GetLastWriteTime(path);
+        return new JsonObject
+        {
+            ["gameState"] = null,
+            ["stale"] = $"last heartbeat written {written.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)}; "
+                + (running ? "the game runs but this side has not answered for over 5 s" : "no game of this copy is running"),
+        };
+    }
 
     static JsonNode? Beat(Heartbeat? state) => state is null ? null : new JsonObject
     {
@@ -407,13 +513,13 @@ public static partial class CoreTools
 
     // --- any bridge function, without a tool of its own ---
 
-    /// <summary>Calls GK.&lt;path&gt;(...) with JSON arguments; the port of the old `call_function`.</summary>
+    /// <summary>Calls GK.&lt;path&gt;(...) with JSON arguments.</summary>
     public static Task<JsonNode?> CallFunctionAsync(GameSession session, string side, string function,
         JsonArray arguments, TimeSpan timeout, CancellationToken cancel = default)
     {
         var path = function.StartsWith("GK.", StringComparison.Ordinal) ? function[3..] : function;
         if (path.Length == 0 || !path.Split('.').All(part => Identifier().IsMatch(part)))
-            throw new StandException($"not a function path: '{function}' (expected e.g. Stage.Fight or GK.Party)");
+            throw new CopyException($"not a function path: '{function}' (expected e.g. Stage.Fight or GK.Party)");
         var payload = arguments.ToJsonString();
         // A Lua long string [=[ ... ]=] whose closing bracket the payload does not contain. Never
         // level 0: "[[" followed by a JSON array's "[" reads as something else.
@@ -432,67 +538,39 @@ public static partial class CoreTools
 
     // --- the bridge's own API, read from its Lua ---
 
-    /// <summary>Every `function GK.X(...)` of the bridge mods' Lua with the `---` comment above it.</summary>
-    public static JsonArray BridgeApi(Stand.Stand stand, string? filter)
+    /// <summary>Every function of the bridge mods' Lua (<see cref="BridgeVerbs.Read"/>) with the `---`
+    /// comment above it and its class from the mod's registry (Shared/VerbClasses.json).</summary>
+    public static JsonArray BridgeApi(Copies.GameCopy copy, string? filter)
     {
         var found = new JsonArray();
-        foreach (var mod in stand.BridgeMods)
+        foreach (var mod in copy.BridgeMods)
         {
             var root = Path.Combine(mod.Root, "Mods", mod.Folder, "ScriptExtender", "Lua");
             if (!Directory.Exists(root)) continue;
-            foreach (var file in Directory.EnumerateFiles(root, "*.lua", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+            var classes = VerbClasses.Of(root);
+            foreach (var verb in BridgeVerbs.Read(root))
             {
-                var comment = new List<string>();
-                // Most of the bridge is written against a local alias - `local Act = GK.Act`, and
-                // then `function Act.Lockpick(...)`. Reading only `function GK.x` hid 400-odd
-                // functions, GK.Act, GK.Cheat and GK.Stage among them: the whole honest-play
-                // surface was missing from the one tool that says what exists. The aliases are
-                // collected as the file is read, so a name is resolved by what was bound above it.
-                var aliases = new Dictionary<string, string>(StringComparer.Ordinal);
-                foreach (var line in File.ReadLines(file))
+                var known = classes.ClassOf(verb.Path);
+                var entry = new JsonObject
                 {
-                    var stripped = line.Trim();
-                    if (stripped.StartsWith("---", StringComparison.Ordinal))
-                    {
-                        comment.Add(stripped[3..].Trim());
-                        continue;
-                    }
-                    if (AliasLine().Match(line) is { Success: true } alias && alias.Groups[2].Value != "GK")
-                        aliases[alias.Groups[1].Value] = alias.Groups[2].Value;
-                    if (ApiLine().Match(line) is { Success: true } match)
-                    {
-                        var path = match.Groups[1].Value;
-                        var head = path[..path.IndexOf('.')];
-                        if (head != "GK")
-                        {
-                            // A local table that is not part of GK is private to the file.
-                            if (!aliases.TryGetValue(head, out var bound)) { comment.Clear(); continue; }
-                            path = bound + path[head.Length..];
-                        }
-                        var entry = new JsonObject
-                        {
-                            ["function"] = path,
-                            ["parameters"] = match.Groups[2].Value.Trim(),
-                            ["where"] = Path.GetRelativePath(root, file).Replace('\\', '/'),
-                            ["about"] = string.Join(" ", comment),
-                        };
-                        if (filter is not { Length: > 0 } wanted
-                            || entry.ToJsonString().Contains(wanted, StringComparison.OrdinalIgnoreCase))
-                            found.Add(entry);
-                    }
-                    comment.Clear();
-                }
+                    ["function"] = verb.Path,
+                    ["parameters"] = verb.Parameters,
+                    ["where"] = verb.Where,
+                    ["side"] = verb.Side,
+                    ["class"] = known?.Class ?? "unclassed",
+                    ["about"] = verb.About,
+                };
+                if (known?.Why is { } why) entry["why"] = why;
+                if (filter is not { Length: > 0 } wanted
+                    || JsonText.Inline(entry).Contains(wanted, StringComparison.OrdinalIgnoreCase))
+                    found.Add(entry);
             }
         }
         return found;
     }
 
-    [GeneratedRegex(@"^function\s+([A-Za-z_]\w*(?:\.\w+)+)\s*\(([^)]*)\)")]
-    private static partial Regex ApiLine();
-
-    /// <summary>`local Act = GK.Act`, with or without a trailing `or {}`.</summary>
-    [GeneratedRegex(@"^local\s+([A-Za-z_]\w*)\s*=\s*(GK(?:\.\w+)*)\b")]
-    private static partial Regex AliasLine();
+    /// <summary>The side a bridge function is called on, from the file it is written in.</summary>
+    public static string SideOf(string where) => BridgeVerbs.SideOf(where);
 
     [GeneratedRegex(@"^[A-Za-z_]\w*$")]
     private static partial Regex Identifier();

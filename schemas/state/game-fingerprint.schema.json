@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "state/game-fingerprint/1",
+  "title": "What a game folder was when GateKit last looked (game-fingerprint.json in the state, or in a copy's record)",
+  "description": "Written by `gatekit game verify` and when a copy is made. Builders compare it with the game they read to record the build and the verdict in a database's metadata; `gatekit doctor` shows it. docs/contracts/cli.md, `game verify`.",
+  "type": "object",
+  "required": ["schema", "folder", "source", "files", "verdict", "recorded"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "state/game-fingerprint/1"},
+    "folder": {"type": "string", "minLength": 1, "description": "The game folder this describes."},
+    "copy": {"type": "string", "minLength": 1, "description": "The copy's name, for a copy."},
+    "source": {
+      "enum": ["steam", "reference", "none"],
+      "description": "The source of invariants the verdict came from: Steam's app and depot manifests, a reference list, or none."
+    },
+    "appId": {"type": "string", "pattern": "^[0-9]+$"},
+    "buildId": {"type": "string", "minLength": 1},
+    "depots": {"type": "array", "items": {"$ref": "#/$defs/depot"}},
+    "reference": {"type": "string", "minLength": 1, "description": "The reference list the folder was held to."},
+    "files": {
+      "type": "array",
+      "description": "The executables and libraries beside the game's executable.",
+      "items": {"$ref": "#/$defs/file"}
+    },
+    "verdict": {"$ref": "game/verify#/$defs/verdict"},
+    "mode": {"enum": ["quick", "full"], "description": "How the verdict was reached; absent when it is `unverified`."},
+    "verified": {"type": "string", "format": "time", "description": "When the verdict was reached."},
+    "counts": {"$ref": "game/verify#/$defs/counts"},
+    "from": {
+      "type": "object",
+      "description": "For a copy made from the installed game: the installed game's verdict when its executables and libraries were the same files.",
+      "required": ["verdict"],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {"$ref": "game/verify#/$defs/verdict"},
+        "mode": {"enum": ["quick", "full"]},
+        "verified": {"type": "string", "format": "time"}
+      }
+    },
+    "recorded": {"type": "string", "format": "time"}
+  },
+  "$defs": {
+    "depot": {
+      "type": "object",
+      "required": ["depot", "manifest"],
+      "additionalProperties": false,
+      "properties": {
+        "depot": {"type": "string", "pattern": "^[0-9]+$"},
+        "manifest": {"type": "string", "format": "uint64"}
+      }
+    },
+    "file": {
+      "type": "object",
+      "required": ["path", "size", "written", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "description": "Inside the game folder, '/' between segments."},
+        "size": {"type": "integer", "minimum": 0},
+        "written": {"type": "string", "format": "time"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

@@ -8,21 +8,26 @@ namespace GateKit.GameData.Packages;
 public sealed record PackageFile(string Name, string Path)
 {
     /// <summary>size:mtime of the file and of its parts; tells whether it changed since the last build.</summary>
-    public string Stamp()
+    public string Stamp() => string.Join("+", Parts().Select(p =>
+    {
+        var info = new FileInfo(p);
+        return string.Create(CultureInfo.InvariantCulture, $"{info.Length}:{new DateTimeOffset(info.LastWriteTimeUtc).ToUnixTimeSeconds()}");
+    }));
+
+    /// <summary>The file and its parts (<c>X_1.pak</c>, ...) that exist, in order.</summary>
+    public IReadOnlyList<string> Parts()
     {
         var parts = new List<string>();
         for (var i = 0; ; i++)
         {
             var p = i == 0 ? Path : Package.MakePartFilename(Path, i);
-            var info = new FileInfo(p);
-            if (!info.Exists)
+            if (!File.Exists(p))
             {
                 break;
             }
-            parts.Add(string.Create(CultureInfo.InvariantCulture,
-                $"{info.Length}:{new DateTimeOffset(info.LastWriteTimeUtc).ToUnixTimeSeconds()}"));
+            parts.Add(p);
         }
-        return string.Join("+", parts);
+        return parts;
     }
 }
 
@@ -57,14 +62,22 @@ public sealed partial class GamePackages : IDisposable
 
     /// <summary>
     /// Packages by name: <c>Data/*.pak</c>, <c>Data/Localization/*.pak</c> and
-    /// <c>Data/Localization/&lt;language&gt;/*.pak</c> for each language. Later folders replace a
-    /// name found earlier. The extra parts of a large package (<c>Textures_1.pak</c>) are part of it, not packages.
+    /// <c>Data/Localization/&lt;language&gt;/*.pak</c> for each language, then the same two shapes
+    /// under each folder of <paramref name="localization"/> — language packs kept outside the
+    /// installation, such as Steam depots downloaded on their own. Later folders replace a name
+    /// found earlier. The extra parts of a large package (<c>Textures_1.pak</c>) are part of it, not packages.
     /// </summary>
-    public Dictionary<string, PackageFile> Find(IEnumerable<string> languages)
+    public Dictionary<string, PackageFile> Find(IEnumerable<string> languages, IEnumerable<string>? localization = null)
     {
         var found = new Dictionary<string, PackageFile>(StringComparer.Ordinal);
+        var wanted = languages.ToList();
         var folders = new List<string> { DataFolder, System.IO.Path.Combine(DataFolder, "Localization") };
-        folders.AddRange(languages.Select(l => System.IO.Path.Combine(DataFolder, "Localization", l)));
+        folders.AddRange(wanted.Select(l => System.IO.Path.Combine(DataFolder, "Localization", l)));
+        foreach (var extra in localization ?? [])
+        {
+            folders.Add(extra);
+            folders.AddRange(wanted.Select(l => System.IO.Path.Combine(extra, l)));
+        }
         foreach (var folder in folders)
         {
             if (!Directory.Exists(folder))

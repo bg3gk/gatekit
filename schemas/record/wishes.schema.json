@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/wishes/1",
+  "title": "A wish (one row of research/coverage/record/wishes.jsonl)",
+  "description": "A change asked of the toolkit. A wish as it stands is the last row of its id. Written by Record.AddWish and RecordBook.UpdateWish.",
+  "type": "object",
+  "required": ["id", "time", "from", "text", "state"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {"type": "string", "pattern": "^W-[0-9]{4,}$"},
+    "time": {"type": "string", "format": "time"},
+    "from": {"type": "string", "minLength": 1, "description": "Who asked: a role, a tool, a person."},
+    "text": {"type": "string", "minLength": 1},
+    "state": {"enum": ["open", "sent", "fixed", "seen_live", "dropped"]},
+    "commit": {"type": "string", "minLength": 1, "description": "The commit that answered it."},
+    "note": {"type": "string", "minLength": 1},
+    "was": {"type": "string", "minLength": 1, "description": "Its number in the tables it was imported from."}
+  }
+}

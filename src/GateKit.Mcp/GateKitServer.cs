@@ -1,12 +1,12 @@
 using System.Reflection;
-using GateKit.Stand;
+using GateKit.Copies;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
 namespace GateKit.Mcp;
 
 /// <summary>
-/// GateKit as an MCP server: the stand's tools (CoreTools) plus whatever the tools folder adds
+/// GateKit as an MCP server: the core tools (CoreTools) plus whatever the tools folder adds
 /// (PluginTools), served over stdio by the official C# SDK (NuGet `ModelContextProtocol`).
 /// The transport is ours (BatchStdioTransport) because batches are not in the SDK; everything
 /// above it - the handshake, capabilities, tools/list, tools/call, ping, cancellation - is the SDK's.
@@ -15,10 +15,20 @@ public sealed class GateKitServer
 {
     readonly IReadOnlyList<GateKitTool> _core;
     readonly PluginTools _plugins;
+    readonly ToolHost _host;
+
+    /// <summary>The tools that act in or read a running game: their answers carry the `attention`
+    /// note (docs/contracts/mcp.md). bg3_wait adds its own.</summary>
+    public static readonly IReadOnlySet<string> GameTools = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "bg3_lua", "bg3_call", "bg3_state", "bg3_events", "bg3_dialog", "bg3_key", "bg3_screenshot", "bg3_status",
+        "bg3_checkpoint", "bg3_reset", "bg3_reload", "bg3_fast_scenes", "bg3_sound",
+    };
 
     public GateKitServer(ToolHost host)
     {
-        _core = [.. CoreTools.Create(host), .. DeckTools.Create(host), .. CoverageTools.Create(host)];
+        _host = host;
+        _core = [.. CoreTools.Create(host), .. DeckTools.Create(host), .. CoverageTools.Create(host), .. RecordTools.Create(host), .. NamesTools.Create(), .. RegistryTools.Create(), .. LeadTools.Create(), .. WikiTools.Create()];
         _plugins = new PluginTools(host, _core.Select(t => t.Name).ToHashSet(StringComparer.Ordinal));
     }
 
@@ -34,9 +44,14 @@ public sealed class GateKitServer
         {
             var tool = _core.FirstOrDefault(t => t.Name == name)
                 ?? _plugins.Find(name)
-                ?? throw new StandException($"unknown tool {name}");
+                ?? throw new CopyException($"unknown tool {name}");
             Refuse.UnknownArguments(tool, args);
-            return await tool.Invoke(args, cancel);
+            Refuse.MissingArguments(tool, args);
+            CallToolResult result;
+            try { result = await tool.Invoke(args, cancel); }
+            catch (MissingArgumentException missing) { throw Refuse.Missing(tool, [missing.Name]); }
+            if (GameTools.Contains(name) || _plugins.Find(name) is not null) AddAttention(result);
+            return result;
         }
         catch (OperationCanceledException) when (cancel.IsCancellationRequested) { throw; }
         catch (Exception e)
@@ -45,12 +60,29 @@ public sealed class GateKitServer
         }
     }
 
+    /// <summary>Appends what waits in the game, or changed since the caller's last call, as one more
+    /// text block "attention: [...]"; nothing when there is nothing. The tool's own answer is untouched.</summary>
+    void AddAttention(CallToolResult result)
+    {
+        try
+        {
+            var note = _host.AttentionNote();
+            if (note.Count == 0) return;
+            // held to common/attention: a misfit is said, not hidden
+            var misfits = SchemaCheck.Misfits("common/attention", note);
+            var text = GateKit.Json.JsonText.Inline(note);
+            result.Content.Add(new TextContentBlock { Text = misfits.Count == 0 ? "attention: " + text
+                : "attention (does not fit common/attention: " + string.Join("; ", misfits.Take(5)) + "): " + text });
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or CopyException) { }
+    }
+
     public McpServerOptions Options() => new()
     {
         ServerInfo = new Implementation
         {
             Name = "gatekit",
-            Title = "GateKit: the Baldur's Gate 3 test stand",
+            Title = "GateKit: Baldur's Gate 3 and its copies",
             Version = typeof(GateKitServer).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0]
                 ?? "0.1.0",
         },

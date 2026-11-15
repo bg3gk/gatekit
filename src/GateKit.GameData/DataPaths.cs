@@ -1,26 +1,25 @@
-using GateKit.Release;
+using GateKit.Home;
+using GateKit.Platform;
 
 namespace GateKit.GameData;
 
-/// <summary>Where the offline databases and the game data are, from options and the environment.</summary>
+/// <summary>Where the offline databases and the game data are: options first, then the home
+/// (<see cref="GateKitHome"/>), whose locations each have their own override variable.</summary>
 public static class DataPaths
 {
-    /// <summary>Per-user GateKit folder: %LOCALAPPDATA%\GateKit on Windows, ~/.local/share/GateKit elsewhere.</summary>
-    public static string LocalFolder => DatabaseKind.LocalFolder;
+    /// <summary>The game index: BG3_INDEX_DB, else <c>&lt;home&gt;/db/index/gameindex.sqlite</c>.</summary>
+    public static string IndexDatabase => GateKitHome.Current.Index.Path!;
 
-    /// <summary>The game index: BG3_INDEX_DB, else <c>&lt;local&gt;/index/gameindex.sqlite</c>.</summary>
-    public static string IndexDatabase => DatabaseKind.Index.DefaultPath;
+    /// <summary>The code symbol database: BG3_SYMBOLS_DB, else <c>&lt;home&gt;/db/symbols/symbols.sqlite</c>.</summary>
+    public static string SymbolsDatabase => GateKitHome.Current.Symbols.Path!;
 
-    /// <summary>The code symbol database: BG3_SYMBOLS_DB, else <c>&lt;local&gt;/symbols/symbols.sqlite</c>.</summary>
-    public static string SymbolsDatabase => DatabaseKind.Symbols.DefaultPath;
-
-    /// <summary>The pseudo-code database: <c>&lt;BG3_DECOMP_WORK or local/decomp&gt;/decomp.sqlite</c>.</summary>
-    public static string DecompDatabase =>
-        Path.Combine(Environment.GetEnvironmentVariable("BG3_DECOMP_WORK") is { Length: > 0 } p ? p : Path.Combine(LocalFolder, "decomp"), "decomp.sqlite");
+    /// <summary>The pseudo-code database: <c>&lt;BG3_DECOMP_WORK or home/db/decomp&gt;/decomp.sqlite</c>.</summary>
+    public static string DecompDatabase => GateKitHome.Current.DecompDb.Path!;
 
     /// <summary>
     /// The game's Data folder: <paramref name="data"/> when given, else <c>&lt;game&gt;/Data</c> with the game
-    /// folder from <paramref name="game"/> or BG3_GAME. Null when none is known.
+    /// folder from <paramref name="game"/>, BG3_GAME or "game" in gatekit.json, else the game found
+    /// in a Steam library (as `gatekit` finds it). Null when none is known.
     /// </summary>
     public static string? GameData(string? data, string? game)
     {
@@ -28,7 +27,24 @@ public static class DataPaths
         {
             return data;
         }
-        game = string.IsNullOrEmpty(game) ? Environment.GetEnvironmentVariable("BG3_GAME") : game;
+        game = string.IsNullOrEmpty(game) ? GateKitHome.Current.Game.Path ?? FindGameInSteam() : game;
         return string.IsNullOrEmpty(game) ? null : Path.Combine(game, "Data");
+    }
+
+    /// <summary>Where <see cref="GameData"/> looks when nothing is given, in words: for a message when it finds nothing.</summary>
+    public static string GameSearch => GateKitHome.Current.Game is { Path: { } named } location
+        ? $"{named} ({location.SourceName}: {location.Origin})"
+        : "BG3_GAME and \"game\" in gatekit.json (both unset), then the Steam libraries: " + string.Join(", ", SteamLibraries());
+
+    static string? FindGameInSteam()
+    {
+        try { return GateKit.Platform.GamePlatform.Current.FindGameFolder(); }
+        catch (Exception e) when (e is PlatformNotSupportedException or IOException or UnauthorizedAccessException) { return null; }
+    }
+
+    static IReadOnlyList<string> SteamLibraries()
+    {
+        try { return GateKit.Platform.GamePlatform.Current.SteamLibraries(); }
+        catch (PlatformNotSupportedException) { return []; }
     }
 }

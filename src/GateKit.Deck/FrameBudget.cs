@@ -1,5 +1,5 @@
 using System.Globalization;
-using GateKit.Stand;
+using GateKit.Copies;
 
 namespace GateKit.Deck;
 
@@ -7,7 +7,7 @@ namespace GateKit.Deck;
 /// How much of the machine each tile is worth. Four games drawing flat out need a computer most
 /// people do not have; four games where the one you are watching draws at sixty and the other
 /// three at ten need far less and lose nothing, because a copy nobody is looking at exists to run
-/// a scenario or let an agent think and does not care how smoothly it draws.
+/// a test or let an agent think and does not care how smoothly it draws.
 ///
 /// The rule is short on purpose: <b>the tile in view is uncapped, every other tile gets the
 /// floor, and one copy on its own is never capped at all.</b> Which tile is in view is the one
@@ -74,11 +74,11 @@ public sealed record FrameBudget(int Floor = 10, int Watched = 0)
 
         var parts = text.Split('/', 2);
         if (!int.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out var floor) || floor > 1000)
-            throw new StandException($"a frame budget is \"off\", a floor like \"10\", or \"10/60\"; \"{value}\" is neither");
+            throw new CopyException($"a frame budget is \"off\", a floor like \"10\", or \"10/60\"; \"{value}\" is neither");
         var watched = 0;
         if (parts.Length == 2
             && (!int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out watched) || watched > 1000))
-            throw new StandException($"a frame budget is \"off\", a floor like \"10\", or \"10/60\"; \"{value}\" is neither");
+            throw new CopyException($"a frame budget is \"off\", a floor like \"10\", or \"10/60\"; \"{value}\" is neither");
         return new FrameBudget(floor, watched);
     }
 

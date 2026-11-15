@@ -16,7 +16,7 @@ public sealed partial class IndexQueries(ReadOnlyDb db, TextWriter output, TextW
 
     /// <summary>Opens the index; a missing file says how to build it.</summary>
     public static IndexQueries Open(string path, TextWriter output, TextWriter error) =>
-        new(ReadOnlyDb.Open(path, $"{path} does not exist; run:  gatekit data build"), output, error);
+        new(ReadOnlyDb.Open(path), output, error);
 
     public void Dispose() => Db.Dispose();
 

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The one JSON core: strict reading with file:line:column errors, exact numbers, one canonical
+       layout, safe appends to ledgers, and the schemas of every kind of file (schemas/, embedded).
+       No project references, so the lowest projects can use it. docs/contracts/data-format.md. -->
+  <PropertyGroup>
+    <RootNamespace>GateKit.Json</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.15" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../schemas/**/*.schema.json" LogicalName="schemas/%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../../schemas/index.json" LogicalName="schemas/index.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="GateKit.Json.UnitTests" />
+  </ItemGroup>
+</Project>

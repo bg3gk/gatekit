@@ -71,7 +71,7 @@ public sealed unsafe class WindowsPlatform : IGamePlatform
             environment["LOCALAPPDATA"] = Path.Combine(home, "AppData", "Local");
             environment["APPDATA"] = Path.Combine(home, "AppData", "Roaming");
         }
-        // What the stand asked for, last, so it means what it says.
+        // What `gatekit` asked for, last, so it means what it says.
         foreach (var (key, value) in launch.Environment ?? new Dictionary<string, string>()) environment[key] = value;
         var block = new StringBuilder();
         foreach (var (key, value) in environment.OrderBy(e => e.Key, StringComparer.OrdinalIgnoreCase))
@@ -87,7 +87,7 @@ public sealed unsafe class WindowsPlatform : IGamePlatform
         // command of its own. This used to ask for SW_SHOWNOACTIVATE and was quietly ignored for
         // as long as it existed, which is worse than asking for nothing: it read like the window
         // was being handled. What actually keeps the window from taking the keyboard is the SDL
-        // hint GateKit puts in the game's environment (Stand.GameEnvironment).
+        // hint GateKit puts in the game's environment (GameCopy.GameEnvironment).
         var startup = new Native.StartupInfo { cb = sizeof(Native.StartupInfo) };
         Native.ProcessInformation info;
         var line = commandLine.ToString().ToCharArray();
@@ -95,7 +95,7 @@ public sealed unsafe class WindowsPlatform : IGamePlatform
         fixed (char* linePointer = line)
         fixed (char* envPointer = env)
         {
-            // Detached and in a group of its own, as the old stand did: no console of ours is
+            // Detached and in a group of its own: no console of ours is
             // inherited (Script Extender opens its own), and Ctrl+C here never reaches the game.
             var ok = Native.CreateProcess(launch.Executable, linePointer, 0, 0, 0,
                 Native.DetachedProcess | Native.CreateNewProcessGroup | Native.CreateUnicodeEnvironment,

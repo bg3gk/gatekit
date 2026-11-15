@@ -101,6 +101,52 @@ public static partial class TextParsers
         return (functions, types);
     }
 
+    /// <summary>The procedures and queries a story goal defines: the signature after each <c>PROC</c>
+    /// or <c>QRY</c> line of its rules, as kind <c>proc</c> or <c>userquery</c> (Osiris's own names
+    /// for them). The story overloads built-in names this way (ApplyStatus/3 and /4 beside the
+    /// header's /5), so these are functions a call may reach. A name defined twice with one arity is
+    /// given once.</summary>
+    public static List<OsirisFunction> ReadGoalDefinitions(string content)
+    {
+        var found = new List<OsirisFunction>();
+        var seen = new HashSet<(string, int)>();
+        string? kind = null;
+        var section = "init";
+        foreach (var raw in content.Split('\n'))
+        {
+            var cut = raw.IndexOf("//", StringComparison.Ordinal);
+            var line = (cut >= 0 ? raw[..cut] : raw).Trim();
+            if (line.Length == 0) continue;
+            if (line is "INITSECTION" or "KBSECTION" or "EXITSECTION" or "ENDEXITSECTION")
+            {
+                section = line;
+                kind = null;
+                continue;
+            }
+            if (section != "KBSECTION") continue;
+            if (line is "PROC" or "QRY")
+            {
+                kind = line == "PROC" ? "proc" : "userquery";
+                continue;
+            }
+            if (kind is null) continue;
+            var open = line.IndexOf('(', StringComparison.Ordinal);
+            var close = line.LastIndexOf(')');
+            if (open > 0 && close > open && Identifier().IsMatch(line[..open].Trim()))
+            {
+                var name = line[..open].Trim();
+                var parameters = line[(open + 1)..close].Split(',').Select(p => p.Trim()).Where(p => p.Length > 0).ToList();
+                if (seen.Add((name, parameters.Count)))
+                    found.Add(new OsirisFunction(name, kind, string.Join(", ", parameters), "", parameters.Count));
+            }
+            kind = null;
+        }
+        return found;
+    }
+
+    [GeneratedRegex(@"^[A-Za-z_]\w*$")]
+    private static partial Regex Identifier();
+
     /// <summary>Counts the names a story goal uses, by role: (name, role) -&gt; uses, in order of first use.</summary>
     public static Dictionary<(string Name, string Role), int> ReadGoal(string content)
     {

@@ -19,7 +19,7 @@ namespace GateKit.Platform.Windows;
 [SupportedOSPlatform("windows")]
 internal static unsafe class DetachedStart
 {
-    public static void Run(string program, IReadOnlyList<string> arguments, string runCopyFolder)
+    public static void Run(string program, IReadOnlyList<string> arguments, IReadOnlyDictionary<string, string> set)
     {
         var commandLine = new StringBuilder(WindowsPlatform.Quote(program));
         foreach (var argument in arguments) commandLine.Append(' ').Append(WindowsPlatform.Quote(argument));
@@ -28,10 +28,11 @@ internal static unsafe class DetachedStart
         var environment = new StringBuilder();
         foreach (System.Collections.DictionaryEntry entry in Environment.GetEnvironmentVariables())
         {
-            if (string.Equals((string)entry.Key, RunCopy.Marker, StringComparison.OrdinalIgnoreCase)) continue;
+            if (set.Keys.Any(k => string.Equals((string)entry.Key, k, StringComparison.OrdinalIgnoreCase))) continue;
             environment.Append((string)entry.Key).Append('=').Append(entry.Value as string ?? "").Append('\0');
         }
-        environment.Append(RunCopy.Marker).Append('=').Append(runCopyFolder).Append('\0').Append('\0');
+        foreach (var (name, value) in set) environment.Append(name).Append('=').Append(value).Append('\0');
+        environment.Append('\0');
 
         var startup = new Native.StartupInfo { cb = sizeof(Native.StartupInfo) };
         Native.ProcessInformation info;

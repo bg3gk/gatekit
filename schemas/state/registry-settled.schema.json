@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "state/registry-settled/1",
+  "title": "How a clash of the registry's live layer at one address was settled (<home>/state/registry-live/settled/<binary>/<build>/<rva>.json)",
+  "description": "Two ids claimed for one function are a clash until it is settled: one id kept, or the ids declared folded (the linker gave identical code one address). Written by `gatekit registry settle`.",
+  "type": "object",
+  "required": ["schema", "binary", "rva", "who", "when", "task"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "state/registry-settled/1"},
+    "binary": {"type": "string", "minLength": 1},
+    "build": {"type": "string", "pattern": "^[0-9]+$"},
+    "rva": {"type": "string", "pattern": "^0x[0-9A-F]+$"},
+    "keep": {"$ref": "registry/parts#/$defs/id", "description": "The id that stays; the other claims at the address are dropped from commits."},
+    "folded": {"const": true, "description": "Every id at the address stands: the code is one function of several names."},
+    "who": {"type": "string", "minLength": 1},
+    "when": {"type": "string", "format": "time"},
+    "task": {"type": "string", "minLength": 1}
+  }
+}

@@ -6,8 +6,7 @@ namespace GateKit.Mcp;
 /// What GateKit knows about each of the engine's component types, joined from the three files
 /// that hold it: <c>coverage.json</c> (what Script Extender covers, a row per side),
 /// <c>seen/index.json</c> (where a type was actually observed alive) and the layout files.
-/// A port of <c>research/coverage/todo.py</c>, which was already standalone - it reads the
-/// committed record and needs no game.
+/// It reads the committed record and needs no game.
 ///
 /// The groups matter more than the counts, because they say what kind of work a type is:
 /// <list type="bullet">
@@ -42,7 +41,7 @@ public sealed class Ledger
         var types = new Dictionary<string, Entry>(StringComparer.Ordinal);
         var coveragePath = Path.Combine(root, "coverage.json");
         if (!File.Exists(coveragePath))
-            throw new Stand.StandException($"the coverage index is missing: {coveragePath}");
+            throw new Copies.CopyException($"the coverage index is missing: {coveragePath}");
 
         foreach (var row in JsonNode.Parse(File.ReadAllText(coveragePath))!["components"]!.AsArray())
         {
@@ -78,20 +77,18 @@ public sealed class Ledger
             }
         }
 
-        var layouts = Path.Combine(root, "layouts");
-        if (Directory.Exists(layouts))
+        // the layouts: the registry's types made from them, else the layout files; one that cannot be
+        // read is left out, so a half-written file does not blind the ledger
+        if (GateKit.Names.LayoutStore.Registry(root) is not null || Directory.Exists(Path.Combine(root, "layouts")))
         {
-            foreach (var file in Directory.EnumerateFiles(layouts, "*.json", SearchOption.AllDirectories))
+            foreach (var file in GateKit.Names.LayoutStore.All(root))
             {
-                JsonObject? layout;
-                try { layout = JsonNode.Parse(File.ReadAllText(file))?.AsObject(); }
-                catch (Exception) { continue; }  // a half-written layout file must not blind the ledger
-                if (layout?["component"]?.GetValue<string>() is not { } name) continue;
+                if (file.Json["component"]?.GetValue<string>() is not { } name) continue;
                 if (!types.TryGetValue(name, out var entry)) continue;
                 types[name] = entry with
                 {
-                    Layout = layout["status"]?.GetValue<string>() ?? "hypothesis",
-                    LayoutFile = Path.GetFileName(Path.GetDirectoryName(file)) + "/" + Path.GetFileName(file),
+                    Layout = file.Json["status"]?.GetValue<string>() ?? "hypothesis",
+                    LayoutFile = file.Batch + "/" + GateKit.Names.LayoutStore.LayoutName(name),
                 };
             }
         }
@@ -107,6 +104,24 @@ public sealed class Ledger
         JsonValue v when v.TryGetValue<string>(out var s) => s.Length > 0,
         _ => true,   // an object, such as coverage.json's `verified` record, means yes
     };
+
+    /// <summary>Whether <paramref name="name"/> is one of the engine's component types.</summary>
+    public bool Knows(string name) => _types.ContainsKey(name);
+
+    /// <summary>Up to <paramref name="max"/> types a mistyped or shortened name probably meant: those
+    /// under it as a namespace, or whose own name holds one of the words of <paramref name="hints"/>
+    /// (a recipe's name, say <c>camp_EndTheDayResultEventOneFrame</c>).</summary>
+    public IReadOnlyList<string> Near(string name, IEnumerable<string> hints, int max = 6)
+    {
+        var words = hints.SelectMany(h => h.Split(['_', '-', ' ', ':'], StringSplitOptions.RemoveEmptyEntries))
+            .Where(w => w.Length >= 5).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        string Tail(string type) => type[(type.LastIndexOf("::", StringComparison.Ordinal) + 2)..];
+        var byWord = _types.Keys.Where(type => words.Any(w => Tail(type).Contains(w, StringComparison.OrdinalIgnoreCase)));
+        var under = _types.Keys.Where(type => type.StartsWith(name.TrimEnd(':') + "::", StringComparison.Ordinal));
+        return [.. byWord.Concat(under).Distinct(StringComparer.Ordinal)
+            .OrderBy(type => type.StartsWith(name, StringComparison.Ordinal) ? 0 : 1).ThenBy(type => type, StringComparer.Ordinal)
+            .Take(max)];
+    }
 
     public JsonObject Tally()
     {
@@ -143,7 +158,7 @@ public sealed class Ledger
                 "waiting" => !mapped && layout is not null,
                 "alive" => !mapped && layout is null && seen,
                 "dead" => !mapped && layout is null && !seen,
-                _ => throw new Stand.StandException($"unknown group {group}"),
+                _ => throw new Copies.CopyException($"unknown group {group}"),
             };
         }
 

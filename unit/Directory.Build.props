@@ -1,0 +1,9 @@
+<Project>
+  <!-- Every unit-test project: the settings of the host side, and the one place unit tests write
+       (Shared/Scratch.cs: the home's scratch folder, cleaned when a run ends). -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Shared/Scratch.cs" Link="Shared/Scratch.cs" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/GateKit.Home/GateKit.Home.csproj" />
+  </ItemGroup>
+</Project>

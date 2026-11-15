@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events/answer/1",
+  "title": "The answer of bg3_events: the event log as one stream",
+  "description": "Both sides' rows merged in the stream's order (docs/contracts/bridge-protocol.md, \"One stream\"), each with its side. `next` is the cursor to pass as `since` next time.",
+  "type": "object",
+  "required": ["rows", "next"],
+  "additionalProperties": false,
+  "properties": {
+    "rows": {"type": "array", "items": {"$ref": "events/row"}},
+    "next": {"type": "string", "description": "client:<boot>.<seq>,server:<boot>.<seq> - past every row read."},
+    "more": {"type": "boolean", "description": "Present and true when `limit` cut the answer: ask again from `next`."},
+    "dropped": {
+      "type": "array",
+      "description": "Where `since` is behind the oldest row kept: the rows between went (the store is bounded).",
+      "items": {
+        "type": "object",
+        "required": ["side", "after", "first"],
+        "additionalProperties": false,
+        "properties": {
+          "side": {"enum": ["server", "client"]},
+          "after": {"type": "integer", "minimum": 0},
+          "first": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "unplaced": {
+      "type": "array",
+      "description": "Rows between `since` and `next` that no registry places (their `unplaced` says why), one entry per kind, whatever `kinds` and `family` asked for.",
+      "items": {
+        "type": "object",
+        "required": ["kind", "rows", "why"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {"type": "string"},
+          "rows": {"type": "integer", "minimum": 1},
+          "why": {"type": "string"},
+          "withheld": {"const": true, "description": "A fair server did not give these rows: a row it cannot place is taken as omniscient."}
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "description": "Per family, both sides summed: rows and bytes written in the current boots, rows dropped.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["rows", "bytes", "dropped"],
+        "additionalProperties": false,
+        "properties": {
+          "rows": {"type": "integer", "minimum": 0},
+          "bytes": {"type": "integer", "minimum": 0},
+          "dropped": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "on": {"type": "array", "items": {"type": "string"}, "description": "The switchable families on now, on either side."}
+  }
+}

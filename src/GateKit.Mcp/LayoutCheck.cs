@@ -7,8 +7,7 @@ namespace GateKit.Mcp;
 
 /// <summary>
 /// A layout against the running game: for every live instance of a component, each field must
-/// hold what the raw bytes at its offset say it holds. The port of the "mapped" stage of
-/// <c>research/coverage/check.py</c> - the comparison that turns a layout from a reading of the
+/// hold what the raw bytes at its offset say it holds: the comparison that turns a layout from a reading of the
 /// game's code into a fact about the running game, and the only thing that moves a type into
 /// <c>verified live</c>.
 ///
@@ -41,15 +40,9 @@ public static partial class LayoutCheck
     /// </summary>
     public static IReadOnlyList<Layout> Load(string coverageRoot, string prefix = "")
     {
-        var folder = Path.Combine(coverageRoot, "layouts");
-        if (!Directory.Exists(folder)) return [];
         var layouts = new List<Layout>();
-        foreach (var path in Directory.EnumerateFiles(folder, "*.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+        foreach (var (path, file) in Files(coverageRoot))
         {
-            JsonObject? file;
-            try { file = JsonNode.Parse(File.ReadAllText(path))?.AsObject(); }
-            catch (Exception) { continue; }
-            if (file is null) continue;
             if (file["kind"]?.GetValue<string>() == "system") continue;
             if (file["hold"] is not null) continue;
             if (file["status"]?.GetValue<string>() is not ("confirmed" or "declared")) continue;
@@ -75,8 +68,17 @@ public static partial class LayoutCheck
         return layouts;
     }
 
+    /// <summary>Every layout of the record as its file path and its layout's JSON: the registry's types
+    /// made from layouts when the registry beside the record holds them, else the layout files; none
+    /// when the record has neither.</summary>
+    static IEnumerable<(string Path, JsonObject Layout)> Files(string coverageRoot)
+    {
+        if (GateKit.Names.LayoutStore.Registry(coverageRoot) is null && !Directory.Exists(Path.Combine(coverageRoot, "layouts"))) return [];
+        return GateKit.Names.LayoutStore.All(coverageRoot).Select(f => (f.Path, f.Json));
+    }
+
     /// <summary>
-    /// One component's layout file, <b>whatever its status</b>, with every field it names -
+    /// One component's layout, <b>whatever its status</b>, with every field it names -
     /// padding and pointers included, which <see cref="Load"/> leaves out because they cannot be
     /// compared against Script Extender.
     ///
@@ -86,14 +88,9 @@ public static partial class LayoutCheck
     /// </summary>
     public static Layout? Find(string coverageRoot, string component)
     {
-        var folder = Path.Combine(coverageRoot, "layouts");
-        if (!Directory.Exists(folder)) return null;
-        foreach (var path in Directory.EnumerateFiles(folder, "*.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+        foreach (var (path, file) in Files(coverageRoot))
         {
-            JsonObject? file;
-            try { file = JsonNode.Parse(File.ReadAllText(path))?.AsObject(); }
-            catch (Exception) { continue; }
-            if (file?["component"]?.GetValue<string>() != component) continue;
+            if (file["component"]?.GetValue<string>() != component) continue;
             var fields = new List<Field>();
             foreach (var entry in file["fields"] as JsonArray ?? [])
             {
@@ -107,6 +104,47 @@ public static partial class LayoutCheck
                 Path.GetFileName(path), file["status"]?.GetValue<string>() ?? "a hypothesis");
         }
         return null;
+    }
+
+    /// <summary>
+    /// The samples of one type - each a row with <c>Present</c>, <c>Hex</c>, <c>Values</c> and
+    /// <c>Entity</c>, as GK.Probe.Mapped and the standing capture take them - against its layout:
+    /// how many instances agreed in every comparable field, or the first disagreement. A row whose
+    /// bytes stop short of the type, or that Script Extender did not give, is not counted either way.
+    /// </summary>
+    public static (int Agreed, string? Problem) Compare(Layout layout, IEnumerable<JsonObject> rows)
+    {
+        var compared = 0;
+        foreach (var row in rows)
+        {
+            if (row["Present"] is not JsonValue present || !present.TryGetValue<bool>(out var given) || !given) continue;
+            var raw = FromHex(row["Hex"]?.GetValue<string>() ?? "");
+            // a type with no fields (a tag) is right by being there: its bytes, if any, say nothing
+            if (layout.Fields.Count == 0) { compared++; continue; }
+            if (raw.Length < layout.Size) continue;
+            var values = row["Values"] as JsonObject;
+            var any = false;
+            foreach (var field in layout.Fields)
+            {
+                if (Expected(field, raw) is not { } want) continue;
+                if (!Same(want, values?[field.Name]))
+                    return (compared, $"{layout.File}: {field.Name} at +0x{field.Offset:X} ({field.Type}) - the bytes say "
+                        + $"{want}, Script Extender says {values?[field.Name]?.ToJsonString() ?? "nothing"} (entity {row["Entity"]})");
+                any = true;
+            }
+            // A row with nothing comparable proves nothing, but a type with no fields to compare (a
+            // tag) agrees by being present with the right size.
+            if (any || layout.Fields.Count == 0) compared++;
+        }
+        return (compared, null);
+    }
+
+    public static byte[] FromHex(string hex)
+    {
+        var bytes = new byte[hex.Length / 2];
+        for (var i = 0; i < bytes.Length; i++)
+            bytes[i] = byte.Parse(hex.AsSpan(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+        return bytes;
     }
 
     /// <summary>What a field should return, read out of the raw bytes; null means "not compared".</summary>

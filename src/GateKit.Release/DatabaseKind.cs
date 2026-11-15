@@ -16,8 +16,8 @@ public sealed record DatabaseKind
     /// <summary>File name the build command writes, and the install command restores.</summary>
     public required string FileName { get; init; }
 
-    /// <summary>Folder under the per-user GateKit folder where it lives by default.</summary>
-    public required string Folder { get; init; }
+    /// <summary>Where it lives in a home (<see cref="GateKit.Home.GateKitHome"/>).</summary>
+    public required Func<GateKit.Home.GateKitHome, GateKit.Home.Location> Locate { get; init; }
 
     /// <summary>Environment variable that moves it elsewhere.</summary>
     public required string EnvironmentVariable { get; init; }
@@ -36,7 +36,7 @@ public sealed record DatabaseKind
         Id = "index",
         Title = "the index of the game's own content (dialogue, stats, templates, localized strings)",
         FileName = "gameindex.sqlite",
-        Folder = "index",
+        Locate = home => home.Index,
         EnvironmentVariable = "BG3_INDEX_DB",
         BuildCommand = "gatekit data build",
         InstallCommand = "gatekit data install",
@@ -51,7 +51,7 @@ public sealed record DatabaseKind
         Id = "symbols",
         Title = "the symbol database of the engine's binaries (names, addresses, sizes, layouts, calls, strings)",
         FileName = "symbols.sqlite",
-        Folder = "symbols",
+        Locate = home => home.Symbols,
         EnvironmentVariable = "BG3_SYMBOLS_DB",
         BuildCommand = "gatekit symbols build",
         InstallCommand = "gatekit symbols install",
@@ -69,46 +69,16 @@ public sealed record DatabaseKind
 
     public static IReadOnlyList<DatabaseKind> All { get; } = [Index, Symbols];
 
-    /// <summary>Where the build command writes it: the environment variable, else the default place.</summary>
-    public string DefaultPath =>
-        System.Environment.GetEnvironmentVariable(EnvironmentVariable) is { Length: > 0 } set
-            ? set
-            : Path.Combine(LocalFolder, Folder, FileName);
+    /// <summary>Where the build command writes it and every query reads it: its variable, else its place in the home.</summary>
+    public string DefaultPath => Locate(GateKit.Home.GateKitHome.Current).Path!;
 
     /// <summary>Base name of the assets of this database in a release: <c>index.sqlite.zst</c>.</summary>
     public string AssetBaseName => $"{Id}.sqlite.zst";
 
-    /// <summary>
-    /// GateKit's per-user folder: %LOCALAPPDATA%\GateKit on Windows, ~/.local/share/GateKit elsewhere.
-    /// The folder's former name (GwynervaDevKit) is used while only that one exists.
-    /// </summary>
-    public static string LocalFolder
-    {
-        get
-        {
-            var root = System.Environment.GetEnvironmentVariable("LOCALAPPDATA");
-            if (string.IsNullOrEmpty(root))
-                root = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData, System.Environment.SpecialFolderOption.DoNotVerify);
-            if (string.IsNullOrEmpty(root))
-                root = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".local", "share");
-            var current = Path.Combine(root, "GateKit");
-            var old = Path.Combine(root, "GwynervaDevKit");
-            return Directory.Exists(old) && !Directory.Exists(current) ? old : current;
-        }
-    }
-
     /// <summary>The GateKit repository this program belongs to or is run from (holds GateKit.slnx), or null.</summary>
-    public static string? RepositoryRoot(string? workingDirectory = null)
-    {
-        foreach (var start in new[] { AppContext.BaseDirectory, workingDirectory ?? Directory.GetCurrentDirectory() })
-        {
-            for (var dir = new DirectoryInfo(start); dir is not null; dir = dir.Parent)
-            {
-                if (File.Exists(Path.Combine(dir.FullName, "GateKit.slnx"))) return dir.FullName;
-            }
-        }
-        return null;
-    }
+    public static string? RepositoryRoot(string? workingDirectory = null) =>
+        GateKit.Home.GateKitHome.FindCheckout(GateKit.Home.GateKitHome.ProgramFolderOfProcess)
+        ?? GateKit.Home.GateKitHome.FindCheckout(workingDirectory ?? Directory.GetCurrentDirectory());
 
     /// <summary>
     /// What an installed database remembers about where it came from: written beside it, so

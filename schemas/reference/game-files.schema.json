@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reference/game-files/1",
+  "title": "Every file of one build of the game, as its store delivered it (a reference list)",
+  "description": "Paths, sizes and hashes, no content. Written by `gatekit game verify --write-reference` from an install another source of invariants proved clean; any install is held to the list whose executables it has. docs/contracts/cli.md, `game verify`.",
+  "type": "object",
+  "required": ["schema", "buildId", "madeFrom", "made", "folders", "files"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "reference/game-files/1"},
+    "about": {"type": "string", "minLength": 1},
+    "appId": {"type": "string", "pattern": "^[0-9]+$", "description": "The Steam app, when the list was made from Steam's record."},
+    "buildId": {"type": "string", "minLength": 1},
+    "madeFrom": {
+      "type": "object",
+      "description": "The source that proved the install clean, and its parts (Steam: depot:manifest).",
+      "required": ["source", "parts"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "parts": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "made": {"type": "string", "format": "time"},
+    "folders": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "files": {"type": "array", "items": {"$ref": "#/$defs/file"}}
+  },
+  "$defs": {
+    "file": {
+      "type": "object",
+      "required": ["path", "size"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "description": "Inside the game folder, '/' between segments."},
+        "size": {"type": "integer", "minimum": 0},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Absent for an empty file."},
+        "sha1": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
+    }
+  }
+}

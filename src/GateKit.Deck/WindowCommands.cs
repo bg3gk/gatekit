@@ -1,6 +1,6 @@
 using System.CommandLine;
 using GateKit.Platform;
-using GateKit.Stand;
+using GateKit.Copies;
 
 namespace GateKit.Deck;
 
@@ -112,7 +112,7 @@ public static class WindowCommands
         return command;
     }
 
-    static Command Simple(string name, string description, Func<StandSettings, string> action)
+    static Command Simple(string name, string description, Func<CopySettings, string> action)
     {
         var command = new Command(name, description);
         command.SetAction(_ => Run(settings => Console.Out.WriteLine(action(settings))));
@@ -127,14 +127,14 @@ public static class WindowCommands
         foreach (var line in lines) Console.Out.WriteLine(line);
     }
 
-    static int Run(Action<StandSettings> action)
+    static int Run(Action<CopySettings> action)
     {
         try
         {
-            action(StandSettings.Resolve(GamePlatform.Current));
+            action(CopySettings.Resolve(GamePlatform.Current));
             return 0;
         }
-        catch (StandException e)
+        catch (CopyException e)
         {
             Console.Error.WriteLine("ERROR: " + e.Message);
             return 1;

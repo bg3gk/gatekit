@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events/row/1",
+  "title": "A row of the event log (events_<side>_<boot>_<n>.jsonl)",
+  "description": "One thing that happened on one side of the game, written by the bridge mod (Shared/EventLog.lua) and never changed. docs/contracts/bridge-protocol.md, \"The event log\". Its kind, knows, attention and payload fields are held to the registry (events/kinds) by the host's reader.",
+  "type": "object",
+  "required": ["seq", "tick", "t", "kind", "knows"],
+  "additionalProperties": false,
+  "properties": {
+    "seq": {"type": "integer", "minimum": 1, "description": "1, 2, 3 ... within one boot of the side's Lua state."},
+    "tick": {"type": "integer", "minimum": 0, "description": "The side's tick count (bridge ticks) when it was written."},
+    "t": {"type": "number", "minimum": 0, "description": "The game process's monotonic milliseconds: one clock for both sides."},
+    "kind": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "A kind of the registry (Shared/EventKinds.json)."},
+    "knows": {
+      "enum": ["player", "omniscient"],
+      "description": "Who could know it: player - perceived through the game itself (an open window, a prompt, the combat log); omniscient - state a player cannot see (Osiris internals, staging, the detailed families, a game-log row the party did not perceive). A host serving a fair client gives it player rows only."
+    },
+    "class": {"enum": ["fair", "cheat", "observation"], "description": "The class of the verb that made the row, on a kind whose registry entry has classPerRow; absent: the kind's own class."},
+    "key": {"type": "string", "minLength": 1, "description": "The waiting state an attention row opens or closes (window:trade, combat, film ...)."},
+    "attention": {
+      "enum": ["begin", "hold", "end", "release", "news"],
+      "description": "begin: opens `key` and is news; hold: opens it quietly; end: closes it and is news; release: closes it quietly; news: told, waits for nothing."
+    },
+    "side": {"enum": ["server", "client"], "description": "Which side wrote the row: given by the host when it merges the two logs into one stream; absent in the files."},
+    "unplaced": {"type": "string", "minLength": 1, "description": "Why the host could not place the row by the registry of the game that wrote it (nor by its own): a kind in neither, a knows or attention the kind does not declare. Given by the host; absent in the files. The row is kept; a fair stream takes it as omniscient."},
+    "scope": {"type": "integer", "minimum": 1, "description": "The stage scope open when the row was written: the seq of its scope_begin row."},
+    "payload": {"type": "object", "additionalProperties": true, "description": "What the kind carries: the fields its registry entry names."}
+  }
+}

@@ -18,12 +18,12 @@ public enum TileShow
 /// one held open, what happens when a game restarts - and a backing decides <em>how</em> the game
 /// gets into it. The two know nothing of each other beyond this.
 ///
-/// There is one backing today, <see cref="Windows.AdoptBacking"/>: the game's own window is taken
-/// into the deck (SetParent). The design (docs/design/deck.md) names a second, <c>mirror</c>: draw
-/// the game's own frames into the tile and send input back through the game's own code, which
-/// needs no window system's permission and would work where adopting a window is forbidden -
-/// natively on Wayland, it always will be. It is not built here. This interface is the seam it
-/// goes behind, so adding it touches nothing of the grid, the tiles, the commands or the API.
+/// There are two backings: <see cref="Windows.AdoptBacking"/> takes the game's own window into the
+/// deck (SetParent); <see cref="Windows.MirrorBacking"/> draws the frames the game shares into the
+/// tile and sends input back through the game's own code, which needs no window system's
+/// permission and works where adopting a window is forbidden - natively on Wayland. Why each
+/// exists: docs/design/deck.md. A backing touches nothing of the grid, the tiles, the commands or
+/// the API.
 /// </summary>
 public interface ITileBacking
 {

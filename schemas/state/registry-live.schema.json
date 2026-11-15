@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "state/registry-live/1",
+  "title": "One id of the registry's live layer (<home>/state/registry-live/entries/<kind>/<path of the id>)",
+  "description": "What processes on this machine have noted about one id and have not committed to a repository: every claim, with who made it, when and for which task. Written by `gatekit registry note` under the file's lock; read by `registry show`, `at`, `clashes` and `commit`. The provenance stays here: `registry commit` leaves it behind.",
+  "type": "object",
+  "required": ["schema", "id", "kind", "claims"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "state/registry-live/1"},
+    "id": {"$ref": "registry/parts#/$defs/id"},
+    "kind": {"enum": ["function", "type", "global"]},
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry", "who", "when", "task"],
+        "additionalProperties": false,
+        "properties": {
+          "entry": {"type": "object", "additionalProperties": true, "description": "The entry as its kind's schema has it (registry/function, type or global), without `schema`."},
+          "at": {
+            "type": "object",
+            "required": ["binary", "rva"],
+            "additionalProperties": false,
+            "properties": {
+              "binary": {"type": "string", "minLength": 1},
+              "rva": {"type": "string", "pattern": "^0x[0-9A-F]+$"},
+              "build": {"type": "string", "pattern": "^[0-9]+$"},
+              "size": {"type": "integer", "minimum": 0}
+            }
+          },
+          "who": {"type": "string", "minLength": 1, "description": "The agent or person that noted it."},
+          "when": {"type": "string", "format": "time"},
+          "task": {"type": "string", "minLength": 1},
+          "committed": {"type": "string", "format": "time", "description": "When `registry commit` wrote it into a checkout's registry."}
+        }
+      }
+    }
+  }
+}

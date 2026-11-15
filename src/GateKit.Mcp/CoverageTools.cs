@@ -2,21 +2,19 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using GateKit.Stand;
+using GateKit.Bridge;
+using GateKit.Copies;
 using ModelContextProtocol.Protocol;
 
 namespace GateKit.Mcp;
 
 /// <summary>
-/// The coverage loop, as tools an agent can reach without the old Python stand.
+/// The coverage loop, as tools an agent can reach.
 ///
 /// Mapping the engine means noticing a component type the first moment anything carries it,
-/// then closing in until the claim is evidence rather than confidence
-/// (docs/design/coverage-runs.md). Until now every step of that needed
-/// <c>research/coverage/*.py</c>, which imports the first repository's stand. The method of
-/// those tools is unchanged here - <c>seen.py</c>, <c>probe.py</c> and <c>author_check.py</c>
-/// already knew how, and the Lua they injected now lives in the bridge as
-/// <c>GK.Probe</c> / <c>GK.Seen</c>. What changed is that an agent reaches all of it in one call.
+/// then closing in until the claim is evidence rather than confidence. The record these tools
+/// write is described in research/coverage/README.md; the reading in the game is done by the
+/// bridge's <c>GK.Probe</c> / <c>GK.Seen</c>.
 ///
 /// The tools, in the order a run uses them:
 /// <list type="bullet">
@@ -29,7 +27,7 @@ namespace GateKit.Mcp;
 /// <item><c>bg3_probe_fields</c> - raw bytes beside what Script Extender returns for the same
 ///   instance, in the same call: how a wrong layout is caught.</item>
 /// <item><c>bg3_recipe</c> - a confirmed finding leaves the shortest sequence that makes the
-///   component appear again.</item>
+///   component appear again, as a test `gatekit test` replays (<see cref="RecipeTest"/>).</item>
 /// <item><c>bg3_run_report</c> - what a run found, what is open, and what it spent.</item>
 /// </list>
 /// </summary>
@@ -37,6 +35,24 @@ public static class CoverageTools
 {
     const string Empty = """{"type": "object", "properties": {}}""";
     static readonly string[] Sides = ["client", "server"];
+
+    /// <summary>Asks one side, and when it gives no answer at all says so instead of failing the
+    /// whole tool: in the main menu the server stays in UnloadLevel and never answers, while the
+    /// client's capture holds what it saw there (N31 of the third coverage run, where every
+    /// two-sided tool timed out and the client's main-menu sightings were lost).</summary>
+    internal static async Task<(JsonNode? Answer, string? Gone)> AskSide(GameSession session, string side, string code,
+        TimeSpan limit, CancellationToken cancel)
+    {
+        try { return (await session.LuaAsync(side, code, limit, cancel), null); }
+        catch (CopyException e) when (IsSilence(e))
+        {
+            return (null, e.Message + " - that side does not answer (in the main menu the server stays in UnloadLevel); "
+                + "the other side was still asked");
+        }
+    }
+
+    /// <summary>Whether a copy error is a side that did not answer, rather than a Lua error.</summary>
+    internal static bool IsSilence(CopyException e) => e.Message.StartsWith("no answer from", StringComparison.Ordinal);
 
     static readonly JsonSerializerOptions Stored = new()
     {
@@ -55,9 +71,19 @@ public static class CoverageTools
     /// <summary>Where the coverage record lives: the repository's own folder, never a machine path.</summary>
     static string Root()
     {
-        var repository = StandSettings.RepositoryRoot()
-            ?? throw new StandException("the coverage record lives in the repository, and this is not a checkout of it");
+        var repository = CopySettings.RepositoryRoot()
+            ?? throw new CopyException("the coverage record lives in the repository, and this is not a checkout of it");
         return Path.Combine(repository, "research", "coverage");
+    }
+
+    /// <summary>The record of this server: the host's when it names one (a test), else the repository's.</summary>
+    static string Root(ToolHost host) => host.CoverageRoot ?? Root();
+
+    /// <summary>One writer of the committed record at a time, across processes
+    /// (<see cref="GateKit.Copies.Record.Lock"/>, shared with the ledgers and `gatekit test`).</summary>
+    public static class RecordLock
+    {
+        public static IDisposable Take(string root, int seconds = 120) => GateKit.Copies.Record.Lock(root, seconds);
     }
 
     static JsonObject ReadObject(string path) =>
@@ -68,7 +94,22 @@ public static class CoverageTools
     static void Write(string path, JsonNode value)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, value.ToJsonString(Stored).ReplaceLineEndings("\n"));
+        var text = value.ToJsonString(Stored).ReplaceLineEndings("\n");
+        // The record is committed while a run goes on, and git maps a file it is reading: for that
+        // moment Windows refuses to write it ("a user-mapped section is open"). The lock keeps our
+        // own writers apart; somebody else's reader is waited out, briefly, rather than failed on.
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                File.WriteAllText(path, text);
+                return;
+            }
+            catch (IOException) when (attempt < 40)
+            {
+                Thread.Sleep(100);
+            }
+        }
     }
 
     public static IReadOnlyList<GateKitTool> Create(ToolHost host) =>
@@ -110,8 +151,8 @@ public static class CoverageTools
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
-            var session = stand.Session();
+            var (copy, _) = host.Begin();
+            var session = copy.Session();
             var side = args.Need("side");
             var component = args.Need("component");
             var read = $"return GK.Probe.Dump({Lua.Value(component)}, {args.Int("max") ?? 16})";
@@ -121,7 +162,7 @@ public static class CoverageTools
             if (args.Flag("unpause"))
             {
                 var state = await session.LuaAsync("server", "return GK.Pause.State()", TimeSpan.FromSeconds(20), cancel);
-                wasPaused = state?["paused"]?.GetValue<bool>() ?? false;
+                wasPaused = state.Field("paused")?.GetValue<bool>() ?? false;
                 if (wasPaused) await session.LuaAsync("server", "return GK.Pause.Set(false)", TimeSpan.FromSeconds(20), cancel);
             }
 
@@ -172,8 +213,8 @@ public static class CoverageTools
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
-            var session = stand.Session();
+            var (copy, _) = host.Begin();
+            var session = copy.Session();
             var side = args.Need("side");
             var root = Root();
             var layouts = LayoutCheck.Load(root, args.Str("prefix") ?? "");
@@ -197,27 +238,7 @@ public static class CoverageTools
                 {
                     var rows = Rows(found?[layout.Component]).OfType<JsonObject>().ToList();
                     if (rows.Count == 0) { nothingAlive.Add(layout.Component); continue; }
-                    var compared = 0;
-                    string? problem = null;
-                    foreach (var row in rows)
-                    {
-                        if (row["Present"]?.GetValue<bool>() != true) continue;
-                        var hex = row["Hex"]?.GetValue<string>() ?? "";
-                        var raw = Hex(hex);
-                        if (raw.Length < layout.Size) continue;   // the sample stops short of the type
-                        var values = row["Values"] as JsonObject;
-                        foreach (var field in layout.Fields)
-                        {
-                            if (LayoutCheck.Expected(field, raw) is not { } want) continue;
-                            if (LayoutCheck.Same(want, values?[field.Name])) continue;
-                            problem = $"{layout.File}: {field.Name} at +0x{field.Offset:X} ({field.Type}) - the bytes say "
-                                + $"{want}, Script Extender says {values?[field.Name]?.ToJsonString() ?? "nothing"} "
-                                + $"(entity {row["Entity"]})";
-                            break;
-                        }
-                        if (problem is not null) break;
-                        compared++;
-                    }
+                    var (compared, problem) = LayoutCheck.Compare(layout, rows);
                     if (problem is not null) disagreed[layout.Component] = problem;
                     else if (compared > 0) agreed[layout.Component] = compared;
                     else notCompared.Add(layout.Component);
@@ -246,6 +267,14 @@ public static class CoverageTools
     static int Record(string root, string side, Dictionary<string, int> agreed)
     {
         if (agreed.Count == 0) return 0;
+        using var held = RecordLock.Take(root);
+        return RecordHeld(root, side, agreed, "bg3_verify", "mapped fields equal raw memory of the same live instance");
+    }
+
+    /// <summary><see cref="Record"/> for a caller that already holds the record's lock.</summary>
+    static int RecordHeld(string root, string side, Dictionary<string, int> agreed, string by, string stage)
+    {
+        if (agreed.Count == 0) return 0;
         var path = Path.Combine(root, "coverage.json");
         var index = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         var written = 0;
@@ -258,22 +287,14 @@ public static class CoverageTools
             component["verified"] = new JsonObject
             {
                 ["date"] = DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                ["scenario"] = "bg3_verify",
-                ["stage"] = "mapped fields equal raw memory of the same live instance",
+                ["by"] = by,
+                ["stage"] = stage,
                 ["instances"] = instances,
             };
             written++;
         }
         Write(path, index);
         return written;
-    }
-
-    static byte[] Hex(string hex)
-    {
-        var bytes = new byte[hex.Length / 2];
-        for (var i = 0; i < bytes.Length; i++)
-            bytes[i] = byte.Parse(hex.AsSpan(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-        return bytes;
     }
 
     // ---------------------------------------------------------------------------------------
@@ -298,11 +319,11 @@ public static class CoverageTools
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
+            var (copy, _) = host.Begin();
             var code = args.Has("paused")
                 ? $"return GK.Pause.Set({(args.Flag("paused") ? "true" : "false")}, {Lua.Value(args.Str("by"))})"
                 : "return GK.Pause.State()";
-            return Results.Text(await stand.Session().LuaAsync("server", code, TimeSpan.FromSeconds(20), cancel));
+            return Results.Text(await copy.Session().LuaAsync("server", code, TimeSpan.FromSeconds(20), cancel));
         });
 
     // ---------------------------------------------------------------------------------------
@@ -313,8 +334,8 @@ public static class CoverageTools
             "Begin the standing capture on both sides: every tick, each component type that has holders is counted, and the first "
             + "few distinct instances of each are sampled as raw bytes. Nothing is prepared in advance - whatever the game is made "
             + "to do feeds it. Start it once when the game is playable, then play; bg3_seen_new says what appeared, bg3_seen_drain "
-            + "moves the samples into the record. The capture lives in the game's Lua state, so a world reset or a Lua reload loses "
-            + "it: drain first, start again after.",
+            + "moves the samples into the record. A side that does not answer (the server in the main menu) is named under `gone` and the other side is still asked. The capture lives in the game's Lua state, so a world reset, a Lua reload or a "
+            + "level change stops it: drain first, start again after.",
             """
             {
              "type": "object",
@@ -322,26 +343,67 @@ public static class CoverageTools
               "label": {"type": "string", "description": "What is happening from now on (\"idle\", \"character creation\", \"first fight\"). It is stored with every sample and is how a recipe is later written."},
               "per_label": {"type": "integer", "description": "Samples kept per type per label (default 3)."},
               "per_type": {"type": "integer", "description": "Cap on samples of one type over the whole run (default 12)."},
-              "max_bytes": {"type": "integer", "description": "Most bytes kept of one instance (default 1024)."}
+              "max_bytes": {"type": "integer", "description": "Most bytes kept of one instance (default 1024)."},
+              "role": {"type": "string", "description": "Your role in the run (runner world, pathfinder...), kept on every sighting this server records. Default GATEKIT_ROLE, else unknown."},
+              "run": {"type": "string", "description": "The run's id, the same for every session of it. Default GATEKIT_RUN, else unknown."},
+              "stretch": {"type": "string", "description": "Which stretch of your work this is. Default GATEKIT_STRETCH, else unknown."}
              }
             }
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
+            var (copy, _) = host.Begin();
+            RecordBook.Context.Start(host.Instance, args.Str("role"), args.Str("run"), args.Str("stretch"));
             var options = new StringBuilder("{ Label = ").Append(Lua.Value(args.Str("label") ?? "idle"));
             if (args.Int("per_label") is { } perLabel) options.Append(", PerLabel = ").Append(perLabel);
             if (args.Int("per_type") is { } perType) options.Append(", PerType = ").Append(perType);
             if (args.Int("max_bytes") is { } maxBytes) options.Append(", MaxBytes = ").Append(maxBytes);
             options.Append(" }");
             var answers = new JsonObject();
+            var session = copy.Session();
+            // Every layout in the build goes with the capture, so each sample of such a type is also
+            // read through Script Extender in the tick it is taken, and bg3_seen_drain compares the
+            // two: the only way a type that lives one frame is ever verified (D14 of the day run).
+            var layouts = LayoutCheck.Load(Root());
             foreach (var side in Sides)
             {
-                answers[side] = await stand.Session().LuaAsync(side, $"return GK.Seen.Start({options})",
-                    TimeSpan.FromSeconds(180), cancel);
+                var handed = await HandLayouts(session, side, layouts, cancel);
+                var (answer, gone) = await AskSide(session, side, $"return GK.Seen.Start({options})", TimeSpan.FromSeconds(180), cancel);
+                if (gone is null && answer is JsonObject started) started["layouts"] = handed;
+                answers[side] = gone is null ? answer : new JsonObject { ["started"] = false, ["gone"] = gone };
             }
             return Results.Text(answers);
         });
+
+    /// <summary>The layouts the capture reads through Script Extender, in batches; what it says when
+    /// the bridge cannot take them (a bridge older than Seen.AddSpecs: reload it).</summary>
+    static async Task<JsonNode?> HandLayouts(GameSession session, string side, IReadOnlyList<LayoutCheck.Layout> layouts, CancellationToken cancel)
+    {
+        if (layouts.Count == 0) return 0;
+        var first = true;
+        JsonNode? held = null;
+        foreach (var batch in layouts.Chunk(120))
+        {
+            var specs = string.Join(", ", batch.Select(l =>
+                $"[{Lua.Value(l.Component)}] = {{ ExtName = {Lua.Value(l.ExtName)}, Fields = {Lua.List([.. l.Fields.Select(f => f.Name)])} }}"));
+            JsonNode? answer;
+            string? gone;
+            try
+            {
+                (answer, gone) = await AskSide(session, side, $"return GK.Seen.AddSpecs({{{specs}}}, {(first ? "true" : "false")})",
+                    TimeSpan.FromSeconds(60), cancel);
+            }
+            catch (CopyException e)
+            {
+                // The capture still starts; its samples just cannot be compared on drain.
+                return "not handed over (a bridge without GK.Seen.AddSpecs? `bridge-reload`): " + e.Message.Split('\n')[0];
+            }
+            if (gone is not null) return "not handed over: " + gone;
+            first = false;
+            held = answer;
+        }
+        return held;
+    }
 
     static GateKitTool SeenMark(ToolHost host) => new(
         Define("bg3_seen_mark",
@@ -357,11 +419,15 @@ public static class CoverageTools
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
+            var (copy, _) = host.Begin();
             var label = Lua.Value(args.Need("label"));
             var answers = new JsonObject();
+            var session = copy.Session();
             foreach (var side in Sides)
-                answers[side] = await stand.Session().LuaAsync(side, $"return GK.Seen.Mark({label})", TimeSpan.FromSeconds(30), cancel);
+            {
+                var (answer, gone) = await AskSide(session, side, $"return GK.Seen.Mark({label})", TimeSpan.FromSeconds(30), cancel);
+                answers[side] = gone is null ? answer : new JsonObject { ["gone"] = gone };
+            }
             return Results.Text(answers);
         });
 
@@ -379,13 +445,17 @@ public static class CoverageTools
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
-            var known = ReadObject(Path.Combine(Root(), "seen", "index.json"));
+            var (copy, _) = host.Begin();
+            var root = Root(host);
+            var known = ReadObject(Path.Combine(root, "seen", "index.json"));
             var fresh = new JsonArray();
             var repeats = new JsonArray();
+            var silent = new JsonObject();
+            var session = copy.Session();
             foreach (var side in Sides)
             {
-                var found = await stand.Session().LuaAsync(side, "return GK.Seen.New()", TimeSpan.FromSeconds(60), cancel);
+                var (found, gone) = await AskSide(session, side, "return GK.Seen.New()", TimeSpan.FromSeconds(60), cancel);
+                if (gone is not null) { silent[side] = gone; continue; }
                 foreach (var row in Rows(found))
                 {
                     if (row is not JsonObject entry || entry["Name"]?.GetValue<string>() is not { } name) continue;
@@ -393,20 +463,49 @@ public static class CoverageTools
                     (known.ContainsKey(name) ? repeats : fresh).Add(entry.DeepClone());
                 }
             }
+            // A type named here is recorded here (D27 of the day run: two server types listed under
+            // new_to_the_record never reached the record - the capture that held them was gone by
+            // the drain). The sighting goes into seen/index.json at once; the drain adds samples.
+            if (fresh.Count > 0) RecordSightings(root, fresh);
+            RecordBook.FromNew(root, host.Instance, fresh, repeats, known);
             var answer = new JsonObject
             {
                 ["new_to_the_record"] = fresh,
                 ["seen_before"] = args.Flag("known") ? repeats : repeats.Count,
+                ["gone"] = silent.Count > 0 ? silent : null,
             };
             return Results.Text(answer);
         });
+
+    /// <summary>Writes sightings (rows of GK.Seen.New with their side) into seen/index.json.</summary>
+    static void RecordSightings(string root, JsonArray rows)
+    {
+        using var held = RecordLock.Take(root);
+        var indexPath = Path.Combine(root, "seen", "index.json");
+        var index = ReadObject(indexPath);
+        foreach (var row in rows)
+        {
+            if (row?["Name"]?.GetValue<string>() is not { } name || row["side"]?.GetValue<string>() is not { } side) continue;
+            if (!index.ContainsKey(name)) index[name] = new JsonObject();
+            var byName = index[name]!.AsObject();
+            if (!byName.ContainsKey(side))
+                byName[side] = new JsonObject { ["max"] = 0, ["labels"] = new JsonArray(), ["levels"] = new JsonArray(), ["samples"] = 0 };
+            var record = byName[side]!.AsObject();
+            var max = Num(row["Max"]);
+            if (max > Num(record["max"])) record["max"] = max;
+            AddOnce(record["labels"]!.AsArray(), row["Label"]?.GetValue<string>());
+        }
+        Write(indexPath, Sorted(index));
+    }
 
     static GateKitTool SeenDrain(ToolHost host) => new(
         Define("bg3_seen_drain",
             "Move the queued samples out of the game and into the record: research/coverage/seen/<side>/<type>.json for the raw "
             + "bytes (derived from the game, never committed) and seen/index.json for where each type was observed. Drain when the "
             + "queue has grown, and always before a world reset or a Lua reload, which lose it. It answers with how many samples "
-            + "each side gave and which types the record had never held before.",
+            + "each side gave and which types the record had never held before; a side with no capture running is named under "
+            + "not_running, and the other side is still drained - a side that does not answer at all (the server in the main menu, "
+            + "which stays in UnloadLevel) is named there too, so the client's main-menu sightings are not lost.",
             """
             {
              "type": "object",
@@ -415,11 +514,16 @@ public static class CoverageTools
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
-            var session = stand.Session();
-            var root = Root();
+            var (copy, _) = host.Begin();
+            var session = copy.Session();
+            var root = Root(host);
+            // Several copies of the game are drained into one record. Read, change, write is not
+            // one step, so two drains at once would each write back what it read and one of them
+            // would be lost - quietly, which for a sighting means a type goes back to "never seen".
+            using var held = RecordLock.Take(root);
             var indexPath = Path.Combine(root, "seen", "index.json");
             var index = ReadObject(indexPath);
+            var seenBefore = RecordBook.SeenKeys(index);
 
             var level = args.Str("level");
             if (level is null)
@@ -434,20 +538,56 @@ public static class CoverageTools
 
             var counts = new JsonObject();
             var firstTime = new JsonArray();
+            var stopped = new JsonObject();
+            var layoutsByName = LayoutCheck.Load(root).GroupBy(l => l.Component, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+            var compared = new JsonObject();
+            var verified = new JsonObject();
+            var disagreements = new List<string>();
             foreach (var side in Sides)
             {
+                // A world reset, a Lua reload or a level change ends the capture in that Lua state;
+                // what is not running has nothing queued, and says so instead of failing.
+                var (status, gone) = await AskSide(session, side, "return GK.Seen.Status()", TimeSpan.FromSeconds(30), cancel);
+                if (gone is not null)
+                {
+                    stopped[side] = "not drained: " + gone;
+                    counts[side] = 0;
+                    continue;
+                }
+                if (SeenCapture.NotRunning(status, side) is { } why)
+                {
+                    stopped[side] = why;
+                    counts[side] = 0;
+                    continue;
+                }
                 var added = new Dictionary<string, List<JsonObject>>(StringComparer.Ordinal);
                 while (true)
                 {
                     var got = await session.LuaAsync(side, "return GK.Seen.Drain(120)", TimeSpan.FromSeconds(120), cancel);
-                    foreach (var row in Rows(got?["Rows"]))
+                    foreach (var row in Rows(got.Field("Rows")))
                     {
                         if (row is not JsonObject sample || sample["Name"]?.GetValue<string>() is not { } name) continue;
                         if (!added.TryGetValue(name, out var list)) added[name] = list = [];
                         list.Add(sample);
                     }
-                    if ((Num(got?["Left"])) <= 0) break;
+                    if ((Num(got.Field("Left"))) <= 0) break;
                 }
+
+                // Each sample of a type with a layout was also read through Script Extender in the
+                // tick it was taken: the two readings are compared here, and the types that agree
+                // are recorded as verified (D14 of the day run - a one-frame type has no other way in).
+                var agreed = new Dictionary<string, int>(StringComparer.Ordinal);
+                foreach (var (name, rows) in added)
+                {
+                    if (!layoutsByName.TryGetValue(name, out var layout)) continue;
+                    var (fine, problem) = LayoutCheck.Compare(layout, rows);
+                    if (problem is not null) { if (disagreements.Count < 20) disagreements.Add($"{side}: {problem}"); }
+                    else if (fine > 0) agreed[name] = fine;
+                }
+                compared[side] = agreed.Count;
+                verified[side] = RecordHeld(root, side, agreed, "bg3_seen_drain",
+                    "mapped fields equal raw memory of the same instance, read in the tick of capture");
 
                 foreach (var (name, rows) in added)
                 {
@@ -467,14 +607,15 @@ public static class CoverageTools
                             ["hex"] = hex,
                             ["entity"] = row["Entity"]?.DeepClone(),
                             ["label"] = row["Label"]?.DeepClone(),
-                            ["level"] = level ?? "",
+                            // a sample spilled before a load carries the level it was taken in
+                            ["level"] = row["Level"] is JsonValue taken && taken.TryGetValue<string>(out var at) && at.Length > 0 ? at : level ?? "",
                         });
                     }
                     Write(path, kept);
                 }
 
                 var types = await session.LuaAsync(side, "return GK.Seen.Types()", TimeSpan.FromSeconds(120), cancel);
-                foreach (var (name, seen) in types?.AsObject() ?? [])
+                foreach (var (name, seen) in types.AsFields() ?? [])
                 {
                     if (seen is not JsonObject entry) continue;
                     if (!index.ContainsKey(name))
@@ -490,9 +631,14 @@ public static class CoverageTools
                     if (max > (Num(record["max"]))) record["max"] = max;
                     AddOnce(record["labels"]!.AsArray(), entry["Label"]?.GetValue<string>());
                     AddOnce(record["levels"]!.AsArray(), level);
+                    // The raw samples are not committed, so a checkout that never drained this type
+                    // holds fewer of them than the record counts: a count never goes down (a drain
+                    // from a fresh worktree took "samples": 10 to 1).
                     if (added.ContainsKey(name))
-                        record["samples"] = ReadObject(Path.Combine(root, "seen", side, Safe(name) + ".json"))["samples"]?.AsArray().Count ?? 0;
+                        record["samples"] = Math.Max((int)Num(record["samples"]),
+                            ReadObject(Path.Combine(root, "seen", side, Safe(name) + ".json"))["samples"]?.AsArray().Count ?? 0);
                 }
+                RecordBook.FromTypes(root, host.Instance, side, types, seenBefore, level);
                 counts[side] = added.Sum(pair => pair.Value.Count);
             }
 
@@ -503,6 +649,10 @@ public static class CoverageTools
                 ["level"] = level ?? "",
                 ["types_new_to_the_record"] = firstTime,
                 ["record"] = index.Count,
+                ["agreed_in_the_tick_of_capture"] = compared,
+                ["recorded_as_verified"] = verified,
+                ["disagreements"] = disagreements.Count > 0 ? new JsonArray([.. disagreements.Select(d => (JsonNode)d!)]) : null,
+                ["not_running"] = stopped.Count > 0 ? stopped : null,
             });
         });
 
@@ -513,10 +663,14 @@ public static class CoverageTools
             + "state was reset under it - start it again.", Empty),
         async (_, cancel) =>
         {
-            var (stand, _) = host.Begin();
+            var (copy, _) = host.Begin();
             var answers = new JsonObject();
+            var session = copy.Session();
             foreach (var side in Sides)
-                answers[side] = await stand.Session().LuaAsync(side, "return GK.Seen.Status()", TimeSpan.FromSeconds(30), cancel);
+            {
+                var (answer, gone) = await AskSide(session, side, "return GK.Seen.Status()", TimeSpan.FromSeconds(30), cancel);
+                answers[side] = gone is null ? answer : new JsonObject { ["gone"] = gone };
+            }
             return Results.Text(answers);
         });
 
@@ -585,8 +739,10 @@ public static class CoverageTools
             + "across the instances (a live entity handle, a pointer into the executable with its offset, a heap pointer, a plain "
             + "value). For every 4-byte half: how many distinct values, their range, whether they all read as ordinary floats, and "
             + "the bytes themselves. A field that is the same in every instance is a constant or a default; one that differs with "
-            + "the situation is what you can force a value into and prove. An offset shown as `exe+0x...` can be named with "
-            + "`gatekit symbols signature bg3.exe+0x...`. Read-only: nothing in the game is changed.",
+            + "the situation is what you can force a value into and prove. An offset shown as `exe+0x...` is in the executable "
+            + "this copy runs - a copy starts bg3_dx11.exe - so it is named with `gatekit symbols signature "
+            + "bg3_dx11.exe+0x...`; the same number asked of bg3.exe names a different function. Read-only: nothing in the "
+            + "game is changed.",
             """
             {
              "type": "object",
@@ -601,11 +757,11 @@ public static class CoverageTools
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
+            var (copy, _) = host.Begin();
             var component = args.Need("component");
-            var dumped = await stand.Session().LuaAsync(args.Need("side"),
+            var dumped = await copy.Session().LuaAsync(args.Need("side"),
                 $"return GK.Probe.Dump({Lua.Value(component)}, {args.Int("max") ?? 16})", TimeSpan.FromSeconds(120), cancel);
-            if (dumped?["Error"] is { } why) return Results.Text($"{component}: {why}");
+            if (dumped is JsonObject refused && refused["Error"] is { } why) return Results.Text($"{component}: {why}");
             return Results.Text(Survey.Render(dumped, component, args.Flag("raw")));
         });
 
@@ -632,16 +788,16 @@ public static class CoverageTools
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
+            var (copy, _) = host.Begin();
             var component = args.Need("component");
             var layout = LayoutCheck.Find(Root(), component);
             if (layout is null)
                 return Results.Text($"no layout file for {component}. `bg3_probe` is where a hypothesis starts; "
                     + "write it to research/coverage/layouts and this reads the game through it.");
-            var read = await stand.Session().LuaAsync(args.Need("side"),
+            var read = await copy.Session().LuaAsync(args.Need("side"),
                 $"return GK.Probe.View({Lua.Value(component)}, {Lua.Fields(layout.Fields)}, {args.Int("max") ?? 4})",
                 TimeSpan.FromSeconds(120), cancel);
-            if (read?["Error"] is { } why) return Results.Text($"{component}: {why}");
+            if (read is JsonObject refused && refused["Error"] is { } why) return Results.Text($"{component}: {why}");
             return Results.Text(new JsonObject
             {
                 ["component"] = component,
@@ -674,11 +830,11 @@ public static class CoverageTools
             """),
         async (args, cancel) =>
         {
-            var (stand, _) = host.Begin();
+            var (copy, _) = host.Begin();
             var fields = args.Strings("fields") ?? [];
             var lua = $"return GK.Probe.Mapped({Lua.Value(args.Need("component"))}, {Lua.Value(args.Need("ext_name"))}, "
                 + $"{Lua.List(fields)}, {args.Int("max") ?? 3})";
-            var rows = await stand.Session().LuaAsync(args.Need("side"), lua, TimeSpan.FromSeconds(60), cancel);
+            var rows = await copy.Session().LuaAsync(args.Need("side"), lua, TimeSpan.FromSeconds(60), cancel);
             // The refusal comes back as an object with Error; the rows themselves come back as a list.
             if (rows is JsonObject refused && refused["Error"] is { } why) return Results.Text(why.ToString());
             return Results.Text(Survey.RenderFields(rows));
@@ -692,23 +848,52 @@ public static class CoverageTools
             "Write down a confirmed finding and the shortest sequence that makes the component appear again. Without a recipe a "
             + "finding is an anecdote however true it is: the recipe is what lets the next person check you, what becomes a "
             + "regression test when the game is patched, and what makes a claim worth sending to Script Extender's author.\n"
-            + "Be honest in `evidence` and `reached_by`. A sighting is NOT a finding: a claim needs the action repeated, or a value "
+            + "The recipe is a TEST that `gatekit --instance <copy> test tests/_coverage -k <name>` replays: it starts in "
+            + "`level`, watches `component` on its side from before the first step, runs `steps` in order, and FAILS unless the "
+            + "component came alive. So give the steps as you did them, from a fresh game in that level: each is one of "
+            + "{\"side\": \"server\", \"lua\": \"...\"} (a chunk run on client, server or ui; an error fails the replay), "
+            + "{\"key\": \"Escape\"} (a key, as bg3_key names it), {\"side\": \"client\", \"until\": \"<Lua expression>\", "
+            + "\"timeout\": 30} (wait until it is true) or {\"wait\": 2} (let seconds pass); any of them may carry `wait` (a pause "
+            + "after it) and `note` (a comment). Each chunk is its own call: a `local` does not reach the next step - look things "
+            + "up again or keep them in a global.\n"
+            + "Write only what is true in `evidence` and `reached_by`. A sighting is NOT a finding: a claim needs the action repeated, or a value "
             + "forced, or the code read, and the record says which. A component seen in ordinary play is a stronger fact than one "
             + "that only appears after a cheat, and both are worth having. A field you could not work out stays unresolved here - a "
             + "confident wrong name travels into other people's mods and is worse than a missing one.\n"
-            + "It writes scenarios/coverage/<name>.lua and appends to research/coverage/findings.jsonl.",
+            + "It writes tests/_coverage/<name>.lua in the checkout this server runs from and appends to "
+            + "research/coverage/findings.jsonl. Replay it before you call it done.",
             """
             {
              "type": "object",
-             "required": ["component", "name", "lua", "evidence", "reached_by"],
+             "required": ["component", "name", "level", "steps", "evidence", "reached_by"],
              "properties": {
               "component": {"type": "string", "description": "The engine's own name of the type the recipe makes appear."},
               "name": {"type": "string", "description": "A short file name for the recipe, e.g. lock-picked."},
-              "lua": {"type": "string", "description": "The scenario: the shortest Lua that reaches the situation from a fresh game, ending by reading the component. It must replay on a clean game."},
+              "level": {"type": "string", "description": "MODULE:LEVEL the replay starts in, as bg3_up takes it (e.g. GustavX:WLD_Main_A), or \"main menu\" for a recipe of the menus (bg3_up main_menu)."},
+              "side": {"type": "string", "enum": ["client", "server"], "description": "Where the component lives. Read off an esv:: (server) or ecl:: (client) name when left out."},
+              "steps": {
+               "type": "array",
+               "description": "What makes it appear, in order, from a fresh game in `level`. Each step is one of lua (with side), key, until (with side), or only wait.",
+               "items": {
+                "type": "object",
+                "properties": {
+                 "side": {"type": "string", "enum": ["client", "server", "ui"], "description": "Where `lua` runs or `until` is read."},
+                 "lua": {"type": "string", "description": "A chunk run on `side`."},
+                 "key": {"type": "string", "description": "A key pressed in the game (bg3_key's names)."},
+                 "hold": {"type": "number", "description": "With key: seconds the key stays down (0 to 30), as bg3_key's hold - moving or turning the camera needs it."},
+                 "until": {"type": "string", "description": "A Lua expression read on `side` until it is true."},
+                 "timeout": {"type": "number", "description": "Seconds `lua` or `until` may take (until: default 30)."},
+                 "wait": {"type": "number", "description": "Seconds to let pass after the step; alone, just a pause."},
+                 "note": {"type": "string", "description": "A comment above the step: why it is there."}
+                }
+               }
+              },
+              "within": {"type": "number", "description": "Seconds after the last step the component may take to appear (default 10)."},
               "claim": {"type": "string", "description": "What you now believe, in one or two sentences. Say which fields you could NOT work out."},
-              "evidence": {"type": "string", "enum": ["repeated", "value forced", "code read", "sighting only"], "description": "What actually backs the claim. \"sighting only\" is allowed and is recorded as a lead, not a finding."},
-              "reached_by": {"type": "string", "enum": ["play", "cheat"], "description": "Whether ordinary play produced it or it had to be staged."},
-              "level": {"type": "string", "description": "The level it was reached in."},
+              "evidence": {"type": "string", "enum": ["sighting", "repeated", "replayed", "field_value"], "description": "What actually backs the claim: sighting (seen once - recorded as a lead, not a finding), repeated (made to appear again in a fresh capture), replayed (this recipe was replayed and passed), field_value (a value was forced or read and the field moved as claimed). Anything more goes in `note`."},
+              "reached_by": {"type": "string", "enum": ["play", "cheat", "play_with_cheat_setup"], "description": "play: ordinary play produced it. cheat: its cause is staged (an Osi call, a GK.Stage or GK.Cheat call, a request queued the way no player can). play_with_cheat_setup: a staged setup (an item brought, a level given), then the player's own action caused it."},
+              "note": {"type": "string", "description": "Free text about the evidence or how it was reached: what the enums cannot say."},
+              "may_exist": {"type": "boolean", "description": "The type may already be held before the steps (a persistent component). Without it the replay FAILS when something holds the type before the steps, since appearing then proves nothing; with it the replay needs the holder count to rise or a new holder entity."},
               "fields": {"type": "object", "description": "Offset -> what you believe it is. Leave out what you do not know; do not guess."},
               "open": {"type": "string", "description": "What is still unresolved about this type."}
              }
@@ -720,44 +905,74 @@ public static class CoverageTools
             var repository = Path.GetDirectoryName(Path.GetDirectoryName(root))!;
             var component = args.Need("component");
             var safe = Safe(args.Need("name")).Trim('_');
+            CheckComponent(root, component, args.Need("name"));
             var evidence = args.Need("evidence");
-            var path = Path.Combine(repository, "scenarios", "coverage", safe + ".lua");
+            var reachedBy = args.Need("reached_by");
+            var mayExist = args.Flag("may_exist");
+            var level = args.Need("level");
+            var side = RecipeTest.ComponentSide(component, args.Str("side"));
+            var steps = RecipeTest.Steps(args.Node("steps") ?? throw new MissingArgumentException("steps"));
+            var path = Path.Combine(repository, "tests", "_coverage", safe + ".lua");
 
             var header = new StringBuilder()
                 .Append("-- ").Append(component).Append(": the shortest way to make it appear again.\n")
-                .Append("-- Claim: ").Append((args.Str("claim") ?? "(none stated)").Replace("\n", "\n-- ")).Append('\n')
-                .Append("-- Backed by: ").Append(evidence).Append(", reached by ").Append(args.Need("reached_by"))
-                .Append(args.Str("level") is { Length: > 0 } level ? $", in {level}" : "").Append('\n');
+                .Append("-- Claim: ").Append((args.Str("claim") ?? "(none stated)").ReplaceLineEndings("\n-- ")).Append('\n')
+                .Append("-- Backed by: ").Append(evidence).Append(", reached by ").Append(reachedBy)
+                .Append(", in ").Append(level).Append('\n');
             if (args.Str("open") is { Length: > 0 } open)
-                header.Append("-- Still unresolved: ").Append(open.Replace("\n", "\n-- ")).Append('\n');
-            header.Append("-- Recorded ").Append(DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(".\n\n");
+                header.Append("-- Still unresolved: ").Append(open.ReplaceLineEndings("\n-- ")).Append('\n');
+            header.Append("-- Recorded ").Append(DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                .Append(". Replay: gatekit --instance <copy> test tests/_coverage -k ").Append(safe).Append("\n\n");
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            File.WriteAllText(path, header + args.Need("lua").TrimEnd() + "\n");
-
+            var test = RecipeTest.Write(header.ToString(), level, component, side, steps, args.Num("within") ?? 10, mayExist);
             var entry = new JsonObject
             {
                 ["date"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
                 ["component"] = component,
-                ["recipe"] = "scenarios/coverage/" + safe + ".lua",
+                ["recipe"] = "tests/_coverage/" + safe + ".lua",
                 ["claim"] = args.Str("claim"),
                 ["evidence"] = evidence,
-                ["reached_by"] = args.Need("reached_by"),
-                ["level"] = args.Str("level"),
+                ["reached_by"] = reachedBy,
+                ["level"] = level,
                 ["fields"] = args.Node("fields"),
                 ["open"] = args.Str("open"),
-                ["kind"] = evidence == "sighting only" ? "lead" : "finding",
+                ["note"] = args.Str("note"),
+                ["kind"] = evidence == "sighting" ? "lead" : "finding",
             };
-            File.AppendAllText(Path.Combine(root, "findings.jsonl"), entry.ToJsonString() + "\n");
+            GateKit.Copies.Record.Validate("findings", entry);  // a value outside the vocabulary writes nothing
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, test);
+            GateKit.Copies.Record.Append(root, "findings", entry);
             return Task.FromResult(Results.Text(new JsonObject
             {
-                ["written"] = "scenarios/coverage/" + safe + ".lua",
+                ["written"] = "tests/_coverage/" + safe + ".lua",
+                ["path"] = Path.GetFullPath(path),
+                ["recorded_in"] = Path.GetFullPath(Path.Combine(root, "findings.jsonl")),
+                ["replay"] = $"gatekit --instance <copy> test tests/_coverage -k {safe}",
                 ["recorded_as"] = entry["kind"]!.DeepClone(),
-                ["note"] = evidence == "sighting only"
+                ["note"] = evidence == "sighting"
                     ? "Recorded as a LEAD, not a finding: one appearance is not evidence. Repeat the action, or force a value, or read the code, then record it again."
-                    : "Recorded as a finding. Check that the recipe replays on a clean game before the run ends.",
+                    : "Recorded as a finding. Replay it (the line above) on a clean game before the run ends: it fails unless the component comes alive.",
             }));
         });
+
+    /// <summary>A recipe whose component is not a type replays as a failure forever: seven of the
+    /// third run's sixteen were written with the bare namespace <c>esv</c> (a shell slip upstream of
+    /// the call), every one failed its replay, and the record said "makes esv live". So the name is
+    /// held to the engine's component types - those of coverage.json when the checkout has it - and a
+    /// refusal names what was probably meant.</summary>
+    public static void CheckComponent(string root, string component, string name)
+    {
+        var shaped = component.Contains("::", StringComparison.Ordinal) && !component.EndsWith("::", StringComparison.Ordinal)
+            && !component.EndsWith("System", StringComparison.Ordinal);
+        var index = Path.Combine(root, "coverage.json");
+        var ledger = File.Exists(index) ? Ledger.Load(root) : null;
+        if (shaped && (ledger is null || ledger.Knows(component))) return;
+        var near = ledger?.Near(component, [name]) ?? [];
+        throw new ArgumentException($"`component` must be a component type, the engine's full name (e.g. esv::lock::LockComponent); "
+            + $"{component} is " + (shaped ? "not one the coverage index knows" : "not a type name") + ". Nothing was written."
+            + (near.Count > 0 ? " Did you mean: " + string.Join(", ", near) + "?" : ""));
+    }
 
     static GateKitTool RunReport() => new(
         Define("bg3_run_report",
@@ -768,9 +983,9 @@ public static class CoverageTools
             """
             {
              "type": "object",
-             "required": ["run", "half", "found", "open", "wishes"],
+             "required": ["half", "found", "open", "wishes"],
              "properties": {
-              "run": {"type": "string", "description": "A short name for this run."},
+              "run": {"type": "string", "description": "A short name for what you did, kept as `name`. The run, role and stretch themselves come from bg3_seen_start's arguments, else GATEKIT_RUN / GATEKIT_ROLE / GATEKIT_STRETCH."},
               "half": {"type": "string", "enum": ["world", "interface"], "description": "Which half you worked: inside the game, or the menus around it."},
               "aim": {"type": "string", "description": "Wide (many situations, to light up the unseen) or narrow (one system from every angle) - and why you chose it."},
               "found": {"type": "string", "description": "What was found, with its evidence and the recipes written. Say plainly what is a lead and what is a finding."},
@@ -787,7 +1002,10 @@ public static class CoverageTools
             var entry = new JsonObject
             {
                 ["ended"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
-                ["run"] = args.Need("run"),
+                ["run"] = RecordBook.Context.Who().Run,
+                ["stretch"] = RecordBook.Context.Who().Stretch,
+                ["role"] = RecordBook.Context.Who().Role,
+                ["name"] = args.Str("run"),
                 ["half"] = args.Need("half"),
                 ["aim"] = args.Str("aim"),
                 ["found"] = args.Need("found"),
@@ -807,7 +1025,7 @@ public static class CoverageTools
 
     // ---------------------------------------------------------------------------------------
 
-    /// <summary>A Lua array arrives as a list; an empty Lua table arrives as an object.</summary>
+    /// <summary>Rows from Lua: a list, or a table keyed otherwise (its values are the rows).</summary>
     static IEnumerable<JsonNode?> Rows(JsonNode? value) => value switch
     {
         JsonArray array => array,
@@ -862,4 +1080,14 @@ static class Lua
         + string.Join(", ", fields.Select(f =>
             $"{{Name={Value(f.Name)}, Offset={f.Offset.ToString(CultureInfo.InvariantCulture)}, Type={Value(f.Type)}}}"))
         + "}";
+}
+
+/// <summary>What GK.Seen.Status() says about a side's standing capture.</summary>
+public static class SeenCapture
+{
+    /// <summary>Why <paramref name="side"/> has nothing to drain (null = its capture runs).</summary>
+    public static string? NotRunning(JsonNode? status, string side) =>
+        status is JsonObject running && running["Running"] is JsonValue on && on.TryGetValue<bool>(out var isOn) && isOn
+            ? null
+            : $"no capture is running on {side} - bg3_reset, a Lua reload or a level change stops it; call bg3_seen_start";
 }

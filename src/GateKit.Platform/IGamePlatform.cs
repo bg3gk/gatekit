@@ -1,7 +1,7 @@
 namespace GateKit.Platform;
 
 /// <summary>
-/// Everything the stand does that depends on the operating system. The rest of GateKit only
+/// Everything `gatekit` does that depends on the operating system. The rest of GateKit only
 /// talks to the game through files and through this interface, so a new platform is one class.
 /// Paths given to and returned by it are host paths (what this process sees); a path the game
 /// itself reads (Script Extender settings, say) goes through <see cref="ToGamePath"/>.
@@ -136,7 +136,7 @@ public sealed record GameProcess(int Pid, string ExecutablePath);
 /// <param name="GameFolder">The game folder the exe belongs to (installed game or clone).</param>
 /// <param name="SourceGameFolder">The installed game (where Steam keeps its prefix on Linux).</param>
 /// <param name="Environment">Variables to add to the game's own environment, over the ones this
-/// process has and the ones the platform sets for an instance. This is how the stand says things
+/// process has and the ones the platform sets for an instance. This is how `gatekit` says things
 /// to the game that the game's own libraries read - the SDL hint that stops a new window taking
 /// the keyboard, for one - without patching anything or passing it through the extender.</param>
 public sealed record GameLaunch(

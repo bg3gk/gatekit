@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "game/verify/1",
+  "title": "Whether a game folder holds exactly what its store delivered (`gatekit game verify --json`)",
+  "description": "The game folder held to the file list of a source of invariants: Steam's own manifests on this machine, or a reference list of GateKit's. docs/contracts/cli.md, `game verify`.",
+  "type": "object",
+  "required": ["schema", "folder", "source", "sources", "mode", "verdict", "parts", "counts", "modified", "missing", "extras", "benign", "rules", "seconds"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "game/verify/1"},
+    "folder": {"type": "string", "minLength": 1, "description": "The folder that was read."},
+    "copy": {"type": "string", "minLength": 1, "description": "The copy's name, when a copy was read."},
+    "source": {"enum": ["steam", "reference", "none"], "description": "The source the folder was held to; none when no source applied."},
+    "sources": {
+      "type": "array",
+      "description": "Every source considered, in the order asked, and why it was or was not used.",
+      "items": {
+        "type": "object",
+        "required": ["id", "used", "why"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "used": {"type": "boolean"},
+          "why": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "appId": {"type": "string", "pattern": "^[0-9]+$"},
+    "buildId": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["quick", "full"]},
+    "verdict": {"$ref": "#/$defs/verdict"},
+    "parts": {"type": "array", "items": {"$ref": "#/$defs/part"}},
+    "counts": {"$ref": "#/$defs/counts"},
+    "modified": {"type": "array", "items": {"$ref": "#/$defs/modified"}},
+    "missing": {"type": "array", "items": {"$ref": "#/$defs/missing"}},
+    "extras": {"type": "array", "items": {"$ref": "#/$defs/extra"}},
+    "benign": {"type": "array", "items": {"$ref": "#/$defs/benign"}},
+    "rules": {"type": "array", "items": {"$ref": "#/$defs/rule"}},
+    "outside": {
+      "type": "object",
+      "description": "Listed entries a copy does not hold by design, counted and not checked.",
+      "required": ["count", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "count": {"type": "integer", "minimum": 0},
+        "reason": {"type": "string", "minLength": 1},
+        "folders": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "notes": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "seconds": {"type": "number", "minimum": 0},
+    "fingerprint": {"type": "string", "minLength": 1, "description": "Where the fingerprint was written."},
+    "reference": {"type": "string", "minLength": 1, "description": "Where a reference list was written (--write-reference)."}
+  },
+  "$defs": {
+    "verdict": {
+      "enum": ["clean", "extras", "dirty", "incomplete", "no-invariants", "unverified"],
+      "description": "clean: every listed file as delivered, nothing else but known-benign files. extras: the same, with files listed nowhere. dirty: a file modified or missing. incomplete: a part of the source could not be read, so the files it lists were held to nothing. no-invariants: no source applies to this install. unverified: never verified."
+    },
+    "counts": {
+      "type": "object",
+      "required": ["listed", "checked", "hashed", "bytesHashed", "modified", "missing", "extras", "benign"],
+      "additionalProperties": false,
+      "properties": {
+        "listed": {"type": "integer", "minimum": 0, "description": "Files and folders the source lists."},
+        "checked": {"type": "integer", "minimum": 0},
+        "hashed": {"type": "integer", "minimum": 0},
+        "bytesHashed": {"type": "integer", "minimum": 0},
+        "modified": {"type": "integer", "minimum": 0},
+        "missing": {"type": "integer", "minimum": 0},
+        "extras": {"type": "integer", "minimum": 0},
+        "benign": {"type": "integer", "minimum": 0},
+        "outside": {"type": "integer", "minimum": 0}
+      }
+    },
+    "part": {
+      "type": "object",
+      "description": "A part of the source: a Steam depot (id) and its manifest (version), or a reference list (its file name and build).",
+      "required": ["id", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "dlc": {"type": "string", "pattern": "^[0-9]+$"},
+        "status": {
+          "enum": ["read", "absent", "unreadable", "encrypted"],
+          "description": "read; absent: not on this machine; unreadable: not in a format the reader knows; encrypted: its file names are encrypted."
+        },
+        "entries": {"type": "integer", "minimum": 0},
+        "file": {"type": "string", "minLength": 1},
+        "detail": {"type": "string", "minLength": 1}
+      }
+    },
+    "modified": {
+      "type": "object",
+      "required": ["path", "why", "part"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "why": {"enum": ["size", "content", "kind", "link"], "description": "size and content: the bytes differ; kind: a folder where a file should be or the reverse; link: a link that points elsewhere."},
+        "part": {"type": "string", "minLength": 1},
+        "expectedSize": {"type": "integer", "minimum": 0},
+        "size": {"type": "integer", "minimum": 0},
+        "userConfig": {"const": true, "description": "The store marks the file as the user's to change."}
+      }
+    },
+    "missing": {
+      "type": "object",
+      "required": ["path", "part"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "part": {"type": "string", "minLength": 1},
+        "expectedSize": {"type": "integer", "minimum": 0},
+        "folder": {"const": true}
+      }
+    },
+    "extra": {
+      "type": "object",
+      "required": ["path", "size"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "size": {"type": "integer", "minimum": 0}
+      }
+    },
+    "benign": {
+      "type": "object",
+      "required": ["path", "size", "rule"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "size": {"type": "integer", "minimum": 0},
+        "rule": {"type": "string", "minLength": 1}
+      }
+    },
+    "rule": {
+      "type": "object",
+      "required": ["id", "patterns", "reason", "matched"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "patterns": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "reason": {"type": "string", "minLength": 1},
+        "matched": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using GateKit.Stand;
+using GateKit.Copies;
 using ModelContextProtocol.Protocol;
 
 namespace GateKit.Mcp;
@@ -8,8 +8,8 @@ namespace GateKit.Mcp;
 /// <summary>
 /// Tools a modder or an agent adds without rebuilding the server: one JSON file per tool (or an
 /// array of them) in the tools folder (GATEKIT_MCP_TOOLS, by default &lt;repo&gt;/mcp-tools). The
-/// folder is read again whenever a file changes, exactly as the old server re-imported
-/// `stand/mcp_tools/*.py` by its modification time, so a new tool is live on the next tools/list.
+/// folder is read again whenever a file changes, by its modification time, so a new tool is live
+/// on the next tools/list.
 ///
 /// A tool is the description an agent reads plus one bridge call:
 /// <code>
@@ -93,7 +93,7 @@ public sealed class PluginTools
                 _loaded[file] = (stamp, Read(file));
                 _errors.Remove(name);
             }
-            catch (Exception e) when (e is IOException or JsonException or StandException or FormatException or KeyNotFoundException)
+            catch (Exception e) when (e is IOException or JsonException or CopyException or FormatException or KeyNotFoundException)
             {
                 _loaded.Remove(file);
                 _errors[name] = $"{e.GetType().Name}: {e.Message}";
@@ -130,8 +130,8 @@ public sealed class PluginTools
         };
         return new GateKitTool(definition, async (args, cancel) =>
         {
-            var (stand, _) = _host.Begin();
-            var session = stand.Session();
+            var (copy, _) = _host.Begin();
+            var session = copy.Session();
             if (function is not null)
             {
                 var values = new JsonArray([.. (template ?? []).Select(v => Fill(v, args))]);

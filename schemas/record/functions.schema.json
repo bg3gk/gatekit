@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/functions/1",
+  "title": "A function named by evidence (one row of research/coverage/functions.jsonl)",
+  "description": "The name of one function of the game's code, keyed by its binary and its start. Written by `gatekit decomp name`, shown by `gatekit decomp at` and `gatekit decomp names`. A row holds an address and our own words, never code of the game. docs/contracts/cli.md, \"decomp name\".",
+  "type": "object",
+  "required": ["binary", "rva", "name", "source", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "binary": {"type": "string", "minLength": 1, "description": "The module: bg3_dx11.exe, bg3.exe, a Toolkit DLL."},
+    "rva": {"type": "string", "pattern": "^0x[0-9A-F]+$", "description": "The function's start in the module."},
+    "name": {"type": "string", "pattern": "^\\S+$", "description": "The name, with :: between its parts."},
+    "source": {"enum": ["game", "toolkit", "inferred", "extender", "unknown"], "description": "Where the name comes from: game and toolkit are facts, inferred is reasoning from the game's code and needs its evidence, extender is Script Extender's name, unknown says so."},
+    "evidence": {"type": "string", "description": "What backs the name: what an instrument read, forced or repeated, and where."},
+    "does": {"type": "string", "minLength": 1, "description": "Our own sentence on what the function does."},
+    "legacy": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "Names the function had before: aliases."},
+    "vars": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"}, "description": "The function's own variables and parameters: the decompiler's name to ours (`decomp vars`)."},
+    "structs": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}, "description": "Which structure a variable points at: the variable to the structure of structs.jsonl."},
+    "build": {"type": "string", "pattern": "^[0-9]+$", "description": "The Steam build of the game the address is in (`gatekit registry stamp`)."},
+    "fingerprint": {"$ref": "registry/function#/$defs/fingerprint", "description": "Facts that find the function again in another build (`gatekit registry stamp`)."},
+    "size": {"type": "integer", "minimum": 0, "description": "Bytes of the function in this build."},
+    "body": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "The hash of its masked body in this build."}
+  }
+}

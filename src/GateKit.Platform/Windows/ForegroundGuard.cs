@@ -40,6 +40,9 @@ internal sealed class ForegroundGuard : IDisposable
     /// <summary>How many times it had to put the foreground back. Should be nought.</summary>
     public int Caught { get; private set; }
 
+    /// <summary>How many Script Extender console windows of this copy it hid.</summary>
+    public int Consoles { get; private set; }
+
     public ForegroundGuard(string executable, Func<IReadOnlyList<GameProcess>> processes, TextWriter? say = null)
     {
         _executable = executable;
@@ -99,7 +102,19 @@ internal sealed class ForegroundGuard : IDisposable
         {
             return;
         }
-        if (!GameWindow.IsOurs(window, Ours()))
+        var ours = Ours();
+        if (GameConsole.IsOurs(window, ours))
+        {
+            // The extender's console, opened by a Shift held at the start: hidden, never closed.
+            var wasFront = Native.GetForegroundWindow() == window;
+            GameConsole.Hide(window);
+            Consoles++;
+            _say?.WriteLine("a copy opened Script Extender's console window (Shift held as it started?); it was hidden, "
+                + "not closed - closing it would end the game");
+            if (wasFront && _keep != 0 && Native.IsWindow(_keep) != 0) Restore(_keep);
+            return;
+        }
+        if (!GameWindow.IsOurs(window, ours))
         {
             // Not ours. On a foreground change that means the person went somewhere else on
             // purpose, and the watch is over.
@@ -136,5 +151,14 @@ internal sealed class ForegroundGuard : IDisposable
     {
         Stop();
         _thread.Join(TimeSpan.FromSeconds(1));
+        // A console shown before the hook was registered, or after the person took the foreground
+        // elsewhere and the watch ended, is caught here, once the copy is up.
+        var hidden = GameConsole.HideAll(Ours());
+        if (hidden > 0)
+        {
+            Consoles += hidden;
+            _say?.WriteLine($"hid {hidden} Script Extender console window(s) of this copy (Shift held as it started?); "
+                + "hidden, not closed - closing one would end the game");
+        }
     }
 }

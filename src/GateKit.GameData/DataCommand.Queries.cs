@@ -288,6 +288,10 @@ public static partial class DataCommand
         {
             using var q = new OfflineQueries(paths);
             var result = run(q);
+            foreach (var note in q.Missing)
+            {
+                error.WriteLine("note: " + note);
+            }
             if (json)
             {
                 output.WriteLine(OfflineQueries.ToJson(result));

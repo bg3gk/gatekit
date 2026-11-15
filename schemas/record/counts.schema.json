@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "record/counts/1",
+  "title": "The counts of the record (one row of research/coverage/record/counts.jsonl)",
+  "description": "What `gatekit record tally --write` counted at one time. `definition` names what the numbers mean (RecordBook.CountsDefinition), so a change of definition is never read as a change of the record.",
+  "type": "object",
+  "required": ["time", "run", "definition"],
+  "additionalProperties": false,
+  "properties": {
+    "time": {"type": "string", "format": "time"},
+    "run": {"type": "string", "minLength": 1},
+    "definition": {"type": "string", "pattern": "^counts-[1-9][0-9]*$"},
+    "types": {"type": "integer", "minimum": 0},
+    "seen": {"type": "integer", "minimum": 0},
+    "never_seen": {"type": "integer", "minimum": 0},
+    "unseen_mapped": {"type": "integer", "minimum": 0},
+    "verified": {"type": "integer", "minimum": 0},
+    "fields": {"type": "integer", "minimum": 0},
+    "fields_named": {"type": "integer", "minimum": 0},
+    "fields_extender_unchecked": {"type": "integer", "minimum": 0},
+    "fields_named_unknown": {"type": "integer", "minimum": 0},
+    "fields_named_by_rung": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}, "description": "Names by rung: game, toolkit, inferred, extender, unknown."},
+    "owed": {"type": "integer", "minimum": 0},
+    "systems_described": {"type": "integer", "minimum": 0},
+    "systems_sure": {"type": "integer", "minimum": 0},
+    "claims_written": {"type": "integer", "minimum": 0},
+    "claims_checked": {"type": "integer", "minimum": 0},
+    "claims_passed": {"type": "integer", "minimum": 0}
+  }
+}
