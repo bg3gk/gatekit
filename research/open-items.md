@@ -74,6 +74,13 @@ attack.
   where in the machine code the switch lives. The first step towards more than one player in one
   game. The first run with a real device is made with the owner there. This work goes to a
   session of its own, started on the owner's word and not before.
+  A case from a night of unattended work, which the lock must cover: the main screen was switched
+  off, the copies opened stretched over a small spare screen, and the machine's real pointer lay
+  inside every copy's frame. The pointer drags systems of the game with it - what an aimed
+  attack points at, the preview of a walk, hover highlights - so the player's own input sent by
+  the toolkit may aim where the pointer rests. It was got round by hand (a smaller window in the
+  middle of the screen, the pointer parked in a corner). The lock is to make a copy indifferent
+  to where the real pointer is, and a copy is to say when the pointer is inside its frame.
 - **No more strictness than the work needs.** The frames already set are enough; a new rule,
   check, schema or refusal is added only where it protects one of the two key products - the
   tests and the registry of the machine code - and those two are held strictly. Everywhere else
