@@ -13,6 +13,11 @@
       "enum": ["game", "toolkit", "confirmed", "inferred", "extender", "guess", "unknown"],
       "description": "How certain a name or a type is, strongest first. Applied (the decompiler may be given it as a real name or type): game - the game's own name (macOS symbols, FieldMeta); toolkit - the Toolkit's exported name; confirmed - ours, with the evidence of an instrument (a watch, a read) or a test. Shown (a comment beside the code, never in it): inferred - reasoning from the code or a pairing; extender - Script Extender's author's name, unchecked; guess - supposed, with what it rests on and what would confirm it; unknown - nothing backs it."
     },
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Only on an entry under `unplaced::`: the scope the thing belongs to (esv::CombatLogProtocol) while its own name there is ours and no store's. `registry questions <scope>` lists it under that scope."
+    },
     "knownAs": {
       "type": "array",
       "description": "The names other sources give the same thing, so that a reader who comes with one finds the entry.",

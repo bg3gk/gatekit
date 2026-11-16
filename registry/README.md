@@ -29,15 +29,25 @@ type, a parameter or local of a function - follows its entity after a dot:
 | a piece the compiler made of a function | `esv::RollSystem::RollDice@thunk` |
 | a function private to a file, a lambda | under the function or type that owns it |
 | a thing with no name yet | `<owner scope>::unnamed_<token>`, the token from its fingerprint, never from its address |
-| a thing whose owner is not known | `unplaced::<Name>` |
+| a thing whose owner is not known, or whose owner is known and whose name there is ours | `unplaced::<Name>`, the second with the owner's scope in its field `owner` |
 
 `::`, `.` and `@` separate only outside `<...>` and `(...)`; an operator's symbol is part of its
 name (`ls::Vector::operator[]`). One id has one file, across the three kinds: a second entry for an
 id that exists is refused with the file that holds it. Several ids may share one address (the
 linker folds identical code); the id is the key, never the address. When a thing is renamed,
-`gatekit registry rename` moves its file and rewrites every citation; the old id is left nowhere.
-The names other sources give the same thing (Script Extender's, the Toolkit's, the decompiler's)
-are kept in `known_as`, and `registry show` and `registry at` find an entry by them.
+`gatekit registry rename` moves its file and rewrites every citation, the live layer's claims and
+the bare id in the data files that hold places (`registry places`); the old id is left nowhere.
+`gatekit registry remove` takes an entry out, with its rows and its claims, and is refused while
+anything cites it. The names other sources give the same thing (Script Extender's, the Toolkit's,
+the decompiler's) are kept in `known_as`, and `registry show` and `registry at` find an entry by
+them.
+
+Whose a name is - the game's, the Toolkit's or ours - is never written by hand: it is read from
+the entry's evidence (a `game-name`, a `toolkit-name`, neither), and `registry show` says it. An
+id carries no mark of it, so a name a store turns out to hold later costs no renaming. An entry
+under `unplaced::` whose owner is known says so in `owner` (`esv::CombatLogProtocol`);
+`registry questions <scope>` lists it under that scope, and a rename into the owner's scope drops
+the field.
 
 ## The file of an id
 
@@ -52,9 +62,16 @@ is written by one reversible rule (`RegistryId.EscapePart`):
 | a name Windows reserves (`CON`, `NUL`, `COM1`, ...) | its first letter as `%XX` |
 | everything else | itself |
 
-A piece follows its function's file name after `@`: `RollDice@thunk.json`. Two ids that differ only
-by case are refused, since a file system without case would give them one file; a relative path
-longer than 160 characters is refused.
+A piece follows its function's file name after `@`: `RollDice@thunk.json`. A relative path longer
+than 160 characters is refused.
+
+Names in one folder that differ only by case - the namespace `esv::status` beside the class
+`esv::Status` - would be one name on a disk that ignores case. Of such names the one that sorts
+first by its characters' codes keeps its name, and each other has every letter whose case differs
+from that one's written as `%XX`: `esv/Status/` and `esv/%73tatus/`. The rule depends on the set
+of names, never on which was written first; a write or a removal that changes the set moves the
+others to where the rule puts them, the live layer keeps its files the same way, and the check
+holds every file to it (`CasePaths`).
 
 ## Rungs of certainty: what is applied and what is shown
 
@@ -65,27 +82,65 @@ code `gatekit decomp code` prints; a shown one is written beside the code as a c
 
 | rung | | what puts it there |
 |---|---|---|
-| `game` | applied | the game's own name: the macOS build's symbols, FieldMeta, a type name the engine keeps |
-| `toolkit` | applied | the Toolkit's exported name |
-| `confirmed` | applied | ours, with an instrument's evidence (a watch, a read) or a test |
-| `inferred` | shown | reasoning from the code, or a pairing |
+| `game` | applied | the game's own name: a `game-name` evidence (the macOS build's symbols, FieldMeta, a type name the engine keeps), tied to the thing |
+| `toolkit` | applied | the Toolkit's exported name: a `toolkit-name` evidence, tied to the thing |
+| `confirmed` | applied | a name of ours with a `read` and a `watch` together, or a `test` |
+| `inferred` | shown | everything else: a reading alone, a watch alone, a counter of reach, a pairing, a store's name that nothing ties |
 | `extender` | shown | Script Extender's author's name, unchecked |
 | `guess` | shown | supposed: what it rests on and what would confirm it |
 | `unknown` | shown | nothing backs it |
 
-An entry on an applied rung carries evidence of a kind that can confirm: `watch`, `read`,
-`game-name`, `toolkit-name` or `test`; a `pairing`, an `extender-name` or a `text` alone does not
-put it above the line. `gatekit registry applied <binary>` lists exactly the applied set of a
-build. A thing not understood is `state: looked_at`; a thing never looked at, `unlooked`.
+The rung is computed from the kinds of evidence an entry, a field or a value itself carries
+(`Rungs.Ceiling`), by every writer and by the check alike. A store's name is tied to a function by
+the store's own match or pair, or by an instrument's evidence of the function in the entry (a
+read, a watch, a test); a type, a field or a value carries its name itself. `reach` - a counter
+showed the code running in a situation - says that it ran, not what it does, and lifts nothing; a
+`pairing`, an `extender-name` and a `text` lift nothing either. A rung asked above what the
+evidence carries is lowered by `registry note`, `registry commit` and `registry tidy` with a line
+that says why, never refused; a `confirmed` name whose evidence holds a store's tied name takes
+the store's rung; a rung below is left as its writer put it. The check refuses an applied rung
+with no evidence that can confirm at all, and notes one that stands above its evidence.
+`gatekit registry applied <binary>` lists exactly the applied set of a build. A thing not
+understood is `state: looked_at`; a thing never looked at, `unlooked`.
+
+## What the tools do by themselves
+
+A writer gives what it saw; the tools add what they can find out, each act a printed line and a
+line of the journal `registry digest` reads:
+
+- **Where a name comes from.** `registry note`, `registry commit` and `registry tidy` look the
+  thing up in the stores - the Toolkit's exports and their matches to the executables, the macOS
+  build's names and the stored pairs, the type names the executable keeps - by its name and by its
+  address, and write the `toolkit-name` or `game-name` evidence with the store and the tie
+  (`match`, `pair`, or `name` alone). An evidence of that kind written by hand is left to speak
+  alone. A different name a store ties to the function is kept under `known_as` and proposed once.
+- **One function under two ids.** At commit an `unnamed_*` id at the address of a named one, with
+  one body, becomes the named entry: its evidence and its questions of reach are kept, its
+  citations follow.
+- **A sentence said twice** in one entry, or one of its members, is kept once.
+- **A field's own evidence.** `registry note --field` takes `--field-rung` and `--field-evidence`;
+  the type's evidence is not copied into its fields.
+- **A correction.** `registry note --amend` puts a sentence in the place of the entry's newest of
+  its kind. A commit merges a claim once: what is written into the entry afterwards stands.
 
 ## Citing code and tests
 
 In running text - a sentence of evidence, a `does`, a document, a comment - code is cited as
 `code:<id>` and a test as `test:<path under tests/ without the extension>[/<case>[/<step>]]`,
 so that one plain search finds every mention. A field whose kind the schema fixes (an evidence
-item's `concerns` or `test`, a tie between entries) holds the bare id or path. An address
-`binary+0xRVA` appears only in the tables under `builds/` and in what an instrument prints.
-`gatekit refs <id or path>` lists every place that cites one. `registry check` refuses a `code:`
+item's `concerns` or `test`, a tie between entries) holds the bare id or path.
+`gatekit refs <id or path>` lists every place that cites one.
+
+A machine address in running text: where the registry names the function that starts there, the
+id is written (`code:<id>`), and a commit turns the address into it. A place with no id of its
+own - a call site inside a function, a callee with no name, a global, a constant - may be written
+as an address, in the one form that carries its binary and build,
+`bg3_dx11.exe@25605617+0x1BC3C2B`: without them an address goes stale unseen at the next patch. A
+commit and `registry tidy` write that form for an address that lacks it, from the tables of the
+binary the entry is placed in; `registry at` reads it; `registry reanchor` to another build of the
+binary moves it with its function when the body is equal and marks it stale otherwise.
+`registry check` never refuses an address, and `registry digest` counts them: turned into ids,
+written with binary and build, stale, not placed. `registry check` refuses a `code:`
 citation that is not a registry id, names no entry, or names a member its entry does not have, and
 a `test:` citation whose path names no test under `tests/`; the case and step after a test's path
 are not checked.

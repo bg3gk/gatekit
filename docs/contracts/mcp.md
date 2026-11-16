@@ -393,13 +393,15 @@ reader's and apply here as they do on the command line; a refusal comes back as 
 The registry's live layer as tools ([cli.md](cli.md) 8.16.1), for agents
 that find code while they work in the game. `bg3_registry_note` is `registry note`: `id` with
 `kind`, `at`, `rung`, `does`, `about`, `evidence` (strings `kind:sentence`), `tests`, `rests_on`,
-`would_confirm`, `ask` with `ask_about`, `fields` (`offset:name[:type]`), `who`, `task`; it answers
-what `bg3_registry_show` answers for the id. `bg3_registry_withdraw` is `registry withdraw`: `id`,
+`would_confirm`, `ask` with `ask_about`, `fields` (`offset:name[:type]`) with `field_rung` and
+`field_evidence`, `snap`, `amend`, `owner`, `who`, `task`; it answers what `bg3_registry_show`
+answers for the id, and under `said` the lines of what the tools did to the note by themselves (a
+rung lowered, a name found in a store). `bg3_registry_withdraw` is `registry withdraw`: `id`,
 `all` (default false), `who`; it answers `{id, withdrawn: [...], now?}`, `now` the claim the id
 says after it, and an id with no claim (of that writer) is the tool's error. `bg3_registry_at` takes `address` and answers
 `{address, function?, decompiler?, symbols?, committed: [...], live: [...]}`; `bg3_registry_show`
-takes `id` (or a name another source gives the thing) and answers `{id, committed?, file?, places?,
-live: [...]}`. Every item of `committed` and `live` carries `id`, `live`, `rung?`, `says?`, and a live
+takes `id` (or a name another source gives the thing) and answers `{id, name?, committed?, file?, places?,
+live: [...]}`, `name` saying whose the name is by the entry's evidence (`the game's`, `the Toolkit's`, `ours`). Every item of `committed` and `live` carries `id`, `live`, `rung?`, `says?`, and a live
 one `who`, `when`, `task`, `at?`. A refusal - a guess without its reason, an entry its schema refuses
 - comes back as the tool's error.
 

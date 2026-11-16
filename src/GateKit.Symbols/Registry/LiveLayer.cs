@@ -68,8 +68,11 @@ public sealed class LiveLayer(string folder)
     public static DateTime ParseTime(string text) =>
         DateTime.ParseExact(text, SchemaSet.TimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
 
-    string EntryPath(EntryKind kind, string id) =>
-        Path.Combine([Folder, "entries", RegistryStore.Folder(kind), .. RegistryId.ToPath(id).Split('/')]);
+    /// <summary>The file of an id's claims: by the rule of the registry's own files (<see cref="CasePaths"/>).</summary>
+    string EntryPath(EntryKind kind, string id, bool arrange = false) =>
+        new CasePaths().Of(Path.Combine(Folder, "entries", RegistryStore.Folder(kind)), id, arrange);
+
+    void Gone(EntryKind kind, string id) => new CasePaths().Rearrange(Path.Combine(Folder, "entries", RegistryStore.Folder(kind)), id);
 
     string SettledPath(string binary, string? build, long rva) =>
         Path.Combine(Folder, "settled", RegistryId.EscapePart(binary), build ?? "any", RegistryStore.Hex(rva) + ".json");
@@ -93,7 +96,7 @@ public sealed class LiveLayer(string folder)
         var misfits = SchemaSet.Embedded.Validate(entry, RegistryStore.Schema(claim.Kind));
         if (misfits.Count > 0) throw new RegistryException($"{claim.Id}: " + string.Join("; ", misfits.Select(m => $"{m.Pointer} {m.What}")));
         entry.Remove("schema");
-        var path = EntryPath(claim.Kind, claim.Id);
+        var path = EntryPath(claim.Kind, claim.Id, arrange: true);
         using var held = JsonLock.Take(path);
         var claims = Read(path, claim.Kind)?.Claims.ToList() ?? [];
         claims.Add(claim with { Entry = entry });
@@ -114,13 +117,13 @@ public sealed class LiveLayer(string folder)
         {
             var path = EntryPath(kind, entity);
             using var held = JsonLock.Take(path);
-            if (Read(path, kind) is not { } found) continue;
+            if (Read(path, kind) is not { } found || found.Id != entity) continue;
             var claims = found.Claims.ToList();
             var mine = claims.Where(c => who is null || c.Who == who).OrderBy(c => c.When).ToList();
             if (mine.Count == 0) return [];
             var gone = all ? mine : [mine[^1]];
             var left = claims.Where(c => !gone.Contains(c)).ToList();
-            if (left.Count == 0) File.Delete(path);
+            if (left.Count == 0) { File.Delete(path); Gone(kind, entity); }
             else Write(path, kind, found.Id, left);
             return gone;
         }
@@ -144,7 +147,7 @@ public sealed class LiveLayer(string folder)
     {
         var entity = RegistryId.EntityOf(id);
         foreach (var kind in Enum.GetValues<EntryKind>())
-            if (Read(EntryPath(kind, entity), kind) is { } found) return found.Claims;
+            if (Read(EntryPath(kind, entity), kind) is { } found && found.Id == entity) return found.Claims;
         return [];
     }
 
@@ -213,6 +216,8 @@ public sealed class LiveLayer(string folder)
                 foreach (var (_, row) in store.At(group.First().Binary!, group.Key.Rva, group.Key.Build).Where(r => r.Row.Rva == group.Key.Rva))
                     if (!ids.Any(i => i.Id == row.Id))
                         ids.Add((row.Id, store.Get(row.Id) is { } e ? JsonText.Text(e.Json["rung"]) : null, false));
+            // a thing with no name yet beside its name is one thing, folded at commit: no clash
+            if (ids.Any(i => !RegistryId.IsUnnamed(i.Id))) ids.RemoveAll(i => RegistryId.IsUnnamed(i.Id));
             if (ids.Select(i => i.Id).Distinct().Count() < 2) continue;
             var settled = Settled(group.First().Binary!, group.Key.Build, group.Key.Rva);
             if (settled is { Folded: true } || settled?.Keep is not null) continue;
@@ -230,17 +235,25 @@ public sealed class LiveLayer(string folder)
     /// not settled is not committed (the rest are), nor an id a settlement dropped, nor an entry the
     /// check of sentences refuses. Returns the ids committed.
     /// </summary>
-    public IReadOnlyList<string> Commit(RegistryStore store, TextWriter output)
+    public IReadOnlyList<string> Commit(RegistryStore store, TextWriter output, INameStores? names = null, bool dry = false)
     {
+        var journal = new Journal(dry ? null : Folder);
+        var rules = new EntryRules(store, names, journal);
         var clashes = Clashes(store);
         var blocked = clashes.SelectMany(c => c.Ids.Where(i => i.Live).Select(i => i.Id)).ToHashSet(StringComparer.Ordinal);
         var committed = new List<string>();
-        // what a checkout already holds is not written again: the layer is shared by every checkout, each commits for itself
         foreach (var claim in Latest().OrderBy(c => c.Id, StringComparer.Ordinal))
         {
+            var existing = store.Get(claim.Id);
+            // A claim a commit already merged is not merged again: what was written into the entry since - by a
+            // person, by `registry tidy` - stands. A checkout that does not hold the id at all still takes it.
+            if (existing is not null && claim.Committed is not null) continue;
             if (blocked.Contains(claim.Id))
             {
-                output.WriteLine($"  held: {claim.Id} is in a clash not settled (`registry clashes`, `registry settle`)");
+                var clash = clashes.First(c => c.Ids.Any(i => i.Id == claim.Id));
+                var why = string.Create(CultureInfo.InvariantCulture, $"a clash not settled at {clash.Binary}+0x{clash.Rva:X} with {string.Join(", ", clash.Ids.Where(i => i.Id != claim.Id).Select(i => i.Id))}");
+                journal.Add(new JournalLine(rules.When, "held", claim.Id) { Why = why });
+                output.WriteLine($"  held: {claim.Id} is in {why} (`registry clashes`, `registry settle`)");
                 continue;
             }
             if (claim.Binary is not null && claim.Rva is { } at && Settled(claim.Binary, claim.Build, at) is { Keep: { } keep } && keep != claim.Id)
@@ -248,32 +261,90 @@ public sealed class LiveLayer(string folder)
                 output.WriteLine($"  dropped: {claim.Id} - the address was settled for {keep}");
                 continue;
             }
-            var existing = store.Get(claim.Id);
             var entry = existing is not null ? (JsonObject)existing.Json.DeepClone() : new JsonObject();
             entry.Remove("schema");
             foreach (var (key, value) in claim.Entry) entry[key] = value?.DeepClone();
+            var said = journal.Lines.Count;
+            // the writer's own sentences are held to the rule; what the tools then do to them is not a new sentence
+            var problems = RegistryCheck.Refusals(entry, existing?.Json);
+            var places = rules.PlacesOf(claim.Id).ToList();
+            if (claim.Binary is not null && claim.Rva is { } here && !places.Contains((claim.Binary, here))) places.Add((claim.Binary, here));
+            rules.Apply(claim.Kind, entry, places);
             var placed = claim.Binary is null || claim.Rva is null || claim.Build is null
                 || store.Table(claim.Build, claim.Binary).Any(r => r.Id == claim.Id && r.Rva == claim.Rva);
             if (existing is not null && placed)
             {
                 var was = (JsonObject)existing.Json.DeepClone();
                 was.Remove("schema");
-                if (JsonNode.DeepEquals(was, entry)) continue;
+                if (JsonNode.DeepEquals(was, entry))
+                {
+                    journal.Forget(said);
+                    if (!dry) MarkCommitted(claim);
+                    continue;
+                }
             }
-            var problems = RegistryCheck.Refusals(entry, existing?.Json);
             if (problems.Count > 0)
             {
+                journal.Forget(said);
+                journal.Add(new JournalLine(rules.When, "refused", claim.Id) { Why = "commit: " + string.Join("; ", problems) });
                 output.WriteLine($"  refused: {claim.Id}: " + string.Join("; ", problems));
                 continue;
             }
-            store.Write(claim.Kind, entry, create: false);
-            if (claim.Binary is not null && claim.Rva is { } rva && claim.Build is not null)
-                store.Place(claim.Build, claim.Binary, new BuildRow(claim.Id, rva, claim.Size, null));
-            MarkCommitted(claim);
+            if (!dry)
+            {
+                store.Write(claim.Kind, entry, create: false);
+                if (claim.Binary is not null && claim.Rva is { } rva && claim.Build is not null)
+                    store.Place(claim.Build, claim.Binary, new BuildRow(claim.Id, rva, claim.Size, null));
+                MarkCommitted(claim);
+            }
             committed.Add(claim.Id);
-            output.WriteLine($"  committed: {claim.Id} -> {store.Relative(store.PathOf(claim.Kind, claim.Id))}");
+            output.WriteLine($"  {(dry ? "would commit" : "committed")}: {claim.Id} -> {store.Relative(store.PathOf(claim.Kind, claim.Id))}");
+            foreach (var line in journal.Lines.Skip(said)) output.WriteLine("  " + line.Said());
         }
+        rules.Fold(this, dry, output);
+        journal.Flush();
         return committed;
+    }
+
+    /// <summary>Moves the claims of an id to another id, and rewrites every citation of the old id in
+    /// the claims of the others: a renamed entry is not brought back under its old id by the next
+    /// commit. Returns the claims touched.</summary>
+    public int Rename(string oldId, string newId)
+    {
+        var touched = 0;
+        foreach (var kind in Enum.GetValues<EntryKind>())
+        {
+            var from = EntryPath(kind, oldId);
+            (string Id, IReadOnlyList<Claim> Claims)? found;
+            using (JsonLock.Take(from)) found = Read(from, kind);
+            if (found is null) continue;
+            var to = EntryPath(kind, newId, arrange: true);
+            using (JsonLock.Take(to))
+            {
+                var moved = found.Value.Claims.Select(c => { var e = (JsonObject)c.Entry.DeepClone(); e["id"] = newId; return c with { Entry = e }; });
+                Write(to, kind, newId, (Read(to, kind)?.Claims ?? []).Concat(moved).OrderBy(c => c.When));
+            }
+            using (JsonLock.Take(from)) File.Delete(from);
+            Gone(kind, oldId);
+            touched += found.Value.Claims.Count;
+        }
+        foreach (var kind in Enum.GetValues<EntryKind>())
+        {
+            var folder = Path.Combine(Folder, "entries", RegistryStore.Folder(kind));
+            if (!Directory.Exists(folder)) continue;
+            foreach (var path in Directory.EnumerateFiles(folder, "*.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToList())
+            {
+                if (!File.ReadAllText(path).Contains(oldId, StringComparison.Ordinal)) continue;
+                using var held = JsonLock.Take(path);
+                if (Read(path, kind) is not { } there) continue;
+                var count = 0;
+                var claims = there.Claims.Select(c => { var e = (JsonObject)c.Entry.DeepClone(); count += RegistryRefs.ReciteIn(e, oldId, newId); return c with { Entry = e }; }).ToList();
+                if (count == 0) continue;
+                Write(path, kind, there.Id, claims);
+                touched += count;
+            }
+        }
+        return touched;
     }
 
     void MarkCommitted(Claim claim)

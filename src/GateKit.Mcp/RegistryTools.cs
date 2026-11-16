@@ -64,6 +64,11 @@ static class RegistryTools
                   "ask": {"type": "array", "items": {"type": "string"}, "description": "Open questions."},
                   "ask_about": {"type": "string", "enum": ["reach", "conditions", "meaning", "other"], "description": "Default reach."},
                   "fields": {"type": "array", "items": {"type": "string"}, "description": "A type: offset:name[:type]."},
+                  "field_rung": {"type": "string", "enum": ["game", "toolkit", "confirmed", "inferred", "extender", "guess", "unknown"], "description": "The rung of the fields this note names; held to each field's own evidence."},
+                  "field_evidence": {"type": "array", "items": {"type": "string"}, "description": "The evidence of the fields this note names, each kind:sentence."},
+                  "snap": {"type": "boolean", "description": "Take an address inside a function as the function that holds it; without it an address that is not a function's start is refused."},
+                  "amend": {"type": "boolean", "description": "Each evidence sentence replaces the entry's newest of its kind, each question its newest open one of that subject."},
+                  "owner": {"type": "string", "description": "For an id under unplaced::, the scope the thing belongs to."},
                   "who": {"type": "string", "description": "Who writes (default GATEKIT_WHO)."},
                   "task": {"type": "string", "description": "For which task (default GATEKIT_TASK)."}
                  }
@@ -72,13 +77,18 @@ static class RegistryTools
         },
         (args, _) => Run(() =>
         {
+            var said = new StringWriter();
             var claim = LiveCommands.Note(new NoteRequest(args.Need("id"))
             {
                 Kind = args.Str("kind") ?? "function", At = args.Str("at"), Rung = args.Str("rung"), Does = args.Str("does"), About = args.Str("about"),
                 Evidence = args.Strings("evidence") ?? [], Tests = args.Strings("tests") ?? [], RestsOn = args.Str("rests_on"), WouldConfirm = args.Str("would_confirm"),
                 Ask = args.Strings("ask") ?? [], AskAbout = args.Str("ask_about") ?? "reach", Fields = args.Strings("fields") ?? [], Who = args.Str("who"), Task = args.Str("task"),
-            }, LiveLayer.OfHome(), Store(), TextWriter.Null);
-            return LiveCommands.ShowJson(claim.Id, Store(), LiveLayer.OfHome());
+                Snap = args.Flag("snap"), Amend = args.Flag("amend"), Owner = args.Str("owner"), FieldRung = args.Str("field_rung"), FieldEvidence = args.Strings("field_evidence") ?? [],
+            }, LiveLayer.OfHome(), Store(), TextWriter.Null, said);
+            var answer = LiveCommands.ShowJson(claim.Id, Store(), LiveLayer.OfHome());
+            // what the tools did to the note by themselves: a rung lowered, a name found in a store
+            answer["said"] = new System.Text.Json.Nodes.JsonArray([.. said.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(l => (System.Text.Json.Nodes.JsonNode)l)]);
+            return answer;
         }));
 
     static GateKitTool Withdraw() => new(

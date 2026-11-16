@@ -445,7 +445,7 @@ public static class CopyCommands
                     named.Add($"{caller["count"]} from {(id is null ? caller["address"] : "inside code:" + id)}");
                 }
                 if (probe["hits"]!.GetValue<long>() > 0)
-                    s.Out.WriteLine($"    evidence  watch:A count-only probe on it shows {probe["hits"]} calls: {string.Join(", ", named)}");
+                    s.Out.WriteLine($"    evidence  reach:A count-only probe on it shows {probe["hits"]} calls: {string.Join(", ", named)}");
             }
             if (unknown.Count > 0)
             {
@@ -460,7 +460,7 @@ public static class CopyCommands
                         var called = string.Join(", ", calls.Where(c => !c.Contains("+0x", StringComparison.Ordinal)).Select(c => "code:" + c));
                         if (called.Length > 0)
                             noted = GateKit.Symbols.Registry.LiveCommands.NoteUnnamed(address,
-                                [$"watch:A count-only probe shows this function calling {called}"],
+                                [$"reach:A count-only probe shows this function calling {called}"],
                                 [$"What this function is for: it calls {called}"], live, store, TextWriter.Null)?.Id;
                     }
                     s.Out.WriteLine("    " + address + (noted is null ? "" : "  noted " + noted));

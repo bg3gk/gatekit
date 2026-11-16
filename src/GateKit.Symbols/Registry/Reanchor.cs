@@ -85,6 +85,16 @@ public static class Reanchor
             s.Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"for a person  {u.Id}  {source}+0x{u.SourceRva:X}: {u.Why}"));
         s.Out.WriteLine($"{source} build {sourceBuild} -> {target} build {targetBuild}: {moved.Count} moved ({moved.Count(m => m.BodyAgrees == true)} with an equal body, "
             + $"{moved.Count(m => m.BodyAgrees == false)} with a different one), {unmoved.Count} for a person" + (dry ? "  [dry run: nothing written]" : ""));
+        // the same binary in another build: the addresses the entries' sentences hold of the old build follow their functions
+        if (string.Equals(source, target, StringComparison.OrdinalIgnoreCase) && sourceBuild != targetBuild)
+        {
+            LiveLayer? live = null;
+            try { live = LiveLayer.OfHome(); } catch (GateKit.Home.HomeException) { }
+            var journal = new Journal(dry ? null : live?.Folder);
+            var (carried, stale) = new EntryRules(store, null, journal).ReanchorProse(source, sourceBuild, targetBuild, store.Table(sourceBuild, source), moved, dry);
+            journal.Flush();
+            s.Out.WriteLine($"addresses in sentences: {carried} moved with their functions to build {targetBuild}, {stale} stale (left as written; `gatekit registry digest` counts them)");
+        }
         if (dry || moved.Count == 0) return 0;
         var rows = existing.Where(r => !moved.Any(m => m.Id == r.Id)).Concat(moved.Select(m => m.Row));
         store.WriteTable(targetBuild, target, rows);

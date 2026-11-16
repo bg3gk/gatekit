@@ -1527,8 +1527,8 @@ Where the registry holds an entry kind, `names` and `decomp name`, `names`, `var
 `struct`, `at` and `code` read and write the registry for that kind; the coverage record's files
 of that kind are left as they are and are not written.
 
-`registry check [--strict] [--notes N]`: every entry valid against its schema and at the path of its
-id, ids unique across the kinds and by case, every build table sorted with each row in its shard and
+`registry check [--strict] [--verbose] [--notes N]`: every entry valid against its schema and at the path of its
+id (ids that differ only by case each at the path the README's rule gives), ids unique across the kinds, every build table sorted with each row in its shard and
 an entry for each id, `build.json` beside each build, every citation of code and of tests in the
 repository resolved (the prefixed mentions `code:<id>` and `test:<path>` in any text file, and the
 typed fields of the entries), and the refusals: a sentence that names the work (an agent's role, a
@@ -1536,14 +1536,42 @@ conversation), a date, a time of day, a model or a machine's path, or quotes the
 decompiler's names, a cast through a pointer); an empty sentence; a name on an applied rung without
 evidence that can confirm it; a guess without what it rests on; a variable with storage and a
 decompiler's name. Exit 1 on any refusal. Provenance and code inside evidence an import carried in from
-the coverage record's stores, and an unconfirmed entry with no question of how the game reaches it, are owed work,
-listed and counted (failures with `--strict`); an address where an id belongs, a variable known only
-by its temporary, a test's case and step not yet resolvable are notes. CI runs it.
+the coverage record's stores, and an unconfirmed entry with no question of how the game reaches it, are owed work
+(failures with `--strict`); an address in a sentence without its binary and build, a rung above what
+its evidence carries (the bar of `registry/README.md`, the function the writers apply), a variable known only
+by its temporary, a test's case and step not yet resolvable are notes. An address is never refused.
+Owed work and notes are counted in the last line, by rule - `0 refused, N owed (questions n, ...), M
+notes (address m, ...)` - and listed only with `--verbose`, `--notes N` of each kind. CI runs it.
 
 `registry rename <old> <new>` renames an entry: its file moves, its rows in every build table and
 every citation of it or its members - in any text of the repository and in the entries' fields - are
-rewritten at once; the old id is left nowhere. `gatekit refs <id or test path>` lists every place
-that cites it, its members included.
+rewritten at once, the live layer's claims of the id move to the new one and the claims that cite it
+are rewritten, and a data file under `mods/` that holds places has the bare id under its keys `id`
+rewritten and its places written again; the old id is left nowhere. `gatekit refs <id or test path>`
+lists every place that cites it, its members included.
+
+`registry remove <id>` takes a committed entry out: its file, its rows in every build table, its live
+claims. Refused, exit 1, while anything outside the entry cites it.
+
+`registry tidy [scope] [--since <commit | A..B | time>] [--keep-rungs] [--dry-run]` does to committed
+entries (all, those whose id or `owner` starts with the scope, those git says were added or changed
+since) what a commit does to a note (8.16.1): the source of each name from the stores, addresses in
+sentences made durable, sentences said twice kept once, every rung where its evidence carries it
+(not with `--keep-rungs`), unnamed duplicates folded. One line an act, then the counts; nothing is
+written with `--dry-run`.
+
+`registry digest [--since <commit | A..B | time>] [--json]` is the page read after a run that wrote
+into the registry. From git (the registry's files against the commit; default the checkout's last
+commit): the entries `added` by kind and rung, `changed`, `removed`, and how rungs moved. From the
+journal of the tools' own acts since the commit's time (`<home>/state/registry-live/journal.jsonl`,
+schema `state/registry-journal/1`, written by `note`, `commit`, `tidy` and `reanchor`): `lowered` and
+`raised` with why and the first ids, `above` (rungs standing above their evidence), `folded`,
+`names` found in a store by store and tie and how many stand under another name there, `addresses`
+turned into ids, written with binary and build, stale and not placed, `repeated`, `clashes` not
+settled and refusals. Last, `a person is needed: N`, one line an id with what to decide: a clash to
+settle, a store's other name to take or leave, a refusal. `--json` gives the same as one object
+(`since, added, changed, removed, rungs_moved, lowered, raised, above, folded, names, differs,
+addresses, repeated, clashes, refused, person`). Outside a git repository only the journal speaks.
 
 `registry mend` puts every build table back in order after a merge: sorted, each row in the shard of
 its id's top scope, a row twice kept once, a merge's marker lines dropped; two different rows for one
@@ -1564,7 +1592,11 @@ rules) - and the rest is listed `for a person` with the reason (no pair above th
 partner, the target's table holding the id at another address). One line per function (`moved` with
 the pair's state, rule, score and margin and whether the bodies are equal, differ or could not be
 compared), then the counts; the target's table and its binary's SHA-256 in `build.json` are written
-unless `--dry-run`. Without stored pairs of the two binaries it exits 1.
+unless `--dry-run`. Without stored pairs of the two binaries it exits 1. When source and target are
+one binary in two builds, the addresses the entries' sentences hold of the source build
+(`binary@build+0xRVA`) follow: one inside a function that moved with an equal body moves by the
+same offset and takes the target's build; any other is left as written and counted stale
+(`addresses in sentences: N moved with their functions to build B, N stale`).
 
 `registry places FILE [--check]` writes into a JSON data file where the build tables put every
 function id the file names: every string under a key `id`, at any depth, is looked up, and the
@@ -1588,8 +1620,8 @@ the pattern to be found exactly once in the executable sections of the binary's 
 limit: K places`. It is what a hook or a Script Extender mapping is written from. Exit 1 when a
 binary's file cannot be read or a pattern is not unique.
 
-`registry questions [scope]` lists every open question of the entries (whose id starts with the
-scope): what is not known of a thing, above all how the game reaches it.
+`registry questions [scope]` lists every open question of the entries (whose id, or whose `owner`,
+starts with the scope): what is not known of a thing, above all how the game reaches it.
 
 #### 8.16.1 The live layer
 
@@ -1598,33 +1630,60 @@ checkout or branch it runs from: one file an id, `entries/<kind>/<scope>/<name>.
 `functions`, `types` or `globals`; the id's scopes as folders), changed only under its lock,
 written whole, its format the schema `state/registry-live/1`; a settlement is
 `settled/<binary>/<build or any>/<rva>.json` (the binary's name escaped as a part of an id's
-path, `bg3%2Eexe`). A read sees every claim written before it.
+path, `bg3%2Eexe`). A read sees every claim written before it. `journal.jsonl` beside them is what
+the tools did by themselves, a line an act (`state/registry-journal/1`); `registry digest` reads it.
 
-- `registry note <id> [--kind function|type|global] [--at binary+0xRVA] [--rung R] [--does T]
-  [--about T] [--evidence kind:T]... [--test path]... [--rests-on T --would-confirm T] [--ask T]...
-  [--ask-about reach|conditions|meaning|other] [--field off:name[:type]]... [--who] [--task]` adds a
-  claim: the id's newest claim (else its committed entry) with what the note says over it, where the
-  function or global is (its start, its build), and who wrote it, when and for which task
-  (`GATEKIT_WHO`, `GATEKIT_TASK` by default). A guess without `--rests-on` and `--would-confirm` is
-  refused, and so is an entry its schema refuses.
+- `registry note <id> [--kind function|type|global] [--at binary+0xRVA [--snap]] [--rung R] [--does T]
+  [--about T] [--evidence kind:T]... [--test path]... [--amend] [--rests-on T --would-confirm T] [--ask T]...
+  [--ask-about reach|conditions|meaning|other] [--owner scope] [--field off:name[:type]]...
+  [--field-rung R] [--field-evidence kind:T]... [--who] [--task]` adds a
+  claim: what the id says now - its newest claim, or its committed entry once a commit has merged
+  that claim - with what the note says over it, where the function or global is (its start, its
+  build), and who wrote it, when and for which task (`GATEKIT_WHO`, `GATEKIT_TASK` by default). The
+  kinds of evidence are `watch`, `read`, `reach` (a counter showed it running in a situation),
+  `pairing`, `game-name`, `toolkit-name`, `extender-name`, `text`. The tools add by themselves, one
+  printed line each (`registry/README.md`, "What the tools do by themselves"): the `toolkit-name`
+  or `game-name` evidence of where the name comes from (`name found: ...`), a store's other name
+  for the function (`another name: ...`), and the rung its evidence carries (`lowered: <id>
+  confirmed -> inferred: <why>`). A sentence the entry already says is not added again; with
+  `--amend` each `--evidence` takes the place of the entry's newest of its kind (one a kind) and
+  each `--ask` of its newest open question of that subject. `--field` names a field with its own
+  `--field-rung` (default the note's) and `--field-evidence`. `--owner` is kept on an id under
+  `unplaced::` and left out, with a line, on any other. Refused: a guess without `--rests-on` and
+  `--would-confirm`; an entry its schema refuses; and `--at` an address that is not the start of
+  a function the databases know (`... is not the start of a function the database knows: it lies
+  in, or beside, the function at ...`) - `--snap` takes the function the address falls to and
+  prints where it landed.
 - `registry withdraw <id> [--all] [--who W]` takes claims back out, under the id's lock: the id's
   newest claim (the claim before it is what the id says again), or with `--all` every one, and the
   id's file goes when none is left; `--who` takes only that writer's claims. Gone for every reader
   at once; what a checkout committed stays. It prints each claim withdrawn and what the id says now;
   no claim of the id (of that writer) is refused, exit 1.
-- `registry at <binary+0xRVA> [--json]`: the function that holds the address, its names in the
-  databases, the committed ids there and the live claims, each marked live or committed.
-- `registry show <id or another source's name> [--json]`: the committed entry with its places, and
-  the live claims.
+- `registry at <binary+0xRVA | binary@build+0xRVA> [--json]`: the function that holds the address, its names in the
+  databases, the committed ids there and the live claims, each marked live or committed. The second
+  form is the one sentences hold: the tables of that build answer, with a `note` when the databases
+  at hand are of another.
+- `registry show <id or another source's name> [--json]`: whose the name is by the entry's evidence
+  (`name  ours`), the committed entry with its places, and the live claims.
 - `registry clashes`: two different ids claimed for one function, among the live claims or against
-  the committed table, not settled: both kept, the higher rung first. `registry settle
+  the committed table, not settled: both kept, the higher rung first. An `unnamed_*` id beside a
+  named one is no clash. `registry settle
   <binary+0xRVA> (--keep <id> | --folded)` settles one: one id stays, or the ids stand together
   (the linker folded identical code).
-- `registry commit` writes the live layer into this checkout's registry in its one canonical form:
+- `registry commit [--dry-run]` writes the live layer into this checkout's registry in its one canonical form:
   each id's newest claim merged over its entry, its place in the build's table. Who, when and which
-  task stay in the live layer. An id in a clash not settled is held (the others are committed), an id
+  task stay in the live layer. A claim is merged once: one a commit already merged into an entry
+  this checkout holds is passed over, so what is written into the entry afterwards stands. On the
+  way in the tools do what `registry/README.md` lists under "What the tools do by themselves" and
+  "Citing code and tests", a line each under the entry's own: the source of the name, an address
+  of a named function turned into `code:<id>` and any other written `binary@build+0xRVA`
+  (`addresses: <id> - N turned into ids, N written with binary and build, N not placed`), a
+  sentence said twice kept once, the rung where the evidence carries it; then an `unnamed_*` id
+  at the address of a named one is folded into it (`folded: <unnamed> into <id>`). An id in a clash
+  not settled is held (the others are committed), an id
   a settlement dropped is left out, an entry whose new sentences the check refuses is refused, and an
-  entry the checkout already holds as it is is not written again. A claim carries the size of the
+  entry the checkout already holds as it is is not written again. `--dry-run` prints all of it
+  (`would commit: ...`) and writes nothing. A claim carries the size of the
   one part of the function its address is in, so after writing, the build tables' rows are stamped
   as `registry stamp` does - the whole function's size, its split-off parts included, and the hash
   of its body; where the databases are not at hand the rows stay as the claims gave them and a
@@ -1824,7 +1883,10 @@ The subcommands: `run load refresh serve code at name names vars field struct gr
 tally pair queries match matches fixedstrings dotnet csharp status stamp vtable` (`at`, `name`,
 `names`, `vars`, `field`, `struct` and `code`: 8.15). `GateKit.Symbols` has two command factories the command line finds:
 `SymbolsCommands.CreateCommand()` (`symbols`) and `DecompCommands.CreateCommand()` (`decomp`, with
-`vtable` added from the symbol side). Settings are the environment's: `BG3_DECOMP_WORK` (the work
+`vtable` added from the symbol side). `symbols find <text>...` lists the Toolkit's exports whose
+declaration holds every word and, after them, the functions of the macOS build whose name does
+(`bg3_macos_x64+0xRVA  <name>`, read from the pseudo-code database; left out with `--kind`, with a
+`--dll` that is another binary, or without that database). Settings are the environment's: `BG3_DECOMP_WORK` (the work
 folder: one folder per binary with its Ghidra project and the decompiler's export `pseudocode.jsonl`
 - an export named `functions.jsonl` is renamed by the first `run`, `load` or `refresh` that
 meets it - and `decomp.sqlite`;

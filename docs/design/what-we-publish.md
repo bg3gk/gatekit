@@ -97,8 +97,8 @@ the binary into a fingerprint is kept only as a hash.
 
 A place in the code is pointed at by its id in the [registry](../../registry/README.md)
 (`code:esv::RollSystem::RollDice`), together with a sentence of our own saying what the code there does;
-an address `<binary>+0xRVA` appears only in the registry's tables of builds and in what an instrument
-prints. No line of the code is quoted, in a document, a registry entry or a comment.
+a place with no id of its own (a call site, a callee with no name) may be written as an address
+with its binary and build, as the registry's README says. An address is a number, not code. No line of the code is quoted, in a document, a registry entry or a comment.
 
 ## In practice
 

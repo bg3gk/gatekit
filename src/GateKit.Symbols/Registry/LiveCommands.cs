@@ -23,6 +23,21 @@ public sealed record NoteRequest(string Id)
     public IReadOnlyList<string> Fields { get; init; } = [];
     public string? Who { get; init; }
     public string? Task { get; init; }
+
+    /// <summary>An address inside a function is taken as the function that holds it (else it is refused).</summary>
+    public bool Snap { get; init; }
+
+    /// <summary>Each sentence of evidence and each question replaces the entry's newest of its kind instead of standing beside it.</summary>
+    public bool Amend { get; init; }
+
+    /// <summary>For an entry under <c>unplaced::</c>: the scope the thing belongs to.</summary>
+    public string? Owner { get; init; }
+
+    /// <summary>The rung of the fields this note names (else the note's rung, held to each field's own evidence).</summary>
+    public string? FieldRung { get; init; }
+
+    /// <summary>The evidence of the fields this note names, kind:sentence.</summary>
+    public IReadOnlyList<string> FieldEvidence { get; init; } = [];
 }
 
 /// <summary>
@@ -42,21 +57,26 @@ public static class LiveCommands
         {
             var id = new Argument<string>("id") { Description = "the registry id (esv::RollSystem::RollDice); a thing with no name yet: <scope>::unnamed_<token> (`registry fingerprint` gives the token)" };
             var kind = new Option<string>("--kind") { Description = "function (default), type or global", DefaultValueFactory = _ => "function" };
-            var at = new Option<string?>("--at") { Description = "binary+0xRVA of the function or global (anywhere inside a function)" };
-            var rung = new Option<string?>("--rung") { Description = "game, toolkit, confirmed, inferred, extender, guess or unknown" };
+            var at = new Option<string?>("--at") { Description = "binary+0xRVA of the global, or of the function's start; an address that is not a function's start is refused without --snap" };
+            var snap = new Option<bool>("--snap") { Description = "take an address inside a function as the function that holds it, and say where it landed" };
+            var rung = new Option<string?>("--rung") { Description = "game, toolkit, confirmed, inferred, extender, guess or unknown; a rung the evidence does not carry is lowered, with a line that says why" };
             var does = new Option<string?>("--does") { Description = "our sentence: what the function does" };
             var about = new Option<string?>("--about") { Description = "our sentence: what the type or global is" };
-            var evidence = new Option<string[]>("--evidence") { Description = "kind:sentence - watch, read, pairing, game-name, toolkit-name, extender-name, text", AllowMultipleArgumentsPerToken = false };
+            var evidence = new Option<string[]>("--evidence") { Description = "kind:sentence - watch, read, reach (a counter showed it running in a situation), pairing, game-name, toolkit-name, extender-name, text; where the name comes from the tool finds itself", AllowMultipleArgumentsPerToken = false };
+            var amend = new Option<bool>("--amend") { Description = "a sentence corrected: each --evidence takes the place of the entry's newest of its kind, each --ask of its newest open question of that subject" };
+            var owner = new Option<string?>("--owner") { Description = "for an id under unplaced::, the scope the thing belongs to (esv::CombatLogProtocol) while its name is ours" };
+            var fieldRung = new Option<string?>("--field-rung") { Description = "the rung of the fields this note names (default: the note's), held to each field's own evidence" };
+            var fieldEvidence = new Option<string[]>("--field-evidence") { Description = "kind:sentence - the evidence of the fields this note names; the type's evidence is not theirs", AllowMultipleArgumentsPerToken = false };
             var test = new Option<string[]>("--test") { Description = "a test that proves it: its path under tests/ without the extension, then case and step" };
             var restsOn = new Option<string?>("--rests-on") { Description = "for a guess: what it rests on" };
             var wouldConfirm = new Option<string?>("--would-confirm") { Description = "for a guess: what would confirm it" };
             var ask = new Option<string[]>("--ask") { Description = "an open question, above all how the game reaches the thing" };
             var askAbout = new Option<string>("--ask-about") { Description = "what the questions are about: reach (default), conditions, meaning, other", DefaultValueFactory = _ => "reach" };
-            var field = new Option<string[]>("--field") { Description = "for a type: offset:name[:type] (0x70:NumRolls:uint64), on the note's rung" };
+            var field = new Option<string[]>("--field") { Description = "for a type: offset:name[:type] (0x70:NumRolls:uint64), with --field-rung and --field-evidence" };
             var who = new Option<string?>("--who") { Description = "who writes (default GATEKIT_WHO, else the user's name); kept in the live layer only" };
             var task = new Option<string?>("--task") { Description = "for which task (default GATEKIT_TASK); kept in the live layer only" };
             var c = new Command("note", "write an entry or a guess into the live layer every process on this machine reads at once; a guess needs --rests-on and --would-confirm")
-                { id, kind, at, rung, does, about, evidence, test, restsOn, wouldConfirm, ask, askAbout, field, who, task };
+                { id, kind, at, snap, rung, does, about, evidence, test, amend, restsOn, wouldConfirm, ask, askAbout, owner, field, fieldRung, fieldEvidence, who, task };
             c.SetAction(p => invoke(p, s =>
             {
                 var claim = Note(s, new NoteRequest(p.GetValue(id)!)
@@ -64,6 +84,7 @@ public static class LiveCommands
                     Kind = p.GetValue(kind)!, At = p.GetValue(at), Rung = p.GetValue(rung), Does = p.GetValue(does), About = p.GetValue(about),
                     Evidence = p.GetValue(evidence) ?? [], Tests = p.GetValue(test) ?? [], RestsOn = p.GetValue(restsOn), WouldConfirm = p.GetValue(wouldConfirm),
                     Ask = p.GetValue(ask) ?? [], AskAbout = p.GetValue(askAbout)!, Fields = p.GetValue(field) ?? [], Who = p.GetValue(who), Task = p.GetValue(task),
+                    Snap = p.GetValue(snap), Amend = p.GetValue(amend), Owner = p.GetValue(owner), FieldRung = p.GetValue(fieldRung), FieldEvidence = p.GetValue(fieldEvidence) ?? [],
                 }, LiveLayer.OfHome());
                 s.Out.WriteLine($"noted {claim.Id} [{claim.Rung ?? "no rung"}]" + (claim.Binary is null ? "" : string.Create(CultureInfo.InvariantCulture, $" at {claim.Binary}+0x{claim.Rva:X}")) + " (live)");
                 return 0;
@@ -166,15 +187,16 @@ public static class LiveCommands
         }
         {
             var coverage = new Option<string?>("--coverage");
-            var c = new Command("commit", "write the live layer into this checkout's registry in its canonical form; who, when and for which task stay behind; a clash not settled holds only its own ids") { coverage };
+            var dry = new Option<bool>("--dry-run") { Description = "say what would be written and what the tools would do to it; write nothing" };
+            var c = new Command("commit", "write the live layer into this checkout's registry in its canonical form; who, when and for which task stay behind; a clash not settled holds only its own ids") { coverage, dry };
             c.SetAction(p => invoke(p, s =>
             {
-                var done = LiveLayer.OfHome().Commit(RegistryCommands.Store(p.GetValue(coverage)), s.Out);
-                s.Out.WriteLine($"{done.Count} entr{(done.Count == 1 ? "y" : "ies")} committed");
+                var done = LiveLayer.OfHome().Commit(RegistryCommands.Store(p.GetValue(coverage)), s.Out, new DatabaseNameStores(s.Symbols, s.DbIfExists), p.GetValue(dry));
+                s.Out.WriteLine($"{done.Count} entr{(done.Count == 1 ? "y" : "ies")} {(p.GetValue(dry) ? "would be committed (--dry-run: nothing written)" : "committed")}");
                 // A claim carries the size of the part of the function its address is in; the build
                 // table's row is the whole function's size and the hash of its body, which the
                 // stamp measures. Without the databases the rows stay as the claims gave them.
-                if (done.Count > 0)
+                if (done.Count > 0 && !p.GetValue(dry))
                 {
                     try { RegistryCommands.StampCommand(s, p.GetValue(coverage)); }
                     catch (SymbolsException e) { s.Out.WriteLine("not stamped (run `gatekit registry stamp` where the databases are): " + e.Message); }
@@ -185,8 +207,13 @@ public static class LiveCommands
         }
     }
 
+    /// <summary>An address as the commands take it: <c>binary+0xRVA</c>, or the form sentences hold, <c>binary@build+0xRVA</c>, with its build taken off.</summary>
+    internal static string Plain(string address) => EntryRules.Qualified().Match(address) is { Success: true } q && q.Length == address.Length
+        ? $"{q.Groups[1].Value}+0x{q.Groups[3].Value}" : address;
+
     static (string Binary, long Rva) Address(string text)
     {
+        text = Plain(text);
         var m = CodeCommand.Address.Match(text);
         if (!m.Success) throw new RegistryException($"{text}: an address is binary+0xRVA");
         var rva = RegistryStore.ParseHex(m.Groups[2].Value);
@@ -203,9 +230,9 @@ public static class LiveCommands
     }
 
     /// <summary>A note written with the home's databases at hand (for the MCP tools).</summary>
-    public static Claim Note(NoteRequest request, LiveLayer live, RegistryStore? store, TextWriter error)
+    public static Claim Note(NoteRequest request, LiveLayer live, RegistryStore? store, TextWriter error, TextWriter? said = null)
     {
-        using var s = new DecompSession(DecompSettings.FromEnvironment(), TextWriter.Null, error);
+        using var s = new DecompSession(DecompSettings.FromEnvironment(), said ?? TextWriter.Null, error);
         return Note(s, request, live, store);
     }
 
@@ -266,14 +293,45 @@ public static class LiveCommands
     }
 
     /// <summary>Writes a note into the live layer: the newest claim of the id (else the committed entry) with what the request says over it.</summary>
-    internal static Claim Note(DecompSession s, NoteRequest request, LiveLayer live, RegistryStore? store = null)
+    static JsonObject EvidenceItem(string item)
+    {
+        var colon = item.IndexOf(':');
+        if (colon <= 0) throw new RegistryException($"{item}: evidence is kind:sentence (watch:the write of Hp came from it)");
+        var (k, says) = (item[..colon], item[(colon + 1)..].Trim());
+        if (k == "test") throw new RegistryException("a test is given with --test");
+        if (!Rungs.EvidenceKinds.Contains(k)) throw new RegistryException($"{k}: evidence is one of {string.Join(", ", Rungs.EvidenceKinds.Where(e => e != "test"))}");
+        return new JsonObject { ["kind"] = k, ["says"] = says };
+    }
+
+    /// <summary>Adds an item to a list of evidence or of questions: one the list already says is not said
+    /// again, and with <paramref name="replaces"/> the newest item it picks gives its place to the new one.</summary>
+    static void Say(JsonArray list, JsonObject item, Func<JsonObject, bool>? replaces)
+    {
+        if (list.Any(e => JsonNode.DeepEquals(e, item))) return;
+        var old = replaces is null ? null : list.OfType<JsonObject>().LastOrDefault(replaces);
+        if (old is not null) list[list.IndexOf(old)] = item;
+        else list.Add(item);
+    }
+
+    static Func<JsonObject, bool>? SameKind(JsonObject item, bool amend) =>
+        amend ? e => JsonText.Text(e["kind"]) == JsonText.Text(item["kind"]) && e["store"] is null : null;
+
+    /// <summary>Writes a note into the live layer: what the id says now - its newest claim, or the committed entry once
+    /// a commit has merged that claim - with what the request says over it, and what the tools add by themselves
+    /// (<see cref="EntryRules"/>): where the name comes from, each rung where its evidence carries it. Every such
+    /// act is a line on the session's output and in the journal.</summary>
+    internal static Claim Note(DecompSession s, NoteRequest request, LiveLayer live, RegistryStore? store = null, INameStores? names = null)
     {
         var kind = RegistryStore.ParseKind(request.Kind);
         var id = request.Id;
         if (RegistryId.Parse(id).Member is not null) throw new RegistryException($"{id} is a member: note its entity, with --field for a type's field");
         store ??= RegistryStore.Find(null);
-        var basis = live.Of(id).LastOrDefault()?.Entry is { } latest ? (JsonObject)latest.DeepClone()
-            : store?.Get(id) is { } committed ? (JsonObject)committed.Json.DeepClone() : new JsonObject { ["id"] = id };
+        var journal = new Journal(live.Folder);
+        var now = DateTime.UtcNow;
+        var committed = store?.Get(id);
+        var newest = live.Of(id).LastOrDefault();
+        var basis = newest is not null && !(newest.Committed is not null && committed is not null) ? (JsonObject)newest.Entry.DeepClone()
+            : committed is not null ? (JsonObject)committed.Json.DeepClone() : new JsonObject { ["id"] = id };
         basis.Remove("schema");
         basis["id"] = id;
         if (kind == EntryKind.Type && basis["kind"] is null) basis["kind"] = "struct";
@@ -290,34 +348,43 @@ public static class LiveCommands
         }
         if (request.Does is not null) { basis["does"] = request.Does; basis["state"] = "described"; }
         if (request.About is not null) { basis["about"] = request.About; basis["state"] = "described"; }
-        var evidence = basis["evidence"] as JsonArray ?? [];
-        foreach (var item in request.Evidence)
+        if (request.Owner is not null)
         {
-            var colon = item.IndexOf(':');
-            if (colon <= 0) throw new RegistryException($"{item}: evidence is kind:sentence (watch:the write of Hp came from it)");
-            var (k, says) = (item[..colon], item[(colon + 1)..].Trim());
-            if (k == "test") throw new RegistryException("a test is given with --test");
-            evidence.Add(new JsonObject { ["kind"] = k, ["says"] = says });
+            if (!RegistryId.IsValid(request.Owner)) throw new RegistryException($"--owner {request.Owner}: not a scope of the registry");
+            if (id.StartsWith(RegistryId.Unplaced + "::", StringComparison.Ordinal)) basis["owner"] = request.Owner;
+            else s.Out.WriteLine($"  owner left out: {id} already says where it belongs; an owner is for an entry under {RegistryId.Unplaced}::");
         }
-        foreach (var test in request.Tests) evidence.Add(new JsonObject { ["kind"] = "test", ["test"] = test.StartsWith("test:", StringComparison.Ordinal) ? test[5..] : test });
-        if (evidence.Count > 0) basis["evidence"] = evidence.DeepClone();
-        var questions = basis["questions"] as JsonArray ?? [];
-        foreach (var question in request.Ask) questions.Add(new JsonObject { ["ask"] = question, ["about"] = request.AskAbout, ["state"] = "open" });
-        if (questions.Count > 0) basis["questions"] = questions.DeepClone();
+        var evidence = (basis["evidence"] as JsonArray)?.DeepClone().AsArray() ?? [];
+        foreach (var item in request.Evidence.Select(EvidenceItem)) Say(evidence, item, SameKind(item, request.Amend));
+        foreach (var test in request.Tests)
+            Say(evidence, new JsonObject { ["kind"] = "test", ["test"] = test.StartsWith("test:", StringComparison.Ordinal) ? test[5..] : test }, null);
+        if (evidence.Count > 0) basis["evidence"] = evidence;
+        var questions = (basis["questions"] as JsonArray)?.DeepClone().AsArray() ?? [];
+        foreach (var question in request.Ask)
+            Say(questions, new JsonObject { ["ask"] = question, ["about"] = request.AskAbout, ["state"] = "open" },
+                request.Amend ? q => JsonText.Text(q["about"]) == request.AskAbout && JsonText.Text(q["state"]) == "open" : null);
+        if (questions.Count > 0) basis["questions"] = questions;
+        if (request.FieldRung is not null && !Rungs.All.Contains(request.FieldRung)) throw new RegistryException($"--field-rung is one of {string.Join(", ", Rungs.All)}");
+        if (request.Fields.Count == 0 && (request.FieldRung is not null || request.FieldEvidence.Count > 0))
+            throw new RegistryException("--field-rung and --field-evidence speak of the fields a note names with --field");
         if (request.Fields.Count > 0)
         {
             if (kind != EntryKind.Type) throw new RegistryException("--field names a field of a type (--kind type)");
             var fields = (basis["fields"] as JsonArray ?? []).OfType<JsonObject>().Select(f => (JsonObject)f.DeepClone()).ToList();
+            var ofField = request.FieldEvidence.Select(EvidenceItem).ToList();
             foreach (var text in request.Fields)
             {
                 var parts = text.Split(':', 3);
                 if (parts.Length < 2) throw new RegistryException($"{text}: a field is offset:name[:type]");
                 var offset = RegistryStore.ParseHex(parts[0]);
-                fields.RemoveAll(f => f["offset"]?.GetValue<long>() == offset && (string?)f["name"] == parts[1]);
-                var f = new JsonObject { ["offset"] = offset, ["name"] = parts[1] };
+                // a field carries its own rung and its own evidence: what it had stays, the type's evidence is not copied into it
+                var f = fields.FirstOrDefault(x => x["offset"]?.GetValue<long>() == offset && (string?)x["name"] == parts[1]) ?? new JsonObject { ["offset"] = offset, ["name"] = parts[1] };
+                fields.Remove(f);
                 if (parts.Length == 3) f["type"] = parts[2];
-                if (JsonText.Text(basis["rung"]) is { } fieldRung) f["rung"] = fieldRung;
-                if (evidence.Count > 0) f["evidence"] = evidence.DeepClone();
+                var own = (f["evidence"] as JsonArray)?.DeepClone().AsArray() ?? [];
+                foreach (var item in ofField) Say(own, (JsonObject)item.DeepClone(), SameKind(item, request.Amend));
+                if (own.Count > 0) f["evidence"] = own;
+                if ((request.FieldRung ?? request.Rung ?? JsonText.Text(f["rung"]) ?? JsonText.Text(basis["rung"])) is { } fieldRung) f["rung"] = fieldRung;
                 fields.Add(f);
             }
             basis["fields"] = new JsonArray([.. fields.OrderBy(f => f["offset"]!.GetValue<long>())]);
@@ -329,23 +396,51 @@ public static class LiveCommands
             var (b, r) = Address(request.At);
             binary = b;
             rva = r;
-            if (kind == EntryKind.Function && s.DbIfExists is not null && NameAtCommand.Resolve(s, request.At) is { } named)
+            if (kind == EntryKind.Function && s.DbIfExists is not null)
             {
-                binary = named.Binary;
-                rva = named.Start;
-                var dll = s.Symbols?.Scalar("SELECT id FROM dlls WHERE name = ? COLLATE NOCASE", binary);
-                if (dll is not null) size = Sql.Long(s.Symbols!.Scalar("SELECT size FROM functions WHERE dll_id = ? AND rva = ?", dll, rva));
+                var named = NameAtCommand.Resolve(s, request.At);
+                if (named is null || named.Start != r)
+                {
+                    var where = named is null ? "no function is known there" : string.Create(CultureInfo.InvariantCulture, $"it lies in, or beside, the function at {named.Binary}+0x{named.Start:X}");
+                    if (!request.Snap)
+                    {
+                        journal.Add(new JournalLine(now, "refused", id) { Why = $"note: --at {request.At} is not the start of a function ({where})" });
+                        journal.Flush();
+                        throw new RegistryException($"{request.At} is not the start of a function the database knows: {where}. Give the function's start (`gatekit decomp at {request.At}`), or --snap to note the function the address falls to");
+                    }
+                    s.Out.WriteLine($"  snapped: {request.At} is not the start of a function: {where}" + (named is null ? "; the address stands as given" : "; the note is of that function"));
+                }
+                if (named is not null)
+                {
+                    binary = named.Binary;
+                    rva = named.Start;
+                    var dll = s.Symbols?.Scalar("SELECT id FROM dlls WHERE name = ? COLLATE NOCASE", binary);
+                    if (dll is not null) size = Sql.Long(s.Symbols!.Scalar("SELECT size FROM functions WHERE dll_id = ? AND rva = ?", dll, rva));
+                }
             }
             build = FunctionNames.BuildAt(s, binary);
         }
-        var claim = new Claim(kind, basis, binary, rva, build, size, Who(request.Who), DateTime.UtcNow, Task(request.Task), null);
+        if (kind != EntryKind.Global)
+        {
+            names ??= new DatabaseNameStores(s.Symbols, s.DbIfExists);
+            IReadOnlyList<(string Binary, long Rva)> places = binary is not null && rva is { } here ? [(binary, here)]
+                : [.. (store?.Places(id) ?? []).Select(p => (p.Binary, p.Row.Rva)).Distinct()];
+            NameSources.Apply(basis, kind, names.Of(kind, id, places), journal, now);
+        }
+        EntryRules.Collapse(basis, journal, now);
+        EntryRules.SettleRungs(basis, kind, journal, now);
+        var claim = new Claim(kind, basis, binary, rva, build, size, Who(request.Who), now, Task(request.Task), null);
         live.Note(claim);
+        foreach (var line in journal.Lines) s.Out.WriteLine(line.Said());
+        journal.Flush();
         return claim;
     }
 
     /// <summary>What is known at an address, as JSON: the databases' names, the committed ids there, the live claims.</summary>
     internal static JsonObject AtJson(DecompSession s, string address, RegistryStore? store, LiveLayer live)
     {
+        var given = EntryRules.Qualified().Match(address) is { Success: true } q && q.Length == address.Length ? q.Groups[2].Value : null;
+        address = Plain(address);
         var (binary, rva) = Address(address);
         var answer = new JsonObject { ["address"] = string.Create(CultureInfo.InvariantCulture, $"{binary}+0x{rva:X}") };
         long start = rva;
@@ -358,6 +453,13 @@ public static class LiveCommands
             if (named.SymbolName is not null) answer["symbols"] = named.SymbolName;
         }
         var build = FunctionNames.BuildAt(s, binary);
+        if (given is not null)
+        {
+            // the address says its own build: the tables of that build answer, and the databases only when they are of it
+            if (build is not null && !build.Split(',').Contains(given))
+                answer["note"] = $"the address is of build {given}; the databases at hand are of build {build}, and what they name here is another build's";
+            build = given;
+        }
         var committed = new JsonArray();
         if (store is not null)
             foreach (var (b, row) in store.At(binary, start, store.BuildFor(binary, build)).Concat(start != rva ? store.At(binary, rva, store.BuildFor(binary, build)) : []).DistinctBy(x => x.Row.Id))
@@ -432,6 +534,8 @@ public static class LiveCommands
         {
             var entry = (JsonObject)found[0].Json.DeepClone();
             entry.Remove("schema");
+            // whose the name is is read from the evidence, never written by hand
+            answer["name"] = NameSources.Whose(entry);
             answer["committed"] = entry;
             answer["file"] = store!.Relative(found[0].Path);
             answer["places"] = new JsonArray([.. store.Places(found[0].Id).Select(p => (JsonNode)new JsonObject
