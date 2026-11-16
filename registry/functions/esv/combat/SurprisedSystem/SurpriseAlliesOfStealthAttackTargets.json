@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat::SurprisedSystem::SurpriseAlliesOfStealthAttackTargets",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "For every creature with a newly added stealth request it walks the participants of that creature's fight (the array at +0x50 of eoc::combat::StateComponent) and puts into the set each one whose relation to the creature is 100 and who is not surprised already.",
+  "fingerprint": {
+    "calls": [
+      "fp:5227b96c8688ff31",
+      "fp:652f749f0b0dd083",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::IsSurprisedOrAskedToBe"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::ActiveComponent,eoc::combat::ParticipantComponent,esv::combat::SurprisedStealthRequestOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<esv::combat::SurprisedStealthRequestOneFrameComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "the Toolkit exports the name at EoCServer.dll+0x1495A50 with the same loop"
+    },
+    {
+      "kind": "read",
+      "says": "the query is active, participant and stealth request, newly added; the ally test is the helper's IsAllied (relation equal to 100); the skip is the check at bg3_dx11.exe+0x322D580"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe on that check shows 2 calls from inside this function in a fight of one target and one ally; the ally gets the join request, a target with Alert keeps its ally surprised"
+    },
+    {"kind": "test", "test": "surprise/alert"}
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat::System::CheckForSurprise",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "For a character that joins a fight it walks the live hits: when a hit whose target is that character carries the attack flag FromSneak (bit 4 of the byte at +0x58 of eoc::hit::TargetComponent), names a spell whose prototype lacks the spell flag NoSurprise (bit 24 of the prototype's flags) and has an attacker whose relation to the character is not 100, the character is put into the update state's set at +0x208, from which the combat system's update gives it esv::combat::SurprisedStealthRequestOneFrameComponent.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:175ac60533e9dfb9",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::hit::AttackerComponent,eoc::hit::MetaComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::hit::TargetComponent,eoc::hit::MetaComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "the Toolkit's EoCServer.dll exports esv::combat::System::CheckForSurprise at +0x147AC20 with the same body: the two queries (hit target with hit meta, hit attacker with hit meta), the same flag tests, the same set at +0x208"
+    },
+    {
+      "kind": "read",
+      "says": "the first query is registered with eoc::hit::TargetComponent and eoc::hit::MetaComponent, the second with eoc::hit::AttackerComponent and eoc::hit::MetaComponent; the function returns at once for an entity without esv::Character; its only callers are three places of the start of a fight, one for each side of a pair of which at least one was in no fight"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe during a hidden archer's shot at one of two idle hostile humans shows 3 calls, one for each of the three that join the fight; the target alone gets the stealth request, in the tick it joins; with the targets already in a fight the same shot gives no request"
+    },
+    {"kind": "test", "test": "surprise/from_hiding"},
+    {"kind": "test", "test": "surprise/already_fighting"}
+  ]
+}
