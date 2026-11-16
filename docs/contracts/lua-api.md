@@ -1024,3 +1024,57 @@ a table that is no plain list (it comes back as a text), a table that holds itse
 
 What cannot be had: a read before the session has loaded (`Ext.Events.SessionLoaded` is the
 first safe moment); the data of a mod that is no longer loaded, past the next save.
+
+## 21. The family `fight` and what the game's rows say of a fight
+
+The family `fight` (Server/FightLog.lua) writes the rows of a fight that the game log does not:
+what a creature is about to do, the reactions used, who joined and left, the ends of turns and the
+starts of rounds, concentration, items used and resources spent. It is off until
+`GK.EventLog.On("fight")` and, like every family, switches itself off after its seconds. Each row
+is written from what the game itself says; a field the game does not give is left out. The Osiris
+listeners are registered once and cost a table look while the family is off; the component
+subscriptions exist only while it is on. Every row is omniscient and an observation.
+
+| Kind | Written when | Payload | From the game |
+|---|---|---|---|
+| `fight_action` | a cast's state is created - some twenty ticks before the first die of the cast; a player's aimed cast once it is confirmed | `who, spell, targets` (a uuid, or `{ x, y, z }` for a position), `from, to` (where the caster stands and where it casts from, when it moves first), `cast` (the cast's id), `reaction` | `SpellCastState` (eoc::spell_cast::StateComponent): Caster, SpellId, Targets, CasterStartPosition, CastPosition, SpellCastGuid, CastOptions IsInterrupt / IsReaction / IsPreview |
+| `fight_reaction` | a reaction or an interrupt is used | `who, interrupt, auto` (the game used it by itself), `trigger = { mover, where }` (a creature that left the reactor's reach just before), `cast, spell` | Osiris `ReactionInterruptUsed`; `ServerMoveLeaveAttackRangeEvent` (esv::move::LeaveAttackRangeEvent) |
+| `fight_joined` | a creature joins a fight | `who, combat, initiative, round, underway` (the fight had begun before) | `CombatantJoinEvent` (esv::combat::JoinEvent): Combat, Initiative; Osiris `CombatStarted` |
+| `fight_left` | a creature leaves a fight | `who, combat, why` (killed, fled, the fight ended), `by` (the killer) | Osiris `LeftCombat`, with `KilledBy`, `FleeFromCombat` and `CombatEnded` (a tick later) |
+| `turn_ended` | a creature's turn ends | `who, round, combat` | Osiris `TurnEnded`; `TurnEndedEvent` (esv::combat::TurnEndedEvent) for the round |
+| `round_started` | a round begins | `combat, round` | Osiris `CombatRoundStarted` |
+| `concentration` | a caster starts or stops concentrating | `who, state` (started, ended), `spell, targets, cast, interrupted, why` (damage, a new spell), `hits` | `ConcentrationChanged` (Started, Ended, Interrupted), `ConcentrationDamageCheck` (Hits), `Concentration` (Targets) |
+| `item_used` | a creature has used an item | `who, item, template, ok` | Osiris `TemplateUseFinished` |
+| `resource_spent` | a cast's state is destroyed and its caster holds less than as it began | `who, spell, cast, spent = { [resource or resource/level] = amount }` | `ActionResources` read as `SpellCastState` is created and destroyed |
+
+The game's own rows (family `game`, Server/GameLog.lua) carry these fields besides those of
+sections 17 and 19:
+
+| Kind | Field | What it says | From the game |
+|---|---|---|---|
+| `game_hit` | `cast` | the id of the cast the hit belongs to, the id `fight_action.cast` carries | HitDesc.SpellCastGuid |
+| `game_hit` | `types` | per damage type `{ rolled, dealt }`: the damage before and after resistance | Damage.TotalDamagePerType, FinalDamagePerType |
+| `game_hit` | `resisted` | `{ type, change, flags }`: each resistance that applied, what it took off, the game's ResistanceBoostFlags | Damage.Resistances (Type, Meta.Value, Meta.DamageType) |
+| `game_hit` | `multiplier` | the damage multiplier, when it is not 1 | Damage.Multiplier |
+| `game_hit` | `rolls` | `{ type, dice, flat, natural, total, critical, from }`: the weapon's rolls (`from = "weapon"`) and the dice of the damage's stats expression (`from` = the expression); `natural` is the sum of the dice | Damage.DamageRolls; the expression Script Extender names Damage.ConditionRoll (StatExpression, RollParams, DamageTypeParams) |
+| `game_hit` | `modifiers` | `{ type, value, name, die }`: the boosts that added damage (DamageBonus, CharacterWeaponDamage, ...) | Damage.Modifiers, Modifiers2 (Value, DamageType, SourceName or SourceId, Source) |
+| `game_hit` | `unlisted` | per damage type, what was rolled minus what the listed rolls and modifiers add up to, only where that is not zero: the terms do not add up | computed from the fields above |
+| `game_heal` | `by, spell, status, cast` | the healer and what healed | the hit of the functor that healed, from its context after it ran (`Ext.Events.AfterExecuteFunctor`), joined by target in the same tick |
+| `game_heal` | `healed` | the amount before the target's maximum capped it | the same functor's AttackDesc.TotalHealDone |
+| `game_death` | `by` | the killer: the attacker, else the owner | Osiris `KilledBy(victim, owner, attacker, storyAction)`, some ticks before `Died` |
+| `game_status` | `turns` | the status's duration in turns, for a status with an end | the status's LifeTime on its holder's status manager (seconds; a turn is 6 of them) |
+
+The text of a `game_hit` names each damage type with its own amount, in the game's order, and what
+a resistance took: `... with Projectile_FireBolt: 4 fire (fire 9 -> 4)`. Found in the game and
+held by `test:fight/log/resisted`: a resistance halves a damage, rounded down, and never brings it
+below 1 (a rolled 1 is dealt 1). Held by `test:fight/log/unlisted`: the dice thrown for a damage's
+stats expression (Sneak Attack, Fire Bolt's die) are listed, in the hit's expression; a hit whose
+terms add up has no `unlisted`. The hit keeps the sum of a roll's dice, not each die: the roll
+log's `dice_thrown` rows have them. A `game_hit` row is GK.HitRow's (Shared/Bridge.lua) with these
+fields added in Server/GameLog.lua.
+
+What the rows do not tell: a move made with no cast (a walk) writes no `fight_action` - only a
+cast's own walk is in its `from` and `to`; why a status left (its end, a save, a dispel, a broken
+concentration) is in no row - `status_removed` and `game_unstatus` say only that it left; the
+Osiris `status_applied` row of the family `status` carries no duration (its writer,
+Server/EventFamilies.lua, does not read the status).

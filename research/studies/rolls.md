@@ -857,3 +857,22 @@ number for a creature standing in its ranged set is being watched.
 - The lines can be read from the view model's memory (developer mode); a verb for it is
   proposed. A forced opening of the tooltip shows an empty box, and nothing in the toolkit moves
   the game's pointer over a line.
+
+## 25. A correction: the dice of a stats expression are in the hit
+
+Sections 20 and 23 said that damage dice thrown for a stats expression (Sneak Attack, Divine
+Smite) are not in the hit. They are - in another field. A hit's damage holds two things: the
+list of damage rolls, which has the weapon's own dice only, and the damage's resolved stats
+expression (the Script Extender names that field `ConditionRoll`, which misleads), with the
+expression's text, its dice and its damage types. Sneak Attack used as an interrupt is a hit of
+its own whose expression is `LevelMapValue(SneakAttack)` with 1d6, the same die the roll log
+shows; Fire Bolt's list of damage rolls is empty and its d10 is in the expression. Section 24
+agrees: the combat log's tooltip is built from that expression, which is why it adds up.
+
+What stands of the earlier finding: the list of damage rolls alone is not the whole of a hit's
+dice, and a reader of a hit must take both; Colossus Slayer's hit lists a weapon roll that is
+not its damage. Whether any hit's damage is in neither field is open: the one case where the
+sweep saw a total above everything listed (Sneak Attack cast as the spell) was not staged again.
+
+The game's rows now carry both (`game_hit`: `rolls` with where each came from, `modifiers`,
+and `unlisted` when the listed terms fall short of the total).

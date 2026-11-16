@@ -6,10 +6,8 @@
 -- family `fight`, Server/FightLog.lua). Staged with a hostile goblin a few metres from the host
 -- and the host's initiative pinned low, so that the goblin's turn comes first and the goblin walks
 -- up and attacks the host by its own AI.
--- The game_hit row does not carry the cast's id: the hit's id is read here from the game's own
--- hit event (HitResultEvent, its HitDesc.SpellCastGuid) by a listener the test sets and removes.
--- Staging (cheat): the host kept alive, the pin, the goblin, the fight, the listener. Reading:
--- observation.
+-- The game_hit row carries the hit's own cast id (HitDesc.SpellCastGuid, `cast`).
+-- Staging (cheat): the host kept alive, the pin, the goblin, the fight. Reading: observation.
 -- Run: gatekit --instance <copy> test tests/fight -k fight/log/intent
 
 test { level = "GustavX:Basic_Level_A", surprises = { "combat_started" },
@@ -31,15 +29,7 @@ function run(game)
             GK.Stage.Immortal(true, h)
             GK.Rolls.Pin{ kind = "Initiative", n = -20 }
             local x, y, z = Osi.GetPosition(h)
-            local g = GK.Stage.Spawn{ template = "goblin", at = { x + 5, y, z }, faction = "enemy" }[1]
-            GK_IntentHits = {}
-            GK_IntentHitSub = Ext.Entity.OnCreate("HitResultEvent", function(e)
-                pcall(function()
-                    local hit = e.HitResultEvent.Hit
-                    GK_IntentHits[#GK_IntentHits + 1] = { by = hit.Inflicter.Uuid.EntityUuid, cast = tostring(hit.SpellCastGuid) }
-                end)
-            end)
-            return g
+            return GK.Stage.Spawn{ template = "goblin", at = { x + 5, y, z }, faction = "enemy" }[1]
         ]])
         game.wait("client", string.format("Ext.Entity.Get(%q) ~= nil", g), 10)
         game.server(string.format("return GK.Stage.Fight({ %q })", g))
@@ -58,17 +48,7 @@ function run(game)
         return a.payload
     end)
     step("the hit carries the cast's id", "observation", function()
-        row(staged, "game_hit", function(p) return uuid(p.by) == goblin and uuid(p.who) == host end, 30)
-        local hits = game.server([[
-            local h = GK_IntentHits
-            pcall(Ext.Entity.Unsubscribe, GK_IntentHitSub)
-            GK_IntentHits, GK_IntentHitSub = nil, nil
-            return h
-        ]])
-        local found = false
-        for _, h in ipairs(hits or {}) do
-            if uuid(h.by) == goblin and h.cast == action.cast then found = true end
-        end
-        check(found, "a hit of the goblin carries the id of the cast the row named", action.cast, hits)
+        local hit = row(staged, "game_hit", function(p) return uuid(p.by) == goblin and uuid(p.who) == host end, 30)
+        eq(hit.payload.cast, action.cast, "the goblin's hit carries the id of the cast the row named")
     end)
 end
