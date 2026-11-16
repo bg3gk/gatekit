@@ -895,3 +895,28 @@ What the server holds and what it sends is whole: natural 1, total 4, the flat 3
 ways by changing the flag before the hit reaches the log: a die of 1 with the flag taken off
 reads "1 (1d4) + 3 (Dexterity modifier) = 4"; a die of 4 with the flag put on reads "4 (1d4)".
 The damage dealt is right throughout.
+
+## 27. The faults held by tests, and two findings taken back
+
+Seven tests under `tests/quirks` hold what the sweeps found, each as the game does it today:
+resistance leaves 1 of a damage of 1 (and 1 of 3); a melee attack's chance and Sand Toss are
+worked out with the weapon set in hand; a weapon attack that misses still throws its ground
+damage and takes no hit points; a saving throw draws two d20 with neither advantage nor
+disadvantage; a roll forced by Karmic Dice writes no dice of its own while its stream moves by
+three draws and the hit shows a natural die; a damage roll's critical flag is of the sum of its
+dice (2+2+2 on 3d6 is flagged, 1+1+1 is not); four entries of the wiki's list of bugged
+actions read from the game's data.
+
+Taken back:
+
+- "A damage bonus from a boost is not doubled on a critical" did not reproduce: on a rigged
+  natural 20 `DamageBonus(2d6)` threw four dice and the hit lists 4d6. What the second sweep
+  read as "not doubled" was the ground row, which throws the boost's dice undoubled. The wiki's
+  entry is about Arcane Shot, which a level 1 host cannot stage.
+- "A forced hit shows a die that was never thrown" is said too strongly. The wiki says the game
+  picks a d20 value among those that would have succeeded; the forced roll moves its stream by
+  three draws, so the die shown is most likely drawn there, on a path the roll event does not
+  see. What holds: the row of the forced roll has no dice.
+
+Seen once and not again: in a fresh game a forced roll lowered the debt and the hit still said
+"miss".
