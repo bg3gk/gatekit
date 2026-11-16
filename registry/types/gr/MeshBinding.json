@@ -1,0 +1,89 @@
+{
+  "schema": "registry/type/1",
+  "id": "gr::MeshBinding",
+  "kind": "struct",
+  "state": "described",
+  "rung": "confirmed",
+  "about": "One mesh bound to a skeleton: two buffers of skinning matrices (3x4 floats a mesh bone, inverse bind times world, in the entity's space), rewritten every frame while the entity is animated, and the skeleton bone each mesh bone follows.",
+  "fields": [
+    {
+      "offset": 16,
+      "name": "Pose",
+      "type": "float[3][4]*",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "adding 0.6 to the translation of every matrix after the Effect system's update draws the figure 0.6 m higher; each matrix equals the bone's inverse bind matrix times its world matrix for the bone the array at 0xA0 names"
+        },
+        {"kind": "test", "test": "figure/client_bones"}
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "OtherPose",
+      "type": "float[3][4]*",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "adding 0.6 to the translation of every matrix after the Effect system's update draws the figure 0.6 m higher; each matrix equals the bone's inverse bind matrix times its world matrix for the bone the array at 0xA0 names"
+        },
+        {"kind": "test", "test": "figure/client_bones"}
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "BoneCount",
+      "type": "uint16",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "adding 0.6 to the translation of every matrix after the Effect system's update draws the figure 0.6 m higher; each matrix equals the bone's inverse bind matrix times its world matrix for the bone the array at 0xA0 names"
+        },
+        {"kind": "test", "test": "figure/client_bones"}
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "Object",
+      "type": "MoveableObject*",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "adding 0.6 to the translation of every matrix after the Effect system's update draws the figure 0.6 m higher; each matrix equals the bone's inverse bind matrix times its world matrix for the bone the array at 0xA0 names"
+        },
+        {"kind": "test", "test": "figure/client_bones"}
+      ]
+    },
+    {
+      "offset": 160,
+      "name": "ToBoneIndices",
+      "type": "int32*",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "adding 0.6 to the translation of every matrix after the Effect system's update draws the figure 0.6 m higher; each matrix equals the bone's inverse bind matrix times its world matrix for the bone the array at 0xA0 names"
+        },
+        {"kind": "test", "test": "figure/client_bones"}
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "adding 0.6 to the translation of every matrix after the Effect system's update draws the figure 0.6 m higher; each matrix equals the bone's inverse bind matrix times its world matrix for the bone the array at 0xA0 names"
+    },
+    {"kind": "test", "test": "figure/client_bones"}
+  ],
+  "questions": [
+    {
+      "ask": "Which of the two poses is the current frame's and which the previous one's: write one alone and look at motion blur.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}
