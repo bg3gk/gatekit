@@ -1,0 +1,38 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::VideoManager::LoadVideo",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Loads a video by its name: finds the file of that name among the loaded mods and hands its path to the player's own loader, the virtual at slot 1 of the video manager.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::FindVideoFile"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "copies the default string, calls the finder at bg3_dx11.exe+0x3CC15A0 with the name and the mod manager, and on success calls the manager's virtual at +8 with the path found"
+    },
+    {
+      "kind": "read",
+      "says": "copies the default string, calls code:unplaced::FindVideoFile with the name and the mod manager, and on success calls the manager's virtual at +8 with the path found"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Play a named video in a game copy (a widget with ls.LSVideoPanel, or the studio logo left in) with a probe on this function and read the name it is given.",
+      "about": "reach",
+      "state": "open"
+    },
+    {
+      "ask": "Play a named video in a game copy (a widget with ls.LSVideoPanel, or the studio logo left in) with a probe on this function and read the name it is given.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}
