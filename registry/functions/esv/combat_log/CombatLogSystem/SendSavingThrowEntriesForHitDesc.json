@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::SendSavingThrowEntriesForHitDesc",
+  "state": "described",
+  "rung": "game",
+  "does": "Turns the condition rolls (saving throws) carried by a status request into entries, with a HitDescLog made by the helper, when there is at least one roll.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "returns at once unless the roll count (+0x5C) is above 0; calls helper slot 0x18; called only by the status added and removed passes"
+    },
+    {
+      "kind": "watch",
+      "says": "called once when Hold Person ended on a successful save, not at all over hits"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RollAbilityCheckOfExpression",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Throws an ability check or saving throw of a roll expression: reads the roller's ability score (StatsComponent abilities by index), builds the roll and throws it through unplaced::RollExpressionAgainstDifficulty.",
+  "fingerprint": {
+    "calls": [
+      "eoc::CopyStatsRollResult",
+      "eoc::stats::AbilityCheck",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:73b6437b8a0b46c5",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::RollExpressionAgainstDifficulty"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads pSVar9->Abilities at its first argument, calls 0x1410663F0 or 0x141076A30, then the roll"
+    },
+    {
+      "kind": "watch",
+      "says": "a concentration Constitution save passes it at bg3_dx11.exe@25605617+0x11883C4"
+    }
+  ]
+}

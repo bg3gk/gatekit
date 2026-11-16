@@ -1,0 +1,19 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CombatLogProtocolAddRollFinishedEntry",
+  "owner": "esv::CombatLogProtocol",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Appends one RollFinishedEntry (a skill or ability check) to the combat log protocol's queue (slot 21 of its entry table).",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"], "vtables": [{"slot": 21}]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "slot 21 of the table at +0x57E4D20; uses the RollFinishedEntry array emplace at bg3_dx11.exe@25605617+0x2E4AE80"
+    },
+    {
+      "kind": "watch",
+      "says": "called once per logged passive roll or Stealth check, and not for a failed Perception while HIDE_FAILED_PERCEPTION_ROLLS is on"
+    }
+  ]
+}

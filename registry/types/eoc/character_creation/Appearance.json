@@ -1,0 +1,181 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::character_creation::Appearance",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "A whole look as the creation code passes it: an icon, four colour ids (hair, skin, eye, second eye), an accessory set, the visuals, the material elements and the additional choices; 0xD8 bytes. It is the member Visual of the dummy definition, of the creation definitions and of the appearance override.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Icon",
+      "type": "ScratchBuffer",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header GameDefinitions/CharacterCreation.h declares Icon first and AccessorySet (legacy field_98) between the colours and Visuals"
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "HairColor",
+      "type": "Guid",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+        }
+      ]
+    },
+    {
+      "offset": 104,
+      "name": "SkinColor",
+      "type": "Guid",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+        }
+      ]
+    },
+    {
+      "offset": 120,
+      "name": "EyeColor",
+      "type": "Guid",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+        }
+      ]
+    },
+    {
+      "offset": 136,
+      "name": "SecondEyeColor",
+      "type": "Guid",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+        }
+      ]
+    },
+    {
+      "offset": 152,
+      "name": "AccessorySet",
+      "type": "Guid",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header GameDefinitions/CharacterCreation.h declares Icon first and AccessorySet (legacy field_98) between the colours and Visuals"
+        }
+      ]
+    },
+    {
+      "offset": 168,
+      "name": "Visuals",
+      "type": "Array<Guid>",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+        }
+      ]
+    },
+    {
+      "offset": 184,
+      "name": "Elements",
+      "type": "Array<AppearanceMaterialSetting>",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+        }
+      ]
+    },
+    {
+      "offset": 200,
+      "name": "AdditionalChoices",
+      "type": "Array<float>",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) copies 16 bytes from each of +0x58, +0x68, +0x78, +0x88 into the target visual's four colour ids in this order, and the arrays at +0xA8, +0xB8, +0xC8 into its visuals, elements and additional choices"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) HairColor and SkinColor of the definition's Visual read the same ids as the dummy's target visual under the same names, and EyeColor equals SecondEyeColor in both"
+    },
+    {
+      "kind": "extender-name",
+      "says": "Script Extender's header GameDefinitions/CharacterCreation.h declares Icon first and AccessorySet (legacy field_98) between the colours and Visuals"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols name the type in signatures, as in FillTargetVisualComponentColorsAndMaterials(TargetVisualComponent&, eoc::character_creation::Appearance const&)"
+    },
+    {"kind": "toolkit-name", "store": "EoCShared.dll", "says": "EoCShared.dll exports this name"}
+  ]
+}

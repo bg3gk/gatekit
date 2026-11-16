@@ -1,0 +1,41 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::GetFailedAbilityCheckString",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Gives the translated text shown when an ability check fails, one localisation handle per EAbility.",
+  "fingerprint": {
+    "calls": ["fp:36ea95f2ce33bd6a", "fp:74095d1efd9aa634", "fp:e4d053ad9455ea7c"],
+    "strings": [
+      "1b54792f623d7d41",
+      "615b6b63de2a2f56",
+      "79a8c01054bb2d77",
+      "96289e555046dbbd",
+      "dbe558368bfc3075",
+      "f2f6508aa27e9314"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the fourth branch of the active-roll result text code at code:unplaced::UpdateActiveRollResultText (failed, ability id 0x12 and above), the same switch over fixed handles as its three siblings"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue never saw it called: none of the five dialogue rolls of the play was a failed ability check"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCShared.dll",
+      "tie": "match",
+      "says": "EoCShared.dll exports this name; the symbol database matches the export to this function by strings"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A failed dialogue ability check with the returned text read would show the line per ability.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

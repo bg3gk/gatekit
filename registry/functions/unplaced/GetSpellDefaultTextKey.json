@@ -1,0 +1,21 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::GetSpellDefaultTextKey",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Gives the FixedString value of one fixed property of a spell prototype, used as the default text key for its conditions.",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a", "fp:5227b96c8688ff31"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads a FixedString property through eoc::SpellPrototype::GetFixedStringValue; eoc::SpellPrototype::GetRollSpellConditionsPerTextKey passes its result as the key of the first condition"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which property it reads (the global at 0x145FC1CE0 names it); a probe on it with a snapshot of its result while a spell is aimed, compared with the FixedString of Default",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

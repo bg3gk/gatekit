@@ -1,0 +1,52 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::StatsExprStringBuilder::Roll",
+  "state": "described",
+  "rung": "game",
+  "does": "Writes a stats roll's die term into a tooltip's trans string: its value, '(NdM' with the damage type when one is given, the advantage or disadvantage mark and the label 'Critical!' when asked, then ')'; a roll of no dice is written as its flat value. Called by gui::StatsExprStringBuilder::StatsRoll before the modifiers.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:25775885d1a67594",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3a1919ec5e4b0a9a",
+      "fp:3bba8475365606e0",
+      "fp:3c1b457638f3ac4f",
+      "fp:5227b96c8688ff31",
+      "fp:653f3d9ddb074501",
+      "fp:72b4801e8e903ffc",
+      "fp:790019b3ba0a712b",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:a678d5b8d1e84280",
+      "fp:b70839e52859db22",
+      "fp:d1045bdeed38dbc1",
+      "fp:d6829d94468fa392",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83"
+    ],
+    "strings": [
+      "08c51123b414b8b2",
+      "22591b2b81a2ce10",
+      "3be6546cbf555959",
+      "65196b6b887f586a",
+      "85a86fc6afc6be6f",
+      "85b9698480a4a596"
+    ],
+    "vtables": [{"slot": 2}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "writes the pattern '[1]d[2]' with the die size from the table at +0x552CF0C indexed by the roll's DiceValue (+0), the count at +1; only user of the loca handle h7c4ca846g7e48g446fg8887g7eca9b33af5d ('Critical!'); its callers are code:gui::StatsExprStringBuilder::StatsRoll and bg3_dx11.exe@25605617+0x14CEAE0, as the macOS build's Roll is called by StatsRoll"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe over a weapon hit shows 2 calls, both from bg3_dx11.exe@25605617+0x178C115 inside gui::StatsExprStringBuilder::StatsRoll (the attack roll and the damage roll)"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

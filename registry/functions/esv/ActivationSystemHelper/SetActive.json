@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::ActivationSystemHelper::SetActive",
+  "state": "described",
+  "rung": "game",
+  "does": "Wakes or puts to sleep one entity for the activation manager, with a reason: adds or removes Active, AnubisActive and the animation blueprint and update; it is the helper's virtual +8, reached from the manager's +0xE8. The decompiler has no function at its entry and folds the body into the small array helper that lies just before it, so the build table places the id at that helper's start.",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the manager calls the virtual +8 of the object at +0xE8 with the world, 1 or 0, the entity handle, a name and the EReason (5 for party anchors, 0xD for timelines); the object's virtual table holds this function's entry at +8"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe at its entry: two sleepers moved to 38 m cause 2 calls from code:esv::ActivationManager::CheckAroundPosition; two awake creatures moved to 47 m cause 2 calls from code:esv::ActivationManager::Update; Active appears or leaves first, AnimationBlueprint 34 ms and AnubisActive 36 ms later"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports esv::ActivationSystemHelper::SetActive(WorldView, bool, ID, FixedString, EReason, EntityManager); it is tied to this function by the arguments the manager passes through the virtual call, the same kinds in the same order"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the same arguments"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the decompiler's function boundary: the entry the virtual table's slot points at is not a function of the database; a pass that splits it would place this name exactly",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

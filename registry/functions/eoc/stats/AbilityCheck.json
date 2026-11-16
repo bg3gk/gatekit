@@ -1,0 +1,49 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::stats::AbilityCheck",
+  "state": "described",
+  "rung": "game",
+  "does": "Rolls a raw ability check: refuses an ability id above 6, calls the roll manager's RollDiceWithBoostsAgainstDC and returns whether the total reached the difficulty.",
+  "fingerprint": {
+    "calls": [
+      "eoc::CopyStatsRollResult",
+      "eoc::roll::stream::RollManager::RollDiceWithBoostsAgainstDC",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the ability byte is bounded at 6, one call to eoc::roll::stream::RollManager::RollDiceWithBoostsAgainstDC, the result compared with the difficulty argument"
+    },
+    {
+      "kind": "pairing",
+      "says": "the pseudo-code pairing gives eoc::stats::AbilityCheck at score 0.32"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; the symbol database finds the export again in the executable at this function by the likeness of the two pseudo-codes"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which scene makes the game call it: no staged roll has reached it yet",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

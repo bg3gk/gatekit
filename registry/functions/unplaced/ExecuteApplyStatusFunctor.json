@@ -1,0 +1,57 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ExecuteApplyStatusFunctor",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Executes an ApplyStatus functor on a target: reads the caster's character or item, its SpellId, concentration and health, and applies the functor's status; its expression evaluation can roll (a roll of type None with no roller).",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
+      "fp:07fdd00e8710fd31",
+      "fp:123b79ba6c390bab",
+      "fp:175ac60533e9dfb9",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3dc70372a826ba29",
+      "fp:5227b96c8688ff31",
+      "fp:5d17a70e50dafa51",
+      "fp:72b4801e8e903ffc",
+      "fp:73b6437b8a0b46c5",
+      "fp:77b26de95fac76d5",
+      "fp:85ff8b6f975d2193",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:a4fcd6458dbd5380",
+      "fp:cb095298fb2af712",
+      "fp:d1045bdeed38dbc1",
+      "fp:d649436bbbe7d47a",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "ls::thoth::shared::ContextData::ContextData",
+      "stats::DealDamageFunctor::ApplyDamage",
+      "thoth::shared::ContextData::Destroy"
+    ],
+    "components": ["esv::StatsSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "case 1 of the functor type switch in unplaced::ExecuteAttackTargetFunctor calls it; it takes a SpellId and reads esv::Character, esv::Item, eoc::ConcentrationComponent and eoc::HealthComponent"
+    },
+    {
+      "kind": "watch",
+      "says": "the None roll between a goblin's weapon attack and its damage comes through RollManager::RollDice <- RollDamageExpressionDice (bg3_dx11.exe@25605617+0x11939C1) <- 0x1052660 (bg3_dx11.exe@25605617+0x1052736) <- this (bg3_dx11.exe@25605617+0x377BF00), inside Target_MainHandAttack's SpellProperties functors"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Which status and which expression the None roll evaluates: snapshot the functor (argument 2) and read its StatusId/Duration; ApplyStatus is functor type 1 in the extender's FunctorId.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

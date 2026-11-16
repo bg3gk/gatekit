@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::RollManager::RollDiceWithBoosts",
+  "state": "described",
+  "rung": "game",
+  "does": "Rolls a formula for a roller with its boosts on a stream named by id, with no difficulty and no debts.",
+  "fingerprint": {"calls": ["eoc::roll::stream::RollManager::InternalRollDiceWithBoosts"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It finds the stream and calls the roll with boosts with the difficulty -1"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ],
+  "questions": [
+    {"ask": "Which rolls come through its three callers", "about": "reach", "state": "open"}
+  ]
+}

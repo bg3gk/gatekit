@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecs::EntityWorld::Update",
+  "rung": "extender",
+  "fingerprint": {"calls": ["fp:a7763fd8336c26c9", "fp:e4d053ad9455ea7c", "fp:eddd7daf5203e52b"]},
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "Script Extender's table of byte patterns names this function: the pattern of its mapping ecl::EoCClient::Update is found once in the binary and an instruction it marks refers here"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "pair",
+      "says": "The macOS build's symbols hold this name; a stored pair of the two builds joins that function to this one (a seed)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "ECS.dll",
+      "tie": "match",
+      "says": "ECS.dll exports this name; the symbol database matches the export to this function by pseudo-code"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "What the function does: it is named from Script Extender's table and has not been read",
+      "about": "meaning",
+      "state": "open"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::UpdateStatusMachines",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Updates every status machine of the server once a frame for esv::status::ExecutionSystem: calls esv::StatusMachine::Update on each machine with new or pending statuses, then ticks the statuses out of turn-based combat (code:unplaced::TickStatusMachinesInRealTime).",
+  "fingerprint": {
+    "calls": [
+      "esv::StatusMachine::Update",
+      "fp:07fdd00e8710fd31",
+      "fp:123b79ba6c390bab",
+      "fp:13ddf19cc6797441",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::TickStatusMachinesInRealTime"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::gamestate::SavegameLoadComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "called only by the update of esv::status::ExecutionSystem (0x2C4EE60, entered from its per-frame SystemUpdate at 0x23910D0); loops the machines at +0x70 calling code:esv::StatusMachine::Update"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe shows esv::StatusMachine::Update called 2760 times in 15 s, all from bg3_dx11.exe@25605617+0x2C5475E inside it"
+    }
+  ]
+}

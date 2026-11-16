@@ -1,0 +1,38 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ConditionAttack",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "The Attack() function of stats conditions: from the current condition context resolves the attacker's weapon or spell (eoc::WeaponSetComponent) and rolls the attack against the target through unplaced::RollAttack; returns the verdict.",
+  "fingerprint": {
+    "calls": [
+      "eoc::StatsSystem::LEGACY_CreateStatsRollContext",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:ebc9e39819ba8149",
+      "fp:f8733ab4e537d29f",
+      "fp:fc7a91e7e6596fa5",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::RollAttack"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads the same condition context frame as the SavingThrow function and reads eoc::WeaponSetComponent of the attacker"
+    },
+    {
+      "kind": "watch",
+      "says": "the caller chains of Fire Bolt's attack and of a goblin's weapon attack pass it at bg3_dx11.exe@25605617+0x116B69F, above unplaced::RollAttack"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::character_creation::System",
+  "kind": "struct",
+  "state": "described",
+  "rung": "inferred",
+  "about": "The server's character creation system: it owns every creation, respec, level-up and change-appearance session. The Osiris calls only append a request (the character's entity and a user id, 16 bytes) to one of its arrays; the bytes at +0x250 and +0x288 refuse new requests while set. The Toolkit exports its methods: RequestChangeAppearance, RequestRespec, RequestFullRespec, RequestUpdateChangeAppearance, RequestUpdateCreation, RequestOverrideAparenceVisual, RequestRemoveCustomVisualOvirride, RequestToggleAccessorySet, RequestAbort, Update.",
+  "fields": [
+    {
+      "offset": 1080,
+      "name": "RespecRequests",
+      "type": "Array<{EntityHandle, UserID}>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit's EoCServer.dll exports the class esv::character_creation::System with 44 methods, and the game's executable registers a system of that name (its index is taken as TypeIndex of esv::character_creation::System in the systems context)"
+        },
+        {
+          "kind": "read",
+          "says": "the handlers of StartRespec (code:esv::OsirisGameFunctions::StartRespec) and StartChangeAppearance (code:esv::OsirisGameFunctions::StartChangeAppearance) test +0x250 and +0x288 and append to the arrays at +0x438 (count +0x444, capacity +0x440) and +0x4E8 (count +0x4F4, capacity +0x4F0)"
+        }
+      ]
+    },
+    {
+      "offset": 1256,
+      "name": "ChangeAppearanceRequests",
+      "type": "Array<{EntityHandle, UserID}>",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit's EoCServer.dll exports the class esv::character_creation::System with 44 methods, and the game's executable registers a system of that name (its index is taken as TypeIndex of esv::character_creation::System in the systems context)"
+        },
+        {
+          "kind": "read",
+          "says": "the handlers of StartRespec (code:esv::OsirisGameFunctions::StartRespec) and StartChangeAppearance (code:esv::OsirisGameFunctions::StartChangeAppearance) test +0x250 and +0x288 and append to the arrays at +0x438 (count +0x444, capacity +0x440) and +0x4E8 (count +0x4F4, capacity +0x4F0)"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the Toolkit's EoCServer.dll exports the class esv::character_creation::System with 44 methods, and the game's executable registers a system of that name (its index is taken as TypeIndex of esv::character_creation::System in the systems context)"
+    },
+    {
+      "kind": "read",
+      "says": "the handlers of StartRespec (code:esv::OsirisGameFunctions::StartRespec) and StartChangeAppearance (code:esv::OsirisGameFunctions::StartChangeAppearance) test +0x250 and +0x288 and append to the arrays at +0x438 (count +0x444, capacity +0x440) and +0x4E8 (count +0x4F4, capacity +0x4F0)"
+    },
+    {"kind": "toolkit-name", "store": "EoCServer.dll", "says": "EoCServer.dll exports this name"}
+  ],
+  "questions": [
+    {
+      "ask": "the field names are ours; read the Toolkit's RequestRespec and RequestChangeAppearance for the members they write, and find the readers of the two arrays in Update; what sets +0x250 and +0x288 (most likely a creation in progress and an unloading session)",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

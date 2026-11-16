@@ -1,0 +1,60 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::DealDamageFunctorAtPosition",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Executes a DealDamage functor at a position rather than on a target (the server's StatsFunctorDealDamage::Execute overload with a position and a radius): when the position is on the level's grid it rolls the functor's damage again, lets fire (damage type 7) and lightning (8) act on surfaces at the position in a 2.4 m radius and passes the damage on, for what lies there, to a function the registry does not name.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Destroy",
+      "fp:123b79ba6c390bab",
+      "fp:2da7c0e68124cba6",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:5d17a70e50dafa51",
+      "fp:63c8a1b1588c8672",
+      "fp:72b4801e8e903ffc",
+      "fp:73b6437b8a0b46c5",
+      "fp:77b26de95fac76d5",
+      "fp:85ff8b6f975d2193",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f2ed9e1f6c3a6dda",
+      "fp:f56cfda99ef7ffa7",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::RollDealDamageFunctor"
+    ],
+    "components": ["esv::PassiveSystem", "esv::StatsSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "checks the position against the level's AiGrid (0x36E9AC0 on +0x80 of the level), calls code:unplaced::RollDealDamageFunctor to roll, then per damage type 7 or 8 calls the surface change 0x142CD5030 with radius 2.4 (0x4019999A), then 0x2ADB0B0 with the same radius"
+    },
+    {
+      "kind": "watch",
+      "says": "a goblin's weapon attack that missed (total 9 against AC 14, then 10 against 14) still threw its damage dice, through this function (bg3_dx11.exe@25605617+0x36EC3FC) under esv::ExecuteStatsFunctor_AttackPositionContext; no damage was dealt to the host"
+    },
+    {
+      "kind": "watch",
+      "says": "two weapon attacks of a goblin that missed (totals 9 and 10 against AC 14) still threw damage dice, both times through this function (bg3_dx11.exe@25605617+0x36EC3FC) under esv::ExecuteStatsFunctor_AttackPositionContext, and not through stats::DealDamageFunctor::ApplyDamage"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "what 0x2ADB0B0 does with the rolled damage (items or destructible terrain in the radius?) - watch a fire weapon attack against an empty spot near a crate",
+      "about": "reach",
+      "state": "open"
+    },
+    {
+      "ask": "whether the target loses hit points from this roll (it should not), and what 0x2ADB0B0 does with it (items or destructible terrain in the radius?) - watch the host's HP across a missed goblin attack, and a fire weapon attack at an empty spot near a crate",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

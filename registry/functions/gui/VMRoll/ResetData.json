@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::VMRoll::ResetData",
+  "state": "described",
+  "rung": "game",
+  "does": "Clears the roll view model before a new roll is shown: the chance, the difficulty class, the result and the phase (set to 5), each change deferred to the UI.",
+  "fingerprint": {
+    "calls": ["fp:36ea95f2ce33bd6a", "fp:92dd4fee11aeea92", "fp:e4d053ad9455ea7c"],
+    "vtables": [{"slot": 5}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "zeroes +0x48, +0x100 (Chance) and +0xD0 (DifficultyCheck) and sets the phase byte to 5, each with ui::deferred::PropertiesManager::DeferPropertyChanged"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a dialogue was on (segments 4, 16, 31, 32), 5 times from 1 place, the active-roll title code at code:unplaced::SetUpActiveRollTitle"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "NoesisGameUI.dll exports this name; the symbol database finds the export again in the executable at this function by the likeness of the two pseudo-codes"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

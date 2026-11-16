@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::FindConditionByTextKey",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Looks a text key up in a FixedString-to-eoc::spell::Condition map (0x18-byte values) and gives the value's address and a not-found flag; the AI uses it on its action's roll-condition map.",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "hashes the FixedString R8 points to, walks the buckets, returns map+0x30 plus index times 0x18, else the flag"
+    },
+    {
+      "kind": "watch",
+      "says": "in a goblin's turn its six calls take the spell's default text key, and the address it gives is the condition the scorer passes to the chance"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateAiScoreSurfaceOnObject",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Scores for the AI the effect of a surface on one character or item standing in it, chasm entry included.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
+      "esv::AiHelpers::CalculateAiScoreStatus",
+      "esv::AiHelpers::GetConditionChance",
+      "fp:123b79ba6c390bab",
+      "fp:24c801b0780dfd1d",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3dc70372a826ba29",
+      "fp:492967c36737a355",
+      "fp:4fa47241a2178942",
+      "fp:5227b96c8688ff31",
+      "fp:643e3cf8b7abf688",
+      "fp:71c77899fef3ecc8",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:97de264972b14985",
+      "fp:b64bf67d316ead69",
+      "fp:bd0fbff4472420b9",
+      "fp:d1045bdeed38dbc1",
+      "fp:d3713deebd9a4a36",
+      "fp:e4d053ad9455ea7c",
+      "ls::thoth::shared::ContextData::ContextData",
+      "thoth::shared::ContextData::Destroy",
+      "unplaced::AddAiScore",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::CreateAiScoreScratchBlock",
+      "unplaced::ReleaseAiScoreScratchBlock"
+    ],
+    "strings": [
+      "022aadc64493559b",
+      "23b4b19dd3fe9d74",
+      "3e37f2c0fa98f56a",
+      "d526546d68affb73",
+      "e98b1dec0183b159",
+      "f05a264c197ecaa4",
+      "f6e8df762ba5dbd3"
+    ],
+    "components": ["esv::AiHelpers"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "esv::StatusMachine::HasStatus and HasActiveStatus, eoc::chasm::CanEnterChasmComponent, GetConditionChance, calls CalculateAiScoreStatus"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 2 places, mostly the position scorer at code:esv::AiHelpers::CalculatePositionScore"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the text constants both refer to"
+    }
+  ]
+}

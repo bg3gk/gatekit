@@ -1,0 +1,42 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::GetStoredOrRollInitiative",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Gives a combatant joining a combat its initiative: takes the value already kept for the entity in the combat's initiative map when there is one, otherwise calls esv::combat::System::NewInitiativeRoll.",
+  "fingerprint": {
+    "calls": [
+      "esv::combat::System::NewInitiativeRoll",
+      "fp:5227b96c8688ff31",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "calls a lookup in a hash map from entity to int reached through +0xB8 of the combat, and only when its found-flag is clear calls code:esv::combat::System::NewInitiativeRoll"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, in the same stretches as the lookup it calls, from one place inside the combat's per-tick function: it ran in a fight, which does not show what it does"
+    },
+    {
+      "kind": "watch",
+      "says": "The roll of a goblin joining a running fight came through this function: the last watch of code:esv::combat::System::NewInitiativeRoll holds the chain. The branch that finds a stored value is not watched."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Joining a second enemy to a running fight would show whether its initiative is found or rolled.",
+      "about": "reach",
+      "state": "answered",
+      "answer": "Rolled: a newly spawned goblin joining a running fight had its initiative rolled through this function and code:esv::combat::System::NewInitiativeRoll.",
+      "source": "the watch of code:esv::combat::System::NewInitiativeRoll"
+    },
+    {
+      "ask": "Whose initiative the map at +0xB8 keeps (a group sharing one roll, or a value set by script), and whether it is the same map code:esv::combat::System::NewInitiativeRoll looks in first: a fight joined by a creature whose combat group already rolled, with a probe on both functions, would show the stored branch.",
+      "about": "conditions",
+      "state": "open"
+    }
+  ]
+}

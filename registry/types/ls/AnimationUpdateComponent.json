@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "ls::AnimationUpdateComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "A tag on a client entity whose animation blueprint is run every frame. Without it the entity's local pose, world pose and skinning matrices are no longer rewritten and the figure stands as it was; given back, the animation resumes.",
   "size": 1,
   "fields": [
     {
@@ -18,6 +21,26 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "AnimationUpdate", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "after RemoveComponent a rotation written into the live local pose is found unchanged on 58 of 59 ticks (0 of 113 with the component), and written skinning matrices are the same bytes seconds later"
+    },
+    {"kind": "test", "test": "figure/client_bones"},
+    {
+      "kind": "game-name",
+      "store": "type-names",
+      "says": "The executable keeps this type's name as text"
+    },
+    {"kind": "toolkit-name", "store": "GameEngine.dll", "says": "GameEngine.dll exports this name"}
+  ],
+  "questions": [
+    {
+      "ask": "Which system reads the tag, and why a figure left without it for minutes after a death animation does not move again when it is given back.",
+      "about": "reach",
+      "state": "open"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Visual.h:165, kind tag), by gatekit symbols se-layouts on 2026-11-14",

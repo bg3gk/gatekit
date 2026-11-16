@@ -1,0 +1,30 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::AnimationBlueprintSystem::TriggerGameplayEvent<EoCGE::ASCancelAnimation>",
+  "state": "described",
+  "rung": "game",
+  "does": "Sends an entity's animation blueprint the gameplay event ASCancelAnimation (id e131c8d9-6049-40a6-a565-73038fedc938) with one flag as its argument: the animation the ASAnimation event started ends.",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It builds an event description with the id global filled from the string e131c8d9-..., writes the byte its third parameter points at as argument 0 and calls the generic TriggerGameplayEvent; ecl::ASAnimation::Update reaches it through bg3_dx11.exe@25605617+0x1BC4BA0 when the state is left."
+    },
+    {
+      "kind": "watch",
+      "says": "Called for a client-only timeline dummy that loops an animation, the blueprint raises its end events for the entity within the next frames; none came in the three seconds before."
+    },
+    {"kind": "test", "test": "figure/client_animation"},
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

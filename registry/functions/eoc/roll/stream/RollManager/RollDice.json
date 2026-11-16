@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::RollManager::RollDice",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "The roll manager's entry for plain dice of a stream with no roller's boosts and no difficulty.",
+  "fingerprint": {"calls": ["eoc::roll::stream::RollManager::InternalRollDice"]},
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; the symbol database finds the export again in the executable at this function by its one call, to code:eoc::roll::stream::RollManager::InternalRollDice. The macOS build's symbols do not hold it."
+    },
+    {
+      "kind": "watch",
+      "says": "roll events of no dice on the Generic stream carried it as the first frame, called from the plain dice of a stats expression"
+    }
+  ]
+}

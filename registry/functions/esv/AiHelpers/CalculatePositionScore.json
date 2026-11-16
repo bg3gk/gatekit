@@ -1,0 +1,41 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculatePositionScore",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Scores for the AI standing on one AI-grid tile: height, collision and floating checks on the tile, the surface the character would stand in, then the detailed position score of CalculatePositionScore2.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::CalculateAiScoreSurfaceOnObject",
+      "esv::AiHelpers::CalculatePositionScore2",
+      "fp:11ebc203f3a94948",
+      "fp:123b79ba6c390bab",
+      "fp:4fa47241a2178942",
+      "fp:5227b96c8688ff31",
+      "fp:5c5870742e57bb9f",
+      "fp:91c3d48dff57ab4c",
+      "fp:b9a18e1f1379aafa",
+      "fp:d3713deebd9a4a36",
+      "fp:e4d053ad9455ea7c",
+      "fp:fed9b68e4d0729f7",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ],
+    "components": ["esv::AiHelpers"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "returns an AiScore for an AiTilePos, character, position and PositionScoreOptions; calls eoc::AiGrid::ToTilePos, IsColliding, GetHeightAtTile, eoc::IsFloating, CalculateAiScoreSurfaceOnObject and, about 15 000 times, CalculatePositionScore2"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 18 places in the AI decision code"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

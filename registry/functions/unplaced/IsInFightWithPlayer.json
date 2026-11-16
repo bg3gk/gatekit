@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::IsInFightWithPlayer",
+  "state": "described",
+  "rung": "inferred",
+  "does": "True when an entity is alive and takes part in a fight whose participants include a player.",
+  "fingerprint": {
+    "calls": [
+      "fp:5227b96c8688ff31",
+      "fp:643e3cf8b7abf688",
+      "fp:652f749f0b0dd083",
+      "fp:a4616baec98bd920",
+      "fp:b9a18e1f1379aafa",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::PlayerComponent,eoc::combat::ParticipantComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "IsEntityAlive, combat ParticipantComponent, DeathComponent and the fight state component"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "probe while two creatures far from the party fight each other",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

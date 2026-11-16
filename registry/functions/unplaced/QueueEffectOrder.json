@@ -1,0 +1,28 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::QueueEffectOrder",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Queues an order (play, stop, destroy and the like) for an effect entity: stamps it with the salt, bits 6 to 12 of the effect component's word at +0x60, and appends it to the effects manager's queue at +0x48, or to the effect's constructor while the effect is still being built.",
+  "fingerprint": {
+    "calls": ["fp:27464f31bddba771", "fp:5227b96c8688ff31", "fp:e01fe878cfcf2765"],
+    "components": ["ls::EffectsManager"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The salt is written at +0x14 of the order; while bit 15 of the word is set and the constructor pointer at +0x58 is there the order goes to the constructor's queue at +0x40, otherwise to the manager's at +0x48."
+    },
+    {
+      "kind": "watch",
+      "says": "Orders appended to the manager's queue with that salt are obeyed: a force stop sets the effect's Stopped flag at once and a destroy removes its Effect component."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Not probed itself: put a count on it while the game stops an effect of its own.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::TLPreviewDummyHelpers::CreateDummy",
+  "state": "described",
+  "rung": "game",
+  "does": "Makes a new client entity for a timeline dummy: takes a uuid and a timeline type, creates the entity in the client world at once, gives it ls::uuid::Component, ecl::TimelineTransformComponent and ecl::TLPreviewDummy, writes the timeline type, the entity handle (0x30) and the entity reference (0x10) into the dummy and returns the dummy.",
+  "fingerprint": {
+    "calls": [
+      "fp:451a3bb3aecbcf6a",
+      "fp:88326e8f659b3ba3",
+      "fp:c8384249d433cc07",
+      "fp:e4d053ad9455ea7c",
+      "fp:f21e55528df2e606"
+    ],
+    "components": ["ecl::TLPreviewDummy", "ecl::TimelineTransformComponent", "ls::uuid::Component"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The body takes the client world from ecl::EoCClient+0x1A8, creates an entity, adds the three components in that order and fills the dummy's fields at 0x10, 0x18 and 0xB9; the Toolkit's ecl::TLPreviewDummyHelpers::CreateDummy(Guid const&, ETimelineType) has the same two parameters and the same job."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts records 93 calls with a pointer to a uuid and the timeline type 1, each returning a dummy whose address is then given to the load; the callers are the three dummy-making functions of the timeline system."
+    },
+    {"kind": "toolkit-name", "says": "ecl::TLPreviewDummyHelpers::CreateDummy"},
+    {"kind": "test", "test": "figure/client_dummy"},
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

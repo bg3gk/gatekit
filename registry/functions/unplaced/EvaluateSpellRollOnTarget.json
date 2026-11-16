@@ -1,0 +1,38 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::EvaluateSpellRollOnTarget",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Prepares a cast's hit on one target and evaluates the spell's roll against it: writes the spell's id into the hit description (+0x150 of the HitDesc it fills), the target's health percentage and the attack's position, then calls the cast's roll evaluator through its vtable (+0x40), which reaches the spell's SpellRoll condition; marks the hit as rolled.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:24c801b0780dfd1d",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3dc70372a826ba29",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "thoth::shared::ContextData::Destroy",
+      "unplaced::BuildConditionContextWithProxies",
+      "unplaced::FindConditionByTextKey"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "copies the FixedString at +0x8 of its fifth argument into the HitDesc at +0x150, reads eoc::HealthComponent and ls::TransformComponent of the target, then makes one virtual call at +0x40 of the object in its second argument"
+    },
+    {
+      "kind": "watch",
+      "says": "one call per Sacred Flame cast, from bg3_dx11.exe@25605617+0x37D0718; the evaluation of the SpellRoll (code:eoc::spell::CheckModifiableSpellRollCondition) is called from bg3_dx11.exe@25605617+0x3726D47 inside it"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which object is the evaluator in its second argument, and is +0x150 of the HitDesc the spell id for every cast (read the HitDesc layout of Script Extender against a watch of a Fire Bolt hit)",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

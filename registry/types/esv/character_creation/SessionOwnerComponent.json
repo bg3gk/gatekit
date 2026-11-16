@@ -2,7 +2,9 @@
   "schema": "registry/type/1",
   "id": "esv::character_creation::SessionOwnerComponent",
   "kind": "struct",
-  "about": "Owner of a character-creation session (respec / change appearance / level-up editor) on the server: the user who opened it and the local time it started. Created by the respec and change-appearance subsystems (esv::character_creation::RespecSubsystem::Update, ChangeAppearanceSubsystem::Update/Abort write it); seen in SYS_CC_I after Osi.StartRespec.",
+  "state": "described",
+  "rung": "game",
+  "about": "The server's record of whose session it is: UserId and StartTime. Script Extender: ServerCCSessionOwner.",
   "size": 16,
   "fields": [
     {
@@ -13,7 +15,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "bg3.exe+0x3794650 (add helper, 0x10 bytes) initialises it from the global default UserID DAT_14617CEAC; bg3.exe+0x37A31D0 / bg3.exe+0x37ADDE0 store the requesting user's id; bg3.exe+0x316F540 reads it as 4 bytes for a user lookup; live 0x00010001"
+          "says": "bg3.exe@25605617+0x3794650 (add helper, 0x10 bytes) initialises it from the global default UserID DAT_14617CEAC; bg3.exe@25605617+0x37A31D0 / bg3.exe@25605617+0x37ADDE0 store the requesting user's id; bg3.exe@25605617+0x316F540 reads it as 4 bytes for a user lookup; live 0x00010001"
         }
       ]
     },
@@ -25,7 +27,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "bg3.exe+0x3794650 sets it to 0; not written by the creators read; live 0"
+          "says": "bg3.exe@25605617+0x3794650 sets it to 0; not written by the creators read; live 0"
         }
       ]
     },
@@ -44,12 +46,22 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "bg3.exe+0x37A31D0 and bg3.exe+0x37ADDE0: GetLocalTime -> struct tm -> _mktime64, stored as __time64_t at +8; live 0x6AF63E85 (a Unix time in 2026)"
+          "says": "bg3.exe@25605617+0x37A31D0 and bg3.exe@25605617+0x37ADDE0: GetLocalTime -> struct tm -> _mktime64, stored as __time64_t at +8; live 0x6AF63E85 (a Unix time in 2026)"
         }
       ]
     }
   ],
   "concept": {"kind": "component", "ext_name": "ServerCCSessionOwner", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) it sits on the session entity; UserId reads 65537 for the host and StartTime a count of seconds of the wall clock at the start"
+    }
+  ],
   "survey": {
     "batch": "alive",
     "confidence": "high",

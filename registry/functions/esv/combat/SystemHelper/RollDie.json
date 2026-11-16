@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat::SystemHelper::RollDie",
+  "state": "described",
+  "rung": "game",
+  "does": "Rolls one die plus a bonus on the Generic stream through the roll manager's plain dice roll, with no boosts: the initiative die of a combatant.",
+  "fingerprint": {
+    "calls": ["eoc::roll::stream::RollManager::RollDice", "fp:3bba8475365606e0"],
+    "vtables": [{"slot": 3}]
+  },
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "As a fight of three began, three d4 were thrown from bg3_dx11.exe@25605617+0x32019E1 inside this function, one with the bonus a pinned initiative gives and two with a goblin's"
+    },
+    {"kind": "read", "says": "It takes the manager's generic stream and calls the plain dice roll"},
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::ASAnimation::Update",
+  "state": "described",
+  "rung": "game",
+  "does": "The update of the client's action state that plays an animation on a character: once, it builds the event of three sets of animation short names (start, loop, end), a float and a flag from the state and sends it to the character's animation blueprint; when the state is left it sends the cancel event with one flag.",
+  "fingerprint": {
+    "calls": ["fp:72b4801e8e903ffc", "fp:e4d053ad9455ea7c", "unplaced::SendASAnimationAndRecord"],
+    "components": ["ecl::animation::GameplaySystem"],
+    "vtables": [{"slot": 4}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The macOS build names the function of the same shape ecl::ASAnimation::Update: it takes the three sets from the state at +0x18, the float at +0x48 and the flag at +0x4c, looks up ecl::animation::GameplaySystem and calls the sender of EoCGE::ASAnimation; the other branch sends EoCGE::ASCancelAnimation with the byte at +0x4d."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while Osi.PlayAnimation runs on the host shows the sender at code:unplaced::SendASAnimationAndRecord called once, from bg3_dx11.exe@25605617+0x1BC3C2B inside this function."
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

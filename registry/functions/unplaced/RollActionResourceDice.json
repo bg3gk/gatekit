@@ -1,0 +1,35 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RollActionResourceDice",
+  "state": "described",
+  "rung": "inferred",
+  "does": "A dice node of the stats expression evaluator that rolls dice whose size comes from an action resource of the roller (the eoc::ActionResourcesComponent read first), such as Bardic Inspiration's die, through eoc::roll::stream::RollManager::RollDice on the Generic stream; the sibling of unplaced::RollExpressionPlainDice.",
+  "fingerprint": {
+    "calls": [
+      "eoc::roll::stream::RollManager::RollDice",
+      "fp:123b79ba6c390bab",
+      "fp:3c74753dbe89f457",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "vtables": [{"slot": 8}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "takes the ActionResourcesComponent of the context's entity, builds RollDefinitions (0xC bytes each) from the node and calls RollManager::RollDice per definition; pairs with a case of the Toolkit's expression switch at 0.52"
+    },
+    {
+      "kind": "watch",
+      "says": "the direct caller of RollManager::RollDice for Bardic Inspiration's d6 on a save; the roll log row of that die has no roller and origin unknown"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Which expressions reach it besides an action-resource die: a Superiority die (Battle Master maneuvers) or Cutting Words would show; the roll log should list it as an asker.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

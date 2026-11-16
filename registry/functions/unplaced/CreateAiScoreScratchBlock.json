@@ -1,0 +1,28 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CreateAiScoreScratchBlock",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Allocates and zeroes a reference-counted 0x130-byte block (two halves at +0x0 and +0x90, the count at +0x12C) and stores it in the handle given; the AI scorers put it in the parameters they hand to esv::AiHelpers::CalculateAiScoreSpellStatsFunctors.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "allocates 0x130 bytes, constructs them through 0x3773C30 and increments +0x12C; 58 callers, all scorers of esv::AiHelpers"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "what the two halves hold: snapshot the block after CalculateAiScoreSpellStatsFunctors returns in an enemy's turn",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

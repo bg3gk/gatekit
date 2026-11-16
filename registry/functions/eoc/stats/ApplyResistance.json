@@ -1,0 +1,36 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::stats::ApplyResistance",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Applies the target's resistances and immunities to one damage amount of a damage type and returns the result.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:487cb3ad377ac4c8",
+      "fp:5227b96c8688ff31",
+      "fp:58a427e18838174e",
+      "fp:6dbec13f747384e3",
+      "fp:91c3d48dff57ab4c",
+      "fp:b70839e52859db22",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8c904b320f1070b",
+      "import:662a91b212c69510"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "called twice per damage roll (min and max) from OnUpdateOverheadTarget, as in the symbol build"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

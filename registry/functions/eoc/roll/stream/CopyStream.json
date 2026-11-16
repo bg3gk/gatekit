@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::CopyStream",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Copies one roll stream (0x78 bytes) field by field into another: its combat participants, cast and player names, combat guid, type, frame, both debts, seed and count.",
+  "parameters": [{"storage": "reg:rcx", "name": "to"}, {"storage": "reg:rdx", "name": "from"}],
+  "ties": [
+    {"type": "esv::roll::stream::Stream", "via": "from"},
+    {"type": "esv::roll::stream::Stream", "via": "to"}
+  ],
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "GK.Memory.Watch on the Generic stream's NumRolls (component and roll manager, stream+0x70): hits at bg3_dx11.exe@25605617+0x105DBBD every frame with the value unchanged, from SystemUpdate<esv::roll::stream::UpdateSystem> (bg3_dx11.exe@25605617+0x238ABC3) and from the SaveSystem's work (bg3_dx11.exe@25605617+0x342DDF9); the offsets it copies agree with Script Extender's Stream and PRNGState"
+    },
+    {
+      "kind": "watch",
+      "says": "A write watch on a stream's count in the roll manager is hit at bg3_dx11.exe@25605617+0x105DBBD inside this function every frame, the value unchanged"
+    },
+    {
+      "kind": "watch",
+      "says": "A count-only probe on it shows every call coming from bg3_dx11.exe@25605617+0x105D985 inside the copy of an array of streams"
+    },
+    {
+      "kind": "text",
+      "says": "The name is ours: the Toolkit exports no function of this name and the macOS build's symbols hold none; it stands in the namespace of the functions that call it."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RollSkillCheckOfExpression",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Throws a skill check of a roll expression: reads the roller's skill bonus (StatsComponent skills by index) and throws it - as a pre-roll through unplaced::RollExpressionAgainstDifficulty when a dialogue roll window opens, and as the check itself through unplaced::RollSkillCheck.",
+  "fingerprint": {
+    "calls": [
+      "eoc::CopyStatsRollResult",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:73b6437b8a0b46c5",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::RollExpressionAgainstDifficulty",
+      "unplaced::RollSkillCheck"
+    ]
+  },
+  "evidence": [
+    {"kind": "read", "says": "reads pSVar9->Skills at its first argument; two roll calls"},
+    {
+      "kind": "watch",
+      "says": "a dialogue Persuasion check rolls from bg3_dx11.exe@25605617+0x1188B61 (Generic stream, as the window opens) and from bg3_dx11.exe@25605617+0x1188BBC (Dialog stream, the throw); a story passive Perception check from bg3_dx11.exe@25605617+0x1188BBC"
+    },
+    {
+      "kind": "watch",
+      "says": "A count-only probe on code:unplaced::RollSkillCheck names this function as a caller"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A dialogue Persuasion check with a probe that reads the skill index and the bonus it passes on would show the skill it reads; a story passive Perception check reaches the second call alone.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

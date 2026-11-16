@@ -36,8 +36,7 @@ layout) equals a value, a field changes. A claim that cannot be said that way sa
 <system>` replays each recipe with the expectations watched every tick and writes the verdict
 beside the claim (`passed`, `failed`, `last`, and the latest cases); `gatekit systems tally`
 counts claims written, checked, passed and failed. A pass proves the claim on the cases run and
-nothing wider. The verbs' arguments: [docs/contracts/cli.md](../../docs/contracts/cli.md),
-section 3.6.
+nothing wider. The verbs' arguments: [docs/contracts/cli.md](../../docs/contracts/cli.md#claims-the-game-checks-systems-tally-systems-check-the-preludes-expect).
 
 **The order.** The systems that create a component never seen alive come first
 (`gatekit symbols creators <type>`), then the systems of the namespaces being worked in, then the

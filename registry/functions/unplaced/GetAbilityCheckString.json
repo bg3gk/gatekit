@@ -1,0 +1,45 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::GetAbilityCheckString",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Gives the translated title of an ability check for the roll screen (Strength Check, Dexterity Check ...), one localisation handle per EAbility.",
+  "fingerprint": {
+    "calls": ["fp:36ea95f2ce33bd6a", "fp:74095d1efd9aa634", "fp:e4d053ad9455ea7c"],
+    "strings": [
+      "53a4f3704ddc7237",
+      "a1a58b3dd1d1bef8",
+      "c0732554eb3e2b79",
+      "d0099d025e254805",
+      "d089e14ee0d6207e",
+      "ee75a03bc17084d9"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "a switch over the EAbility value, each case building a TranslatedString from a fixed localisation handle | A counter on every function over a play of the prologue shows it called only while a dialogue was on (segments 4, 16, 31, 32, the dialogue rolls), 5 times from 1 place, the active-roll title code at code:unplaced::SetUpActiveRollTitle"
+    },
+    {
+      "kind": "read",
+      "says": "a switch over the EAbility value, each case building a TranslatedString from a fixed localisation handle"
+    },
+    {
+      "kind": "watch",
+      "says": "a counter on every function over a play of the prologue shows it called only while a dialogue was on (the dialogue rolls), 5 times from 1 place, the active-roll title code at code:unplaced::SetUpActiveRollTitle"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCShared.dll",
+      "tie": "match",
+      "says": "EoCShared.dll exports this name; the symbol database matches the export to this function by strings"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A dialogue check of each ability with the returned text read would show the title per ability.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

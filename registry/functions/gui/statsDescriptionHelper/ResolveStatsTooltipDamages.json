@@ -1,0 +1,41 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::statsDescriptionHelper::ResolveStatsTooltipDamages",
+  "state": "described",
+  "rung": "game",
+  "does": "Resolves a spell's tooltip damage description into the VMDamageRoll collection of the player's UI data.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:755939297683221b",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:b70839e52859db22",
+      "fp:b854a97f49e8bfad",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8d99f5891680858",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "takes the collection at VMUIData+0x818, the place of the old build's only user of that name string"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

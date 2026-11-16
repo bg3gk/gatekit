@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RepickGuaranteedOutcome",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Replaces a roll's natural die when the roller's guaranteed-chance-roll-outcome boost disagrees with the outcome, with a number from the C runtime's random generator, outside the roll streams.",
+  "fingerprint": {
+    "calls": [
+      "fp:3a8dcddf5119e2e0",
+      "fp:487cb3ad377ac4c8",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8c904b320f1070b",
+      "import:9c9aac12eb379696"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The new die is the runtime's random number reduced to the faces that reach, or miss, the difficulty"
+    },
+    {
+      "kind": "watch",
+      "says": "A count-only probe on it shows two calls for each passive check, from bg3_dx11.exe@25605617+0x1075D0D inside the skill check and from bg3_dx11.exe@25605617+0x3296460 inside the roll system's roll"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A roller given the boost GuaranteedChanceRollOutcome: the natural die changes with no stream count moving",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

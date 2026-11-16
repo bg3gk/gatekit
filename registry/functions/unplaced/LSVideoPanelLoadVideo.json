@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::LSVideoPanelLoadVideo",
+  "owner": "ls::LSVideoPanel",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Starts the video of an ls.LSVideoPanel element: reads the element's Video property (a video's name), makes the interface's small video buffer when there is none, gives the element an image source over that buffer, loads the named video (code:ls::VideoManager::LoadVideo) into the small video manager, sets it looping and plays it.",
+  "fingerprint": {
+    "calls": [
+      "fp:27464f31bddba771",
+      "fp:2cd69c6317c46c86",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:8dcabb93a9f3bd3d",
+      "fp:cacd65f9ef89cba2",
+      "fp:e4d053ad9455ea7c",
+      "ls::VideoManager::LoadVideo"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads the dependency property that code:unplaced::LSVideoPanelRegisterType registers under the text Video, creates the mini video resources, then calls code:ls::VideoManager::LoadVideo and the manager's virtuals at +0x40 and +0x20 with 1"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Ship a widget whose XAML holds an ls:LSVideoPanel with Video set to a .bk2's name and AutoPlay true, open it, and probe this function: one call, and the video drawn in the element.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

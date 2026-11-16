@@ -1,0 +1,21 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::FindEffectResourceByName",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Looks an effect's name up in a map from name to resource id and answers the effect resource of that id from the resource bank of type 7.",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a", "fp:b2ed0bb7ae0970ca"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It walks the hash chain for the FixedString key under a read lock, takes the FixedString stored with it and asks the bank of the current resource container for type 7 with it."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Which object owns the map at +0x50 of the global resource manager, and is it filled from EffectName of every effect resource?",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

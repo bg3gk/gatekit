@@ -1,0 +1,63 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::CharacterTask_Spell::GetTaskInfo",
+  "state": "described",
+  "rung": "game",
+  "does": "Fills the TaskInfo and the TargetingInfo of the spell task under the cursor: the main damage type, the roll conditions' chance through CalculateModifiableSpellRollChance, the chance without advantage at +0xD8 and the shown chance clamped 1..99 at +0xD9.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
+      "eoc::SpellPrototype::GetSpellConditions",
+      "eoc::spell::CalculateModifiableSpellRollChance",
+      "eoc::spell::GetMainDamageType",
+      "fp:0abf40b778261fab",
+      "fp:123b79ba6c390bab",
+      "fp:1945249a4d5e8dd6",
+      "fp:24c801b0780dfd1d",
+      "fp:32526db0ca8c7030",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3dc70372a826ba29",
+      "fp:487cb3ad377ac4c8",
+      "fp:5227b96c8688ff31",
+      "fp:5d17a70e50dafa51",
+      "fp:7262ff501c291315",
+      "fp:73797869de93c7d1",
+      "fp:73b6437b8a0b46c5",
+      "fp:74095d1efd9aa634",
+      "fp:77b26de95fac76d5",
+      "fp:7c6f6a52d0f820ca",
+      "fp:7f28f1517baf2418",
+      "fp:8bacb749b708741a",
+      "fp:91c3d48dff57ab4c",
+      "fp:cecaa22b2816792b",
+      "fp:dbb67d5e064f495b",
+      "fp:e4d053ad9455ea7c",
+      "fp:e539d7f35bb17b23",
+      "fp:f8c904b320f1070b",
+      "fp:fd1c6b74f136fa9c",
+      "import:9dff6e088b0cfef9",
+      "thoth::shared::ContextData::Destroy",
+      "unplaced::BuildConditionContextWithProxies"
+    ],
+    "vtables": [{"slot": 16}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "vtable match and the same body as EoCClient+0x1132AA0; the advantage removal is inlined as sqrt and 1-sqrt(1-p)"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCClient.dll exports this name; the symbol database finds the export again in the executable at this function by its slot in the class's virtual table"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

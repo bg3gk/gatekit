@@ -2,6 +2,7 @@
   "schema": "registry/type/1",
   "id": "ecl::character_creation::CurrentVisualComponent",
   "kind": "struct",
+  "rung": "game",
   "about": "Visual currently applied to the character-editor dummy (queried together with TargetVisualComponent; the creator stores the same defaults as TargetVisual, shifted by 8 bytes). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
   "size": 216,
   "fields": [
@@ -13,7 +14,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "Creator bg3.exe+0x201B8E0 writes 0xFFFFFFFF; destructor DecRefs it. FillTargetVisualComponent sets it from a FixedString of the character template (template +0x4B8 on macOS). Live: 0x0EF00E61 in TargetVisual (also IconDefinition +8), null in CurrentVisual."
+          "says": "Creator bg3.exe@25605617+0x201B8E0 writes 0xFFFFFFFF; destructor DecRefs it. FillTargetVisualComponent sets it from a FixedString of the character template (template +0x4B8 on macOS). Live: 0x0EF00E61 in TargetVisual (also IconDefinition +8), null in CurrentVisual."
         }
       ]
     },
@@ -61,7 +62,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "Creator bg3.exe+0x201B8E0 writes 8 zero bytes; macOS 'stp q1,q1,[x19,#0x10]' zeroes it too. Not in TargetVisualComponent. Live 0."
+          "says": "Creator bg3.exe@25605617+0x201B8E0 writes 8 zero bytes; macOS 'stp q1,q1,[x19,#0x10]' zeroes it too. Not in TargetVisualComponent. Live 0."
         }
       ]
     },
@@ -73,7 +74,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe+0x201B8E0) copies eoc::character_creation::Appearance +0xA8 (SE: Visuals); Windows creator zeroes ptr/cap/size here"
+          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe@25605617+0x201B8E0) copies eoc::character_creation::Appearance +0xA8 (SE: Visuals); Windows creator zeroes ptr/cap/size here"
         }
       ]
     },
@@ -85,7 +86,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe+0x201B8E0) copies Appearance +0xB8 (SE: Elements). Live (TargetVisual): 9 entries"
+          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe@25605617+0x201B8E0) copies Appearance +0xB8 (SE: Elements). Live (TargetVisual): 9 entries"
         }
       ]
     },
@@ -97,7 +98,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe+0x201B8E0) copies Appearance +0xC8 (SE: AdditionalChoices)"
+          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe@25605617+0x201B8E0) copies Appearance +0xC8 (SE: AdditionalChoices)"
         }
       ]
     },
@@ -109,7 +110,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe+0x201B8E0) copies Appearance +0x58; creator writes Guid::Empty"
+          "says": "same default-store sequence as TargetVisualComponent shifted by 8 (Windows creator bg3.exe@25605617+0x201B8E0) copies Appearance +0x58; creator writes Guid::Empty"
         }
       ]
     },
@@ -154,7 +155,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "Same member as TargetVisualComponent.Classes (+0x90), shifted by the 8 bytes CurrentVisual has at +0x10 (identical default-store sequence of the Windows creators bg3.exe+0x201B8E0 / 0x201BE90): filled by macOS SubsystemHelper::FillTargetVisualComponent from its first Span<Guid> argument (parameter 5), which DummySubsystem::UpdateDummyVisual takes from the DummyDefinitionComponent class list (Script Extender's CharacterCreation.h). Live 1 entry."
+          "says": "Same member as TargetVisualComponent.Classes (+0x90), shifted by the 8 bytes CurrentVisual has at +0x10 (identical default-store sequence of the Windows creators bg3.exe@25605617+0x201B8E0 / 0x201BE90): filled by macOS SubsystemHelper::FillTargetVisualComponent from its first Span<Guid> argument (parameter 5), which DummySubsystem::UpdateDummyVisual takes from the DummyDefinitionComponent class list (Script Extender's CharacterCreation.h). Live 1 entry."
         }
       ]
     },
@@ -166,7 +167,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "Same member as TargetVisualComponent.Subclasses (+0xA0), shifted by 8 (identical default-store sequence of the Windows creators bg3.exe+0x201B8E0 / 0x201BE90): filled by macOS FillTargetVisualComponent from its second Span<Guid> argument (parameter 6), which UpdateDummyVisual takes from DummyDefinitionComponent +0xB8 (Script Extender names it the subclass list). Live 1 entry."
+          "says": "Same member as TargetVisualComponent.Subclasses (+0xA0), shifted by 8 (identical default-store sequence of the Windows creators bg3.exe@25605617+0x201B8E0 / 0x201BE90): filled by macOS FillTargetVisualComponent from its second Span<Guid> argument (parameter 6), which UpdateDummyVisual takes from DummyDefinitionComponent +0xB8 (Script Extender names it the subclass list). Live 1 entry."
         }
       ]
     },
@@ -252,6 +253,16 @@
     "ext_name": "ClientCharacterCreationCurrentVisual",
     "one_frame": false
   },
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) it sits on the dummy entity beside the target visual and reads the same colour ids, Race, Origin and body type once the dummy is drawn"
+    }
+  ],
   "survey": {
     "batch": "alive",
     "confidence": "medium",

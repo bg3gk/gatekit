@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "eoc::CharacterCreationStatsComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "What a character keeps of its creation beside the look: Race, SubRace, BodyType, BodyShape, Name and the point-buy abilities. A respec can only be started on a character that carries it. Script Extender: CharacterCreationStats.",
   "size": 96,
   "fields": [
     {
@@ -91,6 +94,27 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "CharacterCreationStats", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types), as struct eoc::CharacterCreationStatsComponent"
+    },
+    {
+      "kind": "read",
+      "says": "the handler of the Osiris call StartRespec (code:esv::OsirisGameFunctions::StartRespec) answers false for a character without this component"
+    },
+    {
+      "kind": "watch",
+      "says": "on Astarion in Basic_Level_A: Race and SubRace are ids, BodyType 0, BodyShape 0, Name is the display name in the game's language, the byte at +0x5C reads 3 - the same value as Identity in the definition of a change-appearance session on him"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "whether the byte at +0x5C (Script Extender: field_5C) is the identity: compare it with the Identity component on characters of other identities",
+      "about": "meaning",
+      "state": "open"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Data.h:168, kind component), by gatekit symbols se-layouts on 2026-11-14",

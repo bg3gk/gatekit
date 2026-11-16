@@ -1,0 +1,48 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::CollectRerollBoosts",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Collects the roller's reroll boosts that match the roll's type, as pairs of the face at or below which a die is thrown again and whether the new die always stands, sorted by that face.",
+  "fingerprint": {
+    "calls": [
+      "fp:487cb3ad377ac4c8",
+      "fp:5227b96c8688ff31",
+      "fp:88f1d05af034c7a9",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8c904b320f1070b"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It walks the roller's boosts of the reroll kind and compares the roll type, the umbrella types through two helpers"
+    },
+    {
+      "kind": "watch",
+      "says": "A count-only probe on it shows one call for each roll with boosts, from code:eoc::roll::stream::RollManager::InternalRollDiceWithBoosts"
+    },
+    {
+      "kind": "watch",
+      "says": "With the passive Halfling Luck on the roller the roll that follows throws its natural 1 again; without it the same function is called and no die is thrown again"
+    },
+    {
+      "kind": "text",
+      "says": "The name is ours: the Toolkit exports no function of this name and the macOS build's symbols hold none; it stands in the namespace of the functions that call it."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A natural 1 of a roller with Halfling Luck",
+      "about": "reach",
+      "state": "answered",
+      "answer": "With Halfling Luck on the roller the natural 1 is thrown again; without it the function is still called and no die is thrown again.",
+      "source": "this entry's watch of the passive"
+    },
+    {
+      "ask": "A natural 1 of a roller with Halfling Luck: what it returns (the pairs of face and always-stands flag) is not read from memory at the return.",
+      "about": "meaning",
+      "state": "open"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::GetAverageDamageForCharacterNoCache",
+  "state": "described",
+  "rung": "game",
+  "does": "Computes the average damage a character can deal, as the AI estimates it: for each spell of its spell book unplaced::EstimateSpellDamage fills the damage list of a context with no target, and the result is the largest sum over the spells divided by a global count; no target, no resistance. RCX the helper, RDX a pointer to the entity, R8 the class descriptions; the float in XMM0.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:5d17a70e50dafa51",
+      "fp:72b4801e8e903ffc",
+      "fp:73b6437b8a0b46c5",
+      "fp:77b26de95fac76d5",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "thoth::shared::ContextData::Destroy",
+      "unplaced::EstimateSpellDamage"
+    ],
+    "components": ["esv::StatsSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads eoc::spell::BookComponent, StatsComponent and ClassesComponent, builds eoc::AttackDesc and calls unplaced::EstimateSpellDamage per spell"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, GetAverageDamageForCharacter on a cache miss (91 calls against about 48 000 of the cached one)"
+    },
+    {
+      "kind": "watch",
+      "says": "in goblins' turns it runs 7 times per goblin, once per turn of the cache, each with seven calls of unplaced::EstimateSpellDamage, and gives 4.0 for a goblin whose Target_MainHandAttack deals 1d6+1 (the dice' average 4.5; the whole-number average of unplaced::RollExpressionPlainDice gives 3+1)"
+    },
+    {
+      "kind": "watch",
+      "says": "over one round of three goblins it ran 21 times, 7 per goblin, each run with seven calls of unplaced::EstimateSpellDamage, and gave 4.0 for goblins whose Target_MainHandAttack deals 1d6+1 (the dice' average 4.5; the whole-number average of unplaced::RollExpressionPlainDice gives 3+1)"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "whether the 4.0 comes from the whole-number average or from a missing modifier: the same probe for a creature whose weapon die is even-faced plus an odd modifier",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

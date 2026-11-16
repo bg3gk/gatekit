@@ -1,0 +1,176 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::ActivationManager",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The activation manager of the server: it decides which characters and items of a level are awake. Its six radii are plain floats a mod can read and write: 40 and 45 m twice and 10 and 15 m; the two bytes at +0x38 and +0x39 keep everything awake when set.",
+  "fields": [
+    {
+      "offset": 56,
+      "name": "ActivateAllCharacters",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+        },
+        {
+          "kind": "read",
+          "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+        }
+      ]
+    },
+    {
+      "offset": 57,
+      "name": "ActivateAll",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+        },
+        {
+          "kind": "read",
+          "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+        }
+      ]
+    },
+    {
+      "offset": 208,
+      "name": "CharacterActivationRadius",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+        },
+        {
+          "kind": "read",
+          "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+        }
+      ]
+    },
+    {
+      "offset": 212,
+      "name": "CharacterDeactivationRadius",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+        },
+        {
+          "kind": "read",
+          "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+        }
+      ]
+    },
+    {
+      "offset": 216,
+      "name": "ItemActivationRadius",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+        },
+        {
+          "kind": "read",
+          "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+        }
+      ]
+    },
+    {
+      "offset": 220,
+      "name": "ItemDeactivationRadius",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+        },
+        {
+          "kind": "read",
+          "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+        }
+      ]
+    },
+    {
+      "offset": 224,
+      "name": "LowItemActivationRadius",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+        },
+        {
+          "kind": "read",
+          "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+        }
+      ]
+    },
+    {
+      "offset": 228,
+      "name": "LowItemDeactivationRadius",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+        },
+        {
+          "kind": "read",
+          "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+        }
+      ]
+    },
+    {
+      "offset": 232,
+      "name": "Helper",
+      "type": "esv::ActivationSystemHelper*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "game-name",
+          "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+        },
+        {
+          "kind": "read",
+          "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the Toolkit EoCServer.dll exports the class esv::ActivationManager with its constructor and methods"
+    },
+    {
+      "kind": "read",
+      "says": "the constructor (code:esv::ActivationManager::ActivationManager) stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper passed to it at +0xE8 and zero into the two bytes at +0x38; the per-character rule (code:esv::ActivationManager::GetActivationResult) tests the bytes at +0x38 and +0x39 after the flags of the character itself"
+    },
+    {
+      "kind": "game-name",
+      "says": "the class and its methods are exported by name from the Toolkit EoCServer.dll; the fields stay on the rung they were noted with"
+    },
+    {"kind": "toolkit-name", "store": "EoCServer.dll", "says": "EoCServer.dll exports this name"}
+  ],
+  "questions": [
+    {
+      "ask": "the field names are ours, and which of the two equal pairs belongs to characters rests on the order alone: write one radius in the live manager (the system object minus 0x28) and stage a creature between the old and the new distance",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

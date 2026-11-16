@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::thoth::shared::ContextData::ContextData",
+  "state": "described",
+  "rung": "game",
+  "does": "Builds a condition context from a source and a target entity, their two positions, a HitDesc and an AttackDesc, a status event and a status id: source at +0x0, target at +0x10, positions at +0x40 and +0x4C, the HitDesc pointer at +0x68, the AttackDesc pointer at +0xC8, the status event at +0xD0, the status FixedString at +0xD4; every other entity slot empty.",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "writes its first two handle arguments at +0x0 and +0x10, copies two vec3 to +0x40 and +0x4C, stores pointers at +0x68 and +0xC8 and adds a reference to the FixedString it stores at +0xD4; unplaced::EvaluateStatusCondition calls it with the status's StatusCause and Target"
+    },
+    {
+      "kind": "game-name",
+      "says": "the overload ContextData(EntityHandle, EntityHandle, Vector3f, Vector3f, HitDesc&, AttackDesc&, EStatusEvent, ...) of the builds with symbols has this argument list"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports the constructors of this type, this argument list among them"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Watch the constructor itself with a probe (Return = true, a 64-byte snapshot of argument 1 on return) during HOLD_PERSON's repeat save to see the fields filled.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

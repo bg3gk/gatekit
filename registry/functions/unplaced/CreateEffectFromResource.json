@@ -1,0 +1,23 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CreateEffectFromResource",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Creates an effect entity for an effect resource at a position, rotation and scale in a level and constructs the effect in it; on failure the new entity is destroyed. Answers the game's reference to the entity.",
+  "fingerprint": {
+    "calls": ["fp:36ea95f2ce33bd6a", "fp:e4d053ad9455ea7c", "unplaced::MakeEffectEntity"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It copies position, rotation and scale into a transform, calls the entity maker code:unplaced::MakeEffectEntity with the manager's world and the level, then bg3_dx11.exe@25605617+0x3B1B180 with the resource; a zero resource answers an invalid reference."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Its one caller is ls::EffectsManager::PlayEffect: which Toolkit CreateEffect overload is it, and what does bg3_dx11.exe@25605617+0x3B1B180 load?",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

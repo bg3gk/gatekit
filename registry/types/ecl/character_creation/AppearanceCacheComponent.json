@@ -2,6 +2,7 @@
   "schema": "registry/type/1",
   "id": "ecl::character_creation::AppearanceCacheComponent",
   "kind": "struct",
+  "rung": "game",
   "about": "Cache of appearances already chosen in the character editor, keyed by Guid (ecl::character_creation::SelectedAppearance values). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
   "size": 64,
   "fields": [
@@ -13,7 +14,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "macOS SubsystemHelper::InitializeAppearanceCacheComponent(ID, Guid const&, Appearance const&, ...) inserts into HashTable<ls::Guid> and resizes IndexedStorage<ecl::character_creation::SelectedAppearance> at +0x30 with stride 0x80. Windows destructor bg3.exe+0x6D0970 loops over the key count at +0x2C and destroys values at +0x30 with stride 0x80, then the key set. Creator bg3.exe+0x201AC40 zeroes 64 bytes. Live: bucket table of 5, one key, one value."
+          "says": "macOS SubsystemHelper::InitializeAppearanceCacheComponent(ID, Guid const&, Appearance const&, ...) inserts into HashTable<ls::Guid> and resizes IndexedStorage<ecl::character_creation::SelectedAppearance> at +0x30 with stride 0x80. Windows destructor bg3.exe@25605617+0x6D0970 loops over the key count at +0x2C and destroys values at +0x30 with stride 0x80, then the key set. Creator bg3.exe@25605617+0x201AC40 zeroes 64 bytes. Live: bucket table of 5, one key, one value."
         }
       ]
     }
@@ -23,6 +24,20 @@
     "ext_name": "ClientCharacterCreationAppearanceCache",
     "one_frame": false
   },
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) the client's definition entity carries it with one entry in Appearances, keyed by the root template id that the dummy definition and the change-appearance definition both name: the key is the root template"
+    },
+    {
+      "kind": "text",
+      "says": "reported from a run of character creation, not read again here: the entry of the current root template has to be written together with the pending definition and the dummy definition for a written look to hold"
+    }
+  ],
   "survey": {
     "batch": "alive",
     "confidence": "medium",

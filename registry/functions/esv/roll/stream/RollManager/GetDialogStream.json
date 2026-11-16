@@ -2,13 +2,29 @@
   "schema": "registry/function/1",
   "id": "esv::roll::stream::RollManager::GetDialogStream",
   "state": "described",
-  "rung": "inferred",
+  "rung": "game",
   "does": "Returns the id of the Dialog stream of one player, creating the stream when there is none.",
   "fingerprint": {"calls": ["esv::roll::stream::RollManager::CreateStream", "fp:e4d053ad9455ea7c"]},
   "evidence": [
     {
       "kind": "text",
-      "says": "the return chain of the CreateStream hit at +0x309FD9E on the first dialogue check passes +0x309F5E9; read in decomp code: looks up a stream of type 1 (Dialog) with the player's id at +0x4C, else creates one"
+      "says": "the return chain of the CreateStream hit at bg3_dx11.exe@25605617+0x309FD9E on the first dialogue check passes bg3_dx11.exe@25605617+0x309F5E9; read in decomp code: looks up a stream of type 1 (Dialog) with the player's id at +0x4C, else creates one"
+    },
+    {
+      "kind": "watch",
+      "says": "The write of the last stream id over the first dialogue check returns through bg3_dx11.exe@25605617+0x309F5E9 inside this function"
+    },
+    {
+      "kind": "read",
+      "says": "It looks for the stream of type 1 with the player's id and makes one when there is none"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

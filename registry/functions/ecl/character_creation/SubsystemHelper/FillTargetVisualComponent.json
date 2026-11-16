@@ -1,0 +1,40 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponent",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Fills the dummy's target visual from what decides the body: the template override, the root template, the origin, the classes and subclasses, the race, the body type and the body shape. The per-frame dummy update calls it when the dummy definition's ChangeId moves and the definition names a race.",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:9cd5e4f98279a2c4",
+      "fp:e4d053ad9455ea7c",
+      "fp:fc070702caf9a6fa"
+    ],
+    "strings": ["393b81332a8609dd"]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "the macOS build's symbol ecl::character_creation::SubsystemHelper::FillTargetVisualComponent takes ten parameters (TargetVisualComponent&, CharacterCreationTemplateOverrideComponent const*, Guid, Guid, two spans of Guid, Guid, EBodyType, EBodyShape, Environment); the call in code:unplaced::ApplyDummyDefinitionChanges passes ten of the same kinds: the target, the override, +0x60 and +0x70 of the dummy definition, two spans, +0x88, +0x80, +0x81 and the environment kept at +0x108 of the caller's owner"
+    },
+    {
+      "kind": "watch",
+      "says": "no call in nine seconds of a change-appearance session in which only ChangeId2 moved"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "compare the body with the macOS function, then write ChangeId + 1 on the client's dummy definition under a count-only probe on this address: one call is expected",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateAiScoreSurfaceTile",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Scores for the AI one AI-grid tile of a surface: the statuses the tile's surface would apply to whoever stands on it, and interesting items there.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::CalculateAiScoreSurfaceOnObject",
+      "esv::AiHelpers::IsItemInteresting",
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:71c77899fef3ecc8",
+      "fp:752e6552b5417c49",
+      "fp:8efc2b447ddf1668",
+      "fp:91c3d48dff57ab4c",
+      "fp:dbb67d5e064f495b",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ],
+    "strings": ["2bc0a82d186a756c", "d8b5a901041f6b10", "e0b7a15c6af8dc39", "e45921a9e6eccd26"],
+    "components": ["esv::AiHelpers", "esv::Character", "esv::Item"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "checks esv::StatusMachine::HasStatus and HasActiveStatus for characters and items on the tile, calls IsItemInteresting"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 3 places, all in CalculateAiScoreSurface"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the text constants both refer to"
+    }
+  ]
+}

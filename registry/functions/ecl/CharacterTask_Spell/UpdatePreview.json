@@ -1,0 +1,41 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::CharacterTask_Spell::UpdatePreview",
+  "state": "described",
+  "rung": "game",
+  "does": "Per-frame preview step of the spell task, called by ecl::InputController::UpdatePreview; calls SetCursor every frame, whether or not the aimed target changed.",
+  "fingerprint": {
+    "calls": [
+      "ecl::CharacterTask_Spell::SetCursor",
+      "fp:123b79ba6c390bab",
+      "fp:1b8f5179dc507be0",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:73797869de93c7d1",
+      "fp:91c3d48dff57ab4c",
+      "fp:a779de99ef0a780f",
+      "fp:c4cf59edd659cbc4",
+      "fp:d6f99e34b466cfac",
+      "fp:e4d053ad9455ea7c",
+      "fp:e7cc67f9dcc02efc",
+      "fp:fd1c6b74f136fa9c"
+    ],
+    "components": ["ecl::spell_cast::CastSystem"],
+    "vtables": [{"slot": 19}]
+  },
+  "evidence": [
+    {"kind": "read", "says": "symbol-build caller list of SetCursor"},
+    {
+      "kind": "watch",
+      "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCClient.dll exports this name; the symbol database finds the export again in the executable at this function by its slot in the class's virtual table"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

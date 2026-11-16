@@ -2,11 +2,12 @@
   "schema": "registry/function/1",
   "id": "unplaced::RollDamageDice",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "Rolls a damage formula's dice on the damage roll stream through RollDiceWithBoosts, so that the damage pin bounds each die; called by the deal-damage functor's path and by the AI's scoring of stats functors.",
   "fingerprint": {
     "calls": [
-      "esv::roll::stream::RollDiceWithBoosts",
+      "eoc::roll::stream::RollManager::InternalRollDiceWithBoosts",
+      "eoc::stats::ApplyResistance",
       "fp:123b79ba6c390bab",
       "fp:169357a5b3566f18",
       "fp:5227b96c8688ff31",
@@ -15,7 +16,6 @@
       "fp:91c3d48dff57ab4c",
       "fp:92dd4fee11aeea92",
       "fp:98abb1dc70f6efc3",
-      "fp:dd35e7b691114650",
       "fp:e4d053ad9455ea7c",
       "fp:f8c904b320f1070b"
     ]
@@ -23,7 +23,15 @@
   "evidence": [
     {
       "kind": "text",
-      "says": "GK.Memory.Watch on the host's PlayerDamage roll stream NumRolls: in a fair melee hit for 4 (dagger 1d4 pinned at 1, + 3) two draws (+0x105AAE3) in the frame of the damage, both returning through +0x10713AF of this function into +0x36E9347 (+0x36E8A80), one from stats::DealDamageFunctor::ApplyDamage (+0x36EA93B), one from +0x36EBCB0 (+0x36EC3FC); in a miss one draw, through +0x36EBCB0 only"
+      "says": "GK.Memory.Watch on the host's PlayerDamage roll stream NumRolls: in a fair melee hit for 4 (dagger 1d4 pinned at 1, + 3) two draws (bg3_dx11.exe@25605617+0x105AAE3) in the frame of the damage, both returning through bg3_dx11.exe@25605617+0x10713AF of this function into bg3_dx11.exe@25605617+0x36E9347 (code:unplaced::RollDealDamageFunctor), one from stats::DealDamageFunctor::ApplyDamage (bg3_dx11.exe@25605617+0x36EA93B), one from code:unplaced::DealDamageFunctorAtPosition (bg3_dx11.exe@25605617+0x36EC3FC); in a miss one draw, through code:unplaced::DealDamageFunctorAtPosition only"
+    },
+    {
+      "kind": "watch",
+      "says": "The count write of the PlayerDamage stream after a weapon attack returns through bg3_dx11.exe@25605617+0x10713AF inside this function, called from bg3_dx11.exe@25605617+0x36E9347"
+    },
+    {
+      "kind": "read",
+      "says": "The formula is rolled through the roll with boosts with no difficulty"
     }
   ]
 }

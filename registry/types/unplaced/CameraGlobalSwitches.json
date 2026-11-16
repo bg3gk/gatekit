@@ -1,0 +1,71 @@
+{
+  "schema": "registry/type/1",
+  "id": "unplaced::CameraGlobalSwitches",
+  "kind": "struct",
+  "state": "described",
+  "rung": "extender",
+  "about": "One set of the camera switches; the game keeps four of them (Ext.Utils.GetGlobalSwitches().CameraSwitches). TargetSnapDistance is how far a target may be for the camera to glide: beyond it the game cuts behind a black screen. MaxDistFromChar is the leash: how far from the controlled character the camera may go.",
+  "fields": [
+    {
+      "offset": 32,
+      "name": "TargetSnapDistance",
+      "type": "float",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender declares the struct CameraGlobalSwitches (0x194 bytes); the name the game gives the type is not known"
+        },
+        {
+          "kind": "watch",
+          "says": "all four sets read TargetSnapDistance 50 and MaxDistFromChar 50 on the level Basic_Level_A"
+        },
+        {
+          "kind": "text",
+          "says": "reported from the study of the camera focus, not read again here: 45 m glides and 52 m fades; a focus at 72 m settles short until MaxDistFromChar is raised in all four"
+        }
+      ]
+    },
+    {
+      "offset": 212,
+      "name": "MaxDistFromChar",
+      "type": "float",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender declares the struct CameraGlobalSwitches (0x194 bytes); the name the game gives the type is not known"
+        },
+        {
+          "kind": "watch",
+          "says": "all four sets read TargetSnapDistance 50 and MaxDistFromChar 50 on the level Basic_Level_A"
+        },
+        {
+          "kind": "text",
+          "says": "reported from the study of the camera focus, not read again here: 45 m glides and 52 m fades; a focus at 72 m settles short until MaxDistFromChar is raised in all four"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "the header Components/Camera.h of Script Extender declares the struct CameraGlobalSwitches (0x194 bytes); the name the game gives the type is not known"
+    },
+    {
+      "kind": "watch",
+      "says": "all four sets read TargetSnapDistance 50 and MaxDistFromChar 50 on the level Basic_Level_A"
+    },
+    {
+      "kind": "text",
+      "says": "reported from the study of the camera focus, not read again here: 45 m glides and 52 m fades; a focus at 72 m settles short until MaxDistFromChar is raised in all four"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the name the game gives the type and which camera mode each of the four sets serves; the reader of TargetSnapDistance is the caller of ecl::CameraSystem::SnapFade",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}
