@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::ActivationManager::CheckAroundPosition",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Wakes what stands near one anchor point: asks the level's spatial grid for the cells within the largest radius, activates items within the item radius (or the low-item radius) and, when the anchor is a party member, characters within the character activation radius that the per-character rule left waiting; things within the deactivation radius are taken out of the to-sleep set.",
   "fingerprint": {
     "calls": [
@@ -25,6 +25,10 @@
     {
       "kind": "watch",
       "says": "called once per tick per anchor (101 calls in 3 s with one party member, 2 per tick with a second anchor); a sleeping creature moved to 39 m from the party member is woken by SetActive called from +0x41A6C52 inside it, one at 40.5 or 42.5 m is not; a ForceSynch character without party membership woke no character 8 m away, the same character given a party member component and put into the party view woke characters 8 and 20 m away"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
     }
   ]
 }

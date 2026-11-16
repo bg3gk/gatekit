@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "unplaced::AddAiScore",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "inferred",
   "does": "Adds one AI score into another with weight 1.0 and releases the added one.",
   "fingerprint": {"calls": ["unplaced::AddAiScoreWeighted"]},
   "evidence": [
@@ -13,6 +13,13 @@
     {
       "kind": "watch",
       "says": "A counter on every function over a play of the prologue shows it called only while a fight was on"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A probe during an enemy's turn that reads the target score's entries before and after the call would show the added values at weight 1.0.",
+      "about": "reach",
+      "state": "open"
     }
   ]
 }

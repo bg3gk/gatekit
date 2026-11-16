@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "bik::BinkManager::LoadVideo",
   "state": "described",
-  "rung": "inferred",
+  "rung": "game",
   "does": "Opens a Bink 2 file by its path for the game's video player: the one place of the executable that calls BinkOpen.",
   "fingerprint": {
     "calls": [
@@ -20,6 +20,14 @@
     {
       "kind": "read",
       "says": "calls the import BinkOpen with the path and the flags 0x4420, as the function of this name in the macOS build calls it with 0x4430; nothing calls it directly, it is reached through the video manager's virtual table"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "BinkBinding.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

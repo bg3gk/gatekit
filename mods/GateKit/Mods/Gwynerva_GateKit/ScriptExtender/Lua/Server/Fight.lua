@@ -9,8 +9,6 @@
 GK.Fight = GK.Fight or {}
 local Fight = GK.Fight
 
---- Each verb's class, for the fair/cheat/observation split.
-Fight.Class = { Options = "observation" }
 
 local function try(fn, ...)
     local ok, a = pcall(fn, ...)

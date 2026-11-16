@@ -7,8 +7,12 @@
 -- value with ==, so nothing is rounded on the way to the host. The save and the load are the
 -- copy's checkpoint and its reset (game.checkpoint, game.reset: the game's own autosave and
 -- Osi.LoadGame). A load ends the stage scope with the Lua state, so it is opened again over the
--- loaded world. Staging (cheat): the writes, the save, the load, the scope. Reading: observation.
--- A save and a load take about a quarter of a minute each.
+-- loaded world. The copy's checkpoint is also what the reset ladder reloads for the tests that
+-- follow (its `venue` rung), so the test does not leave its own there: its last step takes the
+-- store out and makes the checkpoint again, of the world as the test found it; a run that fails
+-- before that step leaves a checkpoint with the store `gk_round_trip` in it.
+-- Staging (cheat): the writes, the saves, the load, the scope. Reading: observation.
+-- Limit: 60 s - two saves and a load, about a quarter of a minute each at most.
 -- Run: gatekit --instance <copy> test tests/store -k store/kept/round_trip
 
 test { level = "GustavX:Basic_Level_A", surprises = { "loading" },
@@ -73,5 +77,10 @@ function run(game)
     end)
     step("the value is the save's", "observation", function()
         eq(game.server(SAME), "same", "the value is back exactly")
+    end)
+    step("the store taken out, and the copy's checkpoint made again without it", "cheat", function()
+        check(game.server("return GK.Store.Drop('gk_round_trip')").ok, "the store is dropped")
+        check(not has(names(game), "gk_round_trip"), "the save's variables hold no store of this test", names(game))
+        game.checkpoint()
     end)
 end

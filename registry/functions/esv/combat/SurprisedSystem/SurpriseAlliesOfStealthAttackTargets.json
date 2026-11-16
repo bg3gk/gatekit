@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::combat::SurprisedSystem::SurpriseAlliesOfStealthAttackTargets",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "For every creature with a newly added stealth request it walks the participants of that creature's fight (the array at +0x50 of eoc::combat::StateComponent) and puts into the set each one whose relation to the creature is 100 and who is not surprised already.",
   "fingerprint": {
     "calls": [
@@ -18,11 +18,11 @@
   "evidence": [
     {
       "kind": "toolkit-name",
-      "says": "the Toolkit exports the name at EoCServer.dll+0x1495A50 with the same loop"
+      "says": "the Toolkit's EoCServer.dll exports the name, with the same loop in the export's body"
     },
     {
       "kind": "read",
-      "says": "the query is active, participant and stealth request, newly added; the ally test is the helper's IsAllied (relation equal to 100); the skip is the check at bg3_dx11.exe+0x322D580"
+      "says": "the query is active, participant and stealth request, newly added; the ally test is the helper's IsAllied (relation equal to 100); the skip is code:unplaced::IsSurprisedOrAskedToBe"
     },
     {
       "kind": "watch",

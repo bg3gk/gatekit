@@ -619,27 +619,71 @@ Statements from his play are hypotheses with their source, checked like any othe
 
 A proposal, as the rest of this document is. The stage that read the roll machinery
 (`research/studies/rolls.md`, sections 8-18) left instruments the tree above did not have, and
-six tests that stand. This section says what that changes.
+tests that stand. This section says what that changes.
 
-### What stands (in `tests/rolls`, each passing at `--speed 1` and `--speed working`)
+### What stands (under `tests/`, each run at `--speed 1` and `--speed working`)
 
 ```
 rolls/
   log/
     origins                 passive check, dialogue check, status applied, status on its turn, weapon attack,
-                            spell attack and damage, target's save, three rays, creature's attack
-    unknown                 (one run) an asker the log is told to forget: the row is written, marked unknown
+                            spell attack and damage, target's save (the pair of a d20: the first kept,
+                            the second discarded), three rays, creature's attack
     adjusted                (one run) an interrupt sets the roll after the throw: thrown 15, kept 1
   rig/
-    one_of_several          (one run) four checks in one tick, the third decided, three the stream's own
+    one_of_several          nth of four (the third of four checks in one tick), by spell (the save
+                            against one spell of two)
   streams/
     chosen_die              passive check, attack 20, attack 1
-store/
-  kept/
-    round_trip              (one run) what a store holds at a save is what it holds after the load
-    refused                 a function, a userdata, a number key, itself, deeper than 64, infinite, not a number
-    three_books             (one run) three books placed again from the store alone, on their markers
+  chance/
+    agrees_with_dice        melee, ranged: the game's own chance against the dice then thrown
+  karmic/
+    forced                  (one run) a roll forced by Karmic Dice has no dice of its own
+fight/
+  log/
+    intent                  (one run) the cast is in the log before its die, its id joins the hit
+    options                 (one run) what the AI weighed, its choice, the chance against the dice
+    membership              (one run) joined at the start and under way, left killed (the death's
+                            row names the killer too) and because the fight ended
+    reaction                (one run) an attack of opportunity with what set it off
+    resisted                die 7: what was rolled and what was dealt against a resistance
+    unlisted                (one run) the dice of a stats expression are in the hit, the terms add up
+  npc/
+    without_the_party       (one run) two creatures fight to a death with no party member
+    surprised               what Surprised does to the first turn
+    asleep                  sleeping enemies start no fight; a fight keeps its members awake
+surprise/
+  from_hiding   hit_before_the_fight   already_fighting   alert
+wake/
+  two_distances   one   place
+camera/focus/
+  matrix                    point near, object middling, point far, object far, npc far; each
+                            with the return to the host at the old distance
+  two_targets   in_a_fight   far
+gui/
+  look/main_menu
+  look/creation             (one run) lists, a slider, a swatch and its panel, the point buy, the way on
+  tips/ability   tips/chain
+figure/
+  client_dummy   client_animation   client_effect
+store/kept/
+  round_trip                (one run) what a store holds at a save is what it holds after the load
+show/
+  picture   menu
+quirks/
+  attack/weapon_set_in_hand
+  damage/critical_flag_of_a_sum
+  damage/ground_row
+  damage/resistance_floor   weapon_of_one, three_becomes_one, fire_bolt_of_one
 ```
+
+Out of the tree, and where each is: the toolkit's own checks that need a game are self tests
+(`tests/_selftest/rolls/log_unknown`, `fight/options_verb`, `say/overhead`, `store/refused`); the
+three books placed again from a store alone are a demonstration (`research/demos/three_books.lua`,
+its result in `research/studies/save-kept-data.md`); the wiki's list of bugged actions compared
+with the game's data is a `gatekit data` query (`research/studies/rolls.md`, sections 23 and 27)
+and no test; the experiment of one fight shared by several cases is recorded in
+`research/rolls-todo.md` ("The experiment's result").
 
 ### What the new instruments change in the proposed tests
 
@@ -672,7 +716,7 @@ rolls/
     after_the_throw         set_roll, adjust_roll (Bardic), reroll (Lucky), boost_reroll (Halfling Luck: inside the throw)
     one_action_many_rolls   extra_attack, off_hand, scorching_ray, concentration_after_damage
   rig/
-    by_cause                a save against this spell only, a save of this status only (the rig told by `spell` / `status`)
+    one_of_several          + by status (a save of this status only: the rig told by `status`)
   generator/
     predicted               the next die of a stream said before it is thrown: check, attack, damage (Karmic off)
   verdict/
@@ -685,8 +729,8 @@ rolls/
   catch a roll that is thrown and shown nowhere.
 - `rolls/log/after_the_throw` - "Each way an interrupt changes a roll is in the log as thrown
   and as kept." It would catch a kind of change that does not pass the one function hooked.
-- `rolls/rig/by_cause` needs the rig to take `spell`, `status`, `source`, `target`: the row has
-  them, the rig does not match by them yet.
+- A rig named by `spell` stands as the case `by spell` of `rolls/rig/one_of_several`; by `status`,
+  `source` and `target` the rig matches too, and no case holds them.
 - `rolls/generator/predicted` - "The die a stream gives next is the generator's" (study,
   section 8): `GK.Rolls.Next` against the row. It would catch a patch that changes the
   generator, which every rewind of a stream depends on.
@@ -706,22 +750,18 @@ its failures are read as news of the game and not as faults of the toolkit:
 ```
 quirks/
   damage/
-    resistance_floor        fire_bolt_of_one, weapon_of_one          (1 stays 1; the wiki rounds down to 0)
-    unlisted_dice           sneak_attack, divine_smite, colossus_slayer   (dice of a stats expression are not in the hit's list)
-    bonus_not_doubled       damage_bonus_boost_on_a_critical         (CharacterWeaponDamage is doubled, DamageBonus is not)
-    ground_row              a_miss_still_throws_it                   (thrown on every weapon attack, never takes hit points)
+    resistance_floor        fire_bolt_of_one, weapon_of_one, three_becomes_one   (1 stays 1; the wiki rounds down to 0)   stands
+    critical_flag_of_a_sum  (the flag is of the sum of the dice)                 stands
+    ground_row              a_miss_still_throws_it   (thrown on every weapon attack, never takes hit points)   stands
   attack/
-    weapon_set_in_hand      melee_asked_with_the_bow, sand_toss      (Strength used in place of the weapon's ability)
+    weapon_set_in_hand      melee_asked_with_the_bow, sand_toss      (Strength used in place of the weapon's ability)   stands
     ai_weighs_the_set       goblin_in_its_ranged_set                 (the scorer's number against the dice)
-  karmic/
-    forced_shows_a_die      attack                                   (a natural die shown that no one threw)
-  saves/
-    second_die_always       plain_save                               (two d20 drawn with neither advantage nor disadvantage)
-  spells/
-    wiki_list               firewine_explosion, cinderous_swipe_wildshape, gargantuan_cleave, gossamer_tomb,
-                            sand_toss_great_weapon_master            (the wiki's "List of bugged actions", each still true)
 ```
 
-Each case names its source (the wiki page and section, or the night's study) in its leading
-comment and asserts the numbers found. Where the game's data alone shows the fault (a formula
-in a spell's fields), the case reads the data and does not stage a fight: `data` tests, fast.
+Each case names its source (the wiki page and section, or the study) in its leading comment and
+asserts the numbers found. What the sweeps proposed here and is not a fault of the game stands
+elsewhere or nowhere: the dice of a stats expression are in the hit (`fight/log/unlisted`); a
+damage bonus of a boost is doubled on a critical (the finding was taken back: the study, section
+27); a forced roll's die is the wiki's own rule (`rolls/karmic/forced`); the second d20 of every
+roll is the study's section 3 (`rolls/log/origins`); the wiki's list of bugged actions is read
+from the game's data by a query, not by a test.

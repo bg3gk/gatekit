@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "ls::VideoManager::GetVideoPath",
   "state": "described",
-  "rung": "inferred",
+  "rung": "toolkit",
   "does": "Builds the path of a video name inside a mod: the mod's folder, Localization, the language's folder and Video, with the English folder as the fallback.",
   "fingerprint": {
     "calls": [
@@ -27,6 +27,10 @@
     {
       "kind": "read",
       "says": "appends the name to a path made with the texts Localization/English/Video and the current language's folder; the decompiler pairs it with the Toolkit's function of this name by its strings"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "GameEngine.dll exports this name; the symbol database finds the export again in the executable at this function by the text constants both refer to"
     }
   ],
   "questions": [

@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::AiHelpers::GetAverageDamageForCharacterNoCache",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Computes the average damage a character can deal, as the AI estimates it: for each spell of its spell book unplaced::EstimateSpellDamage fills the damage list of a context with no target, and the result is the largest sum over the spells divided by a global count; no target, no resistance. RCX the helper, RDX a pointer to the entity, R8 the class descriptions; the float in XMM0.",
   "fingerprint": {
     "calls": [
@@ -43,6 +43,14 @@
     {
       "kind": "watch",
       "says": "over one round of three goblins it ran 21 times, 7 per goblin, each run with seven calls of unplaced::EstimateSpellDamage, and gave 4.0 for goblins whose Target_MainHandAttack deals 1d6+1 (the dice' average 4.5; the whole-number average of unplaced::RollExpressionPlainDice gives 3+1)"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

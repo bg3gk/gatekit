@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "ecl::CharacterTask_Spell::UpdatePreview",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Per-frame preview step of the spell task, called by ecl::InputController::UpdatePreview; calls SetCursor every frame, whether or not the aimed target changed.",
   "fingerprint": {
     "calls": [
@@ -28,6 +28,14 @@
     {
       "kind": "watch",
       "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCClient.dll exports this name; the symbol database finds the export again in the executable at this function by its slot in the class's virtual table"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

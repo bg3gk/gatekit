@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "eoc::roll::stream::RollManager::RollDiceWithBoostsAgainstDC",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Rolls a formula for a roller against a difficulty on the stream named by its id: finds the stream, marks the manager changed, and, when weighted rolls are on and the stream's type is weighted, first lets the weighted decision force the outcome; otherwise rolls with boosts and moves the debts.",
   "fingerprint": {
     "calls": [
@@ -24,6 +24,14 @@
     {
       "kind": "read",
       "says": "The stream is looked up by the id at its +0x58; the manager's byte at +0x28 equal to 1 and a stream type other than 0, 6 and 7 lead to the weighted decision"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

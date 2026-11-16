@@ -11,8 +11,6 @@
 GK.RollLog = GK.RollLog or {}
 local Log = GK.RollLog
 
---- Each verb's class, for the fair/cheat/observation split.
-Log.Class = { Available = "observation", Origin = "observation", Origins = "observation", Causes = "observation", Forget = "observation" }
 
 -- The askers (the functions that call the roll manager; `what` is the roll asked for) and the
 -- causes are named in Server/RollOrigins.json by registry id; their places in each executable

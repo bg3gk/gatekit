@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::combat_log::CombatLogSystem::ProcessSkillCheckRequests",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Builds a RollFinishedEntry (type 21) for each SkillCheckEvent: roller and subject as net entities, success, critical, the stats expression and the roll result. Skips an event whose spell has CombatLogSetSingleLineRoll, a failed Perception, Survival or Investigation check while the ruleset modifier HIDE_FAILED_PERCEPTION_ROLLS is on, and an event with +0x158 equal to 1 while DIALOGUE_PASSIVE_ROLL_HIDE is on.",
   "fingerprint": {
     "calls": [
@@ -25,6 +25,10 @@
     {
       "kind": "watch",
       "says": "Osi.RequestPassiveRoll and the Stealth checks of Hide each give one RollFinished entry from this pass; with HIDE_FAILED_PERCEPTION_ROLLS written true a failed passive Perception gives none while a failed Athletics still gives one; written false, the failed Perception gives one"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

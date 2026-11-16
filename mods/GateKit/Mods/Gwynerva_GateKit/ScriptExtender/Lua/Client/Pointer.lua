@@ -9,20 +9,20 @@
 -- window id and writes the event's position into the engine's own mouse (ls::Mouse, its position
 -- the first two floats); every motion event, whatever its window, then raises the input manager's
 -- motion event, on which the interface reads that position and gives it to the UI library, whose
--- hit test, hover, tooltips and clicks follow. A motion event injected by Script Extender names no
--- window, so the position is not taken from it. The instrument therefore writes the position into
--- ls::Mouse itself (GK.Memory.Write) and injects the motion event that makes the interface read it;
--- a button event injected after it is pressed where the game believes the pointer is. The real
--- mouse is not touched. A real motion inside the game's window overwrites the position.
+-- hit test, hover, tooltips and clicks follow. GateKit's Script Extender names the game's window on
+-- the mouse events it injects, so an injected motion is taken as the pointer's own and a button
+-- event injected after it is pressed where the game believes the pointer is: the instrument injects
+-- events and writes nothing. A motion to (-1, -1) is the pointer leaving the frame. The real mouse
+-- is not touched; a real motion inside the game's window moves the pointer again.
 --
--- ls::Mouse is reached through the pointer the window manager's update keeps at a fixed place of
--- the executable; the place is the one of the build named below, and another build is refused.
+-- A build that injects events without the window's name does not move the pointer: it is told
+-- apart by the `Injected` field of the input events (GK.Features.injectedInput), which the same
+-- build brings, and the instrument refuses there.
 
 local Probe = GK.Cheat or {}
 GK.Cheat = Probe
 local UI = GK.Gui
 
-local MOUSE = { module = "bg3_dx11.exe", rva = 0x614fb70, update = 0x57AAA0 }
 local EVENTS = { "PreviewMouseMove", "PreviewMouseDown", "PreviewMouseUp", "PreviewMouseWheel" }
 local CONTROLS = { "Button", "ListBoxItem", "ComboBoxItem", "TabItem", "CheckBox", "Slider", "TextBox", "ComboBox" }
 
@@ -47,19 +47,6 @@ end
 local function label(element)
     local name = guard(function() return element.Name end)
     return typeOf(element) .. ((type(name) == "string" and name ~= "") and ("#" .. name) or "")
-end
-
--- The engine's mouse: the address of ls::Mouse, or nil and why.
-local function mouse()
-    if not (GK.Memory and GK.Memory.Available and GK.Memory.Available()) then
-        return nil, "the memory instrument is not there (GateKit's Script Extender in developer mode)"
-    end
-    local at = guard(GK.Memory.FromModule, MOUSE.module, MOUSE.rva)
-    local address = at and guard(GK.Memory.Read, at, "uint64")
-    if type(address) ~= "number" or address == 0 then return nil, "ls::Mouse was not found where this build keeps its pointer" end
-    local owner = guard(GK.Memory.At, address)
-    if owner and owner.Module then return nil, "the place read does not hold a pointer to ls::Mouse: another build of the game?" end
-    return address
 end
 
 -- What lies under a point of the frame: the element the UI library's own hit test finds, the named
@@ -171,9 +158,9 @@ end
 
 --- A pointer inside the game: GK.Cheat.Pointer{ at = { x, y } (fractions of the frame) | widget =
 --- name, handle = a handle of GK.Gui.Look (the point is found by hit tests), do = "move" (default)
---- | "press" | "release" | "click" | "leave", button = 1 (left) | 2 | 3, wait = ms }. It writes
---- the game's own mouse position and injects the motion and button events; the real mouse is not
---- used. Answers what the interface reported back after the wait: { ok, did, at = { x, y, px, py },
+--- | "press" | "release" | "click" | "leave", button = 1 (left) | 2 | 3, wait = ms }. It injects
+--- the motion and button events, which the game takes as its own pointer's ("leave" is a motion to
+--- (-1, -1)); the real mouse is not used and no memory is written. Answers what the interface reported back after the wait: { ok, did, at = { x, y, px, py },
 --- under = { hit, path, control, data, command, tooltipOn, widget } before and `after` the act,
 --- events (the UI library's routed events seen at the root, with their sources), opened and closed
 --- widgets, tips (the open tooltips), changed (the widget's picture before and after, as
@@ -181,8 +168,10 @@ end
 function Probe.Pointer(options)
     options = options or {}
     local act = options["do"] or "move"
-    local address, problem = mouse()
-    if not address then return { ok = false, error = problem } end
+    if not (GK.Features and GK.Features.injectedInput) then
+        return { ok = false, error = "GK.Cheat.Pointer needs a Script Extender build whose injected mouse events name the game's window: "
+            .. "GateKit's own build has it (gatekit se status)" }
+    end
     local root = guard(function() return Ext.UI.GetRoot() end)
     if not root then return { ok = false, error = "the interface has no root" } end
     local width, height = root.ActualWidth, root.ActualHeight
@@ -208,9 +197,6 @@ function Probe.Pointer(options)
     local button = options.button or 1
     unlisten()
     listen()
-    GK.Memory.Write(address, "float", px + 0.0)
-    GK.Memory.Write(address + 4, "float", py + 0.0)
-    GK.Memory.Write(address + 16, "uint8", act == "leave" and 0 or 1)
     Ext.Input.InjectMouseMove(px, py)
     local looks, held = 0, false
     if act == "release" then Ext.Input.InjectMouseButton(button, false, px, py) end

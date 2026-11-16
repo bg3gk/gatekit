@@ -2,7 +2,7 @@
 -- `fight_action` row is written as the game creates the state of a cast (SpellCastState), some
 -- twenty ticks before the cast's first roll, and names the caster, the spell, the targets, the
 -- move the caster makes first, and the cast's id - the id the game's hit of the cast carries, so
--- that a reader joins the intent to its outcome (docs/contracts/lua-api.md, section 15; the
+-- that a reader joins the intent to its outcome (docs/contracts/lua-api.md, section 21; the
 -- family `fight`, Server/FightLog.lua). Staged with a hostile goblin a few metres from the host
 -- and the host's initiative pinned low, so that the goblin's turn comes first and the goblin walks
 -- up and attacks the host by its own AI.

@@ -9,7 +9,8 @@
 -- The numbers are not constants: the wanted bonus is worked from the host's own abilities and
 -- proficiency, the chance from the difficulty and bonus of the roll the game then throws.
 -- Staging (cheat): the host first, a hostile goblin beside it kept alive, the fight, the ranged
--- set put in hand, the casts. Reading: observation.
+-- set put in hand (a row of the stage ledger, so the clean puts the set back), the casts.
+-- Reading: observation.
 -- Run: gatekit --instance <copy> test tests -k quirks/attack/weapon_set_in_hand
 
 test { level = "GustavX:Basic_Level_A", before = "stage", surprises = { "combat_started" },
@@ -48,7 +49,17 @@ function stage(game)
         ]])
         game.wait("client", string.format("Ext.Entity.Get(%q) ~= nil", g), 10)
         game.server(string.format("return GK.Stage.Fight({ %q })", g))
-        game.server(string.format("Ext.Entity.Get(%q).WeaponSet.WeaponSet = 'Ranged' return true", host))
+        -- the weapon set through the stage ledger (the fixtures' `weaponset` undo), so the clean puts it back
+        game.server([[
+            local h = Osi.GetHostCharacter()
+            local e = Ext.Entity.Get(h)
+            local was = tostring(e.WeaponSet.WeaponSet)
+            if was ~= "Ranged" then
+                GK.Stage.Track{ kind = "other", note = "the host's weapon set " .. was .. " -> Ranged",
+                                op = { op = "weaponset", who = h, set = was, drawn = Osi.IsWeaponUnsheathed(h) } }
+                e.WeaponSet.WeaponSet = "Ranged"
+            end
+            return true ]])
         return g
     end))
     step("the scene is as staged", "observation", function()

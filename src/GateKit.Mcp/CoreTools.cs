@@ -398,11 +398,13 @@ public static partial class CoreTools
 
         new(Define("bg3_screenshot",
                 "A picture of the game. The game takes it itself, off the frame it is about to show and before any overlay is drawn over "
-                + "it, so it works while the window is in the background or covered by other windows; nothing is moved, focused or paused.",
+                + "it, so it works while the window is in the background or covered by other windows; nothing is moved, focused or paused. "
+                + "With overlay the frame is taken after the extender's own layer is drawn.",
                 """
                 {
                  "type": "object",
-                 "properties": {"width": {"type": "integer", "description": "Scale down to this width in pixels (default 1150)."}}
+                 "properties": {"width": {"type": "integer", "description": "Scale down to this width in pixels (default 1150)."},
+                                "overlay": {"type": "boolean", "description": "With the extender's own layer in it: its windows, GateKit's console, a picture of GK.Show (default false)."}}
                 }
                 """),
             (args, _) =>
@@ -413,7 +415,7 @@ public static partial class CoreTools
                 Directory.CreateDirectory(Path.GetDirectoryName(file)!);
                 // The picture, and where it was saved: `gatekit mcp call` prints text only, and a
                 // screenshot answered nothing there (N33 of the third run); a file can be read by anyone.
-                var shot = copy.Shot(file, args.Int("width") ?? 1150);
+                var shot = copy.Shot(file, args.Int("width") ?? 1150, args.Flag("overlay"));
                 var result = Results.Image(File.ReadAllBytes(shot), "image/jpeg");
                 result.Content.Add(new TextContentBlock { Text = "saved: " + Path.GetFullPath(shot) });
                 return Task.FromResult(result);

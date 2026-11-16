@@ -2,8 +2,8 @@
   "schema": "registry/function/1",
   "id": "esv::combat::System::CheckForSurprise",
   "state": "described",
-  "rung": "confirmed",
-  "does": "For a character that joins a fight it walks the live hits: when a hit whose target is that character carries the attack flag FromSneak (bit 4 of the byte at +0x58 of eoc::hit::TargetComponent), names a spell whose prototype lacks the spell flag NoSurprise (bit 24 of the prototype's flags) and has an attacker whose relation to the character is not 100, the character is put into the update state's set at +0x208, from which the combat system's update gives it esv::combat::SurprisedStealthRequestOneFrameComponent.",
+  "rung": "toolkit",
+  "does": "Decides whether a character that joins a fight was surprised by an attack from hiding. It asks for a live hit whose target is that character, made from hiding (the attack flag FromSneak), by a spell that may surprise (its prototype lacks the spell flag NoSurprise), from an attacker that is not the character's ally; with such a hit the character is marked, and the combat system's update gives it esv::combat::SurprisedStealthRequestOneFrameComponent. FromSneak is bit 4 of the byte at +0x58 of eoc::hit::TargetComponent, NoSurprise bit 24 of the prototype's flags, an ally a relation of 100, and the mark the update state's set at +0x208.",
   "fingerprint": {
     "calls": [
       "fp:123b79ba6c390bab",
@@ -21,7 +21,7 @@
   "evidence": [
     {
       "kind": "toolkit-name",
-      "says": "the Toolkit's EoCServer.dll exports esv::combat::System::CheckForSurprise at +0x147AC20 with the same body: the two queries (hit target with hit meta, hit attacker with hit meta), the same flag tests, the same set at +0x208"
+      "says": "the Toolkit's EoCServer.dll exports esv::combat::System::CheckForSurprise with the same body: the two queries (hit target with hit meta, hit attacker with hit meta), the same flag tests, the same set at +0x208"
     },
     {
       "kind": "read",

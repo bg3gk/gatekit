@@ -492,10 +492,13 @@ function GK.Key(name, modifiers, hold) end
 ---taking it neither pauses nor moves anything. `path` is below the Script Extender folder of the
 ---profile, as `Ext.IO.SaveFile` takes it, and the PNG appears there a few frames later. False
 ---when the renderer cannot do it (so far only the DX11 one) or when one is already on its way.
+---`overlay = true` asks for the frame after the extender's own layer is drawn (its windows, a
+---picture of GK.Show); false on a Script Extender build that cannot take that frame.
 ---Client.
 ---@param path string
+---@param overlay? boolean
 ---@return boolean
-function GK.Shot(path) end
+function GK.Shot(path, overlay) end
 
 ---Whether a picture asked for with `GK.Shot` has still to be taken or written. Client.
 ---@return boolean
@@ -2667,7 +2670,9 @@ function GK.Gui.Controls(name, filter) end
 
 ---Clicks a control of an open widget as a player does (the XAML chain). A disabled control is a
 ---failure with `state`: the flags, numbers and short texts of the control's data, which usually
----show why (a count at 0, a flag off). UI.
+---show why (a count at 0, a flag off). A toggle with no chain and no command has its IsChecked
+---written: the answer carries `value` (the flag read again) and `handle` when the press changed
+---the toggle's handle. UI.
 ---@param name string
 ---@param what string|integer|table @ name, part of its text, filter table, or number in GK.Gui.Controls
 ---@param which integer? @ the n-th match (default 1)
@@ -2751,19 +2756,21 @@ function GK.Gui.PinTip() end
 ---@return { ok: boolean, did: string?, closed: integer?, tips: GK.GuiTip[]?, saw: string?, error: string? }
 function GK.Gui.CloseTips(which) end
 
----A pointer inside the game, for research: the game's own mouse position written and motion and
----button events injected, the real mouse untouched. Answers what the interface reported back.
+---A pointer inside the game, for research: motion and button events injected, which the game
+---takes as its own pointer's; the real mouse untouched. Answers what the interface reported back.
 ---Nothing that ships may rest on it (docs/contracts/lua-api.md, "The pointer"). UI. A cheat.
 ---@param options { at: number[]?, widget: string?, handle: string?, ["do"]: "move"|"press"|"release"|"click"|"leave"|nil, button: integer?, wait: integer? }
 ---@return table
 function GK.Cheat.Pointer(options) end
 
 ---Sets a control to a value as the player's hand would: a slider inside its range, a toggle, a
----text field, a list (as GK.Gui.Select). Answers what the control reads afterwards. UI.
+---text field, a list (as GK.Gui.Select). Answers what the control reads afterwards; `handle` is
+---the control's handle after the act when the act changed it (a toggle that hides itself by what
+---it switches answers to "~<handle>"). UI.
 ---@param name string
 ---@param handle string
 ---@param value number|boolean|string
----@return { ok: boolean, before: any, after: any, error: string? }
+---@return { ok: boolean, before: any, after: any, handle: string?, error: string? }
 function GK.Gui.Set(name, handle, value) end
 
 ---Selects an item of a list (ListBox, tab strip...) of an open widget. UI. The items are counted
@@ -3355,6 +3362,26 @@ function GK.Rolls.Rigs() end
 ---@return boolean
 function GK.Rolls.CanRig() end
 
+---SetKarmic's undo, called by the stage ledger: switches the game's weighted rolls and makes no
+---ledger row. Server. A cheat.
+---@param on boolean
+function GK.Rolls.WriteKarmic(on) end
+
+---SetStreams' undo, called by the stage ledger: writes seed and count of the streams named and
+---makes no ledger row. Server. A cheat.
+---@param list table[]
+function GK.Rolls.WriteStreams(list) end
+
+---SetInspiration's undo, called by the stage ledger: writes the party's inspiration points (and
+---the resource's maximum) and makes no ledger row. Server. A cheat.
+---@param points number
+---@param max number?
+function GK.Rolls.WriteInspiration(points, max) end
+
+---Rig's undo, called by the stage ledger: takes one rig off and makes no ledger row. Server. A cheat.
+---@param id integer
+function GK.Rolls.WriteRig(id) end
+
 ---The causes of a roll known for each executable. Server. Observation.
 ---@return table<string, { id: string, cause: string, rva: integer, size: integer }[]>
 function GK.RollLog.Causes() end
@@ -3481,7 +3508,7 @@ GK.Show = {}
 
 ---What a picture is asked with.
 ---@class GK.Show.PictureOptions
----@field file string? @ a png, jpg, tga or bmp under the game's Data folder, named as a mod ships it ("Mods/<Mod>/...", "Public/<Mod>/..."), in a package or loose
+---@field file string? @ a png, jpg, tga or bmp: under the game's Data folder, named as a mod ships it ("Mods/<Mod>/...", "Public/<Mod>/..."), in a package or loose; or the whole path of a file on the disk ("E:/pictures/logo.png")
 ---@field resource string? @ instead of a file: a texture resource's uuid or an icon's name
 ---@field where ("screen"|number[]|{ x: number, y: number, w: number, h: number })? @ the rectangle it is fitted into, in parts of the screen (0 to 1); default the whole screen
 ---@field fit ("contain"|"cover"|"stretch")? @ default "contain"
@@ -3489,7 +3516,7 @@ GK.Show = {}
 ---@field opacity number? @ 0 to 1
 ---@field fade (number|{ ["in"]: number?, out: number? })? @ real seconds
 ---@field seconds number? @ real seconds at full strength; none: until hidden
----@field skip (string|string[]|boolean)? @ keys that take it off: "escape", "enter", "space", a letter, a digit, "any"; while it shows the picture holds the keyboard
+---@field skip (string|string[]|boolean)? @ what takes it off: key names as GK.Key takes them ("escape", "enter", "f5", a letter ...), "click", "any"; while it shows the picture holds the keyboard
 ---@field over "everything"? @ the only layer
 
 ---A picture shown or gone.

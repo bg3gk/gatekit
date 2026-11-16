@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "eoc::spell::CalculateModifiableSpellRollChance",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Returns, as a float 0..1, the chance that a spell's roll condition passes for a condition context, after the caster's spell modifications; advantage and disadvantage are folded in. Arguments: RCX the eoc::spell::Condition, RDX the ls::thoth::shared::ContextData, R8 a pointer to the spell's FixedString (SpellPrototype+0x8), R9 the caster's eoc::spell::ModificationContainerComponent or null, [rsp+0x28] RPGStats, [rsp+0x30] the ls::thoth::shared::Machine. Without a modification for the spell it is eoc::CalculateStaticSpellConditionChance(RCX, RDX, machine).",
   "fingerprint": {
     "calls": [
@@ -39,6 +39,14 @@
     {
       "kind": "watch",
       "says": "in a goblin's turn the calls from +0x3752C28 carry the goblin at context +0x0 and the host at +0x10, R9 null, the fifth argument the pointer at gRPGStats and the sixth the pointer at EoCServer+0x2C8; it returns 0.5 for Target_MainHandAttack where the attack roll that follows has difficulty 14 and bonus 3 (10 faces of 20), and 0.75 with Advantage(AttackRoll) on the goblin (1 - 0.5 squared); all on the server's main thread"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

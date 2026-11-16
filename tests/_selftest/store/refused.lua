@@ -11,7 +11,7 @@
 -- to the host), put at the key `bad` of a store that holds `kept`. GK.Store.Check gives the same
 -- path from the value's own root. No save is made: the refusal comes before the write.
 -- Staging (cheat): the writes. Reading: observation.
--- Run: gatekit --instance <copy> test tests/_selftest -k store_refused
+-- Run: gatekit --instance <copy> test tests -k _selftest/store/refused
 
 test { level = "GustavX:Basic_Level_A",
        about = "A value the save would lose is refused before it is written." }

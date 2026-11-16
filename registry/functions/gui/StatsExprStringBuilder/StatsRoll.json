@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "gui::StatsExprStringBuilder::StatsRoll",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Writes one stats roll into a tooltip's trans string: the die term through gui::StatsExprStringBuilder::Roll, then, unless the roll's result is a critical failure (Critical = 2 at the roll's +0x2C), the roll's own modifiers (its flat bonus, roll bonuses, ability and skill modifiers) and, when asked, ' = ' and the total (+0x20). A roll flagged critical failure is written as its die alone, so a damage die of 1 on a 1dN weapon roll shows '1 (1d4 Piercing)' with no modifier and no total, while the damage dealt has both.",
   "fingerprint": {
     "calls": [
@@ -26,6 +26,10 @@
     {
       "kind": "watch",
       "says": "a probe with a 64-byte snapshot of the third argument over a dagger hit: die 1 -> natural 1, total 4, flat 3, Critical 2, line '1 (1d4 Piercing)'; die 2 -> Critical 0, '2 (1d4) + 3 (Dex) = 5'; die 4 -> Critical 1, '4 (1d4) + 3 = 7'; the server's Critical set to None in Ext.Events.BeforeDealDamage on a 1 gave '1 (1d4) + 3 (Dex) = 4', set to Fail on a 4 gave '4 (1d4)'; an attack die of 1 gives '1 (Critical!) (1d20)'"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

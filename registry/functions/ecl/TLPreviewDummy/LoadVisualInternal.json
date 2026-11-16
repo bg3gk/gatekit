@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "ecl::TLPreviewDummy::LoadVisualInternal",
   "state": "described",
-  "rung": "inferred",
+  "rung": "game",
   "does": "Asks the visual system (ls::VisualSystem of the client world) to load the dummy's visual resource for the dummy's entity, wrapping the caller's callback in one of its own that finishes the load on the dummy; with its second parameter set it first releases the cloth and spring state of the visual it replaces.",
   "fingerprint": {
     "calls": [
@@ -33,6 +33,14 @@
     {
       "kind": "read",
       "says": "It takes the visual system from the client world's system table, builds a 0x58-byte callback object that captures the dummy, and hands the dummy's resource id (0x54), its load flags and the callback to the visual system's load; code:ecl::TLPreviewDummyHelpers::LoadDummy calls it for a dummy with no visual yet."
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCClient.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

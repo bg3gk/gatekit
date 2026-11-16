@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::ActivationManager::GetActivationResult",
   "state": "described",
-  "rung": "inferred",
+  "rung": "game",
   "does": "Decides one character's activation and its reason: kept awake by NeedsUpdate or ForceSynch above 0, by two character flags, by a combat or a timeline component, a running timer, the manager's activate-all switches (+0x38, +0x39); a player character is left to its own path; otherwise awake within 45 m of a running timeline's point and asleep beyond, or waiting for an anchor.",
   "evidence": [
     {
@@ -12,6 +12,14 @@
     {
       "kind": "watch",
       "says": "Osi.SetForceUpdate(creature, 1) sets esv::Character ForceSynch to 1 and wakes that creature 80 m from every party member within a tick, as the reason 7 branch says"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

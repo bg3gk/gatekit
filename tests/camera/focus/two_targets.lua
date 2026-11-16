@@ -1,6 +1,6 @@
 -- GK.Camera.Focus given two things frames both, as the game frames a caster and its target on a
--- ranged attack (docs/contracts/lua-api.md, section 22; night notes K1: the combat target's
--- TargetMode 4 with two targets, the camera's distance raised to fit them). Outside a fight the
+-- ranged attack (docs/contracts/lua-api.md, section 22: the combat target's TargetMode 4 with two
+-- targets, the camera's distance raised to fit them). Outside a fight the
 -- verb writes both into the camera behaviour's targets. Two neutral humans 14 m apart, on either
 -- side of a point 10 m to the screen's right, so that neither is on the screen's middle before.
 -- Staging (cheat): the camera on the host, the humans. Acting (fair): the focus. Reading

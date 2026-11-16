@@ -205,7 +205,9 @@ public sealed class GameApi
             var path = Resolve(Text(a[0], "path"));
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             var width = a[1].Type == DataType.Number ? (int)a[1].Number : 1150;
-            return DynValue.NewString(Guard(() => _copy.Shot(path, width)));
+            // game.shot(path [, width [, overlay]]): overlay = true takes the frame with the extender's layer
+            var overlay = a[2].Type == DataType.Boolean && a[2].Boolean;
+            return DynValue.NewString(Guard(() => _copy.Shot(path, width, overlay)));
         });
         // The copies running and their tiles in a deck, if one is running (docs/design/deck.md).
         // A test uses it to prove that reading the game never depends on a window being seen.
@@ -290,6 +292,23 @@ public sealed class GameApi
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllBytes(path, TestPng((int)a[1].Number, (int)a[2].Number));
             return DynValue.NewString(path);
+        });
+
+        // game.pixel(path, x, y): the colour of a picture file at a point given in parts of its
+        // width and height (0 to 1), as { r, g, b } from 0 to 255, with the picture's width and height
+        Register(game, "pixel", (_, a) =>
+        {
+            var path = Resolve(Text(a[0], "path"));
+            if (!File.Exists(path)) throw new ScriptRuntimeException("game.pixel: no file " + path);
+            var picture = GateKit.Platform.ImageReader.Read(File.ReadAllBytes(path));
+            var x = Math.Clamp((int)(a[1].Number * picture.Width), 0, picture.Width - 1);
+            var y = Math.Clamp((int)(a[2].Number * picture.Height), 0, picture.Height - 1);
+            var at = (y * picture.Width + x) * 4;
+            return LuaValues.ToLua(_script, new JsonObject
+            {
+                ["r"] = picture.Bgra[at + 2], ["g"] = picture.Bgra[at + 1], ["b"] = picture.Bgra[at],
+                ["width"] = picture.Width, ["height"] = picture.Height,
+            });
         });
 
         Register(game, "burst", (_, a) => Burst((int)a[0].CastToNumber()!, (int)a[1].CastToNumber()!));

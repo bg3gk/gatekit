@@ -6,15 +6,21 @@
 -- player's spell attack and its damage, a target's save against the player's spell, the three
 -- attacks of one Scorching Ray, and a hostile creature's attack and its damage. The stream is read
 -- from who acts (a player's attack draws from PlayerSpell, a creature's from NPCSpell), the roller
--- from the scene; a d20 roll draws a pair of dice, a damage roll the dice its formula names.
+-- from the scene; a d20 roll draws a pair of dice, a damage roll the dice its formula names. The
+-- pair is drawn with neither advantage nor disadvantage too (research/studies/rolls.md, section
+-- 3; bg3.wiki, "Advantage", speaks of a second die only with one of them): the first die is
+-- kept and the second discarded, held in the case of the target's save with Karmic Dice off. A
+-- tool that rewinds or predicts a stream counts two dice for every d20 roll.
 -- Staging (cheat): the stage scope, the roll log's family, the creatures, the fight with the host
 -- first, the spells taught and their slots, the pins that make a hit a hit, the statuses, the
 -- passive check (the story's RequestPassiveRoll), the casts (GK.Cheat.Cast: Osi.UseSpell rolls
 -- nothing), the talk, the turn passed. The weapon attack and the dialogue's answer and throw are
 -- the player's own path (fair). Reading the rows: observation.
 -- Not covered: initiative (its row has no roller and kind None, by the contract's own words); the
--- cause of a damage roll, which the log does not place yet (test:_selftest/roll_log_unknown).
--- A case with a fight stages it anew (about 5 s): each case runs from a clean scene.
+-- cause of a damage roll (a weapon's ground damage has one, `damage at a position`:
+-- test:quirks/damage/ground_row; the damage of a hit is asserted here without a cause).
+-- Limit: 120 s at speed 1 - nine cases, five of them with a fight staged anew (about 5 s), since
+-- each case runs from a clean scene.
 -- Run: gatekit --instance <copy> test tests/rolls -k rolls/log/origins
 
 test { level = "GustavX:Basic_Level_A", before = "stage", surprises = { "combat_started", "dialogue", "roll" },
@@ -59,6 +65,14 @@ local function says(p, want)
     if want.status then eq(p.status, want.status, "the status") end
     check(type(p.count) == "number" and p.count >= 1, "the formula names its dice", p)
     eq(#p.dice, (p.dieType == "D20" and 2 or 1) * p.count, "the dice drawn for " .. tostring(p.count) .. " " .. tostring(p.dieType))
+    -- the pair of a d20 is drawn whatever the roll: with neither advantage nor disadvantage the
+    -- first die is the one kept and the second is discarded, shown nowhere but here
+    if want.plain then
+        eq(p.forced, nil, "the dice decided it, not Karmic Dice")
+        eq(p.advantage, nil, "neither advantage nor disadvantage")
+        eq(p.natural, p.dice[1], "the first die is kept")
+        eq(p.discarded, p.dice[2], "the second is the discarded one")
+    end
 end
 
 --- A hostile goblin three metres off, kept alive; the host first; the fight begun on the host's turn.
@@ -213,13 +227,17 @@ end)
 case("target's save", function(game)
     local goblin = fight(game)
     teach(game, "Target_SacredFlame")
+    step("the dice are the stream's own", "cheat", function()
+        check(game.server("return GK.Rolls.SetKarmic(false)").ok, "Karmic Dice off")
+    end)
     local mark = cast(game, "Target_SacredFlame", goblin)
     step("the row", "observation", function()
         local p = thrown(mark, function(p) return uuid(p.who) == goblin end)
-        -- the target rolls, from the stream of the one who cast
+        -- the target rolls, from the stream of the one who cast; nothing is pinned or rigged here,
+        -- so the pair is the stream's: the first die kept, the second discarded
         says(p, { who = goblin, kind = "SavingThrow", stream = stream_of(game, host, "Spell"),
                   origin = "unplaced::RollSavingThrow", cause = "spell",
-                  source = host, target = goblin, spell = "Target_SacredFlame" })
+                  source = host, target = goblin, spell = "Target_SacredFlame", plain = true })
     end)
 end)
 

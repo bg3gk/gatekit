@@ -2,9 +2,15 @@
 -- no atlas, no XAML. docs/contracts/lua-api.md, "GK.Show".
 --
 -- The picture is drawn by Script Extender's own drawing layer (IMGUI), which decodes png, jpg, tga
--- and bmp files read through the game's file system: a file of a mod's package or a loose file
--- under the game's Data folder. That layer is drawn after the game's whole frame, so a picture is
--- over everything the game shows, in any client state that draws frames.
+-- and bmp files: one read through the game's file system (a file of a mod's package or a loose
+-- file under the game's Data folder), or one read straight from the disk by its whole path
+-- (Ext.IMGUI.LoadImageFile, held while the picture is shown). That layer is drawn after the game's
+-- whole frame, so a picture is over everything the game shows, in any client state that draws
+-- frames.
+--
+-- A picture with `skip` hears the game's own input events (Ext.Events.KeyInput, MouseButtonInput),
+-- which GateKit's Script Extender raises for a key pressed by hand and for one pressed through the
+-- bridge alike; what it hears it keeps from the game (PreventAction).
 
 GK.Show = GK.Show or {}
 local Show = GK.Show
@@ -16,8 +22,6 @@ Show.Seq = Show.Seq or 0
 local KEPT = 32                          -- how many pictures that left are remembered
 local FILE_TYPES = { png = true, jpg = true, jpeg = true, tga = true, bmp = true }
 local FITS = { contain = true, cover = true, stretch = true }
--- What the key field can tell apart: a character typed, and the key that ends typing.
-local CHARACTER = { space = " ", enter = "\n" }
 
 local function now() return Ext.Utils.MonotonicTime() end
 local function log(kind, payload) if GK.EventLog then pcall(GK.EventLog.Append, kind, payload) end end
@@ -74,33 +78,37 @@ local function fadeOf(value)
     return nil
 end
 
--- The keys that take a picture off, as the key field can hear them.
+-- What takes a picture off: keys by the names GK.Key takes, "click" (a mouse button), "any" (both).
+-- { any, click, keys = { [scan code name] = the name given }, names }.
 local function skipOf(value)
     if value == nil or value == false then return nil end
-    if value == true or value == "any" then return { any = true, chars = {}, names = { "any" } } end
+    if value == true then value = "any" end
     if type(value) == "string" then value = { value } end
     if type(value) ~= "table" then return nil, "skip is a list of key names" end
-    local skip = { chars = {}, names = {} }
+    local skip = { keys = {}, names = {} }
     for _, name in ipairs(value) do
         local key = tostring(name):lower()
+        if key == "esc" then key = "escape" end
         if key == "any" then
             skip.any = true
-        elseif key == "escape" or key == "esc" then
-            skip.escape = true
-            key = "escape"
-        elseif CHARACTER[key] then
-            skip.chars[CHARACTER[key]] = key
-        elseif #key == 1 then
-            skip.chars[key] = key
+        elseif key == "click" then
+            skip.click = true
         else
-            return nil, "skip cannot hear the key '" .. tostring(name) .. "': it hears escape, enter, space, a letter, a digit, "
-                .. "or \"any\" (a key that types nothing - an arrow, a function key - reaches neither the picture nor the game)"
+            local code = GK.ScanCode(key)
+            if not code then
+                return nil, "skip does not know the key '" .. tostring(name) .. "': it takes the key names GK.Key takes (escape, enter, "
+                    .. "space, a letter, a digit, f5, left ..., or an SDL scan code name), \"click\" and \"any\""
+            end
+            skip.keys[code] = key
         end
         skip.names[#skip.names + 1] = key
     end
     if #skip.names == 0 then return nil end
     return skip
 end
+
+-- The whole path of a file on the disk, as against a path under the game's Data folder.
+local function onDisk(file) return file:match("^%a:/") ~= nil or file:sub(1, 1) == "/" end
 
 -- Where the picture lies in a rectangle of the screen (pixels) by its fit, and which part of it is drawn.
 local function place(pic, vw, vh)
@@ -155,11 +163,49 @@ local function describe(pic)
              shownMs = pic.drawnAt and math.floor(now() - pic.drawnAt) or nil }
 end
 
-local tick
+local tick, leave
+-- The names a row gives the keys GK.Key has its own names for; any other key is its scan code's name in lower case.
+local KEY_NAMES = { ESCAPE = "escape", RETURN = "enter", SPACE = "space" }
+
+-- The picture a key or a click is for: the one shown last among those with `skip` that stay.
+local function listener()
+    local found
+    for _, pic in pairs(Show.Pictures) do
+        if pic.skip and (not found or pic.seq > found.seq) then found = pic end
+    end
+    return found
+end
+
+-- While a picture with `skip` is shown every key goes to it and not to the game; a click is kept
+-- from the game only when it takes the picture off.
+local function hearKeys()
+    if Show.KeySubscription then return end
+    Show.KeySubscription = Ext.Events.KeyInput:Subscribe(function(e)
+        local pic = listener()
+        if not pic then return end
+        e:PreventAction()
+        if e.Event ~= "KeyDown" or e.Repeat or pic.phase == "out" or not pic.drawnAt then return end
+        local code = tostring(e.Key)
+        local name = pic.skip.keys[code]
+        if name or pic.skip.any then leave(pic, "skipped", name or KEY_NAMES[code] or code:lower()) end
+    end)
+    Show.ClickSubscription = Ext.Events.MouseButtonInput:Subscribe(function(e)
+        local pic = listener()
+        if not (pic and e.Pressed and (pic.skip.click or pic.skip.any)) or pic.phase == "out" or not pic.drawnAt then return end
+        e:PreventAction()
+        leave(pic, "skipped", "click")
+    end)
+end
 
 local function forget(pic, why, key)
     Show.Pictures[pic.handle] = nil
     pcall(function() pic.window:Destroy() end)
+    if pic.loaded then pcall(Ext.IMGUI.UnloadImageFile, pic.loaded) end
+    if not listener() and Show.KeySubscription then
+        Ext.Events.KeyInput:Unsubscribe(Show.KeySubscription)
+        Ext.Events.MouseButtonInput:Unsubscribe(Show.ClickSubscription)
+        Show.KeySubscription, Show.ClickSubscription = nil, nil
+    end
     local ended = describe(pic)
     ended.phase, ended.alpha, ended.left, ended.why, ended.key = nil, nil, true, why, key
     Show.Ended[pic.handle] = ended
@@ -175,7 +221,7 @@ local function forget(pic, why, key)
 end
 
 -- Begins a picture's leaving: it fades out and is then forgotten.
-local function leave(pic, why, key, fade)
+leave = function(pic, why, key, fade)
     if pic.phase == "out" then return end
     pic.phase, pic.why, pic.key = "out", why, key
     pic.outFrom, pic.outAt = pic.alpha, now()
@@ -214,42 +260,13 @@ tick = function()
     end
 end
 
--- The key field: a text field of the drawing layer that holds the keyboard while the picture is
--- shown. A key pressed goes to it and not to the game; it tells a typed character and the end of
--- typing (Escape, or a click of the mouse) and nothing else.
-local function listen(pic)
-    local field = pic.window:AddInputText("##gk_show_keys_" .. pic.handle, "")
-    field.Multiline = true
-    field.SizeHint = { 4, 4 }
-    field.AbsolutePosition = { 0, 0 }
-    pcall(function() field:SetStyle("Alpha", 0) end)
-    field.OnChange = function()
-        local text = field.Text or ""
-        if text == "" or not Show.Pictures[pic.handle] then return end
-        local last = text:sub(-1)
-        field.Text = ""
-        local name = pic.skip.chars[last:lower()]
-        if name or pic.skip.any then leave(pic, "skipped", name or (last == " " and "space" or last == "\n" and "enter" or last)) end
-    end
-    field.OnDeactivate = function()
-        if not Show.Pictures[pic.handle] or pic.phase == "out" then return end
-        if pic.skip.escape or pic.skip.any then
-            leave(pic, "skipped", "escape")
-        else
-            field:Activate()
-        end
-    end
-    pic.window:SetFocus()
-    field:Activate()
-    pic.field = field
-end
-
---- Puts a picture over the game. `options`: `file` (png, jpg, tga or bmp, a path under the game's
---- Data folder as a mod ships it) or `resource` (a texture resource's uuid or an icon's name);
---- `where` ("screen", or { x, y, w, h } in parts of the screen); `fit` ("contain", "cover",
---- "stretch"); `back` (a colour behind it over the whole screen); `opacity`; `fade` (seconds, or
---- { in, out }); `seconds` (how long it stays at full strength; none: until hidden); `skip` (key
---- names that take it off); `over` ("everything"). Answers once the first frame with it is drawn.
+--- Puts a picture over the game. `options`: `file` (png, jpg, tga or bmp: a path under the game's
+--- Data folder as a mod ships it, or the whole path of a file on the disk) or `resource` (a texture
+--- resource's uuid or an icon's name); `where` ("screen", or { x, y, w, h } in parts of the screen);
+--- `fit` ("contain", "cover", "stretch"); `back` (a colour behind it over the whole screen);
+--- `opacity`; `fade` (seconds, or { in, out }); `seconds` (how long it stays at full strength; none:
+--- until hidden); `skip` (key names, "click", "any": what takes it off); `over` ("everything").
+--- Answers once the first frame with it is drawn.
 function Show.Picture(options)
     if type(options) == "string" then options = { file = options } end
     if type(options) ~= "table" then return refuse("GK.Show.Picture takes a table: { file = ... } or { resource = ... }") end
@@ -263,9 +280,13 @@ function Show.Picture(options)
     if file ~= nil and resource ~= nil then return refuse("give file or resource, not both") end
     if type(file) == "string" then
         file = file:gsub("\\", "/")
-        if file:match("^%a:/") or file:sub(1, 1) == "/" or file:find("%.%./") then
-            return refuse("the game reads a picture through its own file system: give a path under its Data folder, as a mod ships it "
-                .. "(Mods/<Mod>/..., Public/<Mod>/...), in a package or loose; a file elsewhere on the disk is not reachable from inside the game",
+        if file:find("%.%./") then
+            return refuse("a picture file is named from the game's Data folder (Mods/<Mod>/..., Public/<Mod>/...) or by its whole path "
+                .. "on the disk; a path with .. is neither", { file = file })
+        end
+        if onDisk(file) and not GK.Features.imageFiles then
+            return refuse("this Script Extender build reads a picture through the game's file system only (GateKit's own build reads any "
+                .. "file of the disk: gatekit se status): give a path under the game's Data folder, as a mod ships it",
                 { file = file, hint = "put the file (or a link to its folder) under <game>/Data and name it from there" })
         end
         local ext = file:match("%.(%w+)$")
@@ -283,7 +304,8 @@ function Show.Picture(options)
     elseif type(resource) == "string" and resource ~= "" then
         source = resource
     else
-        return refuse("GK.Show.Picture needs file (a path under the game's Data folder) or resource (a texture's uuid or an icon's name)")
+        return refuse("GK.Show.Picture needs file (a path under the game's Data folder, or a whole path on the disk) or resource "
+            .. "(a texture's uuid or an icon's name)")
     end
     local rect, whyRect = rectOf(options.where)
     if not rect then return refuse(whyRect) end
@@ -297,9 +319,23 @@ function Show.Picture(options)
     if seconds ~= nil and (type(seconds) ~= "number" or seconds < 0) then return refuse("seconds is a number of seconds") end
     local skip, whySkip = skipOf(options.skip)
     if whySkip then return refuse(whySkip) end
+    if skip and not GK.Features.injectedInput then
+        return refuse("skip needs a Script Extender build that raises its input events for keys pressed through the bridge too: "
+            .. "GateKit's own build has it (gatekit se status)", { skip = skip.names })
+    end
 
+    -- a file of the disk is loaded under its own path and held until the picture is forgotten
+    local loaded
+    if file and onDisk(file) then
+        local okLoad, loadedSize = pcall(Ext.IMGUI.LoadImageFile, file)
+        if not okLoad or type(loadedSize) ~= "table" then
+            return refuse("the disk has no such picture, or it is not a png, jpg, tga or bmp inside", { file = file })
+        end
+        loaded = file
+    end
     local okSize, size = pcall(Ext.IMGUI.GetImageSize, source)
     if not okSize or type(size) ~= "table" or not size[1] or size[1] <= 0 then
+        if loaded then pcall(Ext.IMGUI.UnloadImageFile, loaded) end
         return refuse(file and "the game's file system has no such picture, or it is not a png, jpg, tga or bmp inside"
             or "no texture resource or icon of that name", { file = file, resource = resource })
     end
@@ -309,11 +345,8 @@ function Show.Picture(options)
     local vw, vh = viewport()
     local window = Ext.IMGUI.NewWindow("###gk_show_" .. Show.Seq)
     for _, flag in ipairs({ "NoTitleBar", "NoResize", "NoMove", "NoScrollbar", "NoCollapse", "NoSavedSettings", "NoBackground",
-        "NoScrollWithMouse", "NoMouseInputs", "NoBringToFrontOnFocus" }) do
+        "NoScrollWithMouse", "NoMouseInputs", "NoBringToFrontOnFocus", "NoInputs", "NoNav", "NoFocusOnAppearing" }) do
         pcall(function() window[flag] = true end)
-    end
-    if not skip then
-        for _, flag in ipairs({ "NoInputs", "NoNav", "NoFocusOnAppearing" }) do pcall(function() window[flag] = true end) end
     end
     window.Closeable = false
     window:SetPos({ 0, 0 }, "Always")
@@ -321,14 +354,15 @@ function Show.Picture(options)
     window:SetStyle("WindowPadding", 0, 0)
     window:SetStyle("WindowBorderSize", 0)
     window:SetStyle("WindowRounding", 0)
-    local pic = { handle = handle, source = source, file = file, resource = resource, size = { size[1], size[2] }, rect = rect, fit = fit,
+    local pic = { handle = handle, seq = Show.Seq, loaded = loaded, source = source, file = file, resource = resource,
+        size = { size[1], size[2] }, rect = rect, fit = fit,
         back = back, opacity = type(options.opacity) == "number" and math.max(0, math.min(1, options.opacity)) or 1,
         fadeIn = fadeIn, fadeOut = fadeOut, seconds = seconds, skip = skip, window = window, phase = "in",
         alpha = fadeIn > 0 and 0 or 1, state = tostring(Ext.Utils.GetGameState and Ext.Utils.GetGameState() or nil) }
-    if skip then listen(pic) end
     local okCanvas, canvas = pcall(function() return window:AddCanvas(vw, vh) end)
     if not okCanvas or not canvas then
         pcall(function() window:Destroy() end)
+        if loaded then pcall(Ext.IMGUI.UnloadImageFile, loaded) end
         return refuse("this Script Extender build has no canvas to draw a picture on (GateKit's build has)")
     end
     canvas.AbsolutePosition = { 0, 0 }
@@ -336,10 +370,12 @@ function Show.Picture(options)
     local okDraw, whyDraw = pcall(function() pic.vw = nil; draw(pic) end)
     if not okDraw then
         pcall(function() window:Destroy() end)
+        if loaded then pcall(Ext.IMGUI.UnloadImageFile, loaded) end
         return refuse("the picture could not be drawn: " .. tostring(whyDraw), { file = file, resource = resource })
     end
     window.Open = true
     Show.Pictures[handle] = pic
+    if skip then hearKeys() end
     if not Show.TickSubscription then Show.TickSubscription = Ext.Events.Tick:Subscribe(function() tick() end) end
 
     return GK.Observe({ ok = true, handle = handle, waiting = true }, function(ticks, final)

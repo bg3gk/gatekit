@@ -1,8 +1,8 @@
 {
   "schema": "registry/function/1",
-  "id": "unplaced::EvaluateSpellRollCondition",
+  "id": "eoc::spell::CheckModifiableSpellRollCondition",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Evaluates a spell's SpellRoll condition for one target, applying the cast's spell modifications to the condition string first when there are any for this spell; every spell's attack roll and spell save, and a creature's weapon attack, passes it. Arguments: RCX the spell's condition, RDX the ls::thoth::shared::ContextData (caster +0x0, target +0x10), R8 a pointer to the spell's FixedString (the first 4 bytes of a SpellId), R9 the cast's spell-modification container (may be null), then the stats and the condition machine on the stack.",
   "fingerprint": {
     "calls": [
@@ -25,12 +25,8 @@
   },
   "evidence": [
     {
-      "kind": "read",
-      "says": "calls eoc::GetSpellConditionString and eoc::spell::ModifySpellRoll::Apply, then evaluates through 0xF00090 or 0xFD9FD0"
-    },
-    {
       "kind": "watch",
-      "says": "one call per Sacred Flame cast, from +0x3726D47; the caller chains of Sacred Flame's save, Hold Person's save and a goblin's weapon attack pass it at +0xFCE3CF"
+      "says": "one call per Sacred Flame cast, from code:unplaced::EvaluateSpellRollOnTarget; the caller chains of Sacred Flame's save, Hold Person's save and a goblin's weapon attack pass it"
     },
     {
       "kind": "read",
@@ -41,15 +37,12 @@
       "says": "at the moment of the roll R8 points at Target_SacredFlame's FixedString (0x4DC000B0) for Sacred Flame, Projectile_FireBolt's (0x4E4000B0) for Fire Bolt and Target_MainHandAttack's (0x20300011) for a goblin's weapon attack (each compared with GetPropertyAddress of the SpellBook entry's Prototype); RDX is the same address that unplaced::EvaluateStatsCondition receives in R9 next"
     },
     {
-      "kind": "game-name",
-      "says": "the argument list fits eoc::spell::CheckModifiableSpellRollCondition(Condition const&, ContextData&, FixedString const&, ModificationContainerComponent const*, RPGStats const&, Machine&) of the builds with symbols"
-    }
-  ],
-  "questions": [
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name with the argument list (Condition const&, ContextData&, FixedString const&, ModificationContainerComponent const*, RPGStats const&, Machine&); the export's body does what the read shows here: the hash of the FixedString looked up in the container, the condition string, eoc::spell::ModifySpellRoll::Apply, then the condition evaluated with the context, and the static check when the spell has no modification"
+    },
     {
-      "ask": "Rename to eoc::spell::CheckModifiableSpellRollCondition once its callees are compared with that build.",
-      "about": "reach",
-      "state": "open"
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name, beside code:eoc::spell::CalculateModifiableSpellRollChance; it is tied to this function by the same argument list and job"
     }
   ]
 }

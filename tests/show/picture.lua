@@ -1,15 +1,20 @@
 -- GK.Show.Picture puts a picture of an ordinary file over the game (docs/contracts/lua-api.md,
--- "GK.Show"): a png of a mod's package, read through the game's file system and drawn by Script
--- Extender's drawing layer over the whole frame. The rule held here: the verb answers once the
--- first frame with the picture is drawn, with where it lies; a picture fitted with `contain` keeps
--- its shape inside the rectangle asked for and one fitted with `cover` fills it; it leaves by
--- itself after its seconds, by a key named in `skip` (which the picture takes and the game does
--- not get: no window opens under it), or by GK.Show.Hide, and each leaving is a row
--- `picture_hidden` that says why; a file outside the game's Data folder, a missing file, a layer
--- under the interface and a video are refused with the reason.
--- What a person sees (the game's own screenshot is taken before the drawing layer draws, so no
--- picture of the test shows it): a small woven tile on the left for two seconds, then a larger
--- one in the middle until Escape.
+-- "GK.Show"): a png of a mod's package read through the game's file system, or a file anywhere on
+-- the disk named by its whole path, drawn by Script Extender's drawing layer over the whole frame.
+-- The rule held here: the verb answers once the first frame with the picture is drawn, with where
+-- it lies; a picture fitted with `contain` keeps its shape inside the rectangle asked for and one
+-- fitted with `cover` fills it; it leaves by itself after its seconds, by a key named in `skip`
+-- (which the picture takes and the game does not get: no window opens under it), or by
+-- GK.Show.Hide, and each leaving is a row `picture_hidden` that says why; a picture is in a shot
+-- taken with the extender's layer and not in the game's own frame; a missing file, a path with
+-- `..`, a layer under the interface, a key that does not exist and a video are refused with the
+-- reason.
+-- The picture in a shot is shown by its pixels: a test picture whose red grows to the right is
+-- stretched over the screen from a file of the test's output folder, and two points of the shot
+-- with the layer (`game.pixel`) carry the picture's colours there, which the game's own frame at
+-- the same moment does not.
+-- What a person sees: a small woven tile on the left for two seconds, a larger one in the middle
+-- until Escape, then a red and green gradient over the whole screen for a moment.
 -- Staging (cheat): the pictures themselves. The key is fair. Reading: observation.
 -- Run: gatekit --instance <copy> test tests -k show/picture --speed working
 
@@ -82,19 +87,46 @@ function run(game)
         eq(gone.payload.why, "hidden", "why it left")
     end)
 
+    local disk = step("a picture of a file on the disk, over the whole screen", "cheat", function()
+        local path = game.testimage("gradient.png", 64, 64):gsub("\\", "/")
+        local shown = game.ui(string.format("return GK.Show.Picture{ file = %q, fit = 'stretch' }", path))
+        check(shown.ok, "a file named by its whole path is drawn", shown)
+        eq(shown.file, path, "the answer names the file")
+        return shown
+    end)
+    step("it is in a shot taken with the extender's layer, and not in the game's own frame", "observation", function()
+        local with, without = game.shot("with-layer.png", 0, true), game.shot("game-frame.png", 0)
+        -- the test picture at a quarter and at three quarters of the width, half way down: red 64 and 191, green 128, blue 64
+        local function carries(file)
+            local left, right = game.pixel(file, 0.25, 0.5), game.pixel(file, 0.75, 0.5)
+            local function is(p, r) return math.abs(p.r - r) <= 16 and math.abs(p.g - 128) <= 16 and math.abs(p.b - 64) <= 16 end
+            return is(left, 64) and is(right, 191), { left, right }
+        end
+        local inLayer, seen = carries(with)
+        check(inLayer, "the shot with the layer carries the picture's colours at two points", seen)
+        local inFrame, plain = carries(without)
+        check(not inFrame, "the game's own frame does not", plain)
+    end)
+    step("the picture of the disk hidden", "cheat", function()
+        local hidden = game.ui(string.format("return GK.Show.Hide(%q)", disk.handle), 30)
+        check(hidden.ok, "Hide answers once it is gone", hidden)
+    end)
+
     step("what cannot be shown is refused with its reason", "cheat", function()
         local no = game.ui(string.format([[return {
-            outside = GK.Show.Picture{ file = "C:/Pictures/logo.png" },
+            outside = GK.Show.Picture{ file = "C:/no-such-folder-of-pictures/logo.png" },
+            dots = GK.Show.Picture{ file = "Mods/../../logo.png" },
             missing = GK.Show.Picture{ file = "Mods/Gwynerva_Weave/no-such-picture.png" },
             dds = GK.Show.Picture{ file = "Public/Game/GUI/Assets/logo.dds" },
             under = GK.Show.Picture{ file = %q, over = "under the UI" },
-            key = GK.Show.Picture{ file = %q, skip = { "f5" } },
+            key = GK.Show.Picture{ file = %q, skip = { "no-such-key" } },
             video = GK.Show.Video{ file = "Video/Splash_Logo_Larian.bk2" } }]], FILE, FILE))
-        check(no.outside.ok == false and contains(no.outside.error, "Data folder"), "a file outside the game's Data folder", no.outside)
+        check(no.outside.ok == false and contains(no.outside.error, "disk has no such picture"), "a file the disk does not have", no.outside)
+        check(no.dots.ok == false and contains(no.dots.error, ".."), "a path with ..", no.dots)
         check(no.missing.ok == false and contains(no.missing.error, "no such picture"), "a missing file", no.missing)
         check(no.dds.ok == false and contains(no.dds.error, "png, jpg, tga or bmp"), "a format that is not decoded", no.dds)
         check(no.under.ok == false and contains(no.under.error, "everything"), "a layer under the interface", no.under)
-        check(no.key.ok == false and contains(no.key.error, "cannot hear"), "a key the picture cannot hear", no.key)
+        check(no.key.ok == false and contains(no.key.error, "does not know the key"), "a key that does not exist", no.key)
         check(no.video.ok == false and contains(no.video.error, "video"), "a video", no.video)
         eq(#game.ui("return GK.Show.Shown()"), 0, "a refusal leaves nothing on the screen")
     end)

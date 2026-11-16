@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "ecl::TLPreviewDummyHelpers::PrePrepareDummy(TLPreviewDummy*,GameObjectTemplate*)",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Fills a dummy from a root template that has no entity behind it: for a character template it runs the character preparation with no character (visual resource, equipment, speaker), for a light template it adds the light to the scene, for other templates it prepares a visual dummy; then it writes the template's id into the dummy at 0x78 and the template's name into its name. Parameters: the address of a pointer to the entity world, the global resource manager, the level's scene, the dummy, the template.",
   "fingerprint": {
     "calls": [
@@ -31,6 +31,10 @@
     {
       "kind": "watch",
       "says": "A probe while a dialog starts records 7 calls, all from the timeline system's function for actors without an entity, with the second argument equal to the value of ls::gGlobalResourceManager and the third equal to the scene at 0x28 of the client level manager's current level. Called for the character root template of Vlaakith on a fresh dummy, the dummy's name reads DUM_Vlaakith, its template field the template's id and its visual resource is set."
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCClient.dll exports this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

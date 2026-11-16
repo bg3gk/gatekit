@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::OsirisGameFunctions::StartChangeAppearance",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "The handler of the Osiris call StartChangeAppearance(Target). It resolves the character, refuses one whose reserved user id (+0x188) is the unassigned constant or that has no eoc::character_creation::AppearanceComponent, refuses while the bytes at +0x250 or +0x288 of esv::character_creation::System are set, and otherwise appends the pair (character entity, unassigned user id) to the system's request array at +0x4E8 (count at +0x4F4) and answers true. The session itself is made by the system later: a definition entity with eoc::character_creation::ChangeAppearanceDefinitionComponent and a session entity appear, and the client opens the widget CharacterChangeAppearance.",
   "fingerprint": {
     "calls": ["fp:ac9a4ad01c5b5061", "fp:e4d053ad9455ea7c"],
@@ -20,6 +20,10 @@
     {
       "kind": "toolkit-name",
       "says": "the Toolkit's EoCServer.dll function with the same checks (a character, reserved for a player, the system's request) carries the text esv::OsirisGameFunctions::StartChangeAppearance and its source file OsirisGameFunctions.cpp in its assertions"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the text the registration of the Osiris game functions stores beside it"
     }
   ],
   "questions": [

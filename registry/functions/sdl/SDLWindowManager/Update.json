@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "sdl::SDLWindowManager::Update",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Polls the window system's events once a frame and turns them into the engine's input. For a mouse motion event it finds the event's window by the event's window id and, when that is the application's main window, writes the event's position into the engine's mouse (ls::Mouse); every motion event, whatever its window, raises the input manager's motion input. It also writes the global pointer position and whether the pointer is inside the window.",
   "fingerprint": {
     "calls": [
@@ -24,6 +24,10 @@
     {
       "kind": "watch",
       "says": "a motion event injected with window id 0 left the position at 0,0 and the interface reported no mouse move; with the position written into ls::Mouse first, the same injected event made the UI library raise PreviewMouseMove at that position and open the tooltip of the hotbar slot under it"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "SDLBinding.dll exports this name; the symbol database finds the export again in the executable at this function by its slot in the class's virtual table"
     }
   ]
 }

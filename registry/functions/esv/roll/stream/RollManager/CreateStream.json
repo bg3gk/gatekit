@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::roll::stream::RollManager::CreateStream",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Adds a roll stream of a type to the roll manager: the manager's last stream id plus one becomes the stream's id, the base seed plus that id its seed, its count zero; sets the manager's HasChanges.",
   "parameters": [
     {"storage": "reg:rcx", "name": "manager"},
@@ -23,6 +23,14 @@
     {
       "kind": "read",
       "says": "The new stream's id is the last id plus one, its seed the base seed plus that id, its count 0"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }
