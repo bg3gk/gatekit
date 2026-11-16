@@ -10,17 +10,59 @@ A character can be created only on the dummy's own platform, up to about 1.6 m b
 (`Osi.CreateAt` answers nothing further out); an item anywhere. A character created on the
 platform can be moved off it (`Osi.TeleportToPosition`, or a seat taken with `Osi.Use`).
 
-## The driver's way: menu, creation, the saved character, the prologue
+## The driver's way: splash, menu, creation, the prologue
 
 Each step is one call; the driver reads the answer before the next. `U` is
-`./gatekit --instance <copy> exec ui`, `C` is `exec client`, `S` is `exec server`.
+`./gatekit --instance <copy> exec ui`, `C` is `exec client`, `S` is `exec server`; `W` is the
+widget `'CharacterCreation'`. The window is driven by the general verbs of `GK.Gui`
+(docs/contracts/lua-api.md, "Look"): `GK.Gui.Look(W)` lists what the page shows with the handles
+the other verbs take, and nothing below is code written for this window.
+
+| Step | Call | Wait for |
+|---|---|---|
+| the splash screen | `gatekit --instance <copy> up --splash`; `U "return GK.Gui.Stuck()"` answers `splash` | - |
+| press any key | `U "return GK.Cheat.Recover()"` (the page's own event `OpenMainMenu`) | `Stuck()` answers `mainmenu` at once; the camera's descent is over when the `Camera` entity that carries `SoundListener` stands still (`stand/menu/dancer.lua` waits so) |
+| New Game | `U "return GK.Gui.NewGame()"` | `ok`; the new-game settings are open |
+| confirm | `U "return GK.Gui.NewGame()"` again | the client leaves the menu (`StartLoading`) |
+| the film of a new game | `C "return GK.Gui.Stuck()"` until it answers `film`, then `U "return GK.Cheat.Recover()"` (Escape) | client and server `Running` in `SYS_CC_I`; `Stuck()` answers nothing |
+| origin | `GK.Gui.Select(W,'presetOrigins','<name>')` (`customOrigins` for a character of one's own) | `ok`, `reads` = the number chosen |
+| a tab of the choices | `GK.Gui.Select(W,'gameplayTabs','raceTab')` (`originTab`, `subRaceTab`, `classTab`, `backgroundTab`, `abilityTab`; the tabs under a tab are the lists `subTabsSpellsList`, `subTabsPassivesList`, `subTabsEquipmentList`) | `ok` |
+| race, subrace, class, background | `GK.Gui.Select(W,'raceListBox','<Guid or name>')`; the other lists by the handle `Look` gives on their tab (`classList`) | `ok`; the server's `CCCharacterDefinition.Definition` reads it |
+| abilities | `GK.Gui.Click(W,'AddAbility[n]')`, `'ReduceAbility[n]'` (the n-th ability in the window's order; `Look(W,{detail=true})` names each); the +2 and +1 rows are the buttons `button[n]`; `Recommend`, `Reset` | `saw` names `UsedAbilityPoints`; a point that is not there is refused (`disabled`) |
+| cantrips, spells | `GK.Gui.Click(W,'subTabsSpellsList[2]#1')`, then `'SelectAvailableSpell[n]'`, `'DeselectAddedSpell[n]'` | `saw` |
+| body type | `GK.Gui.Click(W,'femaleBtn')` (`maleBtn`, `femaleStrongBtn`, `maleStrongBtn`) | `saw` names the change |
+| the appearance panel | `GK.Gui.Click(W,'EditAppearanceButton')`, then a tab: `GK.Gui.Select(W,'appearanceTabs','generalTab')` (`tattooAndPiercingTab`, `eyesTab`, `makeupTab`, `hairTab`, `facialHairTab`, `hornsTab`, `draconicTab`, `tailTab`: those the race has) | `saw = "the controls shown changed"` |
+| a part of the look | `GK.Gui.Select(W,'SelectableHeadsListBox', n)` and the other lists of the tab (`SelectableHairListBox`, `SelectablePiercingsListBox`, `SelectableMakeupListBox`, `SelectableTailsListBox`, `SelectableScarsListBox`, `SelectableVoicesListBox`), by number or by the name shown | `ok`, `reads` |
+| a colour | the lists behind the swatch buttons, by their `~` handles (`Look(W,{all=true,under='<panel>'})`): `~generalPanel/ListBox[2]` (skin), `~eyecolourListBox`, `~SelectableHairColorsListBox`, `~SelectableHairHighlightColorsListBox`, `~SelectableHairGreyingColorsListBox`, `~SelectableTattooColorsListBox`, `~SelectableMakeupColorsListBox`, `~SelectableLipTintColorsListBox` | `ok`, `reads` |
+| a slider | `GK.Gui.Set(W,'Age/Slider', 40)` (0 to 100; `Freckles/Slider`, `FrecklesIntensity/Slider`, `Vitiligo/Slider`) | `ok`, `after` |
+| back, on | `GK.Gui.Click(W,'backToGameplayPage')`; `GK.Gui.Click(W,'GameplayProceedButton')` or `'toNamingPage'` (refused while a choice is unfinished) | `saw = "the controls shown changed"` |
+| the name | `GK.Gui.Set(W,'characterName','<name>')` | `ok`; the server's definition reads the name |
+| the guardian | `GK.Gui.Click(W,'namingToCompanion')`; its page is the same panel: `appearanceTabs` (its race is the list `raceTabPanel/ListBox`), the same lists, swatches and sliders | the server's `CCCompanionDefinition` reads each choice |
+| finish | `GK.Gui.Click(W,'ventureForth')` | `ok` (`IsLocked` turns true) |
+| the opening film | `C "return GK.Gui.Stuck()"` answers `film` while the client sits in `StartLoading`; `U "return GK.Cheat.Recover()"` | client and server `Running`, the host's region `TUT_Avernus_C` |
+
+A choice in the window answers within a tenth of a second and the server's definition follows
+within a second.
+
+The items of the look (heads, hair, colours) carry no Guid in the window: a list's own selection
+is what the game takes, so they are chosen by number or by the name the window shows. A saved
+character's look is Guids, and nothing here maps a Guid to an item of a list: the saved look is
+applied by `appearance.lua`, past the window, as the next section says.
+
+A swatch button opens its colours through its `IsChecked`, which the extender cannot set: a colour
+is chosen in the swatch's list while the swatch panel stays closed on the screen.
+
+## The saved character's way: the look written past the window
+
+The same way with the steps that differ when a saved look is applied by `appearance.lua`,
+`choose.lua` and `page.lua`.
 
 | Step | Call | Wait for |
 |---|---|---|
 | New Game | `U "return GK.Gui.NewGame()"` | `ok`; the new-game settings are open |
 | confirm | `U "return GK.Gui.NewGame()"` again | the client leaves the menu (`StartLoading`) |
 | the film of a new game | `C "return GK.Gui.Stuck()"` until it answers `film`, then `U "return GK.Cheat.Recover()"` (Escape) | client and server `Running` in `SYS_CC_I`; `Stuck()` answers nothing |
-| origin | `U "return GK.Gui.Select('CharacterCreation','presetOrigins',7)"` (the Dark Urge is the seventh; the answer says `ok = false` though the origin is taken) | `Data('CharacterCreation').SelectedBackground.Guid` |
+| origin | `U "return GK.Gui.Select('CharacterCreation','presetOrigins',7)"` (the Dark Urge is the seventh) | `Data('CharacterCreation').SelectedBackground.Guid` |
 | race, subrace | `GK.Gui.Click('CharacterCreation','raceTab')`, then `choose.lua` with `from = "SelectableRaces"`; `subRaceTab` and `SelectableSubRaces` the same way | `ok` with `selected` = the Guid asked for |
 | class | `Click(... 'classTab')`, `GK.Gui.Select('CharacterCreation','classList', n)` | `ok` |
 | body type | `GK.Gui.Click('CharacterCreation','femaleBtn')` (`maleBtn`, `femaleStrongBtn`, `maleStrongBtn`) | `saw` names the change |
@@ -37,7 +79,8 @@ the level does not load while it plays, and it plays for minutes: skipped, the p
 `Running` about fifteen seconds later, in its first dialogue.
 
 The window's own buttons `GameplayProceedButton` and `namingToCompanion` run no command: they set
-`SelectedIndex` of the list `flowPage`, which `page.lua` does. `ventureForth` runs the window's
+`SelectedIndex` of the list `flowPage` (a chain in `Public/Game/GUI/Library/CCLib_k.xaml`, which
+`GK.Gui.Click` runs), as `page.lua` does directly. `ventureForth` runs the window's
 command `FinishCreating` and is enabled when `IsCharacterComplete` (a name is set).
 
 ## The saved character
@@ -71,9 +114,10 @@ client's replicated copy and neither the dummy nor the window; setting `Selected
 window's view model is not taken (the list box's selection is).
 
 The guardian is the definition with `CCCompanionDefinition`; the client edits
-`ClientCCCompanionDefinition`. No change of the window was found that sends the guardian's look, so
-`appearance_server.lua` writes the server's copy as well - a cheat, the server checks nothing. The
-guardian in the prologue then carries the look.
+`ClientCCCompanionDefinition`. A choice in a list of the guardian's page sends its definition; a
+look written past the window by `appearance.lua` is not sent by itself, so `appearance_server.lua`
+writes the server's copy as well - a cheat, the server checks nothing. The guardian in the prologue
+then carries the look.
 
 ## appearance, choose, page - the saved character's steps
 

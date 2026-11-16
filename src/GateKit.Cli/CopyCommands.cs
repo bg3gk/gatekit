@@ -182,13 +182,14 @@ public static class CopyCommands
         var mods = new Option<string?>("--mods") { Description = "comma-separated mod folders to load besides the base game (default: none in a cloned copy or with --level; the installed game without --level keeps your own list)" };
         var storyLog = new Option<bool>("--story-log") { Description = "also write Script Extender's logs, the Osiris trace included (see `logs --story`)" };
         var mainMenu = new Option<bool>("--main-menu") { Description = "stop in the main menu instead of loading the last save (first-launch screens gone through in a cloned copy, never in the installed game)" };
+        var splash = new Option<bool>("--splash") { Description = "stop on the splash screen before the main menu (\"press any key\") and leave it standing; first-launch screens are gone through as with --main-menu" };
         var gameArgs = new Argument<string[]>("game-args") { Description = "extra game arguments, after `--`", Arity = ArgumentArity.ZeroOrMore };
-        var command = new Command("up", "back up, configure, start the game, wait until it is playable") { level, save, mods, storyLog, mainMenu, gameArgs };
+        var command = new Command("up", "back up, configure, start the game, wait until it is playable") { level, save, mods, storyLog, mainMenu, splash, gameArgs };
         command.SetAction((parse, cancel) => Run(parse, async s =>
         {
             var modList = parse.GetValue(mods) is { } text ? text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) : null;
             await s.UpAsync(new UpOptions(parse.GetValue(level), parse.GetValue(save), modList, parse.GetValue(storyLog), parse.GetValue(gameArgs),
-                parse.GetValue(mainMenu)), cancel);
+                parse.GetValue(mainMenu), parse.GetValue(splash)), cancel);
         }));
         return command;
     }

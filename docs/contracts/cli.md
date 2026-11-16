@@ -122,13 +122,14 @@ one ends, `status` says whether the game is up.` (exit 1).
 
 Synopsis:
 ```
-gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,...] [--story-log] [--main-menu] [-- GAME_ARGS...]
+gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,...] [--story-log] [--main-menu | --splash] [-- GAME_ARGS...]
 ```
 - `--level`: start a fresh test game, no menu, no save. It must be `MODULE:LEVEL` (one colon, both parts non-empty, no spaces): anything else is refused before the game starts (`level 'X' is not MODULE:LEVEL ...`), since the game given a bare level only sits in the main menu. While the client sits in `Menu` waiting for `Running` (any start), `gatekit` asks every 2 s what holds it (`GK.Gui.Stuck()` on the UI context): the splash screen before the main menu (`splash`) is passed with `GK.Cheat.Recover()` on every start (the event its own page raises on a key, `OpenMainMenu`); the game's own first-launch and licence screens (`firstlaunch`: Eula, Larian's mod policy, SensitiveSettings, HDR/Gamma calibration) are gone through with `GK.Cheat.Recover()` in an instance only (a copy GateKit made for itself), and in the installed game fail the start at once naming the screen. Each screen passed is printed (`  splash screen: SplashScreen raised OpenMainMenu, as its key does`). Anything else that keeps the client in `Menu` for 60 s with nothing moving it on fails the start (`the game stayed in the menu for 60 s (<what holds it>) instead of loading level 'X' ...` / `... loading a save`); the game is left running for a look and `down`.
 - `--save`: a save folder name under `Savegames/Story` to load instead of the last.
 - `--mods`: comma-separated folder names, empty entries dropped. `--mods ""` gives an empty list (still a bare start); not passing it gives none.
 - `--story-log`: also record the Osiris trace (`logs --story`).
 - `--main-menu`: see 3.5.
+- `--splash`: as `--main-menu`, and the splash screen before the main menu is not passed: the start returns when `GK.Gui.Stuck()` names it (`on the splash screen after N s ...`), and `GK.Cheat.Recover()` on the UI context passes it (the event `OpenMainMenu`). Refused together with `--main-menu`; a main menu met with no splash screen before it fails the start.
 - `GAME_ARGS`: extra raw game arguments after `--`.
 
 In order (`GameCopy.UpAsync`):

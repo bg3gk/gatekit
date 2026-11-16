@@ -38,14 +38,15 @@ dance animation is played.
 
 ## Not done
 
-- **Someone behind the statue on the splash screen.** `up --main-menu` goes through the splash
-  screen by itself the moment it appears, and nothing found leads back to it (the UI event
-  `OpenSplashScreen` and `ShowSplashScreen` raised in the menu change nothing). The splash is the
-  widget `SplashScreen` over the same level, left by the event `OpenMainMenu`, which the start
-  raises itself; a scene for the splash needs a start that does not raise it. In the menu the
-  dummies of every menu timeline stand at once (five values of
-  `ClientTimelineActorControl.Timeline` among the `TLPreviewDummy` entities), so the adventurers
-  are likely there under the splash too; it is unseen.
+- **Someone behind the statue on the splash screen.** `up --splash` stops on the splash screen
+  (the widget `SplashScreen`: a text block and an input binding; `GK.Cheat.Recover()` raises its
+  event `OpenMainMenu`). The camera stands at `984.03, 1.98, -1075.00` and the dummies of every
+  menu timeline exist there already, the adventurers among them, but they are not drawn: each has
+  `TLPreviewDummy.ActiveDummy = false`, `ClientInvisibilityVisual.State = 1` (the drawn dummies of
+  `MM_Open_Boats` have `true` and `0`) and a visual whose `CullFlags` lack `CullRenderView1`. A
+  dummy taken off its timeline and moved before the camera stays undrawn after `State = 0` is
+  written (`ActiveDummy` then reads `true`) and `CullRenderView1` is added to the visual and to
+  each of its attachments.
 - **A figure of the stand's own cast** (Raphael, Mizora). There is no server to spawn one, and
   the extender offers no client-side visual to load a character's look into; the scene borrows a
   figure the menu already has.

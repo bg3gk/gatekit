@@ -2668,11 +2668,55 @@ function GK.Gui.Controls(name, filter) end
 ---@return table
 function GK.Gui.Click(name, what, which) end
 
+---A control of GK.Gui.Look.
+---@class GK.GuiLookControl
+---@field handle string @ what GK.Gui.Click, Select and Set take
+---@field kind "button"|"toggle"|"list"|"slider"|"text"
+---@field type string
+---@field text string?
+---@field value any
+---@field enabled boolean? @ false only
+---@field hidden boolean?
+---@field data string? @ the type of the view model the control stands for
+---@field of string? @ what that view model calls itself
+---@field count integer? @ a list's items
+---@field selected integer?
+---@field items { n: integer, text: string?, id: string|number|nil, name: string?, enabled: boolean?, hidden: boolean? }[]?
+---@field min number?
+---@field max number?
+
+---Everything a player could act on in an open widget, found by walking it (docs/contracts/lua-api.md,
+---"Look"). UI.
+---@param name string
+---@param options string|{ under: string?, kind: string?, find: string?, items: integer?, detail: boolean?, all: boolean? }|nil
+---@return { ok: boolean, widget: string, data: string, controls: GK.GuiLookControl[] }|GK.Failure
+function GK.Gui.Look(name, options) end
+
+---The row of a handle of GK.Gui.Look (it holds the live element), and for an item's handle
+---("list#3") the list's row and the item's number; nil and why when nothing has it. UI.
+---@param name string
+---@param handle string
+---@return table|nil, integer|string|nil
+function GK.Gui.Handle(name, handle) end
+
+---The handles of the controls a widget element shows, as one text. UI.
+---@param widget any
+---@return string
+function GK.Gui.Shown(widget) end
+
+---Sets a control to a value as the player's hand would: a slider inside its range, a toggle, a
+---text field, a list (as GK.Gui.Select). Answers what the control reads afterwards. UI.
+---@param name string
+---@param handle string
+---@param value number|boolean|string
+---@return { ok: boolean, before: any, after: any, error: string? }
+function GK.Gui.Set(name, handle, value) end
+
 ---Selects an item of a list (ListBox, tab strip...) of an open widget. UI. The items are counted
 ---from the list's Items, else its ItemsSource (the view model's collection), and an item's text is
 ---read as the player reads it, so a race or a class can be chosen by its name.
 ---@param name string
----@param list string @ the list's x:Name
+---@param list string @ the list's handle (GK.Gui.Look) or x:Name
 ---The items are counted by `#`, else Count, else by reading them until the first gap (a Noesis
 ---collection has no length operator). An item read from the view model selects that item.
 ---What the list reads afterwards decides: a game handler that fails after the selection is made

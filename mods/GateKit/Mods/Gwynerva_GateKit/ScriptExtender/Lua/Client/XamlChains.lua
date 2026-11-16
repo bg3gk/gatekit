@@ -21,7 +21,8 @@ UI.XamlCache = UI.XamlCache or {}
 
 local PAGES = { "Mods/MainUI/GUI/Pages/%s.xaml", "Mods/MainUI/GUI/Pages/%s_k.xaml", "Public/Game/GUI/Widgets/%s.xaml",
                 "Mods/MainUI/GUI/Widgets/%s.xaml" }
-local LIBRARY = { "Mods/MainUI/GUI/Library/CCLib.xaml", "Mods/MainUI/GUI/Library/CCLib_k.xaml",
+local LIBRARY = { "Public/Game/GUI/Library/CCLib_k.xaml", "Public/Game/GUI/Library/CCLib.xaml",
+                  "Mods/MainUI/GUI/Library/CCLib.xaml", "Mods/MainUI/GUI/Library/CCLib_k.xaml",
                   "Mods/MainUI/GUI/Library/Templates.xaml", "Mods/MainUI/GUI/Library/Templates_k.xaml",
                   "Mods/MainUI/GUI/Library/Common.xaml", "Mods/MainUI/GUI/Library/Common_k.xaml" }
 
