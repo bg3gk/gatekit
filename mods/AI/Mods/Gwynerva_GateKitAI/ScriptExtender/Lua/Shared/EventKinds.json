@@ -1,0 +1,17 @@
+{
+  "schema": "events/kinds/1",
+  "about": "The rows of the mod GateKit AI: what the playing agent did, said, thought, looked at and noted. Added to GateKit's event log at start (GK.EventLog.Register).",
+  "families": {
+    "ai": {"always": true, "about": "the playing agent's own record (GateKit AI): each step with its act, line and thought, each look, scene call, plan move and note"}
+  },
+  "kinds": {
+    "ai_step": {"family": "ai", "class": "cheat", "knows": "player", "payload": {"do": "the act", "target": "what it was done to, as the answer names it", "spell": "the action's stats name", "n": "the answer's number", "who": "the party member who acted", "way": "fair, ordered or cheat: how the act goes (AI.Acts)", "ok": "whether it was done", "did": "what was done", "why_not": "why it was not", "say": "the line shown over the head", "think": "what the character thinks", "ticks": "server ticks from the call to the answer", "ms": "the same in real milliseconds", "chars": "the length of the answer's now block as JSON text"}},
+    "ai_said": {"family": "ai", "class": "cheat", "knows": "player", "payload": {"who": "the speaker", "name": "its name", "say": "the line shown over its head, as shown (cut when too long)", "think": "what the character thinks", "do": "the plain reason", "at": "what the line is about: a uuid or { x, y, z }", "atName": "its name", "style": "the style's name, or custom"}},
+    "ai_accent": {"family": "ai", "class": "cheat", "knows": "player", "payload": {"at": "what was pointed at: a uuid or { x, y, z }", "atName": "its name", "style": "the style's name, or custom"}},
+    "ai_look": {"family": "ai", "class": "observation", "knows": "player", "payload": {"part": "the part asked for", "detail": "brief or full", "chars": "the length of the answer's now block as JSON text"}},
+    "ai_scene": {"family": "ai", "class": "cheat", "knows": "omniscient", "payload": {"name": "the scene", "call": "its function that was run", "ok": "whether it ran", "error": "what it said when it did not"}},
+    "ai_session": {"family": "ai", "class": "cheat", "knows": "omniscient", "payload": {"mode": "open or blind", "prompt": "the length of the owner's prompt", "promptFrom": "the file the host read it from", "plan": "the plan loaded"}},
+    "ai_plan": {"family": "ai", "class": "observation", "knows": "omniscient", "payload": {"call": "load, off, go or passed", "name": "the plan", "step": "the step's number", "steps": "how many steps the plan has", "why": "arrived (its condition came true) or done (its act was done)"}},
+    "ai_note": {"family": "ai", "class": "observation", "knows": "player", "payload": {"text": "the note", "level": "the level it was written on", "at": "the point it was written at"}}
+  }
+}

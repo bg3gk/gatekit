@@ -10,6 +10,7 @@ public static class McpCommand
     public static Command CreateCommand()
     {
         var command = new Command("mcp", "serve GateKit to AI agents over the Model Context Protocol (stdio, one JSON message per line)");
+        command.Add(OnlyOption);
         command.SetAction((parse, cancel) => ServeAsync(parse, cancel));
         command.Add(ToolList());
         command.Add(ToolCall());
@@ -175,7 +176,36 @@ public static class McpCommand
         catch (ArgumentException) { return false; }
     }
 
-    static ToolHost Host(ParseResult parse) => ToolHost.FromEnvironment(Instance(parse), InstalledGame(parse));
+    /// <summary>`--only PREFIX`: the server, `tools` and `call` offer the tools whose name begins with
+    /// the prefix and no other - the tool list of an agent that is given one task's tools.</summary>
+    static readonly Option<string?> OnlyOption = new("--only")
+    {
+        Description = "offer only the tools whose name begins with this (e.g. --only ai_)",
+        Recursive = true,
+    };
+
+    static ToolHost Host(ParseResult parse) => ToolHost.FromEnvironment(Instance(parse), InstalledGame(parse), parse.GetValue(OnlyOption));
+
+    /// <summary>The tools as the `tools` array of a chat-completions request: `{"type": "function",
+    /// "function": {name, description, parameters}}` each, the parameters being the tool's JSON Schema.</summary>
+    public static System.Text.Json.Nodes.JsonArray FunctionTools(IEnumerable<GateKitTool> tools)
+    {
+        var array = new System.Text.Json.Nodes.JsonArray();
+        foreach (var tool in tools)
+        {
+            array.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["type"] = "function",
+                ["function"] = new System.Text.Json.Nodes.JsonObject
+                {
+                    ["name"] = tool.Name,
+                    ["description"] = tool.Definition.Description,
+                    ["parameters"] = GateKit.Json.JsonText.Parse(tool.Definition.InputSchema.GetRawText(), tool.Name).Root?.DeepClone(),
+                },
+            });
+        }
+        return array;
+    }
 
     static async Task<int> ServeAsync(ParseResult parse, CancellationToken cancel)
     {
@@ -202,11 +232,22 @@ public static class McpCommand
 
     static Command ToolList()
     {
-        var command = new Command("tools", "the tools this server offers, the tools folder included (nothing is started)");
+        var format = new Option<string>("--format")
+        {
+            Description = "list (default): a line per tool; functions: the tools as the `tools` array of a chat-completions request, for a client without MCP",
+            DefaultValueFactory = _ => "list",
+        };
+        format.AcceptOnlyFromAmong("list", "functions");
+        var command = new Command("tools", "the tools this server offers, the tools folders included (nothing is started)") { format };
         command.SetAction(parse =>
         {
             var host = Host(parse);
             var server = new GateKitServer(host);
+            if (parse.GetValue(format) == "functions")
+            {
+                Console.Out.Write(GateKit.Json.JsonText.Format(FunctionTools(server.Tools())));
+                return 0;
+            }
             Console.Out.WriteLine("instance: " + (host.Instance ?? "none (the installed game)"));
             Console.Out.WriteLine($"tools folder: {server.Plugins.Folder}"
                 + (Directory.Exists(server.Plugins.Folder) ? "" : " (none yet)"));

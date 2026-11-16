@@ -48,6 +48,15 @@ public sealed class PluginTools
 
     public string Folder => _host.PluginFolder;
 
+    readonly HashSet<string> _quiet = new(StringComparer.Ordinal);
+
+    /// <summary>Whether the tool declared `"attention": false`: its answer carries what waits in the
+    /// game by itself, so the host's `attention` note is not added to it.</summary>
+    public bool SaysAttentionItself(string name)
+    {
+        lock (_quiet) return _quiet.Contains(name);
+    }
+
     /// <summary>The tools of the folder as it is now, re-reading what changed.</summary>
     public IReadOnlyList<GateKitTool> Current()
     {
@@ -78,10 +87,12 @@ public sealed class PluginTools
 
     void Refresh()
     {
-        var folder = Folder;
-        var files = Directory.Exists(folder)
-            ? Directory.EnumerateFiles(folder, "*.json").Where(f => !Path.GetFileName(f).StartsWith('_')).ToList()
-            : [];
+        var files = new List<string>();
+        foreach (var folder in (IEnumerable<string>)[Folder, .. _host.ModToolFolders()])
+        {
+            if (Directory.Exists(folder))
+                files.AddRange(Directory.EnumerateFiles(folder, "*.json").Where(f => !Path.GetFileName(f).StartsWith('_')).Order(StringComparer.Ordinal));
+        }
         foreach (var gone in _loaded.Keys.Except(files, StringComparer.Ordinal).ToList()) _loaded.Remove(gone);
         foreach (var file in files)
         {
@@ -107,11 +118,38 @@ public sealed class PluginTools
         var root = JsonNode.Parse(text, documentOptions: new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true })
             ?? throw new FormatException("the file is empty");
         var entries = root as JsonArray ?? [root.DeepClone()];
-        return [.. entries.Select(e => Build(e as JsonObject ?? throw new FormatException("a tool must be a JSON object")))];
+        // a path a tool is given is read from the folder that holds the tools folder (mods/AI for mods/AI/tools)
+        var home = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetFullPath(file))) ?? Directory.GetCurrentDirectory();
+        return [.. entries.Select(e => Build(e as JsonObject ?? throw new FormatException("a tool must be a JSON object"), home))];
     }
 
-    GateKitTool Build(JsonObject entry)
+    /// <summary>The most characters of a file a tool reads for its caller (`files`).</summary>
+    public const int MaxFileCharacters = 16000;
+
+    /// <summary>`"files": {"prompt_file": "prompt"}`: when the call gives the argument on the left, it
+    /// is a path of a UTF-8 text file on this machine - a relative one under <paramref name="home"/> -
+    /// which the host reads; its text goes to the chunk as the argument on the right, and the
+    /// argument on the left becomes the full path. The game never opens the file.</summary>
+    static void ReadFiles(string tool, JsonObject files, JsonObject table, string home)
     {
+        foreach (var (from, into) in files)
+        {
+            if (table[from] is not JsonValue given || !given.TryGetValue<string>(out var path) || path.Length == 0) continue;
+            var target = into is JsonValue name && name.TryGetValue<string>(out var text) ? text : throw new CopyException($"{tool}: `files` maps an argument to an argument's name");
+            var full = Path.GetFullPath(path, home);
+            if (!File.Exists(full))
+                throw new CopyException($"{tool}: {from} names no file: {full} (a relative path is read from {home})");
+            var content = File.ReadAllText(full, System.Text.Encoding.UTF8);
+            if (content.Length > MaxFileCharacters)
+                throw new CopyException($"{tool}: {full} has {content.Length} characters; a file given as {from} has at most {MaxFileCharacters}");
+            table[target] = content;
+            table[from] = full;
+        }
+    }
+
+    GateKitTool Build(JsonObject entry, string home)
+    {
+        var files = entry["files"] as JsonObject;
         var name = Text(entry, "name") ?? throw new KeyNotFoundException("'name'");
         var description = Text(entry, "description") ?? throw new KeyNotFoundException("'description'");
         var side = Text(entry, "side") ?? "server";
@@ -120,6 +158,9 @@ public sealed class PluginTools
         var lua = Text(entry, "lua");
         if ((function is null) == (lua is null)) throw new FormatException("a tool needs either `function` (a GK.* name) or `lua` (a chunk), not both");
         var template = entry["args"] as JsonArray;
+        // "attention": false - the tool's own answer says what waits; the host adds no note to it
+        if (entry["attention"] is JsonValue attention && attention.TryGetValue<bool>(out var noted) && !noted)
+            lock (_quiet) _quiet.Add(name);
         var timeout = TimeSpan.FromSeconds(entry["timeout"] is JsonValue t && t.TryGetValue<double>(out var seconds) ? seconds : 20);
         var schema = entry["inputSchema"] is JsonObject input ? input.ToJsonString() : """{"type": "object", "properties": {}}""";
         var definition = new Tool
@@ -139,6 +180,7 @@ public sealed class PluginTools
             }
             var table = new JsonObject();
             foreach (var key in args.Names) table[key] = args.Node(key);
+            if (files is not null) ReadFiles(name, (JsonObject)files.DeepClone(), table, home);
             var payload = table.ToJsonString();
             var level = 1;
             while (level < 8 && payload.Contains($"]{new string('=', level)}]", StringComparison.Ordinal)) level++;

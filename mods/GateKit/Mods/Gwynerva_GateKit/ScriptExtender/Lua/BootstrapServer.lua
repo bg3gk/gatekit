@@ -31,7 +31,6 @@ Ext.Require("Server/Camera.lua")
 Ext.Require("Server/Wake.lua")
 Ext.Require("Server/Say.lua")
 Ext.Require("Server/Fight.lua")
-Ext.Require("Server/Stand.lua")
 GK.Verbs.Guard()
 GK.Start("server")
 
