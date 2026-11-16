@@ -130,6 +130,7 @@ gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,
 - `--story-log`: also record the Osiris trace (`logs --story`).
 - `--main-menu`: see 3.5.
 - `--splash`: as `--main-menu`, and the splash screen before the main menu is not passed: the start returns when `GK.Gui.Stuck()` names it (`on the splash screen after N s ...`), and `GK.Cheat.Recover()` on the UI context passes it (the event `OpenMainMenu`). Refused together with `--main-menu`; a main menu met with no splash screen before it fails the start.
+- `--startup-videos`: the game plays its own startup video (the studio's logo, `Video/Splash_Logo_Larian.bk2`). By default every start shadows it with an empty loose file of that name so that a start does not wait on it; with this option the shadow is not written, and one left by an earlier start is removed. A start takes the length of the video longer; the bridge answers only after it.
 - `GAME_ARGS`: extra raw game arguments after `--`.
 
 In order (`GameCopy.UpAsync`):
