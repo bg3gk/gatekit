@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CombatLogDamageRollTooltipLine",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Writes the combat log tooltip's Damage Roll line for one damage type: the translated label 'Damage Roll' and a nested trans string made by eoc::StatsDamage::StringVisit over the hit's resolved stats expression (each term's value, its dice and damage type or its source, and the total).",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:73b6437b8a0b46c5",
+      "fp:92dd4fee11aeea92",
+      "fp:a678d5b8d1e84280",
+      "fp:b70839e52859db22",
+      "fp:d6829d94468fa392",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "strings": ["578be5c47ddedfca"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "only user of the loca handle h8c63b44agf159g4aa7g878bg1ed2a817865e (Damage Roll); calls eoc::StatsDamage::StringVisit; its one caller is GenerateDamageTooltips at +0x14BFA20"
+    },
+    {
+      "kind": "watch",
+      "says": "over one weapon hit eoc::StatsDamage::StringVisit is called once, from inside this function; the line read back from the entry's view model is 'Бросок урона: 4 (1d4 Колющее) + 3 (Модификатор ловкости) = 7' for a d4 of 4"
+    }
+  ]
+}

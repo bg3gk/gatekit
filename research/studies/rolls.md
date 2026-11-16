@@ -841,3 +841,19 @@ number for a creature standing in its ranged set is being watched.
   critical flag compares the sum of its dice with one die's size (3+3 on 2d6 is flagged).
 - What the player sees in the combat log's tooltip was not read: the tooltip's lines are not
   filled by opening it from code.
+
+## 24. What the player sees in the combat log
+
+- The tooltip of a line of the combat log is built once, as the entry is made, by the client
+  (`gui::CombatLogEntries::VMHitDamagedEntry::GenerateDamageTooltips`), from the entry the
+  server sent. Its damage line is written from the hit's resolved stats expression, not from
+  the hit's list of damage rolls. Hovering only shows what was built; no request is made.
+- So the gap of the hit's list (sections 20, 23) is not what a player sees: the tooltip of a
+  Sneak Attack reads "2 (1d4) + 3 + 5 (1d6) = 10" and adds up; Colossus Slayer's own line adds up.
+- **What does not add up for the player: a damage die that lands on 1.** The tooltip then shows
+  only the die - no modifier and no total - while the damage dealt has both: "1 (1d4)" for 4
+  dealt, three times of three. The same roll on a 2 or a 4 shows "+ 3 ... = N". The branch that
+  drops the terms is not found: in the building of the line, or already in what the server sends.
+- The lines can be read from the view model's memory (developer mode); a verb for it is
+  proposed. A forced opening of the tooltip shows an empty box, and nothing in the toolkit moves
+  the game's pointer over a line.
