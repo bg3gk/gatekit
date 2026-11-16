@@ -56,6 +56,11 @@ function run(game)
         local turn = row(staged, "game_turn", function(p) return p.who ~= nil end, 60)
         need(uuid(turn.payload.who) == host, "the host has the first turn")
     end)
+    step("the host can react", "cheat", function()
+        -- an interrupt needs its owner able to react: a reaction spent in an earlier fight of the same game
+        -- is not given back by the clean between tests
+        check(game.server(string.format("return GK.Stage.Refill{ who = %q, reaction = true }", host)).ok, "the reaction is given back")
+    end)
     local mark = game.mark()
     step("attack the goblin", "fair", function()
         check(game.ui(string.format("return GK.Act.Attack(%q)", goblin), 120).ok, "the game finished the attack")
