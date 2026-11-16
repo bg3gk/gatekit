@@ -36,19 +36,55 @@ The off script gives the adventurer back to the timeline, at the place it was ta
 The dance is the scene's own turning and hopping of the figure over the idle animation it had: no
 dance animation is played.
 
+## A figure of the scene's own
+
+`Ext.ClientVisual.CreateDummy(template, position, rotation)` of GateKit's Script Extender makes a
+new figure on the client, with the functions the game's timeline system makes its own dummies
+with (`code:ecl::TLPreviewDummyHelpers::CreateDummy`, `code:ecl::TLPreviewDummyHelpers::SetupDummy`,
+the template overload of `PrePrepareDummy`, `code:ecl::TLPreviewDummyHelpers::LoadDummy`,
+`code:ecl::TLPreviewDummyHelpers::AttachDummyToScene`); `Ext.ClientVisual.DestroyDummy(entity)`
+removes it. It needs a character root template of the global bank
+(`Ext.Template.GetAllRootTemplates()` lists them; a character whose look is on a placed object of
+a level, such as Raphael's human form, has none) and a level on the client, which the menu and the
+splash screen have. The new figure is drawn on the splash screen too, where the menu's own parked
+dummies are not. It stands in its animation blueprint's pose; no timeline plays an animation on
+it. `Ext.Entity.GetAllEntitiesWithComponent("TLPreviewDummy")` does not list it: a scene keeps the
+entity it was given.
+
+**Light.** The place before the menu's camera is dark. A light of the level that carries
+`LightMovement` (the torches' flickering lights) is put where its `Transform` says every frame,
+so writing its `Transform` moves it; a light without `LightMovement` ignores both its `Transform`
+and `Light.PositionOffset`. The scene borrows one torch's light and puts it back.
+
+## dancer_new - a new figure dances to the right of the menu, lit
+
+    ./gatekit --instance <copy> exec client "$(cat stand/menu/dancer_new.lua)"       # arm
+    ./gatekit --instance <copy> exec client "$(cat stand/menu/dancer_new_off.lua)"   # disarm
+
+The dancer as above, with a figure of its own (Vlaakith by default: `who` takes any character
+root template) and the four adventurers left on the stairs. The light `213b0683-...` of
+`SYS_Menuscreen_Act3_B` (a torch's point light, radius 6) is put between the figure and the
+camera at chest height (`light`, `light_toward`, `light_up`; `light = false` leaves the figure
+dark). State: `GKScene.menu_dancer_new`. The off script removes the figure and puts the light
+back; so does leaving the menu.
+
+## statue - someone behind the statue on the splash screen
+
+    ./gatekit --instance <copy> exec client "$(cat stand/menu/statue.lua)"       # arm
+    ./gatekit --instance <copy> exec client "$(cat stand/menu/statue_off.lua)"   # disarm
+
+Client context, armed while the splash screen stands (`gatekit --instance <copy> up --splash`;
+the widget `SplashScreen`, passed by `GK.Cheat.Recover()`). The camera stands at
+`984.03, 1.98, -1075.00`; the statue is a scenery object 4.7 m ahead of it and 2.2 m to the
+picture's right. A new figure stands behind it (`ahead`, `right`, `down` from the camera) and
+leans out to the picture's left once in `period` seconds by `lean` metres. The figure is removed
+the moment the splash screen is passed. State: `GKScene.menu_statue`.
+
 ## Not done
 
-- **Someone behind the statue on the splash screen.** `up --splash` stops on the splash screen
-  (the widget `SplashScreen`: a text block and an input binding; `GK.Cheat.Recover()` raises its
-  event `OpenMainMenu`). The camera stands at `984.03, 1.98, -1075.00` and the dummies of every
-  menu timeline exist there already, the adventurers among them, but they are not drawn: each has
-  `TLPreviewDummy.ActiveDummy = false`, `ClientInvisibilityVisual.State = 1` (the drawn dummies of
-  `MM_Open_Boats` have `true` and `0`) and a visual whose `CullFlags` lack `CullRenderView1`. A
-  dummy taken off its timeline and moved before the camera stays undrawn after `State = 0` is
-  written (`ActiveDummy` then reads `true`) and `CullRenderView1` is added to the visual and to
-  each of its attachments.
-- **A figure of the stand's own cast** (Raphael, Mizora). There is no server to spawn one, and
-  the extender offers no client-side visual to load a character's look into; the scene borrows a
-  figure the menu already has.
+- **The menu's own parked dummies on the splash screen** stay undrawn: each has
+  `TLPreviewDummy.ActiveDummy = false`, `ClientInvisibilityVisual.State = 1` and a visual whose
+  `CullFlags` lack `CullRenderView1`, and writing these by hand does not draw one. The scenes
+  make a figure of their own instead.
 - **The Act 1 menu level** is not looked at: the dummies' templates in the scene are those of
   `SYS_Menuscreen_Act3_B`, and the scene says so and does nothing in another level.
