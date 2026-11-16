@@ -473,7 +473,7 @@ enabled (false only), hidden, data, of, command, parameter }`.
 | `kind` | Elements | `value` | Acted on by |
 |---|---|---|---|
 | `button` | a type with `Button` in its name; a list item outside any list | - | `GK.Gui.Click` |
-| `toggle` | `CheckBox`, `RadioButton`, `ToggleButton` | `IsChecked` when it reads; else the flag `Value` of the view model the toggle stands for (`valueFrom = "data.Value"`); else `unread = "IsChecked"` | `GK.Gui.Click`, `GK.Gui.Set` |
+| `toggle` | `CheckBox`, `RadioButton`, `ToggleButton` | `IsChecked` (true or false); when it reads neither, the flag `Value` of the view model the toggle stands for (`valueFrom = "data.Value"`); else `unread = "IsChecked"` | `GK.Gui.Click`, `GK.Gui.Set` |
 | `list` | `ListBox`, `ComboBox`, `TabControl` | the selected item's text; `selected`, `count`, `items = { { n, text, id, name, enabled, hidden } }`, `more`, `notShown` | `GK.Gui.Select`, `GK.Gui.Click(widget, "<list>#<n>")` |
 | `slider` | `Slider` | `Value`, with `min`, `max` | `GK.Gui.Set` |
 | `text` | `TextBox` | `Text` | `GK.Gui.Set` |
@@ -509,16 +509,26 @@ differs) or a list, and answers `{ ok, before, after }`. A picture of a window (
 holds the handles of the controls it shows, so a page turned inside one widget is seen as a change
 (`saw = "the controls shown changed"`).
 
+**Toggles.** A toggle's state is its `IsChecked`, a nullable flag that GateKit's Script Extender
+reads and writes as true, false or nil. A click presses a toggle through its click chain or its
+command when it has one; a toggle with neither has its `IsChecked` written, and what is bound to
+the flag follows (`steps = { "toggled" }`; a radio button is chosen, never unchosen). The answers
+of `GK.Gui.Click` (`value`) and `GK.Gui.Set` (`before`, `after`) carry the state read again, and
+`handle` when the press changed the toggle's own handle: a toggle may hide itself by what it
+switches. A colour swatch of character creation is such a toggle - its panel's `Visibility` is
+bound to its `IsChecked`, the swatch is not shown while the panel is, and a confirm toggle in the
+panel is bound back: `GK.Gui.Click(w, "swatchSkinColourButton")` opens the panel and answers
+`value = true, handle = "~swatchSkinColourButton"`; `GK.Gui.Look` reads the swatch with
+`value = true` under that handle (`all = true`) while the panel is open; the confirm toggle
+closes it. A toggle bound to a flag of its own data whose `IsChecked` reads neither (a tick box of
+the game's settings: `ls.VMTickBoxSetting.Value`) is read from that flag, and `GK.Gui.Set` writes
+the flag and runs the toggle's click chain, which is what a click does through the binding. On a
+Script Extender build that does not hand out a nullable flag `IsChecked` reads nil and its write
+is lost: a toggle with no command and no flag of its data answers `ok = false`, `saw = "nothing
+changed"` to a click, and `GK.Gui.Set` says that the flag does not read.
+
 What the walk does not reach:
 
-- **A toggle whose state is nowhere but in `IsChecked`.** `IsChecked` is a nullable flag, which
-  the extender neither reads nor writes. A toggle bound to a flag of its own data (a tick box of
-  the game's settings: `ls.VMTickBoxSetting.Value`) is read from that flag, and `GK.Gui.Set`
-  writes the flag and runs the toggle's click chain, which is what a click does through the
-  binding. A toggle with a command only is pressed through it. A toggle with neither (a colour
-  swatch of character creation, `IsChecked="False"` in the XAML, the panel's `Visibility` bound to
-  it and a confirm toggle bound back) cannot be pressed: what its panel holds is in the tree and is
-  acted on by its `~` handle, and the answer cannot say the panel opened.
 - **A chain on an unnamed control.** `Client/XamlChains.lua` finds a click chain by x:Name; an
   unnamed control runs its own `Command` only.
 - **Triggers on other events** (`ValueChanged`, `SelectionChanged`) are the game's own and fire by
@@ -578,12 +588,26 @@ a handle, a command or an event.
 
 The window manager's update takes a mouse motion event's position only when the event names the
 game's window; every motion event then raises the input manager's motion event, on which the
-interface reads the engine's own mouse position (`ls::Mouse`) and gives it to the UI library. An
-event injected by Script Extender names no window, so the instrument writes the position into
-`ls::Mouse` (`GK.Memory.Write`) and injects the motion event that makes the interface read it; a
-button event injected after it is pressed there. It needs the memory instrument (section 16) and
-knows where one build of `bg3_dx11.exe` keeps its pointer to `ls::Mouse`; a real motion inside the
-game's window overwrites the position.
+interface reads the engine's own mouse position (`ls::Mouse`) and gives it to the UI library.
+GateKit's Script Extender names the game's window on the mouse events it injects, so the
+instrument injects events and nothing else: a motion event moves the game's pointer, a button
+event after it is pressed there, and `do = "leave"` is a motion to (-1, -1). No memory is written
+and no address of a build is known. A real motion inside the game's window moves the pointer
+again. On a build whose injected events name no window the instrument refuses
+(`GK.Features.injectedInput`, the `Injected` field of the input events, tells the builds apart).
+
+**Injected input and listeners.** GateKit's Script Extender raises `Ext.Events.KeyInput`,
+`MouseButtonInput` and `MouseWheelInput` for injected events too, marked `Injected = true`, and
+`e:PreventAction()` keeps such an event from the game. What each listener of the two mods does
+with a key or a click given through the bridge (`GK.Key`, `game.key`, `GK.Act.Press`, the click
+of `GK.Gui.Click` on an aim):
+
+| Listener | Hears injected input | Why |
+|---|---|---|
+| Weave's windows (`Client/Shell.lua`): keys, clicks and the wheel held back while a window that blocks is open, Escape closing the top one | yes | a blocking window stands between the player and the game, whoever presses |
+| the console's key and the capture of a new key for it (`Client/Overlay.lua`) | no | both are for the person at the keyboard; a key given through the bridge is meant for the game and passes to it |
+| a press on the HUD button kept from the game (`Client/Overlay.lua`) | no | the button's hover is the real pointer's; an injected click lands where the game's pointer is |
+| a picture with `skip` (`Client/Show.lua`, section 24) | yes | the picture takes the keyboard from the game, by hand or through the bridge |
 
 ### AutomationId
 
@@ -935,7 +959,8 @@ roll kind; its pin is the boost `Initiative(n)`, and `n` is a bonus added to the
 not the die (+-100 decides the order). Every pin is a track row of the stage ledger whose undo is
 data (`op = { op = "boost", who, text, cause }`, GK.Fixture's `boost` undo), so it outlives a reload of
 the bridge, `GK.Stage.Clean` and `GK.Fixture.Clear` take it off, and a pin left from a scope that a
-fresh `Begin` replaced stays a fixture row until `GK.Fixture.Clear`. `GK.Rolls.Class` names each verb's class.
+fresh `Begin` replaced stays a fixture row until `GK.Fixture.Clear`. Each verb's class is in the
+registry of verbs (section 19), which also sets `GK.Rolls.Class`.
 
 | Verb | Class | What it does |
 |---|---|---|
@@ -944,7 +969,8 @@ fresh `Begin` replaced stays a fixture row until `GK.Fixture.Clear`. `GK.Rolls.C
 | `GK.Rolls.Pins()` | observation | what is pinned now, read from the boosts of every creature pinned in this Lua state or named by an open ledger row: `{ { who, kind, n, once, boost, track, tracked } }`; `tracked = false`: the row is undone and the boost has not left yet |
 | `GK.Rolls.Kinds()` | observation | every value of the game's `Ext.Enums.StatsRollType` except `None` and its end marker `Sentinel`, sorted, then `Initiative` |
 | `GK.Rolls.Karmic()` | observation | `{ on, option, mode, saved }`: Karmic Dice (below) |
-| `GK.Rolls.SetKarmic(on)` | cheat | writes the game's option for the length of the scope (Clean writes the old value back, from data in the ledger row, `op = "karmic"`, so a bridge reload keeps the undo; refused outside a scope); observed until the roll manager follows: `{ ok, on, was, mode, ticks }`. `WriteKarmic`, `WriteStreams`, `WriteInspiration` are the undos themselves: they write and track nothing |
+| `GK.Rolls.SetKarmic(on)` | cheat | writes the game's option for the length of the scope (Clean writes the old value back, from data in the ledger row, `op = "karmic"`, so a bridge reload keeps the undo; refused outside a scope); observed until the roll manager follows: `{ ok, on, was, mode, ticks }` |
+| `GK.Rolls.WriteKarmic(on)`, `GK.Rolls.WriteStreams(list)`, `GK.Rolls.WriteInspiration(points, max)`, `GK.Rolls.WriteRig(id)` | cheat | the undos of `SetKarmic`, `SetStreams`, `SetInspiration` and `Rig`, called by the stage ledger (`GK.Fixture`'s undo of the rows `karmic`, `streams`, `inspiration`, `rig`): each writes the value and makes no ledger row, so a call of one is not undone by `GK.Stage.Clean`. A scene uses the `Set` verbs and `Rig` |
 | `GK.Rolls.Finished(who, take)` | observation | the oldest finished roll of `who` that no RollResult event has taken yet (GK.GameLog joins it to its `game_roll` row); the event comes the next tick, and a finished roll older than 5 ticks is dropped, so that it is never joined to a later roll. Its `advantage` (advantage, disadvantage, both), `discarded` (the other d20: the game draws two for every roll), `total`, `critical` and `modifiers` come from the roll's request - alive for a passive roll, read in its destruction for an active one, whose request is gone before its finished event |
 | `GK.Rolls.Streams()` | observation | the server's roll streams, read from the roll manager: `{ base, frame, mode, streams = { { type, seed, rolls, frame, failDebt, successDebt, player, combat, cast } }, saved }` - `base` its base seed, each stream's `type` one of `Ext.Enums.RollStreamType` (Generic, Dialog, PlayerSpell, ...), `rolls` the dice drawn from it (two for every d20 roll); `saved` the same read from the roll streams component. A load sets `base` to the clock in seconds and makes the streams anew |
 | `GK.Rolls.SetStreams(list)` | cheat | writes `seed` and `rolls` of the streams `list` names (`{ { type, player, combat, seed, rolls } }`, the shape of `Streams().streams`, or a whole `Streams()` answer - so an earlier reading rewinds them) in the roll streams component, which the game draws from (a write to the roll manager is not honoured); a stream's dice are a function of its seed and count, so the same rolls come again. Clean writes the old values back (data in the ledger row, `op = "streams"`), or reports the stream gone. Refused outside a scope. `{ ok, written = { { type, player, combat, seed, rolls, was } }, missing }` (`missing`: named streams that do not exist, such as a Dialog stream before the first dialogue check) |
@@ -953,6 +979,7 @@ fresh `Begin` replaced stays a fixture row until `GK.Fixture.Clear`. `GK.Rolls.C
 | `GK.Verbs.Has(path)` | observation | whether this Script Extender build has what `path` names under `Ext`: a function (`"Debug.AddProbe"`) or an event (`"Events.Roll"`: `Ext.Events` answers for any name, so an event is there when the type of its parameters is among the extender's types). A verb whose entry in `Shared/VerbClasses.json` has `needs` answers `{ ok = false, error, needs }` and does nothing when the build lacks it; `GK.Verbs.Needs()` lists such verbs with whether each is met |
 | `GK.RollLog.Forget(id)` | observation | leaves one named asker or cause out of the log's tables until the family `dice` is turned off (the scope's end does it), so that its rolls are written as rolls asked from a place nobody has named: `origin = "unknown"` (or `cause = "unknown"`) with the address in `caller`. Nothing in the game changes. Without an id nothing is left out. `{ ok, forgotten }` |
 | `GK.RollLog.Origins()` | observation | the askers known for each executable: `{ [module] = { { id, what, rva, size } } }`; the ids and words are in `Server/RollOrigins.json`, the places are written into it from the registry's build tables by `gatekit registry places`, for every executable the registry places them in |
+| `GK.RollLog.Causes()` | observation | the causes of a roll known for each executable, from the same file and the same command: `{ [module] = { { id, cause, rva, size } } }` - `cause` is the word a row's `cause` carries, `id` its `causeId` |
 | `GK.Rolls.Next(spec)` | observation | the dice the stream `spec` names (`type`, and `player`, `combat` when several share the type) gives to its next roll, computed from its seed and count with the game's generator and not drawn: `{ ok, type, player, combat, seed, rolls, dice }`. `dice` (default 2: the pair the game draws for every d20 roll, the first kept unless advantage or disadvantage chooses) and `faces` (default 20) describe the roll; `rolls` computes from another count. A roll that Karmic Dice forces, a die a reroll boost throws again and a die replaced by a guaranteed-outcome boost are not these |
 | `GK.Rolls.SetNext(spec)` | cheat | chooses the natural die of the next roll drawn from the stream `spec` names: moves its count forward to the nearest one at which the first die is `die` and, with `both`, every die of the roll (so that advantage and disadvantage keep it too); written through `SetStreams`, so Clean puts the count back. One roll is chosen - the roll after it draws what the stream gives where it is left; other streams and the bounds a boost puts on a die are untouched. `{ ok, type, player, combat, seed, rolls, was, dice }`, or `{ ok = false, error }` when the stream does not exist yet or no count near gives the die. Refused outside a scope |
 | `GK.Rolls.Rig(spec)` | cheat | decides one throw at the moment it is made, through the extender's roll event, for the length of the scope. `spec` names the roll by what the game says of it - `who` (the roller), `kind` (the roll's type as the game names it, or `Attack` / `Damage` for every type that ends so), `stream` (the roll stream's type), and by what the roll is for - `spell`, `status`, `source`, `target` (the spell and the status the roll belongs to, the two parties; on a build of the extender whose roll event says them); a field left out matches any roll - and which of the rolls that fit: `nth` (default 1, the next) and `times` (how many from there, default 1; 0: every one until `Unrig` or Clean). The throw gets `natural` (the die that counts: the total follows, and the critical by the game's rule) or `total`. Every other roll is as the game throws it: of four checks asked in one tick with the third rigged, three are the stream's own. One rig decides a roll; the earliest set wins. A `roll_rigged` row (scope, cheat, omniscient) says what the game had thrown. `{ ok, id }`, or `{ ok = false, error }` on a build without the roll event. Refused outside a scope |
@@ -1192,9 +1219,11 @@ sections 17 and 19:
 | `game_status` | `turns` | the status's duration in turns, for a status with an end | the status's LifeTime on its holder's status manager (seconds; a turn is 6 of them) |
 
 The text of a `game_hit` names each damage type with its own amount, in the game's order, and what
-a resistance took: `... with Projectile_FireBolt: 4 fire (fire 9 -> 4)`. Found in the game and
-held by `test:fight/log/resisted`: a resistance halves a damage, rounded down, and never brings it
-below 1 (a rolled 1 is dealt 1). Held by `test:fight/log/unlisted`: the dice thrown for a damage's
+a resistance took: `... with Projectile_FireBolt: 4 fire (fire 9 -> 4)`. Held by
+`test:fight/log/resisted`: against a resistance the row says what was rolled and what was dealt,
+the half rounded down. The game never brings a resisted damage below 1 (a rolled 1 is dealt 1,
+where the wiki's rule gives 0): `test:quirks/damage/resistance_floor` holds that as the game's
+own. Held by `test:fight/log/unlisted`: the dice thrown for a damage's
 stats expression (Sneak Attack, Fire Bolt's die) are listed, in the hit's expression; a hit whose
 terms add up has no `unlisted`. The hit keeps the sum of a roll's dice, not each die: the roll
 log's `dice_thrown` rows have them. A `game_hit` row is GK.HitRow's (Shared/Bridge.lua) with these
@@ -1215,6 +1244,8 @@ request and client -> server for the answer); `Server/Say.lua`.
 |---|---|---|---|
 | `GK.Camera.Focus(at, options)` | C and S | fair | observed once the camera settled: `{ ok, at, distance, ticks, how, snapped, fight, off, onScreen, far, away, drawn, leashRaised }`, after a far move also `faded`, `blackTicks`, `fadeTicks`; on the server the client's answer with `serverTicks`, and with `options.wake` also `wake`, `woke`, `wakeTicks` |
 | `GK.Camera.Return(options)` | C and S | fair | observed: as Focus's, with `restoredDistance` and `leashRestored`; on the server `released` when the focus had woken something |
+| `GK.Camera.Look(degrees, options)` | C | fair | turns the camera to look that way (0 = north = +z, 90 = east = +x), the shorter way round, eased, at most `GK.Camera.Speed` degrees a second: `{ ok, from, to, seconds }`; `options.now` sets it at once (`{ ok, rotation }`); a turn smaller than `options.min` (default `GK.Camera.MinTurn`) is `{ ok, skipped }`. Answers when the turn begins, not when it ends |
+| `GK.Camera.Face(to)` | C | fair | `Look` from the point the camera follows towards `to` (a uuid the client holds, or a point); closer than 1 m: `{ ok, note }` |
 | `GK.Camera.OnScreen(at)` | C | observation | `{ u, v, inFront, inside }` |
 | `GK.Camera.State()` | C | observation | as before, with `moving`, `mode`, `focus` added |
 | `GK.Say.Line(who, text, options)` | S | cheat | observed once the status is on the creature: `{ ok, who, text, status, slot, handle, markup, ticks }` |
@@ -1230,7 +1261,7 @@ each) and, for a point, `TargetDestination` with the targets emptied (`how` is `
 component the game writes on a ranged attack, TargetMode 4, and on the restore after it,
 TargetMode 1) is read only when marked changed (`MarkChanged`) and not at all outside a fight
 (CameraMode 8); on the player's own turn (CameraMode 9) a TargetMode 4 written into it was copied
-into `CameraTarget` and did not move the camera, in five variants (one target, two, a Position,
+into `CameraTarget` and did not move the camera (with one target, with two, with a Position, with
 the behaviour's targets emptied first); its restore did. So `Return` in a fight is the restore -
 TargetMode 1, the character, `ZoomToDistance`, and the `Position` set to the float maximum,
 without which a Position left there overrides the targets and the return silently fails - and
@@ -1294,17 +1325,17 @@ that the return it makes releases the wake too. The wake is a cheat: inside a fa
 with `options.wake` is refused, naming `GK.Wake.One` and `GK.Wake.Place` for a cheat step before
 it. Rows `camera_focused` and `camera_returned` are written by the client when a move ends.
 
-**Times** (`test:camera/focus/matrix`, Basic_Level_A, 1024x576): to 3 m 22-25 server ticks, to
-10 m 27-35, to 50 m with a glide 51; a pair 27; in a fight 26. The camera runs on the client's
-frames in real time: the game's speed does not change it (the same ticks at speed 1 and 8).
-Turn-based mode outside a fight changes nothing (CameraMode stays 8).
+**Times.** The camera runs on the client's frames in real time: the game's speed does not change
+how long a move takes, and a farther move takes longer (each answer's `ticks`;
+`test:camera/focus/matrix` holds every move to its limit at both speeds). Turn-based mode outside
+a fight changes nothing (CameraMode stays 8).
 
 **On the screen.** clip = P * V * p with the camera's own `Camera.Controller.Camera.ViewMatrix`
 and `ProjectionMatrix` (column-major); u = (x/w + 1)/2, v = (1 - y/w)/2; behind the camera when
 w <= 0. A focused creature's feet stand at about u 0.5, v 0.55-0.6.
 
 **A line over a head.** The game writes the name of a status over the head of the creature it
-is applied to, for about three seconds whatever the status's duration (12 s tried). `GK.Say.Line`
+is applied to, for about three seconds whatever the status's duration. `GK.Say.Line`
 applies a status of the toolkit's own, `GK_SAY_<slot>` - made at run time as a copy of BLESS with
 its boosts and effects emptied and the flags `DisableCombatlog` and `DisablePortraitIndicator` (no
 log line, no portrait icon; a status made from scratch shows nothing) - whose display name is a
@@ -1425,16 +1456,20 @@ tga and bmp files and draws them after the game's whole frame. A picture is a wi
 layer without a frame, the size of the game's frame, holding one canvas. So a picture is over
 everything the game shows - the interface, a dialogue, a loading screen's picture - in any client
 state that draws frames (shown in `Menu`, on the splash screen and the main menu, and in
-`Running`), needs no texture resource, no atlas and no XAML, and is not in the picture
-`GK.Shot` takes, which is the game's frame before that layer.
+`Running`), needs no texture resource, no atlas and no XAML. It is not in the picture `GK.Shot`
+takes by default, which is the game's frame before that layer, and it is in the one taken with
+the layer (`GK.Shot(path, true)`, `gatekit shot --overlay`, `game.shot(path, width, true)`:
+`test:show/picture`).
 
 **Options.**
 
 - `file`: a path under the game's Data folder as a mod ships it (`Mods/<Mod>/...`,
-  `Public/<Mod>/...`), inside a package or loose; a file put under Data while the game runs is
-  found. The game's file system is the only reader: a drive path, a path with `..` and a file
-  elsewhere on the disk are refused, and so is a file that is not png, jpg, tga or bmp. Files are
-  decoded under the DX11 renderer only.
+  `Public/<Mod>/...`), inside a package or loose, read through the game's file system (a file put
+  under Data while the game runs is found); or the whole path of a file anywhere on the disk
+  (`E:/pictures/logo.png`), which the extender loads under that path (`Ext.IMGUI.LoadImageFile`)
+  and holds until the picture has left. A path with `..` is refused, and so is a file that is not
+  png, jpg, tga or bmp. Files are decoded under the DX11 renderer only. A Script Extender build
+  without the loader (`GK.Features.imageFiles`) refuses a whole path and reads under Data only.
 - `resource`: instead of a file, a texture resource's uuid or an icon's name (`Action_Dash`).
 - `where`: `"screen"` (default) or `{ x, y, w, h }` in parts of the screen, 0 to 1: the rectangle
   the picture is fitted into. It is worked out again when the frame's size changes.
@@ -1445,16 +1480,19 @@ state that draws frames (shown in `Menu`, on the splash screen and the main menu
 - `fade`: seconds, or `{ in, out }`; `seconds`: how long it stays at full strength (none: until
   hidden). Both are real seconds: the layer draws on the client's frames, which the game's speed
   does not change.
-- `skip`: key names that take the picture off - `escape`, `enter`, `space`, a letter, a digit, or
-  `"any"`. A picture with `skip` holds the keyboard while it shows: it carries a text field of the
-  drawing layer that has the focus, so a key pressed - by hand or through the bridge (`GK.Key`) -
-  goes to the picture and not to the game, and what is under it (the splash screen's "press any
-  key", the escape menu) does not hear it. The field tells a typed character and the end of typing;
-  the end of typing is Escape, and a click of the mouse ends it too and is read as Escape. A key
-  that types nothing (an arrow, a function key) cannot be named and reaches neither. A key pressed
-  through the bridge is a key event with no text: of those the field hears Escape and Enter; a
-  letter, a digit or the space bar is heard when typed (the keyboard, `Ext.ClientInput.InjectText`)
-  and is otherwise swallowed. Without `skip` the picture takes no input at all. The mouse always passes through to the game.
+- `skip`: what takes the picture off - key names as `GK.Key` takes them (`escape`, `enter`,
+  `space`, a letter, a digit, `f5`, `left`, an SDL scan code name), `"click"` (a mouse button) and
+  `"any"` (any key or click); a name that is no key is refused. A picture with `skip` holds the
+  keyboard while it shows: it listens to the game's own input events (`Ext.Events.KeyInput`),
+  which are raised for a key pressed by hand and for one pressed through the bridge (`GK.Key`)
+  alike, and keeps every key from the game (`PreventAction`), so what is under it (the splash
+  screen's "press any key", the escape menu) does not hear it. Of several pictures with `skip` the
+  one shown last hears. A click passes through to the game unless `skip` names `"click"` or
+  `"any"`; then the click takes the picture off and the game does not get it. The row's `key` is
+  the name given, or under `"any"` the key's own (`escape`, `enter`, `space`, else its scan code's
+  name in lower case), or `click`. Without `skip` the picture takes no input at all. `skip` needs
+  a Script Extender build that raises its input events for injected keys
+  (`GK.Features.injectedInput`); another build refuses it.
 - `over`: `"everything"`, the only layer. Under the game's interface is refused: only the
   interface itself draws there, and its images are the game's own texture files (a mod's XAML names
   `Assets/x.png` and ships `x.DDS`).

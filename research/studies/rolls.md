@@ -236,8 +236,8 @@ advance. The tests are under [tests/rolls](../../tests/rolls); the verbs are `GK
   held (`GK.Memory.Freeze`) gives every roll the same pair.
 - Every roller's passive checks share the Generic stream; a dialogue check draws its dice from the
   Dialog stream of the player and two more from Generic.
-- `tests/rolls/streams/rewind.lua` shows the rewind: the Generic stream written back gives the
-  same six checks' dice; without it they go on.
+- `test:rolls/streams/chosen_die` holds the function: the count that gives a wanted die is computed
+  and written, and the next roll from that stream shows that die.
 - Open: the fight's streams (Spell, Damage, RandomCast).
 
 ## 6. The code
@@ -794,8 +794,9 @@ reaction (nothing says the attack was one), a bonus action (what it spent), a ju
 destination), a drunk potion (no row of the item used), a kill (no killer), the end of a fight
 (no reason).
 
-For each the game holds the fact in an event of the story or in a component of one frame
-(listed in the night's notes); none needs a function hooked.
+For each the game holds the fact in an event of the story or in a component of one frame (the
+column "From the game" of [docs/contracts/lua-api.md](../../docs/contracts/lua-api.md), section
+21, names each); none needs a function hooked.
 
 What a creature is about to do: nothing says it before the cast's own state appears - 10 to 29
 ticks after its turn starts, about 20 ticks before the attack roll. The move the AI is about to
@@ -898,14 +899,18 @@ The damage dealt is right throughout.
 
 ## 27. The faults held by tests, and two findings taken back
 
-Seven tests under `tests/quirks` hold what the sweeps found, each as the game does it today:
-resistance leaves 1 of a damage of 1 (and 1 of 3); a melee attack's chance and Sand Toss are
-worked out with the weapon set in hand; a weapon attack that misses still throws its ground
-damage and takes no hit points; a saving throw draws two d20 with neither advantage nor
-disadvantage; a roll forced by Karmic Dice writes no dice of its own while its stream moves by
-three draws and the hit shows a natural die; a damage roll's critical flag is of the sum of its
-dice (2+2+2 on 3d6 is flagged, 1+1+1 is not); four entries of the wiki's list of bugged
-actions read from the game's data.
+Tests hold what the sweeps found, each as the game does it today. Under `tests/quirks`, where the
+game differs from its text or the wiki: resistance leaves 1 of a damage of 1 and 1 of 3
+(`test:quirks/damage/resistance_floor`); a melee attack's chance and Sand Toss are worked out
+with the weapon set in hand (`test:quirks/attack/weapon_set_in_hand`); a weapon attack that
+misses still throws its ground damage and takes no hit points (`test:quirks/damage/ground_row`);
+a damage roll's critical flag is of the sum of its dice - 2+2+2 on 3d6 is flagged, 1+1+1 is not
+(`test:quirks/damage/critical_flag_of_a_sum`). Under `tests/rolls`, where the game does what the
+wiki says: every d20 roll draws two dice, and with neither advantage nor disadvantage the first
+is kept (`test:rolls/log/origins`); a roll forced by Karmic Dice writes no dice of its own while
+its stream moves by three draws and the hit shows a natural die (`test:rolls/karmic/forced`).
+The entries of the wiki's list of bugged actions that section 23 read from the game's data are
+held by no test: a `gatekit data` query shows each.
 
 Taken back:
 

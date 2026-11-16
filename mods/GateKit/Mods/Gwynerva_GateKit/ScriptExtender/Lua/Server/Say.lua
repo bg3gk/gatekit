@@ -5,7 +5,7 @@
 --   GK.Say.Shown(who)                 the line a creature shows now
 --   GK.Say.Styles, GK.Say.Effects, GK.Say.Sounds   data: a modder adds presets by name
 --
--- How (game 4.1.1.7631656; night notes K1 and G1): the game writes a status's name over the head of
+-- How (game 4.1.1.7631656): the game writes a status's name over the head of
 -- the creature it is applied to, for about three seconds, whatever the status's duration. So the
 -- line is a status of the toolkit's own - a copy of BLESS with every effect stripped, flags
 -- DisableCombatlog and DisablePortraitIndicator (no log line, no portrait icon) - whose display name
@@ -24,8 +24,7 @@
 GK.Say = GK.Say or {}
 local Say = GK.Say
 
--- Effects of the game's own (effect resources), short and ending by themselves. Measured in
--- Basic_Level_A, screenshots in the night notes G1.
+-- Effects of the game's own (effect resources), short and ending by themselves.
 Say.Effects = Say.Effects or {
     orb = "70ebf4d3-46f9-1cd2-7f59-15bd673f5bdb",       -- VFX_Characters_Gale_ActivateNethereseOrb_Cast_BodyFX_01: the body tinted violet, ~1 s
     spectral = "6d73ed12-1bb6-b0dd-9aff-09b78489362e",  -- VFX_Cinematic_Gale_SpectralVoice_Disappear_01: a violet-white burst on the ground, ~1.5 s

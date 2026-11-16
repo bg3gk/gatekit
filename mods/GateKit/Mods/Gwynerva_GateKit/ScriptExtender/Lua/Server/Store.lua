@@ -33,8 +33,6 @@
 GK.Store = GK.Store or {}
 local Store = GK.Store
 
---- Each verb's class, for the fair/cheat/observation split: a write goes into the save.
-Store.Class = { Open = "observation", Get = "observation", Names = "observation", Check = "observation", Set = "cheat", Drop = "cheat" }
 
 local MOD = ModuleUUID          -- the bridge mod's own uuid: a global while the bootstrap runs
 Store.Mod = MOD

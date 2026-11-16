@@ -348,10 +348,14 @@ game is played. Needs the Script Extender build with coverage counters
 
 ### 2.9 `shot`, `key`
 
-- `shot OUT [--width N]`: a picture of the game, taken by the game itself (8.3, point 12), or of
-  its window when the bridge cannot; scaled down to `--width` (1150; 0 for full size) when wider;
-  `.png` writes PNG, anything else JPEG quality 82. Prints the absolute path. Failures:
-  `screenshot failed: ...`, `the game accepted the screenshot but wrote no file in 10 s`.
+- `shot OUT [--width N] [--overlay]`: a picture of the game, taken by the game itself (8.3, point
+  12), or of its window when the bridge cannot; scaled down to `--width` (1150; 0 for full size)
+  when wider; `.png` writes PNG, anything else JPEG quality 82. The picture is the game's frame
+  alone; `--overlay` takes the frame after the extender's own layer is drawn (its windows,
+  GateKit's console, a picture of `GK.Show`), which only the game can take: where it cannot, the
+  command fails and no window is photographed. Prints the absolute path. Failures:
+  `screenshot failed: ...`, `the game accepted the screenshot but wrote no file in 10 s`,
+  `the game took no picture with the extender's layer in it: ...`.
 - `key NAME [--hold S]`: the names of `GameKeys` (`escape`, `enter`, `space`, `tab`, `backspace`,
   `left`, `up`, `right`, `down`, `f1`..`f12`, or one letter or digit); else `unknown key 'X';
   known: ...`. Pressed through the game (8.3, point 11). Prints nothing on success.
@@ -937,7 +941,9 @@ build or SHA-256.
     Extender build for the frame the renderer is about to show; the extender copies it out of the
     swap chain before it draws any window of its own, encodes a PNG on a thread of its own and
     renames it into the channel folder. `gatekit` waits up to 10 s for that file, reads it,
-    deletes it, and then scales and saves it (`--width`, `.png` or JPEG 82).
+    deletes it, and then scales and saves it (`--width`, `.png` or JPEG 82). `GK.Shot(path, true)`
+    (`shot --overlay`, `game.shot(path, width, true)`) asks for the frame after the extender's
+    windows are drawn.
     The picture is the game alone — no extender overlay, no console — and the game is neither
     paused nor moved to take it. The window is photographed with `IGamePlatform.CaptureWindow`
     only when the bridge is not there or its renderer cannot read frames (only the DX11 backend

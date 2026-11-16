@@ -669,10 +669,11 @@ public static class CopyCommands
     {
         var output = new Argument<string>("out") { Description = "picture file: .jpg (default) or .png" };
         var width = new Option<int>("--width") { Description = "scale down to this width when wider (0: full size)", DefaultValueFactory = _ => 1150 };
-        var command = new Command("shot", "a picture of the game, taken inside it (the window may stay behind other windows)") { output, width };
+        var overlay = new Option<bool>("--overlay") { Description = "with the extender's own layer in it: its windows, GateKit's console, a picture of GK.Show" };
+        var command = new Command("shot", "a picture of the game, taken inside it (the window may stay behind other windows)") { output, width, overlay };
         command.SetAction((parse, _) => Run(parse, s =>
         {
-            s.Out.WriteLine(s.Shot(parse.GetValue(output)!, parse.GetValue(width)));
+            s.Out.WriteLine(s.Shot(parse.GetValue(output)!, parse.GetValue(width), parse.GetValue(overlay)));
             return Task.CompletedTask;
         }));
         return command;

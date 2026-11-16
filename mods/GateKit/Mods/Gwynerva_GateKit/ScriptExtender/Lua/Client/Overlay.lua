@@ -312,9 +312,12 @@ Ext.Events.Shutdown:Subscribe(save)
 
 -- --- Keys and mouse -----------------------------------------------------------------------
 -- Weave holds keys and clicks back while a window is open and closes the top one on Esc.
--- GateKit claims its own key (and every key while one is being captured) before that.
+-- GateKit claims its own key (and every key while one is being captured) before that. Both are
+-- for the person at the keyboard: a key pressed through the bridge (`e.Injected`) is meant for the
+-- game, so it neither becomes the console's key nor opens the console, and is not claimed.
 
 UI.OnKey(function(e, key, down)
+    if e.Injected then return false end
     if capturingKey then
         if down and not e.Repeat then
             capturingKey = false
@@ -332,7 +335,10 @@ UI.OnKey(function(e, key, down)
     return false
 end)
 
+-- A press on the HUD button is kept from the game. The button's hover is the real pointer's: a
+-- click given through the bridge (an aim confirmed) lands where the game's own pointer is and passes.
 Ext.Events.MouseButtonInput:Subscribe(function(e)
+    if e.Injected then return end
     if e.Pressed and hudState.hovered and hudState.visible then e:PreventAction() end
 end)
 

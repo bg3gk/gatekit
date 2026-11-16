@@ -243,9 +243,9 @@ the folders: [contracts/cli.md](contracts/cli.md), `test`.
 | `game.dialog()`, `game.answer(n)` | the dialogue on screen; choose answer `n` and wait until it changes | observation; fair |
 | `game.key(name [, hold])` | a key pressed through the bridge into the game's input (the window only when the bridge is not there) | fair |
 | `game.checkpoint()`, `game.reset()`, `game.reload()`, `game.skip_scenes()`, `game.fast_scenes(speed)`, `game.burst(senders, each)` | a checkpoint and its reload, a bridge reload, scenes skipped or played fast, a load on the channel | cheat |
-| `game.shot(path [, width])`, `game.logs{ story, lines, grep }`, `game.windows()`, `game.process()` | a picture, what Script Extender printed, the copies in a deck, the game's memory use | observation |
+| `game.shot(path [, width [, overlay]])`, `game.logs{ story, lines, grep }`, `game.windows()`, `game.process()` | a picture (the game's frame; `overlay = true`: with the extender's own layer), what Script Extender printed, the copies in a deck, the game's memory use | observation |
 | `game.now()`, `game.sleep(seconds)` | the host's clock | observation |
-| `game.out`, `game.path`, `game.save`, `game.read`, `game.exists`, `game.mkdir`, `game.remove`, `game.glob`, `game.testimage` | files; a relative path is in the test's output folder | observation |
+| `game.out`, `game.path`, `game.save`, `game.read`, `game.exists`, `game.mkdir`, `game.remove`, `game.glob`, `game.testimage`, `game.pixel(path, x, y)` | files; a relative path is in the test's output folder. `testimage(path, w, h)` writes a png whose red grows to the right and green downwards; `pixel` reads a picture's colour at a point in parts of its size: `{ r, g, b, width, height }` | observation |
 | `game.channel`, `game.extender`, `game.weave`, `game.folder`, `game.profile` | the folders of the copy the run uses | |
 
 A `since` left out is `game.mark()` at the call. The kinds a test names to `game.events`,

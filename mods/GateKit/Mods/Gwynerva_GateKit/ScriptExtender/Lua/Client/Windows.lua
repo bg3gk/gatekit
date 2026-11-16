@@ -910,7 +910,7 @@ end
 --- Wraps an acting verb's answer so the bridge answers with what it saw (GK.Observe): looks
 --- every third tick for a change of the picture; `within` ms of a running game (default 1500,
 --- longer for a chain with a delayed step) before it says nothing changed.
-function UI.ObserveEffect(result, name, controlName, before, within, hint)
+function UI.ObserveEffect(result, name, controlName, before, within, hint, seen)
     if not result.ok then return result end
     local lastLook = -1000
     return GK.Observe(result, function(ticks, final)
@@ -920,6 +920,7 @@ function UI.ObserveEffect(result, name, controlName, before, within, hint)
         local changed = UI.Changed(before, after)
         if #changed > 0 then
             result.saw = table.concat(changed, "; ")
+            if seen then seen(result) end
             return result
         end
         if not final then return nil end
@@ -1008,6 +1009,7 @@ function UI.Click(name, what, which)
     local before = UI.Picture(name, row.name)
     local log = {}
     local delayed = 0
+    local toggled = false
     if entry and (entry.command or entry.click) then
         UI.LastDelayed = {}
         local _, later = runChain(entry, row.element, widget, log, widgetName(name), row.name)
@@ -1023,16 +1025,31 @@ function UI.Click(name, what, which)
             guard(function() row.element.IsSelected = true end)
             log[#log + 1] = "selected"
         elseif row.toggle or guard(function() return row.element.IsChecked end) ~= nil then
+            -- A toggle with no command: a click writes its IsChecked, and what is bound to the flag
+            -- follows (a panel's Visibility, a flag of the data). A radio button is chosen, never
+            -- unchosen, by a click.
             local checked = guard(function() return row.element.IsChecked end)
-            -- a radio button is chosen, never unchosen, by a click
             guard(function() row.element.IsChecked = row.radio and true or not checked end)
             log[#log + 1] = row.radio and "chosen" or "toggled"
+            toggled = true
         else
             return { ok = false, error = "nothing to run on " .. tostring(row.name or row.text) }
         end
     end
     local result = { ok = true, control = row.name or row.text, steps = log, delayed = delayed > 0 and delayed or nil,
                      chain = entry and (entry.source or "catalog") or nil }
+    if toggled then
+        -- a toggle that hides itself by what it switches is still the control the picture reads
+        return UI.ObserveEffect(result, name, row.name, before, 1500,
+            "the toggle's IsChecked was written and nothing followed: on a Script Extender build that does not hand out a nullable flag the write is lost",
+            function(answer)
+                if type(what) ~= "string" then return end
+                local now = UI.Handle(name, what) or UI.Handle(name, what:sub(1, 1) == "~" and what:sub(2) or ("~" .. what))
+                if not now then return end
+                answer.value = guard(function() return now.element.IsChecked end)
+                if now.handle ~= what then answer.handle = now.handle end
+            end)
+    end
     if not (entry and (entry.command or entry.click)) then
         -- D20 of the day run: a control whose click chain is in neither GK.UICatalog nor the
         -- game's XAML runs only its own Command; the observation below says if that did anything.
@@ -1297,10 +1314,11 @@ local function describeItem(item, container, n, detail)
     return out
 end
 
--- Whether a toggle is on, and where that was read: its own IsChecked when the extender reads it
--- (a nullable flag, which it hands out as nil), else the flag `Value` of the view model the toggle
--- stands for (a tick box of the game's settings binds its IsChecked to it), when that view model is
--- not the widget's own.
+-- Whether a toggle is on, and where that was read: its own IsChecked, a nullable flag that reads
+-- true, false or nil (neither) on GateKit's Script Extender and nil whatever it holds on a build
+-- that does not hand it out; when it is nil, the flag `Value` of the view model the toggle stands
+-- for (a tick box of the game's settings binds its IsChecked to it), when that view model is not
+-- the widget's own.
 local function toggleState(element, widgetData)
     local checked = guard(function() return element.IsChecked end)
     if type(checked) == "boolean" then return checked, "IsChecked" end
@@ -1354,8 +1372,7 @@ local function describeRow(row, widgetData, options)
         local content = guard(function() return element.Content end)
         out.text = type(content) == "string" and content ~= "" and readable(content) or textsWithin(element, 1)[1]
         if row.kind == "toggle" then
-            -- IsChecked is a nullable flag, which this extender hands out as nil whatever it holds:
-            -- the value is given when it reads, else from the flag of the toggle's own data
+            -- the toggle's own IsChecked when it reads, else the flag of the toggle's own data
             local checked, from = toggleState(element, widgetData)
             if type(checked) == "boolean" then
                 out.value = checked
@@ -1425,6 +1442,15 @@ function UI.Handle(name, handle)
     return nil, "no control " .. tostring(handle) .. " in " .. tostring(name) .. " (GK.Gui.Look lists the handles)"
 end
 
+-- A control found again after an act that may have hidden or shown it: by its handle, else by the
+-- same handle with or without the "~" of what is not shown.
+local function controlAgain(name, handle)
+    local row = UI.Handle(name, handle)
+    if row then return row end
+    handle = tostring(handle)
+    return (UI.Handle(name, handle:sub(1, 1) == "~" and handle:sub(2) or ("~" .. handle)))
+end
+
 --- Sets a control of an open widget to a value, as the player's hand on it would: a slider to a
 --- number inside its range, a toggle to true or false (through its own command when it has one), a
 --- text field to a text, a list to an item (as GK.Gui.Select). Answers what the control reads
@@ -1469,9 +1495,22 @@ function UI.Set(name, handle, value)
         local before = state == true
         if before == (value == true) then return { ok = true, before = before, after = before, already = true } end
         local pressed = UI.Click(name, handle)
-        local now = UI.Handle(name, handle)
-        local after = now and guard(function() return now.element.IsChecked end) == true
-        return { ok = after == (value == true), before = before, after = after, pressed = pressed }
+        if type(pressed) ~= "table" or (pressed.ok == false and pressed.error) then return pressed end
+        -- A toggle may hide itself by what it switches (a colour swatch is not shown while its panel
+        -- is): it is found again under either form of its handle, and the answer names the one it has.
+        local result = { ok = true, before = before, steps = pressed.steps }
+        return GK.Observe(result, function(ticks, final)
+            local now = controlAgain(name, handle)
+            local after = now and guard(function() return now.element.IsChecked end)
+            if after ~= (value == true) and not final then return nil end
+            result.ok, result.after = after == (value == true), after
+            if now and now.handle ~= handle then result.handle = now.handle end
+            if type(after) ~= "boolean" then
+                result.error = now and "the toggle's IsChecked does not read: this Script Extender build does not hand out a nullable flag"
+                    or ("no control " .. tostring(handle) .. " after the press")
+            end
+            return result
+        end, 1500)
     elseif row.kind == "text" then
         local before = guard(function() return element.Text end)
         local _, failed = guard(function() element.Text = tostring(value) end)

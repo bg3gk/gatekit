@@ -19,15 +19,7 @@
 GK.Rolls = GK.Rolls or {}
 local Rolls = GK.Rolls
 
---- Each verb's class, for the fair/cheat/observation split.
-Rolls.Class = {
-    Pin = "cheat", Unpin = "cheat", Pins = "observation", Kinds = "observation",
-    Karmic = "observation", SetKarmic = "cheat", Finished = "observation",
-    Inspiration = "observation", SetInspiration = "cheat", Streams = "observation", SetStreams = "cheat",
-    Next = "observation", SetNext = "cheat",
-    Rig = "cheat", Unrig = "cheat", Rigs = "observation", CanRig = "observation", WriteRig = "cheat",
-    WriteInspiration = "cheat", WriteKarmic = "cheat", WriteStreams = "cheat",
-}
+-- Each verb's class is in the registry of verbs (Shared/VerbClasses.json), which sets GK.Rolls.Class.
 
 local CAUSE = "GKPin"
 local FIXTURE = "Rolls"

@@ -107,7 +107,7 @@ value that is not a string is indented JSON (one space, nothing escaped; `Result
 
 #### `bg3_screenshot`
 
-- **Arguments**: `width` (default 1150).
+- **Arguments**: `width` (default 1150), `overlay` (default false: the game's frame alone; true: with the extender's own layer in it).
 - **Calls**: `GameCopy.Shot` into `<state>/shots/mcp-HHmmss.jpg` (cli.md 2.9).
 - **Result**: an image block (`image/jpeg`, base64) and a text block `saved: <path>`. The file stays on disk (calls in the same second overwrite it).
 - **Errors**: `CopyError: screenshot failed: ...`.

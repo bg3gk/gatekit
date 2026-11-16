@@ -840,13 +840,16 @@ public sealed class GameCopy
     /// <paramref name="width"/> at most. The bridge takes it inside the game, off the frame the
     /// renderer is about to show and before anything of the extender's is drawn over it, which
     /// needs no window and works on every platform; the window is only photographed when the
-    /// bridge cannot do it.</summary>
-    public string Shot(string output, int width = 1150)
+    /// bridge cannot do it. With <paramref name="overlay"/> the frame is taken after the extender's
+    /// own layer is drawn (its windows, a picture of GK.Show); only the game can take that one.</summary>
+    public string Shot(string output, int width = 1150, bool overlay = false)
     {
         var path = Path.GetFullPath(output);
-        var picture = ShotFromGame();
+        var picture = ShotFromGame(overlay);
         if (picture is null)
         {
+            if (overlay) throw new CopyException("the game took no picture with the extender's layer in it: that needs the bridge "
+                + "answering, GateKit's newest Script Extender build under the DX11 renderer (gatekit se status), and no other picture on its way");
             if (!Platform.CanCaptureWindow) throw new CopyException(Platform.WhyNot("shot")
                 + "; the bridge could not take one either (is the game up with GateKit's Script Extender build?)");
             try { picture = Platform.CaptureWindow(FirstPid()); }
@@ -861,7 +864,7 @@ public sealed class GameCopy
 
     /// <summary>The frame as the game itself writes it into the channel folder, or null when the
     /// bridge is not there or its renderer cannot read the frame.</summary>
-    Screenshot? ShotFromGame()
+    Screenshot? ShotFromGame(bool overlay = false)
     {
         var session = Session();
         if (session.State(Side.Client) is null) return null;
@@ -869,7 +872,7 @@ public sealed class GameCopy
         var file = Path.Combine(Layout.Channel, name);
         try
         {
-            var asked = session.LuaAsync("client", $"return GK.Shot(\"{ModSettings.BridgeFolder}/{name}\")",
+            var asked = session.LuaAsync("client", $"return GK.Shot(\"{ModSettings.BridgeFolder}/{name}\"{(overlay ? ", true" : "")})",
                 TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
             if (asked is not JsonValue value || !value.TryGetValue<bool>(out var ok) || !ok) return null;
             var waited = Stopwatch.StartNew();

@@ -107,7 +107,7 @@ end
 --   GK.Camera.Return(options)      back to the controlled character, by the game's own restore
 --   GK.Camera.OnScreen(at)         where a point or an entity is on the screen: { u, v, inFront }
 --
--- How (game 4.1.1.7631656; research in the night notes K1): the camera entity (GameCameraBehavior)
+-- How (game 4.1.1.7631656; research/studies/camera-focus.md): the camera entity (GameCameraBehavior)
 -- also holds CameraCombatTarget, which the game writes on a ranged attack (TargetMode 4, the
 -- targets, no zoom) and on the restore after it (TargetMode 1, the actor, zoom); it is read only
 -- when marked changed (MarkChanged), and outside a fight (CameraMode 8) not at all. On the player's
