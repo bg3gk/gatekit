@@ -209,14 +209,67 @@ end
 -- A roll changed after the throw - an interrupt set it, adjusted it or rerolled it - is a row of
 -- its own: the row of the throw says what was thrown, this one what the game goes on with. From
 -- the extender's RollAdjusted event, on a build that has it.
+-- Who changed it: the interrupts the casts list as used on this roll. Each cast's
+-- ServerSpellCastInterrupt holds, per animation, the interrupts used (Usage: the interrupt's entity,
+-- then each event it answered with what it asked of the roll); the event of a roll names the roll
+-- by its id. An interrupt listed is used, not always applied: two may be listed on one roll and
+-- only one change it, so each entry says whether its own adjustment accounts for the change seen.
+local function entityUuid(x)
+    if x == nil then return nil end
+    local ok, id = pcall(function() return x.Uuid.EntityUuid end)
+    if ok and type(id) == "string" then return id end
+    return uuid(x)
+end
+
+local function changedBy(e)
+    local want = tostring(e.RollUuid)
+    local by, source, target = {}, nil, nil
+    for _, holder in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerSpellCastInterrupt") or {}) do
+        local anims = holder.ServerSpellCastInterrupt.AnimationInterrupts
+        for _, anim in ipairs(anims or {}) do
+            for interrupt, events in pairs(anim.Usage or {}) do
+                for event, entry in pairs(events) do
+                    local ok, roll = pcall(function() return tostring(event.Event.RollUuid) end)
+                    if ok and roll == want then
+                        local one = {}
+                        pcall(function()
+                            one.interrupt = tostring(interrupt.InterruptData.Interrupt)
+                            one.owner = entityUuid(interrupt.InterruptData.Caster)
+                        end)
+                        pcall(function()
+                            local adj = entry.RollAdjustments
+                            local fixed, base = adj.FixedAdjustment, adj.BaseAdjustment
+                            -- a fixed value is there when the interrupt sets the die (SetRoll); 0 is no die
+                            if type(fixed) == "number" and fixed > 0 then one.set = fixed end
+                            if type(base) == "number" and base ~= 0 then one.add = base end
+                        end)
+                        one.applied = (one.set ~= nil and e.Natural == one.set)
+                            or (one.add ~= nil and type(e.Total) == "number" and type(e.OldTotal) == "number" and e.Total - e.OldTotal == one.add)
+                        source = source or entityUuid(event.Source)
+                        target = target or entityUuid(event.Target)
+                        by[#by + 1] = one
+                    end
+                end
+            end
+        end
+    end
+    return by, source, target
+end
+
 local function adjusted(e)
     local payload = {
         roll = tostring(e.RollUuid), dc = e.DC, natural = e.Natural, total = e.Total, critical = tostring(e.Critical),
         was = { natural = e.OldNatural, total = e.OldTotal, critical = tostring(e.OldCritical) },
         outcomeChanged = e.OutcomeChanged or nil,
     }
-    payload.text = string.format("a roll of %s (natural %s) became %s (natural %s) after the throw", tostring(e.OldTotal),
-        tostring(e.OldNatural), tostring(e.Total), tostring(e.Natural))
+    local ok, by, source, target = pcall(changedBy, e)
+    if ok and #by > 0 then payload.by, payload.source, payload.target = by, source, target end
+    local named = {}
+    for _, one in ipairs(ok and by or {}) do
+        if one.applied then named[#named + 1] = string.format("%s of %s", tostring(one.interrupt), tostring(one.owner)) end
+    end
+    payload.text = string.format("a roll of %s (natural %s) became %s (natural %s) after the throw%s", tostring(e.OldTotal),
+        tostring(e.OldNatural), tostring(e.Total), tostring(e.Natural), #named > 0 and (" by " .. table.concat(named, ", ")) or "")
     GK.EventLog.Append("dice_adjusted", payload)
 end
 

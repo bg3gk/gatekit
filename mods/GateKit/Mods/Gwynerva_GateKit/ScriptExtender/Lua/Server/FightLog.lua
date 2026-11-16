@@ -5,6 +5,8 @@
 --
 -- Each row is written from what the game itself says, and a field the game does not give is left
 -- out:
+--   fight_options   the AI's candidate actions for a creature (Ext.System.ServerAi.Ai[subject].Actions)
+--   fight_choice    the candidate the AI takes (the list's NextAction stepping on)
 --   fight_action    the creation of a cast's state (eoc::spell_cast::StateComponent, SpellCastState)
 --   fight_reaction  Osiris ReactionInterruptUsed; the trigger from esv::move::LeaveAttackRangeEvent
 --   fight_joined    esv::combat::JoinEvent (CombatantJoinEvent): the fight and the initiative
@@ -178,6 +180,203 @@ local function confirmPreviews()
             previews[key] = nil
             pcall(cast, entity)
         end
+    end
+end
+
+-- ---------------------------------------------------------------------------------------
+-- fight_options, fight_choice: what a creature weighed, and what it chose
+--
+-- The game's AI keeps, per creature it is deciding for, the list of its candidate actions
+-- (Ext.System.ServerAi.Ai[subject].Actions, CombatAiAction), read once the AI system has updated.
+-- A finished calculation with a list new to this turn is written as `fight_options`, some ten to
+-- twenty ticks before the cast's state; the list's NextAction stepping on is the AI taking one, in
+-- the tick the cast's state is created: `fight_choice`. After the cast the list is one action of
+-- no spell, the end of the turn (written too: a choice with no spell).
+
+local function resourceLabel(id)
+    return try(function() return tostring(Ext.StaticData.Get(id, "ActionResource").Name) end) or tostring(id)
+end
+
+local function costsOf(list)
+    local out, any = {}, false
+    for _, c in ipairs(try(function() return list end) or {}) do
+        local id = try(function() return c.Resources[1] end)
+        local amount = try(function() return c.Amount end)
+        if id and type(amount) == "number" then
+            local label = resourceLabel(id)
+            local level = try(function() return c.SubResourceId end) or 0
+            if type(level) == "number" and level > 0 then label = label .. "/" .. level end
+            out[label] = (out[label] or 0) + amount
+            any = true
+        end
+    end
+    return any and out or nil
+end
+
+local AMOUNTS = { damage = "DamageAmount", heal = "HealAmount", control = "ControlAmount", boost = "BoostAmount",
+                  position = "PositionScore", dot = "DoTAmount" }
+
+local function amountsOf(score)
+    local per = try(function() return score.Score.DamageAmounts end)
+    if not per then return nil end
+    local out, any = {}, false
+    for who, a in pairs(per) do
+        local one, some = {}, false
+        for field, key in pairs(AMOUNTS) do
+            local v = try(function() return a[key] end)
+            if type(v) == "number" and v ~= 0 then one[field] = v; some = true end
+        end
+        local id = uuidOf(who)
+        if id and some then out[id] = one; any = true end
+    end
+    return any and out or nil
+end
+
+local function far(a, b)
+    if not a or not b then return false end
+    local dx, dy, dz = a[1] - b[1], a[2] - b[2], a[3] - b[3]
+    return dx * dx + dy * dy + dz * dz > 0.01
+end
+
+local function sane(v)
+    -- the game fills an unused position with the largest float
+    return v and math.abs(v[1]) < 1e30 and v or nil
+end
+
+-- the game's own chance of a candidate's roll, asked of the game with the creature as it is now
+-- (the weapon set in hand counts): a local call, not the wrapped verb GK.Rolls.Chance
+local function chanceOf(subject, spell, targetEntity)
+    if not spell or spell == "" or not targetEntity then return nil end
+    if not try(function() return targetEntity.ServerCharacter end) then return nil end
+    local ok, chance = pcall(Ext.Stats.GetSpellRollChance, subject, spell, targetEntity)
+    return ok and type(chance) == "number" and chance or nil
+end
+
+local function optionOf(subject, here, a)
+    local spell = try(function() return tostring(a.Spell.Prototype) end)
+    if spell == "" then spell = nil end
+    local targetEntity = try(function() return a.Target end)
+    local o = {
+        guid = try(function() return tostring(a.ActionGuid) end),
+        type = try(function() return tostring(a.Type) end),
+        spell = spell,
+        target = uuidOf(targetEntity),
+        score = try(function() return a.FinalScore end),
+        action = try(function() return a.ActionFinalScore end),
+        position = try(function() return a.PositionFinalScore end),
+        movement = try(function() return a.MovementFinalScore end),
+        multiplier = try(function() return a.ScoreMultiplier end),
+        range = { min = try(function() return a.MinRange end), preferred = try(function() return a.PreferredRange end),
+                  max = try(function() return a.MaxRange end) },
+        costs = costsOf(try(function() return a.ActionCosts end)),
+        amounts = amountsOf(try(function() return a.Score end)),
+    }
+    if not o.target then o.at = sane(vec(try(function() return a.TargetPos end))) end
+    local castAt = sane(vec(try(function() return a.CastPosition end)))
+    if far(castAt, here) then o.from = castAt end
+    local flags = {}
+    for _, f in pairs(try(function() return a.Flags end) or {}) do flags[#flags + 1] = tostring(f) end
+    if #flags > 0 then table.sort(flags) o.flags = flags end
+    o.chance = chanceOf(subject, spell, o.target and targetEntity or nil)
+    return o
+end
+
+-- per creature: the list last written (its options, best first), the content and the ids it was
+-- written for, each id's rank, the NextAction it had then. The AI recalculates during a turn (a
+-- weapon drawn): the same candidates with the same scores come back under new ids, and are not
+-- written again - only their ids are taken over.
+local thinking = {}
+
+local function keyOf(a)
+    return string.format("%s|%s|%s", tostring(try(function() return a.Spell.Prototype end)),
+        tostring(uuidOf(try(function() return a.Target end))), tostring(try(function() return a.FinalScore end)))
+end
+
+local function idOf(a) return try(function() return tostring(a.ActionGuid) end) end
+
+local function ranks(state, list)
+    state.rankOf = {}
+    for _, a in ipairs(list) do
+        local id, rank = idOf(a), state.rankByKey[keyOf(a)]
+        if id and rank then state.rankOf[id] = rank end
+    end
+end
+
+local function writeOptions(subject, who, list)
+    local here = vec(try(function() return subject.Transform.Transform.Translate end))
+    local options, keys = {}, {}
+    for i, a in ipairs(list) do
+        options[i] = optionOf(subject, here, a)
+        keys[options[i]] = keyOf(a)
+    end
+    table.sort(options, function(x, y) return (x.score or -math.huge) > (y.score or -math.huge) end)
+    local rankByKey = {}
+    for i, o in ipairs(options) do
+        local k = keys[o]
+        if rankByKey[k] == nil then rankByKey[k] = i end
+    end
+    local best = options[1]
+    append("fight_options", { text = string.format("%s weighs %d option%s, the best %s%s (%.2f)", name(who), #options,
+                                  #options == 1 and "" or "s", tostring(best and best.spell or "the end of its turn"),
+                                  best and best.target and (" on " .. name(best.target)) or "", best and best.score or 0),
+                              who = who, options = options })
+    return options, rankByKey
+end
+
+local function writeChoice(who, state, a)
+    local guid = idOf(a)
+    local rank = guid and state.rankOf[guid]
+    local chosen = rank and state.options[rank] or {}
+    append("fight_choice", { text = string.format("%s chooses %s%s%s", name(who), tostring(chosen.spell or "to end its turn"),
+                                 chosen.target and (" on " .. name(chosen.target)) or "",
+                                 rank and string.format(" (%d of %d)", rank, #state.options) or ""),
+                             who = who, spell = chosen.spell, target = chosen.target, at = chosen.at, score = chosen.score,
+                             rank = rank, options = #state.options, guid = guid })
+end
+
+local function aiUpdated()
+    local all = Ext.System.ServerAi.Ai
+    local present = {}
+    for subject, data in pairs(all) do
+        local who = uuidOf(subject)
+        if who then
+            present[who] = true
+            local list = {}
+            for i, a in pairs(data.Actions or {}) do list[i] = a end
+            local state = thinking[who]
+            if #list == 0 then
+                thinking[who] = nil
+            elseif data.CalculationFinished and (type(data.ActionCount) ~= "number" or data.ActionCount == #list) then
+                -- (a list whose ActionCount is behind its length is still being scored)
+                local ids = {}
+                for i, a in ipairs(list) do ids[i] = tostring(idOf(a)) end
+                ids = table.concat(ids, "|")
+                local nextAction = data.NextAction
+                if not state or state.ids ~= ids then
+                    local content = {}
+                    for i, a in ipairs(list) do content[i] = keyOf(a) end
+                    content = table.concat(content, "\n")
+                    if state and state.content == content then
+                        state.ids = ids
+                        ranks(state, list)
+                        if type(nextAction) == "number" and type(state.next) == "number" and nextAction < state.next then state.next = nextAction end
+                    else
+                        local options, rankByKey = writeOptions(subject, who, list)
+                        state = { ids = ids, content = content, next = nextAction, options = options, rankByKey = rankByKey }
+                        ranks(state, list)
+                        thinking[who] = state
+                    end
+                end
+                if type(nextAction) == "number" and type(state.next) == "number" and nextAction > state.next then
+                    state.next = nextAction
+                    local a = list[nextAction]
+                    if a then writeChoice(who, state, a) end
+                end
+            end
+        end
+    end
+    for who in pairs(thinking) do
+        if not present[who] then thinking[who] = nil end
     end
 end
 
@@ -416,13 +615,16 @@ L.Hooks.fight = {
         if ok and h then handles[#handles + 1] = h end
         local fine, t = pcall(function() return Ext.Events.Tick:Subscribe(function() pcall(flushPending) pcall(confirmPreviews) end) end)
         if fine then ticker = t end
+        thinking = {}
+        local good, a = pcall(Ext.Entity.OnSystemPostUpdate, "ServerAi", function() pcall(aiUpdated) end)
+        if good and a then handles[#handles + 1] = a end
     end,
     off = function()
         for _, h in ipairs(handles) do pcall(Ext.Entity.Unsubscribe, h) end
         handles = {}
         if ticker then pcall(function() Ext.Events.Tick:Unsubscribe(ticker) end) end
         ticker = nil
-        pending, casts, previews = {}, {}, {}
+        pending, casts, previews, thinking = {}, {}, {}, {}
         forget()
     end,
 }
