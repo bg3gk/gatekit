@@ -3308,3 +3308,43 @@ function GK.Rolls.Chance(spec) end
 ---@param path string
 ---@return boolean
 function GK.Verbs.Has(path) end
+
+---Moves the game's camera to `at` (an entity's uuid, a point {x, y, z}, or a list of two framed together) the way the game moves it: the camera behaviour's targets for an entity, its destination for a point, in a fight and outside. options.glide: glide past the game's snap distance (50 m) and put it back; options.hold: seconds before the camera returns by itself. Client: refuses a far creature's stub. Server: sends the server's point of every uuid to the client (channel GK_Camera) and answers the client's answer with `serverTicks`. Fair. Observed once the camera settled.
+---@param at string|number[]|(string|number[])[]
+---@param options { glide: boolean?, hold: number? }?
+---@return { ok: boolean, at: number[]?, distance: number?, ticks: integer?, how: ("targets"|"destination")?, snapped: boolean?, fight: boolean?, off: number?, onScreen: table?, serverTicks: integer?, error: string? }
+function GK.Camera.Focus(at, options) end
+
+---Brings the camera back to the controlled character by the game's own restore (in a fight the combat target's TargetMode 1 with its Position reset; outside, the behaviour's targets and the distance the first focus saved). options.glide as Focus's. Client, or server through GK_Camera. Fair. Observed once the camera settled.
+---@param options { glide: boolean? }?
+---@return { ok: boolean, at: number[]?, distance: number?, restoredDistance: number?, ticks: integer?, how: string?, serverTicks: integer?, error: string? }
+function GK.Camera.Return(options) end
+
+---Where a point or an entity (its feet) is on the screen, from the camera's view and projection matrices: u, v from 0 to 1 from the top left corner. Refuses a far creature's stub (its client position is stale). Client. Observation.
+---@param at string|number[]
+---@return { u: number?, v: number?, inFront: boolean?, inside: boolean?, error: string? }
+function GK.Camera.OnScreen(at) end
+
+---@class GK.Say
+---@field Styles table<string, { color: string?, bold: boolean?, italic: boolean?, prefix: string?, suffix: string?, accent: string?, effect: string?, sound: string? }> @ the looks of a line by name; `default` is the toolkit's own
+---@field Effects table<string, string> @ short effects of the game's own by name (effect resource uuids)
+---@field Sounds table<string, string> @ sound resources of the game's own by name
+GK.Say = {}
+
+---Shows `text` over the head of the creature `who` for about three seconds: a status of the toolkit's own (GK_SAY_<slot>) named with the text in the game's markup. options.style: a name of GK.Say.Styles or a table of its fields; any field may also be given in options. The caller's < > & are shown as written. Tracked by the stage's ledger; a row `said_overhead`. Server. Cheat. Observed once the status is on the creature.
+---@param who string
+---@param text string
+---@param options { style: (string|table)?, color: string?, bold: boolean?, italic: boolean?, prefix: string?, suffix: string?, accent: string?, effect: (string|false)?, sound: string? }?
+---@return { ok: boolean, who: string?, text: string?, status: string?, slot: integer?, handle: string?, markup: string?, ticks: integer?, error: string? }
+function GK.Say.Line(who, text, options) end
+
+---The line a creature shows now (within ~3 s), or nil. Server. Observation.
+---@param who string
+---@return { text: string, status: string, slot: integer, active: boolean }?
+function GK.Say.Shown(who) end
+
+---A short effect of the game's own on a creature or an item (a uuid) or at a point: options.effect (a name of GK.Say.Effects or an effect resource; default "orb" on an object, "spectral" at a point), options.sound, options.scale. The effects end by themselves. Server. Cheat.
+---@param at string|number[]
+---@param options { effect: string?, sound: string?, scale: number? }?
+---@return { ok: boolean, effect: string?, at: (string|number[])?, error: string? }
+function GK.Say.Accent(at, options) end

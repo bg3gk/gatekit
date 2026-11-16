@@ -1078,3 +1078,88 @@ cast's own walk is in its `from` and `to`; why a status left (its end, a save, a
 concentration) is in no row - `status_removed` and `game_unstatus` say only that it left; the
 Osiris `status_applied` row of the family `status` carries no duration (its writer,
 Server/EventFamilies.lua, does not read the status).
+
+## 22. The camera's focus and a line over a head
+
+`Client/Camera.lua` and `Server/Camera.lua` (the channel `GK_Camera`, server -> client for the
+request and client -> server for the answer); `Server/Say.lua`.
+
+| Verb | Side | Class | Answers |
+|---|---|---|---|
+| `GK.Camera.Focus(at, options)` | C and S | fair | observed once the camera settled: `{ ok, at, distance, ticks, how, snapped, fight, off, onScreen }`; on the server the client's answer with `serverTicks` |
+| `GK.Camera.Return(options)` | C and S | fair | observed: as Focus's, with `restoredDistance` |
+| `GK.Camera.OnScreen(at)` | C | observation | `{ u, v, inFront, inside }` |
+| `GK.Camera.State()` | C | observation | as before, with `moving`, `mode`, `focus` added |
+| `GK.Say.Line(who, text, options)` | S | cheat | observed once the status is on the creature: `{ ok, who, text, status, slot, handle, markup, ticks }` |
+| `GK.Say.Shown(who)` | S | observation | `{ text, status, slot, active }` or nil |
+| `GK.Say.Accent(at, options)` | S | cheat | `{ ok, effect, at }` |
+
+**The focus.** `at` is an entity's uuid, a point `{x, y, z}` or a list of two (framed together, as
+the game frames a caster and its target on a ranged attack). The camera is the entity with
+`GameCameraBehavior`; what moves it, in and out of a fight, is that component's `Targets` (read
+only when their count changes: one entity is written as `{e, e}`, a pair as two or three copies
+each) and, for a point, `TargetDestination` with the targets emptied (`how` is `targets` or
+`destination`; the camera keeps its own height above a point). `CameraCombatTarget` (the
+component the game writes on a ranged attack, TargetMode 4, and on the restore after it,
+TargetMode 1) is read only when marked changed (`MarkChanged`) and not at all outside a fight
+(CameraMode 8); on the player's own turn (CameraMode 9) a TargetMode 4 written into it was copied
+into `CameraTarget` and did not move the camera, in five variants (one target, two, a Position,
+the behaviour's targets emptied first); its restore did. So `Return` in a fight is the restore -
+TargetMode 1, the character, `ZoomToDistance`, and the `Position` set to the float maximum,
+without which a Position left there overrides the targets and the return silently fails - and
+outside a fight the behaviour's targets and the distance the first focus saved (the game moves
+the distance itself when its targets change: 10 m to 11.5 m). Beyond the camera switches'
+`TargetSnapDistance` (50 m; `Ext.Utils.GetGlobalSwitches().CameraSwitches`, four of them) the
+camera cuts (`snapped`); `options.glide` raises it to 200 for the move and puts it back when the
+answer comes, on the next focus or return, and in any case 6 s later. `options.hold` returns the
+camera by itself after that many seconds (a timer of the game's time). The answer comes when the
+game says the camera is not moving, its distance reached its destination and its target stood
+still for three frames; `ok` when the target is within 0.5 m (x, z) of the thing (of both, on
+the screen); `ok = false` with the reason: no such entity, a stub, cancelled by the player's input
+(the behaviour's `PlayerInControl` became true), a newer move took over, the camera did not move
+(the game holds it: during a dialogue the focus answers so), or it did not settle within 4 s of a
+running game (a guard).
+
+**Far creatures.** 30-45 m and more from the camera a character or an item is a stub on the client
+(17-20 components instead of 70-120: no `Level`, no `GameObjectVisual`, not drawn), and its client
+`Transform` is stale: moved on the server, the stub keeps the old point. The client's verbs refuse
+a stub; the server's `GK.Camera.Focus` sends the server's `Osi.GetPosition` of every uuid, and the
+client focuses the entity when it holds it whole and that point otherwise.
+
+**Times** (`test:camera/focus/matrix`, Basic_Level_A, 1024x576): to 3 m 22-25 server ticks, to
+10 m 27-35, to 50 m with a glide 51; a pair 27; in a fight 26. The camera runs on the client's
+frames in real time: the game's speed does not change it (the same ticks at speed 1 and 8).
+Turn-based mode outside a fight changes nothing (CameraMode stays 8).
+
+**On the screen.** clip = P * V * p with the camera's own `Camera.Controller.Camera.ViewMatrix`
+and `ProjectionMatrix` (column-major); u = (x/w + 1)/2, v = (1 - y/w)/2; behind the camera when
+w <= 0. A focused creature's feet stand at about u 0.5, v 0.55-0.6.
+
+**A line over a head.** The game writes the name of a status over the head of the creature it
+is applied to, for about three seconds whatever the status's duration (12 s tried). `GK.Say.Line`
+applies a status of the toolkit's own, `GK_SAY_<slot>` - made at run time as a copy of BLESS with
+its boosts and effects emptied and the flags `DisableCombatlog` and `DisablePortraitIndicator` (no
+log line, no portrait icon; a status made from scratch shows nothing) - whose display name is a
+translated string of the toolkit's own (`h6b1d5c0dg7e57g4b1dg9e0ag<slot as 12 digits>`), rewritten
+before each apply. Its duration is 1: it leaves in under a second, before any clean; a status
+still on when `GK.Stage.Clean` comes is removed after its name is emptied (a removal shows the name
+struck through). The name takes `<font color="#rrggbb">`, `<b>`, `<i>` and several colours in a
+line; `size` changes nothing; `&lt;`, `&gt;`, `&amp;` are shown as `<`, `>`, `&` (the caller's
+text is escaped so), numeric entities are shown as written, and a glyph the font lacks is a box
+(✦ is; « » • ♦ — ~ show). A string rewritten while its name floats changes the floating text, so
+each line takes its own slot of `GK.Say.PoolSize` (8): two creatures keep their own lines, and a
+creature's second line within the three seconds takes another slot (the same status applied again
+while its name floats shows nothing). The look is data: `GK.Say.Styles.<name> = { color, bold,
+italic, prefix, suffix, accent, effect, sound }` (`default`, `magic`, `whisper`, `warning` given;
+`options.style` names one or is such a table, and any field may be given in `options`); `effect`
+and `sound` name `GK.Say.Effects` and `GK.Say.Sounds` or are resource uuids, played with
+`Osi.PlayEffect` and `Osi.PlaySoundResource` (a status's `ApplyEffect` given an effect resource
+showed nothing). The translated string lives in the process's localization, which the host's own
+client shares; a client on another machine would not see the text. A row `said_overhead`.
+
+**An accent.** `GK.Say.Accent(at, options)` plays a short effect of the game's own on a creature
+or an item (`Osi.PlayEffect`) or at a point (`Osi.PlayEffectAtPosition`), with an optional sound.
+The effects named in `GK.Say.Effects` end by themselves within two seconds: nothing is left to
+stop or for `GK.Stage.Clean`. `orb` (Gale's Netherese orb, the body tinted violet), `spectral` (a
+violet-white burst on the ground), `faerie`, `faerie_point`, `mystra` (a golden glyph over the
+head).
