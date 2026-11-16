@@ -40,9 +40,12 @@ dance animation is played.
 
 - **Someone behind the statue on the splash screen.** `up --main-menu` goes through the splash
   screen by itself the moment it appears, and nothing found leads back to it (the UI event
-  `OpenSplashScreen` raised in the menu changes nothing). A scene for the splash needs a start
-  that stops there. The adventurers' dummies belong to `MM_Accept_Temple`; whether they exist
-  while `MM_Open_Boats` plays is unseen.
+  `OpenSplashScreen` and `ShowSplashScreen` raised in the menu change nothing). The splash is the
+  widget `SplashScreen` over the same level, left by the event `OpenMainMenu`, which the start
+  raises itself; a scene for the splash needs a start that does not raise it. In the menu the
+  dummies of every menu timeline stand at once (five values of
+  `ClientTimelineActorControl.Timeline` among the `TLPreviewDummy` entities), so the adventurers
+  are likely there under the splash too; it is unseen.
 - **A figure of the stand's own cast** (Raphael, Mizora). There is no server to spawn one, and
   the extender offers no client-side visual to load a character's look into; the scene borrows a
   figure the menu already has.
