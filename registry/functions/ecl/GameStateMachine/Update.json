@@ -1,0 +1,38 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateMachine::Update",
+  "rung": "extender",
+  "fingerprint": {
+    "calls": [
+      "fp:1c165509f9af111b",
+      "fp:5227b96c8688ff31",
+      "fp:7ec6bc773f10ca24",
+      "fp:b3c923f7f3c2b334",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "strings": ["5a994439920ff7b8", "60e34c6cdac49879", "c6c6f311e727600b"],
+    "components": [
+      "ecl::screen_fade::ScreenFadeSystem",
+      "ecs::query::spec::Spec<ls::TypeList<ecl::screen_fade::ClearScreenFadeFinishedOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<ecl::screen_fade::ClearScreenFadeFinishedOneFrameComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "Script Extender's table of byte patterns names this function: the pattern of its mapping ecl::EoCClient::Update is found once in the binary and an instruction it marks refers here"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "match",
+      "says": "EoCClient.dll exports this name; the symbol database matches the export to this function by strings"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "What the function does: it is named from Script Extender's table and has not been read",
+      "about": "meaning",
+      "state": "open"
+    }
+  ]
+}
