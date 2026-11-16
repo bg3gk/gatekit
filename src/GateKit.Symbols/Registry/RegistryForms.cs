@@ -288,6 +288,11 @@ public static partial class RegistryForms
             var was = before.FirstOrDefault(b => b["offset"]?.GetValue<long>() == field["offset"]?.GetValue<long>() && JsonText.Text(b["name"]) == JsonText.Text(field["name"]))
                 ?? before.FirstOrDefault(b => b["offset"]?.GetValue<long>() == field["offset"]?.GetValue<long>());
             if (was is null) continue;
+            // A layout carries a field's evidence as one sentence; where that sentence and the rung are
+            // what the entry already says, the entry's own evidence stays, each piece with its kind.
+            if (was["evidence"] is JsonArray kept && JsonText.Text(was["rung"]) == JsonText.Text(field["rung"])
+                && EvidenceText(kept) == EvidenceText(field["evidence"]))
+                field["evidence"] = kept.DeepClone();
             foreach (var (key, value) in was)
                 if (key is not ("offset" or "name" or "type" or "rung" or "evidence") && !field.ContainsKey(key)) field[key] = value?.DeepClone();
         }
