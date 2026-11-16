@@ -37,7 +37,7 @@ main menu by itself when they end, and the driver does nothing more - no key, no
 Each of `watchers`, `queen` and `skill_issue` is one Lua chunk that **arms** a scene on the server and
 returns at once. The scene then fires by itself when its condition comes true in the game, however
 the agent got there, and fires once. Each keeps its state in a global table `GKScene.<name>` for
-the stand's feed: `armed`, `fired`, `log` (`{ tick, ms, text }`, in order) and the fields below.
+the bridge's `now.scenes` (mods/AI): `armed`, `fired`, `log` (`{ tick, ms, text }`, in order) and the fields below.
 `<name>_off.lua` disarms it and takes back what it made.
 
     ./gatekit --instance <copy> exec server "$(cat stand/scenes/<name>.lua)"       # arm
@@ -56,7 +56,7 @@ matters gets `GK.Camera.Focus` (with a hold); nothing opens a window.
   mizora = {x,y,z} } }` before arming. Raphael is his root (a bare human) transformed into the
   placed object `S_GLO_Monitor` (his look; his name stays "Человек").
 - Every 0.3 s: a party member within 25 m whose sight holds one (`GK.See.Perceives`) marks it
-  `seen` (`who.<name>.seen, seenBy`); `GKScene.watchers.notice` is then a line for the feed
+  `seen` (`who.<name>.seen, seenBy`); `GKScene.watchers.notice` is then a line the bridge tells the agent
   ("someone is watching from afar (Рафаил)"). Each turns towards the nearest party member.
 - Within 6 m: +0.6 s the camera on it (4.6 s), +1.1 s its line, +3.9 s the puff
   (`VFX_Script_Stub_Poof_01`, as Raphael vanishes in the game), +4.2 s removed.

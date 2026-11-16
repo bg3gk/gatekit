@@ -8,66 +8,60 @@ is listed for the owner when it does. Rough is allowed here; breaking the game c
 
 ## Who does what
 
-- **The player is an AI agent** in an AI application (Claude Desktop or another), driving one copy
-  of the game through GateKit's MCP server (`gatekit --instance <copy> mcp`), as the blind runs
-  did. The owner talks to that agent by voice or text; the agent decides and acts.
-- **The stand gives the agent three things**: a fast way to read where it stands (one call, by
-  layers), a way to show its intent in the game (a line over the head, a purple accent, the
-  game's own camera focus and target sound), and sub-scenarios that fire by the situation.
-- **The stand does not talk and does not listen.** Voice, replies and commands are the
-  application's; nothing of sound goes into the game.
+- **The player is an AI agent** in an AI application of the owner's choice, driving one copy of
+  the game through the bridge of the mod GateKit AI. The owner talks to that agent by voice or
+  text; the agent decides and acts.
+- **The bridge is a mod of its own**, `mods/AI` ([mods/AI/README.md](../mods/AI/README.md)): four
+  tools, each answer carrying what changed in the game since the agent's last call. It shows the
+  agent's intent in the game (a line over the head, a glow on the target, the camera's focus), and
+  reads the state of the stand's scenes with no name of them known to it.
+- **The stand is the scenes** (`stand/scenes`, `stand/menu`, `stand/creation`, `stand/splash`:
+  [scenes/README.md](scenes/README.md)) and the owner's prompt for this run
+  ([prompt.md](prompt.md)). Scenes are scripts, armed by the driver, and fire by the situation.
+- **Nothing here talks or listens.** Voice, replies and commands are the application's; nothing
+  of sound goes into the game.
 
-## The layers (what the agent reads, one call)
+## Setting a session up
 
-`GK.Stand.Feed(since)` - also the MCP tool `bg3_stand_feed` - answers what changed since the
-cursor, grouped by layer, each layer a short list of plain rows:
+1. **Start the copy** in the prologue and set the working speed:
 
-| Layer | What it holds | From |
-|---|---|---|
-| `situation` | the place, the party with hit points and what is in hand, the quest's objective and its marker, whether a fight is on and whose turn | `GK.See.Status`, `GK.See.Combat` |
-| `seen` | who and what the party perceives now: creatures (hostile or not, distance, direction), doors and ways on, things to use | `GK.See.Around`, `GK.See.Ways` |
-| `heard` | lines spoken since the cursor, who said them, where | `GK.Heard` |
-| `waiting` | what waits for the player: a dialogue with its answers, a roll, a reaction, a loot window | attention |
-| `about_to` | what each creature is about to do and what it weighed, with the game's own chance | the rows `fight_options`, `fight_action` |
-| `dice` | every roll: who, what for, the dice, the result, what an interrupt changed | the rows `dice_thrown`, `dice_adjusted` |
-| `happened` | hits with their damage and what resisted, heals, deaths with who killed, who joined and left the fight | the game's rows and the family `fight` |
-| `said` | the agent's own lines and reasons, in order | `GK.Stand.Say` |
-| `scenario` | which sub-scenario is armed, which fired, what it is waiting for | the stand |
+       gatekit --instance <copy> up --level GustavX:TUT_Avernus_C
+       gatekit --instance <copy> exec server "return GK.Speed.Set('working')"
 
-The agent's own three voices are one call, `GK.Stand.Say{ think, say, do, at }` (MCP:
-`bg3_stand_say`): `think` is what the character thinks (kept in the feed only), `say` is the
-short line shown over the character's head, in the first person, of what it is about to do,
-`do` is the plain reason for a reader of the log, `at` is what the line is about. With `at` the
-stand marks the thing: the purple accent, the game's camera focus, the target sound.
+2. **Arm the scenes** of the prologue (again after every `reset`: a load restarts Lua):
+   [scenes/README.md](scenes/README.md), "The driver's order of the whole video".
+3. **Give the application the server.** `gatekit --instance <copy> mcp config` prints the
+   registration; add `--only` and `ai_` to its arguments, so that the server line is
 
-## The accent (what the watcher sees)
+       gatekit --instance <copy> mcp --only ai_
 
-One verb, `GK.Stand.Accent(at, options)`: the purple outline and ring the toolkit has
-(`GK.Focus`), the game's own camera focus moved to the thing and back, and the game's target
-sound. The camera part and the line over the head are built in the toolkit proper, on
-`rolls-real`, as universal verbs with tests; the stand only calls them.
+   and the agent's tool list is the four tools `ai_session`, `ai_step`, `ai_look`, `ai_scene` and
+   nothing else. An application without MCP is given the same tools with
+   `gatekit --instance <copy> mcp --only ai_ tools --format functions` and calls them with
+   `gatekit --instance <copy> mcp call <tool> '<json>'`.
+4. **Give the agent the brief**: the text of [mods/AI/brief.md](../mods/AI/brief.md), as the
+   application's system prompt or pasted as the first message.
+5. **Begin the session**: tell the agent to call
 
-## Sub-scenarios
+       ai_session { "mode": "open", "plan": "prologue", "prompt_file": "../../stand/prompt.md" }
 
-A sub-scenario is a small table: `when` (a condition over the feed: a place reached, a creature
-seen, a fight ended, an action asked), `run` (steps of staged events), `once`. They are armed at
-the start and fire by the situation, never by a script of the level:
+   Its answer hands the agent the stand's prompt and the whole situation. `"mode": "blind"`
+   instead, with no plan, is the run in which the agent knows only what a player could: the
+   scenes still fire and the director commands still work, but the agent is told nothing of a
+   scene's state, so the owner says when a moment is ready.
+6. **Play.** The owner talks; the agent steps.
 
-- **Watchers.** Mizora and Raphael stand somewhere on the level, each out of the way. When the
-  party comes within a few metres of one, it vanishes with its own effect.
-- **The queen's answer.** After the first fight, when the agent shoves Lae'zel off (the shove is
-  made to succeed), Vlaakith appears beside the character, says her line and casts Power Word
-  Kill. The stand then loads the save made just before the shove.
-- **Skill issue.** When Command: Drop is cast at Zhalk, his save is made to succeed, he says his
-  line, and Shadowheart polymorphs him.
+## Director commands
 
-Each uses the toolkit's own instruments: a roll decided at the throw (`GK.Rolls.Rig` by spell),
-the stage's spawn and status verbs, a checkpoint and a reset.
+What the owner says and which call each command means is the table of [prompt.md](prompt.md),
+"Director commands": the watchers, the shove and the queen's answer, skill issue, the finale.
+The driver's side of each - arming, the checkpoint before the shove, the reset after it - is the
+table of [scenes/README.md](scenes/README.md).
 
-## Stages of the work
+**The run is over** when `finale` says `done`: the agent stops, and the driver does nothing more.
 
-1. Base mechanics: the camera focus and the line over the head (toolkit); `Say`, `Accent`,
-   `Feed` (stand).
-2. The prologue: the agent's brief, the copy started in the prologue from the owner's save, the
-   speed, a first whole run.
-3. The sub-scenarios and whatever else is fun and fits the lore.
+## Reading a run afterwards
+
+Every step, line, thought, look and scene call of the agent is a row of the family `ai` in the
+copy's event log; [mods/AI/README.md](../mods/AI/README.md), "Rows" and "Choosing the model",
+has the command that reads them.
