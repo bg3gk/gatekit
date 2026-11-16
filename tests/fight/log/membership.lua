@@ -1,8 +1,9 @@
 -- Who is in a fight is in the fight log: a `fight_joined` row for each creature the fight takes
 -- in, with the fight's id and the creature's initiative, and `underway` for one that joins a fight
 -- already begun; a `fight_left` row for each that leaves, with why when the game says - killed
--- (and by whom, Osiris KilledBy), fled, or the fight ended (Osiris CombatEnded) (docs/contracts/
--- lua-api.md, section 15; the family `fight`, Server/FightLog.lua). Staged with a goblin beside
+-- (and by whom, Osiris KilledBy, which the game's own `game_death` row carries as `by` too),
+-- fled, or the fight ended (Osiris CombatEnded) (docs/contracts/
+-- lua-api.md, section 21; the family `fight`, Server/FightLog.lua). Staged with a goblin beside
 -- the host; a second goblin is made and brought into the fight on the host's first turn; the host
 -- kills the first with its own attack, and the second is removed by a cheat, which ends the fight.
 -- Staging (cheat): the pins, the goblins, the fight, the first goblin's wounds, the second's
@@ -72,6 +73,8 @@ function run(game)
         eq(l.combat, combat, "the same fight")
         eq(l.why, "killed", "why it left")
         eq(uuid(l.by), host, "who killed it")
+        local death = row(killing, "game_death", function(p) return uuid(p.who) == first end, 30)
+        eq(uuid(death.payload.by), host, "the death's own row names the killer")
     end)
     local ending = game.mark()
     step("the second goblin dies", "cheat", function()

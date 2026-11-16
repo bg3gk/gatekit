@@ -2,9 +2,10 @@
 -- holds, per damage type, the hit's own TotalDamagePerType (rolled) and FinalDamagePerType (dealt),
 -- and `resisted` the resistance that applied (HitDesc.Damage.Resistances; Server/GameLog.lua,
 -- docs/contracts/lua-api.md, section 21). Resistance halves the damage, rounded down (bg3.wiki,
--- "Resistance"); as found in the game, it never brings a damage below 1: a rolled 1 is dealt 1.
+-- "Resistance"): a rolled 7 is dealt 3. What the game does with a rolled 1 is its own and is held
+-- by test:quirks/damage/resistance_floor.
 -- Staged with a hostile goblin five metres off holding Resistance(Fire,Resistant), the host first;
--- the host's Fire Bolt has its attack die rigged to hit and its damage die rigged to the case's.
+-- the host's Fire Bolt has its attack die rigged to hit and its damage die rigged to 7.
 -- Staging (cheat): the host kept alive, the pin, the goblin and its boost, the fight; the cast
 -- and its dice (cheat). Reading: observation.
 -- Run: gatekit --instance <copy> test tests/fight -k fight/log/resisted
@@ -61,11 +62,10 @@ local function bolt(die, dealt)
             local fire = (hit.types or {}).Fire
             check(fire ~= nil, "the row says the fire damage", hit)
             eq(fire.rolled, die, "rolled: the die")
-            eq(fire.dealt, dealt, "dealt: half, rounded down, never below 1")
+            eq(fire.dealt, dealt, "dealt: half, rounded down")
             check(hit.resisted ~= nil and hit.resisted[1].type == "Fire", "the row names the resistance that applied", hit.resisted)
         end)
     end
 end
 
 case("die 7", bolt(7, 3))
-case("die 1", bolt(1, 1))

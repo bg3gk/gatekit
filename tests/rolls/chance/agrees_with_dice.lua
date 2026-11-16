@@ -6,7 +6,8 @@
 -- for real and its row of the roll log read. Each case is a weapon attack with another weapon
 -- set: the chance is asked while the other set is in hand, which is where a chance asked
 -- carelessly goes wrong (the game counts the weapons in hand).
--- Staging (cheat): the goblin kept alive, the fight, the cast. Reading: observation.
+-- Staging (cheat): the goblin kept alive, the fight, the other weapon set put in hand (a row of
+-- the stage ledger, so the clean puts the set back), the cast. Reading: observation.
 -- Run: gatekit --instance <copy> test tests/rolls -k rolls/chance/agrees_with_dice
 
 test { level = "GustavX:Basic_Level_A", surprises = { "combat_started" },
@@ -39,7 +40,17 @@ for _, c in ipairs(CASES) do
             ]], c.distance))
             game.wait("client", string.format("Ext.Entity.Get(%q) ~= nil", g), 10)
             game.server(string.format("return GK.Stage.Fight({ %q })", g))
-            game.server(string.format("Ext.Entity.Get(%q).WeaponSet.WeaponSet = %q return true", host, c.held))
+            -- the weapon set through the stage ledger (the fixtures' `weaponset` undo), so the clean puts it back
+            game.server(string.format([[
+                local h = Osi.GetHostCharacter()
+                local e = Ext.Entity.Get(h)
+                local was = tostring(e.WeaponSet.WeaponSet)
+                if was ~= %q then
+                    GK.Stage.Track{ kind = "other", note = "the host's weapon set " .. was .. " -> %s",
+                                    op = { op = "weaponset", who = h, set = was, drawn = Osi.IsWeaponUnsheathed(h) } }
+                    e.WeaponSet.WeaponSet = %q
+                end
+                return true ]], c.held, c.held, c.held))
             return uuid(g)
         end)
         step("the host's turn", "observation", function()

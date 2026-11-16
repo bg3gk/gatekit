@@ -7,8 +7,11 @@
 -- host, 25 m away and an enemy of one of the two, is never taken in (at 12 m it is).
 -- Staged with a goblin and a human 3 m apart; both miss for two rounds (the attack die pinned at
 -- 1), so that whole rounds pass and their length is read; then the goblin's die is pinned at 20
--- and the human, left with one hit point, dies of the next blow. The rounds' ticks are written to
--- rounds.txt.
+-- and the human, left with one hit point, dies of the next blow. In each of the two rounds each
+-- creature makes exactly one action of its own turn (a `fight_action` between that round's start
+-- and the next, a reaction left out): the goblin its main-hand attack, the human an unarmed one.
+-- The rounds' ticks and every action with its round, tick and spell are written to rounds.txt,
+-- and a count that is not one names them in the failure.
 -- Staging (cheat): the pair, the pins, the wound, the factions. Reading: observation.
 -- Limit: 30 s at speed 1 - two whole rounds of two turns, which the rule is about, and a third begun.
 -- Run: gatekit --instance <copy> test tests -k fight/npc/without_the_party --speed working
@@ -40,18 +43,27 @@ function run(game)
         return id
     end)
     step("two rounds pass, each creature acting in each", "observation", function()
-        local third = row(staged, "round_started", function(p) return p.combat == combat and p.round == 3 end, 60)
-        local starts, acted = {}, {}
-        for _, r in ipairs(game.events(staged, { "round_started", "fight_action", "turn_ended" }).rows or {}) do
+        row(staged, "round_started", function(p) return p.combat == combat and p.round == 3 end, 60)
+        -- each action is counted in the round it was made in: the rows between two round starts
+        local starts, acted, round, told = {}, { {}, {} }, 0, {}
+        for _, r in ipairs(game.events(staged, { "round_started", "fight_action" }).rows or {}) do
             local p = r.payload
-            if r.kind == "round_started" and p.combat == combat then starts[p.round] = r.tick end
-            if r.kind == "fight_action" and r.seq < third.seq then acted[N.uuid(p.who)] = (acted[N.uuid(p.who)] or 0) + 1 end
+            if r.kind == "round_started" and p.combat == combat then
+                starts[p.round], round = r.tick, p.round
+            elseif r.kind == "fight_action" and (round == 1 or round == 2) then
+                local who = N.uuid(p.who)
+                local name = who == cast.goblin and "goblin" or who == cast.human and "human" or who
+                told[#told + 1] = string.format("round %d tick %d: %s %s%s", round, r.tick, name, tostring(p.spell), p.reaction and " (a reaction)" or "")
+                if not p.reaction then acted[round][who] = (acted[round][who] or 0) + 1 end
+            end
         end
-        check((acted[cast.goblin] or 0) >= 2, "the goblin attacked in each of the two rounds", acted)
-        check((acted[cast.human] or 0) >= 2, "the human attacked in each of the two rounds", acted)
         check(starts[1] and starts[2] and starts[3], "the three rounds' starts are in the log", starts)
-        game.save("rounds.txt", string.format("round 1: %d server ticks, round 2: %d server ticks (two creatures, one attack each)\n",
-            starts[2] - starts[1], starts[3] - starts[2]))
+        game.save("rounds.txt", string.format("round 1: %d server ticks, round 2: %d server ticks\n%s\n",
+            starts[2] - starts[1], starts[3] - starts[2], table.concat(told, "\n")))
+        for n = 1, 2 do
+            eq(acted[n][cast.goblin], 1, "the goblin's actions of its own turn in round " .. n .. " (" .. table.concat(told, "; ") .. ")")
+            eq(acted[n][cast.human], 1, "the human's actions of its own turn in round " .. n .. " (" .. table.concat(told, "; ") .. ")")
+        end
     end)
     local killing = game.mark()
     step("the goblin's die at 20", "cheat", function() N.die(game, cast.goblin, 20) end)

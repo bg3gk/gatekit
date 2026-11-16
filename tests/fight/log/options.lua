@@ -3,14 +3,14 @@
 -- one. The fight log writes the list as `fight_options` - each candidate with its spell, target,
 -- score and the parts of it, its range, costs, the damage the AI expects and the game's own chance
 -- of its roll - and the one taken as `fight_choice` (docs/contracts/lua-api.md, section 21; the
--- family `fight`, Server/FightLog.lua). Staged as tests/fight/log/intent.lua stages it: a hostile
+-- family `fight`, Server/FightLog.lua). Staged as test:fight/log/intent stages it: a hostile
 -- goblin a few metres off with the first turn, acting by its own AI. The chance the AI weighed is
--- held to the dice the attack then throws, as tests/rolls/chance/agrees_with_dice.lua holds it.
+-- held to the dice the attack then throws, as test:rolls/chance/agrees_with_dice holds it.
 -- Staging (cheat): the host kept alive, the pin, the goblin, the fight. Reading: observation.
 -- Run: gatekit --instance <copy> test tests/fight -k fight/log/options
 
 test { level = "GustavX:Basic_Level_A", surprises = { "combat_started" },
-           about = "What a creature weighed before it acted is in the log, and it did the best of it." }
+           about = "What a creature weighed before it acted is in the log, the best first, with the one it took and the chance it counted on." }
 
 local function uuid(id) return id and string.match(id, "(%x+%-%x+%-%x+%-%x+%-%x+)$") or id end
 

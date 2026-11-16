@@ -1,14 +1,15 @@
--- A hit forced by Karmic Dice shows a natural die that was never thrown: once misses have built
--- the player's stream a success debt, Karmic Dice decides the next attack a hit before the d20 is
--- thrown - its roll row is `forced`, with no dice - and the hit still names a natural die and a
--- total that add up, as if a d20 had been thrown. The stream moves three draws for it where a
--- thrown d20 moves two: the hidden roll of the wiki and the choice of the die are drawn from it.
+-- A roll forced by Karmic Dice has a row with no dice of its own, and the hit still shows a
+-- natural die: once misses have built the player's stream a success debt, Karmic Dice decides the
+-- next attack a hit before the d20 is thrown - its roll row is `forced`, with no dice - and the
+-- hit names a natural die and a total that add up. The stream moves three draws for it where a
+-- thrown d20 moves two: the wiki's hidden roll and the die it chooses are most likely drawn
+-- there, on a path the roll event does not see (research/studies/rolls.md, section 27).
 -- bg3.wiki, "Dice rolls", "Karmic Debt": a hidden roll decides an automatic success, and the game
--- then chooses a d20 value among those that would have succeeded - the choice is the wiki's too;
--- what neither the hit nor the combat log says is that the die shown was chosen and not thrown,
--- so a reader of the hit takes it for a throw. research/studies/rolls.md, section 20. Found in
+-- then chooses a d20 value among those that would have succeeded. Neither the hit nor the combat
+-- log says that the die shown was chosen, so a reader of the hit takes it for a plain throw; a
+-- reader of the roll log finds a roll without dice. research/studies/rolls.md, section 20. Found in
 -- build 4.1.1.7631656; when this fails, the game changed. The attack is repeated, at most four
--- times (and once more, unchosen, in a game just started, whose stream does not exist yet), because the rule is about what a run of misses does: the misses are real dice (the
+-- times (and once more, unchosen, in a game just started, whose stream does not exist yet), because the rule is about what a run of misses does (a success was forced after two to four misses wherever it was watched; a run with none within four ends unmet, saying nothing of the rule): the misses are real dice (the
 -- stream's next die chosen, GK.Rolls.SetNext), so that the debt the game keeps is its own; a rig
 -- decides the outcome after the debt is counted from the die first thrown.
 -- Staging (cheat): the host first, Karmic Dice on for the scope, a hostile goblin beside it kept

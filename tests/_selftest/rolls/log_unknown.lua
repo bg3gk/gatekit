@@ -6,7 +6,7 @@
 -- nothing in the game - and a roll of that asker is thrown: a story's passive check, asked by
 -- unplaced::RollSkillCheck. The same check before the forgetting gives the named row to compare.
 -- Staging (cheat): the passive check (the story's RequestPassiveRoll). Reading: observation.
--- Run: gatekit --instance <copy> test tests/_selftest -k roll_log_unknown
+-- Run: gatekit --instance <copy> test tests -k _selftest/rolls/log_unknown
 
 test { level = "GustavX:Basic_Level_A",
            about = "A roll asked from a place the log does not know is written and marked unknown, not dropped." }

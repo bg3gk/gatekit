@@ -3,7 +3,7 @@
 -- it by itself, and the `fight_reaction` row (Osiris ReactionInterruptUsed) names the one who
 -- reacts, the interrupt, the mover and where it left the reach (esv::move::LeaveAttackRangeEvent),
 -- and the id of the reaction's cast, whose `fight_action` row says it is a reaction
--- (docs/contracts/lua-api.md, section 15; the family `fight`, Server/FightLog.lua). Staged with a
+-- (docs/contracts/lua-api.md, section 21; the family `fight`, Server/FightLog.lua). Staged with a
 -- goblin beside the host on the host's turn; the host walks away with GK.Cheat.Move told to
 -- provoke. The first attack of opportunity of a game start calls up the tutorial "Attack of
 -- Opportunity" on the client, which waits for the player: it is closed as a player closes it.
@@ -57,8 +57,14 @@ function run(game)
         return r
     end)
     step("the tutorial closed, if the game showed it", "fair", function()
-        -- the tutorial shows once per game start: a later run of the test sees none
-        local shown = pcall(game.wait, "ui","GK.Gui.Blocking().window == 'tutorial'", 3)
-        if shown then check(game.ui("return GK.Gui.Resolve{ tutorial = 'close' }").ok, "the tutorial is closed") end
+        -- The tutorial shows once per game start, as the reaction is used; the goblin's attack is
+        -- judged whether it shows or not. The first of the two rows ends the wait, so a run that
+        -- sees no tutorial waits for nothing but the attack's own row.
+        local first = game.wait_row(mark, { "tutorial", "game_hit" }, function(p, r)
+            return r.kind == "tutorial" or (uuid(p.who) == host and uuid(p.by) == goblin)
+        end, 30)
+        if first.kind == "tutorial" or game.ui("return GK.Gui.Blocking().window") == "tutorial" then
+            check(game.ui("return GK.Gui.Resolve{ tutorial = 'close' }").ok, "the tutorial is closed")
+        end
     end)
 end

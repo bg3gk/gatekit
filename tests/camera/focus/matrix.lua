@@ -1,26 +1,31 @@
 -- GK.Camera.Focus moves the game's camera onto a thing the way the game itself moves it, and the
--- answer comes when the camera has settled (docs/contracts/lua-api.md, section 22). The rule held
--- here, over three kinds of thing and three distances: after the focus the camera's target stands
--- within half a metre (x, z) of the thing, the thing is near the middle of the screen
--- (GK.Camera.OnScreen, from the camera's own matrices), and the camera settled within a budget of
--- server ticks. Kinds: a point of the ground, an object (a chest), a creature (a neutral human,
--- never attacked). Distances, to the right of the screen from the host: near (3 m, on screen
--- already), middling (10 m, at the screen's edge) and far (50 m, well outside: the client holds a
--- stub of a creature or an item there, so the verb is called on the server, which sends the
--- server's point; past the game's snap distance of 50 m the camera would cut, so the far cases ask
--- for a glide). The answer also says whether the thing is drawn: a creature 50 m from the party is
--- asleep and a stub on the client, so the camera shows its place and the answer says `drawn = false`
--- with a warning; the chest's stub is drawn all the same; a point has no `drawn`
--- (research/studies/camera-focus.md; the far creature woken first: test:camera/focus/far).
--- Budgets measured with the camera's own glide (night notes K1): 0.6-1.1 s up to 18 m,
--- 1.5 s for a raised-snap glide of 60 m, at 30 server ticks a second, with room for the answer's
--- way back from the client.
+-- answer comes when the camera has settled; GK.Camera.Return brings it back to the controlled
+-- character at the distance it had before the focus (docs/contracts/lua-api.md, section 22). The
+-- rule held here, over the kinds of thing and the distances that differ: after the focus the
+-- camera's target stands within half a metre (x, z) of the thing, the thing is near the middle of
+-- the screen (GK.Camera.OnScreen, from the camera's own matrices), and the camera settled within
+-- a limit of server ticks; after the return the camera's target is on the host and its distance
+-- is the one before the focus (the game itself moves the distance when its targets change, so
+-- the saved one is written back). Kinds: a point of the ground, an object (a chest), a creature
+-- (a neutral human, never attacked). Distances, to the right of the screen from the host: near
+-- (3 m, on screen already), middling (10 m, at the screen's edge) and far (50 m, well outside:
+-- the client holds a stub of a creature or an item there, so the verb is called on the server,
+-- which sends the server's point; past the game's snap distance of 50 m the camera would cut, so
+-- the far cases ask for a glide). Near and middling differ only in the limit, so each is held
+-- once; far is held for each kind, because there the answer says whether the thing is drawn: a
+-- creature 50 m from the party is asleep and a stub on the client, so the camera shows its place
+-- and the answer says `drawn = false` with a warning; the chest's stub is drawn all the same; a
+-- point has no `drawn` (research/studies/camera-focus.md; the far creature woken first:
+-- test:camera/focus/far).
+-- Limits: 45, 60 and 90 server ticks - the camera's own glide takes up to about a second within
+-- 18 m and a second and a half for a raised-snap glide of 60 m, at 30 server ticks a second, with
+-- room for the answer's way back from the client.
 -- Staging (cheat): the camera put back on the host, the thing spawned. Acting (fair): the focus, on
--- the server. Reading (observation): the answer, the server's position, the screen.
+-- the server, and the return. Reading (observation): the answers, the server's position, the screen.
 -- Run: gatekit --instance <copy> test tests/camera -k camera/focus/matrix --speed working
 
 test { level = "GustavX:Basic_Level_A",
-       about = "GK.Camera.Focus brings the camera onto a point, an object or a creature - near, at the screen's edge or far - near the middle of the screen, settled within a budget." }
+       about = "GK.Camera.Focus brings the camera onto a point, an object or a creature - near, at the screen's edge or far - near the middle of the screen, settled within a limit; GK.Camera.Return puts it back on the host at its old distance." }
 
 local F = require("_focus")
 
@@ -39,9 +44,12 @@ local function focusCase(kind, range)
     local r = RANGES[range]
     return function(game)
         game.wait_state("Running", "server", 120)
+        local host, before
         local thing = step("the camera on the host, the thing " .. r.metres .. " m to the screen's right", "cheat", function()
             F.home(game)
-            local _, p = F.place(game, r.metres)
+            before = game.client("return GK.Camera.State()")
+            local h, p = F.place(game, r.metres)
+            host = h
             if not KINDS[kind] then return p end
             return F.uuid(game.server(string.format("return GK.Stage.Spawn{ template = %q, at = { %f, %f, %f }, faction = 'neutral' }[1]",
                 KINDS[kind], p[1], p[2], p[3])))
@@ -84,12 +92,23 @@ local function focusCase(kind, range)
                 eq(a.drawn, true, "the thing is drawn")
             end
         end)
-        step("the camera back", "fair", function() F.home(game) end)
+        local back = step("the camera back", "fair", function()
+            local answer = game.server(string.format("return GK.Camera.Return({ glide = %s })", tostring(r.glide == true)), 30)
+            check(answer.ok, "the camera settled on the host", answer)
+            return answer
+        end)
+        step("on the host, at the distance before the focus", "observation", function()
+            local s = game.client("return GK.Camera.State()")
+            check(F.flat(s.target, host) <= 0.5, "the camera's target within 0.5 m (x, z) of the host", s.target, host)
+            check(math.abs(s.distance - before.distance) <= 0.5, "the camera at its distance before the focus",
+                s.distance, before.distance)
+            check(back.serverTicks <= r.budget, "back within " .. r.budget .. " server ticks", back.serverTicks)
+        end)
     end
 end
 
-for _, kind in ipairs({ "point", "object", "npc" }) do
-    for _, range in ipairs({ "near", "middling", "far" }) do
-        case(kind .. " " .. range, focusCase(kind, range))
-    end
-end
+case("point near", focusCase("point", "near"))
+case("object middling", focusCase("object", "middling"))
+case("point far", focusCase("point", "far"))
+case("object far", focusCase("object", "far"))
+case("npc far", focusCase("npc", "far"))
