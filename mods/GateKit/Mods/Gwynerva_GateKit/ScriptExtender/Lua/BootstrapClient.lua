@@ -32,6 +32,7 @@ end
 
 Ext.Require("Client/Windows.lua")
 Ext.Require("Client/XamlChains.lua")
+Ext.Require("Client/Pointer.lua")
 Ext.Require("Client/WindowReaders.lua")
 Ext.Require("Client/Popups.lua")
 Ext.Require("Client/Camera.lua")

@@ -2676,6 +2676,8 @@ function GK.Gui.Click(name, what, which) end
 ---@field type string
 ---@field text string?
 ---@field value any
+---@field valueFrom string? @ a toggle whose state was read from its data's flag ("data.Value"), not from IsChecked
+---@field unread string? @ "IsChecked": a toggle whose state cannot be read
 ---@field enabled boolean? @ false only
 ---@field hidden boolean?
 ---@field data string? @ the type of the view model the control stands for
@@ -2704,6 +2706,52 @@ function GK.Gui.Handle(name, handle) end
 ---@param widget any
 ---@return string
 function GK.Gui.Shown(widget) end
+
+---An open tooltip, as GK.Gui.Tips reads it.
+---@class GK.GuiTip
+---@field n integer
+---@field handle string @ "tip#1"
+---@field pinned boolean
+---@field type string @ the element's type: ls.LSTooltip (a hover holds it open), ls.LSElementCopy (pinned)
+---@field about { type: string?, of: string?, id: string|number|nil, spell: string?, values: table?, text: string? }? @ the view model the tooltip was given
+---@field data string? @ the type of the tooltip's own data
+---@field context string?
+---@field hint string? @ the key hint the game draws above it
+---@field title string?
+---@field texts { part: string?, text: string }[]
+---@field links { handle: string, text: string?, tag: string?, data: string?, of: string? }[] @ what inside it carries a tooltip of its own
+---@field parent string? @ the handle of the tooltip it was called from
+---@field owner { widget: string?, element: string }? @ where in a window it was called from
+
+---The open tooltips as a chain: the pinned ones in the game's order, then what a hover holds open
+---(docs/contracts/lua-api.md, "Tooltips"). UI.
+---@param options { detail: boolean? }|nil
+---@return { ok: boolean, tips: GK.GuiTip[] }
+function GK.Gui.Tips(options) end
+
+---Calls up a tooltip as a hover does, with no pointer: of a control of an open widget (a handle of
+---GK.Gui.Look, an item's handle or an x:Name), or of a link inside an open tooltip
+---(GK.Gui.Tip("tip#1/link#2")). UI.
+---@param name string @ the widget, or a link's handle
+---@param handle string?
+---@return { ok: boolean, did: string?, tip: GK.GuiTip?, open: integer?, saw: string?, error: string? }
+function GK.Gui.Tip(name, handle) end
+
+---Pins the tooltip a hover holds open: the key of the game's input event UIPinTooltip. UI.
+---@return { ok: boolean, did: string?, pinned: GK.GuiTip?, open: integer?, saw: string?, error: string? }
+function GK.Gui.PinTip() end
+
+---Closes every tooltip, or the one a hover holds open by its handle. UI.
+---@param which string?
+---@return { ok: boolean, did: string?, closed: integer?, tips: GK.GuiTip[]?, saw: string?, error: string? }
+function GK.Gui.CloseTips(which) end
+
+---A pointer inside the game, for research: the game's own mouse position written and motion and
+---button events injected, the real mouse untouched. Answers what the interface reported back.
+---Nothing that ships may rest on it (docs/contracts/lua-api.md, "The pointer"). UI. A cheat.
+---@param options { at: number[]?, widget: string?, handle: string?, ["do"]: "move"|"press"|"release"|"click"|"leave"|nil, button: integer?, wait: integer? }
+---@return table
+function GK.Cheat.Pointer(options) end
 
 ---Sets a control to a value as the player's hand would: a slider inside its range, a toggle, a
 ---text field, a list (as GK.Gui.Select). Answers what the control reads afterwards. UI.

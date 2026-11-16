@@ -111,8 +111,9 @@ The tables and functions each file adds to `GK`; the signatures are in `lua-type
 | `Client/Sound.lua` (C) | `GK.Sound` (section 8) |
 | `Client/UI.lua` (UI) | `GK.ViewModel`, `ViewModels`, `Properties`, `Dialog`, `Answer`, `Fold`, `Commands`, `Command` |
 | `Client/Stage.lua` (UI) | `GK.Blocking`, `RollNext`, `BoxPress`, `Unblock`, `Autoplay`, `AutoplayInfo`, `Controls`, `Press` |
-| `Client/Windows.lua` (UI) | `GK.Gui`: `Widget`, `Data`, `Open`, `Page`, `IsOpen`, `InputEvents`, `Event`, `Show`, `Close`, `CloseAll`, `Find`, `Controls`, `ActionOf`, `UseSlot`, `Picture`, `Changed`, `ObserveEffect`, `Click`, `Select`, `Input`, `Snapshot`, `Read`, `Item`, `ItemDo`, `FilmPlaying`, `Stuck`, `NewGame`, `List`, the registry of windows `Windows`; the client's `GK.Cheat` window verbs `Run`, `Set`, `Step`, `Auto`, `Quiet`, `Recover` |
+| `Client/Windows.lua` (UI) | `GK.Gui`: `Widget`, `Data`, `Open`, `Page`, `IsOpen`, `InputEvents`, `Event`, `Show`, `Close`, `CloseAll`, `Find`, `Controls`, `ActionOf`, `UseSlot`, `Picture`, `Changed`, `ObserveEffect`, `Click`, `Select`, `Input`, `Snapshot`, `Read`, `Item`, `ItemDo`, `FilmPlaying`, `Stuck`, `NewGame`, `List`, `Look`, `Handle`, `Shown`, `Set`, `Tips`, `Tip`, `PinTip`, `CloseTips`, the registry of windows `Windows`; the client's `GK.Cheat` window verbs `Run`, `Set`, `Step`, `Auto`, `Quiet`, `Recover` |
 | `Client/XamlChains.lua` (UI) | `GK.Gui.XamlChain`: a control's click chain read from the game's XAML (section 11) |
+| `Client/Pointer.lua` (UI) | `GK.Cheat.Pointer`: a pointer inside the game, a research instrument (section 11, "The pointer") |
 | `Client/WindowReaders.lua` (UI) | no new functions; adds `read` to the entries of `GK.Gui.Windows` |
 | `Client/Popups.lua` (UI) | `GK.Gui.Blocking`, `Resolve`, `DialoguePhase`, `RollBonuses`, `AddRollBonus`, `Trade`, `Combine`, `LongRest`, `QuickSave`, `QuickLoad`, `SaveAs`, `LoadLatest`; the entries of the windows that wait for the player (dialogue, roll, reaction, box, tutorial, loot, trade, pickpocket, rest, learn ...) |
 | `Client/Camera.lua` (C) | `GK.Camera` (`State`, `Look`, `Face`) |
@@ -472,7 +473,7 @@ enabled (false only), hidden, data, of, command, parameter }`.
 | `kind` | Elements | `value` | Acted on by |
 |---|---|---|---|
 | `button` | a type with `Button` in its name; a list item outside any list | - | `GK.Gui.Click` |
-| `toggle` | `CheckBox`, `RadioButton`, `ToggleButton` | `IsChecked` when it reads (`unread = "IsChecked"` when it does not) | `GK.Gui.Click`, `GK.Gui.Set` |
+| `toggle` | `CheckBox`, `RadioButton`, `ToggleButton` | `IsChecked` when it reads; else the flag `Value` of the view model the toggle stands for (`valueFrom = "data.Value"`); else `unread = "IsChecked"` | `GK.Gui.Click`, `GK.Gui.Set` |
 | `list` | `ListBox`, `ComboBox`, `TabControl` | the selected item's text; `selected`, `count`, `items = { { n, text, id, name, enabled, hidden } }`, `more`, `notShown` | `GK.Gui.Select`, `GK.Gui.Click(widget, "<list>#<n>")` |
 | `slider` | `Slider` | `Value`, with `min`, `max` | `GK.Gui.Set` |
 | `text` | `TextBox` | `Text` | `GK.Gui.Set` |
@@ -510,16 +511,79 @@ holds the handles of the controls it shows, so a page turned inside one widget i
 
 What the walk does not reach:
 
-- **A toggle's state.** `IsChecked` is a nullable flag, which the extender neither reads nor
-  writes: a toggle with a command is pressed through it, one without (a swatch button that only
-  opens a panel through a binding on `IsChecked`) cannot be pressed. What such a panel holds is in
-  the tree and is acted on by its `~` handle; the answer cannot say the panel opened.
+- **A toggle whose state is nowhere but in `IsChecked`.** `IsChecked` is a nullable flag, which
+  the extender neither reads nor writes. A toggle bound to a flag of its own data (a tick box of
+  the game's settings: `ls.VMTickBoxSetting.Value`) is read from that flag, and `GK.Gui.Set`
+  writes the flag and runs the toggle's click chain, which is what a click does through the
+  binding. A toggle with a command only is pressed through it. A toggle with neither (a colour
+  swatch of character creation, `IsChecked="False"` in the XAML, the panel's `Visibility` bound to
+  it and a confirm toggle bound back) cannot be pressed: what its panel holds is in the tree and is
+  acted on by its `~` handle, and the answer cannot say the panel opened.
 - **A chain on an unnamed control.** `Client/XamlChains.lua` finds a click chain by x:Name; an
   unnamed control runs its own `Command` only.
 - **Triggers on other events** (`ValueChanged`, `SelectionChanged`) are the game's own and fire by
   themselves when the value is set; they are not read.
 - **Items a virtualised list has not drawn**, when its source cannot be indexed either.
-- **Popups outside the widget** (a combo box's drop-down drawn in another root).
+- **Popups outside the widget** (a combo box's drop-down drawn in another root). Tooltips are
+  read from there by `GK.Gui.Tips` (below).
+
+### Tooltips
+
+An element, or an inline of a text (a keyword of a description), carries its tooltip in the UI
+library's `ToolTip` property, an `ls.LSTooltip`. A hover sets the tooltip's `IsOpen` after the
+library's delay, and the tooltip is drawn in a popup layer above the canvas, outside every widget;
+for an inline the tooltip records its `Inline` and `InlineParent` and makes its content from them.
+The game's input event `UIPinTooltip` moves the open tooltip into the list of pinned ones
+(`ls.UIWidget.PinnedTooltipList`, drawn by the widget `PinnedTooltips` as `ls.LSElementCopy`
+elements); a link inside a pinned tooltip opens the next one, which can be pinned in turn. A pinned
+tooltip's `PlacementTarget` is the element it was called from.
+
+| Verb | Class | What it does |
+|---|---|---|
+| `GK.Gui.Tips([{ detail }])` | observation | the open tooltips as a chain, the pinned ones first in the game's order, what a hover holds open last: `{ ok, tips = { { n, handle ("tip#1"), pinned, type, about = { type, of, id, spell, values (detail) }, data, context, hint, title, texts = { { part, text } }, links = { { handle ("tip#1/link#2"), text, tag, data, of } }, parent \| owner = { widget, element } } } }` |
+| `GK.Gui.Tip(window, control)`, `GK.Gui.Tip("tip#1/link#2")` | fair | calls up the tooltip of a control (a handle of `GK.Gui.Look`, an item's handle, an x:Name) or of a link inside an open tooltip, as a hover does: the tooltip's own `IsOpen` (for an inline, its `Inline` and `InlineParent` first). Another tooltip a hover held open is closed first. `{ ok, tip, open }` when it stands open and two looks read the same texts |
+| `GK.Gui.PinTip()` | fair | presses the key the profile binds to `UIPinTooltip`; `{ ok, pinned, open }` when the game's list of pinned tooltips grew and the pinned one shows its texts. The tooltip that was pinned is then closed, as a pointer moving off closes it |
+| `GK.Gui.CloseTips([handle])` | fair | every tooltip - a hover's by its `IsOpen`, the pinned ones by the widget's `RequestClearPinnedTooltipsCommand` (what a click beside them and the menu key run) - or the one a hover holds open; `{ ok, closed, tips }` |
+
+- **`about`** is the view model the tooltip was given (`ls.VMCharacterAction`, `ls.VMItem`,
+  `ls.VMAbility` ...): its type, what it calls itself, its id, and the spell of the game's stats it
+  names, when it names one.
+- **`texts`** are the tooltip's text blocks in tree order, inlines joined, each under the x:Name of
+  the part it lies in (`TitleArea`, `TechnicalDescription`, `PropertyText` ...); `title` is the
+  first. The key hint of the game's tooltip template (`uiHintContainer`) is `hint`, apart.
+- **`links`** are what inside the tooltip carries a tooltip of its own: an inline (`tag` is its
+  `TagTooltip`, `data` and `of` its view model) or an element (a cost, a property, a status icon,
+  named by the first text it shows).
+- **`parent`** is the tooltip whose tree holds the element this one was called from; a tooltip
+  called from a window has `owner`.
+- **Not reached.** One pinned tooltip among several is not closed apart: the game takes away the
+  ones pinned after a pinned tooltip on a click on it (`ls.LSElementPanel.ClickCommand` bound to
+  `RemovePinnedTooltipCommand`), with a parameter its panel makes in code. A tooltip opened by
+  handle has no pointer over it: it stays until it is closed or another is called up. No rows of
+  the event log are written for tooltips.
+
+### The pointer, a research instrument
+
+`GK.Cheat.Pointer{ at = { x, y } | widget, handle, do, button, wait }` (Client/Pointer.lua, a
+cheat) makes the game believe its pointer is at a point of its frame - fractions of the frame, or
+a point the UI library's hit test gives to a control of `GK.Gui.Look` - and that a button went
+down and up there (`do = "move" | "press" | "release" | "click" | "leave"`), without the real
+mouse. It answers what the interface reported back after `wait` ms: what lies under the point
+(`under`, `after`: the element hit, the named elements above it, the nearest control with its data
+and whether it has a command, the nearest element with a tooltip, the widget), the UI library's
+routed events seen at the root with their sources (`events`), the open tooltips before and after
+(`tipsBefore`, `tips`), and what changed in the widget's picture (`changed`). **Nothing that ships
+- a verb, a test, a recipe - rests on it**: it finds what answers, so that the answer can be given
+a handle, a command or an event.
+
+The window manager's update takes a mouse motion event's position only when the event names the
+game's window; every motion event then raises the input manager's motion event, on which the
+interface reads the engine's own mouse position (`ls::Mouse`) and gives it to the UI library. An
+event injected by Script Extender names no window, so the instrument writes the position into
+`ls::Mouse` (`GK.Memory.Write`) and injects the motion event that makes the interface read it; a
+button event injected after it is pressed there. It needs the memory instrument (section 16) and
+knows where one build of `bg3_dx11.exe` keeps its pointer to `ls::Mouse`; a real motion inside the
+game's window overwrites the position.
 
 ### AutomationId
 
