@@ -109,8 +109,12 @@ can stand together (`light`, `light_toward`, `light_up`).
   `Humans_Female_Civilian`.
 - **The kill.** The victim cowers in `HUM_F_Rig_DFLT_CINE_Fear_Loop_01` for `fear` seconds; Orin
   plays her own `HUM_F_Rig_DWS_CMBT_Skill_Orin_DeathbringerAssault_01_Attack`; at its first `Cast`
-  text key the victim plays `HUM_F_Rig_DFLT_DIE_Physical_Stationary_Front_01` and stays in
-  `HUM_F_Rig_DFLT_DIE_Generic_Deathpose_01`. The attack is over when the blueprint says so.
+  text key the victim plays `HUM_F_Rig_DFLT_DIE_Physical_Stationary_Front_01` and is held in its
+  last frame: `settle` seconds before the animation's `Duration` has passed, her `AnimationUpdate`
+  component is removed, and a figure without it is no longer animated (giving the component back
+  resumes it). `HUM_F_Rig_DFLT_DIE_Generic_Deathpose_01` is not a loop to lie in: its fourteen
+  frames are fourteen different death poses, and played as a loop it throws the body about. The
+  attack is over when the blueprint says so.
 - **The door** is in the level: the scenery actor `13045dab-...` of `MM_Accept_Temple` is a
   timeline dummy whose visual is `DOOR_Bhaal_Stone_Double_Big_A`, the slab in the temple's gate
   behind the adventurers. The timeline lifts it by about thirteen metres in about twelve seconds,

@@ -11,7 +11,11 @@
 --   the victim  Humans_Female_Civilian, in HUM_F_Rig_DFLT_CINE_Fear_Loop_01
 --   the kill    Orin's HUM_F_Rig_DWS_CMBT_Skill_Orin_DeathbringerAssault_01_Attack; at its first
 --               "Cast" text key the victim plays HUM_F_Rig_DFLT_DIE_Physical_Stationary_Front_01
---               and stays in HUM_F_Rig_DFLT_DIE_Generic_Deathpose_01
+--               and lies as its last frame leaves her: `settle` seconds before the animation's
+--               Duration has passed her AnimationUpdate component is removed, which stops her
+--               animation blueprint where it is. (HUM_F_Rig_DFLT_DIE_Generic_Deathpose_01 is no
+--               loop to lie in: its frames are fourteen different death poses, one a frame, and
+--               played as a loop it throws the body about.)
 --   the door    the timeline actor 13045dab-... of MM_Accept_Temple, whose visual is
 --               DOOR_Bhaal_Stone_Double_Big_A: the timeline lifts it some seconds after the camera
 --               has come down. Its Transform is read every tick; "it opens" is its rising by
@@ -23,7 +27,7 @@
 --
 -- Fires when the main menu is shown and the menu's camera has stood still for `still` seconds.
 -- Options, before arming: GKSceneOptions = { menu_orin = { ahead = 5, right = 1.0, apart = 1.1,
--- down = 0.88, still = 0.5, fear = 1.5, door_rise = 0.25, door_wait = 40, turn = 0.7, look = 2.0,
+-- down = 0.88, still = 0.5, fear = 1.5, settle = 0.1, door_rise = 0.25, door_wait = 40, turn = 0.7, look = 2.0,
 -- burst = 2.2, cover = 0.45, light = <uuid of the level's light to borrow, or false>,
 -- light_toward = 1.6, light_up = 1.6 } }
 -- State: GKScene.menu_orin = { armed, fired, stage, waiting, error, log, door }.
@@ -44,7 +48,6 @@ local LIGHT = "28c8bd46-35d5-4955-9313-8e21917b8977"
 if O.light ~= nil then LIGHT = O.light end
 local FEAR = "122199f3-ca4d-6b06-bca7-7f276af20883"
 local DIE = "5bb1d9e7-140a-3b91-8b9b-7787910cd33d"
-local POSE = "173913d2-1451-4ab0-d3aa-98cb1d668c35"
 local ATTACK = "2f6c18c9-17bc-8013-5602-155c0c2eb692"
 local RING = "57eb927b-c716-c3dc-934c-afc55017fec9"
 local BURST = "VFX_Cinematic_Orin_Teleportation_01"
@@ -234,7 +237,7 @@ local steps = {}
 
 function steps.loading()
     if not (loaded(S.orin) and loaded(S.victim)) then return end
-    if link(S.victim, { FEAR, DIE, POSE }) == 0 or link(S.orin, { ATTACK, RING }) == 0 then
+    if link(S.victim, { FEAR, DIE }) == 0 or link(S.orin, { ATTACK, RING }) == 0 then
         S.error = "no animation set of the figures took the links"
         return
     end
@@ -255,17 +258,31 @@ function steps.fear()
     stage("attack")
 end
 
+-- The victim falls by the death animation alone and is held in its last frame: with her
+-- AnimationUpdate component gone nothing samples her blueprint again, so the body rests.
+local function fall()
+    S.struck = true
+    S.fellAt = now()
+    S.fallFor = try(function() return Ext.Resource.Get(DIE, "Animation").Duration end) or 2.6
+    Ext.ClientVisual.PlayAnimation(S.victim, { DIE })
+end
+
+local function settle()
+    if not (S.fellAt and S.victim) or S.settled then return end
+    if (now() - S.fellAt) / 1000 < S.fallFor - (O.settle or 0.1) then return end
+    S.settled = pcall(function() S.victim:RemoveComponent("AnimationUpdate") end)
+    note(S.settled and "the body lies still" or "the body could not be stilled")
+end
+
 function steps.attack()
     local keys, ended = raised(S.orin)
     if keys.Cast and not S.struck then
-        S.struck = true
-        Ext.ClientVisual.PlayAnimation(S.victim, { DIE }, { POSE })
+        fall()
         note("the first blow lands: the victim falls")
     end
     if ended then
         if not S.struck then
-            S.struck = true
-            Ext.ClientVisual.PlayAnimation(S.victim, { DIE }, { POSE })
+            fall()
             note("the attack ended with no Cast text key seen: the victim falls now")
         end
         stage("killed")
@@ -347,6 +364,7 @@ local function tick()
             return
         end
         if S.error then return end
+        settle()
         local step = steps[S.stage]
         if step then step() end
         return
