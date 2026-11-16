@@ -5,7 +5,7 @@ namespace GateKit.UnitTests;
 
 /// <summary>Cases inside a test: `case(name, fn)` at its top level, each from a clean scene, a
 /// failing one not stopping the others.</summary>
-public sealed partial class GameTestTests
+public sealed class TestCasesTests : FakeGameRuns
 {
     const string Cased = """
         test { level = 'GustavX:TUT_Avernus_C', mods = {}, before = 'stage' }
@@ -21,7 +21,7 @@ public sealed partial class GameTestTests
     {
         var folder = Tests(("cased", Cased));
         var copy = CopyWithGame("cases");
-        var exit = await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, null, false);
+        var exit = await Runner(copy).RunSuiteAsync(folder, null, false);
         Assert.Equal(1, exit);
         var output = _game.Output.ToString();
         Assert.Contains("case bow: pass", output, StringComparison.Ordinal);
@@ -50,7 +50,7 @@ public sealed partial class GameTestTests
     {
         var folder = Tests(("cased", Cased));
         var copy = CopyWithGame("onecase");
-        Assert.Equal(0, await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, "cased/dart", false));
+        Assert.Equal(0, await Runner(copy).RunSuiteAsync(folder, "cased/dart", false));
         lock (_chunks)
         {
             Assert.Contains("dart", _chunks);

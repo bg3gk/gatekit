@@ -4,7 +4,7 @@ namespace GateKit.UnitTests;
 
 /// <summary>game.wait_row and the prelude's row(): the host's own wait on the event log, its limit
 /// counted in the game's ticks.</summary>
-public sealed partial class GameTestTests
+public sealed class TestWaitRowTests : FakeGameRuns
 {
     [Fact]
     public async Task A_mark_is_where_the_game_says_its_log_ends_not_where_its_files_have_got_to()
@@ -33,7 +33,7 @@ public sealed partial class GameTestTests
                 game.server("first " .. row(m, "note").payload.note)
             end
             """));
-        await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, null, false);
+        await Runner(copy).RunSuiteAsync(folder, null, false);
         lock (_chunks) Assert.Contains("first new", _chunks);
     }
 
@@ -46,7 +46,7 @@ public sealed partial class GameTestTests
             ("b_capped", "test { level = 'GustavX:TUT_Avernus_C', mods = {}, speed_ceiling = 1, ceiling_finding = 'a study' }\nfunction run(game) game.server('b') end"),
             ("c_capped", "test { level = 'GustavX:TUT_Avernus_C', mods = {}, speed_ceiling = 2, ceiling_finding = 'a study' }\nfunction run(game) game.server('c') end"));
         var copy = CopyWithGame("ceilings");
-        await new TestRunner(copy, _game.Output) { Speed = "working" }.RunSuiteAsync(folder, null, false);
+        await new TestRunner(copy, _game.Output) { Speed = "working", Limits = Quick }.RunSuiteAsync(folder, null, false);
         lock (_chunks)
         {
             int At(string marker) => _chunks.IndexOf(marker);
@@ -64,7 +64,7 @@ public sealed partial class GameTestTests
             ("b_two", "test { level = 'GustavX:TUT_Avernus_C', mods = {} }\nfunction run(game) game.server('two') end"));
         var copy = CopyWithGame("attachspeed");
         await copy.UpAsync(new GateKit.Copies.UpOptions(Level: "GustavX:TUT_Avernus_C"));
-        await new TestRunner(copy, _game.Output) { Speed = "working" }.RunSuiteAsync(folder, null, false, attach: true);
+        await new TestRunner(copy, _game.Output) { Speed = "working", Limits = Quick }.RunSuiteAsync(folder, null, false, attach: true);
         lock (_chunks)
         {
             int At(string marker) => _chunks.IndexOf(marker);
@@ -106,7 +106,7 @@ public sealed partial class GameTestTests
                 game.server("limit " .. tostring(ok) .. " " .. tostring(why))
             end
             """));
-        await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, null, false);
+        await Runner(copy).RunSuiteAsync(folder, null, false);
         lock (_chunks)
         {
             Assert.Contains("found 3 server", _chunks);

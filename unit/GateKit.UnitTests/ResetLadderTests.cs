@@ -197,4 +197,19 @@ public sealed class ResetLadderTests
         }
         finally { Directory.Delete(folder, true); }
     }
+
+    /// <summary>The runner's tests against the fake game shorten the waits; a real run, `systems check`
+    /// and anything that does not say otherwise keep these.</summary>
+    [Fact]
+    public void A_real_game_gets_the_ladders_own_waits()
+    {
+        Assert.Equal((TimeSpan.FromMilliseconds(300), TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(12), TimeSpan.FromSeconds(3)),
+            (ResetLimits.Default.Settle, ResetLimits.Default.VerifyFor, ResetLimits.Default.PendingFor, ResetLimits.Default.SceneAppear));
+        using var game = new FakeGame();
+        var copy = game.GameCopy("limits");
+        Assert.Same(ResetLimits.Default, new TestRunner(copy, game.Output).Limits);
+        var actions = new GameResetActions(copy, copy.Session(), restart: null);
+        Assert.Equal((ResetLimits.Default.Settle, ResetLimits.Default.VerifyFor, ResetLimits.Default.PendingFor),
+            (actions.Settle, actions.VerifyFor, actions.PendingFor));
+    }
 }

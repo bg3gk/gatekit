@@ -334,6 +334,30 @@ public sealed class GameCopyTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task A_start_to_the_splash_screen_leaves_it_standing()
+    {
+        // The fake plays Lua's part: the probe presses only when its chunk sets SPLASH true.
+        var copy = _game.GameCopy("splash-stays");
+        var pressed = false;
+        _game.Platform.OnStart = _ =>
+        {
+            _bridges.Add(new FakeBridge(copy.Layout.Channel, "client", code =>
+            {
+                if (!code.Contains("GK.Gui.Stuck()", StringComparison.Ordinal)) return null;
+                if (code.Contains("SPLASH = true, true", StringComparison.Ordinal)) pressed = true;
+                return JsonNode.Parse("""{"stuck": "splash", "widget": "SplashScreen"}""");
+            }) { GameState = "Menu" });
+        };
+        await Assert.ThrowsAsync<CopyException>(() => copy.UpAsync(new UpOptions(MainMenu: true, Splash: true)));
+        using var limit = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await copy.UpAsync(new UpOptions(Splash: true), limit.Token);
+        Assert.False(pressed);
+        Assert.Equal(["--skip-launcher"], _game.Platform.Started.Single().Arguments);
+        Assert.Contains("on the splash screen after", _game.Output.ToString());
+        copy.Down();
+    }
+
+    [Fact]
     public async Task A_copy_starts_bare_unless_mods_are_named()
     {
         // The player's own mods turned up in copies nobody had asked them for: a copy started
