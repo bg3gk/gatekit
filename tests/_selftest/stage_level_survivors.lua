@@ -1,7 +1,7 @@
 -- What survives a level load: one thing of each kind is changed, the copy's checkpoint is loaded
 -- (the reset ladder's `level`), and each is read again. A level load is supposed to rebuild the
 -- level from its save; what lives outside the level does not come from the save. The table this
--- prints is the measured half of docs/contracts/lua-api.md 14, "What survives a level load".
+-- prints is the measured half of docs/contracts/lua-api.md, "What survives a level load".
 -- Needs a checkpoint of the level (`gatekit checkpoint`). Run: gatekit --instance <copy> test tests -k stage_level_survivors
 
 -- reset = "venue": the run then makes a checkpoint of this level at its start, which game.reset() loads
