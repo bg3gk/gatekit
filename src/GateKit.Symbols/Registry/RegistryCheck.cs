@@ -26,7 +26,10 @@ public sealed class CheckReport
 public static partial class RegistryCheck
 {
     /// <summary>The keys of an entry that hold our own sentences.</summary>
-    static readonly HashSet<string> SentenceKeys = ["does", "about", "says", "rests_on", "would_confirm", "ask", "tried", "answer", "text"];
+    internal static readonly HashSet<string> SentenceKeys = ["does", "about", "says", "rests_on", "would_confirm", "ask", "tried", "answer", "text"];
+
+    /// <summary>How many addresses stand in a sentence where an id belongs.</summary>
+    public static int Addresses(string text) => Address().Count(text);
 
     [GeneratedRegex(@"\b20\d\d-[01]\d-[0-3]\d\b")] private static partial Regex Date();
     [GeneratedRegex(@"(?<![\d.:+x])\b[0-2]?\d:[0-5]\d(:[0-5]\d)?\b(?![\d:])")] private static partial Regex Clock();
@@ -68,10 +71,9 @@ public static partial class RegistryCheck
             }
         }
 
-        // one id, one file - across the kinds, and by case
-        foreach (var group in entries.GroupBy(e => RegistryId.CaseKey(e.Id)).Where(g => g.Count() > 1))
-            report.Refuse("unique", string.Join(", ", group.Select(e => store.Relative(e.Path))),
-                group.Select(e => e.Id).Distinct().Count() == 1 ? $"{group.First().Id} has more than one file" : "these ids differ only by case: one file system would keep one of them");
+        // one id, one file - across the kinds; ids that differ only by case lie apart by the rule of CasePaths, which the path check holds
+        foreach (var group in entries.GroupBy(e => e.Id, StringComparer.Ordinal).Where(g => g.Count() > 1))
+            report.Refuse("unique", string.Join(", ", group.Select(e => store.Relative(e.Path))), $"{group.Key} has more than one file");
         var ids = entries.Select(e => e.Id).ToHashSet(StringComparer.Ordinal);
         var known = entries.ToDictionary(e => e.Id, StringComparer.Ordinal);
 
@@ -154,7 +156,7 @@ public static partial class RegistryCheck
             foreach (var (key, value) in survey)
                 if (value is JsonValue && JsonText.Text(value) is { } text && (Date().IsMatch(text) || MachinePath().IsMatch(text)))
                     report.Note("survey", rel + "#/survey/" + key, "the survey's carried text names a date or a machine's path; it is to become our sentences");
-        CheckRest(json, rel, report);
+        CheckRest(json, rel, report, entry.Kind == EntryKind.Function);
     }
 
     /// <summary>Our sentences: no provenance, no code, never empty. An address where an id belongs is a note.</summary>
@@ -175,22 +177,23 @@ public static partial class RegistryCheck
                 if (regex.Match(text) is { Success: true } m) flag("provenance", at, $"names {what}: \"{m.Value}\"");
             if (DecompilerName().Match(text) is { Success: true } name) flag("code", at, $"quotes the decompiler's name {name.Value}: name the thing by its storage or its id");
             if (PointerArithmetic().Match(text) is { Success: true } arithmetic) flag("code", at, $"quotes the game's code: \"{arithmetic.Value}\"");
+            // an address is never refused: one that names nothing with an id is a lead, and only lacks its binary and build here
             foreach (Match address in Address().Matches(text))
-                report.Note("address", at, $"an address where an id belongs: {address.Value} (code:<id>)");
+                report.Note("address", at, $"an address without its binary and build: {address.Value} (`gatekit registry tidy` writes binary@build+0xRVA, or the id where the registry names the function)");
         }
     }
 
-    static void CheckRest(JsonObject json, string rel, CheckReport report)
+    static void CheckRest(JsonObject json, string rel, CheckReport report, bool code)
     {
         // the state of the description
         if (JsonText.Text(json["state"]) == "described" && JsonText.Text(json["does"]) is null && JsonText.Text(json["about"]) is null)
             report.Refuse("sentence", rel, "described, and no sentence says what it is (does or about)");
 
         // rungs: applied needs evidence that can confirm, a guess its reason
-        CheckRung(json, rel, "", report);
+        CheckRung(json, rel, "", report, code);
         foreach (var (list, label) in new[] { ("fields", "field"), ("parameters", "parameter"), ("locals", "local"), ("values", "value") })
             foreach (var (member, i) in (json[list] as JsonArray ?? []).OfType<JsonObject>().Select((m, i) => (m, i)))
-                CheckRung(member, rel, $"/{list}/{i}", report);
+                CheckRung(member, rel, $"/{list}/{i}", report, false);
 
         // what is below the line says how it could be reached from the game
         var rung = JsonText.Text(json["rung"]);
@@ -214,7 +217,7 @@ public static partial class RegistryCheck
                 report.Refuse("tie", rel, $"ties {JsonText.Text(tie["type"])} through {via}, which is no parameter or local of it");
     }
 
-    static void CheckRung(JsonObject json, string rel, string pointer, CheckReport report)
+    static void CheckRung(JsonObject json, string rel, string pointer, CheckReport report, bool code)
     {
         var rung = JsonText.Text(json["rung"]);
         var at = rel + (pointer.Length > 0 ? "#" + pointer : "");
@@ -225,6 +228,9 @@ public static partial class RegistryCheck
             if (!kinds.Any(k => k is not null && Rungs.Confirming.Contains(k)))
                 report.Refuse("rung", at, $"{label}on the applied rung {rung} with no evidence that can confirm it ({string.Join(", ", Rungs.Confirming)}); "
                     + (kinds.Count == 0 ? "it has none" : "it has " + string.Join(", ", kinds)));
+            // the bar the writers apply (Rungs.Settle): a rung its evidence does not carry is lowered by the next `registry tidy`, never by a person
+            else if (Rungs.Settle(rung, json["evidence"], code, out var why) is { } settled && Rungs.Rank(settled) > Rungs.Rank(rung))
+                report.Note("rung", at, $"{label}{rung} is above what its evidence carries ({settled}): {why} (`gatekit registry tidy` lowers it)");
             if (json["guess"] is not null) report.Refuse("rung", at, $"{label}a guess is not on an applied rung");
         }
         if (rung == "guess" && json["guess"] is null) report.Refuse("rung", at, $"{label}a guess says what it rests on and what would confirm it");

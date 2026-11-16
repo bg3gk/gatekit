@@ -152,7 +152,7 @@ code tests.
 | The check: a hit on the joiner with `FromSneak` (bit 4 of the attack flags of `eoc::hit::TargetComponent`), a spell without `NoSurprise`, an attacker whose relation is not 100; the joiner is given `esv::combat::SurprisedStealthRequestOneFrameComponent` | `code:esv::combat::System::CheckForSurprise` | confirmed: 3 calls for 3 joiners, the request on the target alone |
 | Each tick: joiners with a surprised party or combat-group ally, then the allies of each stealth target in its fight, are given `esv::combat::SurprisedJoinRequestOneFrameComponent` | `code:esv::combat::SurprisedSystem::Update`, `code:esv::combat::SurprisedSystem::SurpriseEntitiesJoiningCombat`, `code:esv::combat::SurprisedSystem::SurpriseAlliesOfStealthAttackTargets`, `code:esv::combat::SurprisedSystem::IsAnyAlliedCombatGroupMemberSurprised` | confirmed for the update and the allies' gatherer, inferred for the joiners' |
 | "Surprised" for these gatherers: the stealth request this tick, or an active status `SURPRISED` | `code:unplaced::IsSurprisedOrAskedToBe` | confirmed |
-| Either request becomes a request to create `SURPRISED` on its holder for 6 seconds with no source; an immunity refuses it as it refuses any status | `code:unplaced::StatusRequestSystemGatherCombatEvents` | inferred |
+| Either request becomes a request to create `SURPRISED` on its holder for 6 seconds with no source; an immunity refuses it as it refuses any status | `code:esv::status::RequestSystem::GatherCombatEvents` | inferred |
 | A character holding a status whose id is `SURPRISED` may not act on its turn | `code:esv::TurnBasedCanAct` | inferred |
 
 The fixed string `SURPRISED` is named by these functions and no other of the executable's

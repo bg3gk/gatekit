@@ -1,7 +1,7 @@
 -- The feat Alert keeps the status off its holder and off nobody else: the passive's boost is
 -- StatusImmunity(SURPRISED) (the game's data, `gatekit data stat Alert`; bg3.wiki, "Alert": "can't
 -- be Surprised"), and the game gives the status through its ordinary status request, which an
--- immunity refuses (code:unplaced::StatusRequestSystemGatherCombatEvents; research/studies/surprised.md).
+-- immunity refuses (code:esv::status::RequestSystem::GatherCombatEvents; research/studies/surprised.md).
 -- The hit from hiding of test:surprise/from_hiding lands on a target that has Alert: the target
 -- joins the fight unsurprised, its ally beside it is surprised as before.
 -- Staged (cheat): the scene of tests/surprise/_surprise.lua with the host hidden; the passive Alert on the

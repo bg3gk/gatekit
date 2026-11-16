@@ -37,13 +37,22 @@
   "evidence": [
     {
       "kind": "read",
-      "says": "the macOS constructor of this name calls GenerateDamageTooltips; here the only caller of +0x14BFA20 is this function"
+      "says": "the macOS constructor of this name calls GenerateDamageTooltips; here the only caller of code:gui::CombatLogEntries::VMHitDamagedEntry::GenerateDamageTooltips is this function"
     },
-    {"kind": "watch", "says": "called once per damaging weapon hit, from +0x16BD9CE"}
+    {
+      "kind": "watch",
+      "says": "called once per damaging weapon hit, from bg3_dx11.exe@25605617+0x16BD9CE"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
   ],
   "questions": [
     {
-      "ask": "read the dx11 body against the macOS constructor (VMHitEntry base, the damage param text) to settle the pairing; +0x16BD9CE's function is likely gui::CombatLogSystem::AddCombatLogEntriesFromHitDamage",
+      "ask": "read the dx11 body against the macOS constructor (VMHitEntry base, the damage param text) to settle the pairing; bg3_dx11.exe@25605617+0x16BD9CE's function is likely gui::CombatLogSystem::AddCombatLogEntriesFromHitDamage",
       "about": "reach",
       "state": "open"
     }

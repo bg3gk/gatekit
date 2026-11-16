@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "eoc::roll::stream::CopyStreams",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "inferred",
   "does": "Copies a whole array of roll streams into another: clears the target, then copies each stream into it.",
   "fingerprint": {
     "calls": [
@@ -16,15 +16,15 @@
   "evidence": [
     {
       "kind": "text",
-      "says": "GK.Memory.Watch on the roll manager's stream count (+0x14): every frame 1->0 at +0x105D919 and 0->1 at +0x105D967 from SystemUpdate<UpdateSystem> (+0x238ABC3); its only callee per stream is CopyStream (+0x105DB40); SaveStreams calls it with the manager's streams"
+      "says": "GK.Memory.Watch on the roll manager's stream count (+0x14): every frame 1->0 at bg3_dx11.exe@25605617+0x105D919 and 0->1 at bg3_dx11.exe@25605617+0x105D967 from SystemUpdate<UpdateSystem> (bg3_dx11.exe@25605617+0x238ABC3); its only callee per stream is CopyStream (code:eoc::roll::stream::CopyStream); SaveStreams calls it with the manager's streams"
     },
     {
       "kind": "watch",
-      "says": "A write watch on the roll manager's stream count goes to 0 at +0x105D919 and back at +0x105D967 every frame"
+      "says": "A write watch on the roll manager's stream count goes to 0 at bg3_dx11.exe@25605617+0x105D919 and back at bg3_dx11.exe@25605617+0x105D967 every frame"
     },
     {
       "kind": "watch",
-      "says": "A count-only probe on it shows its calls coming from +0x238ABC3, the update of the roll streams every frame, and once after a roll from +0x342DDF9, the save of the streams"
+      "says": "A count-only probe on it shows its calls coming from bg3_dx11.exe@25605617+0x238ABC3, the update of the roll streams every frame, and once after a roll from bg3_dx11.exe@25605617+0x342DDF9, the save of the streams"
     },
     {
       "kind": "text",

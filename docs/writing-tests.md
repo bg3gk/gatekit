@@ -50,7 +50,10 @@ of its kind: `test:` before a test's address, `code:` before a registry id of th
 (`bg3_`) and a file path need none. A file or a document is addressed by its path relative to the
 repository's root, as a link where the format has links. In a field whose kind its schema fixes (a registry entry's
 evidence, a header) the bare address is written. The forms and the rule for code:
-[registry/README.md](../registry/README.md), "Citing code and tests".
+[registry/README.md](../registry/README.md), "Citing code and tests". An address here is the
+written form of a test, an id or a kind; a machine address of the game's code
+(`bg3_dx11.exe@25605617+0x1BC3C2B`) is another thing, and the same section of the README says
+where one may stand.
 
 `gatekit refs <address>` lists every place that cites a test or a registry id. `gatekit registry
 check` refuses a `test:` citation that names no test under `tests/` and a `code:` citation that

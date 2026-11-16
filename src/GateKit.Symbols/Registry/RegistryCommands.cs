@@ -98,17 +98,18 @@ public static class RegistryCommands
         {
             var coverage = new Option<string?>("--coverage") { Description = "the coverage record beside the registry (default: the repository's)" };
             var strict = new Option<bool>("--strict") { Description = "fail on owed work too (an unconfirmed entry with no question of how the game reaches it)" };
-            var notes = new Option<int>("--notes") { Description = "how many notes to print (default 20; the count is always printed)", DefaultValueFactory = _ => 20 };
-            var c = new Command("check", "every entry valid, at its path, unique by case; build tables in order; every citation of code and tests resolved; the refusals of registry/README.md. Exit 1 on a refusal") { coverage, strict, notes };
-            c.SetAction(p => Invoke(p, s => CheckCommand(s, p.GetValue(coverage), p.GetValue(strict), p.GetValue(notes))));
+            var notes = new Option<int>("--notes") { Description = "with --verbose: how many of each kind to print (default 20)", DefaultValueFactory = _ => 20 };
+            var verbose = new Option<bool>("--verbose") { Description = "list the owed work and the notes; without it they are counted in one line each" };
+            var c = new Command("check", "every entry valid, at its path, one file an id; build tables in order; every citation of code and tests resolved; the refusals of registry/README.md. Exit 1 on a refusal") { coverage, strict, notes, verbose };
+            c.SetAction(p => Invoke(p, s => CheckCommand(s, p.GetValue(coverage), p.GetValue(strict), p.GetValue(notes), p.GetValue(verbose))));
             root.Subcommands.Add(c);
         }
         {
             var old = new Argument<string>("old") { Description = "the entry's id" };
             var fresh = new Argument<string>("new") { Description = "its new id" };
             var coverage = new Option<string?>("--coverage");
-            var c = new Command("rename", "rename an entry: its file moves, every build table and every citation in the repository follows; the old id is left nowhere") { old, fresh, coverage };
-            c.SetAction(p => Invoke(p, s => { RegistryRefs.Rename(Store(p.GetValue(coverage)), p.GetValue(old)!, p.GetValue(fresh)!, s.Out); return 0; }));
+            var c = new Command("rename", "rename an entry: its file moves, every build table, every citation in the repository, the live layer's claims and the data files that hold places follow; the old id is left nowhere") { old, fresh, coverage };
+            c.SetAction(p => Invoke(p, s => { RegistryRefs.Rename(Store(p.GetValue(coverage)), p.GetValue(old)!, p.GetValue(fresh)!, s.Out, LiveLayer.OfHome()); return 0; }));
             root.Subcommands.Add(c);
         }
         {
@@ -151,6 +152,7 @@ public static class RegistryCommands
             root.Subcommands.Add(c);
         }
         LiveCommands.Add(root, Invoke);
+        Digest.Add(root, Invoke);
         return root;
     }
 
@@ -194,23 +196,29 @@ public static class RegistryCommands
         catch (Microsoft.Data.Sqlite.SqliteException) { return null; }
     }
 
-    static int CheckCommand(DecompSession s, string? coverage, bool strict, int notes)
+    static int CheckCommand(DecompSession s, string? coverage, bool strict, int notes, bool verbose)
     {
         var store = Store(coverage);
         var report = RegistryCheck.Run(store);
         foreach (var (rule, where, what) in report.Refusals) s.Out.WriteLine($"refused [{rule}] {where}: {what}");
-        foreach (var group in report.Owed.GroupBy(o => o.Rule))
-        {
-            s.Out.WriteLine($"owed [{group.Key}]: {group.Count()} entries; the first:");
-            foreach (var (_, where, what) in group.Take(notes)) s.Out.WriteLine($"  {where}: {what}");
-        }
-        foreach (var group in report.Notes.GroupBy(n => n.Rule))
-        {
-            s.Out.WriteLine($"note [{group.Key}]: {group.Count()}");
-            foreach (var (_, where, what) in group.Take(notes)) s.Out.WriteLine($"  {where}: {what}");
-        }
-        s.Out.WriteLine($"{report.Refusals.Count} refused, {report.Owed.Count} owed, {report.Notes.Count} notes; by kind: "
-            + string.Join(", ", report.Refusals.GroupBy(r => r.Rule).OrderBy(g => g.Key, StringComparer.Ordinal).Select(g => $"{g.Key} {g.Count()}")));
+        static string ByRule(List<(string Rule, string Where, string What)> list) =>
+            string.Join(", ", list.GroupBy(r => r.Rule).OrderBy(g => g.Key, StringComparer.Ordinal).Select(g => $"{g.Key} {g.Count()}"));
+        // owed work and notes are counts, not a list of hand work: the list is there for whoever asks
+        if (verbose || (strict && report.Owed.Count > 0))
+            foreach (var group in report.Owed.GroupBy(o => o.Rule))
+            {
+                s.Out.WriteLine($"owed [{group.Key}]: {group.Count()} entries; the first:");
+                foreach (var (_, where, what) in group.Take(notes)) s.Out.WriteLine($"  {where}: {what}");
+            }
+        if (verbose)
+            foreach (var group in report.Notes.GroupBy(n => n.Rule))
+            {
+                s.Out.WriteLine($"note [{group.Key}]: {group.Count()}");
+                foreach (var (_, where, what) in group.Take(notes)) s.Out.WriteLine($"  {where}: {what}");
+            }
+        s.Out.WriteLine($"{report.Refusals.Count} refused{(report.Refusals.Count > 0 ? $" ({ByRule(report.Refusals)})" : "")}, "
+            + $"{report.Owed.Count} owed{(report.Owed.Count > 0 ? $" ({ByRule(report.Owed)})" : "")}, "
+            + $"{report.Notes.Count} notes{(report.Notes.Count > 0 ? $" ({ByRule(report.Notes)})" : "")}" + (verbose ? "" : "; --verbose lists them"));
         return report.Refusals.Count > 0 || (strict && report.Owed.Count > 0) ? 1 : 0;
     }
 
@@ -227,11 +235,11 @@ public static class RegistryCommands
     {
         var store = Store(coverage);
         var count = 0;
-        foreach (var entry in store.All().Where(e => scope is null || e.Id.StartsWith(scope, StringComparison.Ordinal)).OrderBy(e => e.Id, StringComparer.Ordinal))
+        foreach (var entry in store.All().Where(e => Digest.InScope(e, scope)).OrderBy(e => e.Id, StringComparer.Ordinal))
         {
             var open = (entry.Json["questions"] as JsonArray ?? []).OfType<JsonObject>().Where(q => JsonText.Text(q["state"]) == "open").ToList();
             if (open.Count == 0) continue;
-            s.Out.WriteLine($"code:{entry.Id}  [{JsonText.Text(entry.Json["rung"]) ?? "no rung"}]");
+            s.Out.WriteLine($"code:{entry.Id}  [{JsonText.Text(entry.Json["rung"]) ?? "no rung"}]" + (JsonText.Text(entry.Json["owner"]) is { } owner ? $"  of {owner}" : ""));
             foreach (var q in open)
             {
                 s.Out.WriteLine($"  ({JsonText.Text(q["about"])}) {JsonText.Text(q["ask"])}");

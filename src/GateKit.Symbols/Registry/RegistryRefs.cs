@@ -195,7 +195,7 @@ public static class RegistryRefs
     /// text, typed fields of every entry - is rewritten in the same act. The old id is left nowhere.
     /// Returns the citations rewritten.
     /// </summary>
-    public static int Rename(RegistryStore store, string oldId, string newId, TextWriter output)
+    public static int Rename(RegistryStore store, string oldId, string newId, TextWriter output, LiveLayer? live = null)
     {
         var old = RegistryId.Parse(oldId);
         var fresh = RegistryId.Parse(newId);
@@ -205,6 +205,7 @@ public static class RegistryRefs
         var json = (JsonObject)entry.Json.DeepClone();
         json.Remove("schema");
         json["id"] = newId;
+        if (!newId.StartsWith(RegistryId.Unplaced + "::", StringComparison.Ordinal)) json.Remove("owner");
         store.Write(entry.Kind, json, create: true);
         store.Delete(entry);
         foreach (var (build, binary) in store.Tables())
@@ -213,6 +214,68 @@ public static class RegistryRefs
             if (!rows.Any(r => r.Id == oldId)) continue;
             store.WriteTable(build, binary, rows.Select(r => r.Id == oldId ? r with { Id = newId } : r));
         }
+        var rewritten = Recite(store, oldId, newId, output);
+        if (live?.Rename(oldId, newId) is > 0 and var claims) output.WriteLine($"  the live layer: {claims} claim{(claims == 1 ? "" : "s")} follow");
+        output.WriteLine($"{oldId} -> {newId}: {store.Relative(store.PathOf(entry.Kind, newId))}, {rewritten} citation{(rewritten == 1 ? "" : "s")} rewritten");
+        return rewritten;
+    }
+
+    /// <summary>
+    /// Removes a committed entry: its file, its rows in every build table and its live claims.
+    /// Refused while anything outside the entry cites it - unless <paramref name="into"/> names the
+    /// id it has become, and then every citation follows there.
+    /// </summary>
+    public static void Remove(RegistryStore store, string id, LiveLayer? live, TextWriter output, string? into = null)
+    {
+        var entry = store.Get(id) ?? throw new RegistryException($"{id}: no entry of that id");
+        if (entry.Id != id) throw new RegistryException($"{id} is a member: an entity is removed, a member is taken out of its entity's file");
+        var own = Path.GetRelativePath(store.Repository, entry.Path).Replace('\\', '/');
+        if (into is null && All(store).Where(c => c.Kind == "code" && Names(c.Address, id) && c.File != own).ToList() is { Count: > 0 } cited)
+            throw new RegistryException($"{id} is cited in {cited.Count} place{(cited.Count == 1 ? "" : "s")} (`gatekit refs {id}`), the first: {cited[0].Where}; nothing was removed");
+        store.Delete(entry);
+        foreach (var (build, binary) in store.Tables())
+        {
+            var rows = store.Table(build, binary);
+            if (rows.RemoveAll(r => r.Id == id) > 0) store.WriteTable(build, binary, rows);
+        }
+        var rewritten = into is null ? 0 : Recite(store, id, into, output);
+        var claims = live?.Withdraw(id, all: true).Count ?? 0;
+        output.WriteLine($"removed {id}: its file, its rows" + (claims > 0 ? $", {claims} live claim{(claims == 1 ? "" : "s")}" : "")
+            + (into is null ? "" : $"; {rewritten} citation{(rewritten == 1 ? "" : "s")} now name {into}"));
+    }
+
+    /// <summary>One text with every prefixed mention of an id, or of its members, rewritten to another id.</summary>
+    public static string RewriteMentions(string text, string oldId, string newId, out int count)
+    {
+        count = 0;
+        if (!text.Contains("code:" + oldId, StringComparison.Ordinal)) return text;
+        var lines = text.Split('\n');
+        for (var n = 0; n < lines.Length; n++)
+        {
+            var b = new StringBuilder();
+            var line = lines[n];
+            var at = 0;
+            int found;
+            while ((found = line.IndexOf("code:", at, StringComparison.Ordinal)) >= 0)
+            {
+                var start = found + 5;
+                var address = ScanAddress(line, start);
+                b.Append(line, at, start - at);
+                if (Names(address, oldId)) { b.Append(newId).Append(address[oldId.Length..]); count++; }
+                else b.Append(address);
+                at = start + address.Length;
+            }
+            b.Append(line, at, line.Length - at);
+            lines[n] = b.ToString();
+        }
+        return string.Join("\n", lines);
+    }
+
+    /// <summary>Rewrites every citation of an id - typed fields of every entry, prefixed mentions in the
+    /// repository's text, and the bare id under a key <c>id</c> of a data file that holds places
+    /// (`registry places`), whose places are then written again. Returns the citations rewritten.</summary>
+    static int Recite(RegistryStore store, string oldId, string newId, TextWriter output)
+    {
         var rewritten = 0;
         // typed fields of every entry
         store.Refresh();
@@ -230,35 +293,81 @@ public static class RegistryRefs
         {
             var path = Path.Combine(store.Repository, file);
             var text = File.ReadAllText(path);
-            if (!text.Contains("code:" + oldId, StringComparison.Ordinal)) continue;
-            var lines = text.Split('\n');
-            var count = 0;
-            for (var n = 0; n < lines.Length; n++)
-            {
-                var b = new StringBuilder();
-                var line = lines[n];
-                var at = 0;
-                int found;
-                while ((found = line.IndexOf("code:", at, StringComparison.Ordinal)) >= 0)
-                {
-                    var start = found + 5;
-                    var address = ScanAddress(line, start);
-                    b.Append(line, at, start - at);
-                    if (Names(address, oldId)) { b.Append(newId).Append(address[oldId.Length..]); count++; }
-                    else b.Append(address);
-                    at = start + address.Length;
-                }
-                b.Append(line, at, line.Length - at);
-                lines[n] = b.ToString();
-            }
+            var fresh = RewriteMentions(text, oldId, newId, out var count);
             if (count == 0) continue;
-            File.WriteAllText(path, string.Join("\n", lines), new UTF8Encoding(false));
+            File.WriteAllText(path, fresh, new UTF8Encoding(false));
             output.WriteLine($"  {file}: {count} mention{(count == 1 ? "" : "s")} rewritten");
             rewritten += count;
         }
         store.Refresh();
-        output.WriteLine($"{oldId} -> {newId}: {store.Relative(store.PathOf(entry.Kind, newId))}, {rewritten} citation{(rewritten == 1 ? "" : "s")} rewritten");
+        // the bare id in a data file that holds places written from the build tables
+        foreach (var path in PlacesFiles(store))
+        {
+            var root = JsonText.Read(path).AsObject();
+            var count = RewriteBare(root, oldId, newId);
+            if (count == 0) continue;
+            root["places"] = LiveCommands.PlacesOf(store, root).Places;
+            JsonText.Write(path, root);
+            output.WriteLine($"  {Path.GetRelativePath(store.Repository, path).Replace('\\', '/')}: {count} id{(count == 1 ? "" : "s")} rewritten, its places written again");
+            rewritten += count;
+        }
         return rewritten;
+    }
+
+    /// <summary>The JSON data files under <c>mods/</c> that hold places written by `registry places`.</summary>
+    public static IEnumerable<string> PlacesFiles(RegistryStore store)
+    {
+        var mods = Path.Combine(store.Repository, "mods");
+        if (!Directory.Exists(mods)) yield break;
+        foreach (var path in Directory.EnumerateFiles(mods, "*.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+        {
+            JsonObject? root;
+            try
+            {
+                if (!File.ReadAllText(path).Contains("\"places\"", StringComparison.Ordinal)) continue;
+                root = JsonText.Read(path) as JsonObject;
+            }
+            catch (Exception e) when (e is IOException or JsonProblemException or ArgumentException) { continue; }
+            if (root?["places"] is JsonObject) yield return path;
+        }
+    }
+
+    static int RewriteBare(JsonNode? node, string oldId, string newId)
+    {
+        var count = 0;
+        if (node is JsonObject o)
+            foreach (var (key, value) in o.ToList())
+            {
+                if (key == "places") continue;
+                if (key == "id" && JsonText.Text(value) == oldId) { o[key] = newId; count++; }
+                else count += RewriteBare(value, oldId, newId);
+            }
+        else if (node is JsonArray a)
+            foreach (var item in a) count += RewriteBare(item, oldId, newId);
+        return count;
+    }
+
+    /// <summary>Rewrites the citations of an id inside one entry (typed fields and prefixed mentions in its sentences).</summary>
+    internal static int ReciteIn(JsonObject entry, string oldId, string newId)
+    {
+        var count = RewriteTyped(entry, "", oldId, newId);
+        void Walk(JsonNode? node)
+        {
+            if (node is JsonObject o)
+                foreach (var (key, value) in o.ToList())
+                {
+                    if (JsonText.Text(value) is { } text)
+                    {
+                        var fresh = RewriteMentions(text, oldId, newId, out var n);
+                        if (n > 0) { o[key] = fresh; count += n; }
+                    }
+                    else Walk(value);
+                }
+            else if (node is JsonArray a)
+                foreach (var item in a) Walk(item);
+        }
+        Walk(entry);
+        return count;
     }
 
     static int RewriteTyped(JsonNode? node, string pointer, string oldId, string newId)

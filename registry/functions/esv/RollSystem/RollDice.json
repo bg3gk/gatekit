@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::RollSystem::RollDice",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Rolls one requested roll on the server: gets the roller's stream (the Dialog stream of a player for a dialogue check), copies the rolled result into the request, decides the verdict - a natural 20 succeeds, a natural 1 fails, else success when the difficulty is at most the total - and writes the natural die, the discarded die (only when advantage and disadvantage differ) and the verdict into the request.",
   "fingerprint": {
     "calls": [
@@ -31,15 +31,21 @@
   "evidence": [
     {
       "kind": "text",
-      "says": "GK.Memory.Watch on a new passive check's eoc::RequestedRollComponent, armed in the tick the request appeared: its NaturalRoll (+0x42) written at +0x3296664 and +0x4C written at +0x3296682 (1 on a pass: natural 13 total over DC 10; read 0 on a fail: total 12 against DC 99), and its Result written through +0xF1889D from +0x32961CE; return chain into SystemUpdate<esv::RollSystem> (+0x2390BAC) via +0x32937EF, +0x32981CF; the decompiler's weak pairing with the Toolkit's esv::RollSystem::RollDice"
+      "says": "GK.Memory.Watch on a new passive check's eoc::RequestedRollComponent, armed in the tick the request appeared: its NaturalRoll (+0x42) written at bg3_dx11.exe@25605617+0x3296664 and +0x4C written at bg3_dx11.exe@25605617+0x3296682 (1 on a pass: natural 13 total over DC 10; read 0 on a fail: total 12 against DC 99), and its Result written through bg3_dx11.exe@25605617+0xF1889D from bg3_dx11.exe@25605617+0x32961CE; return chain into SystemUpdate<esv::RollSystem> (bg3_dx11.exe@25605617+0x2390BAC) via bg3_dx11.exe@25605617+0x32937EF, bg3_dx11.exe@25605617+0x32981CF; the decompiler's weak pairing with the Toolkit's esv::RollSystem::RollDice"
     },
     {
       "kind": "watch",
-      "says": "A write watch armed on a new roll request shows its natural die written at +0x3296664 and its verdict at +0x3296682 inside this function"
+      "says": "A write watch armed on a new roll request shows its natural die written at bg3_dx11.exe@25605617+0x3296664 and its verdict at bg3_dx11.exe@25605617+0x3296682 inside this function"
     },
     {
       "kind": "watch",
-      "says": "A count-only probe on it shows one call for each of three passive checks, from +0x32981CF"
+      "says": "A count-only probe on it shows one call for each of three passive checks, from bg3_dx11.exe@25605617+0x32981CF"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCServer.dll",
+      "tie": "name",
+      "says": "EoCServer.dll exports this name; nothing but the name ties it to this function"
     }
   ]
 }
