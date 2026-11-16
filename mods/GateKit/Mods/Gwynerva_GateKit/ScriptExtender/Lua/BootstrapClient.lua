@@ -40,6 +40,7 @@ Ext.Require("Client/Focus.lua")
 Ext.Require("Client/Aim.lua")
 Ext.Require("Client/Act.lua")
 Ext.Require("Client/Attention.lua")
+Ext.Require("Client/Stand.lua")
 GK.Verbs.Guard()
 GK.Start("client")
 

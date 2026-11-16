@@ -1,0 +1,46 @@
+[
+  {
+    "name": "bg3_stand_feed",
+    "description": "The video stand's feed (stand/README.md): what changed since a cursor, by layers - situation (where the character is, the party's health and weapons, a fight and whose turn), seen (who and what is around now, nearest first, `new` when not listed last time), heard (lines spoken), waiting (a dialogue with its answers, a roll, a window to close), about_to (what each creature weighs and begins in a fight), dice (every roll), happened (hits, deaths, items, quests, fights begun and ended), said (your own lines), scenario. Each row has a `text` to read and the ids to act on (`who`, `target`, `at`). Pass the answer's `cursor` as `since` next time. Call it before deciding; call it again after acting.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "since": {"type": "string", "description": "the `cursor` of the last answer; left out: the picture now and the last rows"},
+        "ways": {"type": "boolean", "description": "also the walkable ways from the character in eight directions (slower, up to 1.5 s)"}
+      }
+    },
+    "side": "server",
+    "lua": "return GK.Stand.Feed(args.since, { ways = args.ways })"
+  },
+  {
+    "name": "bg3_stand_say",
+    "description": "Show the character's intent in the game before acting: `say` is a short first-person line of what you are about to do (at most 60 characters; it floats over the character's head for about 3 seconds), `at` what it is about (a uuid from the feed, a name you saw, or a point [x, y, z]): it glows, the camera glides to it and back, a soft sound plays. `think` (what the character thinks) and `do` (the plain reason) go to the feed only. `style`: intent (default), danger, found, aside. Also the way to answer the owner in character: a line with no `at`.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "say": {"type": "string", "description": "the line over the head, first person, short"},
+        "think": {"type": "string", "description": "what the character thinks (feed only)"},
+        "do": {"type": "string", "description": "the plain reason, for a reader of the log (feed only)"},
+        "at": {"description": "what the line is about: a uuid, a name the party knows, or a point [x, y, z]"},
+        "who": {"type": "string", "description": "who speaks; the controlled character when left out"},
+        "style": {"description": "intent, danger, found, aside, or an object of style fields over the default"}
+      }
+    },
+    "side": "server",
+    "lua": "return GK.Stand.Say{ say = args.say, think = args.think, [\"do\"] = args[\"do\"], at = args.at, who = args.who, style = args.style }"
+  },
+  {
+    "name": "bg3_stand_accent",
+    "description": "Point at something without a line: `at` (a uuid, a name the party knows, or a point [x, y, z]) glows, the camera glides to it and back, a soft sound plays. `style` as bg3_stand_say's (danger adds the violet outline).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "at": {"description": "a uuid, a name the party knows, or a point [x, y, z]"},
+        "style": {"description": "intent, danger, found, aside, or an object of style fields"}
+      },
+      "required": ["at"]
+    },
+    "side": "server",
+    "lua": "return GK.Stand.Accent(args.at, args.style)"
+  }
+]
