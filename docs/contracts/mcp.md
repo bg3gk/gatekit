@@ -224,9 +224,20 @@ in a tile, behind another window, out of view or in no deck at all.
    (`GATEKIT_MCP_TOOLS`), each a description plus one bridge call or Lua chunk, re-read when its
    modification time changes. A file that fails to load is named by `bg3_plugin_errors`, a tool
    listed only while there is such a file; a tool whose name is taken is skipped and named there
-   too. The README has the format.
-7. **`bg3_reload`'s `mod_root`** is resolved to a full path.
-8. **`bg3_api`** reads the bridge mods `up` would install (`GATEKIT_BRIDGE`, default
+   too. The README has the format. A bridge mod brings its own tools the same way: the folder
+   `tools` beside its `Mods` folder (`mods/AI/tools`) is read with `mcp-tools/`. Two fields of a
+   tool file belong to the host: `"attention": false` (the tool's answer says what waits by
+   itself, so no `attention` block is added to it) and `"files": {"<argument>": "<argument>"}`
+   (the argument on the left is a path of a UTF-8 text file, at most 16,000 characters, a
+   relative one read from the folder that holds the tools folder; the host reads it and gives
+   its text to the chunk as the argument on the right).
+7. **A server of one set of tools**: `gatekit mcp --only <prefix>` lists and calls the tools
+   whose name begins with the prefix and no other (`--only ai_`: the four tools of GateKit AI);
+   `mcp tools` and `mcp call` take it too. `gatekit mcp tools --format functions` prints the
+   tools as the `tools` array of a chat-completions request (`{"type": "function", "function":
+   {name, description, parameters}}`), for a client that has no MCP; `mcp call` is its call.
+8. **`bg3_reload`'s `mod_root`** is resolved to a full path.
+9. **`bg3_api`** reads the bridge mods `up` would install (`GATEKIT_BRIDGE`, default
    `<repo>/mods`), so it covers Weave as well as GateKit.
 
 ### 2.5 `bg3_status` names the copy
@@ -467,7 +478,7 @@ compared.
 
 - **Every answer of a game tool** (`bg3_lua`, `bg3_call`, `bg3_state`, `bg3_events`, `bg3_dialog`,
   `bg3_key`, `bg3_screenshot`, `bg3_status`, `bg3_checkpoint`, `bg3_reset`, `bg3_reload`,
-  `bg3_fast_scenes`, `bg3_sound` and the plugin tools) gets one more text block when anything waits
+  `bg3_fast_scenes`, `bg3_sound` and the plugin tools that do not declare `"attention": false`) gets one more text block when anything waits
   in the game or changed since the caller's last call: `attention: [{seq?, what, window?,
   choices?, waiting?, side, since_ms, ...}]` (docs/contracts/bridge-protocol.md, "Attention").
   The tool's own blocks are unchanged; with nothing to say there is no block. Nothing is read when

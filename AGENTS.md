@@ -25,6 +25,7 @@ at is [docs/design/what-this-is-for.md](docs/design/what-this-is-for.md).
 | tools an agent sees | `src/GateKit.Mcp` | `docs/contracts/mcp.md` |
 | the `GK.*` API inside the game | `mods/GateKit/.../Lua/` | `docs/contracts/lua-api.md`, `lua-types/GateKit.lua` |
 | in-game windows | `mods/Weave` | `lua-types/Weave.lua`, `mods/Weave/README.md` |
+| the bridge for an AI agent that plays | `mods/AI` | `mods/AI/README.md`, `mods/AI/tools/ai.json`, `lua-types/GateKitAI.lua` |
 | reading or writing any JSON file or tool answer of ours | `src/GateKit.Json` (`JsonText`, `SchemaSet`) | `docs/contracts/data-format.md` + `schemas/` |
 | tests (they run in the game) | `tests/` (a tree by the game's notions), the runner in `src/GateKit.Testing` | `docs/writing-tests.md`, `docs/contracts/cli.md` (`test`) |
 | unit tests: checks of the toolkit itself, with no game | `unit/`, projects named `*.UnitTests` | `dotnet test` (Checking your work, below) |

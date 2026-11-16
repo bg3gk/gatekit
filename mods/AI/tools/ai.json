@@ -1,0 +1,128 @@
+[
+  {
+    "name": "ai_step",
+    "description": "Do ONE act in the game as the character, wait until the game has settled, and read what changed. Answers one line of JSON: ok, mode, did, why_not, hint, now. `now` holds only what changed since your last call: where, fight, can, party, waiting, near, heard, events, notes (and in mode open: rolls, scenes, route). If `now.waiting` is not empty, answer it first, exactly as its line says. When ok is false nothing was done: read why_not and make the call that hint gives.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "do": {
+          "type": "string",
+          "enum": ["go", "use", "talk", "loot", "jump", "cast", "attack", "end", "select", "answer", "continue", "roll", "take", "close", "wait", "plan", "cheat_cast", "cheat_teleport"],
+          "description": "The act. go: walk to target. use: walk up and use target (door, lever, ladder, pod). talk: walk up and talk to target. loot: walk up and open target (a body, a chest). jump: jump to target. cast: use the action `spell` at target. attack: weapon attack at target. end: end the turn. select: take control of party member `who`. answer: choose answer number `n` of what waits. continue: go on in a dialogue. roll: throw the dice of a roll window. take: take everything from the open loot window. close: close the window that waits. wait: do nothing until the game has settled. plan: do the act that now.route names (mode open). cheat_cast: cast `spell` at target by script. cheat_teleport: put the character at target. The two cheats are used only when the owner says so."
+        },
+        "target": {
+          "type": "string",
+          "description": "What the act is done to: a handle from now.near (like #1a2b3c), a name, or a point as text \"x,y,z\"."
+        },
+        "spell": {
+          "type": "string",
+          "description": "For cast: the action's name as now.can lists it (like Projectile_FireBolt)."
+        },
+        "n": {
+          "type": "integer",
+          "description": "For answer: the number of the answer, as now.waiting numbers them."
+        },
+        "who": {
+          "type": "string",
+          "description": "The party member who acts, by name. Left out: in a fight the member whose turn is open, else the character you control."
+        },
+        "say": {
+          "type": "string",
+          "description": "A short first-person line shown over the character's head before the act (60 characters at most)."
+        },
+        "think": {
+          "type": "string",
+          "description": "One line of what the character thinks. Kept in the run's record only."
+        },
+        "note": {
+          "type": "string",
+          "description": "A note to yourself kept with this place, across reloads: you are shown it again when you come back here."
+        }
+      },
+      "required": ["do"]
+    },
+    "side": "server",
+    "timeout": 120,
+    "attention": false,
+    "lua": "return Mods.GateKitAI.AI.Tool('step', args)"
+  },
+  {
+    "name": "ai_look",
+    "description": "Read the whole situation again, or one part of it, when you are lost. Changes nothing in the game. Answers one line of JSON: ok, mode, did, why_not, hint, now.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "part": {
+          "type": "string",
+          "enum": ["all", "where", "fight", "can", "party", "waiting", "near", "heard", "events", "notes", "things", "actions", "prompt", "rolls", "scenes", "route", "plan"],
+          "description": "all (default): every key of now as it is at this moment. A key of now: only it. things: every object around, items included. actions: what the acting character can do. notes: your notes of this level. prompt: the owner's text for you, again. rolls, scenes, route, plan (every step of the route): mode open only."
+        },
+        "detail": {
+          "type": "string",
+          "enum": ["brief", "full"],
+          "description": "brief (default): short lists. full: long lists and whole texts."
+        }
+      }
+    },
+    "side": "server",
+    "timeout": 30,
+    "attention": false,
+    "lua": "return Mods.GateKitAI.AI.Tool('look', args)"
+  },
+  {
+    "name": "ai_scene",
+    "description": "The owner's director commands: run a named call of a staged scene, or read a scene's state. Use it only when the owner says so. Answers one line of JSON: ok, mode, did, why_not, hint, now.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The scene's name as now.scenes shows it. Left out: every scene with its state and calls."
+        },
+        "call": {
+          "type": "string",
+          "description": "The call of that scene to run (like go or reply). Left out: the scene's state and its calls."
+        }
+      }
+    },
+    "side": "server",
+    "timeout": 60,
+    "attention": false,
+    "lua": "return Mods.GateKitAI.AI.Tool('scene', args)"
+  },
+  {
+    "name": "ai_session",
+    "description": "Call this first. It starts the session and answers the owner's own text for you as `prompt` (who you are, what is wanted, how to talk) and the whole situation as `now`. With no arguments it reads the session again and changes nothing. Answers one line of JSON: ok, mode, did, why_not, hint, prompt, now.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["open", "blind"],
+          "description": "blind: you are told only what a player at the screen could know. open: everything the bridge can read, with scenes and a route. Left out: the mode stays as it is."
+        },
+        "prompt": {
+          "type": "string",
+          "description": "The owner's own text for the model, given as text."
+        },
+        "prompt_file": {
+          "type": "string",
+          "description": "The same, given as the path of a plain text file on the machine that runs the game."
+        },
+        "plan": {
+          "type": "string",
+          "description": "Mode open only: the name of a route plan to follow (like prologue), or off."
+        },
+        "step": {
+          "type": "integer",
+          "description": "Mode open only: the number of the plan's step to stand on."
+        }
+      }
+    },
+    "side": "server",
+    "timeout": 30,
+    "attention": false,
+    "files": {"prompt_file": "prompt"},
+    "lua": "args.prompt_from = args.prompt_file; return Mods.GateKitAI.AI.Tool('session', args)"
+  }
+]

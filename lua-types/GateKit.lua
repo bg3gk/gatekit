@@ -186,6 +186,11 @@ function GK.Start(side) end
 ---@field Open table<string, GK.EventRow> @ the waiting view: key -> the row that opened it
 GK.EventLog = {}
 
+---Adds another mod's families and kinds to the vocabulary of this side's log: a table in the registry file's own shape. A kind the registry has in another family is refused and nothing is added; the same entry given again changes nothing. The merged registry is written to the channel, where the host reads it. Both sides. Cheat.
+---@param registry { families: table<string, { always: boolean?, default: boolean?, about: string }>?, kinds: table<string, { family: string, class: string, knows: string, attention: string?, ends: string?, payload: table<string, string> }>? }
+---@return { ok: boolean, families: integer?, kinds: integer?, error: string? }
+function GK.EventLog.Register(registry) end
+
 ---Appends a row; `kind` must be in the vocabulary. A detail kind whose family is off writes nothing.
 ---@param kind string
 ---@param payload table?

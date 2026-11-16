@@ -73,7 +73,7 @@ The tables and functions each file adds to `GK`; the signatures are in `lua-type
 | --- | --- |
 | `Shared/Bridge.lua` | `GK`, `GK.Dump`, `GK.Run`, `GK.Format`, `GK.AutoSave`, `GK.Start` (the file channel of the host), `GK.Log` (per chunk); the observed answers: `GK.Observe`, `GK.Unobserved`, `GK.Follow`, `GK.Later`, `GK.Ticks`, `GK.LimitTicks`, `GK.TickMs`, `GK.Clock`; a hit read from the game: `GK.HitOutcome`, `GK.HitSaves`, `GK.HitAttack`, `GK.HitRow` |
 | `Shared/Verbs.lua` | `GK.Verbs` (`Load`, `Of`, `List`, `Guard`, `Within`; section 19) |
-| `Shared/EventLog.lua` | `GK.EventLog` (`LoadRegistry`, `Append`, `Row`, `Since`, `Previous`, `On`, `Off`, `SwitchedOn`, `ScopeEnded`, `Tick`, `Costs`, `Families`, `Kinds`; section 15), `GK.Note`, `GK.Step`, `GK.StepEnded`, `GK.Events` |
+| `Shared/EventLog.lua` | `GK.EventLog` (`LoadRegistry`, `Register` - another mod's families and kinds added to the vocabulary, as the mod GateKit AI adds its family `ai` -, `Append`, `Row`, `Since`, `Previous`, `On`, `Off`, `SwitchedOn`, `ScopeEnded`, `Tick`, `Costs`, `Families`, `Kinds`; section 15), `GK.Note`, `GK.Step`, `GK.StepEnded`, `GK.Events` |
 | `Shared/Attention.lua` | `GK.Attention` (`Push`, `Set`, `State`, `Mark`, `Since`, `Tick`, `Costs`, `Waiting`; section 11) |
 | `Shared/ConsoleLog.lua` | `GK.LogSinks`, `GK.Features`, `GK.CutUtf8`, `GK.ShortTrace`, `GK.ConsoleEmit`, `GK.FlushLog` |
 | `Shared/Complete.lua` | `GK.Complete`, `GK.CommonPrefix` |
