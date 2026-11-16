@@ -462,6 +462,65 @@ A button's command may not be its `Command`: `finishLevelUpButton`'s `Command` i
 tell the chain: its attached `Triggers` reads as a `NoesisApp.TriggerCollection` that Script
 Extender hands out as a plain DependencyObject.
 
+### Look: any window by walking it
+
+`GK.Gui.Look(widget [, options])` answers what a player could act on in an open widget, found by
+walking its visual tree and by what each element is - no table of names, no code per window:
+`{ ok, widget, data, controls = { ... } }`, each control `{ handle, kind, type, text, value,
+enabled (false only), hidden, data, of, command, parameter }`.
+
+| `kind` | Elements | `value` | Acted on by |
+|---|---|---|---|
+| `button` | a type with `Button` in its name; a list item outside any list | - | `GK.Gui.Click` |
+| `toggle` | `CheckBox`, `RadioButton`, `ToggleButton` | `IsChecked` when it reads (`unread = "IsChecked"` when it does not) | `GK.Gui.Click`, `GK.Gui.Set` |
+| `list` | `ListBox`, `ComboBox`, `TabControl` | the selected item's text; `selected`, `count`, `items = { { n, text, id, name, enabled, hidden } }`, `more`, `notShown` | `GK.Gui.Select`, `GK.Gui.Click(widget, "<list>#<n>")` |
+| `slider` | `Slider` | `Value`, with `min`, `max` | `GK.Gui.Set` |
+| `text` | `TextBox` | `Text` | `GK.Gui.Set` |
+
+- **Handle.** A control's x:Name; an unnamed control is `<what holds it>/<its type>`, where what
+  holds it is the nearest named element or control above it, or the item of a list it lies in
+  (`classList#4/LSButton`). A handle met again in tree order is numbered (`AddAbility[3]`). An item
+  of a list is `<list>#<number>`, the number being the list's own (items not shown keep theirs).
+  A control that is not shown (`options.all`) carries `~` before its handle and is numbered apart,
+  so the handles of what is shown do not depend on it. Handles hold while the window shows the
+  same controls; after a page turns, look again.
+- **Text.** A control's `Content` when it is a text, else the first text block inside it (its
+  `Text`, else its `ls:TextBlockFormatter.SourceText`); localisation handles are translated.
+- **`data`, `of`.** The type of the view model a control stands for and what that view model calls
+  itself (`Name`, `Title`, `DisplayName`, `Label`, `Header`, `Text`, `Description`, else the
+  property named as the type is: `ls.VMAbility.Ability`), when it is not the widget's own.
+- **Items.** A list's `ItemsSource`, else `Items`; a source the list hands out as an object that
+  counts and cannot be indexed is found again, by its address, among the properties of the list's
+  data context, where it reads as a collection; a source that still cannot be indexed (a filtered
+  view) is read by the item elements the list shows (`notShown` counts the rest). An item written
+  in the XAML carries its `name`; a generated one its data's text and `id` (`Guid`, `UUID`, `Id`).
+- **Options:** `under` (a handle or x:Name: only what lies inside it), `kind`, `find` (part of a
+  handle or text), `items` (how many items are written out, default 12), `detail` (the plain values
+  of each control's and item's data), `all` (controls not shown too).
+
+`GK.Gui.Click`, `GK.Gui.Select` and `GK.Gui.Set` take a handle. `GK.Gui.Select(widget, list, item)`
+takes the item's number, its `id`, its `name` or its text (the whole text first, then a part),
+refuses an item that is not shown or a disabled list, and answers `{ ok, selected, of, was, reads,
+text }`: `reads` is the list's selection read again by its handle; a list that does not keep a
+selection is judged by what the window shows. `GK.Gui.Set(widget, handle, value)` sets a slider
+inside its range (outside it: refused with `min`, `max`), a text field, a toggle (pressed when it
+differs) or a list, and answers `{ ok, before, after }`. A picture of a window (`GK.Gui.Picture`)
+holds the handles of the controls it shows, so a page turned inside one widget is seen as a change
+(`saw = "the controls shown changed"`).
+
+What the walk does not reach:
+
+- **A toggle's state.** `IsChecked` is a nullable flag, which the extender neither reads nor
+  writes: a toggle with a command is pressed through it, one without (a swatch button that only
+  opens a panel through a binding on `IsChecked`) cannot be pressed. What such a panel holds is in
+  the tree and is acted on by its `~` handle; the answer cannot say the panel opened.
+- **A chain on an unnamed control.** `Client/XamlChains.lua` finds a click chain by x:Name; an
+  unnamed control runs its own `Command` only.
+- **Triggers on other events** (`ValueChanged`, `SelectionChanged`) are the game's own and fire by
+  themselves when the value is set; they are not read.
+- **Items a virtualised list has not drawn**, when its source cannot be indexed either.
+- **Popups outside the widget** (a combo box's drop-down drawn in another root).
+
 ### AutomationId
 
 `GK.Gui.Controls` rows carry `automationId` (the control's own `ls:AttachedProperties.AutomationId`)
