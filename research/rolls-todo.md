@@ -150,7 +150,7 @@ cases: 93 s at speed 1). The risk is cases that lean on each other - a case that
 the fight in a state the next one did not expect, and a verdict stops meaning one thing. To try
 on one test first (origins), measuring the time won and whether each case can still fail alone.
 
-### The experiment's result (`tests/rolls/log/origins_one_fight.lua`)
+### The experiment's result (the test `rolls/log/origins_one_fight`, since taken out of the tree; it is in the branch's history)
 
 Measured on the five fight cases of the origins test, three runs each: one staged fight takes
 about 30 s at speed 1 against 64 s (2.1 times faster), and 20 s against 30 s at the working

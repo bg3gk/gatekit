@@ -13,7 +13,7 @@
 -- three seconds.
 -- Staging (cheat): two neutral humans beside the host; the lines (GK.Say is a cheat: a text the
 -- game did not say). The camera's focus on them is fair. Reading: observation.
--- Run: gatekit --instance <copy> test tests -k say/overhead --speed working
+-- Run: gatekit --instance <copy> test tests/_selftest -k say_overhead --speed working
 
 test { level = "GustavX:Basic_Level_A",
        about = "A line over a head is a status of the toolkit's own named with the text: on while it shows, gone after, one per creature, markup characters kept." }

@@ -5,7 +5,7 @@
 -- game's can-cast. Staged with a neutral goblin five metres from the host, out of a fight: the
 -- host's bow reaches it, its melee weapon does not.
 -- Staging (cheat): the goblin. Reading: observation.
--- Run: gatekit --instance <copy> test tests/fight -k fight/options_verb
+-- Run: gatekit --instance <copy> test tests/_selftest -k fight_options_verb
 
 test { level = "GustavX:Basic_Level_A",
            about = "The spells a creature could use on a target now are read with their cost, their reach and the game's chance." }

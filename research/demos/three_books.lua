@@ -20,7 +20,7 @@
 -- takes them away). Staging (cheat): the books, the markers, the writes, the save, the load, the
 -- scope, the second placing. Reading: observation. A save and a load take about a quarter of a
 -- minute each. Stands on test:store/kept/round_trip (a store survives a save and its load).
--- Run: gatekit --instance <copy> test tests/store -k store/kept/three_books
+-- Run: gatekit --instance <copy> test research/demos -k three_books
 
 test { level = "GustavX:Basic_Level_A", surprises = { "loading" },
        about = "Books placed from a store after a load stand where they stood before the save." }

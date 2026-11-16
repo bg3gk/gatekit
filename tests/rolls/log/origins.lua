@@ -13,7 +13,7 @@
 -- nothing), the talk, the turn passed. The weapon attack and the dialogue's answer and throw are
 -- the player's own path (fair). Reading the rows: observation.
 -- Not covered: initiative (its row has no roller and kind None, by the contract's own words); the
--- cause of a damage roll, which the log does not place yet (test:rolls/log/unknown).
+-- cause of a damage roll, which the log does not place yet (test:_selftest/roll_log_unknown).
 -- A case with a fight stages it anew (about 5 s): each case runs from a clean scene.
 -- Run: gatekit --instance <copy> test tests/rolls -k rolls/log/origins
 
