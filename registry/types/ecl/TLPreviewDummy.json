@@ -1,0 +1,29 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::TLPreviewDummy",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "A character, item or scenery actor a client timeline made for itself: Name (DUM_TimelineTemplate_<template>), OriginalCharacterTemplate, SourceTemplateOverride, Speakers, VisualResourceId, PhysicsResourceId, ActiveDummy, TimelineType, VisibilityFlags. The figures and props of the main menu are such dummies: the menu is a level (SYS_Menuscreen_Act3_B or SYS_Menuscreen_Act1_A) with the timelines MM_Open_Boats, MM_Accept and MM_Accept_Temple playing in it, client only, with no server.",
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "the component TLPreviewDummy, engine name from Ext.Debug.GetComponentTypes"
+    },
+    {
+      "kind": "watch",
+      "says": "in the Menu game state 98 entities carry it, each with Level.LevelName SYS_Menuscreen_Act3_B and TimelineActorData; four have ActiveDummy true and the templates of the four character actors of the timeline MM_Accept_Temple"
+    },
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types), as class ecl::TLPreviewDummy; the Toolkit's EoCClient.dll exports the class with its virtual table and accessors, and Script Extender binds TLPreviewDummy to it (Components/Timeline.h)"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which function creates the dummies of a timeline, and whether one can be asked for a template the timeline does not name (a figure of a mod's own in the main menu)",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

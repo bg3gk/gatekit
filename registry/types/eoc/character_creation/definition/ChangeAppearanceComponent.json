@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "eoc::character_creation::definition::ChangeAppearanceComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "On the session entity of a change-appearance session: the character being edited and the definition entity. Script Extender: CCDefinitionChangeAppearance.",
   "size": 16,
   "fields": [
     {
@@ -30,6 +33,16 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "CCDefinitionChangeAppearance", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) the handle at +0x0 is the host's entity and the one at +0x8 is the entity that carries CCChangeAppearanceDefinition and CCDefinitionCommon"
+    }
+  ],
   "survey": {
     "batch": "replicated",
     "confidence": "high",

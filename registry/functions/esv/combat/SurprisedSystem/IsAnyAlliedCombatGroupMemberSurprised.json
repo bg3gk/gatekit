@@ -1,0 +1,30 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat::SurprisedSystem::IsAnyAlliedCombatGroupMemberSurprised",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Answers whether any member of the joining creature's combat group, as the combat group mapping lists it, has relation 100 to the creature and is surprised.",
+  "fingerprint": {
+    "calls": ["fp:5227b96c8688ff31", "fp:e4d053ad9455ea7c", "unplaced::IsSurprisedOrAskedToBe"],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<esv::combat::CombatGroupMappingComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "the Toolkit exports the name at EoCServer.dll+0x1495040 with the same walk"
+    },
+    {
+      "kind": "read",
+      "says": "called from the gatherer of joining creatures alone; it ends with the surprised check at bg3_dx11.exe+0x322D580 on each member"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Reached in a scene where two hostile humans share a combat group set through Osiris; a probe that counts its calls there would confirm it.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -2,6 +2,7 @@
   "schema": "registry/type/1",
   "id": "ecl::character_creation::DummyComponent",
   "kind": "struct",
+  "rung": "game",
   "size": 24,
   "fields": [
     {
@@ -20,11 +21,15 @@
       "offset": 8,
       "name": "ChangeId",
       "type": "int32_t",
-      "rung": "inferred",
+      "rung": "confirmed",
       "evidence": [
         {
-          "kind": "text",
-          "says": "bg3.exe+0x202FB70: compared with the int at +8 of the DummyDefinitionComponent (Script Extender: ChangeId) and overwritten with it when different, after which the dummy's visuals are rebuilt - the last applied revision."
+          "kind": "read",
+          "says": "the per-frame dummy update (bg3_dx11.exe+0x202EB00) compares these two ints with +0x8 and +0xC of ecl::character_creation::DummyDefinitionComponent and copies the definition's value in before refilling the target visual"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) each reads the definition's counter a moment after a client write of +1 to that counter; EquipmentChangeId at +0x10 follows the definition's int at +0x10 the same way, and Definition names the definition entity"
         }
       ]
     },
@@ -32,11 +37,15 @@
       "offset": 12,
       "name": "ChangeId2",
       "type": "int32_t",
-      "rung": "inferred",
+      "rung": "confirmed",
       "evidence": [
         {
-          "kind": "text",
-          "says": "bg3.exe+0x202FB70: compared with the int at +0xC of the DummyDefinitionComponent (Script Extender: ChangeId2) and overwritten with it, then bg3.exe+0x2018450 is called with definition+0xC8."
+          "kind": "read",
+          "says": "the per-frame dummy update (bg3_dx11.exe+0x202EB00) compares these two ints with +0x8 and +0xC of ecl::character_creation::DummyDefinitionComponent and copies the definition's value in before refilling the target visual"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) each reads the definition's counter a moment after a client write of +1 to that counter; EquipmentChangeId at +0x10 follows the definition's int at +0x10 the same way, and Definition names the definition entity"
         }
       ]
     },
@@ -66,6 +75,20 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "ClientCCDummy", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the per-frame dummy update (bg3_dx11.exe+0x202EB00) compares these two ints with +0x8 and +0xC of ecl::character_creation::DummyDefinitionComponent and copies the definition's value in before refilling the target visual"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) each reads the definition's counter a moment after a client write of +1 to that counter; EquipmentChangeId at +0x10 follows the definition's int at +0x10 the same way, and Definition names the definition entity"
+    },
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types), as struct ecl::character_creation::DummyComponent; Script Extender binds ClientCCDummy to it"
+    }
+  ],
   "survey": {
     "batch": "equipment",
     "confidence": "high",

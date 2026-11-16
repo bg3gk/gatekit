@@ -2,7 +2,9 @@
   "schema": "registry/type/1",
   "id": "esv::character_creation::SessionOwnerComponent",
   "kind": "struct",
-  "about": "Owner of a character-creation session (respec / change appearance / level-up editor) on the server: the user who opened it and the local time it started. Created by the respec and change-appearance subsystems (esv::character_creation::RespecSubsystem::Update, ChangeAppearanceSubsystem::Update/Abort write it); seen in SYS_CC_I after Osi.StartRespec.",
+  "state": "described",
+  "rung": "game",
+  "about": "The server's record of whose session it is: UserId and StartTime. Script Extender: ServerCCSessionOwner.",
   "size": 16,
   "fields": [
     {
@@ -50,6 +52,16 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "ServerCCSessionOwner", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) it sits on the session entity; UserId reads 65537 for the host and StartTime a count of seconds of the wall clock at the start"
+    }
+  ],
   "survey": {
     "batch": "alive",
     "confidence": "high",

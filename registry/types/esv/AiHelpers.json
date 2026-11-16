@@ -1,0 +1,75 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::AiHelpers",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The AI helper of the server, reached from Lua as Ext.System.ServerAi: Ai maps a character to the data of its running AI calculation (the actions scored, the next action, whether the calculation is finished), beside the lists of allies, enemies and neutrals of the current fight.",
+  "fields": [
+    {
+      "offset": 96,
+      "name": "Ai",
+      "type": "HashMap<EntityHandle, AiData*>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header AiHelpers.h of Script Extender binds its system ServerAi to this engine name; the two offsets are from its layout, the members of AiData (Actions, NextAction, CalculationFinished) have no offsets there"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A, outside a fight, Ext.System.ServerAi answers with the maps Ai and Fallback and the lists CombatEnemies, CombatAllies, Enemies, Allies; Ai holds no entry for the host"
+        },
+        {
+          "kind": "text",
+          "says": "reported from the study of rolls, not read again here: Ai[subject] gains an entry while that creature takes its turn, with CalculationFinished, Actions and NextAction"
+        }
+      ]
+    },
+    {
+      "offset": 224,
+      "name": "Fallback",
+      "type": "HashMap<EntityHandle, AiFallbackData>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header AiHelpers.h of Script Extender binds its system ServerAi to this engine name; the two offsets are from its layout, the members of AiData (Actions, NextAction, CalculationFinished) have no offsets there"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A, outside a fight, Ext.System.ServerAi answers with the maps Ai and Fallback and the lists CombatEnemies, CombatAllies, Enemies, Allies; Ai holds no entry for the host"
+        },
+        {
+          "kind": "text",
+          "says": "reported from the study of rolls, not read again here: Ai[subject] gains an entry while that creature takes its turn, with CalculationFinished, Actions and NextAction"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "the header AiHelpers.h of Script Extender binds its system ServerAi to this engine name; the two offsets are from its layout, the members of AiData (Actions, NextAction, CalculationFinished) have no offsets there"
+    },
+    {
+      "kind": "watch",
+      "says": "on the level Basic_Level_A, outside a fight, Ext.System.ServerAi answers with the maps Ai and Fallback and the lists CombatEnemies, CombatAllies, Enemies, Allies; Ai holds no entry for the host"
+    },
+    {
+      "kind": "text",
+      "says": "reported from the study of rolls, not read again here: Ai[subject] gains an entry while that creature takes its turn, with CalculationFinished, Actions and NextAction"
+    },
+    {
+      "kind": "game-name",
+      "says": "the executable keeps the type name class esv::AiHelpers (gatekit symbols types)"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the offsets of NextAction and CalculationFinished inside esv::AiData, from the function that picks the next action of a creature on its turn",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

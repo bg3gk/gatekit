@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RequestTimelineDummyLoad",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Queues the load of one timeline dummy: stores the request (the dummy's entity, its template, the callbacks, the actor's uuid) in the timeline system's table of pending loads under the timeline's uuid (system 0xDA0), builds the callback object and calls code:ecl::TLPreviewDummyHelpers::LoadDummy with it.",
+  "fingerprint": {
+    "calls": [
+      "ecl::TLPreviewDummyHelpers::LoadDummy",
+      "fp:0447c984b485073b",
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:4f8c2f11fb1bd048",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83",
+      "import:affe5cd49527c729"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It parses the timeline's uuid, finds or adds the timeline's row in the table at 0xDA0 of the system, copies the request into it, allocates a 0x58-byte callback object that captures the system, the two uuids and a flag, and calls LoadDummy."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts shows all 27 calls of LoadDummy coming from it."
+    }
+  ]
+}

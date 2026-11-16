@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::ActivationManager::ActivationManager",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Builds the server's activation manager: its listeners, its sets, the activation helper (+0xE8) and the distances: characters wake under 40 m and sleep beyond 45 m, items the same, low items 10 and 15 m.",
+  "fingerprint": {
+    "calls": ["fp:123b79ba6c390bab", "fp:e4d053ad9455ea7c", "import:196f87dd222b4c83"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "stores 40.0 at +0xD0 and +0xD8, 45.0 at +0xD4 and +0xDC, 10.0 at +0xE0, 15.0 at +0xE4, the helper at +0xE8; the virtual table 0x5911848 at +0, 0x5911758 at +0x28 (the ecs::System part)"
+    },
+    {
+      "kind": "watch",
+      "says": "the live manager (the system object minus 0x28) holds 40, 45, 40, 45, 10, 15 at those offsets; staged creatures wake at 39 m and not at 40.5 m, sleep at 45.4 m and not at 44.8 m"
+    }
+  ]
+}

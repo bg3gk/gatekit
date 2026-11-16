@@ -1,0 +1,44 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CreateTimelineDummiesFromTemplates",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "For one timeline, makes a dummy for every actor that has no registered entity and is given by a template: looks the actor's uuid up in the global template bank, creates the dummy, sets it up by the template's type (character 0x1FC7, light 8, other 0x1005), prepares it from the template, queues its load, hides it in both render views and adds ecl::ClientTimelineActorControlComponent with the actor, the timeline and IsAdditional set.",
+  "fingerprint": {
+    "calls": [
+      "ecl::TLPreviewDummyHelpers::CreateDummy",
+      "ecl::TLPreviewDummyHelpers::PrePrepareDummy(TLPreviewDummy*,GameObjectTemplate*)",
+      "ecl::TLPreviewDummyHelpers::SetupDummy",
+      "fp:123b79ba6c390bab",
+      "fp:1429763f407ed494",
+      "fp:20f8c37ca2ebb7f1",
+      "fp:36ea95f2ce33bd6a",
+      "fp:39a64b633f8384f0",
+      "fp:5227b96c8688ff31",
+      "fp:9cd5e4f98279a2c4",
+      "fp:d1045bdeed38dbc1",
+      "fp:dfe8414d83dba058",
+      "fp:e4d053ad9455ea7c",
+      "import:3c67524f6489a260",
+      "unplaced::RequestTimelineDummyLoad"
+    ],
+    "strings": ["393b81332a8609dd"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The loop over the timeline's actors skips those ls::Timeline::GetRegisteredActor answers, and for the rest calls code:ecl::TLPreviewDummyHelpers::CreateDummy, code:ecl::TLPreviewDummyHelpers::SetupDummy, the template overload of PrePrepareDummy and the load request in that order, then writes the control component's Actor, Timeline, Slot, IsAdditional and IsListener."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts shows it as the caller of 7 CreateDummy, 7 SetupDummy with 0x1005 and all 7 calls of the template overload of PrePrepareDummy."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Its owner: a member of the client's timeline system, called on the path that starts a timeline.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::ActivationSystemHelper::SetActive",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Wakes or puts to sleep one entity for the activation manager, with a reason: adds or removes Active, AnubisActive and the animation blueprint and update; it is the helper's virtual +8, reached from the manager's +0xE8. Its entry is bg3_dx11.exe+0x41A8EE0: the decompiler has no function there and folds it into the small array helper at +0x41A8E30.",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the manager calls the virtual +8 of the object at +0xE8 with the world, 1 or 0, the entity handle, a name and the EReason (5 for party anchors, 0xD for timelines); the object's virtual table 0x5700B38 has this function at +8; the symbol build names esv::ActivationSystemHelper::SetActive(WorldView, bool, ID, FixedString, EReason, EntityManager)"
+    },
+    {
+      "kind": "watch",
+      "says": "two sleepers moved to 38 m cause 2 calls from CheckAroundPosition (+0x41A6C52); two awake creatures moved to 47 m cause 2 calls from the manager's update (+0x41A4EB0); Active appears or leaves first, AnimationBlueprint 34 ms and AnubisActive 36 ms later"
+    },
+    {
+      "kind": "read",
+      "says": "the manager calls the virtual +8 of the object at +0xE8 with the world, 1 or 0, the entity handle, a name and the EReason (5 for party anchors, 0xD for timelines); the object's virtual table 0x5700B38 holds 0x41A8EE0 at +8; the symbol build names esv::ActivationSystemHelper::SetActive(WorldView, bool, ID, FixedString, EReason, EntityManager)"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe at +0x41A8EE0: two sleepers moved to 38 m cause 2 calls from CheckAroundPosition (+0x41A6C52); two awake creatures moved to 47 m cause 2 calls from the manager's update (+0x41A4EB0); Active appears or leaves first, AnimationBlueprint 34 ms and AnubisActive 36 ms later"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the decompiler's function boundary: the entry 0x41A8EE0 (the virtual table's slot) is not a function of the database; a pass that splits it would place this name exactly",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "sdl::SDLWindowManager::Update",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Polls the window system's events once a frame and turns them into the engine's input. For a mouse motion event it finds the event's window by the event's window id and, when that is the application's main window, writes the event's position into the engine's mouse (ls::Mouse); every motion event, whatever its window, raises the input manager's motion input. It also writes the global pointer position and whether the pointer is inside the window.",
+  "fingerprint": {
+    "calls": [
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:cb8dda2c16d733bd",
+      "fp:e4d053ad9455ea7c",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "vtables": [{"slot": 15}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the branch for event type 0x400 looks the window up by the event's window id, writes the converted position through the global pointer at +0x614fb70 only when the window is the application's, and queues raw input 0x10080 in either case; the global position is written from SDL_GetGlobalMouseState before the loop and the inside flag from SDL_GetMouseFocus after each event"
+    },
+    {
+      "kind": "watch",
+      "says": "a motion event injected with window id 0 left the position at 0,0 and the interface reported no mouse move; with the position written into ls::Mouse first, the same injected event made the UI library raise PreviewMouseMove at that position and open the tooltip of the hotbar slot under it"
+    }
+  ]
+}

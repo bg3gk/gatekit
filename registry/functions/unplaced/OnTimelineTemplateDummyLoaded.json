@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::OnTimelineTemplateDummyLoaded",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Runs when the load of a dummy made from a template has ended: attaches the dummy to the current level's scene, and for a character template whose dummy has a source character refreshes the equipment visuals and marks them as invisibility attachments.",
+  "fingerprint": {
+    "calls": [
+      "ecl::TLPreviewDummyHelpers::AttachDummyToScene",
+      "fp:8a35391d21d60fa3",
+      "fp:b87a62c9a9a87876",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It reads the scene at 0x28 of the client level manager's current level, calls code:ecl::TLPreviewDummyHelpers::AttachDummyToScene, and only when the template's type is character and the dummy's source entity (0x88) has ecl::Character goes on to the equipment."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts shows 7 of the 27 calls of AttachDummyToScene coming from it, as many as dummies were made from templates."
+    }
+  ]
+}

@@ -2,6 +2,7 @@
   "schema": "registry/type/1",
   "id": "ecl::character_creation::CurrentVisualComponent",
   "kind": "struct",
+  "rung": "game",
   "about": "Visual currently applied to the character-editor dummy (queried together with TargetVisualComponent; the creator stores the same defaults as TargetVisual, shifted by 8 bytes). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
   "size": 216,
   "fields": [
@@ -252,6 +253,16 @@
     "ext_name": "ClientCharacterCreationCurrentVisual",
     "one_frame": false
   },
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) it sits on the dummy entity beside the target visual and reads the same colour ids, Race, Origin and body type once the dummy is drawn"
+    }
+  ],
   "survey": {
     "batch": "alive",
     "confidence": "medium",

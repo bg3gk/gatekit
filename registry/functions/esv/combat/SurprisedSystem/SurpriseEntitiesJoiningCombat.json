@@ -1,0 +1,40 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat::SurprisedSystem::SurpriseEntitiesJoiningCombat",
+  "state": "described",
+  "rung": "inferred",
+  "does": "For every creature that joins a fight this tick and is not surprised already it puts the creature into the set when a member of its party is surprised, or when a member of its combat group whose relation to it is 100 is surprised.",
+  "fingerprint": {
+    "calls": [
+      "esv::combat::SurprisedSystem::IsAnyAlliedCombatGroupMemberSurprised",
+      "fp:5227b96c8688ff31",
+      "fp:e3222fd921e547a3",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::IsSurprisedOrAskedToBe"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::ActiveComponent,eoc::combat::ParticipantComponent,esv::combat::JoinEventOneFrameComponent>,ls::TypeList<eoc::combat::IsInCombatComponent>,ls::TypeList<>,ls::TypeList<eoc::party::MemberComponent>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "the Toolkit exports the name at EoCServer.dll+0x1495DF0 with the same order of tests"
+    },
+    {
+      "kind": "read",
+      "says": "the query is active, participant and join event, with the party member component optional; the party is walked through eoc::party::CompositionComponent, the combat group through the function at bg3_dx11.exe+0x322DE70"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe on the surprised check shows one call from here for each of three joiners; a hostile human sharing its combat group with the target joins from 37 m and gets the join request, one without a shared group that joins in round 1 gets none"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A party member joining while another member is surprised is not staged: the test level's party is one character.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

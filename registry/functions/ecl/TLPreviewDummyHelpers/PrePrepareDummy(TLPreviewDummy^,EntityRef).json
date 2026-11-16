@@ -1,0 +1,54 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::TLPreviewDummyHelpers::PrePrepareDummy(TLPreviewDummy*,EntityRef)",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Fills a dummy from an existing entity of the level, by what the entity carries: a character (through its template and the character preparation), a light, an item, an effect (its resource becomes the dummy's visual resource) or a plain visual.",
+  "fingerprint": {
+    "calls": [
+      "fp:10424310f7b87fd7",
+      "fp:123b79ba6c390bab",
+      "fp:24b7188a79145a99",
+      "fp:2e11dab32a025d84",
+      "fp:30c7b9626ca9abdd",
+      "fp:45dc6e5176859392",
+      "fp:5227b96c8688ff31",
+      "fp:6e456152879c980c",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:b87a62c9a9a87876",
+      "fp:e4d053ad9455ea7c",
+      "fp:fc070702caf9a6fa",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The branches test ecl::Character, ls::LightComponent, the item check, ls::EffectComponent and ls::VisualComponent on the source entity in that order; its two callers are the timeline system's functions that make a dummy for a registered actor."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog with no cast in the level starts shows no call, while the template overload runs 7 times."
+    },
+    {
+      "kind": "read",
+      "says": "The branches test ecl::Character, ls::LightComponent, the item check, ls::EffectComponent and ls::VisualComponent on the source entity in that order; its two callers are the timeline system's functions that make a dummy for a registered actor."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Start a dialog whose speakers stand in the level and count its calls.",
+      "about": "reach",
+      "state": "open"
+    },
+    {
+      "ask": "A dialog started by the host with itself as the speaker shows no call; start a dialog whose speakers stand in the level and count its calls.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

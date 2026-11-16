@@ -1,0 +1,48 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::TLPreviewDummyHelpers::PrePrepareDummy(TLPreviewDummy*,GameObjectTemplate*)",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Fills a dummy from a root template that has no entity behind it: for a character template it runs the character preparation with no character (visual resource, equipment, speaker), for a light template it adds the light to the scene, for other templates it prepares a visual dummy; then it writes the template's id into the dummy at 0x78 and the template's name into its name. Parameters: the address of a pointer to the entity world, the global resource manager, the level's scene, the dummy, the template.",
+  "fingerprint": {
+    "calls": [
+      "fp:10424310f7b87fd7",
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "fp:fc070702caf9a6fa"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The template's type (virtual slot 3) selects one of three branches; the tail copies the template's id to the dummy's 0x78 and its name to 0x38. The only caller walks a timeline's actors that have no registered entity and looks each template up in the global template bank."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts records 7 calls, all from the timeline system's function for actors without an entity, with the second argument equal to the value of ls::gGlobalResourceManager and the third equal to the scene at 0x28 of the client level manager's current level."
+    },
+    {
+      "kind": "read",
+      "says": "The template's type (virtual slot 3) selects one of three branches; the tail copies the template's id to the dummy's 0x78 and its name to 0x38. The only caller walks a timeline's actors that have no registered entity and looks each template up in the global template bank."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts records 7 calls, all from the timeline system's function for actors without an entity, with the second argument equal to the value of ls::gGlobalResourceManager and the third equal to the scene at 0x28 of the client level manager's current level. Called for the character root template of Vlaakith on a fresh dummy, the dummy's name reads DUM_Vlaakith, its template field the template's id and its visual resource is set."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Which of the Toolkit's three PrePrepareDummy overloads this is by signature: the Toolkit's take a Resource or a long world view.",
+      "about": "reach",
+      "state": "open"
+    },
+    {
+      "ask": "Which of the Toolkit's three PrePrepareDummy overloads this is by signature: the Toolkit's take a Resource or a long world view.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

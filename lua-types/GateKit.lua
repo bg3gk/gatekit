@@ -69,6 +69,7 @@
 ---@field Memory GK.Memory @ server: the memory instrument (read, watch, freeze a field)
 ---@field Sound GK.Sound @ client: how loud this copy of the game is
 ---@field Camera GK.Camera @ client: camera control
+---@field Wake GK.Wake @ server: a creature or a place kept awake and drawn far from the party (cheats)
 ---@field Places GK.Places @ client/ui: zone name and map markers
 ---@field Gui GK.Gui @ client/ui: every game window operated from code
 ---@field UI GK.UIPanels @ client: panels of other mods in the console overlay
@@ -2675,6 +2676,8 @@ function GK.Gui.Click(name, what, which) end
 ---@field type string
 ---@field text string?
 ---@field value any
+---@field valueFrom string? @ a toggle whose state was read from its data's flag ("data.Value"), not from IsChecked
+---@field unread string? @ "IsChecked": a toggle whose state cannot be read
 ---@field enabled boolean? @ false only
 ---@field hidden boolean?
 ---@field data string? @ the type of the view model the control stands for
@@ -2703,6 +2706,52 @@ function GK.Gui.Handle(name, handle) end
 ---@param widget any
 ---@return string
 function GK.Gui.Shown(widget) end
+
+---An open tooltip, as GK.Gui.Tips reads it.
+---@class GK.GuiTip
+---@field n integer
+---@field handle string @ "tip#1"
+---@field pinned boolean
+---@field type string @ the element's type: ls.LSTooltip (a hover holds it open), ls.LSElementCopy (pinned)
+---@field about { type: string?, of: string?, id: string|number|nil, spell: string?, values: table?, text: string? }? @ the view model the tooltip was given
+---@field data string? @ the type of the tooltip's own data
+---@field context string?
+---@field hint string? @ the key hint the game draws above it
+---@field title string?
+---@field texts { part: string?, text: string }[]
+---@field links { handle: string, text: string?, tag: string?, data: string?, of: string? }[] @ what inside it carries a tooltip of its own
+---@field parent string? @ the handle of the tooltip it was called from
+---@field owner { widget: string?, element: string }? @ where in a window it was called from
+
+---The open tooltips as a chain: the pinned ones in the game's order, then what a hover holds open
+---(docs/contracts/lua-api.md, "Tooltips"). UI.
+---@param options { detail: boolean? }|nil
+---@return { ok: boolean, tips: GK.GuiTip[] }
+function GK.Gui.Tips(options) end
+
+---Calls up a tooltip as a hover does, with no pointer: of a control of an open widget (a handle of
+---GK.Gui.Look, an item's handle or an x:Name), or of a link inside an open tooltip
+---(GK.Gui.Tip("tip#1/link#2")). UI.
+---@param name string @ the widget, or a link's handle
+---@param handle string?
+---@return { ok: boolean, did: string?, tip: GK.GuiTip?, open: integer?, saw: string?, error: string? }
+function GK.Gui.Tip(name, handle) end
+
+---Pins the tooltip a hover holds open: the key of the game's input event UIPinTooltip. UI.
+---@return { ok: boolean, did: string?, pinned: GK.GuiTip?, open: integer?, saw: string?, error: string? }
+function GK.Gui.PinTip() end
+
+---Closes every tooltip, or the one a hover holds open by its handle. UI.
+---@param which string?
+---@return { ok: boolean, did: string?, closed: integer?, tips: GK.GuiTip[]?, saw: string?, error: string? }
+function GK.Gui.CloseTips(which) end
+
+---A pointer inside the game, for research: the game's own mouse position written and motion and
+---button events injected, the real mouse untouched. Answers what the interface reported back.
+---Nothing that ships may rest on it (docs/contracts/lua-api.md, "The pointer"). UI. A cheat.
+---@param options { at: number[]?, widget: string?, handle: string?, ["do"]: "move"|"press"|"release"|"click"|"leave"|nil, button: integer?, wait: integer? }
+---@return table
+function GK.Cheat.Pointer(options) end
 
 ---Sets a control to a value as the player's hand would: a slider inside its range, a toggle, a
 ---text field, a list (as GK.Gui.Select). Answers what the control reads afterwards. UI.
@@ -3353,16 +3402,45 @@ function GK.Rolls.Chance(spec) end
 ---@return boolean
 function GK.Verbs.Has(path) end
 
----Moves the game's camera to `at` (an entity's uuid, a point {x, y, z}, or a list of two framed together) the way the game moves it: the camera behaviour's targets for an entity, its destination for a point, in a fight and outside. options.glide: glide past the game's snap distance (50 m) and put it back; options.hold: seconds before the camera returns by itself. Client: refuses a far creature's stub. Server: sends the server's point of every uuid to the client (channel GK_Camera) and answers the client's answer with `serverTicks`. Fair. Observed once the camera settled.
+---Moves the game's camera to `at` (an entity's uuid, a point {x, y, z}, or a list of two framed together) the way the game moves it: the camera behaviour's targets for an entity, its destination for a point, in a fight and outside. options.glide: glide past the game's snap distance (50 m) and put it back; options.hold: seconds before the camera returns by itself. The answer says `away` (the length of the move), `far` (past the snap distance) and `drawn` (every entity focused is drawn on the client; `notDrawn` and a `warning` name those that are not; a point has no `drawn`); a far move with no glide says `faded` (the game's own fade to black came) with `blackTicks` and `fadeTicks`, and answers when the fade has ended. A thing beyond the camera's leash (the switches' MaxDistFromChar) raises it until the return (`leashRaised`). Client: refuses a far creature's stub. Server: sends the server's point of every uuid to the client (channel GK_Camera) and answers the client's answer with `serverTicks`; options.wake = "one" (GK.Wake.One) or "place" (GK.Wake.Place) wakes the thing first and waits until the client holds it whole (`wake`, `woke`, `wakeTicks`) - a cheat, refused inside a fair step - and what it woke stays awake until GK.Camera.Return, a newer focus or GK.Stage.Clean. Fair. Observed once the camera settled; a row `camera_focused`.
 ---@param at string|number[]|(string|number[])[]
----@param options { glide: boolean?, hold: number? }?
----@return { ok: boolean, at: number[]?, distance: number?, ticks: integer?, how: ("targets"|"destination")?, snapped: boolean?, fight: boolean?, off: number?, onScreen: table?, serverTicks: integer?, error: string? }
+---@param options { glide: boolean?, hold: number?, wake: ("one"|"place")? }?
+---@return { ok: boolean, at: number[]?, distance: number?, ticks: integer?, how: ("targets"|"destination")?, snapped: boolean?, fight: boolean?, off: number?, onScreen: table?, far: boolean?, away: number?, drawn: boolean?, notDrawn: string[]?, warning: string?, faded: boolean?, blackTicks: integer?, fadeTicks: integer?, leashRaised: boolean?, wake: string?, woke: table?, wakeTicks: integer?, serverTicks: integer?, stage: string?, error: string? }
 function GK.Camera.Focus(at, options) end
 
----Brings the camera back to the controlled character by the game's own restore (in a fight the combat target's TargetMode 1 with its Position reset; outside, the behaviour's targets and the distance the first focus saved). options.glide as Focus's. Client, or server through GK_Camera. Fair. Observed once the camera settled.
+---Brings the camera back to the controlled character by the game's own restore (in a fight the combat target's TargetMode 1 with its Position reset; outside, the behaviour's targets and the distance the first focus saved). options.glide as Focus's. From past the snap distance with no glide the game fades, and the answer comes when the fade has ended (`faded`, `blackTicks`). Puts back a leash the focus raised (`leashRestored`); on the server it then releases what the focus woke (`released`: GK.Wake.Release's answer). Client, or server through GK_Camera. Fair. Observed once the camera settled; a row `camera_returned`.
 ---@param options { glide: boolean? }?
----@return { ok: boolean, at: number[]?, distance: number?, restoredDistance: number?, ticks: integer?, how: string?, serverTicks: integer?, error: string? }
+---@return { ok: boolean, at: number[]?, distance: number?, restoredDistance: number?, ticks: integer?, how: string?, far: boolean?, away: number?, faded: boolean?, blackTicks: integer?, fadeTicks: integer?, leashRestored: boolean?, released: table?, serverTicks: integer?, error: string? }
 function GK.Camera.Return(options) end
+
+---@class GK.Wake
+---@field HelperTemplate string @ the template of the helper GK.Wake.Place spawns: a name of GK.Stage.Templates or a root template
+GK.Wake = {}
+
+---Keeps the creature `who` awake and drawn wherever the party is (Osi.SetForceUpdate: an anchor of itself and of nobody else). Tracked by the stage's ledger; a row `wake_kept`. A wait that ran out says which side's and after how many ticks, and the creature is let go. Server. Cheat. Observed once it is active on the server and whole on the client.
+---@param who string
+---@return { ok: boolean, who: string?, name: string?, awake: boolean?, drawn: boolean?, was: { awake: boolean }?, distance: number?, ticks: integer?, awakeTicks: integer?, clientTicks: integer?, error: string? }
+function GK.Wake.One(who) end
+
+---Wakes the space around `at` (a point {x, y, z} or an entity's uuid) as a party member standing there would: a helper character put into the party's view, off stage and never drawn when it spawned asleep (`hidden`; `seen` says what a watcher could see of it). options.helper: a creature the caller spawned, in place of one spawned here; an origin, a player's character and a creature of the level's own cast are refused. options.template: the helper's template. Tracked by the stage's ledger; a row `wake_place`. Server. Cheat. Observed once the creatures within the manager's waking distance are active and the client holds whole those it is sent.
+---@param at string|number[]
+---@param options { helper: string?, template: string? }?
+---@return { ok: boolean, helper: string?, at: number[]?, hidden: boolean?, seen: string?, radius: number?, count: integer?, woke: { who: string, name: string?, distance: number, drawn: boolean }[]?, wokeCount: integer?, drawnCount: integer?, alreadyAwake: integer?, asleep: table[]?, ticks: integer?, wakeTicks: integer?, clientTicks: integer?, error: string? }
+function GK.Wake.Place(at, options) end
+
+---Lets go what GK.Wake holds: a creature kept by GK.Wake.One, a helper of GK.Wake.Place, or with nil all of them. The undo is done at once; a row `wake_released`. `stayed` are the creatures another anchor keeps awake. The client is not waited for. Server. Cheat. Observed once the creatures nobody else reaches have lost Active on the server.
+---@param handle string?
+---@return { ok: boolean, released: string[]?, slept: { who: string, name: string? }[]?, sleptCount: integer?, stayed: { who: string, name: string?, why: string }[]?, stillAwake: string[]?, ticks: integer?, error: string? }
+function GK.Wake.Release(handle) end
+
+---Whether an entity (a uuid) or the space around a point {x, y, z} is awake on the server and whole on the client, how far the nearest character of the party's view is, and which rule keeps it awake: "kept up" (GK.Wake.One), "party", "place" (a helper of GK.Wake.Place) or "none". Of a point `characters`, `awake` and `whole` are counts within the manager's waking distance. Server; the client is asked. Observation. Observed.
+---@param at string|number[]
+---@return { ok: boolean, who: string?, at: number[]?, name: string?, character: boolean?, awake: (boolean|integer)?, whole: (boolean|integer)?, drawn: boolean?, rule: ("kept up"|"party"|"place"|"none")?, anchor: string?, anchorKind: ("party"|"place")?, distance: number?, characters: integer?, radii: { wake: number, sleep: number, source: string }?, ticks: integer?, error: string? }
+function GK.Wake.State(at) end
+
+---The activation manager's distances as the game holds them now: a character is awake within `wake` metres of an anchor and asleep beyond `sleep`. Read from the manager's own object (needs GateKit's Script Extender build); otherwise ok = false with the measured ones and source = "measured". Server. Observation.
+---@return { ok: boolean, wake: number, sleep: number, itemWake: number?, itemSleep: number?, lowItemWake: number?, lowItemSleep: number?, source: string, error: string? }
+function GK.Wake.Radii() end
 
 ---Where a point or an entity (its feet) is on the screen, from the camera's view and projection matrices: u, v from 0 to 1 from the top left corner. Refuses a far creature's stub (its client position is stale). Client. Observation.
 ---@param at string|number[]

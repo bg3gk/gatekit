@@ -356,6 +356,16 @@ Found on the way, about tests and tools:
 
 ### Studies
 
+- **Appearance, and changing it on the fly.** Cover the machine code that carries a character's
+  appearance and applies a change of it, for controlled characters and for NPCs alike: where
+  creation writes it, what the camp's Magic Mirror does to a living character, what the many
+  appearance mods reach for and what they cannot. The aim is universal verbs - read an
+  appearance, apply one to any character in a running game, finish creation - and names in the
+  registry for what stands behind them. A first sight of it, from creation:
+  the server takes a whole definition only when the client sends it by a command of the window (a
+  write on the server alone does not reach the drawn figure), and a mod on disk changes a living
+  character by writing its appearance components and replicating them. The level of character
+  creation (`SYS_CC_I`, with a server) is a ready ground for trying this.
 - Simple actions that take time - drawing and sheathing a weapon and the like: how the game
   carries each (a state with a duration, an animation the logic waits for, or an instant change
   with the animation for show), what a test waits on, and what "done" is. The weapon is sometimes

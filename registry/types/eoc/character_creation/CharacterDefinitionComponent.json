@@ -1,0 +1,140 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::character_creation::CharacterDefinitionComponent",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The character being created, on the server and replicated to the client: Definition.Definition (Race, Subrace, BodyType, BodyShape, RootTemplate, Voice, Origin, Background, Deity), Definition.Visual (Visuals, Elements, AdditionalChoices, EyeColor, SecondEyeColor, HairColor, SkinColor), Definition.Name, Definition.Abilities, Definition.LevelUpData. The created character's CharacterCreationAppearance and CharacterCreationStats are made from it at FinishCreating.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Definition",
+      "type": "eoc::character_creation::CharacterDefinition",
+      "rung": "extender",
+      "evidence": [
+        {"kind": "extender-name", "says": "Script Extender exposes it as CCCharacterDefinition"},
+        {
+          "kind": "watch",
+          "says": "written on the server and replicated, the client's copy of this component changes and neither the dummy nor the creation window follows; changed by the client's own message, the created character carries its Visual, Name and Abilities"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds CCCharacterDefinition to this engine name; the offsets are the ones its legacy field names carry (field_28C, field_290)"
+        },
+        {
+          "kind": "watch",
+          "says": "no entity carries it in a change-appearance session started on a running level: it belongs to the creation of a new character"
+        },
+        {
+          "kind": "text",
+          "says": "reported from a run of character creation, not read again here: a server write of Definition followed by Replicate changes the client's replicated copy and neither the dummy nor the window"
+        }
+      ]
+    },
+    {
+      "offset": 648,
+      "name": "field_288",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {"kind": "extender-name", "says": "Script Extender exposes it as CCCharacterDefinition"},
+        {
+          "kind": "watch",
+          "says": "written on the server and replicated, the client's copy of this component changes and neither the dummy nor the creation window follows; changed by the client's own message, the created character carries its Visual, Name and Abilities"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds CCCharacterDefinition to this engine name; the offsets are the ones its legacy field names carry (field_28C, field_290)"
+        },
+        {
+          "kind": "watch",
+          "says": "no entity carries it in a change-appearance session started on a running level: it belongs to the creation of a new character"
+        },
+        {
+          "kind": "text",
+          "says": "reported from a run of character creation, not read again here: a server write of Definition followed by Replicate changes the client's replicated copy and neither the dummy nor the window"
+        }
+      ]
+    },
+    {
+      "offset": 652,
+      "name": "ChangeId",
+      "type": "int32_t",
+      "rung": "extender",
+      "evidence": [
+        {"kind": "extender-name", "says": "Script Extender exposes it as CCCharacterDefinition"},
+        {
+          "kind": "watch",
+          "says": "written on the server and replicated, the client's copy of this component changes and neither the dummy nor the creation window follows; changed by the client's own message, the created character carries its Visual, Name and Abilities"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds CCCharacterDefinition to this engine name; the offsets are the ones its legacy field names carry (field_28C, field_290)"
+        },
+        {
+          "kind": "watch",
+          "says": "no entity carries it in a change-appearance session started on a running level: it belongs to the creation of a new character"
+        },
+        {
+          "kind": "text",
+          "says": "reported from a run of character creation, not read again here: a server write of Definition followed by Replicate changes the client's replicated copy and neither the dummy nor the window"
+        }
+      ]
+    },
+    {
+      "offset": 656,
+      "name": "Synced",
+      "type": "bool",
+      "rung": "extender",
+      "evidence": [
+        {"kind": "extender-name", "says": "Script Extender exposes it as CCCharacterDefinition"},
+        {
+          "kind": "watch",
+          "says": "written on the server and replicated, the client's copy of this component changes and neither the dummy nor the creation window follows; changed by the client's own message, the created character carries its Visual, Name and Abilities"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds CCCharacterDefinition to this engine name; the offsets are the ones its legacy field names carry (field_28C, field_290)"
+        },
+        {
+          "kind": "watch",
+          "says": "no entity carries it in a change-appearance session started on a running level: it belongs to the creation of a new character"
+        },
+        {
+          "kind": "text",
+          "says": "reported from a run of character creation, not read again here: a server write of Definition followed by Replicate changes the client's replicated copy and neither the dummy nor the window"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {"kind": "extender-name", "says": "Script Extender exposes it as CCCharacterDefinition"},
+    {
+      "kind": "watch",
+      "says": "written on the server and replicated, the client's copy of this component changes and neither the dummy nor the creation window follows; changed by the client's own message, the created character carries its Visual, Name and Abilities"
+    },
+    {
+      "kind": "extender-name",
+      "says": "Script Extender's header Components/CharacterCreation.h binds CCCharacterDefinition to this engine name; the offsets are the ones its legacy field names carry (field_28C, field_290)"
+    },
+    {
+      "kind": "watch",
+      "says": "no entity carries it in a change-appearance session started on a running level: it belongs to the creation of a new character"
+    },
+    {
+      "kind": "text",
+      "says": "reported from a run of character creation, not read again here: a server write of Definition followed by Replicate changes the client's replicated copy and neither the dummy nor the window"
+    },
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types); Script Extender binds CCCharacterDefinition to it"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "The server function that builds the character from it at FinishCreating",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

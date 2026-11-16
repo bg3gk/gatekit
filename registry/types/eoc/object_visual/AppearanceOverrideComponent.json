@@ -1,0 +1,41 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::object_visual::AppearanceOverrideComponent",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "An appearance laid over a character's own: one member, a whole eoc::character_creation::Appearance. Script Extender: AppearanceOverride.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Visual",
+      "type": "eoc::character_creation::Appearance",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/Visual.h binds AppearanceOverride to this engine name with the one member Visual"
+        },
+        {"kind": "watch", "says": "Astarion on the level Basic_Level_A does not carry it"}
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "Script Extender's header Components/Visual.h binds AppearanceOverride to this engine name with the one member Visual"
+    },
+    {"kind": "watch", "says": "Astarion on the level Basic_Level_A does not carry it"},
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types), as struct eoc::object_visual::AppearanceOverrideComponent"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "what adds it and who reads it: the Toolkit's esv::character_creation::System::RequestOverrideAparenceVisual and RequestRemoveCustomVisualOvirride are the candidates; a component added by hand with a look and replicated is the test of a change of appearance on the fly for a character with no creation data",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

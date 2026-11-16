@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "eoc::party::ViewComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "On the party entity: PartyUuid, Views (one for each user, each with its Characters) and Characters, every character of the party view. A character present in both lists is an anchor of activation: the space around it is awake. Script Extender: PartyView.",
   "size": 48,
   "fields": [
     {
@@ -43,6 +46,20 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "PartyView", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "on the level Basic_Level_A the party entity named by PartyMember.Party of the host carries it with one view of one character, the host, and a PartyUuid"
+    },
+    {
+      "kind": "text",
+      "says": "reported from the study of the camera focus, not read again here: a spawned character given PartyMember and appended to both lists wakes every character within 40 m on the next tick, and taking it out puts them to sleep"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Party.h:14, kind component), by gatekit symbols se-layouts on 2026-11-14",

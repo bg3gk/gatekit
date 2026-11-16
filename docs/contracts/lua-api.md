@@ -111,8 +111,9 @@ The tables and functions each file adds to `GK`; the signatures are in `lua-type
 | `Client/Sound.lua` (C) | `GK.Sound` (section 8) |
 | `Client/UI.lua` (UI) | `GK.ViewModel`, `ViewModels`, `Properties`, `Dialog`, `Answer`, `Fold`, `Commands`, `Command` |
 | `Client/Stage.lua` (UI) | `GK.Blocking`, `RollNext`, `BoxPress`, `Unblock`, `Autoplay`, `AutoplayInfo`, `Controls`, `Press` |
-| `Client/Windows.lua` (UI) | `GK.Gui`: `Widget`, `Data`, `Open`, `Page`, `IsOpen`, `InputEvents`, `Event`, `Show`, `Close`, `CloseAll`, `Find`, `Controls`, `ActionOf`, `UseSlot`, `Picture`, `Changed`, `ObserveEffect`, `Click`, `Select`, `Input`, `Snapshot`, `Read`, `Item`, `ItemDo`, `FilmPlaying`, `Stuck`, `NewGame`, `List`, the registry of windows `Windows`; the client's `GK.Cheat` window verbs `Run`, `Set`, `Step`, `Auto`, `Quiet`, `Recover` |
+| `Client/Windows.lua` (UI) | `GK.Gui`: `Widget`, `Data`, `Open`, `Page`, `IsOpen`, `InputEvents`, `Event`, `Show`, `Close`, `CloseAll`, `Find`, `Controls`, `ActionOf`, `UseSlot`, `Picture`, `Changed`, `ObserveEffect`, `Click`, `Select`, `Input`, `Snapshot`, `Read`, `Item`, `ItemDo`, `FilmPlaying`, `Stuck`, `NewGame`, `List`, `Look`, `Handle`, `Shown`, `Set`, `Tips`, `Tip`, `PinTip`, `CloseTips`, the registry of windows `Windows`; the client's `GK.Cheat` window verbs `Run`, `Set`, `Step`, `Auto`, `Quiet`, `Recover` |
 | `Client/XamlChains.lua` (UI) | `GK.Gui.XamlChain`: a control's click chain read from the game's XAML (section 11) |
+| `Client/Pointer.lua` (UI) | `GK.Cheat.Pointer`: a pointer inside the game, a research instrument (section 11, "The pointer") |
 | `Client/WindowReaders.lua` (UI) | no new functions; adds `read` to the entries of `GK.Gui.Windows` |
 | `Client/Popups.lua` (UI) | `GK.Gui.Blocking`, `Resolve`, `DialoguePhase`, `RollBonuses`, `AddRollBonus`, `Trade`, `Combine`, `LongRest`, `QuickSave`, `QuickLoad`, `SaveAs`, `LoadLatest`; the entries of the windows that wait for the player (dialogue, roll, reaction, box, tutorial, loot, trade, pickpocket, rest, learn ...) |
 | `Client/Camera.lua` (C) | `GK.Camera` (`State`, `Look`, `Face`) |
@@ -472,7 +473,7 @@ enabled (false only), hidden, data, of, command, parameter }`.
 | `kind` | Elements | `value` | Acted on by |
 |---|---|---|---|
 | `button` | a type with `Button` in its name; a list item outside any list | - | `GK.Gui.Click` |
-| `toggle` | `CheckBox`, `RadioButton`, `ToggleButton` | `IsChecked` when it reads (`unread = "IsChecked"` when it does not) | `GK.Gui.Click`, `GK.Gui.Set` |
+| `toggle` | `CheckBox`, `RadioButton`, `ToggleButton` | `IsChecked` when it reads; else the flag `Value` of the view model the toggle stands for (`valueFrom = "data.Value"`); else `unread = "IsChecked"` | `GK.Gui.Click`, `GK.Gui.Set` |
 | `list` | `ListBox`, `ComboBox`, `TabControl` | the selected item's text; `selected`, `count`, `items = { { n, text, id, name, enabled, hidden } }`, `more`, `notShown` | `GK.Gui.Select`, `GK.Gui.Click(widget, "<list>#<n>")` |
 | `slider` | `Slider` | `Value`, with `min`, `max` | `GK.Gui.Set` |
 | `text` | `TextBox` | `Text` | `GK.Gui.Set` |
@@ -510,16 +511,79 @@ holds the handles of the controls it shows, so a page turned inside one widget i
 
 What the walk does not reach:
 
-- **A toggle's state.** `IsChecked` is a nullable flag, which the extender neither reads nor
-  writes: a toggle with a command is pressed through it, one without (a swatch button that only
-  opens a panel through a binding on `IsChecked`) cannot be pressed. What such a panel holds is in
-  the tree and is acted on by its `~` handle; the answer cannot say the panel opened.
+- **A toggle whose state is nowhere but in `IsChecked`.** `IsChecked` is a nullable flag, which
+  the extender neither reads nor writes. A toggle bound to a flag of its own data (a tick box of
+  the game's settings: `ls.VMTickBoxSetting.Value`) is read from that flag, and `GK.Gui.Set`
+  writes the flag and runs the toggle's click chain, which is what a click does through the
+  binding. A toggle with a command only is pressed through it. A toggle with neither (a colour
+  swatch of character creation, `IsChecked="False"` in the XAML, the panel's `Visibility` bound to
+  it and a confirm toggle bound back) cannot be pressed: what its panel holds is in the tree and is
+  acted on by its `~` handle, and the answer cannot say the panel opened.
 - **A chain on an unnamed control.** `Client/XamlChains.lua` finds a click chain by x:Name; an
   unnamed control runs its own `Command` only.
 - **Triggers on other events** (`ValueChanged`, `SelectionChanged`) are the game's own and fire by
   themselves when the value is set; they are not read.
 - **Items a virtualised list has not drawn**, when its source cannot be indexed either.
-- **Popups outside the widget** (a combo box's drop-down drawn in another root).
+- **Popups outside the widget** (a combo box's drop-down drawn in another root). Tooltips are
+  read from there by `GK.Gui.Tips` (below).
+
+### Tooltips
+
+An element, or an inline of a text (a keyword of a description), carries its tooltip in the UI
+library's `ToolTip` property, an `ls.LSTooltip`. A hover sets the tooltip's `IsOpen` after the
+library's delay, and the tooltip is drawn in a popup layer above the canvas, outside every widget;
+for an inline the tooltip records its `Inline` and `InlineParent` and makes its content from them.
+The game's input event `UIPinTooltip` moves the open tooltip into the list of pinned ones
+(`ls.UIWidget.PinnedTooltipList`, drawn by the widget `PinnedTooltips` as `ls.LSElementCopy`
+elements); a link inside a pinned tooltip opens the next one, which can be pinned in turn. A pinned
+tooltip's `PlacementTarget` is the element it was called from.
+
+| Verb | Class | What it does |
+|---|---|---|
+| `GK.Gui.Tips([{ detail }])` | observation | the open tooltips as a chain, the pinned ones first in the game's order, what a hover holds open last: `{ ok, tips = { { n, handle ("tip#1"), pinned, type, about = { type, of, id, spell, values (detail) }, data, context, hint, title, texts = { { part, text } }, links = { { handle ("tip#1/link#2"), text, tag, data, of } }, parent \| owner = { widget, element } } } }` |
+| `GK.Gui.Tip(window, control)`, `GK.Gui.Tip("tip#1/link#2")` | fair | calls up the tooltip of a control (a handle of `GK.Gui.Look`, an item's handle, an x:Name) or of a link inside an open tooltip, as a hover does: the tooltip's own `IsOpen` (for an inline, its `Inline` and `InlineParent` first). Another tooltip a hover held open is closed first. `{ ok, tip, open }` when it stands open and two looks read the same texts |
+| `GK.Gui.PinTip()` | fair | presses the key the profile binds to `UIPinTooltip`; `{ ok, pinned, open }` when the game's list of pinned tooltips grew and the pinned one shows its texts. The tooltip that was pinned is then closed, as a pointer moving off closes it |
+| `GK.Gui.CloseTips([handle])` | fair | every tooltip - a hover's by its `IsOpen`, the pinned ones by the widget's `RequestClearPinnedTooltipsCommand` (what a click beside them and the menu key run) - or the one a hover holds open; `{ ok, closed, tips }` |
+
+- **`about`** is the view model the tooltip was given (`ls.VMCharacterAction`, `ls.VMItem`,
+  `ls.VMAbility` ...): its type, what it calls itself, its id, and the spell of the game's stats it
+  names, when it names one.
+- **`texts`** are the tooltip's text blocks in tree order, inlines joined, each under the x:Name of
+  the part it lies in (`TitleArea`, `TechnicalDescription`, `PropertyText` ...); `title` is the
+  first. The key hint of the game's tooltip template (`uiHintContainer`) is `hint`, apart.
+- **`links`** are what inside the tooltip carries a tooltip of its own: an inline (`tag` is its
+  `TagTooltip`, `data` and `of` its view model) or an element (a cost, a property, a status icon,
+  named by the first text it shows).
+- **`parent`** is the tooltip whose tree holds the element this one was called from; a tooltip
+  called from a window has `owner`.
+- **Not reached.** One pinned tooltip among several is not closed apart: the game takes away the
+  ones pinned after a pinned tooltip on a click on it (`ls.LSElementPanel.ClickCommand` bound to
+  `RemovePinnedTooltipCommand`), with a parameter its panel makes in code. A tooltip opened by
+  handle has no pointer over it: it stays until it is closed or another is called up. No rows of
+  the event log are written for tooltips.
+
+### The pointer, a research instrument
+
+`GK.Cheat.Pointer{ at = { x, y } | widget, handle, do, button, wait }` (Client/Pointer.lua, a
+cheat) makes the game believe its pointer is at a point of its frame - fractions of the frame, or
+a point the UI library's hit test gives to a control of `GK.Gui.Look` - and that a button went
+down and up there (`do = "move" | "press" | "release" | "click" | "leave"`), without the real
+mouse. It answers what the interface reported back after `wait` ms: what lies under the point
+(`under`, `after`: the element hit, the named elements above it, the nearest control with its data
+and whether it has a command, the nearest element with a tooltip, the widget), the UI library's
+routed events seen at the root with their sources (`events`), the open tooltips before and after
+(`tipsBefore`, `tips`), and what changed in the widget's picture (`changed`). **Nothing that ships
+- a verb, a test, a recipe - rests on it**: it finds what answers, so that the answer can be given
+a handle, a command or an event.
+
+The window manager's update takes a mouse motion event's position only when the event names the
+game's window; every motion event then raises the input manager's motion event, on which the
+interface reads the engine's own mouse position (`ls::Mouse`) and gives it to the UI library. An
+event injected by Script Extender names no window, so the instrument writes the position into
+`ls::Mouse` (`GK.Memory.Write`) and injects the motion event that makes the interface read it; a
+button event injected after it is pressed there. It needs the memory instrument (section 16) and
+knows where one build of `bg3_dx11.exe` keeps its pointer to `ls::Mouse`; a real motion inside the
+game's window overwrites the position.
 
 ### AutomationId
 
@@ -1149,8 +1213,8 @@ request and client -> server for the answer); `Server/Say.lua`.
 
 | Verb | Side | Class | Answers |
 |---|---|---|---|
-| `GK.Camera.Focus(at, options)` | C and S | fair | observed once the camera settled: `{ ok, at, distance, ticks, how, snapped, fight, off, onScreen }`; on the server the client's answer with `serverTicks` |
-| `GK.Camera.Return(options)` | C and S | fair | observed: as Focus's, with `restoredDistance` |
+| `GK.Camera.Focus(at, options)` | C and S | fair | observed once the camera settled: `{ ok, at, distance, ticks, how, snapped, fight, off, onScreen, far, away, drawn, leashRaised }`, after a far move also `faded`, `blackTicks`, `fadeTicks`; on the server the client's answer with `serverTicks`, and with `options.wake` also `wake`, `woke`, `wakeTicks` |
+| `GK.Camera.Return(options)` | C and S | fair | observed: as Focus's, with `restoredDistance` and `leashRestored`; on the server `released` when the focus had woken something |
 | `GK.Camera.OnScreen(at)` | C | observation | `{ u, v, inFront, inside }` |
 | `GK.Camera.State()` | C | observation | as before, with `moving`, `mode`, `focus` added |
 | `GK.Say.Line(who, text, options)` | S | cheat | observed once the status is on the creature: `{ ok, who, text, status, slot, handle, markup, ticks }` |
@@ -1183,11 +1247,52 @@ the screen); `ok = false` with the reason: no such entity, a stub, cancelled by 
 (the game holds it: during a dialogue the focus answers so), or it did not settle within 4 s of a
 running game (a guard).
 
-**Far creatures.** 30-45 m and more from the camera a character or an item is a stub on the client
-(17-20 components instead of 70-120: no `Level`, no `GameObjectVisual`, not drawn), and its client
-`Transform` is stale: moved on the server, the stub keeps the old point. The client's verbs refuse
-a stub; the server's `GK.Camera.Focus` sends the server's `Osi.GetPosition` of every uuid, and the
-client focuses the entity when it holds it whole and that point otherwise.
+**Far creatures.** Far from the party a character or an item is a stub on the client (17-20
+components instead of 70-120: no `Level`, no `GameObjectVisual`), and its client `Transform` is
+stale: moved on the server, the stub keeps the old point. A creature's stub is not drawn; an
+item's is (a chest at 55 m). The client's verbs refuse a stub; the server's `GK.Camera.Focus`
+sends the server's `Osi.GetPosition` of every uuid and whether it is a character, and the client
+focuses the entity when it holds it whole and that point otherwise. Which distances decide, and
+the verbs that wake a creature or a place: section 23.
+
+**Drawn, far, faded.** Every answer says `away`, the length of the move in metres (x, z), and
+`far`, whether that is past the snap distance. `drawn` is whether every entity focused is drawn
+on the client when the camera has settled - a creature when the client holds it whole (`Level`
+and `GameObjectVisual`), an item when the client holds it with a `Visual` - and a point has no
+`drawn`. A focus on a creature that is not drawn settles on its place with `ok = true`,
+`drawn = false`, `notDrawn` (the uuids) and a `warning` that says so. Past the snap distance and
+with no glide the game itself decides the road: onto a point or a stub it cuts (`snapped`,
+`faded = false`); onto an entity the client holds whole it fades to black, cuts, holds the black
+and fades in. The fade is read every client tick from the HUD's `ScreenFade` widget
+(`CurrentPlayer.UIData.ScreenFadeVisibility` and `ScreenFadeOpacity`; the widget is found again
+each tick): the answer comes only when the widget is collapsed again, with `faded = true`,
+`blackTicks` (the client ticks the opacity stood at 1) and `fadeTicks` (the ticks the widget
+showed); a collapsed widget keeps its last opacity, so the opacity alone does not say the fade is
+over. A move onto an entity is given eight ticks for the black to begin before "no fade" is
+believed. The limit of a far move is 15 s of a running game, and an answer at the limit says
+which wait ran out - "the fade did not end in N ticks" or "the camera did not settle in N ticks".
+
+**The leash.** The camera does not go farther from the controlled character than the switches'
+`MaxDistFromChar` (50 m, the same four switches). A focus on a thing at that distance or beyond
+raises it on all four (`leashRaised`) and it stays raised while the focus is held; `Return` puts
+it back when the camera has settled (`leashRestored`), and so do a focus on a thing within the
+leash and `GK.Stage.Clean` (the server's focus is a row of the stage ledger, once a scope, whose
+undo returns the camera and puts the switches back). `GK.Camera.State().leashRaised` reads it.
+The saved values live in the client's Lua state: a state lost while the leash is raised leaves
+the switches raised until the game restarts.
+
+**Waking before the focus.** On the server `options.wake` wakes the thing first: `"one"` calls
+`GK.Wake.One` on the creature, `"place"` calls `GK.Wake.Place` on the creature, the item or the
+point (section 23). The focus is sent only when the wake has answered - the creature active on
+the server and whole on the client - so the game's fade comes and the creature stands there when
+it lifts. The answer carries `wake`, `woke` (the wake's own answer) and `wakeTicks`; a wake that
+did not finish answers `ok = false`, `stage = "wake"` with the wake's reason, and leaves nothing
+awake. What the focus woke stays awake until `GK.Camera.Return` (which answers `released`,
+`GK.Wake.Release`'s answer, after the camera is back), a newer focus (unless it asks for the same
+wake of the same thing), or `GK.Stage.Clean`. With a wake `options.hold` is kept on the server, so
+that the return it makes releases the wake too. The wake is a cheat: inside a fair step a focus
+with `options.wake` is refused, naming `GK.Wake.One` and `GK.Wake.Place` for a cheat step before
+it. Rows `camera_focused` and `camera_returned` are written by the client when a move ends.
 
 **Times** (`test:camera/focus/matrix`, Basic_Level_A, 1024x576): to 3 m 22-25 server ticks, to
 10 m 27-35, to 50 m with a glide 51; a pair 27; in a fight 26. The camera runs on the client's
@@ -1227,7 +1332,86 @@ stop or for `GK.Stage.Clean`. `orb` (Gale's Netherese orb, the body tinted viole
 violet-white burst on the ground), `faerie`, `faerie_point`, `mystra` (a golden glyph over the
 head).
 
-## 23. `GK.Show`: a picture over the game, straight from a file (Client/Show.lua)
+## 23. `GK.Wake`: a creature or a place kept awake far from the party (Server/Wake.lua)
+
+Far from the party the game stops a creature twice over, by distances of its own
+([research/studies/camera-focus.md](../../research/studies/camera-focus.md)): the server's
+activation manager keeps a character awake - `Active`, animating, thinking - within its waking
+distance of an anchor and puts it to sleep beyond its sleeping distance, staying as it was
+between the two; and the client is sent a creature whole by a shorter distance of its own, so a
+creature can be awake and not drawn (`test:wake/two_distances`). The anchors that wake other
+characters are the characters of the party's view; a character asked to be kept up
+(`Osi.SetForceUpdate`) is an anchor of itself alone. The camera is no anchor.
+
+| Verb | Side | Class | Answers |
+|---|---|---|---|
+| `GK.Wake.One(who)` | S | cheat | observed once the creature is active on the server and whole on the client: `{ ok, who, name, awake, drawn, was = { awake }, distance, ticks, awakeTicks, clientTicks }` |
+| `GK.Wake.Place(at, options)` | S | cheat | observed once the place is awake and the client holds whole what it is sent: `{ ok, helper, at, hidden, seen, radius, count, woke = { { who, name, distance, drawn } }, wokeCount, drawnCount, alreadyAwake, asleep, ticks, wakeTicks, clientTicks }` |
+| `GK.Wake.Release(handle)` | S | cheat | observed once those nobody else reaches have lost `Active`: `{ ok, released, slept = { { who, name } }, sleptCount, stayed = { { who, name, why } }, ticks }` |
+| `GK.Wake.State(at)` | S | observation | observed (the client is asked): of an entity `{ ok, who, name, character, awake, whole, drawn, rule, anchor, anchorKind, distance, radii }`; of a point `{ ok, at, anchor, anchorKind, distance, rule, characters, awake, whole, radii }` |
+| `GK.Wake.Radii()` | S | observation | `{ ok, wake, sleep, itemWake, itemSleep, lowItemWake, lowItemSleep, source }` |
+
+**The distances.** `GK.Wake.Radii` reads them from the manager's own object
+(`GK.Memory.System("esv::ActivationManager")`, the floats at +0xd0 to +0xe4 of the object that
+begins 0x28 before it; `code:esv::ActivationManager::Update`): `wake` and `sleep` for
+characters, and the same pairs for items and for low items. Without GateKit's Script Extender
+build it answers `ok = false`, `source = "measured"` and the measured 40 and 45. The client's own
+distance is not read: where the game holds it is not found.
+
+**One creature.** `GK.Wake.One` calls `Osi.SetForceUpdate(who, 1)`; the creature wakes alone, its
+neighbours sleep on (`test:wake/one`), and the client receives it whole. The answer waits for
+`Active` on the server (`awakeTicks`) and then for the client's word that it holds the creature
+with `Level` and `GameObjectVisual` (`clientTicks`, the client's own ticks); `distance` is to the
+nearest character of the party's view. A wait that ran out says which side's and after how many
+ticks, and the creature is let go again. Whether the creature was kept up before by the game's
+own story is not read: `Release` sets the force update off.
+
+**A place.** `GK.Wake.Place(at, options)` takes a point `{x, y, z}` or an entity's uuid and puts
+a helper there into the party's view: a temporary character spawned through the stage
+(`GK.Wake.HelperTemplate`, or `options.template`), given the `PartyMember` component with the
+host's party, user and view and appended to both lists of the party's view (`Views[1].Characters`
+and `Characters`). No portrait appears. The helper is hidden by the order of the steps: it is
+waited for until the manager has put it to sleep - a newborn is active for some ticks - and
+taken off stage while it is a stub on the client, and only then joins the view; it stays
+inactive and a stub, never drawn and nothing to click, and the manager wakes the space around it
+all the same (`hidden = true`; `test:wake/place`). A helper spawned within the party's reach is
+awake and is left as it is - `hidden = false`, and `seen` says that a plain figure stands there -
+because a creature the client held whole and that is then taken off stage leaves its figure
+frozen on the screen. The answer waits until the number of creatures awake within the waking
+distance of the point stood still for three server ticks - with the entity `at` itself among
+them, when it is a creature - and then for the client: the entity `at` whole, and the number of
+whole ones among the others standing still for five client ticks, since a creature between the
+client's distance and the manager's is awake and not drawn. `woke` lists the creatures that were
+asleep before, each with whether the client holds it whole; `alreadyAwake` counts the others;
+`asleep` lists those within the distance that did not wake. A wait that ran out says which and
+after how many ticks, and the helper is taken away again. `options.helper` gives a creature the
+caller spawned in place of a new one; an origin, a player's character, a member of a party and a
+creature of the level's own cast (one without the `Temporary` flag) are refused. While it is in
+the view the helper is a party member to everything that reads the component
+(`GK.Stage.Party` lists it); what that does to the story is not measured.
+
+**Release.** `GK.Wake.Release(handle)` takes a creature kept by `One`, the `helper` of `Place`'s
+answer, or nothing for all that `GK.Wake` holds. The undo is done in the call: the force update
+off; the helper out of both lists, its component removed, and the helper deleted when `Place`
+spawned it (put back on stage when the caller gave it). The answer waits until every creature it
+kept awake that no other anchor reaches - farther than the sleeping distance from every
+character of the party's view, and not kept by `One` - has lost `Active`; `stayed` names the
+others with the reason. The client is not waited for; it holds a stub again a moment later.
+
+**State.** `GK.Wake.State(at)` changes nothing. Of an entity: `awake` (it has `Active` on the
+server), `whole` (the client holds it with `Level` and `GameObjectVisual`), `drawn` (of a
+character, the same; of an item not given - an item's stub is drawn all the same), the nearest
+character of the party's view (`anchor`, `anchorKind` `"party"` or `"place"`, `distance`), and
+`rule`: `"kept up"` (by `One`), `"party"` or `"place"` (awake within the sleeping distance of
+such an anchor), or `"none"` - asleep, or awake by something the toolkit does not read (the
+story's own force update, a running timeline). Of a point: the same anchor, and `characters`,
+`awake` and `whole` as counts of the creatures within the waking distance of the point.
+
+**The ledger and the log.** `One` and `Place` are rows of the stage ledger (`GK.Stage.Track`;
+`Place`'s helper is also the stage's spawn), so `GK.Stage.Clean` lets everything go. Rows
+`wake_kept`, `wake_place` and `wake_released` are written when each answer comes.
+
+## 24. `GK.Show`: a picture over the game, straight from a file (Client/Show.lua)
 
 | Verb | Class | Answers |
 |---|---|---|

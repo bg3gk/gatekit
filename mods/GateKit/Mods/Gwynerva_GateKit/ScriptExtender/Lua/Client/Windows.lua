@@ -1297,6 +1297,21 @@ local function describeItem(item, container, n, detail)
     return out
 end
 
+-- Whether a toggle is on, and where that was read: its own IsChecked when the extender reads it
+-- (a nullable flag, which it hands out as nil), else the flag `Value` of the view model the toggle
+-- stands for (a tick box of the game's settings binds its IsChecked to it), when that view model is
+-- not the widget's own.
+local function toggleState(element, widgetData)
+    local checked = guard(function() return element.IsChecked end)
+    if type(checked) == "boolean" then return checked, "IsChecked" end
+    local context = guard(function() return element.DataContext end)
+    if type(context) == "userdata" and typeOf(context) ~= widgetData then
+        local value = guard(function() return context.Value end)
+        if type(value) == "boolean" then return value, "data.Value", context end
+    end
+    return nil
+end
+
 local function describeRow(row, widgetData, options)
     local element = row.element
     local out = { handle = row.handle, kind = row.kind, type = row.type, hidden = row.hidden }
@@ -1340,9 +1355,14 @@ local function describeRow(row, widgetData, options)
         out.text = type(content) == "string" and content ~= "" and readable(content) or textsWithin(element, 1)[1]
         if row.kind == "toggle" then
             -- IsChecked is a nullable flag, which this extender hands out as nil whatever it holds:
-            -- the value is given only when it reads
-            local checked = guard(function() return element.IsChecked end)
-            if type(checked) == "boolean" then out.value = checked else out.unread = "IsChecked" end
+            -- the value is given when it reads, else from the flag of the toggle's own data
+            local checked, from = toggleState(element, widgetData)
+            if type(checked) == "boolean" then
+                out.value = checked
+                if from ~= "IsChecked" then out.valueFrom = from end
+            else
+                out.unread = "IsChecked"
+            end
         elseif row.kind == "slider" then
             out.value = guard(function() return element.Value end)
             out.min = guard(function() return element.Minimum end)
@@ -1428,7 +1448,25 @@ function UI.Set(name, handle, value)
         local after = guard(function() return element.Value end)
         return { ok = failed == nil and type(after) == "number" and math.abs(after - value) < 1e-4, before = before, after = after, error = failed }
     elseif row.kind == "toggle" then
-        local before = guard(function() return element.IsChecked end) == true
+        local state, from, context = toggleState(element, typeOf(UI.Data(name)))
+        if from == "data.Value" then
+            -- The toggle's state is the flag of its data: a click writes it through the binding and
+            -- then runs the toggle's chain. The same two things are done here, in that order.
+            if state == (value == true) then return { ok = true, before = state, after = state, already = true, from = from } end
+            local _, failed = guard(function() context.Value = value == true end)
+            if failed then return { ok = false, error = failed, from = from } end
+            local pressed = UI.Click(name, handle)
+            -- the view model takes the write a frame later: the flag is read again until it holds
+            local result = { ok = true, before = state, from = from, steps = pressed and pressed.steps }
+            return GK.Observe(result, function(ticks, final)
+                local now = UI.Handle(name, handle)
+                local after = now and toggleState(now.element, typeOf(UI.Data(name)))
+                if after ~= (value == true) and not final then return nil end
+                result.ok, result.after = after == (value == true), after
+                return result
+            end, 1500)
+        end
+        local before = state == true
         if before == (value == true) then return { ok = true, before = before, after = before, already = true } end
         local pressed = UI.Click(name, handle)
         local now = UI.Handle(name, handle)
@@ -2293,6 +2331,445 @@ function UI.NewGame()
             return { ok = false, error = "New Game was pressed and the new-game settings did not open", state = clientState() }
         end
     end, 3000)
+end
+
+-- Tooltips: read as a chain, opened, pinned and closed by handle -------------------------------
+--
+-- How the game shows a tooltip. An element (or an inline of a text: a keyword in a description)
+-- carries its tooltip in the UI library's own ToolTip property, an ls.LSTooltip. A hover of the
+-- pointer sets the tooltip's IsOpen after the library's delay, and the tooltip is then drawn in a
+-- popup layer above the canvas, outside every widget; for an inline the game's tooltip also records
+-- which inline and which text block it belongs to (Inline, InlineParent) and makes its content
+-- from them. The input event UIPinTooltip moves the open tooltip into the list of pinned ones
+-- (ls.UIWidget.PinnedTooltipList, shown by the widget PinnedTooltips as ls.LSElementCopy elements):
+-- a pinned tooltip stays, takes the pointer, and a link inside it opens the next tooltip, which
+-- can be pinned in turn. A pinned tooltip's PlacementTarget is the element it was called from, so
+-- the chain is read from where each target lies.
+
+local function addressOf(object)
+    return object ~= nil and tostring(object):match("%((%x+)%)") or nil
+end
+
+-- The top of the UI tree: popup layers hang there, beside the canvas that holds the widgets.
+local function topVisual()
+    local element, steps = guard(function() return Ext.UI.GetRoot() end), 0
+    while element and steps < 16 do
+        local parent = guard(function() return element.VisualParent end)
+        if not parent then break end
+        element, steps = parent, steps + 1
+    end
+    return element
+end
+
+-- The tooltips a hover holds open: every tooltip element of a popup layer.
+local function hoverTips()
+    local out = {}
+    local function walk(element, depth)
+        if depth > 6 then return end
+        local typeName = typeOf(element)
+        if typeName == "ls.UICanvas" then return end
+        if typeName:find("Tooltip", 1, true) or typeName:find("ToolTip", 1, true) then out[#out + 1] = element return end
+        for i = 1, guard(function() return element.VisualChildrenCount end) or 0 do
+            local child = guard(function() return element:VisualChild(i) end)
+            if child then walk(child, depth + 1) end
+        end
+    end
+    local top = topVisual()
+    if top then walk(top, 0) end
+    return out
+end
+
+-- The pinned tooltips: the list every widget may keep (the game's PinnedTooltips widget does).
+-- Each is { shown, listed }: the widget draws a copy of its own (an ls.LSElementCopy in its tree,
+-- which holds the texts) for every element of the list (which holds the PlacementTarget); the two
+-- are paired by the content they share, else by their order.
+local function pinnedTips()
+    local out, holder = {}, nil
+    for _, open in ipairs(UI.Open()) do
+        local widget = UI.Widget(open.name)
+        local list = widget and guard(function() return widget.PinnedTooltipList end)
+        local count = list and guard(function() return #list end) or 0
+        if count > 0 then
+            holder = widget
+            local shown, stack, budget = {}, { widget }, 4000
+            while #stack > 0 and budget > 0 do
+                local e = table.remove(stack)
+                budget = budget - 1
+                if typeOf(e):find("ElementCopy", 1, true) then
+                    shown[#shown + 1] = e
+                else
+                    for i = guard(function() return e.VisualChildrenCount end) or 0, 1, -1 do
+                        local child = guard(function() return e:VisualChild(i) end)
+                        if child then stack[#stack + 1] = child end
+                    end
+                end
+            end
+            local taken = {}
+            for i = 1, count do
+                local listed = guard(function() return list[i] end)
+                local content = listed and addressOf(guard(function() return listed.Content end))
+                local pair
+                for k, e in ipairs(shown) do
+                    if not taken[k] and content and addressOf(guard(function() return e.Content end)) == content then pair = k break end
+                end
+                if not pair and shown[i] and not taken[i] then pair = i end
+                if pair then taken[pair] = true end
+                if listed then out[#out + 1] = { shown = pair and shown[pair] or listed, listed = listed } end
+            end
+        end
+    end
+    return out, holder
+end
+
+-- The text of a run of inlines, and the inlines among them that carry a tooltip of their own.
+local function readInlines(list, acc, links, block)
+    for i = 1, guard(function() return #list end) or 0 do
+        local run = guard(function() return list[i] end)
+        if run then
+            local start = #acc
+            local text = guard(function() return run.Text end)
+            if type(text) == "string" then acc[#acc + 1] = text end
+            local inner = guard(function() return run.Inlines end)
+            if inner then readInlines(inner, acc, links, block) end
+            if guard(function() return run.ToolTip end) ~= nil then
+                links[#links + 1] = { inline = run, block = block, text = table.concat(acc, "", start + 1) }
+            end
+        end
+    end
+end
+
+-- What a tooltip shows: its texts in tree order, each under the name of the part it lies in, and
+-- its links - the inlines and elements inside it that carry a tooltip.
+local function readTip(element)
+    local texts, links, hints, budget = {}, {}, {}, 4000
+    local into = texts
+    local function walk(e, part, depth)
+        if budget <= 0 then return end
+        budget = budget - 1
+        local visibility = guard(function() return tostring(e.Visibility) end)
+        if visibility == "Collapsed" or visibility == "Hidden" then return end
+        local name = guard(function() return e.Name end)
+        if type(name) == "string" and name ~= "" then part = name end
+        -- the key hint the game's tooltip template draws above a tooltip ("T Pin") is not its content
+        if name == "uiHintContainer" then
+            into = hints
+            for i = 1, guard(function() return e.VisualChildrenCount end) or 0 do
+                local child = guard(function() return e:VisualChild(i) end)
+                if child then walk(child, part, depth + 1) end
+            end
+            into = texts
+            return
+        end
+        if typeOf(e):find("TextBlock", 1, true) then
+            local acc = {}
+            local inlines = guard(function() return e.Inlines end)
+            if inlines then readInlines(inlines, acc, links, e) end
+            local text = table.concat(acc)
+            if text == "" then text = guard(function() return e.Text end) or "" end
+            text = tostring(text):gsub("%s+", " "):gsub("^ ", ""):gsub(" $", "")
+            if text ~= "" and text ~= "[ForceUpdate]" then into[#into + 1] = { part = part, text = readable(text) } end
+        elseif depth > 0 and guard(function() return e.ToolTip end) ~= nil then
+            -- an element with a tooltip of its own (a cost, a property, a status icon): named by
+            -- the first text it shows, which the walk below adds after it
+            links[#links + 1] = { element = e, part = part, textAt = #into + 1, from = into }
+        end
+        for i = 1, guard(function() return e.VisualChildrenCount end) or 0 do
+            local child = guard(function() return e:VisualChild(i) end)
+            if child then walk(child, part, depth + 1) end
+        end
+    end
+    walk(element, nil, 0)
+    for _, link in ipairs(links) do
+        if link.element then
+            local row = link.from[link.textAt]
+            link.text = row and row.text or link.part
+            link.from = nil
+        end
+    end
+    local hint = {}
+    for i, row in ipairs(hints) do hint[i] = row.text end
+    return texts, links, #hint > 0 and table.concat(hint, " ") or nil
+end
+
+-- What a tooltip is about: the view model it was given (an action, an item, an ability ...).
+local function aboutOf(content, detail)
+    if type(content) ~= "userdata" then
+        if content == nil then return nil end
+        return { text = readable(tostring(content)) }
+    end
+    return { type = typeOf(content), of = dataText(content), id = dataId(content),
+             spell = guard(UI.ActionOf, content), values = detail and dataScalars(content) or nil }
+end
+
+-- The open tooltips in order: the pinned ones as the game lists them, then what a hover holds.
+-- Each entry keeps its element and the elements of its links; stripTips takes them off.
+local function tipChain(detail)
+    local chain, numberOf = {}, {}
+    local pinned, holder = pinnedTips()
+    local function add(element, isPinned, listed)
+        local n = #chain + 1
+        local texts, links, hint = readTip(element)
+        local entry = { n = n, handle = "tip#" .. n, pinned = isPinned, type = typeOf(element), element = element,
+                        about = aboutOf(guard(function() return element.Content end), detail), hint = hint,
+                        title = texts[1] and texts[1].text or nil, texts = texts, links = {}, linkRefs = links, listed = listed }
+        local data = guard(function() return element.Data end)
+        if type(data) == "userdata" then entry.data = typeOf(data) end
+        local context = guard(function() return element:DependencyProperties().Context end)
+        if type(context) == "string" and context ~= "" then entry.context = context end
+        for k, link in ipairs(links) do
+            local carrier = link.inline or link.element
+            local described = { handle = entry.handle .. "/link#" .. k, text = readable(link.text) }
+            local tag = guard(function() return carrier:DependencyProperties().TagTooltip end)
+            if type(tag) == "string" and tag ~= "" then described.tag = tag end
+            local linked = guard(function() return carrier.DataContext end)
+            if type(linked) == "userdata" then
+                described.data = typeOf(linked)
+                described.of = dataText(linked)
+            end
+            entry.links[k] = described
+        end
+        chain[n] = entry
+        local address = addressOf(element)
+        if address then numberOf[address] = n end
+    end
+    for _, copy in ipairs(pinned) do add(copy.shown, true, copy.listed) end
+    for _, tip in ipairs(hoverTips()) do add(tip, false) end
+    -- the parent: the tooltip whose tree holds the element this one was called from
+    for _, entry in ipairs(chain) do
+        local element = entry.listed or entry.element
+        local target = guard(function() return element.PlacementTarget end) or guard(function() return element.InlineParent end)
+        local first, steps = target, 0
+        while target and steps < 80 do
+            local above = numberOf[addressOf(target) or ""]
+            if above and above ~= entry.n then entry.parent = "tip#" .. above break end
+            if typeOf(target) == "ls.UIWidget" then
+                entry.owner = { widget = guard(function() return target.Name end),
+                                element = typeOf(first) .. "#" .. tostring(guard(function() return first.Name end) or "") }
+                break
+            end
+            target, steps = guard(function() return target.VisualParent end), steps + 1
+        end
+    end
+    return chain, holder
+end
+
+local function stripTips(chain)
+    local out = {}
+    for i, entry in ipairs(chain) do
+        local copy = {}
+        for key, value in pairs(entry) do
+            if key ~= "element" and key ~= "linkRefs" and key ~= "listed" then copy[key] = value end
+        end
+        out[i] = copy
+    end
+    return out
+end
+
+--- The open tooltips as a chain: { ok, tips = { { n, handle ("tip#1"), pinned, type, about = { type,
+--- of, id, spell, values (options.detail) } (the view model the tooltip was given), data (the type
+--- of the tooltip's own data), context, hint (the key hint above it), title, texts = { { part,
+--- text } }, links = { { handle ("tip#1/link#2"), text, tag, data, of } }, parent (the handle of
+--- the tooltip it was called from) or owner = { widget, element } (where in a window it was called
+--- from) } } }. Pinned ones come first, in the game's order; what a hover holds open comes last.
+function UI.Tips(options)
+    return { ok = true, tips = stripTips((tipChain(type(options) == "table" and options.detail))) }
+end
+
+-- The element that carries the tooltip of a control: the control, else the first element inside
+-- it that has one (a hotbar slot's tooltip sits on a grid inside the slot's button), else the
+-- nearest above it.
+local function carrierOf(element)
+    if guard(function() return element.ToolTip end) ~= nil then return element end
+    local queue, head = { element }, 1
+    while queue[head] and head < 600 do
+        local e = queue[head]
+        head = head + 1
+        if head > 2 and guard(function() return e.ToolTip end) ~= nil then return e end
+        for i = 1, guard(function() return e.VisualChildrenCount end) or 0 do
+            local child = guard(function() return e:VisualChild(i) end)
+            if child then queue[#queue + 1] = child end
+        end
+    end
+    local above, steps = guard(function() return element.VisualParent end), 0
+    while above and steps < 6 and typeOf(above) ~= "ls.UIWidget" do
+        if guard(function() return above.ToolTip end) ~= nil then return above end
+        above, steps = guard(function() return above.VisualParent end), steps + 1
+    end
+    return nil
+end
+
+--- Calls up a tooltip as a hover does, with no pointer: GK.Gui.Tip(window, control) for a control
+--- of an open widget (a handle of GK.Gui.Look or an x:Name), GK.Gui.Tip("tip#1/link#2") for a link
+--- inside an open tooltip. The tooltip's own IsOpen is set, which is what the UI library sets when
+--- its hover delay has passed; another tooltip a hover held open is closed first, as it is when
+--- the pointer moves on. Answers { ok, tip = <the entry of GK.Gui.Tips>, open = how many stand }
+--- when the tooltip stands open with its content, ok = false and what was seen otherwise.
+function UI.Tip(name, handle)
+    local carrier, inline, block
+    local tipHandle, linkNumber = tostring(name):match("^(tip#%d+)/link#(%d+)$")
+    if tipHandle then
+        local link
+        for _, entry in ipairs((tipChain())) do
+            if entry.handle == tipHandle then link = entry.linkRefs[tonumber(linkNumber)] end
+        end
+        if not link then return { ok = false, error = "no link " .. tostring(name) .. " (GK.Gui.Tips lists the open tooltips and their links)" } end
+        inline, block, carrier = link.inline, link.block, link.inline or link.element
+    else
+        local row, problem = UI.Handle(name, handle)
+        local element = row and row.element
+        -- an item of a list ("list#3") is the element the list shows for it
+        if row and type(problem) == "number" then element, problem = row.containers and row.containers[problem], nil end
+        if not element then
+            local widget = UI.Widget(name)
+            element = widget and findElement(widget, handle)
+        end
+        if not element then return { ok = false, error = problem or ("no control " .. tostring(handle) .. " in " .. tostring(name)) } end
+        carrier = carrierOf(element)
+        if not carrier then return { ok = false, error = tostring(handle) .. " carries no tooltip" } end
+    end
+    local tip = guard(function() return carrier.ToolTip end)
+    if type(tip) ~= "userdata" then
+        return { ok = true, did = "read", tip = { about = { text = readable(tostring(tip)) }, title = readable(tostring(tip)) },
+                 saw = "the tooltip is a plain text and opens no window of its own here" }
+    end
+    local wanted = addressOf(tip)
+    for _, open in ipairs(hoverTips()) do
+        if addressOf(open) ~= wanted then guard(function() open.IsOpen = false end) end
+    end
+    if inline then
+        guard(function() tip.Inline = inline end)
+        guard(function() tip.InlineParent = block end)
+    end
+    local _, failed = guard(function() tip.IsOpen = true end)
+    if failed then return { ok = false, error = "the tooltip did not open: " .. failed } end
+    -- the tooltip builds its content over a few frames: it is answered when two looks read the same
+    local texts = -1
+    return GK.Observe({ ok = true, did = "opened" }, function(ticks, final)
+        local chain = tipChain()
+        for _, entry in ipairs(chain) do
+            if not entry.pinned and addressOf(entry.element) == wanted and (entry.title or entry.about) then
+                if #entry.texts ~= texts and not final then texts = #entry.texts return nil end
+                return { ok = true, did = "opened", tip = stripTips(chain)[entry.n], open = #chain }
+            end
+        end
+        if not final then return nil end
+        return { ok = false, did = "set the tooltip's IsOpen", saw = "no tooltip stands open",
+                 hint = "the control's tooltip may be switched off (ToolTipService.IsEnabled) or have nothing to show" }
+    end, 1500)
+end
+
+-- The key the profile binds to an input event, from the input scheme's table of raw inputs (each
+-- raw input lists the events bound to it): the scan code's name and its modifier, or nil and why.
+local function keyOfEvent(eventName)
+    local manager = guard(function() return Ext.Input.GetInputManager() end)
+    if not manager then return nil, "the input manager is not there" end
+    local id
+    for _, definition in pairs(manager.InputDefinitions) do
+        if tostring(definition.EventName) == eventName then id = definition.EventID break end
+    end
+    if not id then return nil, "the game has no input event " .. eventName end
+    for _, mapping in ipairs(manager.InputScheme.RawToBinding) do
+        local plain = guard(function() return Ext.Types.Serialize(mapping) end)
+        for _, bound in ipairs(plain and plain.Bindings or {}) do
+            local binding = bound.Binding
+            if bound.InputIndex == id and binding and binding.DeviceId == 0 then
+                local code = GK.ScanCode(tostring(binding.InputId))
+                if code then return code, binding.Modifiers and binding.Modifiers[1] and tostring(binding.Modifiers[1]) or nil end
+            end
+        end
+    end
+    return nil, "no key is bound to " .. eventName .. " in the profile"
+end
+
+local function pinnedCount(chain)
+    local n = 0
+    for _, entry in ipairs(chain) do if entry.pinned then n = n + 1 end end
+    return n
+end
+
+--- Pins the tooltip a hover holds open, as the player's key does: the key the profile binds to the
+--- game's input event UIPinTooltip, pressed in the game's own input. Answers { ok, pinned = <the
+--- entry>, open } when the game's list of pinned tooltips grew and the pinned one shows its texts,
+--- ok = false and what was seen otherwise (nothing open, or a tooltip the game does not pin).
+function UI.PinTip()
+    local before = tipChain()
+    local open
+    for _, entry in ipairs(before) do if not entry.pinned then open = entry end end
+    if not open then return { ok = false, did = "nothing", error = "no tooltip is open: GK.Gui.Tip(window, control) calls one up" } end
+    local key, modifier = keyOfEvent("UIPinTooltip")
+    if not key then return { ok = false, did = "nothing", error = modifier } end
+    local had = pinnedCount(before)
+    local pressed, problem = pcall(GK.Key, key, modifier)
+    if not pressed then return { ok = false, did = "nothing", error = "the key was not pressed: " .. tostring(problem) } end
+    local did = "pressed " .. key .. (modifier and ("+" .. modifier) or "")
+    -- The pinned copy is drawn a few frames after the list grew: it is answered when it shows its
+    -- texts. No pointer leaves the tooltip that was pinned, so it is closed here as a pointer
+    -- moving off would close it.
+    local closed = false
+    return GK.Observe({ ok = true, did = did }, function(ticks, final)
+        local chain = tipChain()
+        if pinnedCount(chain) > had then
+            if not closed then
+                closed = true
+                for _, tip in ipairs(hoverTips()) do guard(function() tip.IsOpen = false end) end
+                if not final then return nil end
+            end
+            local last
+            for _, entry in ipairs(chain) do if entry.pinned then last = entry end end
+            if last and #last.texts == 0 and not final then return nil end
+            for _, entry in ipairs(chain) do if not entry.pinned and not final then return nil end end
+            return { ok = true, did = did, pinned = stripTips(chain)[last.n], open = #chain }
+        end
+        if not final then return nil end
+        return { ok = false, did = did, saw = "nothing was pinned", tips = stripTips(chain),
+                 hint = "the game pins only a tooltip that says it can be (CanBePinned)" }
+    end, 1500)
+end
+
+--- Closes tooltips: GK.Gui.CloseTips() every one - what a hover holds open is closed as when the
+--- pointer leaves, the pinned ones by the command the game runs on a click beside them or on the
+--- menu key (RequestClearPinnedTooltipsCommand); GK.Gui.CloseTips("tip#3") the one a hover holds
+--- open. One pinned tooltip among several is not closed apart: the game takes the ones pinned
+--- after a pinned tooltip away on a click on it, by a parameter its panel makes in code. Answers
+--- { ok, closed, tips } when they are gone.
+function UI.CloseTips(which)
+    local chain, holder = tipChain()
+    local had = #chain
+    if had == 0 then return { ok = true, did = "nothing", already = true, tips = {} } end
+    local wanted
+    if which ~= nil then
+        for _, entry in ipairs(chain) do if entry.handle == which then wanted = entry end end
+        if not wanted then return { ok = false, did = "nothing", error = "no tooltip " .. tostring(which) .. " (GK.Gui.Tips lists them)" } end
+        if wanted.pinned and pinnedCount(chain) > 1 then
+            return { ok = false, did = "nothing", error = "a pinned tooltip is not closed apart from the others: GK.Gui.CloseTips() closes all",
+                     hint = "the game removes the tooltips pinned after one on a click on it (ls.LSElementPanel.ClickCommand, RemovePinnedTooltipCommand with a parameter made in code)" }
+        end
+        if wanted.pinned then wanted = nil end
+    end
+    local did = {}
+    for _, entry in ipairs(chain) do
+        if not entry.pinned and (not wanted or wanted == entry) then
+            guard(function() entry.element.IsOpen = false end)
+            did[#did + 1] = "closed " .. entry.handle
+        end
+    end
+    if holder and not wanted then
+        local command = guard(function() return holder.RequestClearPinnedTooltipsCommand end)
+        if not command then return { ok = false, did = table.concat(did, "; "), error = "the widget of the pinned tooltips has no command to close them" } end
+        local _, failed = guard(function() command:Execute(nil) end)
+        if failed then return { ok = false, did = table.concat(did, "; "), error = failed } end
+        did[#did + 1] = "ran RequestClearPinnedTooltipsCommand"
+    end
+    local expected = wanted and had - 1 or 0
+    local result = { ok = true, did = table.concat(did, "; ") }
+    return GK.Observe(result, function(ticks, final)
+        local now = tipChain()
+        if #now <= expected then
+            return { ok = true, did = result.did, closed = had - #now, tips = stripTips(now) }
+        end
+        if not final then return nil end
+        return { ok = false, did = result.did, saw = (#now) .. " tooltips still stand", tips = stripTips(now) }
+    end, 1500)
 end
 
 --- The named windows and whether each is open.

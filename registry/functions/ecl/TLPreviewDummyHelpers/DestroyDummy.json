@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::TLPreviewDummyHelpers::DestroyDummy",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Removes a timeline dummy: checks that the handle names a live entity with ecl::TLPreviewDummy, unloads the dummy's visual, physics and light, and marks the entity for destruction in the calling thread's command buffer. Parameters: the address of a pointer to the entity world, the entity handle.",
+  "fingerprint": {
+    "calls": ["fp:e4d053ad9455ea7c", "fp:f21e55528df2e606", "unplaced::UnloadTimelineDummy"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "After the handle check it calls the function that unloads the dummy's visual and physics and detaches its light, then sets the destroy bit (2) on the entity's record in the thread's command buffer; its caller is the per-frame update of the timeline system, twice. The Toolkit's ecl::TLPreviewDummyHelpers::DestroyDummy(ID const&) unloads visual, physics and light and destroys the entity in the same order."
+    },
+    {
+      "kind": "read",
+      "says": "After the handle check it calls the function that unloads the dummy's visual and physics and detaches its light, then sets the destroy bit (2) on the entity's record in the thread's command buffer; its caller is the per-frame update of the timeline system, twice. The Toolkit's ecl::TLPreviewDummyHelpers::DestroyDummy(ID const&) unloads visual, physics and light and destroys the entity in the same order."
+    },
+    {
+      "kind": "watch",
+      "says": "Called on a dummy standing in a level and in the main menu, the figure leaves the picture, and a frame later the entity's uuid names nothing and its handle has no components."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "End a dialog under a probe and count its calls against the dummies that were made.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

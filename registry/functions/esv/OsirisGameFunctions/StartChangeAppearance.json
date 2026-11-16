@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::OsirisGameFunctions::StartChangeAppearance",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "The handler of the Osiris call StartChangeAppearance(Target). It resolves the character, refuses one whose reserved user id (+0x188) is the unassigned constant or that has no eoc::character_creation::AppearanceComponent, refuses while the bytes at +0x250 or +0x288 of esv::character_creation::System are set, and otherwise appends the pair (character entity, unassigned user id) to the system's request array at +0x4E8 (count at +0x4F4) and answers true. The session itself is made by the system later: a definition entity with eoc::character_creation::ChangeAppearanceDefinitionComponent and a session entity appear, and the client opens the widget CharacterChangeAppearance.",
+  "fingerprint": {
+    "calls": ["fp:ac9a4ad01c5b5061", "fp:e4d053ad9455ea7c"],
+    "components": ["esv::character_creation::System"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the registration of the Osiris game functions (bg3_dx11.exe+0x36B0C00) pairs the text StartChangeAppearance with this address; the body calls esv::StoryUtils::OsirisParamGUIDToCharacter, ecs::HasComponent of eoc::character_creation::AppearanceComponent, takes the system by TypeIndex of esv::character_creation::System and writes 16 bytes into the array at +0x4E8"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe during Osi.StartChangeAppearance(host) shows one call, from bg3_dx11.exe+0x38248AA; afterwards the server holds one entity with CCChangeAppearanceDefinition and CCDefinitionCommon, one with CCSessionCommon, ServerCCSessionOwner and CCDefinitionChangeAppearance, and the host's CCState.HasDummy reads true (false before)"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "the Toolkit's EoCServer.dll function with the same checks (a character, reserved for a player, the system's request) carries the text esv::OsirisGameFunctions::StartChangeAppearance and its source file OsirisGameFunctions.cpp in its assertions"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which function of esv::character_creation::System reads the array at +0x4E8 and builds the session (the Toolkit exports RequestChangeAppearance and Update); a probe on the readers of +0x4E8 during Osi.StartChangeAppearance reaches it",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

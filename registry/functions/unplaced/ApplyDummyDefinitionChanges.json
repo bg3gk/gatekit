@@ -1,0 +1,43 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ApplyDummyDefinitionChanges",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "The per-frame step of the client's character creation that keeps a dummy in step with its definition. For a dummy definition entity it takes ecl::character_creation::DummyDefinitionComponent, and from the dummy it names the target visual and ecl::character_creation::DummyComponent; when the definition's ChangeId differs from the dummy's it copies it and refills the target visual (FillTargetVisualComponent, or a reset when the definition has no race); when ChangeId2 differs it copies it and calls FillTargetVisualComponentColorsAndMaterials with the definition's Visual at +0xC8. A mod that writes a look into the dummy definition and moves ChangeId2 gets the dummy redrawn by this step.",
+  "fingerprint": {
+    "calls": [
+      "ecl::character_creation::SubsystemHelper::FillTargetVisualComponent",
+      "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials",
+      "fp:0eefe765b7630a16",
+      "fp:201479de08f55bee",
+      "fp:24c801b0780dfd1d",
+      "fp:43286a6c92ad572e",
+      "fp:4ff96f8834f3a3d9",
+      "fp:5227b96c8688ff31",
+      "fp:7168f963e8351ac3",
+      "fp:7498726bfeb8e02a",
+      "fp:d17ed4a4e9c30488",
+      "fp:d4d92ac37cb6109c",
+      "fp:e4d053ad9455ea7c",
+      "fp:f273f57ce33b044d",
+      "fp:f37197919115df6c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the two comparisons and copies between DummyComponent.ChangeId / ChangeId2 and +0x8 / +0xC of the definition, each followed by its fill call"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe shows 285 calls in nine seconds, all from bg3_dx11.exe+0x202E72C, while a change-appearance session stands; after a client write of ChangeId2 + 1 the dummy's counter reads the new value and the colours-and-materials fill is called once from inside this function"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the game's own name: the caller bg3_dx11.exe+0x202E72C belongs to a system of ecl::character_creation whose update walks the dummy definitions; the macOS build's symbols name it",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

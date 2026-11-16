@@ -1,0 +1,28 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::UnloadTimelineDummy",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Unloads what a timeline dummy holds before its entity is destroyed: the visual, the physics, and the scene attachment of its light.",
+  "fingerprint": {
+    "calls": [
+      "fp:3e876ea05b4c67a4",
+      "fp:6e456152879c980c",
+      "fp:a03866eadda12b37",
+      "fp:b72b55929af538be"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It calls ecl::TLPreviewDummy::UnloadVisual, a second unload on the dummy, and for an entity with ls::LightComponent reads its ls::SceneAttachComponent; its one caller is code:ecl::TLPreviewDummyHelpers::DestroyDummy."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Reached whenever a timeline ends; probe it at a dialog's end.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

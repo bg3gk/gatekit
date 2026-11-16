@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::CameraSystem::SnapFade",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Starts the cut of the camera behind a black screen: while the game runs and no film plays it files the request (the set at GameCameraBehavior+0x208) and keeps the new target and destination as pending (+0x248 with the flag +0x254, +0x238 with +0x244) to be applied when the screen is black; otherwise it sets them at once.",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "checks the game state 0x12 and the movie player's playing flag, ensures a short in the hash set at +0x208, writes +0x248/+0x250 and +0x238/+0x240 and their flags +0x254/+0x244, else TargetCurrent (+0x48) and TargetDestination (+0x24)"
+    },
+    {
+      "kind": "watch",
+      "says": "a switch to a party member 80 m away calls it once from +0x1E1B207 (0x1E1AE70); the pending flag +0x254 is 1 for two client ticks, the HUD's ScreenFadeOpacity goes from 0.17 to 1.0 in one tick, the camera's TargetCurrent jumps on the next, the black holds 36 ticks (1.2 s) and fades in over 5 ticks (0.17 s)"
+    }
+  ]
+}

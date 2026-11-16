@@ -1,0 +1,45 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::TLPreviewDummy::LoadVisualInternal",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Asks the visual system (ls::VisualSystem of the client world) to load the dummy's visual resource for the dummy's entity, wrapping the caller's callback in one of its own that finishes the load on the dummy; with its second parameter set it first releases the cloth and spring state of the visual it replaces.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:227aadb92d3cd447",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3e652ed33a047749",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:7f2249b2c6e0eae3",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:acd4d1af33e2b88d",
+      "fp:b72b55929af538be",
+      "fp:e4d053ad9455ea7c",
+      "fp:f9412659e7b05763",
+      "import:196f87dd222b4c83",
+      "import:90f37ce9f6d89ffa",
+      "import:affe5cd49527c729",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "components": ["ls::VisualSystem", "phx::NVClothScene"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It takes the visual system from the client world's system table, builds a 0x58-byte callback object that captures the dummy, and hands the dummy's resource id (0x54), its load flags and the callback to the visual system's load; code:ecl::TLPreviewDummyHelpers::LoadDummy calls it for a dummy with no visual yet."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Reached on every dummy load; a probe at a dialog's start would count it against LoadDummy's 27 calls.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

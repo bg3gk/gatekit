@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "eoc::character_creation::AppearanceComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The look a character keeps from its creation: Visuals (the chosen visual resources: head, hair, horns, ...), Elements (material settings: makeup, tattoo, scars, with colour and intensity), AdditionalChoices, and the colour ids SkinColor, EyeColor, SecondEyeColor, HairColor. A change-appearance session can only be started on a character that carries it. Script Extender: CharacterCreationAppearance.",
   "size": 112,
   "fields": [
     {
@@ -90,6 +93,31 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "CharacterCreationAppearance", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types), as struct eoc::character_creation::AppearanceComponent"
+    },
+    {
+      "kind": "read",
+      "says": "the handler of the Osiris call StartChangeAppearance (bg3_dx11.exe+0x36AD7A0) answers false for a character without this component"
+    },
+    {
+      "kind": "watch",
+      "says": "the origin character Astarion on the level Basic_Level_A carries it with all four colour ids null, while the definition of a change-appearance session started on him reads real ids for skin, hair and both eyes: an origin's colours come from elsewhere than this component"
+    },
+    {
+      "kind": "text",
+      "says": "reported from a run of character creation, not read again here: the character that lands in the prologue carries here the Visuals, Elements and colours of the creation definition"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which function turns this component into the drawn picture outside a session, so that a write here followed by replication can be tested as a change of appearance on the fly; the Toolkit's esv::character_creation::SubsystemHelper::ApplyAppearance (macOS symbol at bg3_macos_x64+0x5DADCE0) is the server's writer to pair first",
+      "about": "reach",
+      "state": "open"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Visual.h:102, kind component), by gatekit symbols se-layouts on 2026-11-14",

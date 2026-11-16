@@ -1,0 +1,22 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials",
+  "state": "described",
+  "rung": "game",
+  "does": "Copies the look of an eoc::character_creation::Appearance into the dummy's ecl::character_creation::TargetVisualComponent: the four colour ids from +0x58, +0x68, +0x78, +0x88 of the appearance into +0x40, +0x50, +0x60, +0x70 of the target, the visuals array from +0xA8 into +0x10, the elements from +0xB8 into +0x20 and the additional choices from +0xC8 into +0x30; before that it adds one to the int at +0x8 of the target unless the value at +0x0 is -1. It runs once each time the dummy definition's ChangeId2 moves.",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbol ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials(TargetVisualComponent&, Appearance const&) at bg3_macos_x64+0x3A1EDD0 has the same body statement for statement: the same test of -1, the same increment and the same four 16-byte copies between the same offsets"
+    },
+    {
+      "kind": "read",
+      "says": "two parameters are used, the target and the appearance; the offsets above"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe over nine seconds of a change-appearance session shows exactly one call, from inside the per-frame dummy update (bg3_dx11.exe+0x202F166), after one client write of ChangeId2 + 1 on the dummy definition"
+    }
+  ]
+}

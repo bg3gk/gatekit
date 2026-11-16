@@ -8,7 +8,11 @@
 -- already), middling (10 m, at the screen's edge) and far (50 m, well outside: the client holds a
 -- stub of a creature or an item there, so the verb is called on the server, which sends the
 -- server's point; past the game's snap distance of 50 m the camera would cut, so the far cases ask
--- for a glide). Budgets measured with the camera's own glide (night notes K1): 0.6-1.1 s up to 18 m,
+-- for a glide). The answer also says whether the thing is drawn: a creature 50 m from the party is
+-- asleep and a stub on the client, so the camera shows its place and the answer says `drawn = false`
+-- with a warning; the chest's stub is drawn all the same; a point has no `drawn`
+-- (research/studies/camera-focus.md; the far creature woken first: test:camera/focus/far).
+-- Budgets measured with the camera's own glide (night notes K1): 0.6-1.1 s up to 18 m,
 -- 1.5 s for a raised-snap glide of 60 m, at 30 server ticks a second, with room for the answer's
 -- way back from the client.
 -- Staging (cheat): the camera put back on the host, the thing spawned. Acting (fair): the focus, on
@@ -71,6 +75,14 @@ local function focusCase(kind, range)
                 "the thing near the middle of the screen", s)
             check(a.serverTicks <= r.budget, "settled within " .. r.budget .. " server ticks", a.serverTicks)
             check(not a.snapped, "the camera glided, it did not cut", a)
+            if kind == "point" then
+                eq(a.drawn, nil, "a point has nothing to draw")
+            elseif kind == "npc" and range == "far" then
+                eq(a.drawn, false, "the far creature is asleep and not drawn, and the answer says so")
+                check(type(a.warning) == "string" and a.notDrawn[1] == thing, "the answer names the creature that is not drawn", a)
+            else
+                eq(a.drawn, true, "the thing is drawn")
+            end
         end)
         step("the camera back", "fair", function() F.home(game) end)
     end

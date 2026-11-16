@@ -1,0 +1,18 @@
+{
+  "schema": "registry/global/1",
+  "id": "unplaced::MousePointer",
+  "kind": "variable",
+  "state": "described",
+  "rung": "confirmed",
+  "about": "A pointer to the engine's mouse object (ls::Mouse). The object's first two floats are the pointer's position in the window's pixels, the two integers at 0x8 its position on the desktop, the byte at 0x10 whether the pointer is inside the window. The interface reads the position from it when the input manager's motion input arrives.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "sdl::SDLWindowManager::Update writes the three fields through this pointer"
+    },
+    {
+      "kind": "watch",
+      "says": "floats written at offsets 0 and 4, followed by an injected motion event, were the position the UI library reported in PreviewMouseMove and the place a press and release were delivered to"
+    }
+  ]
+}
