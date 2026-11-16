@@ -74,6 +74,13 @@ attack.
   where in the machine code the switch lives. The first step towards more than one player in one
   game. The first run with a real device is made with the owner there. This work goes to a
   session of its own, started on the owner's word and not before.
+  A case from a night of unattended work, which the lock must cover: the main screen was switched
+  off, the copies opened stretched over a small spare screen, and the machine's real pointer lay
+  inside every copy's frame. The pointer drags systems of the game with it - what an aimed
+  attack points at, the preview of a walk, hover highlights - so the player's own input sent by
+  the toolkit may aim where the pointer rests. It was got round by hand (a smaller window in the
+  middle of the screen, the pointer parked in a corner). The lock is to make a copy indifferent
+  to where the real pointer is, and a copy is to say when the pointer is inside its frame.
 - **No more strictness than the work needs.** The frames already set are enough; a new rule,
   check, schema or refusal is added only where it protects one of the two key products - the
   tests and the registry of the machine code - and those two are held strictly. Everywhere else
@@ -86,12 +93,6 @@ attack.
   fork's surface. They are a mix of hurried checks of several generations (former scenarios
   among them) with sleeps of their own. Each is to be either a unit test (where no game is
   needed), a proper test of the toolkit under the rules of `docs/writing-tests.md`, or dropped.
-- **No numbered sections in the documents - among the first things to do.** The contracts number
-  their sections (`cli.md` 2.13.1, `lua-api.md` section 17) and code comments, help texts and
-  other documents cite those numbers, so adding or moving one section renumbers many and every
-  citation has to be chased: edits that change nothing. Headings lose their numbers; a section is
-  cited by its title as a link (`cli.md#the-test-command`), which a link checker can hold; a
-  citation from code names the document and the section's title.
 - **The in-game console knows the API as the editor does.** Its completion asks the live tables
   (the `GK_Complete` channel), so it gives names and nothing else. It is to show, for each
   variant, what `lua-types/GateKit.lua` already says: the signature, the types of the arguments
@@ -184,8 +185,7 @@ attack.
 - **A copy's build and the default build are one record.** `gatekit se install --instance <copy>`
   also makes that build the home's default, so installing into one copy changes what every new
   copy gets. They are to be two records.
-- **Waits on the real clock and timers of the bridge's own** (rule 3 of
-  [api-rules.md](../docs/api-rules.md)), each a defect: in `Server/Act.lua` the job deadlines,
+- **Waits on the real clock and timers of the bridge's own** ([api-rules.md](../docs/api-rules.md#events-not-waits)), each a defect: in `Server/Act.lua` the job deadlines,
   the arrival and stuck checks, the "nothing happened" window and the cast-flag window; the
   real-second boosts of `Server/Speed.lua`; the windows and retries of `Server/Stage.lua`; the
   fixed delays of `Server/Fixtures.lua`, which `Ext.Timer.WaitFor` rounds up to a tick; the timers of
@@ -246,6 +246,64 @@ attack.
   quiet machine. Not verified at speed: a projectile spell, dialogue and sound, the window in
   front.
 
+### The real coverage of rolls: not yet, and why
+
+What the stage of rolls reached is in `research/studies/rolls.md` (from "Who asks for a die" to "After the throw") and proved by
+`tests/rolls`. What it did not reach:
+
+- **A death saving throw was not staged.** In the test level every way tried of downing a party
+  member ended the game at once (the only party member down) or killed the creature outright
+  (a spawned or recruited one dies instead of being downed). It needs a save with a real
+  companion in the party.
+- **The roller of an initiative roll is not in the roll event.** The function that holds the
+  combatant (`esv::combat::System::NewInitiativeRoll`) takes arguments on the stack whose count
+  is not read; wrapping it blind was not risked. The row has the roll and no `who`.
+- **Which interrupt changed a roll is not in `RollAdjusted`.** It is not among the arguments of
+  the function hooked; the game's own log reads it from a component of the same tick
+  (`esv::interrupt::UsedOneFrameComponent`). Not read yet.
+- **A change after the throw is not tied to the row of its throw by an id.** The roll event has
+  no id of the roll; the change carries the condition roll's. A reader pairs them by order.
+- **A reroll by an interrupt (Lucky) throws no roll event**: only the change is seen, not the
+  new dice.
+- **A heal's roll has the type `Sentinel`** and initiative `None`: neither can be named by kind
+  in a pin or a rig.
+- **The second executable (`bg3.exe`, Vulkan) was run once**: every hook of the fork was found
+  in it, and the tests of the roll log's origins, of the game's chance and of a roll changed
+  after the throw pass on it. The rest of the tests were run on `bg3_dx11.exe` only.
+- **The pin was judged and not changed.** Kept as the standing rule on stock Script Extender;
+  the condition in the game's boost words (`when`) is proposed and not built; one throw is the
+  rig's business, on the fork.
+- **A test's header does not say which Script Extender it needs.** A verb now does (`needs` in
+  the table of verbs, one refusal in one sentence: `GK.Verbs.Has`, `GK.Verbs.Lacks`); a test asks
+  with `need(...)` by hand. A `needs` in the header, read by the runner, is proposed and not built.
+- **The cause of a roll asked by the story or by a dialogue** is the request's own record
+  (`request`): the parties and the spell are empty, by the game's own account.
+- **The rolls of no dice** seen after nearly every cast are the duration of a status that a
+  weapon attack's own properties give a creature that is no player (an AI helper): named.
+- **Karmic Dice on damage** was watched once: the dice were not the generator's own. The rule
+  of that draw is read in the code and not confirmed by a test.
+- **The game's own chance is built for a spell's roll** (`Ext.Stats.GetSpellRollChance`,
+  `GK.Rolls.Chance`; [studies/rolls.md](studies/rolls.md#the-chance-built-and-proven)). Not built: the damage a hit would do to a given target - the
+  server has no cheap function for it; a check that is no spell's roll (a skill check's chance).
+- **The build table of `bg3.exe` is refreshed by hand** after a `registry commit`
+  (`registry reanchor --target bg3.exe`); a data file of the mod whose places went stale is then
+  refused by `registry check` until `registry places` is run on it.
+
+Found on the way, about tests and tools:
+
+- `game.checkpoint()` in a test overwrites the copy's own checkpoint; a test that saves and loads
+  needs a named save of its own. `game.reset()` does not open the stage scope again, does not
+  put the run's speed back, and its loading screen counts as a surprise.
+- The family `dice` asked for ten hours was switched off after about forty minutes.
+- The roll log's writing is under `pcall`: an error in it would be silent.
+- A probe's snapshot is at most 64 bytes behind one pointer; a rule "this pointer, this offset,
+  read there" is wanted. No Lua call turns the index of a game string into its text.
+- Windows that block and are not handled by themselves (candidates for the attention system):
+  the tutorial "Attack of Opportunity" (closed by `GK.Gui.Resolve{ tutorial = 'close' }`; no
+  row in the server's attention log); the reaction window of an interrupt that asks (it held
+  `GK.Act.Attack` for 50 s; closed by `GK.Gui.Resolve{ reaction = ... }`); the game-over
+  screen (closed only by a reset; `GK.Stage.Clean` gives the hit points back and leaves it).
+
 ### Tests and the event log
 
 - Not checked for the guide: whether the limits of `game.server`/`ui`/`lua` count ticks or real
@@ -291,6 +349,30 @@ attack.
 
 ### Studies
 
+- **Bones, brought to the end, with the game's own blending.** A creature's skeleton is read
+  (named bones, the live pose) and a pose of our own can be held - frozen, or over a playing idle
+  by rewriting the skinning each frame from Lua; both work, but the layer over an animation costs
+  milliseconds a frame per limb, needs developer mode, flickered until its moment in the frame was
+  found, and carries neither the sockets nor the cloth; entering and leaving a written pose is
+  smoothed by hand, because the game's own blending (about 0.17 s between two of its animations)
+  does not reach a pose written from outside. To be done: a native override of bones in the fork,
+  applied where the game builds the pose, so that sockets and cloth follow, with no developer mode
+  and no per-frame Lua; and the game's own blending into and out of such a pose - found and used,
+  not written by us (its blend between animations exists; whether a weight or a layer of the
+  animation blueprint carries an outside pose is the question). Then a verb any mod can use: a
+  creature posed or partly moved by a table of bone to rotation, entered and left smoothly by the
+  game, held over its own idle. What is known and where to dig:
+  [research/leads/bones-in-the-fork.md](leads/bones-in-the-fork.md).
+- **Appearance, and changing it on the fly.** Cover the machine code that carries a character's
+  appearance and applies a change of it, for controlled characters and for NPCs alike: where
+  creation writes it, what the camp's Magic Mirror does to a living character, what the many
+  appearance mods reach for and what they cannot. The aim is universal verbs - read an
+  appearance, apply one to any character in a running game, finish creation - and names in the
+  registry for what stands behind them. A first sight of it, from creation:
+  the server takes a whole definition only when the client sends it by a command of the window (a
+  write on the server alone does not reach the drawn figure), and a mod on disk changes a living
+  character by writing its appearance components and replicating them. The level of character
+  creation (`SYS_CC_I`, with a server) is a ready ground for trying this.
 - Simple actions that take time - drawing and sheathing a weapon and the like: how the game
   carries each (a state with a duration, an animation the logic waits for, or an instant change
   with the animation for show), what a test waits on, and what "done" is. The weapon is sometimes
@@ -368,8 +450,7 @@ attack.
   answer "no tile" for a copy straight after a test run ends; no verb reads a copy's frame cap or
   mute, so that only the tile in view is heard and a background tile draws at the lower rate is
   not measured.
-- `GK.UI` and `GK.Focus` are not renamed or split (the couplings of
-  [docs/contracts/lua-api.md](../docs/contracts/lua-api.md), section 5).
+- `GK.UI` and `GK.Focus` are not renamed or split ([docs/contracts/lua-api.md](../docs/contracts/lua-api.md#couplings-inside-the-bridge)).
 - Weave: hot reload keeps a window's old size (a changed height needs `Weave.Rescue()`); background
   and frame colours draw brighter than written, and the showcase compensates by hand where the
   framework should.

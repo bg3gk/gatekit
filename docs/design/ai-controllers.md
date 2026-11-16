@@ -79,7 +79,7 @@ host that stops answering is noticed within three seconds.
 **The actions come back as data, not as Lua.** The agent asks for `{"act":"Cast","spell":"...",
 "target":"..."}`; the mod decides whether that character really could do that, and does it
 through the fair verbs (`GK.Act`, `GK.Gui`), which go the player's path
-([api-rules.md](../api-rules.md), rule 4). An agent cannot teleport, cannot read what the
+([api-rules.md](../api-rules.md#fair-cheat-observation)). An agent cannot teleport, cannot read what the
 character cannot see, and cannot spend what it does not have, whatever it answers. Cheats stay in
 `GK.Cheat`, which no controller may call.
 

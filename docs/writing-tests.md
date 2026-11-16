@@ -21,10 +21,10 @@ explained, code named - never by the number of tests.
 | **test** | a Lua file under `tests/` that runs against a real game; not a **unit test** ([AGENTS.md](../AGENTS.md), "Where things live") |
 | **suite** | a folder of tests; its `_suite.json` (schema `tests/suite`) says in `about` what the folder answers for |
 | **case** | a variation of a test's one rule, inside the file (`case`, below) |
-| **step** | a named part of a test or a case, of class `fair`, `cheat` or `observation` ([api-rules.md](api-rules.md), rule 4) |
+| **step** | a named part of a test or a case, of class `fair`, `cheat` or `observation` ([api-rules.md](api-rules.md#fair-cheat-observation)) |
 | **venue** | where a test runs: a level started fresh, a save, or the main menu, declared in the header |
 | **sandbox** | the empty level `GustavX:Basic_Level_A`, the preferred venue; other small levels are in [facts.md](facts.md) |
-| **fixture** | a prepared scene built in one call next to the party from the game's own data - a fight that really starts, a talker, a trader, loot, a lock, a trap, a downed member, a message box. The namespace is `GK.Fixture` ([contracts/lua-api.md](contracts/lua-api.md), section 12) |
+| **fixture** | a prepared scene built in one call next to the party from the game's own data - a fight that really starts, a talker, a trader, loot, a lock, a trap, a downed member, a message box. The namespace is `GK.Fixture` ([contracts/lua-api.md](contracts/lua-api.md#gkfixture-scenes-staged-in-the-empty-test-level)) |
 | **cast**, **actor** | the creatures a test stages, and the one that acts - by default the host's character |
 | **batch** | the tests that declare the same venue and mods, run in one game one after another |
 | **reset rung** | one way of making the world clean between tests (the reset ladder, below); not the registry's rung of certainty |
@@ -32,7 +32,7 @@ explained, code named - never by the number of tests.
 Words not used: **scenario** - in commands, help, documents or code, a test is a test
 (`GateKit.Testing`, `GameTest`, `test { ... }`); **kit** for a fixture - the namespace is
 `GK.Fixture`. The word for a game copy is in [concepts.md](concepts.md), "Copies"; the word for a
-class of verb in [api-rules.md](api-rules.md), rule 4.
+class of verb in [api-rules.md](api-rules.md#fair-cheat-observation).
 
 ## Addresses
 
@@ -50,7 +50,10 @@ of its kind: `test:` before a test's address, `code:` before a registry id of th
 (`bg3_`) and a file path need none. A file or a document is addressed by its path relative to the
 repository's root, as a link where the format has links. In a field whose kind its schema fixes (a registry entry's
 evidence, a header) the bare address is written. The forms and the rule for code:
-[registry/README.md](../registry/README.md), "Citing code and tests".
+[registry/README.md](../registry/README.md), "Citing code and tests". An address here is the
+written form of a test, an id or a kind; a machine address of the game's code
+(`bg3_dx11.exe@25605617+0x1BC3C2B`) is another thing, and the same section of the README says
+where one may stand.
 
 `gatekit refs <address>` lists every place that cites a test or a registry id. `gatekit registry
 check` refuses a `test:` citation that names no test under `tests/` and a `code:` citation that
@@ -102,7 +105,7 @@ verdict stay the game's. Every pin is a row of the stage ledger, so the clean ta
 Dice overrides a pin on the rolls it weights, so `Pin` switches it off for the scope
 (`karmic = true` keeps it on); a test that needs plain unpinned dice calls
 `GK.Rolls.SetKarmic(false)`. Initiative is pinned as a bonus, not a die. The kinds, `once` and when
-a pin binds: [contracts/lua-api.md](contracts/lua-api.md), section 17.
+a pin binds: [contracts/lua-api.md](contracts/lua-api.md#gkrolls-rolls-decided-in-advance-serverrollslua).
 
 **Geometry and state.** A claim about what blocks or lets through - a wall, a door, an object, a
 creature on the line - is made only with the geometry and the state it was seen in, as preconditions
@@ -115,7 +118,7 @@ not a finding.
 
 A step moves on when the row it waits for arrives in the event log, never after a pause of a fixed
 length; a limit is only a guard against a hang. The rule, and where an event comes from when the
-game seems to give none: [api-rules.md](api-rules.md), rule 3.
+game seems to give none: [api-rules.md](api-rules.md#events-not-waits).
 
 - **Limits count the game's ticks.** Every limit of a wait of `game` (`wait`, `wait_row`,
   `wait_attention`, `answer`) is seconds of a running game, converted to the server's ticks at the
@@ -153,7 +156,7 @@ resources given back instead of a turn ended - or recorded as a gap with the rea
 
 A finished test runs at the working speed, `GK.Speed.Working` - one named value, so that it is
 raised in one place (its value, and what breaks in the game at high speed:
-[contracts/lua-api.md](contracts/lua-api.md), section 18) - and gives the same verdict there as at
+[contracts/lua-api.md](contracts/lua-api.md#gkspeed-the-working-speed-and-the-games-clock-serverspeedlua)) - and gives the same verdict there as at
 speed 1. The speed is the run's: `gatekit test --speed working` and `--speed 1` start every test at
 that speed and hold it before each test; without `--speed` a test runs at the copy's speed. A step
 that sets the speed itself (`GK.Speed.Set`) changes it until the clean puts the baseline's back.
@@ -207,7 +210,7 @@ the class does not allow: a fair step that calls a cheat fails ("a fair step cal
 GK.Cheat.Attack"), and so does an observation step that calls anything but an observation, even
 when the chunk catches the refusal itself. The host's own `game.*` functions are held to it too.
 What a verb calls inside itself, a raw `Osi` or `Ext` call, and code the chunk leaves to a timer are
-not judged ([contracts/lua-api.md](contracts/lua-api.md), section 19, "Steps"). A failure stops the
+not judged ([contracts/lua-api.md](contracts/lua-api.md#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson), "Steps"). A failure stops the
 test and names its step: `step <name> (<class>) failed: <why>`. Steps do not nest. A step's begin
 and end are rows of the event log, so every row between them belongs to it.
 
@@ -243,9 +246,9 @@ the folders: [contracts/cli.md](contracts/cli.md), `test`.
 | `game.dialog()`, `game.answer(n)` | the dialogue on screen; choose answer `n` and wait until it changes | observation; fair |
 | `game.key(name [, hold])` | a key pressed through the bridge into the game's input (the window only when the bridge is not there) | fair |
 | `game.checkpoint()`, `game.reset()`, `game.reload()`, `game.skip_scenes()`, `game.fast_scenes(speed)`, `game.burst(senders, each)` | a checkpoint and its reload, a bridge reload, scenes skipped or played fast, a load on the channel | cheat |
-| `game.shot(path [, width])`, `game.logs{ story, lines, grep }`, `game.windows()`, `game.process()` | a picture, what Script Extender printed, the copies in a deck, the game's memory use | observation |
+| `game.shot(path [, width [, overlay]])`, `game.logs{ story, lines, grep }`, `game.windows()`, `game.process()` | a picture (the game's frame; `overlay = true`: with the extender's own layer), what Script Extender printed, the copies in a deck, the game's memory use | observation |
 | `game.now()`, `game.sleep(seconds)` | the host's clock | observation |
-| `game.out`, `game.path`, `game.save`, `game.read`, `game.exists`, `game.mkdir`, `game.remove`, `game.glob`, `game.testimage` | files; a relative path is in the test's output folder | observation |
+| `game.out`, `game.path`, `game.save`, `game.read`, `game.exists`, `game.mkdir`, `game.remove`, `game.glob`, `game.testimage`, `game.pixel(path, x, y)` | files; a relative path is in the test's output folder. `testimage(path, w, h)` writes a png whose red grows to the right and green downwards; `pixel` reads a picture's colour at a point in parts of its size: `{ r, g, b, width, height }` | observation |
 | `game.channel`, `game.extender`, `game.weave`, `game.folder`, `game.profile` | the folders of the copy the run uses | |
 
 A `since` left out is `game.mark()` at the call. The kinds a test names to `game.events`,
@@ -277,7 +280,7 @@ the main menu has no scene to clean: only a declared `game` applies to it. `gate
 <rung>` raises every test's need; `--attach` runs in a copy already up and leaves it running, where
 `game` is never taken. What each reset rung does in detail, what makes a level simple, and what
 survives a level load: [contracts/cli.md](contracts/cli.md), `test`, and
-[contracts/lua-api.md](contracts/lua-api.md), section 14.
+[contracts/lua-api.md](contracts/lua-api.md#the-stage-scope-gkstagebegin-clean-verify-track-serverstagelua).
 
 **A test does not clean up by hand.** Everything it stages goes through the stage ledger - `GK.Stage`,
 `GK.Fixture`, `GK.Rolls`, or `GK.Stage.Track` for staging of its own - so the clean can undo it. A boost
@@ -316,8 +319,7 @@ Each is for finding a cause or a mechanism, not for an ordinary run whose times 
 - **`GK.Trace`** - the entity tracer, on each side: between `Begin` and `End` it records which
   components a step creates, destroys, replicates or modifies, with the frame and flush of each
   change and, asked, the system that made it. Reach for it to learn what the game does around a
-  moment, before guessing which component to read. [contracts/lua-api.md](contracts/lua-api.md),
-  section 16.1.
+  moment, before guessing which component to read. [contracts/lua-api.md](contracts/lua-api.md#gktrace-the-entity-tracer-as-rows-of-the-event-log-sharedtracelua-both-sides).
 - **`gatekit test --trace`** - the tracer through every step of a run on both sides, one trace a
   step, written as `trace/<nn>-[<case>-]<step>.json` in the test's output folder. Reach for it when
   a test fails and the step's changes are the question. [contracts/cli.md](contracts/cli.md),
@@ -325,7 +327,7 @@ Each is for finding a cause or a mechanism, not for an ordinary run whose times 
 - **`GK.Memory`** - the memory instrument: a field's address (`Field`), which instruction writes or
   reads it (`Watch`, then `Hits`), what depends on a value held fixed (`Freeze`). Reach for it when
   the question is which function changes a value; `gatekit decomp at <module+0xRVA>` names the
-  instruction's function. [contracts/lua-api.md](contracts/lua-api.md), section 16.
+  instruction's function. [contracts/lua-api.md](contracts/lua-api.md#gkmemory-the-memory-instrument-sharedmemorylua).
 - **`gatekit crashes`** - the crash dumps a copy left, newest first, each with its faulting address
   and the function there. Reach for it when the game closed under a test; a test that fails after a
   death also gets `crash.txt`. [contracts/cli.md](contracts/cli.md), `crashes`.
@@ -509,4 +511,3 @@ So that nobody looks for what is not there:
   case and step cited resolved; no folder beside a test of the same name.
 - `gatekit test move`: a test moved with every citation of it rewritten in the same act.
 - `event:` citations found by `gatekit refs` and resolved by the checks.
-- A link checker for the paths of files cited in the repository, run in CI.

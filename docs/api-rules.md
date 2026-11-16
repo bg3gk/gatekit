@@ -4,7 +4,7 @@ What anything added to the API - a verb inside the game, a tool, a command, a fi
 schema - is held to. A *verb* is one function of the API inside the game: `GK.Gui.UseSlot`,
 `GK.Stage.Spawn`.
 
-## 1. Universal, never a special case
+## Universal, never a special case
 
 A piece of the API holds across the whole game: any character, any spell, any window, any
 venue it can meaningfully meet. It is driven by the game's own data and state, not by a list of
@@ -12,7 +12,7 @@ known cases. A piece that works for one scene only is generalised or stays insid
 needed it. Every new piece says what it covers and what it does not, and is tried on two unlike
 cases before it is merged. Universality is asked of the API, not of a test's subject.
 
-## 2. Every piece of work reviews the API
+## Every piece of work reviews the API
 
 Covering a mechanic, writing a test, running a case - each ends with a short section on the API
 it used: what to improve, remove, make faster, cover additionally. A general fix that is small
@@ -20,7 +20,7 @@ is made in the same piece of work; the rest become the open items
 ([research/open-items.md](../research/open-items.md)). The API is expected to
 get smaller and faster as well as larger: a verb nobody needs, or two that do the same, goes.
 
-## 3. Events, not waits
+## Events, not waits
 
 Anything that takes time is followed by an event, not by a pause. A verb that starts something
 returns when it has seen the thing happen, and says what it saw; a test moves on when the row
@@ -51,7 +51,7 @@ really happened.
   reported as "the event never came" - never as the ordinary way a step ends.
 - A test that fails only when fast is first a suspicion that something waits on the clock.
 
-## 4. Fair, cheat, observation
+## Fair, cheat, observation
 
 Every verb has one of three classes. These are the words for them: an action the player could
 take is `fair`, never "honest".
