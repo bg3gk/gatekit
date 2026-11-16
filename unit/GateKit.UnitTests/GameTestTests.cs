@@ -772,9 +772,9 @@ public sealed class LuaBindingTests
             "has({ 'a', 'b' }, 'b')", "count({ x = 1, y = 2 }) == 2",
             "contains('hello world', 'lo w')", "startswith('abc', 'ab')", "endswith('abc', 'bc')",
             "join({ 'a', 'b' }) == 'a, b'", "join({}, ', ', 'nothing') == 'nothing'",
-            // gatekit:allow-non-english  `bytes` counts bytes, not characters, and only a string
-            // outside ASCII can tell the two apart - which is the whole of what this asserts.
-            "lua_list({ 'a', 'b' }) == '{\"a\", \"b\"}'", "bytes('hello мир') == 12",
+            // `bytes` counts bytes, not characters, and only a string outside ASCII can tell the
+            // two apart - which is the whole of what this asserts (three Cyrillic letters, escaped).
+            "lua_list({ 'a', 'b' }) == '{\"a\", \"b\"}'", "bytes('hello " + new string(new[] { (char)0x43C, (char)0x438, (char)0x440 }) + "') == 12",
         })
             Assert.True(script.DoString("return " + expression).CastToBool(), expression);
         var failed = Assert.Throws<ScriptRuntimeException>(() => script.DoString("check(false, 'wrong', { 1, 2 })"));

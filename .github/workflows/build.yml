@@ -59,22 +59,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: English only outside deliberate exceptions
-        # CONTRIBUTING.md: English everywhere, except localization, verbatim quotes and test data
-        # that tests non-ASCII text. A file that needs an exception says so in itself:
-        #   gatekit:allow-non-english <why>
+      - name: English only
+        # CONTRIBUTING.md: English everywhere, with no exceptions; a test that needs other
+        # alphabets writes them as escapes.
         run: |
           # -I skips binary files: a PNG or a JPEG hits a Cyrillic byte sequence by chance often
           # enough that six of the brand images were reported as non-English prose.
-          hits=$(grep -rlIP '[\p{Cyrillic}]' --exclude-dir=.git --exclude-dir=research \
-                 --exclude-dir=external . || true)
-          bad=""
-          for file in $hits; do
-            grep -q 'gatekit:allow-non-english' "$file" || bad="$bad$file\n"
-          done
-          if [ -n "$bad" ]; then
-            echo "non-English text, with no 'gatekit:allow-non-english <why>' line:"; printf "$bad"; exit 1
-          fi
+          hits=$(grep -rnIP '[\p{Cyrillic}]' --exclude-dir=.git --exclude-dir=external . || true)
+          if [ -n "$hits" ]; then echo "non-English text:"; echo "$hits"; exit 1; fi
       - name: No machine-specific paths
         # Documentation is where these actually turn up, so `.md` is not excluded any more: a
         # path to one person's disk is no more use to a reader in prose than it is in code, and

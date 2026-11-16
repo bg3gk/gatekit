@@ -19,7 +19,8 @@ test { level = "GustavX:Basic_Level_A", surprises = { "loading" },
        about = "What a store holds at a save is what it holds after that save is loaded." }
 
 local VALUE = [[{
-    books = { "Тхарианский Кодекс", "書", "Necromancy of Thay" },
+    -- other alphabets, escaped (Cyrillic and a CJK character), to prove a save keeps them whole
+    books = { "\u{422}\u{445}\u{430}\u{440} \u{41A}\u{43E}\u{434}\u{435}\u{43A}\u{441}", "\u{66F8}", "Necromancy of Thay" },
     at = { x = 1 / 3, y = -2.5e-7, z = 1234567.875, far = 1e300, near = 1e-50, big = 9007199254740993 },
     deep = { a = { b = { c = { 0.1, 0.2, 0.30000000000000004 } } } },
     read = false,
@@ -59,7 +60,7 @@ function run(game)
     step("the game saved", "cheat", function() game.checkpoint() end)
     step("the value changed, a second store made", "cheat", function()
         check(game.server("return GK.Store.Set('gk_round_trip', 'at.x', 0.5)").ok, "a field changed")
-        check(game.server("return GK.Store.Set('gk_round_trip', 'books', { 'другая' })").ok, "the list replaced")
+        check(game.server("return GK.Store.Set('gk_round_trip', 'books', { '\u{434}\u{440}\u{443}\u{433}\u{430}\u{44F}' })").ok, "the list replaced")
         check(game.server("return GK.Store.Set('gk_round_trip_after', 'made', true)").ok, "a second store")
     end)
     step("the change is in force", "observation", function()

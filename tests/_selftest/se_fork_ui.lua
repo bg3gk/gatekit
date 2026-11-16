@@ -5,8 +5,9 @@
 --
 --     set GATEKIT_SE=<se-fork>\builds\v34
 --     gatekit test -k se_fork_ui
--- gatekit:allow-non-english  a merged font is only worth testing with glyphs the first font
--- does not have; that is the whole point of merging one.
+-- A merged font is only worth testing with glyphs the first font does not have; that is the
+-- whole point of merging one. The Cyrillic word ("hello") is written as escapes in the game-side
+-- code, so the file stays English.
 
 test { level = "GustavX:TUT_Avernus_C", mods = {} }
 
@@ -96,7 +97,7 @@ for _, name in ipairs(Ext.IMGUI.GetFontNames()) do
     if name == "SeForkBig" then out.fontListed = true end
 end
 s.title.Font = "SeForkBig"
-s.bigText = s.window:AddText("Merged font: Привет 22px")
+s.bigText = s.window:AddText("Merged font: \u{41F}\u{440}\u{438}\u{432}\u{435}\u{442} 22px")
 s.bigText.Font = "SeForkMerged"
 s.title:AnimateStyle("Alpha", 0.1, 1.0, 0.4)
 s.button:AnimateColor("Button", { 0.9, 0.1, 0.1, 1 }, { 0.1, 0.5, 0.9, 1 }, 0.4)
@@ -244,7 +245,7 @@ function run(game)
                     local name = "SeForkSize%d"
                     local ok = Ext.IMGUI.LoadFont(name, "Public/Game/GUI/Assets/Fonts/QuadraatOffcPro/QuadraatOffcPro.ttf", %d)
                     s.bigText.Font = name
-                    s.bigText.Label = "Font size %d: Привет"
+                    s.bigText.Label = "Font size %d: \u{41F}\u{440}\u{438}\u{432}\u{435}\u{442}"
                     return ok]]):format(size, size, size))
                 check(loaded == true, "a font did not load", size)
                 frames(game, 150)
@@ -262,7 +263,7 @@ function run(game)
                     client(([[local t = Mods.GateKit.SeForkUi.bigText
                         t.Font = "Medium"
                         t.FontSize = %d
-                        t.Label = "FontSize %d: Привет"
+                        t.Label = "FontSize %d: \u{41F}\u{440}\u{438}\u{432}\u{435}\u{442}"
                     ]]):format(size, size))
                     frames(game, 200)
                     local rect = client("return Mods.GateKit.SeForkUi.bigText.LastRect")

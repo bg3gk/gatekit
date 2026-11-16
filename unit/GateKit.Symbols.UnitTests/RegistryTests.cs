@@ -139,7 +139,7 @@ public sealed class RegistryTests : IDisposable
     [InlineData("Seen on 2026-11-12 in a test.", "provenance")]
     [InlineData("Read at 14:05 in the game.", "provenance")]
     [InlineData("Opus thinks it rolls the dice.", "provenance")]
-    [InlineData("Read from C:\\Users\\me\\dump.", "provenance")]
+    [InlineData("Read from D:\\work\\dump.", "provenance")]
     [InlineData("It returns param_1 plus one.", "code")]
     [InlineData("It reads *(int *)(this + 8) and returns it.", "code")]
     [InlineData("   ", "sentence")]

@@ -144,7 +144,7 @@ local function noSource(wanted)
 end
 
 --- Text in lower case for matching, beyond ASCII: Latin-1, Greek and Cyrillic capitals too. The
---- game shows names in the player's language, and string.lower leaves "Зелье" as it is, so a name
+--- game shows names in the player's language, and string.lower leaves a Cyrillic capital as it is, so a name
 --- typed in another case never matched (the third coverage run). Bytes that are not such a
 --- character are kept as they are.
 function GK.Fold(text)

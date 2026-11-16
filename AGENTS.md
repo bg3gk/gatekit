@@ -37,7 +37,8 @@ commit as the code, or do not change the behaviour.
 ## Rules
 
 1. **English only** — code, comments, documentation, commit messages. Localized text comes from
-   the game's own data, never a hardcoded table. The exceptions are in `CONTRIBUTING.md`.
+   the game's own data, never a hardcoded table. No exceptions: a test that needs another alphabet writes it as escapes
+   (`CONTRIBUTING.md`).
 2. **Name things as the game does.** Where the game has its own name for a field or a function,
    that name wins; the names other sources give the same thing (Script Extender's, the
    Toolkit's) stay as cross-references (`known_as`), never as aliases (rule 15).

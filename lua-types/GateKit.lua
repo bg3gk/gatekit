@@ -632,7 +632,7 @@ function GK.Dialog() end
 function GK.Answer(n) end
 
 ---Text in lower case for matching, Latin-1, Greek and Cyrillic capitals included (string.lower
----leaves "Зелье" as it is); every name match of GK.Gui uses it. Client.
+---leaves a Cyrillic capital as it is); every name match of GK.Gui uses it. Client.
 ---@param text any
 ---@return string
 function GK.Fold(text) end

@@ -79,9 +79,9 @@ public sealed class SoundTests : IAsyncLifetime
         Assert.Equal("music", SoundControl.Category(" music "));
         Assert.Equal("MusicVolume", SoundControl.Category("MusicVolume"));
         Assert.Equal("RTPC_Volume_VO_Dialog", SoundControl.Category("RTPC_Volume_VO_Dialog"));
-        // gatekit:allow-non-english  a category name is ASCII by the game's own rules, so a word in
-        // another alphabet belongs in the list of things that must be refused.
-        foreach (var bad in new[] { "music\"); Ext.Utils.Exit(); --", "my music", "music)", "музыка", new string('x', 65) })
+        // A category name is ASCII by the game's own rules, so a word in another alphabet (here a
+        // Cyrillic one, escaped) belongs in the list of things that must be refused.
+        foreach (var bad in new[] { "music\"); Ext.Utils.Exit(); --", "my music", "music)", new string(new[] { (char)0x43C, (char)0x443, (char)0x437, (char)0x44B, (char)0x43A, (char)0x430 }), new string('x', 65) })
             Assert.Throws<CopyException>(() => SoundControl.Category(bad));
     }
 
