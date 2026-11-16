@@ -870,6 +870,8 @@ function UI.Picture(name, controlName)
     if data then scalarsOf(data, picture.data, "", 0) end
     if element and controlName then picture.control = controlState(findElement(element, controlName)) end
     picture.present = element ~= nil
+    -- which controls the widget shows: a page turned inside one widget changes nothing else
+    if element and UI.Shown then picture.shown = UI.Shown(element) end
     return picture
 end
 
@@ -883,6 +885,7 @@ end
 function UI.Changed(before, after)
     local out = {}
     if before.present and not after.present then out[#out + 1] = "the window closed" end
+    if before.shown and after.shown and before.shown ~= after.shown then out[#out + 1] = "the controls shown changed" end
     if before.open ~= after.open then
         local a, b = setOf(before.open), setOf(after.open)
         for name in pairs(b) do if not a[name] then out[#out + 1] = name .. " opened" end end
@@ -907,7 +910,7 @@ end
 --- Wraps an acting verb's answer so the bridge answers with what it saw (GK.Observe): looks
 --- every third tick for a change of the picture; `within` ms of a running game (default 1500,
 --- longer for a chain with a delayed step) before it says nothing changed.
-function UI.ObserveEffect(result, name, controlName, before, within, hint)
+function UI.ObserveEffect(result, name, controlName, before, within, hint, seen)
     if not result.ok then return result end
     local lastLook = -1000
     return GK.Observe(result, function(ticks, final)
@@ -917,6 +920,7 @@ function UI.ObserveEffect(result, name, controlName, before, within, hint)
         local changed = UI.Changed(before, after)
         if #changed > 0 then
             result.saw = table.concat(changed, "; ")
+            if seen then seen(result) end
             return result
         end
         if not final then return nil end
@@ -932,11 +936,28 @@ end
 --- catalogue does not know runs its own Command with its own parameter. `which`: the n-th
 --- match when several fit (default 1).
 function UI.Click(name, what, which)
-    local listing = UI.Controls(name, (type(what) == "string" or type(what) == "table") and what or nil)
+    -- A handle of GK.Gui.Look names one control, whatever it is called or not called; an item's
+    -- handle ("list#3") is a selection.
+    local handled
+    if type(what) == "string" and which == nil then
+        local hit, number = UI.Handle(name, what)
+        if hit and number then return UI.Select(name, hit.handle, number) end
+        if hit and hit.kind == "list" then
+            return { ok = false, error = tostring(what) .. " is a list: GK.Gui.Select(window, list, item) chooses in it" }
+        end
+        if hit then
+            handled = { name = hit.name, kind = hit.type, element = hit.element, text = hit.handle,
+                        enabled = guard(function() return hit.element.IsEnabled end), toggle = hit.kind == "toggle",
+                        radio = hit.type:find("RadioButton", 1, true) ~= nil }
+        end
+    end
+    local listing = handled and { ok = true } or UI.Controls(name, (type(what) == "string" or type(what) == "table") and what or nil)
     if not listing.ok then return listing end
     local rows = UI.LastControls
     local row
-    if type(what) == "number" then
+    if handled then
+        row = handled
+    elseif type(what) == "number" then
         UI.Controls(name)  -- an index counts every control, not only the ones a filter kept
         rows = UI.LastControls
         row = rows[what]
@@ -988,6 +1009,7 @@ function UI.Click(name, what, which)
     local before = UI.Picture(name, row.name)
     local log = {}
     local delayed = 0
+    local toggled = false
     if entry and (entry.command or entry.click) then
         UI.LastDelayed = {}
         local _, later = runChain(entry, row.element, widget, log, widgetName(name), row.name)
@@ -1002,16 +1024,32 @@ function UI.Click(name, what, which)
         elseif row.kind:find("ListBoxItem", 1, true) then
             guard(function() row.element.IsSelected = true end)
             log[#log + 1] = "selected"
-        elseif guard(function() return row.element.IsChecked end) ~= nil then
+        elseif row.toggle or guard(function() return row.element.IsChecked end) ~= nil then
+            -- A toggle with no command: a click writes its IsChecked, and what is bound to the flag
+            -- follows (a panel's Visibility, a flag of the data). A radio button is chosen, never
+            -- unchosen, by a click.
             local checked = guard(function() return row.element.IsChecked end)
-            guard(function() row.element.IsChecked = not checked end)
-            log[#log + 1] = "toggled"
+            guard(function() row.element.IsChecked = row.radio and true or not checked end)
+            log[#log + 1] = row.radio and "chosen" or "toggled"
+            toggled = true
         else
             return { ok = false, error = "nothing to run on " .. tostring(row.name or row.text) }
         end
     end
     local result = { ok = true, control = row.name or row.text, steps = log, delayed = delayed > 0 and delayed or nil,
                      chain = entry and (entry.source or "catalog") or nil }
+    if toggled then
+        -- a toggle that hides itself by what it switches is still the control the picture reads
+        return UI.ObserveEffect(result, name, row.name, before, 1500,
+            "the toggle's IsChecked was written and nothing followed: on a Script Extender build that does not hand out a nullable flag the write is lost",
+            function(answer)
+                if type(what) ~= "string" then return end
+                local now = UI.Handle(name, what) or UI.Handle(name, what:sub(1, 1) == "~" and what:sub(2) or ("~" .. what))
+                if not now then return end
+                answer.value = guard(function() return now.element.IsChecked end)
+                if now.handle ~= what then answer.handle = now.handle end
+            end)
+    end
     if not (entry and (entry.command or entry.click)) then
         -- D20 of the day run: a control whose click chain is in neither GK.UICatalog nor the
         -- game's XAML runs only its own Command; the observation below says if that did anything.
@@ -1036,14 +1074,521 @@ local function length(collection)
     return i
 end
 
+-- Look: any widget as a player meets it ---------------------------------------------------------
+--
+-- One walk of a widget's visual tree finds everything a player could act on, by what each element
+-- is and never by a table of names: buttons, toggles (check boxes, radio buttons, toggle buttons),
+-- lists (list boxes, combo boxes, tab strips) with their items, sliders and text fields. Each gets
+-- a handle that the acting verbs take: its x:Name, or for an unnamed control the handle of what
+-- holds it and its kind ("hairPanel/LSButton"); a repeated handle is numbered in tree order
+-- ("Increase[3]"). A control inside an item of a list is held by that item ("classList#4/LSButton"),
+-- and an item itself is "<list>#<number>".
+
+local ITEM_TEXTS = { "Name", "Title", "DisplayName", "Label", "Header", "Text", "Description" }
+local ITEM_IDS = { "Guid", "UUID", "Id", "ID" }
+local NULL_GUID = "00000000-0000-0000-0000-000000000000"
+
+local function kindOf(typeName)
+    if typeName:find("ListBoxItem", 1, true) or typeName:find("ComboBoxItem", 1, true) or typeName:find("TabItem", 1, true) then return "item" end
+    if typeName:find("ListBox", 1, true) or typeName:find("ComboBox", 1, true) or typeName:find("TabControl", 1, true) then return "list" end
+    if typeName:find("Slider", 1, true) then return "slider" end
+    if typeName:find("TextBoxView", 1, true) then return nil end  -- the inside of a text box
+    if typeName:find("TextBox", 1, true) then return "text" end
+    if typeName:find("CheckBox", 1, true) or typeName:find("RadioButton", 1, true) or typeName:find("ToggleButton", 1, true) then return "toggle" end
+    if typeName:find("RepeatButton", 1, true) then return nil end  -- a part of a scroll bar or a slider
+    if typeName:find("Button", 1, true) then return "button" end
+    return nil
+end
+
+-- The text of a text block: its Text, or the game's own formatted source (ls:TextBlockFormatter).
+local function blockText(element)
+    local text = guard(function() return element.Text end)
+    if type(text) ~= "string" or text == "" or text == "[ForceUpdate]" then
+        local values = guard(function() return element:DependencyProperties() end)
+        text = type(values) == "table" and values.SourceText or nil
+    end
+    if type(text) ~= "string" or text == "" or text == "[ForceUpdate]" then return nil end
+    return readable(text)
+end
+
+-- The texts a player reads on an element: its text blocks, in tree order.
+local function textsWithin(element, most)
+    local out, stack, n = {}, { element }, 0
+    while #stack > 0 and n < 300 and #out < (most or 2) do
+        local e = table.remove(stack)
+        n = n + 1
+        local visibility = guard(function() return tostring(e.Visibility) end)
+        if visibility ~= "Collapsed" and visibility ~= "Hidden" then
+            if typeOf(e):find("TextBlock", 1, true) then
+                local text = blockText(e)
+                if text then out[#out + 1] = text end
+            end
+            local count = guard(function() return e.VisualChildrenCount end) or 0
+            for i = count, 1, -1 do
+                local child = guard(function() return e:VisualChild(i) end)
+                if child then stack[#stack + 1] = child end
+            end
+        end
+    end
+    return out
+end
+
+-- What a view model calls itself: the first of its naming properties that reads as a text.
+local function dataText(data)
+    if type(data) ~= "userdata" then return type(data) == "string" and readable(data) or nil end
+    for _, property in ipairs(ITEM_TEXTS) do
+        local value = readable(guard(function() return data[property] end))
+        if type(value) == "string" and value ~= "" then return value end
+    end
+    -- a view model that has no name of its own is called by the property named as it is
+    -- (ls.VMAbility.Ability, ls.VMSkill.Skill)
+    local own = typeOf(data):match("VM(%w+)$")
+    local value = own and guard(function() return data[own] end)
+    if value ~= nil and type(value) ~= "userdata" and tostring(value) ~= "" then return tostring(readable(value)) end
+    return nil
+end
+
+local function dataId(data)
+    if type(data) ~= "userdata" then return nil end
+    for _, property in ipairs(ITEM_IDS) do
+        local value = guard(function() return data[property] end)
+        if (type(value) == "string" and value ~= "" and value ~= NULL_GUID) or type(value) == "number" then return value end
+    end
+    return nil
+end
+
+-- The plain values of a view model: what tells one unnamed item from another (a colour, an index).
+local function dataScalars(data)
+    local ok, properties = pcall(function() return data:GetAllProperties() end)
+    if not ok or type(properties) ~= "table" then return nil end
+    local out, n = {}, 0
+    for key, value in pairs(properties) do
+        local kind = type(value)
+        if n < 24 and (kind == "boolean" or kind == "number" or (kind == "string" and #value < 80 and value ~= NULL_GUID)) then
+            if kind == "string" then value = readable(value) end
+            out[tostring(key)] = value
+            n = n + 1
+        end
+    end
+    return next(out) and out or nil
+end
+
+local function shortType(typeName) return (typeName:match("([%w_]+)$") or typeName) end
+
+-- The walk. Rows keep their elements; UI.Look strips them.
+local function survey(widget, options)
+    options = options or {}
+    local rows, seen, budget = {}, {}, 60000
+    local widgetData = typeOf(guard(function() return widget.DataContext end))
+    local function handleFor(base)
+        seen[base] = (seen[base] or 0) + 1
+        return seen[base] == 1 and base or (base .. "[" .. seen[base] .. "]")
+    end
+    local function walk(element, anchor, list, inItem, under, hidden)
+        if budget <= 0 then return end
+        budget = budget - 1
+        if not hidden then
+            local visibility = guard(function() return tostring(element.Visibility) end)
+            if visibility == "Collapsed" or visibility == "Hidden" then
+                if not options.all then
+                    -- an item that is not shown keeps its place in its list: the numbers are the list's own
+                    if list and kindOf(typeOf(element)) == "item" then
+                        list.containers[#list.containers + 1] = element
+                        list.hiddenItems = list.hiddenItems or {}
+                        list.hiddenItems[#list.containers] = true
+                    end
+                    return
+                end
+                -- what is not shown is numbered apart, under "~", so that the handles of what is
+                -- shown are the same with and without it
+                hidden = true
+                if anchor:sub(1, 1) ~= "~" then anchor = "~" .. anchor end
+            end
+        end
+        local typeName = typeOf(element)
+        if typeName:find("ScrollBar", 1, true) then return end
+        local name = guard(function() return element.Name end)
+        if name == "" then name = nil end
+        local kind = element ~= widget and kindOf(typeName) or nil
+        if kind == "item" then
+            if list then
+                list.containers[#list.containers + 1] = element
+                anchor, inItem = list.handle .. "#" .. #list.containers, true
+            else
+                kind = "button"  -- an item outside any list is pressed like a button
+            end
+        end
+        local made
+        if kind and kind ~= "item" then
+            made = { kind = kind, type = typeName, name = name, element = element, hidden = hidden or nil,
+                     handle = handleFor(name and ((hidden and "~" or "") .. name) or (anchor .. "/" .. shortType(typeName))) }
+            if options.under and (name == options.under or made.handle == options.under) then under = true end
+            made.under = under
+            if kind == "list" then
+                made.containers = {}
+                list, inItem = made, false
+            end
+            rows[#rows + 1] = made
+            anchor = made.handle
+        elseif name and not inItem then
+            anchor = (hidden and "~" or "") .. name
+        end
+        if options.under and name == options.under then under = true end
+        local count = guard(function() return element.VisualChildrenCount end) or 0
+        for i = 1, count do
+            local child = guard(function() return element:VisualChild(i) end)
+            if child then walk(child, anchor, list, inItem, under, hidden) end
+        end
+    end
+    walk(widget, widgetName(guard(function() return widget.Name end) or "widget"), nil, false, not options.under)
+    return rows, widgetData
+end
+
+-- The handles of the controls a widget shows, as one text (UI.Picture compares two of them).
+function UI.Shown(widget)
+    local handles = {}
+    for i, row in ipairs(survey(widget)) do handles[i] = row.handle end
+    return table.concat(handles, ",")
+end
+
+-- The items of a list: its ItemsSource or Items where they count, else the item elements it shows.
+local function listItems(row)
+    local box = row.element
+    local items, count = nil, 0
+    for _, source in ipairs({ "ItemsSource", "Items" }) do
+        local candidate = guard(function() return box[source] end)
+        local n = length(candidate)
+        if type(n) == "number" and n > count then items, count = candidate, n end
+        if count > 0 then break end
+    end
+    local out = {}
+    if count > 0 and guard(function() return items[1] end) == nil then
+        -- The list hands its source out as a bare object that counts and cannot be indexed, while
+        -- the view model hands the same object out as a collection: it is found there by its address.
+        local address = tostring(items):match("%((%x+)%)")
+        local context = guard(function() return box.DataContext end)
+        local ok, properties = pcall(function() return context:GetAllProperties() end)
+        if address and ok and type(properties) == "table" then
+            for _, value in pairs(properties) do
+                if type(value) == "userdata" and tostring(value):match("%((%x+)%)") == address
+                    and guard(function() return value[1] end) ~= nil then
+                    items = value
+                    break
+                end
+            end
+        end
+    end
+    -- a source that still cannot be indexed (a filtered or sorted view) is read by what it shows
+    if count > 0 and guard(function() return items[1] end) ~= nil then
+        for i = 1, count do out[i] = guard(function() return items[i] end) end
+        return out, "source"
+    end
+    for i, container in ipairs(row.containers or {}) do
+        -- an item written in the XAML is its own element; a generated one stands for its data
+        local own = guard(function() return container.Name end)
+        out[i] = (own == nil or own == "") and guard(function() return container.DataContext end) or container
+    end
+    return out, "shown", count
+end
+
+local function describeItem(item, container, n, detail)
+    local out = { n = n }
+    local isElement = type(item) == "userdata" and guard(function() return item.VisualChildrenCount end) ~= nil
+    if isElement then
+        local elementName = guard(function() return item.Name end)
+        out.name = elementName ~= "" and elementName or nil
+        local texts = textsWithin(item, 2)
+        out.text = texts[1]
+        out.value = texts[2]
+        out.enabled = guard(function() return item.IsEnabled end)
+    else
+        out.text = dataText(item)
+        out.id = dataId(item)
+        out.type = type(item) == "userdata" and typeOf(item) or nil
+        if type(item) ~= "userdata" and item ~= nil then out.text = tostring(readable(item)) end
+        if not out.text and container then out.text = textsWithin(container, 1)[1] end
+        if container then out.enabled = guard(function() return container.IsEnabled end) end
+        if detail and type(item) == "userdata" then out.data = dataScalars(item) end
+    end
+    if out.enabled == true then out.enabled = nil end
+    return out
+end
+
+-- Whether a toggle is on, and where that was read: its own IsChecked, a nullable flag that reads
+-- true, false or nil (neither) on GateKit's Script Extender and nil whatever it holds on a build
+-- that does not hand it out; when it is nil, the flag `Value` of the view model the toggle stands
+-- for (a tick box of the game's settings binds its IsChecked to it), when that view model is not
+-- the widget's own.
+local function toggleState(element, widgetData)
+    local checked = guard(function() return element.IsChecked end)
+    if type(checked) == "boolean" then return checked, "IsChecked" end
+    local context = guard(function() return element.DataContext end)
+    if type(context) == "userdata" and typeOf(context) ~= widgetData then
+        local value = guard(function() return context.Value end)
+        if type(value) == "boolean" then return value, "data.Value", context end
+    end
+    return nil
+end
+
+local function describeRow(row, widgetData, options)
+    local element = row.element
+    local out = { handle = row.handle, kind = row.kind, type = row.type, hidden = row.hidden }
+    local enabled = guard(function() return element.IsEnabled end)
+    if enabled == false then out.enabled = false end
+    local context = guard(function() return element.DataContext end)
+    local contextType = context and typeOf(context) or nil
+    if contextType and contextType ~= widgetData and contextType ~= "ui::DCWidget" then
+        out.data = contextType
+        out.of = dataText(context)
+        if options.detail then out.dataValues = dataScalars(context) end
+    end
+    if row.kind == "list" then
+        local items, from, total = listItems(row)
+        local selected = guard(function() return element.SelectedIndex end)
+        out.count = #items
+        -- a list read by what it shows may hold more than it has drawn
+        if from == "shown" and total and total > #items then out.notShown = total - #items end
+        if type(selected) == "number" and selected >= 0 then
+            out.selected = selected + 1
+            if items[selected + 1] ~= nil then out.value = describeItem(items[selected + 1], row.containers[selected + 1], selected + 1).text end
+        end
+        local cap = options.items or 12
+        out.items = {}
+        local shown = 0
+        for i = 1, #items do
+            local hiddenItem = from == "shown" and row.hiddenItems and row.hiddenItems[i]
+            if not hiddenItem or options.all then
+                shown = shown + 1
+                if #out.items < cap then
+                    local described = describeItem(items[i], from == "shown" and row.containers[i] or nil, i, options.detail)
+                    described.hidden = hiddenItem or nil
+                    out.items[#out.items + 1] = described
+                end
+            end
+        end
+        out.count = shown
+        if shown > #out.items then out.more = shown - #out.items end
+    else
+        local content = guard(function() return element.Content end)
+        out.text = type(content) == "string" and content ~= "" and readable(content) or textsWithin(element, 1)[1]
+        if row.kind == "toggle" then
+            -- the toggle's own IsChecked when it reads, else the flag of the toggle's own data
+            local checked, from = toggleState(element, widgetData)
+            if type(checked) == "boolean" then
+                out.value = checked
+                if from ~= "IsChecked" then out.valueFrom = from end
+            else
+                out.unread = "IsChecked"
+            end
+        elseif row.kind == "slider" then
+            out.value = guard(function() return element.Value end)
+            out.min = guard(function() return element.Minimum end)
+            out.max = guard(function() return element.Maximum end)
+        elseif row.kind == "text" then
+            out.value = guard(function() return element.Text end)
+        end
+        local command = guard(function() return element.Command end)
+        if command then
+            local parameter = guard(function() return element.CommandParameter end)
+            if type(parameter) == "string" or type(parameter) == "number" or type(parameter) == "boolean" then out.parameter = parameter end
+            local boxed = parameter
+            if type(boxed) ~= "userdata" and boxed ~= nil then boxed = guard(function() return Ext.UI.Box(boxed) end) end
+            local known, can = pcall(function() return command:CanExecute(boxed) end)
+            if known and can == false then out.enabled = false end
+        end
+        out.command = command ~= nil or nil
+    end
+    return out
+end
+
+--- Everything a player could act on in an open widget: { ok, widget, controls = { { handle, kind
+--- ("button", "toggle", "list", "slider", "text"), type, text, value, enabled (false only), data and
+--- of (the view model the control stands for, when it is not the widget's own), and for a list:
+--- count, selected, items = { { n, text, id, name, enabled } } } } }. options: under (a handle or
+--- an element's x:Name: only what lies inside it), kind, find (part of a handle or a text), items
+--- (how many items of a list are written out, default 12), detail (the plain values of each
+--- control's and item's data), all (hidden controls too; their handles are numbered apart).
+function UI.Look(name, options)
+    local widget = UI.Widget(name)
+    if not widget then return { ok = false, error = "not open: " .. tostring(name) } end
+    if type(options) == "string" then options = { find = options } end
+    options = options or {}
+    local rows, widgetData = survey(widget, options)
+    local out = {}
+    local wanted = options.find and GK.Fold(options.find)
+    for _, row in ipairs(rows) do
+        if row.under and (not options.kind or options.kind == row.kind) then
+            local described = describeRow(row, widgetData, options)
+            local fits = not wanted or GK.Fold(described.handle):find(wanted, 1, true)
+                or (described.text and GK.Fold(tostring(described.text)):find(wanted, 1, true))
+                or (described.of and GK.Fold(tostring(described.of)):find(wanted, 1, true))
+            if fits then out[#out + 1] = described end
+        end
+    end
+    return { ok = true, widget = widgetName(name), data = widgetData, controls = out }
+end
+
+--- The row of a handle of GK.Gui.Look: { kind, type, name, handle, element, containers }, and for an
+--- item's handle ("list#3") the list's row and the item's number; nil and why when nothing has it.
+function UI.Handle(name, handle)
+    local widget = UI.Widget(name)
+    if not widget then return nil, "not open: " .. tostring(name) end
+    local listHandle, number = tostring(handle):match("^(.*)#(%d+)$")
+    local rows = survey(widget, { all = tostring(handle):sub(1, 1) == "~" })
+    for _, row in ipairs(rows) do
+        if row.handle == handle then return row end
+        if listHandle and row.handle == listHandle and row.kind == "list" then return row, tonumber(number) end
+    end
+    return nil, "no control " .. tostring(handle) .. " in " .. tostring(name) .. " (GK.Gui.Look lists the handles)"
+end
+
+-- A control found again after an act that may have hidden or shown it: by its handle, else by the
+-- same handle with or without the "~" of what is not shown.
+local function controlAgain(name, handle)
+    local row = UI.Handle(name, handle)
+    if row then return row end
+    handle = tostring(handle)
+    return (UI.Handle(name, handle:sub(1, 1) == "~" and handle:sub(2) or ("~" .. handle)))
+end
+
+--- Sets a control of an open widget to a value, as the player's hand on it would: a slider to a
+--- number inside its range, a toggle to true or false (through its own command when it has one), a
+--- text field to a text, a list to an item (as GK.Gui.Select). Answers what the control reads
+--- afterwards: { ok, before, after }.
+function UI.Set(name, handle, value)
+    local row, problem = UI.Handle(name, handle)
+    if not row then return { ok = false, error = problem } end
+    local element = row.element
+    if guard(function() return element.IsEnabled end) == false then
+        return { ok = false, error = "disabled: " .. tostring(handle) }
+    end
+    if row.kind == "list" then return UI.Select(name, handle, value) end
+    if row.kind == "slider" then
+        if type(value) ~= "number" then return { ok = false, error = "a slider takes a number" } end
+        local low, high = guard(function() return element.Minimum end), guard(function() return element.Maximum end)
+        if (low and value < low) or (high and value > high) then
+            return { ok = false, error = "outside the slider's range", min = low, max = high }
+        end
+        local before = guard(function() return element.Value end)
+        local _, failed = guard(function() element.Value = value end)
+        local after = guard(function() return element.Value end)
+        return { ok = failed == nil and type(after) == "number" and math.abs(after - value) < 1e-4, before = before, after = after, error = failed }
+    elseif row.kind == "toggle" then
+        local state, from, context = toggleState(element, typeOf(UI.Data(name)))
+        if from == "data.Value" then
+            -- The toggle's state is the flag of its data: a click writes it through the binding and
+            -- then runs the toggle's chain. The same two things are done here, in that order.
+            if state == (value == true) then return { ok = true, before = state, after = state, already = true, from = from } end
+            local _, failed = guard(function() context.Value = value == true end)
+            if failed then return { ok = false, error = failed, from = from } end
+            local pressed = UI.Click(name, handle)
+            -- the view model takes the write a frame later: the flag is read again until it holds
+            local result = { ok = true, before = state, from = from, steps = pressed and pressed.steps }
+            return GK.Observe(result, function(ticks, final)
+                local now = UI.Handle(name, handle)
+                local after = now and toggleState(now.element, typeOf(UI.Data(name)))
+                if after ~= (value == true) and not final then return nil end
+                result.ok, result.after = after == (value == true), after
+                return result
+            end, 1500)
+        end
+        local before = state == true
+        if before == (value == true) then return { ok = true, before = before, after = before, already = true } end
+        local pressed = UI.Click(name, handle)
+        if type(pressed) ~= "table" or (pressed.ok == false and pressed.error) then return pressed end
+        -- A toggle may hide itself by what it switches (a colour swatch is not shown while its panel
+        -- is): it is found again under either form of its handle, and the answer names the one it has.
+        local result = { ok = true, before = before, steps = pressed.steps }
+        return GK.Observe(result, function(ticks, final)
+            local now = controlAgain(name, handle)
+            local after = now and guard(function() return now.element.IsChecked end)
+            if after ~= (value == true) and not final then return nil end
+            result.ok, result.after = after == (value == true), after
+            if now and now.handle ~= handle then result.handle = now.handle end
+            if type(after) ~= "boolean" then
+                result.error = now and "the toggle's IsChecked does not read: this Script Extender build does not hand out a nullable flag"
+                    or ("no control " .. tostring(handle) .. " after the press")
+            end
+            return result
+        end, 1500)
+    elseif row.kind == "text" then
+        local before = guard(function() return element.Text end)
+        local _, failed = guard(function() element.Text = tostring(value) end)
+        local after = guard(function() return element.Text end)
+        return { ok = failed == nil and after == tostring(value), before = before, after = after, error = failed }
+    end
+    return { ok = false, error = tostring(handle) .. " is a " .. tostring(row.kind) .. ": GK.Gui.Click presses it" }
+end
+
 --- Selects an item of a list (ListBox, tab strip ...) of an open widget, as a click on the item
---- would: `list` is the list's x:Name, `item` its number (1-based), part of its text, or the item
---- itself (a userdata read from the view model, e.g. GK.Gui.Data(w):GetProperty("SelectableRaces")[i]).
+--- would: `list` is the list's handle (GK.Gui.Look) or x:Name, `item` its number (1-based), part of
+--- its text, its id (a Guid), or the item itself (a userdata read from the view model, e.g.
+--- GK.Gui.Data(w):GetProperty("SelectableRaces")[i]).
 function UI.Select(name, list, item)
     local widget = UI.Widget(name)
     if not widget then return { ok = false, error = "not open: " .. tostring(name) } end
     local box = findElement(widget, list)
+    local row
+    if not box or kindOf(typeOf(box)) ~= "list" then
+        row = UI.Handle(name, list)
+        box = row and row.kind == "list" and row.element or box
+    end
     if not box then return { ok = false, error = "no list " .. tostring(list) .. " in " .. tostring(name) } end
+    if type(item) ~= "userdata" then
+        -- by what GK.Gui.Look shows: the same items, the same numbers; a list whose source cannot
+        -- be counted takes the item its shown element stands for
+        row = row or UI.Handle(name, list)
+        if row and row.kind == "list" then
+            local items, from = listItems(row)
+            local index = type(item) == "number" and item or nil
+            if not index and type(item) == "string" then
+                local wanted = GK.Fold(item)
+                for pass = 1, 2 do
+                    for i = 1, #items do
+                        local described = describeItem(items[i], from == "shown" and row.containers[i] or nil, i)
+                        local exact = described.id == item or described.name == item or (described.text and GK.Fold(described.text) == wanted)
+                        if exact or (pass == 2 and described.text and GK.Fold(described.text):find(wanted, 1, true)) then index = i break end
+                    end
+                    if index then break end
+                end
+            end
+            if not index or index < 1 or index > #items then
+                return { ok = false, error = "no item " .. tostring(item) .. " (the list has " .. #items .. ")" }
+            end
+            if from == "shown" and row.hiddenItems and row.hiddenItems[index] then
+                return { ok = false, error = "item " .. index .. " of " .. tostring(row.handle) .. " is not shown: a player cannot choose it now" }
+            end
+            if guard(function() return box.IsEnabled end) == false then
+                return { ok = false, error = "disabled: " .. tostring(row.handle) }
+            end
+            local shownAs = #row.containers == #items and row.containers[index] or nil
+            if shownAs and guard(function() return shownAs.IsEnabled end) == false then
+                return { ok = false, error = "item " .. index .. " of " .. tostring(row.handle) .. " is disabled" }
+            end
+            local before = UI.Picture(name)
+            local selectedBefore = guard(function() return box.SelectedIndex end)
+            local _, failed = guard(function() box.SelectedIndex = index - 1 end)
+            if guard(function() return box.SelectedIndex end) ~= index - 1 then
+                local chosen = items[index]
+                if guard(function() return chosen.VisualChildrenCount end) ~= nil then
+                    _, failed = guard(function() chosen.IsSelected = true end)
+                else
+                    _, failed = guard(function() box.SelectedItem = chosen end)
+                end
+            end
+            -- The list is read again by its handle: the game's own handler of a selection may
+            -- rebuild the list, and the element held here then answers for a list that is gone.
+            local again = UI.Handle(name, row.handle)
+            local now = again and guard(function() return again.element.SelectedIndex end)
+            local result = { ok = true, selected = index, of = #items, was = selectedBefore and selectedBefore + 1 or nil,
+                             reads = now and now + 1 or nil, warning = failed,
+                             text = describeItem(items[index], from == "shown" and row.containers[index] or nil, index).text }
+            if now == index - 1 then return result end
+            -- a list that does not keep its selection (a row of buttons) is judged by what the window shows
+            return UI.ObserveEffect(result, name, nil, before, 1500,
+                "the list does not read the item as selected and the window shows no change")
+        end
+    end
     -- The items are wherever a count can be read: a list bound to a view model (the races of
     -- character creation) may hand out an Items that has no length, while its ItemsSource - the
     -- same collection GK.Gui.Read counts - has one. The first source that counts more than
@@ -1825,6 +2370,445 @@ function UI.NewGame()
             return { ok = false, error = "New Game was pressed and the new-game settings did not open", state = clientState() }
         end
     end, 3000)
+end
+
+-- Tooltips: read as a chain, opened, pinned and closed by handle -------------------------------
+--
+-- How the game shows a tooltip. An element (or an inline of a text: a keyword in a description)
+-- carries its tooltip in the UI library's own ToolTip property, an ls.LSTooltip. A hover of the
+-- pointer sets the tooltip's IsOpen after the library's delay, and the tooltip is then drawn in a
+-- popup layer above the canvas, outside every widget; for an inline the game's tooltip also records
+-- which inline and which text block it belongs to (Inline, InlineParent) and makes its content
+-- from them. The input event UIPinTooltip moves the open tooltip into the list of pinned ones
+-- (ls.UIWidget.PinnedTooltipList, shown by the widget PinnedTooltips as ls.LSElementCopy elements):
+-- a pinned tooltip stays, takes the pointer, and a link inside it opens the next tooltip, which
+-- can be pinned in turn. A pinned tooltip's PlacementTarget is the element it was called from, so
+-- the chain is read from where each target lies.
+
+local function addressOf(object)
+    return object ~= nil and tostring(object):match("%((%x+)%)") or nil
+end
+
+-- The top of the UI tree: popup layers hang there, beside the canvas that holds the widgets.
+local function topVisual()
+    local element, steps = guard(function() return Ext.UI.GetRoot() end), 0
+    while element and steps < 16 do
+        local parent = guard(function() return element.VisualParent end)
+        if not parent then break end
+        element, steps = parent, steps + 1
+    end
+    return element
+end
+
+-- The tooltips a hover holds open: every tooltip element of a popup layer.
+local function hoverTips()
+    local out = {}
+    local function walk(element, depth)
+        if depth > 6 then return end
+        local typeName = typeOf(element)
+        if typeName == "ls.UICanvas" then return end
+        if typeName:find("Tooltip", 1, true) or typeName:find("ToolTip", 1, true) then out[#out + 1] = element return end
+        for i = 1, guard(function() return element.VisualChildrenCount end) or 0 do
+            local child = guard(function() return element:VisualChild(i) end)
+            if child then walk(child, depth + 1) end
+        end
+    end
+    local top = topVisual()
+    if top then walk(top, 0) end
+    return out
+end
+
+-- The pinned tooltips: the list every widget may keep (the game's PinnedTooltips widget does).
+-- Each is { shown, listed }: the widget draws a copy of its own (an ls.LSElementCopy in its tree,
+-- which holds the texts) for every element of the list (which holds the PlacementTarget); the two
+-- are paired by the content they share, else by their order.
+local function pinnedTips()
+    local out, holder = {}, nil
+    for _, open in ipairs(UI.Open()) do
+        local widget = UI.Widget(open.name)
+        local list = widget and guard(function() return widget.PinnedTooltipList end)
+        local count = list and guard(function() return #list end) or 0
+        if count > 0 then
+            holder = widget
+            local shown, stack, budget = {}, { widget }, 4000
+            while #stack > 0 and budget > 0 do
+                local e = table.remove(stack)
+                budget = budget - 1
+                if typeOf(e):find("ElementCopy", 1, true) then
+                    shown[#shown + 1] = e
+                else
+                    for i = guard(function() return e.VisualChildrenCount end) or 0, 1, -1 do
+                        local child = guard(function() return e:VisualChild(i) end)
+                        if child then stack[#stack + 1] = child end
+                    end
+                end
+            end
+            local taken = {}
+            for i = 1, count do
+                local listed = guard(function() return list[i] end)
+                local content = listed and addressOf(guard(function() return listed.Content end))
+                local pair
+                for k, e in ipairs(shown) do
+                    if not taken[k] and content and addressOf(guard(function() return e.Content end)) == content then pair = k break end
+                end
+                if not pair and shown[i] and not taken[i] then pair = i end
+                if pair then taken[pair] = true end
+                if listed then out[#out + 1] = { shown = pair and shown[pair] or listed, listed = listed } end
+            end
+        end
+    end
+    return out, holder
+end
+
+-- The text of a run of inlines, and the inlines among them that carry a tooltip of their own.
+local function readInlines(list, acc, links, block)
+    for i = 1, guard(function() return #list end) or 0 do
+        local run = guard(function() return list[i] end)
+        if run then
+            local start = #acc
+            local text = guard(function() return run.Text end)
+            if type(text) == "string" then acc[#acc + 1] = text end
+            local inner = guard(function() return run.Inlines end)
+            if inner then readInlines(inner, acc, links, block) end
+            if guard(function() return run.ToolTip end) ~= nil then
+                links[#links + 1] = { inline = run, block = block, text = table.concat(acc, "", start + 1) }
+            end
+        end
+    end
+end
+
+-- What a tooltip shows: its texts in tree order, each under the name of the part it lies in, and
+-- its links - the inlines and elements inside it that carry a tooltip.
+local function readTip(element)
+    local texts, links, hints, budget = {}, {}, {}, 4000
+    local into = texts
+    local function walk(e, part, depth)
+        if budget <= 0 then return end
+        budget = budget - 1
+        local visibility = guard(function() return tostring(e.Visibility) end)
+        if visibility == "Collapsed" or visibility == "Hidden" then return end
+        local name = guard(function() return e.Name end)
+        if type(name) == "string" and name ~= "" then part = name end
+        -- the key hint the game's tooltip template draws above a tooltip ("T Pin") is not its content
+        if name == "uiHintContainer" then
+            into = hints
+            for i = 1, guard(function() return e.VisualChildrenCount end) or 0 do
+                local child = guard(function() return e:VisualChild(i) end)
+                if child then walk(child, part, depth + 1) end
+            end
+            into = texts
+            return
+        end
+        if typeOf(e):find("TextBlock", 1, true) then
+            local acc = {}
+            local inlines = guard(function() return e.Inlines end)
+            if inlines then readInlines(inlines, acc, links, e) end
+            local text = table.concat(acc)
+            if text == "" then text = guard(function() return e.Text end) or "" end
+            text = tostring(text):gsub("%s+", " "):gsub("^ ", ""):gsub(" $", "")
+            if text ~= "" and text ~= "[ForceUpdate]" then into[#into + 1] = { part = part, text = readable(text) } end
+        elseif depth > 0 and guard(function() return e.ToolTip end) ~= nil then
+            -- an element with a tooltip of its own (a cost, a property, a status icon): named by
+            -- the first text it shows, which the walk below adds after it
+            links[#links + 1] = { element = e, part = part, textAt = #into + 1, from = into }
+        end
+        for i = 1, guard(function() return e.VisualChildrenCount end) or 0 do
+            local child = guard(function() return e:VisualChild(i) end)
+            if child then walk(child, part, depth + 1) end
+        end
+    end
+    walk(element, nil, 0)
+    for _, link in ipairs(links) do
+        if link.element then
+            local row = link.from[link.textAt]
+            link.text = row and row.text or link.part
+            link.from = nil
+        end
+    end
+    local hint = {}
+    for i, row in ipairs(hints) do hint[i] = row.text end
+    return texts, links, #hint > 0 and table.concat(hint, " ") or nil
+end
+
+-- What a tooltip is about: the view model it was given (an action, an item, an ability ...).
+local function aboutOf(content, detail)
+    if type(content) ~= "userdata" then
+        if content == nil then return nil end
+        return { text = readable(tostring(content)) }
+    end
+    return { type = typeOf(content), of = dataText(content), id = dataId(content),
+             spell = guard(UI.ActionOf, content), values = detail and dataScalars(content) or nil }
+end
+
+-- The open tooltips in order: the pinned ones as the game lists them, then what a hover holds.
+-- Each entry keeps its element and the elements of its links; stripTips takes them off.
+local function tipChain(detail)
+    local chain, numberOf = {}, {}
+    local pinned, holder = pinnedTips()
+    local function add(element, isPinned, listed)
+        local n = #chain + 1
+        local texts, links, hint = readTip(element)
+        local entry = { n = n, handle = "tip#" .. n, pinned = isPinned, type = typeOf(element), element = element,
+                        about = aboutOf(guard(function() return element.Content end), detail), hint = hint,
+                        title = texts[1] and texts[1].text or nil, texts = texts, links = {}, linkRefs = links, listed = listed }
+        local data = guard(function() return element.Data end)
+        if type(data) == "userdata" then entry.data = typeOf(data) end
+        local context = guard(function() return element:DependencyProperties().Context end)
+        if type(context) == "string" and context ~= "" then entry.context = context end
+        for k, link in ipairs(links) do
+            local carrier = link.inline or link.element
+            local described = { handle = entry.handle .. "/link#" .. k, text = readable(link.text) }
+            local tag = guard(function() return carrier:DependencyProperties().TagTooltip end)
+            if type(tag) == "string" and tag ~= "" then described.tag = tag end
+            local linked = guard(function() return carrier.DataContext end)
+            if type(linked) == "userdata" then
+                described.data = typeOf(linked)
+                described.of = dataText(linked)
+            end
+            entry.links[k] = described
+        end
+        chain[n] = entry
+        local address = addressOf(element)
+        if address then numberOf[address] = n end
+    end
+    for _, copy in ipairs(pinned) do add(copy.shown, true, copy.listed) end
+    for _, tip in ipairs(hoverTips()) do add(tip, false) end
+    -- the parent: the tooltip whose tree holds the element this one was called from
+    for _, entry in ipairs(chain) do
+        local element = entry.listed or entry.element
+        local target = guard(function() return element.PlacementTarget end) or guard(function() return element.InlineParent end)
+        local first, steps = target, 0
+        while target and steps < 80 do
+            local above = numberOf[addressOf(target) or ""]
+            if above and above ~= entry.n then entry.parent = "tip#" .. above break end
+            if typeOf(target) == "ls.UIWidget" then
+                entry.owner = { widget = guard(function() return target.Name end),
+                                element = typeOf(first) .. "#" .. tostring(guard(function() return first.Name end) or "") }
+                break
+            end
+            target, steps = guard(function() return target.VisualParent end), steps + 1
+        end
+    end
+    return chain, holder
+end
+
+local function stripTips(chain)
+    local out = {}
+    for i, entry in ipairs(chain) do
+        local copy = {}
+        for key, value in pairs(entry) do
+            if key ~= "element" and key ~= "linkRefs" and key ~= "listed" then copy[key] = value end
+        end
+        out[i] = copy
+    end
+    return out
+end
+
+--- The open tooltips as a chain: { ok, tips = { { n, handle ("tip#1"), pinned, type, about = { type,
+--- of, id, spell, values (options.detail) } (the view model the tooltip was given), data (the type
+--- of the tooltip's own data), context, hint (the key hint above it), title, texts = { { part,
+--- text } }, links = { { handle ("tip#1/link#2"), text, tag, data, of } }, parent (the handle of
+--- the tooltip it was called from) or owner = { widget, element } (where in a window it was called
+--- from) } } }. Pinned ones come first, in the game's order; what a hover holds open comes last.
+function UI.Tips(options)
+    return { ok = true, tips = stripTips((tipChain(type(options) == "table" and options.detail))) }
+end
+
+-- The element that carries the tooltip of a control: the control, else the first element inside
+-- it that has one (a hotbar slot's tooltip sits on a grid inside the slot's button), else the
+-- nearest above it.
+local function carrierOf(element)
+    if guard(function() return element.ToolTip end) ~= nil then return element end
+    local queue, head = { element }, 1
+    while queue[head] and head < 600 do
+        local e = queue[head]
+        head = head + 1
+        if head > 2 and guard(function() return e.ToolTip end) ~= nil then return e end
+        for i = 1, guard(function() return e.VisualChildrenCount end) or 0 do
+            local child = guard(function() return e:VisualChild(i) end)
+            if child then queue[#queue + 1] = child end
+        end
+    end
+    local above, steps = guard(function() return element.VisualParent end), 0
+    while above and steps < 6 and typeOf(above) ~= "ls.UIWidget" do
+        if guard(function() return above.ToolTip end) ~= nil then return above end
+        above, steps = guard(function() return above.VisualParent end), steps + 1
+    end
+    return nil
+end
+
+--- Calls up a tooltip as a hover does, with no pointer: GK.Gui.Tip(window, control) for a control
+--- of an open widget (a handle of GK.Gui.Look or an x:Name), GK.Gui.Tip("tip#1/link#2") for a link
+--- inside an open tooltip. The tooltip's own IsOpen is set, which is what the UI library sets when
+--- its hover delay has passed; another tooltip a hover held open is closed first, as it is when
+--- the pointer moves on. Answers { ok, tip = <the entry of GK.Gui.Tips>, open = how many stand }
+--- when the tooltip stands open with its content, ok = false and what was seen otherwise.
+function UI.Tip(name, handle)
+    local carrier, inline, block
+    local tipHandle, linkNumber = tostring(name):match("^(tip#%d+)/link#(%d+)$")
+    if tipHandle then
+        local link
+        for _, entry in ipairs((tipChain())) do
+            if entry.handle == tipHandle then link = entry.linkRefs[tonumber(linkNumber)] end
+        end
+        if not link then return { ok = false, error = "no link " .. tostring(name) .. " (GK.Gui.Tips lists the open tooltips and their links)" } end
+        inline, block, carrier = link.inline, link.block, link.inline or link.element
+    else
+        local row, problem = UI.Handle(name, handle)
+        local element = row and row.element
+        -- an item of a list ("list#3") is the element the list shows for it
+        if row and type(problem) == "number" then element, problem = row.containers and row.containers[problem], nil end
+        if not element then
+            local widget = UI.Widget(name)
+            element = widget and findElement(widget, handle)
+        end
+        if not element then return { ok = false, error = problem or ("no control " .. tostring(handle) .. " in " .. tostring(name)) } end
+        carrier = carrierOf(element)
+        if not carrier then return { ok = false, error = tostring(handle) .. " carries no tooltip" } end
+    end
+    local tip = guard(function() return carrier.ToolTip end)
+    if type(tip) ~= "userdata" then
+        return { ok = true, did = "read", tip = { about = { text = readable(tostring(tip)) }, title = readable(tostring(tip)) },
+                 saw = "the tooltip is a plain text and opens no window of its own here" }
+    end
+    local wanted = addressOf(tip)
+    for _, open in ipairs(hoverTips()) do
+        if addressOf(open) ~= wanted then guard(function() open.IsOpen = false end) end
+    end
+    if inline then
+        guard(function() tip.Inline = inline end)
+        guard(function() tip.InlineParent = block end)
+    end
+    local _, failed = guard(function() tip.IsOpen = true end)
+    if failed then return { ok = false, error = "the tooltip did not open: " .. failed } end
+    -- the tooltip builds its content over a few frames: it is answered when two looks read the same
+    local texts = -1
+    return GK.Observe({ ok = true, did = "opened" }, function(ticks, final)
+        local chain = tipChain()
+        for _, entry in ipairs(chain) do
+            if not entry.pinned and addressOf(entry.element) == wanted and (entry.title or entry.about) then
+                if #entry.texts ~= texts and not final then texts = #entry.texts return nil end
+                return { ok = true, did = "opened", tip = stripTips(chain)[entry.n], open = #chain }
+            end
+        end
+        if not final then return nil end
+        return { ok = false, did = "set the tooltip's IsOpen", saw = "no tooltip stands open",
+                 hint = "the control's tooltip may be switched off (ToolTipService.IsEnabled) or have nothing to show" }
+    end, 1500)
+end
+
+-- The key the profile binds to an input event, from the input scheme's table of raw inputs (each
+-- raw input lists the events bound to it): the scan code's name and its modifier, or nil and why.
+local function keyOfEvent(eventName)
+    local manager = guard(function() return Ext.Input.GetInputManager() end)
+    if not manager then return nil, "the input manager is not there" end
+    local id
+    for _, definition in pairs(manager.InputDefinitions) do
+        if tostring(definition.EventName) == eventName then id = definition.EventID break end
+    end
+    if not id then return nil, "the game has no input event " .. eventName end
+    for _, mapping in ipairs(manager.InputScheme.RawToBinding) do
+        local plain = guard(function() return Ext.Types.Serialize(mapping) end)
+        for _, bound in ipairs(plain and plain.Bindings or {}) do
+            local binding = bound.Binding
+            if bound.InputIndex == id and binding and binding.DeviceId == 0 then
+                local code = GK.ScanCode(tostring(binding.InputId))
+                if code then return code, binding.Modifiers and binding.Modifiers[1] and tostring(binding.Modifiers[1]) or nil end
+            end
+        end
+    end
+    return nil, "no key is bound to " .. eventName .. " in the profile"
+end
+
+local function pinnedCount(chain)
+    local n = 0
+    for _, entry in ipairs(chain) do if entry.pinned then n = n + 1 end end
+    return n
+end
+
+--- Pins the tooltip a hover holds open, as the player's key does: the key the profile binds to the
+--- game's input event UIPinTooltip, pressed in the game's own input. Answers { ok, pinned = <the
+--- entry>, open } when the game's list of pinned tooltips grew and the pinned one shows its texts,
+--- ok = false and what was seen otherwise (nothing open, or a tooltip the game does not pin).
+function UI.PinTip()
+    local before = tipChain()
+    local open
+    for _, entry in ipairs(before) do if not entry.pinned then open = entry end end
+    if not open then return { ok = false, did = "nothing", error = "no tooltip is open: GK.Gui.Tip(window, control) calls one up" } end
+    local key, modifier = keyOfEvent("UIPinTooltip")
+    if not key then return { ok = false, did = "nothing", error = modifier } end
+    local had = pinnedCount(before)
+    local pressed, problem = pcall(GK.Key, key, modifier)
+    if not pressed then return { ok = false, did = "nothing", error = "the key was not pressed: " .. tostring(problem) } end
+    local did = "pressed " .. key .. (modifier and ("+" .. modifier) or "")
+    -- The pinned copy is drawn a few frames after the list grew: it is answered when it shows its
+    -- texts. No pointer leaves the tooltip that was pinned, so it is closed here as a pointer
+    -- moving off would close it.
+    local closed = false
+    return GK.Observe({ ok = true, did = did }, function(ticks, final)
+        local chain = tipChain()
+        if pinnedCount(chain) > had then
+            if not closed then
+                closed = true
+                for _, tip in ipairs(hoverTips()) do guard(function() tip.IsOpen = false end) end
+                if not final then return nil end
+            end
+            local last
+            for _, entry in ipairs(chain) do if entry.pinned then last = entry end end
+            if last and #last.texts == 0 and not final then return nil end
+            for _, entry in ipairs(chain) do if not entry.pinned and not final then return nil end end
+            return { ok = true, did = did, pinned = stripTips(chain)[last.n], open = #chain }
+        end
+        if not final then return nil end
+        return { ok = false, did = did, saw = "nothing was pinned", tips = stripTips(chain),
+                 hint = "the game pins only a tooltip that says it can be (CanBePinned)" }
+    end, 1500)
+end
+
+--- Closes tooltips: GK.Gui.CloseTips() every one - what a hover holds open is closed as when the
+--- pointer leaves, the pinned ones by the command the game runs on a click beside them or on the
+--- menu key (RequestClearPinnedTooltipsCommand); GK.Gui.CloseTips("tip#3") the one a hover holds
+--- open. One pinned tooltip among several is not closed apart: the game takes the ones pinned
+--- after a pinned tooltip away on a click on it, by a parameter its panel makes in code. Answers
+--- { ok, closed, tips } when they are gone.
+function UI.CloseTips(which)
+    local chain, holder = tipChain()
+    local had = #chain
+    if had == 0 then return { ok = true, did = "nothing", already = true, tips = {} } end
+    local wanted
+    if which ~= nil then
+        for _, entry in ipairs(chain) do if entry.handle == which then wanted = entry end end
+        if not wanted then return { ok = false, did = "nothing", error = "no tooltip " .. tostring(which) .. " (GK.Gui.Tips lists them)" } end
+        if wanted.pinned and pinnedCount(chain) > 1 then
+            return { ok = false, did = "nothing", error = "a pinned tooltip is not closed apart from the others: GK.Gui.CloseTips() closes all",
+                     hint = "the game removes the tooltips pinned after one on a click on it (ls.LSElementPanel.ClickCommand, RemovePinnedTooltipCommand with a parameter made in code)" }
+        end
+        if wanted.pinned then wanted = nil end
+    end
+    local did = {}
+    for _, entry in ipairs(chain) do
+        if not entry.pinned and (not wanted or wanted == entry) then
+            guard(function() entry.element.IsOpen = false end)
+            did[#did + 1] = "closed " .. entry.handle
+        end
+    end
+    if holder and not wanted then
+        local command = guard(function() return holder.RequestClearPinnedTooltipsCommand end)
+        if not command then return { ok = false, did = table.concat(did, "; "), error = "the widget of the pinned tooltips has no command to close them" } end
+        local _, failed = guard(function() command:Execute(nil) end)
+        if failed then return { ok = false, did = table.concat(did, "; "), error = failed } end
+        did[#did + 1] = "ran RequestClearPinnedTooltipsCommand"
+    end
+    local expected = wanted and had - 1 or 0
+    local result = { ok = true, did = table.concat(did, "; ") }
+    return GK.Observe(result, function(ticks, final)
+        local now = tipChain()
+        if #now <= expected then
+            return { ok = true, did = result.did, closed = had - #now, tips = stripTips(now) }
+        end
+        if not final then return nil end
+        return { ok = false, did = result.did, saw = (#now) .. " tooltips still stand", tips = stripTips(now) }
+    end, 1500)
 end
 
 --- The named windows and whether each is open.

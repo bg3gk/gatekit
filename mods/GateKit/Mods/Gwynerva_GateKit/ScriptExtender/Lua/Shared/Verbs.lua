@@ -61,6 +61,58 @@ function V.List(filter)
     return out
 end
 
+-- What a verb needs of the Script Extender beyond the stock build, as the registry says it
+-- (`needs`: a path under Ext that must be there, "Events.Roll"). One place answers for every
+-- such verb, in one sentence.
+-- Whether the Script Extender has what a path under Ext names. A function or a table is there
+-- when it is not nil. An event cannot be asked that way - Ext.Events answers for any name - so
+-- an event ("Events.Roll") is there when the type of its parameters is among the extender's types.
+local function reach(path)
+    local event = tostring(path):match("^Events%.([%w_]+)$")
+    if event then
+        for _, side in ipairs({ "esv", "ecl", "lua" }) do
+            local name = (side == "lua" and "lua::" or side .. "::lua::") .. event .. "EventParams"
+            local ok, info = pcall(Ext.Types.GetTypeInfo, name)
+            if ok and info ~= nil then return true end
+        end
+        return nil
+    end
+    local at = Ext
+    for part in tostring(path):gmatch("[^%.]+") do
+        local ok, value = pcall(function() return at[part] end)
+        if not ok or value == nil then return nil end
+        at = value
+    end
+    return at
+end
+
+--- Whether this Script Extender build has what `path` names under Ext: a function
+--- ("Debug.AddProbe"), or an event ("Events.Roll").
+function V.Has(path) return reach(path) ~= nil end
+
+--- What the verb at `path` needs that this Script Extender build does not have, or nil when it
+--- needs nothing or has it: { needs, error }.
+local function lacking(path)
+    path = tostring(path):gsub("^GK%.", "")
+    local entry = V.Verbs and V.Verbs[path]
+    if not (entry and entry.needs) or reach(entry.needs) ~= nil then return nil end
+    return { needs = entry.needs, error = "GK." .. path .. " needs Ext." .. entry.needs
+        .. ", which this Script Extender build does not have: GateKit's own build has it (gatekit se status)" }
+end
+--- (the check itself is a local function: the wrapper of every verb calls it, and must not call a wrapped verb)
+function V.Lacks(path) return lacking(path) end
+
+
+--- Every verb that needs something of the Script Extender: { { verb, needs, has } }.
+function V.Needs()
+    local out = {}
+    for path, entry in pairs(V.Verbs or {}) do
+        if entry.needs then out[#out + 1] = { verb = path, needs = entry.needs, has = reach(entry.needs) ~= nil } end
+    end
+    table.sort(out, function(a, b) return a.verb < b.verb end)
+    return out
+end
+
 local function an(class) return class == "observation" and "an" or "a" end
 
 local function wrap(path, fn, class)
@@ -73,6 +125,8 @@ local function wrap(path, fn, class)
         end
     end
     local wrapper = function(...)
+        local lacks = lacking(path)
+        if lacks then return { ok = false, error = lacks.error, needs = lacks.needs } end
         local scope = V.Scope
         if scope == nil or depth > 0 then
             record()

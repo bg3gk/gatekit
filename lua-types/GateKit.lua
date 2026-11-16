@@ -69,6 +69,7 @@
 ---@field Memory GK.Memory @ server: the memory instrument (read, watch, freeze a field)
 ---@field Sound GK.Sound @ client: how loud this copy of the game is
 ---@field Camera GK.Camera @ client: camera control
+---@field Wake GK.Wake @ server: a creature or a place kept awake and drawn far from the party (cheats)
 ---@field Places GK.Places @ client/ui: zone name and map markers
 ---@field Gui GK.Gui @ client/ui: every game window operated from code
 ---@field UI GK.UIPanels @ client: panels of other mods in the console overlay
@@ -184,6 +185,11 @@ function GK.Start(side) end
 ---@field Boot integer @ this boot of the side's Lua state, one above the previous one
 ---@field Open table<string, GK.EventRow> @ the waiting view: key -> the row that opened it
 GK.EventLog = {}
+
+---Adds another mod's families and kinds to the vocabulary of this side's log: a table in the registry file's own shape. A kind the registry has in another family is refused and nothing is added; the same entry given again changes nothing. The merged registry is written to the channel, where the host reads it. Both sides. Cheat.
+---@param registry { families: table<string, { always: boolean?, default: boolean?, about: string }>?, kinds: table<string, { family: string, class: string, knows: string, attention: string?, ends: string?, payload: table<string, string> }>? }
+---@return { ok: boolean, families: integer?, kinds: integer?, error: string? }
+function GK.EventLog.Register(registry) end
 
 ---Appends a row; `kind` must be in the vocabulary. A detail kind whose family is off writes nothing.
 ---@param kind string
@@ -486,10 +492,13 @@ function GK.Key(name, modifiers, hold) end
 ---taking it neither pauses nor moves anything. `path` is below the Script Extender folder of the
 ---profile, as `Ext.IO.SaveFile` takes it, and the PNG appears there a few frames later. False
 ---when the renderer cannot do it (so far only the DX11 one) or when one is already on its way.
+---`overlay = true` asks for the frame after the extender's own layer is drawn (its windows, a
+---picture of GK.Show); false on a Script Extender build that cannot take that frame.
 ---Client.
 ---@param path string
+---@param overlay? boolean
 ---@return boolean
-function GK.Shot(path) end
+function GK.Shot(path, overlay) end
 
 ---Whether a picture asked for with `GK.Shot` has still to be taken or written. Client.
 ---@return boolean
@@ -925,7 +934,7 @@ function GK.Speed.State() end
 -- Server/Rolls.lua  (server)
 
 ---Rolls decided in advance: the game's MinimumRollResult/MaximumRollResult boosts (Initiative: the
----Initiative boost) on the roller, each a track row of the stage ledger. docs/contracts/lua-api.md 17.
+---Initiative boost) on the roller, each a track row of the stage ledger. docs/contracts/lua-api.md, "GK.Rolls".
 -- =========================================================================================
 -- Shared/Memory.lua  (both sides, each owning its own watches; GateKit's Script Extender in developer mode)
 
@@ -957,7 +966,7 @@ function GK.Speed.State() end
 ---@field Moved boolean? @ may have come after its component moved: not a hit of the field (no Of)
 ---@field Now integer? @ the place's address then, nil when its component is gone
 
----The memory instrument: read, watch the writer of, and hold a field. docs/contracts/lua-api.md, section 16.
+---The memory instrument: read, watch the writer of, and hold a field. docs/contracts/lua-api.md, "GK.Memory".
 ---@class GK.Memory
 ---@field Class table<string, "cheat"|"observation">
 GK.Memory = {}
@@ -972,6 +981,11 @@ function GK.Memory.Field(entity, component, field) end
 ---@param name string @ a system's engine name
 ---@return integer?
 function GK.Memory.System(name) end
+---Where a value below an object's top level lies and how wide it is ("Streams[2].State.NumRolls"). Observation.
+---@param object any @ a reference to an object of the game
+---@param path string
+---@return { Address: integer, Size: integer, Offset: integer?, ObjectAddress: integer?, Path: string }?, string?
+function GK.Memory.Path(object, path) end
 ---@return integer
 function GK.Memory.Element(bufferAt, index, elementSize, offset) end
 ---The followed watches whose place moved, by the slot each had.
@@ -1041,7 +1055,7 @@ function GK.Memory.Clear() end
 ---@field flush integer
 ---@field rows table[] @ the payloads of the step's trace_change and trace_system rows
 
----The entity tracer as rows of the event log's `trace` family. docs/contracts/lua-api.md 16.1.
+---The entity tracer as rows of the event log's `trace` family. docs/contracts/lua-api.md, "GK.Trace".
 ---@class GK.Trace
 GK.Trace = {}
 ---@return boolean
@@ -1142,6 +1156,18 @@ function GK.Rolls.Streams() end
 ---@param list { type: string, player: string?, combat: string?, seed: integer?, rolls: integer? }[]|table
 ---@return { ok: boolean, written: table[], missing: table[]? }
 function GK.Rolls.SetStreams(list) end
+
+---The dice a roll stream gives to its next roll, computed from its seed and count and not drawn
+---(dice: how many, default the pair of a d20 roll; faces: default 20; rolls: another count). Server. Observation.
+---@param spec { type: string, player: string?, combat: string?, dice: integer?, faces: integer?, rolls: integer? }
+---@return { ok: boolean, type: string?, player: string?, combat: string?, seed: integer?, rolls: integer?, dice: integer[]?, error: string? }
+function GK.Rolls.Next(spec) end
+
+---Chooses the natural die of the next roll drawn from a roll stream, for the stage scope: moves the
+---stream's count to the nearest one that gives `die` (with `both`, on every die of the roll). Server. Cheat.
+---@param spec { type: string, player: string?, combat: string?, die: integer, both: boolean?, dice: integer?, faces: integer? }
+---@return { ok: boolean, type: string?, player: string?, combat: string?, seed: integer?, rolls: integer?, was: integer?, dice: integer[]?, error: string? }
+function GK.Rolls.SetNext(spec) end
 
 ---The oldest finished roll of who not yet joined to a RollResult (take removes it). Server. Observation.
 ---@param who GK.Uuid
@@ -2141,7 +2167,7 @@ function GK.See.Status(options) end
 -- =========================================================================================
 -- Server/Act.lua  (server): GK.Act, what a player does (fair or observation), and GK.Cheat's
 -- scripted actions of the same names (Osiris commands that skip rolls, costs or checks).
--- docs/contracts/lua-api.md section 19.
+-- docs/contracts/lua-api.md, "The class of a verb, and steps".
 
 ---Commands start a job and return at once: `{ job = n, ... }`, or `{ ok = false, error }` when a
 ---player could not do it. GK.Act.Job(n) tells how it went.
@@ -2644,18 +2670,114 @@ function GK.Gui.Controls(name, filter) end
 
 ---Clicks a control of an open widget as a player does (the XAML chain). A disabled control is a
 ---failure with `state`: the flags, numbers and short texts of the control's data, which usually
----show why (a count at 0, a flag off). UI.
+---show why (a count at 0, a flag off). A toggle with no chain and no command has its IsChecked
+---written: the answer carries `value` (the flag read again) and `handle` when the press changed
+---the toggle's handle. UI.
 ---@param name string
 ---@param what string|integer|table @ name, part of its text, filter table, or number in GK.Gui.Controls
 ---@param which integer? @ the n-th match (default 1)
 ---@return table
 function GK.Gui.Click(name, what, which) end
 
+---A control of GK.Gui.Look.
+---@class GK.GuiLookControl
+---@field handle string @ what GK.Gui.Click, Select and Set take
+---@field kind "button"|"toggle"|"list"|"slider"|"text"
+---@field type string
+---@field text string?
+---@field value any
+---@field valueFrom string? @ a toggle whose state was read from its data's flag ("data.Value"), not from IsChecked
+---@field unread string? @ "IsChecked": a toggle whose state cannot be read
+---@field enabled boolean? @ false only
+---@field hidden boolean?
+---@field data string? @ the type of the view model the control stands for
+---@field of string? @ what that view model calls itself
+---@field count integer? @ a list's items
+---@field selected integer?
+---@field items { n: integer, text: string?, id: string|number|nil, name: string?, enabled: boolean?, hidden: boolean? }[]?
+---@field min number?
+---@field max number?
+
+---Everything a player could act on in an open widget, found by walking it (docs/contracts/lua-api.md,
+---"Look"). UI.
+---@param name string
+---@param options string|{ under: string?, kind: string?, find: string?, items: integer?, detail: boolean?, all: boolean? }|nil
+---@return { ok: boolean, widget: string, data: string, controls: GK.GuiLookControl[] }|GK.Failure
+function GK.Gui.Look(name, options) end
+
+---The row of a handle of GK.Gui.Look (it holds the live element), and for an item's handle
+---("list#3") the list's row and the item's number; nil and why when nothing has it. UI.
+---@param name string
+---@param handle string
+---@return table|nil, integer|string|nil
+function GK.Gui.Handle(name, handle) end
+
+---The handles of the controls a widget element shows, as one text. UI.
+---@param widget any
+---@return string
+function GK.Gui.Shown(widget) end
+
+---An open tooltip, as GK.Gui.Tips reads it.
+---@class GK.GuiTip
+---@field n integer
+---@field handle string @ "tip#1"
+---@field pinned boolean
+---@field type string @ the element's type: ls.LSTooltip (a hover holds it open), ls.LSElementCopy (pinned)
+---@field about { type: string?, of: string?, id: string|number|nil, spell: string?, values: table?, text: string? }? @ the view model the tooltip was given
+---@field data string? @ the type of the tooltip's own data
+---@field context string?
+---@field hint string? @ the key hint the game draws above it
+---@field title string?
+---@field texts { part: string?, text: string }[]
+---@field links { handle: string, text: string?, tag: string?, data: string?, of: string? }[] @ what inside it carries a tooltip of its own
+---@field parent string? @ the handle of the tooltip it was called from
+---@field owner { widget: string?, element: string }? @ where in a window it was called from
+
+---The open tooltips as a chain: the pinned ones in the game's order, then what a hover holds open
+---(docs/contracts/lua-api.md, "Tooltips"). UI.
+---@param options { detail: boolean? }|nil
+---@return { ok: boolean, tips: GK.GuiTip[] }
+function GK.Gui.Tips(options) end
+
+---Calls up a tooltip as a hover does, with no pointer: of a control of an open widget (a handle of
+---GK.Gui.Look, an item's handle or an x:Name), or of a link inside an open tooltip
+---(GK.Gui.Tip("tip#1/link#2")). UI.
+---@param name string @ the widget, or a link's handle
+---@param handle string?
+---@return { ok: boolean, did: string?, tip: GK.GuiTip?, open: integer?, saw: string?, error: string? }
+function GK.Gui.Tip(name, handle) end
+
+---Pins the tooltip a hover holds open: the key of the game's input event UIPinTooltip. UI.
+---@return { ok: boolean, did: string?, pinned: GK.GuiTip?, open: integer?, saw: string?, error: string? }
+function GK.Gui.PinTip() end
+
+---Closes every tooltip, or the one a hover holds open by its handle. UI.
+---@param which string?
+---@return { ok: boolean, did: string?, closed: integer?, tips: GK.GuiTip[]?, saw: string?, error: string? }
+function GK.Gui.CloseTips(which) end
+
+---A pointer inside the game, for research: motion and button events injected, which the game
+---takes as its own pointer's; the real mouse untouched. Answers what the interface reported back.
+---Nothing that ships may rest on it (docs/contracts/lua-api.md, "The pointer"). UI. A cheat.
+---@param options { at: number[]?, widget: string?, handle: string?, ["do"]: "move"|"press"|"release"|"click"|"leave"|nil, button: integer?, wait: integer? }
+---@return table
+function GK.Cheat.Pointer(options) end
+
+---Sets a control to a value as the player's hand would: a slider inside its range, a toggle, a
+---text field, a list (as GK.Gui.Select). Answers what the control reads afterwards; `handle` is
+---the control's handle after the act when the act changed it (a toggle that hides itself by what
+---it switches answers to "~<handle>"). UI.
+---@param name string
+---@param handle string
+---@param value number|boolean|string
+---@return { ok: boolean, before: any, after: any, handle: string?, error: string? }
+function GK.Gui.Set(name, handle, value) end
+
 ---Selects an item of a list (ListBox, tab strip...) of an open widget. UI. The items are counted
 ---from the list's Items, else its ItemsSource (the view model's collection), and an item's text is
 ---read as the player reads it, so a race or a class can be chosen by its name.
 ---@param name string
----@param list string @ the list's x:Name
+---@param list string @ the list's handle (GK.Gui.Look) or x:Name
 ---The items are counted by `#`, else Count, else by reading them until the first gap (a Noesis
 ---collection has no length operator). An item read from the view model selects that item.
 ---What the list reads afterwards decides: a game handler that fails after the selection is made
@@ -3196,3 +3318,251 @@ function GK.Observe(result, check, within) end
 ---Push(what, fields), Set(key, item, ended), Waiting (key -> item, read-only), State(), Since(seq),
 ---Mark(), Costs(). Observation. Both sides.
 GK.Attention = {}
+
+---The roll log: `dice_thrown` rows of the family `dice`, written from the roll events of GateKit's
+---Script Extender build.
+GK.RollLog = {}
+
+---Whether this Script Extender build throws the roll events the log is written from. Server. Observation.
+---@return boolean
+function GK.RollLog.Available() end
+
+---The named asker an address of an executable belongs to, or nil. Server. Observation.
+---@param module string
+---@param rva integer
+---@return { id: string, what: string, entry: boolean? }?
+function GK.RollLog.Origin(module, rva) end
+
+---Leaves one named asker or cause out of the log's tables until the family `dice` is turned off,
+---so that its rolls are written as rolls of an unknown origin. Without an id: nothing is left out.
+---Server. Observation.
+---@param id string?
+---@return { ok: boolean, forgotten: string[] }
+function GK.RollLog.Forget(id) end
+
+---The askers known for each executable. Server. Observation.
+---@return table<string, { id: string, what: string, rva: integer, size: integer }[]>
+function GK.RollLog.Origins() end
+
+---Decides one throw at the moment it is made, for the stage scope. Server. Cheat.
+---@param spec { who: string?, kind: string?, stream: string?, nth: integer?, times: integer?, natural: integer?, total: integer? }
+---@return { ok: boolean, id: integer?, error: string? }
+function GK.Rolls.Rig(spec) end
+
+---Takes a rig off (every rig without an id). Server. Cheat.
+---@param id integer?
+---@return { ok: boolean, removed: integer }
+function GK.Rolls.Unrig(id) end
+
+---The rigs in force. Server. Observation.
+---@return { id: integer, who: string?, kind: string?, stream: string?, nth: integer, times: integer, natural: integer?, total: integer?, seen: integer, decided: integer }[]
+function GK.Rolls.Rigs() end
+
+---Whether this Script Extender build raises the roll event a rig acts through. Server. Observation.
+---@return boolean
+function GK.Rolls.CanRig() end
+
+---SetKarmic's undo, called by the stage ledger: switches the game's weighted rolls and makes no
+---ledger row. Server. A cheat.
+---@param on boolean
+function GK.Rolls.WriteKarmic(on) end
+
+---SetStreams' undo, called by the stage ledger: writes seed and count of the streams named and
+---makes no ledger row. Server. A cheat.
+---@param list table[]
+function GK.Rolls.WriteStreams(list) end
+
+---SetInspiration's undo, called by the stage ledger: writes the party's inspiration points (and
+---the resource's maximum) and makes no ledger row. Server. A cheat.
+---@param points number
+---@param max number?
+function GK.Rolls.WriteInspiration(points, max) end
+
+---Rig's undo, called by the stage ledger: takes one rig off and makes no ledger row. Server. A cheat.
+---@param id integer
+function GK.Rolls.WriteRig(id) end
+
+---The causes of a roll known for each executable. Server. Observation.
+---@return table<string, { id: string, cause: string, rva: integer, size: integer }[]>
+function GK.RollLog.Causes() end
+
+---Data of any shape that a mod keeps inside the game's save. Server.
+GK.Store = {}
+
+---Declares a store: its version, defaults, migration and whose mod's variable it is. Server. Observation.
+---@param name string
+---@param options { version: integer?, defaults: table?, migrate: (fun(data: table, from: integer, to: integer): table)?, mod: string? }?
+---@return { ok: boolean, name: string, version: integer, saved: boolean }
+function GK.Store.Open(name, options) end
+
+---A copy of the value at a path of a store (the whole store without a path), or nil. Server. Observation.
+---@param name string
+---@param path (string|(string|integer)[])?
+---@param mod string?
+---@return any
+function GK.Store.Get(name, path, mod) end
+
+---Writes a value at a path of a store; nil takes the key out. Checked first: nothing is written when it cannot be kept. Server. Cheat.
+---@param name string
+---@param path (string|(string|integer)[])?
+---@param value any
+---@param mod string?
+---@return { ok: boolean, name: string?, error: string?, at: string? }
+function GK.Store.Set(name, path, value, mod) end
+
+---The stores of GateKit's own mod that the save holds. Server. Observation.
+---@return { name: string, version: integer? }[]
+function GK.Store.Names() end
+
+---Whether a value can be kept in a store. Server. Observation.
+---@param value any
+---@return { ok: boolean, error: string?, at: string? }
+function GK.Store.Check(value) end
+
+---Takes a store of GateKit's own mod out of the save's variables altogether. Server. Cheat.
+---@param name string
+---@return { ok: boolean, dropped: boolean }
+function GK.Store.Drop(name) end
+
+---The chance (0..1) that a spell's roll succeeds for a caster against a target, as the game itself works it out. Nothing is rolled. Server. Observation.
+---@param spec { who: string?, spell: string, target: string, set: ("Melee"|"Ranged")? }
+---@return { ok: boolean, chance: number?, set: string?, was: string?, error: string?, needs: string? }
+function GK.Rolls.Chance(spec) end
+
+---Whether this Script Extender build has what a path under Ext names: a function ("Debug.AddProbe") or an event ("Events.Roll"). Both sides. Observation.
+---@param path string
+---@return boolean
+function GK.Verbs.Has(path) end
+
+---Moves the game's camera to `at` (an entity's uuid, a point {x, y, z}, or a list of two framed together) the way the game moves it: the camera behaviour's targets for an entity, its destination for a point, in a fight and outside. options.glide: glide past the game's snap distance (50 m) and put it back; options.hold: seconds before the camera returns by itself. The answer says `away` (the length of the move), `far` (past the snap distance) and `drawn` (every entity focused is drawn on the client; `notDrawn` and a `warning` name those that are not; a point has no `drawn`); a far move with no glide says `faded` (the game's own fade to black came) with `blackTicks` and `fadeTicks`, and answers when the fade has ended. A thing beyond the camera's leash (the switches' MaxDistFromChar) raises it until the return (`leashRaised`). Client: refuses a far creature's stub. Server: sends the server's point of every uuid to the client (channel GK_Camera) and answers the client's answer with `serverTicks`; options.wake = "one" (GK.Wake.One) or "place" (GK.Wake.Place) wakes the thing first and waits until the client holds it whole (`wake`, `woke`, `wakeTicks`) - a cheat, refused inside a fair step - and what it woke stays awake until GK.Camera.Return, a newer focus or GK.Stage.Clean. Fair. Observed once the camera settled; a row `camera_focused`.
+---@param at string|number[]|(string|number[])[]
+---@param options { glide: boolean?, hold: number?, wake: ("one"|"place")? }?
+---@return { ok: boolean, at: number[]?, distance: number?, ticks: integer?, how: ("targets"|"destination")?, snapped: boolean?, fight: boolean?, off: number?, onScreen: table?, far: boolean?, away: number?, drawn: boolean?, notDrawn: string[]?, warning: string?, faded: boolean?, blackTicks: integer?, fadeTicks: integer?, leashRaised: boolean?, wake: string?, woke: table?, wakeTicks: integer?, serverTicks: integer?, stage: string?, error: string? }
+function GK.Camera.Focus(at, options) end
+
+---Brings the camera back to the controlled character by the game's own restore (in a fight the combat target's TargetMode 1 with its Position reset; outside, the behaviour's targets and the distance the first focus saved). options.glide as Focus's. From past the snap distance with no glide the game fades, and the answer comes when the fade has ended (`faded`, `blackTicks`). Puts back a leash the focus raised (`leashRestored`); on the server it then releases what the focus woke (`released`: GK.Wake.Release's answer). Client, or server through GK_Camera. Fair. Observed once the camera settled; a row `camera_returned`.
+---@param options { glide: boolean? }?
+---@return { ok: boolean, at: number[]?, distance: number?, restoredDistance: number?, ticks: integer?, how: string?, far: boolean?, away: number?, faded: boolean?, blackTicks: integer?, fadeTicks: integer?, leashRestored: boolean?, released: table?, serverTicks: integer?, error: string? }
+function GK.Camera.Return(options) end
+
+---@class GK.Wake
+---@field HelperTemplate string @ the template of the helper GK.Wake.Place spawns: a name of GK.Stage.Templates or a root template
+GK.Wake = {}
+
+---Keeps the creature `who` awake and drawn wherever the party is (Osi.SetForceUpdate: an anchor of itself and of nobody else). Tracked by the stage's ledger; a row `wake_kept`. A wait that ran out says which side's and after how many ticks, and the creature is let go. Server. Cheat. Observed once it is active on the server and whole on the client.
+---@param who string
+---@return { ok: boolean, who: string?, name: string?, awake: boolean?, drawn: boolean?, was: { awake: boolean }?, distance: number?, ticks: integer?, awakeTicks: integer?, clientTicks: integer?, error: string? }
+function GK.Wake.One(who) end
+
+---Wakes the space around `at` (a point {x, y, z} or an entity's uuid) as a party member standing there would: a helper character put into the party's view, off stage and never drawn when it spawned asleep (`hidden`; `seen` says what a watcher could see of it). options.helper: a creature the caller spawned, in place of one spawned here; an origin, a player's character and a creature of the level's own cast are refused. options.template: the helper's template. Tracked by the stage's ledger; a row `wake_place`. Server. Cheat. Observed once the creatures within the manager's waking distance are active and the client holds whole those it is sent.
+---@param at string|number[]
+---@param options { helper: string?, template: string? }?
+---@return { ok: boolean, helper: string?, at: number[]?, hidden: boolean?, seen: string?, radius: number?, count: integer?, woke: { who: string, name: string?, distance: number, drawn: boolean }[]?, wokeCount: integer?, drawnCount: integer?, alreadyAwake: integer?, asleep: table[]?, ticks: integer?, wakeTicks: integer?, clientTicks: integer?, error: string? }
+function GK.Wake.Place(at, options) end
+
+---Lets go what GK.Wake holds: a creature kept by GK.Wake.One, a helper of GK.Wake.Place, or with nil all of them. The undo is done at once; a row `wake_released`. `stayed` are the creatures another anchor keeps awake. The client is not waited for. Server. Cheat. Observed once the creatures nobody else reaches have lost Active on the server.
+---@param handle string?
+---@return { ok: boolean, released: string[]?, slept: { who: string, name: string? }[]?, sleptCount: integer?, stayed: { who: string, name: string?, why: string }[]?, stillAwake: string[]?, ticks: integer?, error: string? }
+function GK.Wake.Release(handle) end
+
+---Whether an entity (a uuid) or the space around a point {x, y, z} is awake on the server and whole on the client, how far the nearest character of the party's view is, and which rule keeps it awake: "kept up" (GK.Wake.One), "party", "place" (a helper of GK.Wake.Place) or "none". Of a point `characters`, `awake` and `whole` are counts within the manager's waking distance. Server; the client is asked. Observation. Observed.
+---@param at string|number[]
+---@return { ok: boolean, who: string?, at: number[]?, name: string?, character: boolean?, awake: (boolean|integer)?, whole: (boolean|integer)?, drawn: boolean?, rule: ("kept up"|"party"|"place"|"none")?, anchor: string?, anchorKind: ("party"|"place")?, distance: number?, characters: integer?, radii: { wake: number, sleep: number, source: string }?, ticks: integer?, error: string? }
+function GK.Wake.State(at) end
+
+---The activation manager's distances as the game holds them now: a character is awake within `wake` metres of an anchor and asleep beyond `sleep`. Read from the manager's own object (needs GateKit's Script Extender build); otherwise ok = false with the measured ones and source = "measured". Server. Observation.
+---@return { ok: boolean, wake: number, sleep: number, itemWake: number?, itemSleep: number?, lowItemWake: number?, lowItemSleep: number?, source: string, error: string? }
+function GK.Wake.Radii() end
+
+---Where a point or an entity (its feet) is on the screen, from the camera's view and projection matrices: u, v from 0 to 1 from the top left corner. Refuses a far creature's stub (its client position is stale). Client. Observation.
+---@param at string|number[]
+---@return { u: number?, v: number?, inFront: boolean?, inside: boolean?, error: string? }
+function GK.Camera.OnScreen(at) end
+
+---@class GK.Say
+---@field Styles table<string, { color: string?, bold: boolean?, italic: boolean?, prefix: string?, suffix: string?, accent: string?, effect: string?, sound: string? }> @ the looks of a line by name; `default` is the toolkit's own
+---@field Effects table<string, string> @ short effects of the game's own by name (effect resource uuids)
+---@field Sounds table<string, string> @ sound resources of the game's own by name
+GK.Say = {}
+
+---Shows `text` over the head of the creature `who` for about three seconds: a status of the toolkit's own (GK_SAY_<slot>) named with the text in the game's markup. options.style: a name of GK.Say.Styles or a table of its fields; any field may also be given in options. The caller's < > & are shown as written. Tracked by the stage's ledger; a row `said_overhead`. Server. Cheat. Observed once the status is on the creature.
+---@param who string
+---@param text string
+---@param options { style: (string|table)?, color: string?, bold: boolean?, italic: boolean?, prefix: string?, suffix: string?, accent: string?, effect: (string|false)?, sound: string? }?
+---@return { ok: boolean, who: string?, text: string?, status: string?, slot: integer?, handle: string?, markup: string?, ticks: integer?, error: string? }
+function GK.Say.Line(who, text, options) end
+
+---The line a creature shows now (within ~3 s), or nil. Server. Observation.
+---@param who string
+---@return { text: string, status: string, slot: integer, active: boolean }?
+function GK.Say.Shown(who) end
+
+---A short effect of the game's own on a creature or an item (a uuid) or at a point: options.effect (a name of GK.Say.Effects or an effect resource; default "orb" on an object, "spectral" at a point), options.sound, options.scale. The effects end by themselves. Server. Cheat.
+---@param at string|number[]
+---@param options { effect: string?, sound: string?, scale: number? }?
+---@return { ok: boolean, effect: string?, at: (string|number[])?, error: string? }
+function GK.Say.Accent(at, options) end
+
+---@class GK.Show
+GK.Show = {}
+
+---What a picture is asked with.
+---@class GK.Show.PictureOptions
+---@field file string? @ a png, jpg, tga or bmp: under the game's Data folder, named as a mod ships it ("Mods/<Mod>/...", "Public/<Mod>/..."), in a package or loose; or the whole path of a file on the disk ("E:/pictures/logo.png")
+---@field resource string? @ instead of a file: a texture resource's uuid or an icon's name
+---@field where ("screen"|number[]|{ x: number, y: number, w: number, h: number })? @ the rectangle it is fitted into, in parts of the screen (0 to 1); default the whole screen
+---@field fit ("contain"|"cover"|"stretch")? @ default "contain"
+---@field back (string|number[])? @ a colour behind it over the whole screen: "black", "white", "#rrggbb[aa]", { r, g, b[, a] }
+---@field opacity number? @ 0 to 1
+---@field fade (number|{ ["in"]: number?, out: number? })? @ real seconds
+---@field seconds number? @ real seconds at full strength; none: until hidden
+---@field skip (string|string[]|boolean)? @ what takes it off: key names as GK.Key takes them ("escape", "enter", "f5", a letter ...), "click", "any"; while it shows the picture holds the keyboard
+---@field over "everything"? @ the only layer
+
+---A picture shown or gone.
+---@class GK.Show.PictureState
+---@field ok boolean?
+---@field handle string
+---@field file string?
+---@field resource string?
+---@field size number[] @ the picture's own width and height in pixels
+---@field where number[] @ x, y, w, h asked, in parts of the screen
+---@field covers number[]? @ x, y, w, h it covers, in parts of the screen
+---@field pixels integer[]? @ the same in pixels of the game's frame
+---@field screen integer[]? @ the frame's width and height
+---@field fit string
+---@field over string
+---@field phase ("in"|"on"|"out")? @ while shown
+---@field alpha number? @ while shown
+---@field seconds number?
+---@field fade number[] @ in, out
+---@field skip string[]?
+---@field state string @ the client's game state when it was asked
+---@field shownMs integer? @ real milliseconds since its first frame
+---@field left boolean? @ true once it is gone
+---@field why string? @ once gone: "seconds", "skipped", "hidden", or "failed: ..."
+---@field key string? @ the key that skipped it
+---@field ticks integer?
+---@field error string?
+---@field hint string?
+
+---Puts a picture over the game's whole frame, straight from a file: drawn by Script Extender's drawing layer, in any client state that draws frames. A row `picture_shown` at its first frame and `picture_hidden` when it is gone. Client (UI context). Cheat. Observed once the first frame with it is drawn.
+---@param options GK.Show.PictureOptions|string
+---@return GK.Show.PictureState
+function GK.Show.Picture(options) end
+
+---Refuses: no video can be played from Lua; the answer says what plays one. Client. Cheat.
+---@param options { file: string? }|string
+---@return { ok: false, error: string, hint: string, file: string? }
+function GK.Show.Video(options) end
+
+---Takes a picture off, or every picture when no handle is given. options.fade: seconds of the fade out (default the picture's own). Client. Cheat. Observed once it is gone.
+---@param handle string?
+---@param options { fade: number? }?
+---@return { ok: boolean, hidden: string[]?, left: GK.Show.PictureState[]?, ticks: integer?, error: string? }
+function GK.Show.Hide(handle, options) end
+
+---The pictures on the screen; with a handle, that picture - shown, or gone with `left`, `why`, `key`, `shownMs` - or nil. Client. Observation.
+---@param handle string?
+---@return GK.Show.PictureState[]|GK.Show.PictureState|nil
+function GK.Show.Shown(handle) end

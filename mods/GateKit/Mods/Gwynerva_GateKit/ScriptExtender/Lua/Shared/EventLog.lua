@@ -51,6 +51,47 @@ function L.LoadRegistry(text)
     pcall(Ext.IO.SaveFile, LOADED, text)
 end
 
+--- Adds another mod's families and kinds to the registry of this side: `registry` is a table in
+--- the registry file's own shape, { families = { name = { always, default, about } }, kinds = {
+--- name = { family, class, knows, attention, ends, payload } } }. A name the registry already has
+--- with another family (a kind) is refused, and nothing of the call is added; the same entry given
+--- again changes nothing. The merged registry is written to the channel (events_<side>_kinds.json),
+--- the file the host places this side's rows by. Answers { ok, families, kinds } - how many were
+--- added - or { ok = false, error }.
+function L.Register(registry)
+    if type(registry) ~= "table" then return { ok = false, error = "a registry is a table { families, kinds }" } end
+    local families, kinds = registry.families or {}, registry.kinds or {}
+    for name, kind in pairs(kinds) do
+        if type(kind) ~= "table" or not (families[kind.family] or L.Families[kind.family]) then
+            return { ok = false, error = "kind " .. tostring(name) .. " names no family of the registry" }
+        end
+        local known = L.Kinds[name]
+        if known and known.family ~= kind.family then
+            return { ok = false, error = "kind " .. tostring(name) .. " is in the registry already, in the family " .. tostring(known.family) }
+        end
+    end
+    local addedFamilies, addedKinds = 0, 0
+    for name, family in pairs(families) do
+        if not L.Families[name] then
+            L.Families[name] = family
+            addedFamilies = addedFamilies + 1
+            if family.default and L.Switched then L.Switched[name] = {} end
+        end
+    end
+    for name, kind in pairs(kinds) do
+        if not L.Kinds[name] then
+            L.Kinds[name] = kind
+            addedKinds = addedKinds + 1
+        end
+    end
+    if addedFamilies + addedKinds > 0 then
+        pcall(function()
+            Ext.IO.SaveFile(LOADED, Ext.Json.Stringify({ schema = "events/kinds/1", families = L.Families, kinds = L.Kinds }, { Beautify = false }))
+        end)
+    end
+    return { ok = true, families = addedFamilies, kinds = addedKinds }
+end
+
 if not L.Kinds then
     local ok, problem = pcall(L.LoadRegistry)
     if not ok then

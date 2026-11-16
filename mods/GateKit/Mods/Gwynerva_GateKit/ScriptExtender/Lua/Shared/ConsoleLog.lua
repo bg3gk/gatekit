@@ -93,6 +93,12 @@ do
     GK.Features.osirisNames = has(function() return Ext.Osiris.GetFunctions ~= nil end)
     GK.Features.clipboard = has(function() return Ext.IMGUI.SetClipboardText ~= nil end)
     GK.Features.injectText = has(function() return Ext.Input.InjectText ~= nil end)
+    -- Injected keys and mouse events are raised to Lua listeners marked `Injected`, and injected
+    -- mouse events name the game's window (one change of the extender): the field's presence tells it
+    GK.Features.injectedInput = has(function() return Ext.Types.GetTypeInfo("ecl::lua::KeyInputEventParams").Members.Injected ~= nil end)
+    -- A picture loaded from any path of the disk, and a screenshot taken after the drawing layer
+    -- (one change of the extender's drawing layer): the loader's presence tells both
+    GK.Features.imageFiles = has(function() return Ext.IMGUI.LoadImageFile ~= nil end)
 end
 
 -- With console messages available, a line a mod prints arrives twice: as a Log event (or

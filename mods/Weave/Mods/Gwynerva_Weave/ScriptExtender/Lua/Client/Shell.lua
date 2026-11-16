@@ -191,6 +191,8 @@ Ext.Events.Shutdown:Subscribe(function()
     if dirty then save() end
 end)
 
+-- A window that blocks takes every key and click, the injected ones (`e.Injected`: a key another
+-- mod or a tool gives the game) as the player's own: while it is open nothing reaches the game.
 Ext.Events.KeyInput:Subscribe(function(e)
     local key = tostring(e.Key)
     local down = e.Event == "KeyDown"

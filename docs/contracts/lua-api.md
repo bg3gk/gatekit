@@ -11,7 +11,7 @@ Sides: **S** server Lua state, **C** client Lua state, **UI** client code that m
 `Ext.UI.Defer`, **both** loaded into both states. The two states are separate Lua worlds; a file
 that exists on both sides (`GK.Focus`) is two different tables with the same name.
 
-## 1. The mod: globals, console commands, channels, load order
+## The mod: globals, console commands, channels, load order
 
 The bridge is `mods/GateKit/Mods/Gwynerva_GateKit/`: module UUID
 `b1d5c0de-7e57-4b1d-9e0a-6d6576646b69`, mod table `GateKit`, Script Extender version 33 or later
@@ -23,7 +23,7 @@ console's are `local GK = Mods.GateKit.GK`.
 | --- | --- | --- |
 | `GK` | `Shared/Bridge.lua` (`GK = GK or {}`) | the API table; every other file adds to it |
 | `Probe` | `Shared/Probe.lua` | the table `GK.Probe` is; `GK.Probe` and `GK.Seen` are the names the host and the tools use |
-| `Weave` | `BootstrapClient.lua`, client only | `Mods.GateKitWeave.Weave` when the Weave mod is loaded, else nil; `GK.Weave` is the same table (section 4) |
+| `Weave` | `BootstrapClient.lua`, client only | `Mods.GateKitWeave.Weave` when the Weave mod is loaded, else nil; `GK.Weave` is the same table ([Weave](#weave-the-mod-gatekit-depends-on)) |
 | `GK.Log` | `Shared/Bridge.lua`, set by each `GK.Run` | adds lines to the `log` of the chunk being run; not a stable function |
 | `GK.LogContext` | set and cleared by `BootstrapServer.lua` and `Client/Console.lua` | attributes console output |
 | `Mods.GateKit.PersistentVars` | `Server/SaveState.lua` | the key `GKState` (version 1) holds the bridge's memory in a save |
@@ -52,18 +52,19 @@ Load order (`BootstrapServer.lua`, `BootstrapClient.lua`):
 
 - Server: `Shared/` Bridge, Verbs, EventLog, Attention, ConsoleLog, Complete, Probe; `Server/` Api,
   Stage, Speed, Pause, Situation, Conditions, Act, Cheat; `Shared/` Memory, Trace; `Server/` Heard,
-  Attention, EventFamilies, GameLog, Focus, SaveState, Fixtures, Rolls; then `GK.Verbs.Guard()`,
+  Attention, EventFamilies, GameLog, Focus, SaveState, Fixtures, Rolls, RollGenerator, RollLog,
+  Store, FightLog, Fight, Camera, Wake, Say; then `GK.Verbs.Guard()`,
   `GK.Start("server")` and the net channels of the console.
 - Client: `Shared/` Bridge, Verbs, EventLog, Attention, ConsoleLog, Complete, Probe, Memory, Trace;
-  `Client/` Api, Sound, UI, Stage; the UI catalogue when present (section 7); `Client/` Windows,
-  XamlChains, WindowReaders, Popups, Camera, Places, Focus, Aim, Act, Attention; then
+  `Client/` Api, Sound, UI, Stage; the [UI catalogue](#the-ui-catalogue) when present; `Client/` Windows,
+  XamlChains, Pointer, WindowReaders, Popups, Camera, Places, Focus, Aim, Act, Attention, Show; then
   `GK.Verbs.Guard()` and `GK.Start("client")`; then, only when Weave is loaded, `Client/` Overlay,
   Console, Panels.
 
 The files look each other up through `GK.<Table>` when a function is called, not when a file
 loads, so the order constrains only what a file does as it loads.
 
-## 2. The files and what each defines
+## The files and what each defines
 
 The tables and functions each file adds to `GK`; the signatures are in `lua-types/GateKit.lua`.
 
@@ -72,32 +73,40 @@ The tables and functions each file adds to `GK`; the signatures are in `lua-type
 | File | Public names |
 | --- | --- |
 | `Shared/Bridge.lua` | `GK`, `GK.Dump`, `GK.Run`, `GK.Format`, `GK.AutoSave`, `GK.Start` (the file channel of the host), `GK.Log` (per chunk); the observed answers: `GK.Observe`, `GK.Unobserved`, `GK.Follow`, `GK.Later`, `GK.Ticks`, `GK.LimitTicks`, `GK.TickMs`, `GK.Clock`; a hit read from the game: `GK.HitOutcome`, `GK.HitSaves`, `GK.HitAttack`, `GK.HitRow` |
-| `Shared/Verbs.lua` | `GK.Verbs` (`Load`, `Of`, `List`, `Guard`, `Within`; section 19) |
-| `Shared/EventLog.lua` | `GK.EventLog` (`LoadRegistry`, `Append`, `Row`, `Since`, `Previous`, `On`, `Off`, `SwitchedOn`, `ScopeEnded`, `Tick`, `Costs`, `Families`, `Kinds`; section 15), `GK.Note`, `GK.Step`, `GK.StepEnded`, `GK.Events` |
-| `Shared/Attention.lua` | `GK.Attention` (`Push`, `Set`, `State`, `Mark`, `Since`, `Tick`, `Costs`, `Waiting`; section 11) |
+| `Shared/Verbs.lua` | `GK.Verbs` (`Load`, `Of`, `List`, `Guard`, `Within`; [the class of a verb](#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson)) |
+| `Shared/EventLog.lua` | `GK.EventLog` (`LoadRegistry`, `Register` - another mod's families and kinds added to the vocabulary, as the mod GateKit AI adds its family `ai` -, `Append`, `Row`, `Since`, `Previous`, `On`, `Off`, `SwitchedOn`, `ScopeEnded`, `Tick`, `Costs`, `Families`, `Kinds`; [the event log](#the-event-log-gkeventlog-sharedeventloglua-both-sides)), `GK.Note`, `GK.Step`, `GK.StepEnded`, `GK.Events` |
+| `Shared/Attention.lua` | `GK.Attention` (`Push`, `Set`, `State`, `Mark`, `Since`, `Tick`, `Costs`, `Waiting`; [attention](#attention)) |
 | `Shared/ConsoleLog.lua` | `GK.LogSinks`, `GK.Features`, `GK.CutUtf8`, `GK.ShortTrace`, `GK.ConsoleEmit`, `GK.FlushLog` |
 | `Shared/Complete.lua` | `GK.Complete`, `GK.CommonPrefix` |
 | `Shared/Probe.lua` | `GK.Probe` (reading engine objects and their layouts), `GK.Seen` (the capture: `Start`, `Mark`, `AddSpecs`, `Drain`, `New`, `Types`, `Stop`, `Status`, `Spill`) |
-| `Shared/Memory.lua` | `GK.Memory` (section 16) |
-| `Shared/Trace.lua` | `GK.Trace` (section 16.1) |
+| `Shared/Memory.lua` | [`GK.Memory`](#gkmemory-the-memory-instrument-sharedmemorylua) |
+| `Shared/Trace.lua` | [`GK.Trace`](#gktrace-the-entity-tracer-as-rows-of-the-event-log-sharedtracelua-both-sides) |
 
 ### Server (S)
 
 | File | Public names |
 | --- | --- |
 | `Server/Api.lua` | `GK.Item`, `Character`, `Party`, `InDialog`, `Pos`, `Give`, `Find`, `Equip`, `Unequip`, `Unsheath`, `Teleport`, `Spawn`, `Dialogs`, `StartDialog`, `Remove`, `Watch`, `Watched` |
-| `Server/Stage.lua` | `GK.Stage`: the stage scope and its ledger (section 14), the staging verbs (spawn, status, damage, heal, surface, lock, flag, fact, level ...), and the tables `Templates`, `Factions`, `TriggerKinds` |
-| `Server/Speed.lua` | `GK.Speed` (`Enable`, `Disable`, `Set`, `Get`, `Boost`, `Rule`, `State`, `Clock`, `Profile`, `Working`, `Class`; section 18) |
+| `Server/Stage.lua` | `GK.Stage`: the [stage scope](#the-stage-scope-gkstagebegin-clean-verify-track-serverstagelua) and its ledger, the staging verbs (spawn, status, damage, heal, surface, lock, flag, fact, level ...), and the tables `Templates`, `Factions`, `TriggerKinds` |
+| `Server/Speed.lua` | `GK.Speed` (`Enable`, `Disable`, `Set`, `Get`, `Boost`, `Rule`, `State`, `Clock`, `Profile`, `Working`, `Class`; [below](#gkspeed-the-working-speed-and-the-games-clock-serverspeedlua)) |
 | `Server/Pause.lua` | `GK.Pause` (`Set`, `State`, `While`) |
 | `Server/Situation.lua` | `GK.See`: what a character perceives and how the scene stands (`Perception`, `Perceives`, `PartyPerceives`, `Relation`, `Around`, `Entity`, `Watchers`, `Exposure`, `Combat`, `Targets`, `Odds`, `Path` ...) |
 | `Server/Conditions.lua` | `GK.Conditions` (`Eval`, `Check`) |
-| `Server/Act.lua` | `GK.Act` on the server: the fair verbs `Select`, `EndTurn`, `Flee`, `TurnBased`, `Lockpick`, the jobs (`Job`, `Jobs`, `HasEnded`), what blocks an action (`CannotAct`, `Stuck`, `Provokes`, `Threats` ...), and the fair names of the scripted actions, which answer with both routes (section 19); `GK.Cheat`'s scripted actions (`Move`, `Cast`, `Attack` ... section 19) |
+| `Server/Act.lua` | `GK.Act` on the server: the fair verbs `Select`, `EndTurn`, `Flee`, `TurnBased`, `Lockpick`, the jobs (`Job`, `Jobs`, `HasEnded`), what blocks an action (`CannotAct`, `Stuck`, `Provokes`, `Threats` ...), and the fair names of the scripted actions, which answer with both routes; `GK.Cheat`'s scripted actions (`Move`, `Cast`, `Attack` ...); both in [the class of a verb](#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson) |
 | `Server/Cheat.lua` | `GK.Cheat`: the catalogue of named cheats beside the scripted actions, `List`, `Used`, `Reset` |
-| `Server/Fixtures.lua` | `GK.Fixture` (`Fight`, `Talker`, `Trader`, `Loot`, `Lock`, `Trap`, `Down`, `Box`, `Clear`, `Made`, `Ready`, `ProvokeReady`, `WhyNoThreat`, `RunOp`, `Defaults`, `Track`; section 12) |
-| `Server/Rolls.lua` | `GK.Rolls` (section 17) |
+| `Server/Fixtures.lua` | `GK.Fixture` (`Fight`, `Talker`, `Trader`, `Loot`, `Lock`, `Trap`, `Down`, `Box`, `Clear`, `Made`, `Ready`, `ProvokeReady`, `WhyNoThreat`, `RunOp`, `Defaults`, `Track`; [below](#gkfixture-scenes-staged-in-the-empty-test-level)) |
+| `Server/Rolls.lua` | [`GK.Rolls`](#gkrolls-rolls-decided-in-advance-serverrollslua) |
+| `Server/RollGenerator.lua` | `GK.Rolls.Generator` (`Outputs`, `Face`, `DrawnAt`): the game's draw of a die, worked out from a stream's seed |
+| `Server/RollLog.lua` | `GK.RollLog` (`Available`, `Origin`, `Origins`, `Causes`, `Forget`): the roll log, a `dice_thrown` row for every roll with who asked for it and why, from the fork's roll events |
+| `Server/Store.lua` | [`GK.Store`](#gkstore-data-kept-in-the-save-serverstorelua) |
+| `Server/FightLog.lua` | `GK.FightLog`: writes the family `fight` ([below](#the-family-fight-and-what-the-games-rows-say-of-a-fight)) |
+| `Server/Fight.lua` | `GK.Fight` (`Options`: GateKit's reading of what a creature could cast at a target, at any moment) |
+| `Server/Camera.lua` | the server's `GK.Camera` (`Focus`, `Return`; [the camera's focus](#the-cameras-focus-and-a-line-over-a-head)) |
+| `Server/Wake.lua` | [`GK.Wake`](#gkwake-a-creature-or-a-place-kept-awake-far-from-the-party-serverwakelua) |
+| `Server/Say.lua` | `GK.Say` (`Line`, `Shown`, `Accent`; [a line over a head](#the-cameras-focus-and-a-line-over-a-head)) |
 | `Server/Heard.lua` | `GK.Heard` (`Since`, `Poll`, `Start`, `Stop`) |
 | `Server/GameLog.lua` | `GK.GameLog` (`Since`, `Kinds`): writes and reads the `game` family of the event log |
-| `Server/EventFamilies.lua` | no public names: writes the detailed families of the event log (section 15) |
+| `Server/EventFamilies.lua` | no public names: writes the detailed families of the [event log](#the-event-log-gkeventlog-sharedeventloglua-both-sides) |
 | `Server/Attention.lua` | no public names: the server's hooks of `GK.Attention` |
 | `Server/Focus.lua` | the server's `GK.Focus` (`Show`, `Glance`, `Clear`, `SetEnabled`, `State`, `JobStarted`, `JobFinished`); sends on `GK_Focus` |
 | `Server/SaveState.lua` | `GK.SaveState` (`Snapshot`, `Write`, `Restore`, `Info`): the bridge's state tables in `Mods.GateKit.PersistentVars` |
@@ -107,27 +116,29 @@ The tables and functions each file adds to `GK`; the signatures are in `lua-type
 
 | File | Public names |
 | --- | --- |
-| `Client/Api.lua` (C) | `GK.Client`, `Controlled`, `ControlledSet`, `Scenes`, `Tracks`, `FastScenes`, `ScanCode`, `Key`, `Shot`, `ShotPending`, `FrameCap`, `SetFrameCap` (section 9) |
-| `Client/Sound.lua` (C) | `GK.Sound` (section 8) |
+| `Client/Api.lua` (C) | `GK.Client`, `Controlled`, `ControlledSet`, `Scenes`, `Tracks`, `FastScenes`, `ScanCode`, `Key`, `Shot`, `ShotPending`, `FrameCap`, `SetFrameCap` ([below](#gkframecap-and-gksetframecap)) |
+| `Client/Sound.lua` (C) | [`GK.Sound`](#gksound) |
 | `Client/UI.lua` (UI) | `GK.ViewModel`, `ViewModels`, `Properties`, `Dialog`, `Answer`, `Fold`, `Commands`, `Command` |
 | `Client/Stage.lua` (UI) | `GK.Blocking`, `RollNext`, `BoxPress`, `Unblock`, `Autoplay`, `AutoplayInfo`, `Controls`, `Press` |
-| `Client/Windows.lua` (UI) | `GK.Gui`: `Widget`, `Data`, `Open`, `Page`, `IsOpen`, `InputEvents`, `Event`, `Show`, `Close`, `CloseAll`, `Find`, `Controls`, `ActionOf`, `UseSlot`, `Picture`, `Changed`, `ObserveEffect`, `Click`, `Select`, `Input`, `Snapshot`, `Read`, `Item`, `ItemDo`, `FilmPlaying`, `Stuck`, `NewGame`, `List`, the registry of windows `Windows`; the client's `GK.Cheat` window verbs `Run`, `Set`, `Step`, `Auto`, `Quiet`, `Recover` |
-| `Client/XamlChains.lua` (UI) | `GK.Gui.XamlChain`: a control's click chain read from the game's XAML (section 11) |
+| `Client/Windows.lua` (UI) | `GK.Gui`: `Widget`, `Data`, `Open`, `Page`, `IsOpen`, `InputEvents`, `Event`, `Show`, `Close`, `CloseAll`, `Find`, `Controls`, `ActionOf`, `UseSlot`, `Picture`, `Changed`, `ObserveEffect`, `Click`, `Select`, `Input`, `Snapshot`, `Read`, `Item`, `ItemDo`, `FilmPlaying`, `Stuck`, `NewGame`, `List`, `Look`, `Handle`, `Shown`, `Set`, `Tips`, `Tip`, `PinTip`, `CloseTips`, the registry of windows `Windows`; the client's `GK.Cheat` window verbs `Run`, `Set`, `Step`, `Auto`, `Quiet`, `Recover` |
+| `Client/XamlChains.lua` (UI) | `GK.Gui.XamlChain`: a control's click chain read from the game's XAML ([look](#look-any-window-by-walking-it)) |
+| `Client/Pointer.lua` (UI) | `GK.Cheat.Pointer`: a pointer inside the game, a [research instrument](#the-pointer-a-research-instrument) |
 | `Client/WindowReaders.lua` (UI) | no new functions; adds `read` to the entries of `GK.Gui.Windows` |
 | `Client/Popups.lua` (UI) | `GK.Gui.Blocking`, `Resolve`, `DialoguePhase`, `RollBonuses`, `AddRollBonus`, `Trade`, `Combine`, `LongRest`, `QuickSave`, `QuickLoad`, `SaveAs`, `LoadLatest`; the entries of the windows that wait for the player (dialogue, roll, reaction, box, tutorial, loot, trade, pickpocket, rest, learn ...) |
-| `Client/Camera.lua` (C) | `GK.Camera` (`State`, `Look`, `Face`) |
+| `Client/Camera.lua` (C) | the client's `GK.Camera` (`State`, `Look`, `Face`, `OnScreen`, `Focus`, `Return`) |
 | `Client/Places.lua` (UI) | `GK.Places` (`Zone`, `Markers`) |
 | `Client/Focus.lua` (C) | the client's `GK.Focus` (`SetCalm`, `State`, `Outline`, `ClearOutlines`, `Aim`, `Confirm`, `ClearAim`); listens on `GK_Focus` |
-| `Client/Aim.lua` (UI) | `GK.Gui.Aiming`, `Aim`, `FirstClickPicked`, `Confirm`, `CancelAim`; `GK.Cheat.AimBest` (section 11) |
-| `Client/Act.lua` (UI) | the client's `GK.Act`: `Cast`, `Attack`, `Press`, `Draw`, `Sheathe` (section 19) |
+| `Client/Aim.lua` (UI) | `GK.Gui.Aiming`, `Aim`, `FirstClickPicked`, `Confirm`, `CancelAim`; `GK.Cheat.AimBest` ([aiming](#aiming-clientaimlua-ui-side)) |
+| `Client/Act.lua` (UI) | the client's `GK.Act`: `Cast`, `Attack`, `Press`, `Draw`, `Sheathe` ([the class of a verb](#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson)) |
+| `Client/Show.lua` (C) | [`GK.Show`](#gkshow-a-picture-over-the-game-straight-from-a-file-clientshowlua) (`Picture`, `Video`, `Hide`, `Shown`) |
 | `Client/Attention.lua` (C) | the client's pollers of `GK.Attention` (`Pollers.windows`, `Pollers.film`, `OnHook`) |
 | `Client/Overlay.lua` (C) | `GK.Overlay` (`Get`, `OnChange`, `Register`), `GK.OverlaySet`, `OverlayState`, `OverlayRescue`, `OverlaySettings`; the console key, the HUD button, the settings window; console commands `gkui`, `gkrescue` |
 | `Client/Console.lua` (C) | the GateKit console: `GK.ConsoleAsk`, `ConsoleRun`, `ConsoleWatch`, `ConsoleUnwatch`, `ConsoleWatches`, `ConsoleAction`, `ConsoleReload`, `ConsoleEvents`, `ConsoleLog`, `ConsoleOutput`, `ConsoleState`, `ConsoleSet`, `ConsoleSubmit`, `ConsoleTab`, `ConsoleCopy`, `ConsoleHistory`, `ConsoleClear`, `ToggleConsole`, `ConsoleHooks`; console command `gk` |
 | `Client/Panels.lua` (C) | `GK.UI` (`Panel`, `Remove`, `Open`, `Panels`, `Press`, `Read`): another mod's own tab in the GateKit console; the builder's methods `SameLine`, `Text`, `Separator`, `Button`, `Toggle`, `Input`, `Select`, `Values`, `Watch` (`GK.PanelBuilder`) |
 | `Client/ui/overlay.weave`, `hud.weave` | GateKit's own Weave components: the settings window and the HUD button |
-| `BootstrapClient.lua` | the UI catalogue's loading (section 7), `GK.Weave`, `GK.Start("client")` |
+| `BootstrapClient.lua` | the [UI catalogue](#the-ui-catalogue)'s loading, `GK.Weave`, `GK.Start("client")` |
 
-## 3. What is not part of the contract
+## What is not part of the contract
 
 What `lua-types/GateKit.lua` and `lua-types/Weave.lua` do not annotate is internal: every `local`,
 and the fields a file exposes only so that a reload keeps them or another bridge file reaches
@@ -139,7 +150,7 @@ windows `GK.Gui.Windows` is public; the reader and the stepper of each window
 (`GK.Gui.Windows.<name>.read`, `.step`) are not. Of Weave, `Weave.Internal` and every
 `Weave.Backend` function (the renderer's seam) are internal.
 
-## 4. Weave, the mod GateKit depends on
+## Weave, the mod GateKit depends on
 
 Weave is `mods/Weave/Mods/Gwynerva_Weave/`: a UI framework for Script Extender mods, client side
 only (module UUID `8ee3d1c7-0362-41bc-b7c9-b10d85c62f4b`, mod table `GateKitWeave`). GateKit's
@@ -168,7 +179,7 @@ annotations are `lua-types/Weave.lua`, its own description `mods/Weave/README.md
   console, the overlay and the HUD button do not exist.
 - Weave trims its own tracebacks and reads nothing of `GK`.
 
-## 5. Couplings inside the bridge
+## Couplings inside the bridge
 
 - **The console borrows Weave's theme.** `Client/Console.lua` is a hand-built IMGUI window, not a
   Weave component; it reads `Weave.Color`, `Skin`, `OnRestyle` and `KeepOnScreen`, and takes part
@@ -190,22 +201,22 @@ annotations are `lua-types/Weave.lua`, its own description `mods/Weave/README.md
   `Server/Stage.lua`; `Client/Panels.lua` documents `Mods.GateKit.GK.UI` as the entry point for
   other mods.
 
-## 6. Annotations
+## Annotations
 
 `lua-types/GateKit.lua` and `lua-types/Weave.lua` are in the format of Script Extender's
 `ExtIdeHelpers.lua`, for LuaLS. Every function either file annotates is part of this contract,
 with the side it runs on.
 
-## 7. The UI catalogue
+## The UI catalogue
 
 `GK.UICatalog` is the game's widgets and what their controls do, derived from the game's own
 XAML. It is not shipped, since it is derived from Larian's files. `BootstrapClient.lua` loads
 `Script Extender/Gwynerva_GateKit/UICatalog.lua` when it is present (a file that sets
 `GK.UICatalog = { ... }`); GateKit has no command that writes it. Without it `GK.Gui` works, and
 `GK.Gui.Click` reads a button's click chain from the game's XAML itself
-(`Client/XamlChains.lua`, section 11).
+(`Client/XamlChains.lua`, [look](#look-any-window-by-walking-it)).
 
-## 8. `GK.Sound`
+## `GK.Sound`
 
 `Client/Sound.lua`, client side only, because sound belongs to the client: every running copy of
 the game mixes its own, which is what makes per-copy volume possible at all.
@@ -271,7 +282,7 @@ What follows from writing the RTPCs rather than the settings:
   loses focus: setting it does not silence a copy that is already in the background until focus
   next changes.
 
-## 9. `GK.FrameCap` and `GK.SetFrameCap`
+## `GK.FrameCap` and `GK.SetFrameCap`
 
 `Client/Api.lua`, client side, over `Ext.ClientRender.FrameCap()`, `SetFrameCap(fps)` and
 `SetLostFocusFrameCap(fps)` in GateKit's Script Extender build.
@@ -310,7 +321,7 @@ What follows:
   `FrameCapEnabled` / `FrameCapFPS` from the graphic config, which is the same field.
 - Nothing survives a restart.
 
-## 10. No `true` for nothing
+## No `true` for nothing
 
 These functions refuse what cannot be done and answer with what was done; every answer is truthy,
 so `if GK.Give(...)` holds whenever something was done.
@@ -321,7 +332,7 @@ so `if GK.Give(...)` holds whenever something was done.
 | `GK.Stage.Teach(spell, who)` (S) | a name that is not in the stats, or is not `SpellData` | `{spell, who, new}`: `new` false when the character knew it |
 | `GK.Command(name, parameter, wanted)` (UI) | no such command on that view model; the game's own `CanExecute` saying no | `{ran, canExecute, note}`: the command RAN, which is not that the game did anything (photo mode with a dialogue open, a short rest out of reach) - read the effect. `canExecute` is nil when the command could not be asked |
 | `GK.Commands(wanted)` (UI) | a `wanted` view model that is not on screen, so that a command name given in its place is not read as "no such command" | the names of the commands |
-| `GK.Stage.Damage(amount, who, kind, anyway)` (S) | a target without a `Health` component; the last party member standing, without `anyway` | observed (section 11): `{who, asked, kind, hpBefore, hpAfter, dealt, row, hit, note?}` - the hit points from the game's `Health` (the game applies damage at once), `row` the seq of the game's own `game_hit` row of the hit and `hit` the damage it says; `dealt = 0` carries a note (a resistance, an immunity, temporary hit points or immortality absorbed it), and no `game_hit` row within the limit says so in `note` |
+| `GK.Stage.Damage(amount, who, kind, anyway)` (S) | a target without a `Health` component; the last party member standing, without `anyway` | [observed](#observed-answers): `{who, asked, kind, hpBefore, hpAfter, dealt, row, hit, note?}` - the hit points from the game's `Health` (the game applies damage at once), `row` the seq of the game's own `game_hit` row of the hit and `hit` the damage it says; `dealt = 0` carries a note (a resistance, an immunity, temporary hit points or immortality absorbed it), and no `game_hit` row within the limit says so in `note` |
 | `GK.Stage.Heal(who, hp)` (S) | a target without a `Health` component | observed: `{who, asked, hpBefore, hpAfter, note?}` once the game's `Health` holds what was asked (the game sets hit points a tick later); a `note` when at the limit it holds something else |
 
 `GK.Stage.Clean()` says in `did` every change of its ledger it takes back - the line the undo gives
@@ -329,7 +340,7 @@ so `if GK.Give(...)` holds whenever something was done.
 of the baseline it puts back; a value asked for once in a clean is not asked again by a later step
 of it.
 
-## 11. Aiming at the world, and answers that are what was observed
+## Aiming at the world, and answers that are what was observed
 
 ### Aiming (Client/Aim.lua, UI side)
 
@@ -462,6 +473,152 @@ A button's command may not be its `Command`: `finishLevelUpButton`'s `Command` i
 tell the chain: its attached `Triggers` reads as a `NoesisApp.TriggerCollection` that Script
 Extender hands out as a plain DependencyObject.
 
+### Look: any window by walking it
+
+`GK.Gui.Look(widget [, options])` answers what a player could act on in an open widget, found by
+walking its visual tree and by what each element is - no table of names, no code per window:
+`{ ok, widget, data, controls = { ... } }`, each control `{ handle, kind, type, text, value,
+enabled (false only), hidden, data, of, command, parameter }`.
+
+| `kind` | Elements | `value` | Acted on by |
+|---|---|---|---|
+| `button` | a type with `Button` in its name; a list item outside any list | - | `GK.Gui.Click` |
+| `toggle` | `CheckBox`, `RadioButton`, `ToggleButton` | `IsChecked` (true or false); when it reads neither, the flag `Value` of the view model the toggle stands for (`valueFrom = "data.Value"`); else `unread = "IsChecked"` | `GK.Gui.Click`, `GK.Gui.Set` |
+| `list` | `ListBox`, `ComboBox`, `TabControl` | the selected item's text; `selected`, `count`, `items = { { n, text, id, name, enabled, hidden } }`, `more`, `notShown` | `GK.Gui.Select`, `GK.Gui.Click(widget, "<list>#<n>")` |
+| `slider` | `Slider` | `Value`, with `min`, `max` | `GK.Gui.Set` |
+| `text` | `TextBox` | `Text` | `GK.Gui.Set` |
+
+- **Handle.** A control's x:Name; an unnamed control is `<what holds it>/<its type>`, where what
+  holds it is the nearest named element or control above it, or the item of a list it lies in
+  (`classList#4/LSButton`). A handle met again in tree order is numbered (`AddAbility[3]`). An item
+  of a list is `<list>#<number>`, the number being the list's own (items not shown keep theirs).
+  A control that is not shown (`options.all`) carries `~` before its handle and is numbered apart,
+  so the handles of what is shown do not depend on it. Handles hold while the window shows the
+  same controls; after a page turns, look again.
+- **Text.** A control's `Content` when it is a text, else the first text block inside it (its
+  `Text`, else its `ls:TextBlockFormatter.SourceText`); localisation handles are translated.
+- **`data`, `of`.** The type of the view model a control stands for and what that view model calls
+  itself (`Name`, `Title`, `DisplayName`, `Label`, `Header`, `Text`, `Description`, else the
+  property named as the type is: `ls.VMAbility.Ability`), when it is not the widget's own.
+- **Items.** A list's `ItemsSource`, else `Items`; a source the list hands out as an object that
+  counts and cannot be indexed is found again, by its address, among the properties of the list's
+  data context, where it reads as a collection; a source that still cannot be indexed (a filtered
+  view) is read by the item elements the list shows (`notShown` counts the rest). An item written
+  in the XAML carries its `name`; a generated one its data's text and `id` (`Guid`, `UUID`, `Id`).
+- **Options:** `under` (a handle or x:Name: only what lies inside it), `kind`, `find` (part of a
+  handle or text), `items` (how many items are written out, default 12), `detail` (the plain values
+  of each control's and item's data), `all` (controls not shown too).
+
+`GK.Gui.Click`, `GK.Gui.Select` and `GK.Gui.Set` take a handle. `GK.Gui.Select(widget, list, item)`
+takes the item's number, its `id`, its `name` or its text (the whole text first, then a part),
+refuses an item that is not shown or a disabled list, and answers `{ ok, selected, of, was, reads,
+text }`: `reads` is the list's selection read again by its handle; a list that does not keep a
+selection is judged by what the window shows. `GK.Gui.Set(widget, handle, value)` sets a slider
+inside its range (outside it: refused with `min`, `max`), a text field, a toggle (pressed when it
+differs) or a list, and answers `{ ok, before, after }`. A picture of a window (`GK.Gui.Picture`)
+holds the handles of the controls it shows, so a page turned inside one widget is seen as a change
+(`saw = "the controls shown changed"`).
+
+**Toggles.** A toggle's state is its `IsChecked`, a nullable flag that GateKit's Script Extender
+reads and writes as true, false or nil. A click presses a toggle through its click chain or its
+command when it has one; a toggle with neither has its `IsChecked` written, and what is bound to
+the flag follows (`steps = { "toggled" }`; a radio button is chosen, never unchosen). The answers
+of `GK.Gui.Click` (`value`) and `GK.Gui.Set` (`before`, `after`) carry the state read again, and
+`handle` when the press changed the toggle's own handle: a toggle may hide itself by what it
+switches. A colour swatch of character creation is such a toggle - its panel's `Visibility` is
+bound to its `IsChecked`, the swatch is not shown while the panel is, and a confirm toggle in the
+panel is bound back: `GK.Gui.Click(w, "swatchSkinColourButton")` opens the panel and answers
+`value = true, handle = "~swatchSkinColourButton"`; `GK.Gui.Look` reads the swatch with
+`value = true` under that handle (`all = true`) while the panel is open; the confirm toggle
+closes it. A toggle bound to a flag of its own data whose `IsChecked` reads neither (a tick box of
+the game's settings: `ls.VMTickBoxSetting.Value`) is read from that flag, and `GK.Gui.Set` writes
+the flag and runs the toggle's click chain, which is what a click does through the binding. On a
+Script Extender build that does not hand out a nullable flag `IsChecked` reads nil and its write
+is lost: a toggle with no command and no flag of its data answers `ok = false`, `saw = "nothing
+changed"` to a click, and `GK.Gui.Set` says that the flag does not read.
+
+What the walk does not reach:
+
+- **A chain on an unnamed control.** `Client/XamlChains.lua` finds a click chain by x:Name; an
+  unnamed control runs its own `Command` only.
+- **Triggers on other events** (`ValueChanged`, `SelectionChanged`) are the game's own and fire by
+  themselves when the value is set; they are not read.
+- **Items a virtualised list has not drawn**, when its source cannot be indexed either.
+- **Popups outside the widget** (a combo box's drop-down drawn in another root). Tooltips are
+  read from there by `GK.Gui.Tips` (below).
+
+### Tooltips
+
+An element, or an inline of a text (a keyword of a description), carries its tooltip in the UI
+library's `ToolTip` property, an `ls.LSTooltip`. A hover sets the tooltip's `IsOpen` after the
+library's delay, and the tooltip is drawn in a popup layer above the canvas, outside every widget;
+for an inline the tooltip records its `Inline` and `InlineParent` and makes its content from them.
+The game's input event `UIPinTooltip` moves the open tooltip into the list of pinned ones
+(`ls.UIWidget.PinnedTooltipList`, drawn by the widget `PinnedTooltips` as `ls.LSElementCopy`
+elements); a link inside a pinned tooltip opens the next one, which can be pinned in turn. A pinned
+tooltip's `PlacementTarget` is the element it was called from.
+
+| Verb | Class | What it does |
+|---|---|---|
+| `GK.Gui.Tips([{ detail }])` | observation | the open tooltips as a chain, the pinned ones first in the game's order, what a hover holds open last: `{ ok, tips = { { n, handle ("tip#1"), pinned, type, about = { type, of, id, spell, values (detail) }, data, context, hint, title, texts = { { part, text } }, links = { { handle ("tip#1/link#2"), text, tag, data, of } }, parent \| owner = { widget, element } } } }` |
+| `GK.Gui.Tip(window, control)`, `GK.Gui.Tip("tip#1/link#2")` | fair | calls up the tooltip of a control (a handle of `GK.Gui.Look`, an item's handle, an x:Name) or of a link inside an open tooltip, as a hover does: the tooltip's own `IsOpen` (for an inline, its `Inline` and `InlineParent` first). Another tooltip a hover held open is closed first. `{ ok, tip, open }` when it stands open and two looks read the same texts |
+| `GK.Gui.PinTip()` | fair | presses the key the profile binds to `UIPinTooltip`; `{ ok, pinned, open }` when the game's list of pinned tooltips grew and the pinned one shows its texts. The tooltip that was pinned is then closed, as a pointer moving off closes it |
+| `GK.Gui.CloseTips([handle])` | fair | every tooltip - a hover's by its `IsOpen`, the pinned ones by the widget's `RequestClearPinnedTooltipsCommand` (what a click beside them and the menu key run) - or the one a hover holds open; `{ ok, closed, tips }` |
+
+- **`about`** is the view model the tooltip was given (`ls.VMCharacterAction`, `ls.VMItem`,
+  `ls.VMAbility` ...): its type, what it calls itself, its id, and the spell of the game's stats it
+  names, when it names one.
+- **`texts`** are the tooltip's text blocks in tree order, inlines joined, each under the x:Name of
+  the part it lies in (`TitleArea`, `TechnicalDescription`, `PropertyText` ...); `title` is the
+  first. The key hint of the game's tooltip template (`uiHintContainer`) is `hint`, apart.
+- **`links`** are what inside the tooltip carries a tooltip of its own: an inline (`tag` is its
+  `TagTooltip`, `data` and `of` its view model) or an element (a cost, a property, a status icon,
+  named by the first text it shows).
+- **`parent`** is the tooltip whose tree holds the element this one was called from; a tooltip
+  called from a window has `owner`.
+- **Not reached.** One pinned tooltip among several is not closed apart: the game takes away the
+  ones pinned after a pinned tooltip on a click on it (`ls.LSElementPanel.ClickCommand` bound to
+  `RemovePinnedTooltipCommand`), with a parameter its panel makes in code. A tooltip opened by
+  handle has no pointer over it: it stays until it is closed or another is called up. No rows of
+  the event log are written for tooltips.
+
+### The pointer, a research instrument
+
+`GK.Cheat.Pointer{ at = { x, y } | widget, handle, do, button, wait }` (Client/Pointer.lua, a
+cheat) makes the game believe its pointer is at a point of its frame - fractions of the frame, or
+a point the UI library's hit test gives to a control of `GK.Gui.Look` - and that a button went
+down and up there (`do = "move" | "press" | "release" | "click" | "leave"`), without the real
+mouse. It answers what the interface reported back after `wait` ms: what lies under the point
+(`under`, `after`: the element hit, the named elements above it, the nearest control with its data
+and whether it has a command, the nearest element with a tooltip, the widget), the UI library's
+routed events seen at the root with their sources (`events`), the open tooltips before and after
+(`tipsBefore`, `tips`), and what changed in the widget's picture (`changed`). **Nothing that ships
+- a verb, a test, a recipe - rests on it**: it finds what answers, so that the answer can be given
+a handle, a command or an event.
+
+The window manager's update takes a mouse motion event's position only when the event names the
+game's window; every motion event then raises the input manager's motion event, on which the
+interface reads the engine's own mouse position (`ls::Mouse`) and gives it to the UI library.
+GateKit's Script Extender names the game's window on the mouse events it injects, so the
+instrument injects events and nothing else: a motion event moves the game's pointer, a button
+event after it is pressed there, and `do = "leave"` is a motion to (-1, -1). No memory is written
+and no address of a build is known. A real motion inside the game's window moves the pointer
+again. On a build whose injected events name no window the instrument refuses
+(`GK.Features.injectedInput`, the `Injected` field of the input events, tells the builds apart).
+
+**Injected input and listeners.** GateKit's Script Extender raises `Ext.Events.KeyInput`,
+`MouseButtonInput` and `MouseWheelInput` for injected events too, marked `Injected = true`, and
+`e:PreventAction()` keeps such an event from the game. What each listener of the two mods does
+with a key or a click given through the bridge (`GK.Key`, `game.key`, `GK.Act.Press`, the click
+of `GK.Gui.Click` on an aim):
+
+| Listener | Hears injected input | Why |
+|---|---|---|
+| Weave's windows (`Client/Shell.lua`): keys, clicks and the wheel held back while a window that blocks is open, Escape closing the top one | yes | a blocking window stands between the player and the game, whoever presses |
+| the console's key and the capture of a new key for it (`Client/Overlay.lua`) | no | both are for the person at the keyboard; a key given through the bridge is meant for the game and passes to it |
+| a press on the HUD button kept from the game (`Client/Overlay.lua`) | no | the button's hover is the real pointer's; an injected click lands where the game's pointer is |
+| a picture with `skip` ([`GK.Show`](#gkshow-a-picture-over-the-game-straight-from-a-file-clientshowlua)) | yes | the picture takes the keyboard from the game, by hand or through the bridge |
+
 ### AutomationId
 
 `GK.Gui.Controls` rows carry `automationId` (the control's own `ls:AttachedProperties.AutomationId`)
@@ -473,14 +630,14 @@ dependency values (`element:DependencyProperties().AutomationId`). Filters take 
 ### Attention
 
 `GK.Attention` (Shared/Attention.lua; hooks in Server/Attention.lua and Client/Attention.lua) is a
-view of the event log (section 15): `Push(what, fields)` appends a news row, `Set(key, item | nil,
+view of the [event log](#the-event-log-gkeventlog-sharedeventloglua-both-sides): `Push(what, fields)` appends a news row, `Set(key, item | nil,
 ended)` a row that opens, changes or closes the waiting state `key` (`item.what` is its kind),
 `Waiting` reads the open states as items `{ what, at, seq, tick, key, ...payload }` (a view of
 `GK.EventLog.Open`, not writable), `State()`, `Since(seq)` and `Mark()` read the rows a caller is
 told, `Costs()` says what the hooks and the log cost. What the host does with it:
-bridge-protocol.md, "Attention"; mcp.md section 4. Observation.
+[bridge-protocol.md](bridge-protocol.md#attention); [mcp.md](mcp.md#attention-and-event-ended-waits). Observation.
 
-## 12. `GK.Fixture`: scenes staged in the empty test level
+## `GK.Fixture`: scenes staged in the empty test level
 
 `Server/Fixtures.lua`. A fight, a talker, a trader, loot, a lock and a trap built next to the party in
 `GustavX:Basic_Level_A` instead of loading an act. Staging is a cheat; what a caller does in the
@@ -535,7 +692,7 @@ What the empty level cannot host: the camp and long rest (no camp region), story
 whose roots check act flags fall through), crimes (no owners or witnesses), doors (no walls),
 navigation beyond the platform.
 
-## 13. Dialogue phases, the roll, and steps that end early
+## Dialogue phases, the roll, and steps that end early
 
 - `GK.Gui.DialoguePhase()` (UI): `{ phase = "choice" | "continue" | "line", answers, speaker, text,
   instance, canTrade, set }` or nil. GK.Attention records a `dialogue_choice` (with the answers and
@@ -559,11 +716,11 @@ navigation beyond the platform.
   defers of NewGame and of a click chain run a command after the call has answered (a load would
   cut the answer) and are not waits; the XAML's own TimerTrigger delays are the game's.
 
-## 14. The stage scope: GK.Stage.Begin, Clean, Verify, Track (Server/Stage.lua)
+## The stage scope: GK.Stage.Begin, Clean, Verify, Track (Server/Stage.lua)
 
 A test stages a scene and leaves it; the next test must find the world as it was. The stage ledger keeps
 what was changed, and a baseline finds what was changed behind its back. The ledger is rows of the
-event log (section 15): `scope_begin` opens a scope, whose id is that row's seq
+[event log](#the-event-log-gkeventlog-sharedeventloglua-both-sides): `scope_begin` opens a scope, whose id is that row's seq
 (`GK.EventLog.Scope`) and which every row written in it carries as `scope`; every change is a
 `scope_track` row, its undo a `scope_undo` row, every Clean a `scope_clean` row and every Verify a
 `scope_verify` row - so "what happened in this scope" is `GK.EventLog.Since(0, { scope = id })`,
@@ -678,7 +835,7 @@ and prints the table; a survivor found later is a row of that test and of this t
 | an armed capture (`GK.Seen`) | files in the bridge's channel | yes by design (re-armed at bootstrap) | the capture label is put back by the clean |
 | a deck's frame-rate floor | the deck, outside the game | yes (it is not the game's) | set again by the deck; Verify may then see the frame cap differ |
 
-## 15. The event log: GK.EventLog (Shared/EventLog.lua, both sides)
+## The event log: GK.EventLog (Shared/EventLog.lua, both sides)
 
 One append-only record per side of everything the bridge notices; the other streams are views of
 it and keep no copy. A row is `{ seq, tick, t, kind, knows, key?, attention?, scope?, payload? }`
@@ -709,14 +866,14 @@ families: `status` from Osiris StatusApplied / StatusRemoved, `entity`, `surface
 from the engine's component creation and destruction (`Ext.Entity.OnCreateDeferred` /
 `OnDestroy`, subscribed only while on).
 
-## 16. `GK.Memory`: the memory instrument (Shared/Memory.lua)
+## `GK.Memory`: the memory instrument (Shared/Memory.lua)
 
 The decompiled code and the running game's memory are one thing from two sides: `module+0xRVA` is a
 place in the live process. `GK.Memory` reads a component's field by address, watches which instruction
 writes or reads it, and holds a value fixed. It is built on the fork's `Ext.Debug` additions (below),
 needs GateKit's Script Extender in developer mode, and exists on both sides: each side owns its own
 watches and freezes, and the four watch slots are shared by the process. Every verb is a **cheat** or
-an **observation**, never fair (section 19; `GK.Memory.Class` carries them), and the cheats
+an **observation**, never fair ([the class of a verb](#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson); `GK.Memory.Class` carries them), and the cheats
 (`Write`, `Freeze`) are recorded in `GK.Cheat.Log`. The server's watches and freezes are removed on
 `GK.Stage.Clean` (registered through `GK.Stage.OnClean`), the client's by the reset ladder's clean of
 the client (`GK.Memory.Clear`). The extender serves the watches and rewrites the frozen values every
@@ -729,6 +886,7 @@ reset in the process; those of an earlier Lua state of a side are cleared as tha
 | `GK.Memory.Available()` | observation | whether the fork's instrument is present (developer mode, the memory build) |
 | `GK.Memory.Field(entity, component, field)` | observation | `{ Address, Offset, ComponentAddress, Type, Size, Scalar }` for a field, from the fork's type information. `entity` is a uuid, an entity or a handle; `component` is the **engine** name (`eoc::HealthComponent`), as `Ext.Debug.GetComponentAddress` takes it; `field` is the Lua field name (`Hp`) |
 | `GK.Memory.System(name)` | observation | the address of a system's own object (`esv::roll::stream::SaveSystem`), or nil: what a system keeps outside the components is reached from here with `Read` |
+| `GK.Memory.Path(object, path)` | observation | where a value below an object's top level lies and how wide it is: `object` is any reference to an object of the game Lua holds (a component, a system's manager, a struct inside one), `path` the way down as Lua writes it (`"Streams[2].State.NumRolls"`, indexes from 1). `{ Address, Size, Offset, ObjectAddress, Path }`, the shape `Watch`, `Read` and `Freeze` take, or nil and why. Needs the Script Extender build with `Ext.Debug.GetPropertyAddress`; an array kind that cannot say where its elements lie and a property that is no plain field answer nil or size 0 |
 | `GK.Memory.Element(bufferAt, index, elementSize[, offset])` | observation | the address inside element `index` (from 0) of an array whose buffer pointer is at `bufferAt` (an address or a field table): `Field` stops at an array |
 | `GK.Memory.Moved()` | observation | the followed watches whose place moved since they were armed, by the slot each had: `{ [slot] = { was, now, did = "rearmed" \| "closed", armed?, why?, entity, component, field? } }` |
 | `GK.Memory.Read(address, type)` | observation | the scalar at an address read as `type` (a field table may be passed for its own address and type) |
@@ -772,7 +930,7 @@ The host names an address with `gatekit decomp at <module+0xRVA>` (the `decomp` 
 the function's name from the decompiler database and the symbol database, for an address from
 `GK.Memory` or any external tool (a debugger, Cheat Engine). Marked observation.
 
-### 16.1 `GK.Trace`: the entity tracer as rows of the event log (Shared/Trace.lua, both sides)
+### `GK.Trace`: the entity tracer as rows of the event log (Shared/Trace.lua, both sides)
 
 Each side has a tracer of its own (GateKit's Script Extender, developer mode). Between `Begin` and
 `End` it records what changed in the entity system, per entity and component - created, destroyed,
@@ -801,7 +959,7 @@ changes and 500 system rows a step); `trace_end`. A change made outside every sy
 `Osi` call from Lua) is recorded with no system. The server's clean ends a trace the scene left
 running (`GK.Stage.OnClean`), the reset ladder's clean of the client the client's.
 
-## 17. `GK.Rolls`: rolls decided in advance (Server/Rolls.lua)
+## `GK.Rolls`: rolls decided in advance (Server/Rolls.lua)
 
 A test must not wait on luck. A pin is the game's own pair of boosts
 `MinimumRollResult(<kind>,n);MaximumRollResult(<kind>,n)` on the roller (added by `Osi.AddBoosts`,
@@ -811,7 +969,8 @@ roll kind; its pin is the boost `Initiative(n)`, and `n` is a bonus added to the
 not the die (+-100 decides the order). Every pin is a track row of the stage ledger whose undo is
 data (`op = { op = "boost", who, text, cause }`, GK.Fixture's `boost` undo), so it outlives a reload of
 the bridge, `GK.Stage.Clean` and `GK.Fixture.Clear` take it off, and a pin left from a scope that a
-fresh `Begin` replaced stays a fixture row until `GK.Fixture.Clear`. `GK.Rolls.Class` names each verb's class.
+fresh `Begin` replaced stays a fixture row until `GK.Fixture.Clear`. Each verb's class is in the
+registry of verbs ([the class of a verb](#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson)), which also sets `GK.Rolls.Class`.
 
 | Verb | Class | What it does |
 |---|---|---|
@@ -820,10 +979,24 @@ fresh `Begin` replaced stays a fixture row until `GK.Fixture.Clear`. `GK.Rolls.C
 | `GK.Rolls.Pins()` | observation | what is pinned now, read from the boosts of every creature pinned in this Lua state or named by an open ledger row: `{ { who, kind, n, once, boost, track, tracked } }`; `tracked = false`: the row is undone and the boost has not left yet |
 | `GK.Rolls.Kinds()` | observation | every value of the game's `Ext.Enums.StatsRollType` except `None` and its end marker `Sentinel`, sorted, then `Initiative` |
 | `GK.Rolls.Karmic()` | observation | `{ on, option, mode, saved }`: Karmic Dice (below) |
-| `GK.Rolls.SetKarmic(on)` | cheat | writes the game's option for the length of the scope (Clean writes the old value back, from data in the ledger row, `op = "karmic"`, so a bridge reload keeps the undo; refused outside a scope); observed until the roll manager follows: `{ ok, on, was, mode, ticks }`. `WriteKarmic`, `WriteStreams`, `WriteInspiration` are the undos themselves: they write and track nothing |
+| `GK.Rolls.SetKarmic(on)` | cheat | writes the game's option for the length of the scope (Clean writes the old value back, from data in the ledger row, `op = "karmic"`, so a bridge reload keeps the undo; refused outside a scope); observed until the roll manager follows: `{ ok, on, was, mode, ticks }` |
+| `GK.Rolls.WriteKarmic(on)`, `GK.Rolls.WriteStreams(list)`, `GK.Rolls.WriteInspiration(points, max)`, `GK.Rolls.WriteRig(id)` | cheat | the undos of `SetKarmic`, `SetStreams`, `SetInspiration` and `Rig`, called by the stage ledger (`GK.Fixture`'s undo of the rows `karmic`, `streams`, `inspiration`, `rig`): each writes the value and makes no ledger row, so a call of one is not undone by `GK.Stage.Clean`. A scene uses the `Set` verbs and `Rig` |
 | `GK.Rolls.Finished(who, take)` | observation | the oldest finished roll of `who` that no RollResult event has taken yet (GK.GameLog joins it to its `game_roll` row); the event comes the next tick, and a finished roll older than 5 ticks is dropped, so that it is never joined to a later roll. Its `advantage` (advantage, disadvantage, both), `discarded` (the other d20: the game draws two for every roll), `total`, `critical` and `modifiers` come from the roll's request - alive for a passive roll, read in its destruction for an active one, whose request is gone before its finished event |
 | `GK.Rolls.Streams()` | observation | the server's roll streams, read from the roll manager: `{ base, frame, mode, streams = { { type, seed, rolls, frame, failDebt, successDebt, player, combat, cast } }, saved }` - `base` its base seed, each stream's `type` one of `Ext.Enums.RollStreamType` (Generic, Dialog, PlayerSpell, ...), `rolls` the dice drawn from it (two for every d20 roll); `saved` the same read from the roll streams component. A load sets `base` to the clock in seconds and makes the streams anew |
 | `GK.Rolls.SetStreams(list)` | cheat | writes `seed` and `rolls` of the streams `list` names (`{ { type, player, combat, seed, rolls } }`, the shape of `Streams().streams`, or a whole `Streams()` answer - so an earlier reading rewinds them) in the roll streams component, which the game draws from (a write to the roll manager is not honoured); a stream's dice are a function of its seed and count, so the same rolls come again. Clean writes the old values back (data in the ledger row, `op = "streams"`), or reports the stream gone. Refused outside a scope. `{ ok, written = { { type, player, combat, seed, rolls, was } }, missing }` (`missing`: named streams that do not exist, such as a Dialog stream before the first dialogue check) |
+| `GK.RollLog.Available()` | observation | whether this Script Extender build throws the roll events the roll log is written from (GateKit's build with them, developer mode). The family `dice` (`GK.EventLog.On("dice")`) then writes a `dice_thrown` row for every roll the game's roll manager throws - a check, an attack, a save, damage, a heal, initiative, a die of a stats expression, by any creature: `{ who, kind, stream, streamId, dieType, count, bonus, dice, natural, discarded, total, critical, dc, advantage, forced, origin, what, caller, cause, causeId, request }`. `origin` is the registry id of the code that asked and `what` the roll it asks for; `cause` says why the roll was asked - `status applied`, `status event`, `spell`, `request` (a roll the roll system makes from a request: `request = { context, fromScript, subject, dialog }` says which), `dialogue throw`, `damage at a position`, `initiative` - from the frame of the system that decided a roll was needed, `causeId` its registry id; an address no named asker holds gives `origin = "unknown"` with `caller`, and the row is still written. A roll asked through one of the roll manager's own entry functions is named by the frame above it. `forced` marks an outcome Karmic Dice decided before the dice. On a build without the events, switching the family on is refused and says why |
+| `GK.RollLog.Origin(module, rva)` | observation | the named asker an address of an executable belongs to, `{ id, what, entry }`, or nil |
+| `GK.Verbs.Has(path)` | observation | whether this Script Extender build has what `path` names under `Ext`: a function (`"Debug.AddProbe"`) or an event (`"Events.Roll"`: `Ext.Events` answers for any name, so an event is there when the type of its parameters is among the extender's types). A verb whose entry in `Shared/VerbClasses.json` has `needs` answers `{ ok = false, error, needs }` and does nothing when the build lacks it; `GK.Verbs.Needs()` lists such verbs with whether each is met |
+| `GK.RollLog.Forget(id)` | observation | leaves one named asker or cause out of the log's tables until the family `dice` is turned off (the scope's end does it), so that its rolls are written as rolls asked from a place nobody has named: `origin = "unknown"` (or `cause = "unknown"`) with the address in `caller`. Nothing in the game changes. Without an id nothing is left out. `{ ok, forgotten }` |
+| `GK.RollLog.Origins()` | observation | the askers known for each executable: `{ [module] = { { id, what, rva, size } } }`; the ids and words are in `Server/RollOrigins.json`, the places are written into it from the registry's build tables by `gatekit registry places`, for every executable the registry places them in |
+| `GK.RollLog.Causes()` | observation | the causes of a roll known for each executable, from the same file and the same command: `{ [module] = { { id, cause, rva, size } } }` - `cause` is the word a row's `cause` carries, `id` its `causeId` |
+| `GK.Rolls.Next(spec)` | observation | the dice the stream `spec` names (`type`, and `player`, `combat` when several share the type) gives to its next roll, computed from its seed and count with the game's generator and not drawn: `{ ok, type, player, combat, seed, rolls, dice }`. `dice` (default 2: the pair the game draws for every d20 roll, the first kept unless advantage or disadvantage chooses) and `faces` (default 20) describe the roll; `rolls` computes from another count. A roll that Karmic Dice forces, a die a reroll boost throws again and a die replaced by a guaranteed-outcome boost are not these |
+| `GK.Rolls.SetNext(spec)` | cheat | chooses the natural die of the next roll drawn from the stream `spec` names: moves its count forward to the nearest one at which the first die is `die` and, with `both`, every die of the roll (so that advantage and disadvantage keep it too); written through `SetStreams`, so Clean puts the count back. One roll is chosen - the roll after it draws what the stream gives where it is left; other streams and the bounds a boost puts on a die are untouched. `{ ok, type, player, combat, seed, rolls, was, dice }`, or `{ ok = false, error }` when the stream does not exist yet or no count near gives the die. Refused outside a scope |
+| `GK.Rolls.Rig(spec)` | cheat | decides one throw at the moment it is made, through the extender's roll event, for the length of the scope. `spec` names the roll by what the game says of it - `who` (the roller), `kind` (the roll's type as the game names it, or `Attack` / `Damage` for every type that ends so), `stream` (the roll stream's type), and by what the roll is for - `spell`, `status`, `source`, `target` (the spell and the status the roll belongs to, the two parties; on a build of the extender whose roll event says them); a field left out matches any roll - and which of the rolls that fit: `nth` (default 1, the next) and `times` (how many from there, default 1; 0: every one until `Unrig` or Clean). The throw gets `natural` (the die that counts: the total follows, and the critical by the game's rule) or `total`. Every other roll is as the game throws it: of four checks asked in one tick with the third rigged, three are the stream's own. One rig decides a roll; the earliest set wins. A `roll_rigged` row (scope, cheat, omniscient) says what the game had thrown. `{ ok, id }`, or `{ ok = false, error }` on a build without the roll event. Refused outside a scope |
+| `GK.Rolls.Chance{ who, spell, target, set }` | observation | the chance, from 0 to 1, that the roll of `spell` cast by `who` (default the host) at `target` succeeds, as the game itself works it out - the number its combat AI weighs and its cursor shows, advantage and disadvantage folded in. Nothing is rolled. The game counts the weapons of the caster's active weapon set and switches the set only when an attack is really made, so for a weapon attack the set the attack would be made with (`set`: `"Melee"` or `"Ranged"`; default: read from the spell's roll) is put on for the length of the question and put back. `{ ok, chance, set, was }`, or `{ ok = false, error }`. Needs the Script Extender's `Ext.Stats.GetSpellRollChance` (GateKit's build): without it `{ ok = false, error, needs }` |
+| `GK.Rolls.Unrig(id)` | cheat | takes a rig off, every rig without an id: `{ ok, removed }` |
+| `GK.Rolls.Rigs()` | observation | the rigs in force: `{ { id, who, kind, stream, nth, times, natural, total, seen, decided } }` |
+| `GK.Rolls.CanRig()` | observation | whether this Script Extender build raises the roll event (`Ext.Events.Roll`) |
 | `GK.Rolls.Inspiration()` | observation | the party's inspiration points, the `InspirationPoint` action resource (its definition looked up by name, `GK.Stage.ResourceId`): `{ points, max, holders = { { uuid?, entity, party, points } } }` - every entity that keeps the resource with its amount; `max` is the definition's `MaxValue` - the resource's own `MaxAmount` grows as points are given and is not the cap. The pool is the party's: one entity of the party's own (`PartyComposition`, `PartyView`; no uuid, `party = true`) holds it, not a character, and it holds at most `max` (4): six points given, four held. Who of a party of two spends it in a roll is not read yet |
 | `GK.Rolls.SetInspiration(n, { past })` | cheat | writes the points (0..max; above the game's ceiling only with `past = true`) on every entity that keeps the resource, and its `MaxAmount` when lower, for the length of the scope (Clean writes both back, from data in the ledger row, `op = "inspiration"`; refused outside a scope): `{ ok, points, was }`. A party that never had a point has no row of the resource (a fresh level): one point is given through `Osi.GiveInspirationPoints`, which makes the party entity's row; the answer is then observed, `{ ok, points, was = 0, made = true, ticks }`, and Clean writes 0 back (the row stays, as the game keeps it). `Osi.GiveInspirationPoints` only adds (a negative amount does nothing) and is not undone by Clean |
 
@@ -885,7 +1058,7 @@ and at 19 hits (`test:_selftest/clean/attack_in_fight`). Not verified in the gam
 active roll's `game_roll` row has no `modifiers` (the roll is gone when its RollResult comes); its
 window's rows list them.
 
-## 18. `GK.Speed`: the working speed and the game's clock (Server/Speed.lua)
+## `GK.Speed`: the working speed and the game's clock (Server/Speed.lua)
 
 `GK.Speed.Set(scale)` takes any positive scale (the engine's switch has no cap; a direct write is
 honoured as written, measured exactly up to 32); from 16 the answer carries `warning`: the game is
@@ -897,7 +1070,7 @@ seconds of that tick (the scale lengthens a tick; the server ticks about 30 time
 speed), the monotonic milliseconds of it. `GK.Speed.Class` names each verb's class (setting the
 scale is a cheat; reading it is observation).
 
-## 19. The class of a verb, and steps (Shared/Verbs.lua, Shared/VerbClasses.json)
+## The class of a verb, and steps (Shared/Verbs.lua, Shared/VerbClasses.json)
 
 Every function under `GK` is **fair** (a player could do it through the game itself: it rolls,
 pays its costs and passes the game's own checks), **cheat** (it sets the world, bends a rule, runs
@@ -984,3 +1157,369 @@ A test (src/GateKit.Testing) names its steps:
 | `need(condition, why)` | answers `condition` when it holds; otherwise the test ends as **unmet: why** - neither a pass nor a failure of the thing tested (cli.md, `test`) |
 
 A test that calls neither runs with nothing held.
+
+## `GK.Store`: data kept in the save (Server/Store.lua)
+
+A store is a named table of any shape that travels inside the game's save: what is set before a
+save is there after that save is loaded; a load returns the store to the save's state; a save
+made before the store existed gives the store's defaults. It stands on the Script Extender's mod
+variables (`Ext.Vars`), one variable in the extender's own region of the save; nothing of the
+game's is touched. Server side. Study: `research/studies/save-kept-data.md`.
+
+| Verb | Class | What it does |
+|---|---|---|
+| `GK.Store.Open(name, options)` | observation | declares a store: `version` (a whole number, default 1), `defaults` (what a save without the store gives), `migrate(data, from, to)` (run once on a save that holds an older version), `mod` (the uuid of the mod whose variable it is; default GateKit's own, whose stores need no declaration). Another mod's store must be opened while that mod's bootstrap script runs, on every start: the extender restores only variables registered by then. `{ ok, name, version, saved }` |
+| `GK.Store.Get(name, path, mod)` | observation | a copy of the value at `path` (the whole store without one), or nil. A path is a list of keys (`{ "books", 2, "at" }`) or a dotted text (`"books.2.at"`; a part of digits only is a list index) |
+| `GK.Store.Set(name, path, value, mod)` | cheat | writes `value` at `path` (nil takes the key out; without a path the whole store is replaced and must be a table); tables on the way are made. The whole store is checked first and nothing is written when it cannot be kept: `{ ok = false, error, at }`. `{ ok, name }`. A write is not undone by `GK.Stage.Clean`: a store outlives a scope by its purpose - a test takes out what it put in |
+| `GK.Store.Names()` | observation | the stores of GateKit's own mod that the save holds: `{ { name, version } }` |
+| `GK.Store.Drop(name)` | cheat | takes a store of GateKit's own mod out of the save's variables altogether: `{ ok, dropped }` |
+| `GK.Store.Check(value)` | observation | whether a value can be kept: `{ ok = true }`, or `{ ok = false, error, at }` with the path of the first part that cannot |
+
+What can be kept: nil, booleans, finite numbers (kept to the last bit: the save itself would keep a
+fraction as a 32-bit float and a whole number through a double, so the store writes such numbers
+as texts and reads them back), texts, and tables of them nested to 64 levels,
+each either a plain list (keys 1..n) or keyed by texts. Refused, because the extender would lose
+it in silence: a function or a userdata (the whole variable is saved as nothing), a number key in
+a table that is no plain list (it comes back as a text), a table that holds itself.
+
+What cannot be had: a read before the session has loaded (`Ext.Events.SessionLoaded` is the
+first safe moment); the data of a mod that is no longer loaded, past the next save.
+
+## The family `fight` and what the game's rows say of a fight
+
+The family `fight` (Server/FightLog.lua) writes the rows of a fight that the game log does not:
+what a creature is about to do, the reactions used, who joined and left, the ends of turns and the
+starts of rounds, concentration, items used and resources spent. It is off until
+`GK.EventLog.On("fight")` and, like every family, switches itself off after its seconds. Each row
+is written from what the game itself says; a field the game does not give is left out. The Osiris
+listeners are registered once and cost a table look while the family is off; the component
+subscriptions exist only while it is on. Every row is omniscient and an observation.
+
+| Kind | Written when | Payload | From the game |
+|---|---|---|---|
+| `fight_options` | the game's AI has finished scoring the actions of a creature it controls and the list is new (a recalculation that brings back the same candidates with the same scores under new ids is not written again) - ten to twenty ticks before the cast's state; after the cast, the list of the end of the turn | `who, options` - each candidate, the best first: `guid, type, spell, target` or `at, from` (where it would cast from, when it moves first), `score` (the final), `action, position, movement` (its parts), `multiplier, range = { min, preferred, max }, costs, amounts = { [target] = { damage, heal, control, boost, position, dot } }` (what the AI expects), `flags, chance` (the game's chance of the roll against a creature target, asked as the creature stands now: the weapon set in hand counts; held by `test:fight/log/options` to the dice of the attack then thrown) | `Ext.System.ServerAi.Ai[subject]` after the AI system's update (`Ext.Entity.OnSystemPostUpdate("ServerAi")`): CalculationFinished, ActionCount, Actions (CombatAiAction: ActionGuid, Type, Spell, Target, TargetPos, CastPosition, FinalScore, ActionFinalScore, PositionFinalScore, MovementFinalScore, ScoreMultiplier, Min/Preferred/MaxRange, ActionCosts, Score.Score.DamageAmounts, Flags); `Ext.Stats.GetSpellRollChance` |
+| `fight_choice` | the AI takes one of the options: the list's NextAction steps on, in the tick the cast's state is created | `who, spell` (none: the end of the turn), `target, at, score, rank` (its place among the last `fight_options`, 1 the best), `options` (how many), `guid` | the same list's NextAction and the action at it |
+| `dice_adjusted` (family `dice`) | a roll is changed after the throw | besides the fields of `dice_thrown` ([`GK.Rolls`](#gkrolls-rolls-decided-in-advance-serverrollslua)): `by` = `{ interrupt, owner, set, add, applied }` for each interrupt the game lists as used on the roll (`set`: the die it sets; `add`: what it adds; `applied`: its own adjustment accounts for the change seen - two may be listed and one change it), `source, target` (the roller and the other party; for a save the saver is the target). Held by `test:rolls/log/adjusted` (a SetRoll interrupt); seen with the game's own Bardic Inspiration on a save (`add`) | `ServerSpellCastInterrupt.AnimationInterrupts[i].Usage[interrupt][event]`, matched by `event.Event.RollUuid`; the interrupt's `InterruptData.Interrupt, Caster`; the entry's `RollAdjustments.FixedAdjustment, BaseAdjustment` (the mapped `InterruptUsage` is empty) |
+| `GK.Fight.Options(who, target)` (a verb, Server/Fight.lua; observation) | asked, for any creature at any moment (the AI's list exists only on the turn of a creature it controls) | `{ ok, who, target, distance, options = { { spell, affordable, inRange, range, radius, distance, costs, chance } } }`: GateKit's own reading, not the game's can-cast (esv::SpellHelpers::CanCast is not placed in this build) - the spell book against the creature's action resources and the distance now; cooldowns, conditions and the line of sight are not read | `SpellBook.Spells`; the spell's UseCosts, TargetRadius, SpellRoll; the equipped weapon's WeaponRange; `ActionResources`; `Osi.GetDistanceTo`; `Ext.Stats.GetSpellRollChance` |
+| `fight_action` | a cast's state is created - some twenty ticks before the first die of the cast; a player's aimed cast once it is confirmed | `who, spell, targets` (a uuid, or `{ x, y, z }` for a position), `from, to` (where the caster stands and where it casts from, when it moves first), `cast` (the cast's id), `reaction` | `SpellCastState` (eoc::spell_cast::StateComponent): Caster, SpellId, Targets, CasterStartPosition, CastPosition, SpellCastGuid, CastOptions IsInterrupt / IsReaction / IsPreview |
+| `fight_reaction` | a reaction or an interrupt is used | `who, interrupt, auto` (the game used it by itself), `trigger = { mover, where }` (a creature that left the reactor's reach just before), `cast, spell` | Osiris `ReactionInterruptUsed`; `ServerMoveLeaveAttackRangeEvent` (esv::move::LeaveAttackRangeEvent) |
+| `fight_joined` | a creature joins a fight | `who, combat, initiative, round, underway` (the fight had begun before) | `CombatantJoinEvent` (esv::combat::JoinEvent): Combat, Initiative; Osiris `CombatStarted` |
+| `fight_left` | a creature leaves a fight | `who, combat, why` (killed, fled, the fight ended), `by` (the killer) | Osiris `LeftCombat`, with `KilledBy`, `FleeFromCombat` and `CombatEnded` (a tick later) |
+| `turn_ended` | a creature's turn ends | `who, round, combat` | Osiris `TurnEnded`; `TurnEndedEvent` (esv::combat::TurnEndedEvent) for the round |
+| `round_started` | a round begins | `combat, round` | Osiris `CombatRoundStarted` |
+| `concentration` | a caster starts or stops concentrating | `who, state` (started, ended), `spell, targets, cast, interrupted, why` (damage, a new spell), `hits` | `ConcentrationChanged` (Started, Ended, Interrupted), `ConcentrationDamageCheck` (Hits), `Concentration` (Targets) |
+| `item_used` | a creature has used an item | `who, item, template, ok` | Osiris `TemplateUseFinished` |
+| `resource_spent` | a cast's state is destroyed and its caster holds less than as it began | `who, spell, cast, spent = { [resource or resource/level] = amount }` | `ActionResources` read as `SpellCastState` is created and destroyed |
+
+The game's own rows (family `game`, Server/GameLog.lua) carry these fields besides those of
+[`GK.Rolls`](#gkrolls-rolls-decided-in-advance-serverrollslua) and [the class of a verb](#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson):
+
+| Kind | Field | What it says | From the game |
+|---|---|---|---|
+| `game_hit` | `cast` | the id of the cast the hit belongs to, the id `fight_action.cast` carries | HitDesc.SpellCastGuid |
+| `game_hit` | `types` | per damage type `{ rolled, dealt }`: the damage before and after resistance | Damage.TotalDamagePerType, FinalDamagePerType |
+| `game_hit` | `resisted` | `{ type, change, flags }`: each resistance that applied, what it took off, the game's ResistanceBoostFlags | Damage.Resistances (Type, Meta.Value, Meta.DamageType) |
+| `game_hit` | `multiplier` | the damage multiplier, when it is not 1 | Damage.Multiplier |
+| `game_hit` | `rolls` | `{ type, dice, flat, natural, total, critical, from }`: the weapon's rolls (`from = "weapon"`) and the dice of the damage's stats expression (`from` = the expression); `natural` is the sum of the dice | Damage.DamageRolls; the expression Script Extender names Damage.ConditionRoll (StatExpression, RollParams, DamageTypeParams) |
+| `game_hit` | `modifiers` | `{ type, value, name, die }`: the boosts that added damage (DamageBonus, CharacterWeaponDamage, ...) | Damage.Modifiers, Modifiers2 (Value, DamageType, SourceName or SourceId, Source) |
+| `game_hit` | `unlisted` | per damage type, what was rolled minus what the listed rolls and modifiers add up to, only where that is not zero: the terms do not add up | computed from the fields above |
+| `game_heal` | `by, spell, status, cast` | the healer and what healed | the hit of the functor that healed, from its context after it ran (`Ext.Events.AfterExecuteFunctor`), joined by target in the same tick |
+| `game_heal` | `healed` | the amount before the target's maximum capped it | the same functor's AttackDesc.TotalHealDone |
+| `game_death` | `by` | the killer: the attacker, else the owner | Osiris `KilledBy(victim, owner, attacker, storyAction)`, some ticks before `Died` |
+| `game_status` | `turns` | the status's duration in turns, for a status with an end | the status's LifeTime on its holder's status manager (seconds; a turn is 6 of them) |
+
+The text of a `game_hit` names each damage type with its own amount, in the game's order, and what
+a resistance took: `... with Projectile_FireBolt: 4 fire (fire 9 -> 4)`. Held by
+`test:fight/log/resisted`: against a resistance the row says what was rolled and what was dealt,
+the half rounded down. The game never brings a resisted damage below 1 (a rolled 1 is dealt 1,
+where the wiki's rule gives 0): `test:quirks/damage/resistance_floor` holds that as the game's
+own. Held by `test:fight/log/unlisted`: the dice thrown for a damage's
+stats expression (Sneak Attack, Fire Bolt's die) are listed, in the hit's expression; a hit whose
+terms add up has no `unlisted`. The hit keeps the sum of a roll's dice, not each die: the roll
+log's `dice_thrown` rows have them. A `game_hit` row is GK.HitRow's (Shared/Bridge.lua) with these
+fields added in Server/GameLog.lua.
+
+What the rows do not tell: a move made with no cast (a walk) writes no `fight_action` - only a
+cast's own walk is in its `from` and `to`; why a status left (its end, a save, a dispel, a broken
+concentration) is in no row - `status_removed` and `game_unstatus` say only that it left; the
+Osiris `status_applied` row of the family `status` carries no duration (its writer,
+Server/EventFamilies.lua, does not read the status).
+
+## The camera's focus and a line over a head
+
+`Client/Camera.lua` and `Server/Camera.lua` (the channel `GK_Camera`, server -> client for the
+request and client -> server for the answer); `Server/Say.lua`.
+
+| Verb | Side | Class | Answers |
+|---|---|---|---|
+| `GK.Camera.Focus(at, options)` | C and S | fair | observed once the camera settled: `{ ok, at, distance, ticks, how, snapped, fight, off, onScreen, far, away, drawn, leashRaised }`, after a far move also `faded`, `blackTicks`, `fadeTicks`; on the server the client's answer with `serverTicks`, and with `options.wake` also `wake`, `woke`, `wakeTicks` |
+| `GK.Camera.Return(options)` | C and S | fair | observed: as Focus's, with `restoredDistance` and `leashRestored`; on the server `released` when the focus had woken something |
+| `GK.Camera.Look(degrees, options)` | C | fair | turns the camera to look that way (0 = north = +z, 90 = east = +x), the shorter way round, eased, at most `GK.Camera.Speed` degrees a second: `{ ok, from, to, seconds }`; `options.now` sets it at once (`{ ok, rotation }`); a turn smaller than `options.min` (default `GK.Camera.MinTurn`) is `{ ok, skipped }`. Answers when the turn begins, not when it ends |
+| `GK.Camera.Face(to)` | C | fair | `Look` from the point the camera follows towards `to` (a uuid the client holds, or a point); closer than 1 m: `{ ok, note }` |
+| `GK.Camera.OnScreen(at)` | C | observation | `{ u, v, inFront, inside }` |
+| `GK.Camera.State()` | C | observation | as before, with `moving`, `mode`, `focus` added |
+| `GK.Say.Line(who, text, options)` | S | cheat | observed once the status is on the creature: `{ ok, who, text, status, slot, handle, markup, ticks }` |
+| `GK.Say.Shown(who)` | S | observation | `{ text, status, slot, active }` or nil |
+| `GK.Say.Accent(at, options)` | S | cheat | `{ ok, effect, at }` |
+
+**The focus.** `at` is an entity's uuid, a point `{x, y, z}` or a list of two (framed together, as
+the game frames a caster and its target on a ranged attack). The camera is the entity with
+`GameCameraBehavior`; what moves it, in and out of a fight, is that component's `Targets` (read
+only when their count changes: one entity is written as `{e, e}`, a pair as two or three copies
+each) and, for a point, `TargetDestination` with the targets emptied (`how` is `targets` or
+`destination`; the camera keeps its own height above a point). `CameraCombatTarget` (the
+component the game writes on a ranged attack, TargetMode 4, and on the restore after it,
+TargetMode 1) is read only when marked changed (`MarkChanged`) and not at all outside a fight
+(CameraMode 8); on the player's own turn (CameraMode 9) a TargetMode 4 written into it was copied
+into `CameraTarget` and did not move the camera (with one target, with two, with a Position, with
+the behaviour's targets emptied first); its restore did. So `Return` in a fight is the restore -
+TargetMode 1, the character, `ZoomToDistance`, and the `Position` set to the float maximum,
+without which a Position left there overrides the targets and the return silently fails - and
+outside a fight the behaviour's targets and the distance the first focus saved (the game moves
+the distance itself when its targets change: 10 m to 11.5 m). Beyond the camera switches'
+`TargetSnapDistance` (50 m; `Ext.Utils.GetGlobalSwitches().CameraSwitches`, four of them) the
+camera cuts (`snapped`); `options.glide` raises it to 200 for the move and puts it back when the
+answer comes, on the next focus or return, and in any case 6 s later. `options.hold` returns the
+camera by itself after that many seconds (a timer of the game's time). The answer comes when the
+game says the camera is not moving, its distance reached its destination and its target stood
+still for three frames; `ok` when the target is within 0.5 m (x, z) of the thing (of both, on
+the screen); `ok = false` with the reason: no such entity, a stub, cancelled by the player's input
+(the behaviour's `PlayerInControl` became true), a newer move took over, the camera did not move
+(the game holds it: during a dialogue the focus answers so), or it did not settle within 4 s of a
+running game (a guard).
+
+**Far creatures.** Far from the party a character or an item is a stub on the client (17-20
+components instead of 70-120: no `Level`, no `GameObjectVisual`), and its client `Transform` is
+stale: moved on the server, the stub keeps the old point. A creature's stub is not drawn; an
+item's is (a chest at 55 m). The client's verbs refuse a stub; the server's `GK.Camera.Focus`
+sends the server's `Osi.GetPosition` of every uuid and whether it is a character, and the client
+focuses the entity when it holds it whole and that point otherwise. Which distances decide, and
+the verbs that wake a creature or a place: [`GK.Wake`](#gkwake-a-creature-or-a-place-kept-awake-far-from-the-party-serverwakelua).
+
+**Drawn, far, faded.** Every answer says `away`, the length of the move in metres (x, z), and
+`far`, whether that is past the snap distance. `drawn` is whether every entity focused is drawn
+on the client when the camera has settled - a creature when the client holds it whole (`Level`
+and `GameObjectVisual`), an item when the client holds it with a `Visual` - and a point has no
+`drawn`. A focus on a creature that is not drawn settles on its place with `ok = true`,
+`drawn = false`, `notDrawn` (the uuids) and a `warning` that says so. Past the snap distance and
+with no glide the game itself decides the road: onto a point or a stub it cuts (`snapped`,
+`faded = false`); onto an entity the client holds whole it fades to black, cuts, holds the black
+and fades in. The fade is read every client tick from the HUD's `ScreenFade` widget
+(`CurrentPlayer.UIData.ScreenFadeVisibility` and `ScreenFadeOpacity`; the widget is found again
+each tick): the answer comes only when the widget is collapsed again, with `faded = true`,
+`blackTicks` (the client ticks the opacity stood at 1) and `fadeTicks` (the ticks the widget
+showed); a collapsed widget keeps its last opacity, so the opacity alone does not say the fade is
+over. A move onto an entity is given eight ticks for the black to begin before "no fade" is
+believed. The limit of a far move is 15 s of a running game, and an answer at the limit says
+which wait ran out - "the fade did not end in N ticks" or "the camera did not settle in N ticks".
+
+**The leash.** The camera does not go farther from the controlled character than the switches'
+`MaxDistFromChar` (50 m, the same four switches). A focus on a thing at that distance or beyond
+raises it on all four (`leashRaised`) and it stays raised while the focus is held; `Return` puts
+it back when the camera has settled (`leashRestored`), and so do a focus on a thing within the
+leash and `GK.Stage.Clean` (the server's focus is a row of the stage ledger, once a scope, whose
+undo returns the camera and puts the switches back). `GK.Camera.State().leashRaised` reads it.
+The saved values live in the client's Lua state: a state lost while the leash is raised leaves
+the switches raised until the game restarts.
+
+**Waking before the focus.** On the server `options.wake` wakes the thing first: `"one"` calls
+`GK.Wake.One` on the creature, `"place"` calls `GK.Wake.Place` on the creature, the item or the
+point ([`GK.Wake`](#gkwake-a-creature-or-a-place-kept-awake-far-from-the-party-serverwakelua)). The focus is sent only when the wake has answered - the creature active on
+the server and whole on the client - so the game's fade comes and the creature stands there when
+it lifts. The answer carries `wake`, `woke` (the wake's own answer) and `wakeTicks`; a wake that
+did not finish answers `ok = false`, `stage = "wake"` with the wake's reason, and leaves nothing
+awake. What the focus woke stays awake until `GK.Camera.Return` (which answers `released`,
+`GK.Wake.Release`'s answer, after the camera is back), a newer focus (unless it asks for the same
+wake of the same thing), or `GK.Stage.Clean`. With a wake `options.hold` is kept on the server, so
+that the return it makes releases the wake too. The wake is a cheat: inside a fair step a focus
+with `options.wake` is refused, naming `GK.Wake.One` and `GK.Wake.Place` for a cheat step before
+it. Rows `camera_focused` and `camera_returned` are written by the client when a move ends.
+
+**Times.** The camera runs on the client's frames in real time: the game's speed does not change
+how long a move takes, and a farther move takes longer (each answer's `ticks`;
+`test:camera/focus/matrix` holds every move to its limit at both speeds). Turn-based mode outside
+a fight changes nothing (CameraMode stays 8).
+
+**On the screen.** clip = P * V * p with the camera's own `Camera.Controller.Camera.ViewMatrix`
+and `ProjectionMatrix` (column-major); u = (x/w + 1)/2, v = (1 - y/w)/2; behind the camera when
+w <= 0. A focused creature's feet stand at about u 0.5, v 0.55-0.6.
+
+**A line over a head.** The game writes the name of a status over the head of the creature it
+is applied to, for about three seconds whatever the status's duration. `GK.Say.Line`
+applies a status of the toolkit's own, `GK_SAY_<slot>` - made at run time as a copy of BLESS with
+its boosts and effects emptied and the flags `DisableCombatlog` and `DisablePortraitIndicator` (no
+log line, no portrait icon; a status made from scratch shows nothing) - whose display name is a
+translated string of the toolkit's own (`h6b1d5c0dg7e57g4b1dg9e0ag<slot as 12 digits>`), rewritten
+before each apply. Its duration is 1: it leaves in under a second, before any clean; a status
+still on when `GK.Stage.Clean` comes is removed after its name is emptied (a removal shows the name
+struck through). The name takes `<font color="#rrggbb">`, `<b>`, `<i>` and several colours in a
+line; `size` changes nothing; `&lt;`, `&gt;`, `&amp;` are shown as `<`, `>`, `&` (the caller's
+text is escaped so), numeric entities are shown as written, and a glyph the font lacks is a box
+(✦ is; « » • ♦ — ~ show). A string rewritten while its name floats changes the floating text, so
+each line takes its own slot of `GK.Say.PoolSize` (8): two creatures keep their own lines, and a
+creature's second line within the three seconds takes another slot (the same status applied again
+while its name floats shows nothing). The look is data: `GK.Say.Styles.<name> = { color, bold,
+italic, prefix, suffix, accent, effect, sound }` (`default`, `magic`, `whisper`, `warning` given;
+`options.style` names one or is such a table, and any field may be given in `options`); `effect`
+and `sound` name `GK.Say.Effects` and `GK.Say.Sounds` or are resource uuids, played with
+`Osi.PlayEffect` and `Osi.PlaySoundResource` (a status's `ApplyEffect` given an effect resource
+showed nothing). The translated string lives in the process's localization, which the host's own
+client shares; a client on another machine would not see the text. A row `said_overhead`.
+
+**An accent.** `GK.Say.Accent(at, options)` plays a short effect of the game's own on a creature
+or an item (`Osi.PlayEffect`) or at a point (`Osi.PlayEffectAtPosition`), with an optional sound.
+The effects named in `GK.Say.Effects` end by themselves within two seconds: nothing is left to
+stop or for `GK.Stage.Clean`. `orb` (Gale's Netherese orb, the body tinted violet), `spectral` (a
+violet-white burst on the ground), `faerie`, `faerie_point`, `mystra` (a golden glyph over the
+head).
+
+## `GK.Wake`: a creature or a place kept awake far from the party (Server/Wake.lua)
+
+Far from the party the game stops a creature twice over, by distances of its own
+([research/studies/camera-focus.md](../../research/studies/camera-focus.md)): the server's
+activation manager keeps a character awake - `Active`, animating, thinking - within its waking
+distance of an anchor and puts it to sleep beyond its sleeping distance, staying as it was
+between the two; and the client is sent a creature whole by a shorter distance of its own, so a
+creature can be awake and not drawn (`test:wake/two_distances`). The anchors that wake other
+characters are the characters of the party's view; a character asked to be kept up
+(`Osi.SetForceUpdate`) is an anchor of itself alone. The camera is no anchor.
+
+| Verb | Side | Class | Answers |
+|---|---|---|---|
+| `GK.Wake.One(who)` | S | cheat | observed once the creature is active on the server and whole on the client: `{ ok, who, name, awake, drawn, was = { awake }, distance, ticks, awakeTicks, clientTicks }` |
+| `GK.Wake.Place(at, options)` | S | cheat | observed once the place is awake and the client holds whole what it is sent: `{ ok, helper, at, hidden, seen, radius, count, woke = { { who, name, distance, drawn } }, wokeCount, drawnCount, alreadyAwake, asleep, ticks, wakeTicks, clientTicks }` |
+| `GK.Wake.Release(handle)` | S | cheat | observed once those nobody else reaches have lost `Active`: `{ ok, released, slept = { { who, name } }, sleptCount, stayed = { { who, name, why } }, ticks }` |
+| `GK.Wake.State(at)` | S | observation | observed (the client is asked): of an entity `{ ok, who, name, character, awake, whole, drawn, rule, anchor, anchorKind, distance, radii }`; of a point `{ ok, at, anchor, anchorKind, distance, rule, characters, awake, whole, radii }` |
+| `GK.Wake.Radii()` | S | observation | `{ ok, wake, sleep, itemWake, itemSleep, lowItemWake, lowItemSleep, source }` |
+
+**The distances.** `GK.Wake.Radii` reads them from the manager's own object
+(`GK.Memory.System("esv::ActivationManager")`, the floats at +0xd0 to +0xe4 of the object that
+begins 0x28 before it; `code:esv::ActivationManager::Update`): `wake` and `sleep` for
+characters, and the same pairs for items and for low items. Without GateKit's Script Extender
+build it answers `ok = false`, `source = "measured"` and the measured 40 and 45. The client's own
+distance is not read: where the game holds it is not found.
+
+**One creature.** `GK.Wake.One` calls `Osi.SetForceUpdate(who, 1)`; the creature wakes alone, its
+neighbours sleep on (`test:wake/one`), and the client receives it whole. The answer waits for
+`Active` on the server (`awakeTicks`) and then for the client's word that it holds the creature
+with `Level` and `GameObjectVisual` (`clientTicks`, the client's own ticks); `distance` is to the
+nearest character of the party's view. A wait that ran out says which side's and after how many
+ticks, and the creature is let go again. Whether the creature was kept up before by the game's
+own story is not read: `Release` sets the force update off.
+
+**A place.** `GK.Wake.Place(at, options)` takes a point `{x, y, z}` or an entity's uuid and puts
+a helper there into the party's view: a temporary character spawned through the stage
+(`GK.Wake.HelperTemplate`, or `options.template`), given the `PartyMember` component with the
+host's party, user and view and appended to both lists of the party's view (`Views[1].Characters`
+and `Characters`). No portrait appears. The helper is hidden by the order of the steps: it is
+waited for until the manager has put it to sleep - a newborn is active for some ticks - and
+taken off stage while it is a stub on the client, and only then joins the view; it stays
+inactive and a stub, never drawn and nothing to click, and the manager wakes the space around it
+all the same (`hidden = true`; `test:wake/place`). A helper spawned within the party's reach is
+awake and is left as it is - `hidden = false`, and `seen` says that a plain figure stands there -
+because a creature the client held whole and that is then taken off stage leaves its figure
+frozen on the screen. The answer waits until the number of creatures awake within the waking
+distance of the point stood still for three server ticks - with the entity `at` itself among
+them, when it is a creature - and then for the client: the entity `at` whole, and the number of
+whole ones among the others standing still for five client ticks, since a creature between the
+client's distance and the manager's is awake and not drawn. `woke` lists the creatures that were
+asleep before, each with whether the client holds it whole; `alreadyAwake` counts the others;
+`asleep` lists those within the distance that did not wake. A wait that ran out says which and
+after how many ticks, and the helper is taken away again. `options.helper` gives a creature the
+caller spawned in place of a new one; an origin, a player's character, a member of a party and a
+creature of the level's own cast (one without the `Temporary` flag) are refused. While it is in
+the view the helper is a party member to everything that reads the component
+(`GK.Stage.Party` lists it); what that does to the story is not measured.
+
+**Release.** `GK.Wake.Release(handle)` takes a creature kept by `One`, the `helper` of `Place`'s
+answer, or nothing for all that `GK.Wake` holds. The undo is done in the call: the force update
+off; the helper out of both lists, its component removed, and the helper deleted when `Place`
+spawned it (put back on stage when the caller gave it). The answer waits until every creature it
+kept awake that no other anchor reaches - farther than the sleeping distance from every
+character of the party's view, and not kept by `One` - has lost `Active`; `stayed` names the
+others with the reason. The client is not waited for; it holds a stub again a moment later.
+
+**State.** `GK.Wake.State(at)` changes nothing. Of an entity: `awake` (it has `Active` on the
+server), `whole` (the client holds it with `Level` and `GameObjectVisual`), `drawn` (of a
+character, the same; of an item not given - an item's stub is drawn all the same), the nearest
+character of the party's view (`anchor`, `anchorKind` `"party"` or `"place"`, `distance`), and
+`rule`: `"kept up"` (by `One`), `"party"` or `"place"` (awake within the sleeping distance of
+such an anchor), or `"none"` - asleep, or awake by something the toolkit does not read (the
+story's own force update, a running timeline). Of a point: the same anchor, and `characters`,
+`awake` and `whole` as counts of the creatures within the waking distance of the point.
+
+**The ledger and the log.** `One` and `Place` are rows of the stage ledger (`GK.Stage.Track`;
+`Place`'s helper is also the stage's spawn), so `GK.Stage.Clean` lets everything go. Rows
+`wake_kept`, `wake_place` and `wake_released` are written when each answer comes.
+
+## `GK.Show`: a picture over the game, straight from a file (Client/Show.lua)
+
+| Verb | Class | Answers |
+|---|---|---|
+| `GK.Show.Picture(options)` | cheat | observed once the first frame with the picture is drawn: `{ ok, handle, file \| resource, size, where, covers, pixels, screen, fit, over, phase, alpha, seconds, fade, skip, state, shownMs, ticks }` |
+| `GK.Show.Hide([handle] [, { fade }])` | cheat | observed once it is gone: `{ ok, hidden = { handles }, left = { ... }, ticks }`; no handle: every picture |
+| `GK.Show.Shown([handle])` | observation | the pictures on the screen; with a handle that picture, shown or gone (`left`, `why`, `key`, `shownMs`), or nil |
+| `GK.Show.Video(options)` | cheat | `{ ok = false, error, hint }`: see "Video" below |
+
+**What draws it.** Script Extender's drawing layer (IMGUI) in GateKit's build decodes png, jpg,
+tga and bmp files and draws them after the game's whole frame. A picture is a window of that
+layer without a frame, the size of the game's frame, holding one canvas. So a picture is over
+everything the game shows - the interface, a dialogue, a loading screen's picture - in any client
+state that draws frames (shown in `Menu`, on the splash screen and the main menu, and in
+`Running`), needs no texture resource, no atlas and no XAML. It is not in the picture `GK.Shot`
+takes by default, which is the game's frame before that layer, and it is in the one taken with
+the layer (`GK.Shot(path, true)`, `gatekit shot --overlay`, `game.shot(path, width, true)`:
+`test:show/picture`).
+
+**Options.**
+
+- `file`: a path under the game's Data folder as a mod ships it (`Mods/<Mod>/...`,
+  `Public/<Mod>/...`), inside a package or loose, read through the game's file system (a file put
+  under Data while the game runs is found); or the whole path of a file anywhere on the disk
+  (`E:/pictures/logo.png`), which the extender loads under that path (`Ext.IMGUI.LoadImageFile`)
+  and holds until the picture has left. A path with `..` is refused, and so is a file that is not
+  png, jpg, tga or bmp. Files are decoded under the DX11 renderer only. A Script Extender build
+  without the loader (`GK.Features.imageFiles`) refuses a whole path and reads under Data only.
+- `resource`: instead of a file, a texture resource's uuid or an icon's name (`Action_Dash`).
+- `where`: `"screen"` (default) or `{ x, y, w, h }` in parts of the screen, 0 to 1: the rectangle
+  the picture is fitted into. It is worked out again when the frame's size changes.
+- `fit`: `contain` (default: the whole picture inside the rectangle, centred, its shape kept),
+  `cover` (the rectangle filled, the picture's middle part drawn), `stretch`.
+- `back`: a colour drawn behind the picture over the whole screen (`"black"`, `"white"`,
+  `"#rrggbb"`, `"#rrggbbaa"`, `{ r, g, b[, a] }`); `opacity`: 0 to 1.
+- `fade`: seconds, or `{ in, out }`; `seconds`: how long it stays at full strength (none: until
+  hidden). Both are real seconds: the layer draws on the client's frames, which the game's speed
+  does not change.
+- `skip`: what takes the picture off - key names as `GK.Key` takes them (`escape`, `enter`,
+  `space`, a letter, a digit, `f5`, `left`, an SDL scan code name), `"click"` (a mouse button) and
+  `"any"` (any key or click); a name that is no key is refused. A picture with `skip` holds the
+  keyboard while it shows: it listens to the game's own input events (`Ext.Events.KeyInput`),
+  which are raised for a key pressed by hand and for one pressed through the bridge (`GK.Key`)
+  alike, and keeps every key from the game (`PreventAction`), so what is under it (the splash
+  screen's "press any key", the escape menu) does not hear it. Of several pictures with `skip` the
+  one shown last hears. A click passes through to the game unless `skip` names `"click"` or
+  `"any"`; then the click takes the picture off and the game does not get it. The row's `key` is
+  the name given, or under `"any"` the key's own (`escape`, `enter`, `space`, else its scan code's
+  name in lower case), or `click`. Without `skip` the picture takes no input at all. `skip` needs
+  a Script Extender build that raises its input events for injected keys
+  (`GK.Features.injectedInput`); another build refuses it.
+- `over`: `"everything"`, the only layer. Under the game's interface is refused: only the
+  interface itself draws there, and its images are the game's own texture files (a mod's XAML names
+  `Assets/x.png` and ships `x.DDS`).
+
+**Rows** (family `show`, always on): `picture_shown` at the first frame (`handle, file | resource,
+where, fit, over, seconds, skip, state`) and `picture_hidden` when the last frame is gone
+(`handle, why, key, shownMs`): `why` is `seconds`, `skipped` (with `key`), `hidden`
+(`GK.Show.Hide`) or `failed: <reason>`.
+
+**Video.** No verb plays one. The game's player takes Bink 2 files only (`.bk2`:
+`code:bik::BinkManager::LoadVideo`), found by name through `code:ls::VideoManager::LoadVideo`
+(the game's own lie in `Video/` and in `Mods/<Mod>/Localization/<language>/Video/`), and nothing of
+Script Extender calls it. The interface library has a video element, `ls.LSVideoPanel`
+(properties `Video`, the name, and `AutoPlay`; commands `PlayCommand`, `StopCommand`;
+`code:unplaced::LSVideoPanelLoadVideo`), which no widget under `Public/Game/GUI` uses; it plays inside
+a widget a mod ships as XAML, and Lua cannot create an element. The drawing layer decodes still
+pictures only.
+
+What is not covered: a picture is not taken off by `GK.Stage.Clean` or a test's reset (hide it);
+several pictures are drawn each in its own window, in no promised order; Vulkan draws no files.

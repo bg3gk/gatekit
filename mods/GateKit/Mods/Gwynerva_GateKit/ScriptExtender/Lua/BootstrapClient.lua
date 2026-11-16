@@ -32,6 +32,7 @@ end
 
 Ext.Require("Client/Windows.lua")
 Ext.Require("Client/XamlChains.lua")
+Ext.Require("Client/Pointer.lua")
 Ext.Require("Client/WindowReaders.lua")
 Ext.Require("Client/Popups.lua")
 Ext.Require("Client/Camera.lua")
@@ -40,6 +41,7 @@ Ext.Require("Client/Focus.lua")
 Ext.Require("Client/Aim.lua")
 Ext.Require("Client/Act.lua")
 Ext.Require("Client/Attention.lua")
+Ext.Require("Client/Show.lua")
 GK.Verbs.Guard()
 GK.Start("client")
 
