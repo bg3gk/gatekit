@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::combat::SurprisedSystem::SurpriseEntitiesJoiningCombat",
   "state": "described",
-  "rung": "inferred",
+  "rung": "toolkit",
   "does": "For every creature that joins a fight this tick and is not surprised already it puts the creature into the set when a member of its party is surprised, or when a member of its combat group whose relation to it is 100 is surprised.",
   "fingerprint": {
     "calls": [
@@ -19,11 +19,11 @@
   "evidence": [
     {
       "kind": "toolkit-name",
-      "says": "the Toolkit exports the name at EoCServer.dll+0x1495DF0 with the same order of tests"
+      "says": "the Toolkit's EoCServer.dll exports the name, with the same order of tests in the export's body"
     },
     {
       "kind": "read",
-      "says": "the query is active, participant and join event, with the party member component optional; the party is walked through eoc::party::CompositionComponent, the combat group through the function at bg3_dx11.exe+0x322DE70"
+      "says": "the query is active, participant and join event, with the party member component optional; the party is walked through eoc::party::CompositionComponent, the combat group through code:esv::combat::SurprisedSystem::IsAnyAlliedCombatGroupMemberSurprised"
     },
     {
       "kind": "watch",

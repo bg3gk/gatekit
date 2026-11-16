@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "ls::AnimationBlueprintSystem::TriggerGameplayEvent<EoCGE::ASAnimation>",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Sends an entity's animation blueprint the gameplay event ASAnimation (id d6c855f3-a9c0-45dc-86dd-d3da429e33b1): arguments 0 to 2 are the start, loop and end sets of animation short names, 3 a float, 4 a flag. The third parameter is the event as a tuple laid out last member first: flag at +0, float at +4, end set at +8, loop set at +0x20, start set at +0x38; the arrays are moved out of the sets.",
   "fingerprint": {
     "calls": [
@@ -21,6 +21,10 @@
       "kind": "watch",
       "says": "A probe while Osi.PlayAnimation runs on the host shows 2 calls, one of them from the client's sender at +0x1BC4C50. Called for a client-only timeline dummy with one linked animation in the start set, the figure plays it: text keys, root motion and an end."
     },
-    {"kind": "test", "test": "figure/client_animation"}
+    {"kind": "test", "test": "figure/client_animation"},
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
   ]
 }

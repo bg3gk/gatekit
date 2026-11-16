@@ -2,8 +2,8 @@
   "schema": "registry/function/1",
   "id": "esv::AiHelpers::GetAverageDamageForCharacter",
   "state": "described",
-  "rung": "confirmed",
-  "does": "Gives the average damage a character deals, as the AI estimates it, memoised per entity in the helper's map at +0x3D0 and computed by the function at +0x3126E30 on first use.",
+  "rung": "game",
+  "does": "Gives the average damage a character deals, as the AI estimates it, memoised per entity in the helper's map at +0x3D0 and computed by code:esv::AiHelpers::GetAverageDamageForCharacterNoCache on first use.",
   "fingerprint": {
     "calls": [
       "esv::AiHelpers::GetAverageDamageForCharacterNoCache",
@@ -15,11 +15,19 @@
   "evidence": [
     {
       "kind": "read",
-      "says": "hash lookup by entity in the table at +0x3CC/+0x3D0; on a miss calls +0x3126E30 and inserts the float"
+      "says": "hash lookup by entity in the table at +0x3CC/+0x3D0; on a miss calls code:esv::AiHelpers::GetAverageDamageForCharacterNoCache and inserts the float"
     },
     {
       "kind": "watch",
-      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 7 places, most of them (about 16 000 calls each) inside the function at +0x371F520"
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 7 places, most of the calls from one position scorer the registry does not name: it ran in a fight, which does not show what it does"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the likeness of the two pseudo-codes"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

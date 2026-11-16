@@ -19,17 +19,25 @@
   "evidence": [
     {
       "kind": "read",
-      "says": "a query with the added tag over a component of 0x1F0 bytes (eoc::RequestedRollComponent), then esv::RollSystem::RollDice per entity; called from the system's update 0x3293560 between ProcessConcentrationDamageRolls and ProcessCreateRollCallRequests"
+      "says": "a query with the added tag over a component of 0x1F0 bytes (eoc::RequestedRollComponent), then code:esv::RollSystem::RollDice per entity; called from code:esv::RollSystem::Update between the processing of concentration damage rolls and of roll call requests"
     },
     {
       "kind": "watch",
-      "says": "the chains of a concentration save, a story passive Perception check and the first roll of a dialogue check pass it at +0x32981CF; the RequestedRoll created each time is read in the same tick"
+      "says": "the chains of a concentration save, a story passive Perception check and the first roll of a dialogue check pass it; the RequestedRoll created each time is read in the same tick"
+    },
+    {
+      "kind": "watch",
+      "says": "A count-only probe on code:esv::RollSystem::RollDice names this function as its caller"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports esv::RollSystem::ProcessCreateEvents among the system's Process members, all taking one world view; the name is given to this function by its job alone, and the export's body was not compared, so the rung stays below the line. The macOS build's symbols do not hold the name."
     }
   ],
   "questions": [
     {
-      "ask": "the name is the game's by its job only (the symbol list of the macOS build has ProcessCreateEvents among the RollSystem members); confirm against the macOS build's code",
-      "about": "reach",
+      "ask": "Whether this body is the Toolkit's ProcessCreateEvents and not one of its siblings (ProcessNewRollsAdded, ProcessRequestedRollComponents): compare it with the export's body in EoCServer.dll.",
+      "about": "other",
       "state": "open"
     }
   ]

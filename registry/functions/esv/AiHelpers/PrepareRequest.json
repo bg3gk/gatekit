@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::AiHelpers::PrepareRequest",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Prepares the AI helpers for one decision request: gathers the level's characters and items with their transforms and the on-damage spells of items into the helper's working state.",
   "fingerprint": {
     "calls": [
@@ -29,6 +29,14 @@
     {
       "kind": "watch",
       "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 2 places, the request function at +0x31071A0 and one at +0x3615CA0, each paired with UnprepareRequest at the same count (308 and 14)"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the likeness of the two pseudo-codes"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

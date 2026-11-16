@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::AiHelpers::CalculateAiScoreSpellStatsFunctors",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Scores for the AI the stats functors of one spell: clamps the spell's ranges through its eoc::spell::ModificationContainerComponent, scores the functors with CalculateAiScoreStatsFunctors, and scores the success functors again weighted by the spell's success chance (its sixth argument, a float on the stack) after the archetype's stupidity modifier (esv::AiHelpers::GetAiHitChance: chance moved toward the modifier 0xBD), adding both into the result.",
   "fingerprint": {
     "calls": [
@@ -35,6 +35,10 @@
     {
       "kind": "watch",
       "says": "on a goblin's turn the sixth argument was 0.2, 0.5 and 0.45 for the goblin against the host - the values GK.Rolls.Chance gives at that moment for Target_SacredFlame, Target_MainHandAttack and Target_Bite_GiantSpider, the three spells of its candidates; 1.0 for spells with no roll"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

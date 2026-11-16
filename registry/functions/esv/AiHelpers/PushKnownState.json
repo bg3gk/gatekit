@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::AiHelpers::PushKnownState",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Pushes a new layer of hypothetical state (a 0x90-byte frame) onto the AI helper's stack, so that scoring can assume an outcome (a status applied, a position moved) and undo it afterwards.",
   "fingerprint": {
     "calls": [
@@ -21,6 +21,14 @@
     {
       "kind": "watch",
       "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 5 places, among them the request function at +0x31071A0 and CalculateAiScoreStatus"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

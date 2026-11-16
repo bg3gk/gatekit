@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "gui::CombatLogEntries::VMHitDamagedEntry::GenerateDamageTooltips",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Builds, once when a hit's combat log entry is made on the client, the tooltip lines of its damage text (VMCombatLogTooltipEntry each: armour class, attack roll, damage roll, resistances) from the HitEntry the server sent; the damage roll line is written from the hit's resolved stats expression, not from its list of damage rolls. Hovering only shows what this built.",
   "fingerprint": {
     "calls": [
@@ -45,6 +45,10 @@
     {
       "kind": "watch",
       "says": "a count-only probe over one weapon hit shows 1 call, from +0x14BEC90 (itself called once from +0x16BD9CE); the lines it built, read from the view model's nested trans strings, are the player's tooltip (Sneak Attack: 'Damage Roll: 2 (1d4) + 3 (Dex) + 5 (1d6) = 10' while the hit's DamageRolls list only 1d4+3)"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

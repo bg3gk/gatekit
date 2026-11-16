@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "eoc::CalculateStaticSpellConditionChance",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Returns the chance (0..1) that a spell condition passes for a condition context: the condition's own id evaluated through the condition machine, multiplied by each meta condition's chance. Arguments: RCX the eoc::spell::Condition (+0x0 id, -1 for none; +0x8 meta conditions, +0x14 their count), RDX the ls::thoth::shared::ContextData, R8 the ls::thoth::shared::Machine.",
   "fingerprint": {"calls": ["fp:68356241bb542619"]},
   "evidence": [
@@ -13,6 +13,10 @@
     {
       "kind": "watch",
       "says": "in a goblin's turn every call comes from eoc::spell::CalculateModifiableSpellRollChance at +0xFCEAC5 with the same condition and context and R8 equal to the pointer at EoCServer+0x2C8, and returns the same float (0.5 for Target_MainHandAttack against the host, 0.3 for Target_Shove, 1.0 for Shout_Dash_NPC)"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
     }
   ]
 }

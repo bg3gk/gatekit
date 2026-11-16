@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "eoc::roll::stream::RollManager::InternalRollDiceWithBoosts",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Rolls a formula for a roller with its boosts: doubles the dice of a d20, rolls them, applies the roller's reroll boosts, bounds each die by the roller's minimum and maximum roll result boosts, keeps the higher or lower die of each pair with advantage or disadvantage and the first die otherwise, and fills the result with the total, the kept and the discarded dice and the critical state.",
   "fingerprint": {
     "calls": [
@@ -39,6 +39,14 @@
     {
       "kind": "read",
       "says": "The dice count is doubled when the die type is the d20's, and the pair is reduced after the bounds are applied"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

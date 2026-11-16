@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::interrupt::ResolveRollAdjustmentsForRoll",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Computes the final value of one roll an interrupt changes: for the roll's Guid takes the event's roll (InterruptEvent variant 2 SpellRoll or 3 ConditionalRoll at +0xA8) and fills RollAdjustments.ResolvedRoll (+0x48): an earlier resolution of the same roll, a FixedAdjustment (SetRoll: the set natural plus BaseAdjustment plus the roll's bonus), UseMaxRoll, BaseAdjustment alone (AdjustRoll), a changed advantage choosing between the two dice already thrown, or RerollConditions rerolled through eoc::roll::stream::RollManager::RerollDice.",
   "fingerprint": {
     "calls": [
@@ -28,6 +28,10 @@
     {
       "kind": "watch",
       "says": "called on the interrupt's use before every adjustment seen (twice per used interrupt: in the cast's update the tick of the roll and again in the pass that applies it); under Lucky it called RerollDice once and the roll became natural 11 from 3 with no new roll event"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
     }
   ]
 }

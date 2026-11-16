@@ -3,41 +3,31 @@
   "id": "gr::GrannySkeleton",
   "kind": "struct",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "about": "The skeleton of a visual, one for each skeleton slot: the bones' names and parents, the rest pose, the live pose the animation writes every frame and the mesh bindings whose skinning matrices the renderer draws with.",
   "fields": [
     {
       "offset": 64,
       "name": "Bones",
       "type": "ls::Skeleton::Bone*",
-      "rung": "confirmed",
+      "rung": "inferred",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
-          "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
-        },
-        {"kind": "test", "test": "figure/client_bones"}
+          "kind": "text",
+          "says": "The field's place and name come from the struct our build of Script Extender declares for this type; no read or watch of the field itself backs it."
+        }
       ]
     },
     {
       "offset": 152,
       "name": "BoneCount",
       "type": "uint16",
-      "rung": "confirmed",
+      "rung": "inferred",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
-          "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
-        },
-        {"kind": "test", "test": "figure/client_bones"}
+          "kind": "text",
+          "says": "The field's place and name come from the struct our build of Script Extender declares for this type; no read or watch of the field itself backs it."
+        }
       ]
     },
     {
@@ -47,12 +37,8 @@
       "rung": "confirmed",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
           "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
+          "says": "the bones' names read through this pointer (a count at +8, bones of 0xA4 bytes at +0xC, each beginning with its name) hold Wrist_R and the other bones of a human figure"
         },
         {"kind": "test", "test": "figure/client_bones"}
       ]
@@ -64,12 +50,8 @@
       "rung": "confirmed",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
           "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
+          "says": "the 4x4 matrix of Wrist_R in this pose rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it"
         },
         {"kind": "test", "test": "figure/client_bones"}
       ]
@@ -78,68 +60,48 @@
       "offset": 232,
       "name": "DeferredWorldPose",
       "type": "granny::world_pose*",
-      "rung": "confirmed",
+      "rung": "inferred",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
-          "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
-        },
-        {"kind": "test", "test": "figure/client_bones"}
+          "kind": "text",
+          "says": "The field's place and name come from the struct our build of Script Extender declares for this type, and the macOS build's symbols hold code of the type that swaps a deferred world pose; no read or watch of the field itself backs it."
+        }
       ]
     },
     {
       "offset": 240,
       "name": "LocalPose",
       "type": "granny::local_pose*",
-      "rung": "confirmed",
+      "rung": "inferred",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
-          "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
-        },
-        {"kind": "test", "test": "figure/client_bones"}
+          "kind": "text",
+          "says": "The field's place and name come from the struct our build of Script Extender declares for this type; no read or watch of the field itself backs it."
+        }
       ]
     },
     {
       "offset": 248,
       "name": "RestWorldPose",
       "type": "granny::world_pose*",
-      "rung": "confirmed",
+      "rung": "inferred",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
           "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
-        },
-        {"kind": "test", "test": "figure/client_bones"}
+          "says": "the pose behind this pointer does not change while a waving animation moves the live world pose: it is no live pose, which does not show that it is the rest pose"
+        }
       ]
     },
     {
       "offset": 256,
       "name": "RestLocalPose",
       "type": "granny::local_pose*",
-      "rung": "confirmed",
+      "rung": "inferred",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
-          "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
-        },
-        {"kind": "test", "test": "figure/client_bones"}
+          "kind": "text",
+          "says": "The field's place and name come from the struct our build of Script Extender declares for this type; no read or watch of the field itself backs it."
+        }
       ]
     },
     {
@@ -149,12 +111,8 @@
       "rung": "confirmed",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
           "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
+          "says": "the skinning matrices reached through the first pointer of this array change while an animation plays, and matrices written into them move the drawn figure"
         },
         {"kind": "test", "test": "figure/client_bones"}
       ]
@@ -163,29 +121,31 @@
       "offset": 276,
       "name": "MeshBindingCount",
       "type": "uint32",
-      "rung": "confirmed",
+      "rung": "inferred",
       "evidence": [
         {
-          "kind": "game-name",
-          "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
-        },
-        {
-          "kind": "watch",
-          "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
-        },
-        {"kind": "test", "test": "figure/client_bones"}
+          "kind": "text",
+          "says": "The field's place and name come from the struct our build of Script Extender declares for this type; the test reads the bindings and not this count."
+        }
       ]
     }
   ],
   "evidence": [
     {
       "kind": "game-name",
-      "says": "the macOS build names gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings and GetBoneWorldTransform"
+      "says": "the macOS build's symbols hold the type's name in its members: gr::GrannySkeleton::BuildWorldPose, SwapDeferredWorldPose, UpdateMeshBindings, GetBoneWorldTransform and its destructor"
     },
     {
       "kind": "watch",
-      "says": "the 4x4 matrix of Wrist_R in the world pose at 0xE0 rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose at 0xF8 does not change"
+      "says": "the 4x4 matrix of Wrist_R in the world pose rises from y 0.97 to 2.04 while a waving animation plays and is back at 0.97 after it; the pose three pointers further does not change"
     },
     {"kind": "test", "test": "figure/client_bones"}
+  ],
+  "questions": [
+    {
+      "ask": "The fields the test does not read (Bones, BoneCount, the deferred and local poses, the rest poses, the count of bindings): read each during a played animation and compare with the granny skeleton's own count and the live pose.",
+      "about": "meaning",
+      "state": "open"
+    }
   ]
 }

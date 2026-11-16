@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::ActivationManager::Update",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "The server's activation pass of one frame: runs the per-character rule over every character on a level, gathers the anchors (the party view's characters, characters with ForceSynch above 0, characters with the SpreadActivation flag, the positions of running synced timelines), wakes and puts to sleep around each anchor, and sends each change through the activation helper's SetActive.",
   "fingerprint": {
     "calls": [
@@ -43,6 +43,14 @@
     {
       "kind": "watch",
       "says": "a count-only probe shows it about 33 times a second, once per server tick, from +0x238A91C; moving an awake creature from 44 to 46 m from the only party member calls SetActive from +0x41A4EB0 (its to-sleep loop) and Active, AnubisActive and AnimationBlueprint leave the creature within 0.1 s"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

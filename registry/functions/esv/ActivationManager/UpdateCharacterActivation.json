@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::ActivationManager::UpdateCharacterActivation",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Applies the activation rule to one character: gets its result (1 activate now, 2 asleep and waiting for an anchor, 3 deactivate now, 4 awake and to sleep unless near an anchor) and calls SetActive or files the character into the manager's wake (+0x200) or sleep (+0x230) candidate sets.",
   "fingerprint": {"calls": ["esv::ActivationManager::GetActivationResult", "fp:e4d053ad9455ea7c"]},
   "evidence": [
@@ -13,6 +13,10 @@
     {
       "kind": "watch",
       "says": "a count-only probe shows 1717 calls in 3 s from +0x41A4599, 17 a tick: one per character of the level's query"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
     }
   ]
 }

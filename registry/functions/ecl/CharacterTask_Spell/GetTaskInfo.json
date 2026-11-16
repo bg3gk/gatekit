@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "ecl::CharacterTask_Spell::GetTaskInfo",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Fills the TaskInfo and the TargetingInfo of the spell task under the cursor: the main damage type, the roll conditions' chance through CalculateModifiableSpellRollChance, the chance without advantage at +0xD8 and the shown chance clamped 1..99 at +0xD9.",
   "fingerprint": {
     "calls": [
@@ -47,6 +47,14 @@
     {
       "kind": "watch",
       "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCClient.dll exports this name; the symbol database finds the export again in the executable at this function by its slot in the class's virtual table"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

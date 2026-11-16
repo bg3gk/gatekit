@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "gui::StatsExprStringBuilder::Roll",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Writes a stats roll's die term into a tooltip's trans string: its value, '(NdM' with the damage type when one is given, the advantage or disadvantage mark and the label 'Critical!' when asked, then ')'; a roll of no dice is written as its flat value. Called by gui::StatsExprStringBuilder::StatsRoll before the modifiers.",
   "fingerprint": {
     "calls": [
@@ -43,6 +43,10 @@
     {
       "kind": "watch",
       "says": "a count-only probe over a weapon hit shows 2 calls, both from +0x178C115 inside gui::StatsExprStringBuilder::StatsRoll (the attack roll and the damage roll)"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }

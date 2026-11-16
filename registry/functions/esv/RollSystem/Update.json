@@ -3,7 +3,7 @@
   "id": "esv::RollSystem::Update",
   "state": "described",
   "rung": "inferred",
-  "does": "The roll system's work of one frame: processes concentration damage rolls, rolls the new requests, creates rolls asked by calls and one-frame requests, applies active-roll modifiers and cancels, and throws the active rolls the player threw (0x3295250).",
+  "does": "The roll system's work of one frame: processes concentration damage rolls, rolls the new requests, creates rolls asked by calls and one-frame requests, applies active-roll modifiers and cancels, and throws the active rolls the player threw (code:unplaced::ThrowActiveRoll).",
   "fingerprint": {
     "calls": [
       "esv::RollSystem::ProcessCreateEvents",
@@ -36,11 +36,15 @@
   "evidence": [
     {
       "kind": "read",
-      "says": "its one caller is SystemUpdate<esv::RollSystem> (0x2390B70); it calls 0x3297330, 0x3297ED0, 0x3298220 (ProcessCreateRollCallRequests), 0x3298EA0 (ProcessCreateRollOneFrameRequests), 0x329A760 (ProcessActiveRollCancels)"
+      "says": "its one caller is the system update of esv::RollSystem; it calls, in order, the processing of concentration damage rolls, code:esv::RollSystem::ProcessCreateEvents, the creation of rolls from call requests and from one-frame requests, and the processing of active-roll cancels, none of the last three named in the registry"
     },
     {
       "kind": "watch",
-      "says": "the chains of every roll-system roll pass it, at +0x32937EF for new requests and at +0x32939C3 for a dialogue check the player threw"
+      "says": "the chains of every roll-system roll pass it, at one place for new requests and at another for a dialogue check the player threw"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by its place under the system's update alone, and the member's own name is the open question"
     }
   ],
   "questions": [

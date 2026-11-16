@@ -2,8 +2,8 @@
   "schema": "registry/function/1",
   "id": "esv::AiHelpers::LinePosHelper",
   "state": "described",
-  "rung": "inferred",
-  "does": "Scores for the AI positions along a line from a source to a target, through CalculatePositionScore for each and the scorer at +0x371F520.",
+  "rung": "toolkit",
+  "does": "Scores for the AI positions along a line from a source to a target, through code:esv::AiHelpers::CalculatePositionScore for each and a second position scorer the registry does not name.",
   "fingerprint": {
     "calls": [
       "esv::AiHelpers::CalculatePositionScore",
@@ -19,19 +19,15 @@
   "evidence": [
     {
       "kind": "read",
-      "says": "takes the source, target, a float distance and returns positions; reads ls::TransformComponent"
+      "says": "takes the source, the target and a float distance and returns positions; reads ls::TransformComponent of both ends, calls code:esv::AiHelpers::CalculatePositionScore and a second, unnamed scorer for points it builds along the segment"
     },
     {
       "kind": "watch",
-      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, the function at +0x37609B0 (about 1 900 calls)"
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from one place in the AI's scoring code: it ran in a fight, which does not show what it does"
     },
     {
-      "kind": "read",
-      "says": "reads ls::TransformComponent of both ends, calls CalculatePositionScore and +0x371F520 for points it builds along the segment"
-    },
-    {
-      "kind": "watch",
-      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, the function at +0x37609B0 (about 1 900 calls)"
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the likeness of the two pseudo-codes"
     }
   ],
   "questions": [
@@ -41,7 +37,7 @@
       "state": "open"
     },
     {
-      "ask": "what the line is (a line spell's area, or a path); a goblin casting a line spell in a fight, with a probe on +0x3125FD0, would tell",
+      "ask": "what the line is (a line spell's area, or a path); a goblin casting a line spell in a fight, with a probe on this function, would tell",
       "about": "reach",
       "state": "open"
     }

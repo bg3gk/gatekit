@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::interrupt::AdjustConditionRoll",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Writes the resolved outcome of the interrupts used on one roll into that roll's ConditionRoll: takes the merged eoc::interrupt::RollAdjustments of the roll (ResolvedRoll at +0x48, set flag +0x4C) and the ConditionRoll (StatsRoll at +0x8, Difficulty +0x118), rewrites total, natural, bonus, advantage and criticality, and answers AdjustConditionRollEffectFlags: byte 0 the success against the difficulty flipped, bytes 1-3 advantage, disadvantage, critical. The one place every post-throw change of an attack or spell save by SetRoll, AdjustRoll or SetReroll passes.",
   "fingerprint": {"calls": ["unplaced::ApplyRollAdjustmentsToStatsRoll"]},
   "evidence": [
@@ -13,6 +13,14 @@
     {
       "kind": "watch",
       "says": "a probe saw one call per changed roll after the interrupt was used: SetRoll(20) by the game's Interrupt_MAG_CriticalExecution (natural 15 total 20 -> 20/25 critical), a SetRoll(1) interrupt (17/22 -> 1/6 critical fail), Lucky's SetReroll (3/8 -> 11/16) and Bardic Inspiration on a Sacred Flame save (total 7 -> 8); the roll event had fired 0.4 s earlier with the old values"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

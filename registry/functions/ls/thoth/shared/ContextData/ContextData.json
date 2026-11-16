@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "ls::thoth::shared::ContextData::ContextData",
   "state": "described",
-  "rung": "inferred",
+  "rung": "game",
   "does": "Builds a condition context from a source and a target entity, their two positions, a HitDesc and an AttackDesc, a status event and a status id: source at +0x0, target at +0x10, positions at +0x40 and +0x4C, the HitDesc pointer at +0x68, the AttackDesc pointer at +0xC8, the status event at +0xD0, the status FixedString at +0xD4; every other entity slot empty.",
   "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a"]},
   "evidence": [
@@ -13,6 +13,10 @@
     {
       "kind": "game-name",
       "says": "the overload ContextData(EntityHandle, EntityHandle, Vector3f, Vector3f, HitDesc&, AttackDesc&, EStatusEvent, ...) of the builds with symbols has this argument list"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports the constructors of this type, this argument list among them"
     }
   ],
   "questions": [

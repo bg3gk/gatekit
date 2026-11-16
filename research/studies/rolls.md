@@ -658,7 +658,7 @@ Probed with the frames still open while the roll event runs.
   is the spell's name, and at +0xD4 the status's name (none for a spell's roll). Seen open at
   Sacred Flame's save, Fire Bolt's attack, a creature's weapon attack and Hold Person's repeated
   save.
-- A spell's roll passes `unplaced::EvaluateSpellRollCondition` first, with the same context as
+- A spell's roll passes `eoc::spell::CheckModifiableSpellRollCondition` first, with the same context as
   its second argument and the spell's name behind its third.
 - Damage dice, a heal and the rolls of no dice are never inside a condition: they run inside the
   execution of a stats functor, which the Script Extender already wraps for its own events. At

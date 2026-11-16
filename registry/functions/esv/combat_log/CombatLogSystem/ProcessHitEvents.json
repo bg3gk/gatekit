@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::combat_log::CombatLogSystem::ProcessHitEvents",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Builds a HitEntry for each new HitResultEvent whose inflicter and target merit an entry: the originator, the hit's condition rolls (attack roll and saves, 0x138 bytes each), a HitDescLog made by the helper from the hit description, the inflicter and target as net entities, Lethal, ShouldBeDowned and AC; killing blows are grouped; the entries go to the protocol at the end.",
   "fingerprint": {
     "calls": [
@@ -26,6 +26,10 @@
     {
       "kind": "watch",
       "says": "over a weapon hit, a weapon miss, Sacred Flame saved and Hold Person's repeating save (a HitResultEvent of cause StatusTick with one condition roll) it calls the merit test once and hands one Hit entry to the protocol"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
     }
   ]
 }

@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::StatusMachine::Update",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Updates one status machine: adds the statuses requested since the last update (entering them), then processes its lifetimes and removals.",
   "fingerprint": {
     "calls": [
@@ -21,12 +21,12 @@
   },
   "evidence": [
     {
-      "kind": "game-name",
-      "says": "esv::StatusMachine::Update(GameTime const&) of the builds that carried symbols; this takes the StatusMachine and the game time and drains the pending list at +0xE0"
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports esv::StatusMachine::Update(GameTime const&); this function takes the StatusMachine and the game time and drains the pending list at +0xE0. The macOS build's symbols do not hold the name."
     },
     {
       "kind": "watch",
-      "says": "a probe shows 2760 calls in 15 s from 0x2C54640 (+0x2C5475E); See Invisibility's save chain passes it at +0x2F73F04"
+      "says": "a probe shows its calls coming from code:unplaced::UpdateStatusMachines, many a frame; See Invisibility's save chain passes it"
     }
   ]
 }

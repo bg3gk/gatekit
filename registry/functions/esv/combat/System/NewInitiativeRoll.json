@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::combat::System::NewInitiativeRoll",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Gives a combatant its initiative: returns the value already stored for it in the combat if there is one, otherwise asks the combat helper whether it may roll and rolls with the StatsComponent InitiativeBonus (esv::combat::SystemHelper::RollDie), returning -20 when it may not. The fourth argument (R9) points at the combatant's EntityHandle: the frame that knows who rolls initiative.",
   "fingerprint": {
     "calls": [
@@ -28,6 +28,10 @@
     {
       "kind": "watch",
       "says": "when a newly spawned goblin joined a running fight, the initiative roll (type None, no roller) happened inside an open call of this function from +0x32041B8, whose R9 pointed at that goblin's handle; the roll's chain is RollDice <- RollDie (+0x32019E1) <- this (+0x3204281) <- unplaced::GetStoredOrRollInitiative (+0x32041B8) <- 0x3206B50 (+0x320A3BC) <- 0x3203050 <- esv::combat::System's update"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
     }
   ]
 }

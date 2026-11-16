@@ -3,7 +3,7 @@
   "id": "ls::thoth::shared::ContextData",
   "kind": "struct",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "about": "The condition context the game hands to every stats condition it evaluates (a spell's SpellRoll, a status's OnApplyRoll or RemoveConditions, a functor's condition): who acts, on whom, with what hit and which status. It lives on the caller's stack for the length of the evaluation, so it is readable at the moment of any roll the condition makes.",
   "fields": [
     {
@@ -14,15 +14,11 @@
       "evidence": [
         {
           "kind": "read",
-          "says": "the constructor at 0x1057860 writes its first two entity arguments at +0x0 and +0x10, a HitDesc pointer at +0x68 and a FixedString at +0xD4; esv's status condition evaluator 0x2FFC4E0 passes the status's StatusCause as the first and its Target as the second"
+          "says": "code:ls::thoth::shared::ContextData::ContextData writes its first entity argument here; code:unplaced::EvaluateStatusCondition passes the status's StatusCause as that argument"
         },
         {
           "kind": "watch",
-          "says": "read at the moment of the roll through Ext.Events.Roll: Sacred Flame's save and Fire Bolt's attack show the caster at +0x0 and the goblin at +0x10; a goblin's weapon attack shows the goblin at +0x0 and the struck creature at +0x10 (the host, or a third creature it attacked); HOLD_PERSON's repeat save shows HOLD_PERSON's FixedString at +0xD4 and the held creature at +0x0 and +0x10; +0xD4 is empty (0xFFFFFFFF) for spell rolls"
-        },
-        {
-          "kind": "game-name",
-          "says": "ls::thoth::shared::ContextData is the type the builds with symbols pass to Machine::CheckStaticCondition and eoc::spell::CheckModifiableSpellRollCondition"
+          "says": "read at the moment of the roll through Ext.Events.Roll: Sacred Flame's save and Fire Bolt's attack show the caster here; a goblin's weapon attack shows the goblin; HOLD_PERSON's repeat save shows the held creature"
         }
       ]
     },
@@ -34,15 +30,35 @@
       "evidence": [
         {
           "kind": "read",
-          "says": "the constructor at 0x1057860 writes its first two entity arguments at +0x0 and +0x10, a HitDesc pointer at +0x68 and a FixedString at +0xD4; esv's status condition evaluator 0x2FFC4E0 passes the status's StatusCause as the first and its Target as the second"
+          "says": "code:ls::thoth::shared::ContextData::ContextData writes its second entity argument here; code:unplaced::EvaluateStatusCondition passes the status's Target as that argument"
         },
         {
           "kind": "watch",
-          "says": "read at the moment of the roll through Ext.Events.Roll: Sacred Flame's save and Fire Bolt's attack show the caster at +0x0 and the goblin at +0x10; a goblin's weapon attack shows the goblin at +0x0 and the struck creature at +0x10 (the host, or a third creature it attacked); HOLD_PERSON's repeat save shows HOLD_PERSON's FixedString at +0xD4 and the held creature at +0x0 and +0x10; +0xD4 is empty (0xFFFFFFFF) for spell rolls"
-        },
+          "says": "read at the moment of the roll through Ext.Events.Roll: Sacred Flame's save and Fire Bolt's attack show the goblin aimed at here; a goblin's weapon attack shows the struck creature (the host, or a third creature it attacked); HOLD_PERSON's repeat save shows the held creature"
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "SourcePosition",
+      "type": "vec3",
+      "rung": "inferred",
+      "evidence": [
         {
-          "kind": "game-name",
-          "says": "ls::thoth::shared::ContextData is the type the builds with symbols pass to Machine::CheckStaticCondition and eoc::spell::CheckModifiableSpellRollCondition"
+          "kind": "read",
+          "says": "code:ls::thoth::shared::ContextData::ContextData copies the first of its two vec3 arguments here; no roll was read with this field watched"
+        }
+      ]
+    },
+    {
+      "offset": 76,
+      "name": "TargetPosition",
+      "type": "vec3",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "code:ls::thoth::shared::ContextData::ContextData copies the second of its two vec3 arguments here; no roll was read with this field watched"
         }
       ]
     },
@@ -50,19 +66,27 @@
       "offset": 104,
       "name": "Hit",
       "type": "pointer",
-      "rung": "confirmed",
+      "rung": "inferred",
       "evidence": [
         {
           "kind": "read",
-          "says": "the constructor at 0x1057860 writes its first two entity arguments at +0x0 and +0x10, a HitDesc pointer at +0x68 and a FixedString at +0xD4; esv's status condition evaluator 0x2FFC4E0 passes the status's StatusCause as the first and its Target as the second"
+          "says": "code:ls::thoth::shared::ContextData::ContextData stores its HitDesc pointer argument here"
         },
         {
-          "kind": "watch",
-          "says": "read at the moment of the roll through Ext.Events.Roll: Sacred Flame's save and Fire Bolt's attack show the caster at +0x0 and the goblin at +0x10; a goblin's weapon attack shows the goblin at +0x0 and the struck creature at +0x10 (the host, or a third creature it attacked); HOLD_PERSON's repeat save shows HOLD_PERSON's FixedString at +0xD4 and the held creature at +0x0 and +0x10; +0xD4 is empty (0xFFFFFFFF) for spell rolls"
-        },
+          "kind": "text",
+          "says": "research/studies/rolls.md, section 17, says the pointer was seen at four unlike rolls to lead to a hit description whose +0x150 is the spell's name; no watch of this field is written in this entry"
+        }
+      ]
+    },
+    {
+      "offset": 200,
+      "name": "Attack",
+      "type": "pointer",
+      "rung": "inferred",
+      "evidence": [
         {
-          "kind": "game-name",
-          "says": "ls::thoth::shared::ContextData is the type the builds with symbols pass to Machine::CheckStaticCondition and eoc::spell::CheckModifiableSpellRollCondition"
+          "kind": "read",
+          "says": "code:ls::thoth::shared::ContextData::ContextData stores its second pointer argument here, an AttackDesc by the constructor's argument list in the stores; no roll was read with this field watched"
         }
       ]
     },
@@ -74,36 +98,32 @@
       "evidence": [
         {
           "kind": "read",
-          "says": "the constructor at 0x1057860 writes its first two entity arguments at +0x0 and +0x10, a HitDesc pointer at +0x68 and a FixedString at +0xD4; esv's status condition evaluator 0x2FFC4E0 passes the status's StatusCause as the first and its Target as the second"
+          "says": "code:ls::thoth::shared::ContextData::ContextData adds a reference to the FixedString it stores here"
         },
         {
           "kind": "watch",
-          "says": "read at the moment of the roll through Ext.Events.Roll: Sacred Flame's save and Fire Bolt's attack show the caster at +0x0 and the goblin at +0x10; a goblin's weapon attack shows the goblin at +0x0 and the struck creature at +0x10 (the host, or a third creature it attacked); HOLD_PERSON's repeat save shows HOLD_PERSON's FixedString at +0xD4 and the held creature at +0x0 and +0x10; +0xD4 is empty (0xFFFFFFFF) for spell rolls"
-        },
-        {
-          "kind": "game-name",
-          "says": "ls::thoth::shared::ContextData is the type the builds with symbols pass to Machine::CheckStaticCondition and eoc::spell::CheckModifiableSpellRollCondition"
+          "says": "read at the moment of the roll through Ext.Events.Roll: HOLD_PERSON's repeat save shows HOLD_PERSON's FixedString here; it is empty (0xFFFFFFFF) for spell rolls"
         }
       ]
     }
   ],
   "evidence": [
     {
+      "kind": "game-name",
+      "says": "the macOS build's symbols and EoCShared.dll's exports hold the type's name in its constructors and in the argument lists of Machine::CheckStaticCondition and code:eoc::spell::CheckModifiableSpellRollCondition, which take it; it is tied to this layout by the constructor read here and by the context those functions are handed at a roll"
+    },
+    {
       "kind": "read",
-      "says": "the constructor at 0x1057860 writes its first two entity arguments at +0x0 and +0x10, a HitDesc pointer at +0x68 and a FixedString at +0xD4; esv's status condition evaluator 0x2FFC4E0 passes the status's StatusCause as the first and its Target as the second"
+      "says": "code:ls::thoth::shared::ContextData::ContextData writes its first two entity arguments at +0x0 and +0x10, two vec3 at +0x40 and +0x4C, a HitDesc pointer at +0x68, a second pointer at +0xC8 and a FixedString at +0xD4"
     },
     {
       "kind": "watch",
-      "says": "read at the moment of the roll through Ext.Events.Roll: Sacred Flame's save and Fire Bolt's attack show the caster at +0x0 and the goblin at +0x10; a goblin's weapon attack shows the goblin at +0x0 and the struck creature at +0x10 (the host, or a third creature it attacked); HOLD_PERSON's repeat save shows HOLD_PERSON's FixedString at +0xD4 and the held creature at +0x0 and +0x10; +0xD4 is empty (0xFFFFFFFF) for spell rolls"
-    },
-    {
-      "kind": "game-name",
-      "says": "ls::thoth::shared::ContextData is the type the builds with symbols pass to Machine::CheckStaticCondition and eoc::spell::CheckModifiableSpellRollCondition"
+      "says": "read at the moment of the roll through Ext.Events.Roll, at Sacred Flame's save, Fire Bolt's attack, a goblin's weapon attack and HOLD_PERSON's repeat save: the source at +0x0, the target at +0x10, the status's FixedString at +0xD4"
     }
   ],
   "questions": [
     {
-      "ask": "+0x38 held the attacker's equipped weapon (one goblin attack); +0x40 and +0x4C look like the source and target positions (vec3); +0x70 is a 16-byte GUID shared by the attack and its damage (the cast's?); +0xC8 an AttackDesc pointer and +0xD0 a uint32 the status path sets to 1 (EStatusEvent?). Watch each with a cast from an item, a thrown weapon and a status with a source.",
+      "ask": "+0x38 held the attacker's equipped weapon (one goblin attack); +0x70 is a 16-byte GUID shared by the attack and its damage (the cast's?); +0xD0 is a uint32 the status path sets to 1 (EStatusEvent?). Watch each, and the two positions and the two pointers the constructor fills, with a cast from an item, a thrown weapon and a status with a source.",
       "about": "reach",
       "state": "open"
     }

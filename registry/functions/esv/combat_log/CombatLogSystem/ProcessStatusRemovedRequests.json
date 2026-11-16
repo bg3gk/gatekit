@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::combat_log::CombatLogSystem::ProcessStatusRemovedRequests",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "toolkit",
   "does": "Builds StatusRemovedEntry (type 10) entries from the system's list of removal requests (+0x70, 0x58 bytes each), and for a removal that carries condition rolls sends saving-throw entries for them first.",
   "fingerprint": {
     "calls": [
@@ -22,6 +22,10 @@
     {
       "kind": "watch",
       "says": "Hold Person ended by a saving throw: SendCombatLogEntryRemoved once, SendSavingThrowEntriesForHitDesc once, one StatusRemoved entry handed to the protocol from inside this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
     }
   ]
 }

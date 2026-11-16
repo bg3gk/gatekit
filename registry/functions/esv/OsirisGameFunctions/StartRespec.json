@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::OsirisGameFunctions::StartRespec",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "The handler of the Osiris call StartRespec(Target). Same shape as StartChangeAppearance: the character must be reserved for a user and carry eoc::CharacterCreationStatsComponent, the bytes at +0x250 and +0x288 of esv::character_creation::System must be clear; then the pair (character entity, unassigned user id) is appended to the system's request array at +0x438 (count at +0x444).",
   "fingerprint": {
     "calls": ["fp:4122c22429c13eea", "fp:e4d053ad9455ea7c"],
@@ -20,6 +20,10 @@
     {
       "kind": "watch",
       "says": "a count-only probe during Osi.StartRespec(host) shows one call, from bg3_dx11.exe+0x38248AA, and none of the handler of StartChangeAppearance; afterwards the server holds one entity with CCRespecDefinition and CCDefinitionCommon and a session entity with CCSessionCommon and CCRespec, the host reads CCState.HasDummy true, and the client opens the widget CharacterRespec on the same level"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ],
   "questions": [

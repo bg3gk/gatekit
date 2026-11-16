@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::Status::Enter",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "does": "Enters a status on its owner: marks it entered, lets statuses it replaces exit, raises the applied status event (0x10) - where the status's OnApplyRoll is evaluated - and then applies the prototype's settings.",
   "fingerprint": {
     "calls": [
@@ -17,11 +17,11 @@
   "evidence": [
     {
       "kind": "game-name",
-      "says": "esv::Status::Enter is a virtual of the server's status in the builds that carried symbols; this one calls esv::Status::IsOnSourceSurface and GetStatusMachine and is called by esv::StatusBoost::Enter and esv::StatusKnockedDown::Enter"
+      "says": "the macOS build's symbols hold this name and EoCServer.dll exports it, a virtual of the server's status; this function calls esv::Status::IsOnSourceSurface and GetStatusMachine and is called by esv::StatusBoost::Enter and esv::StatusKnockedDown::Enter, as a base class's Enter is"
     },
     {
       "kind": "watch",
-      "says": "a probe during Osi.ApplyStatus of HOLD_PERSON shows 1 call from esv::StatusBoost::Enter (+0x370DE4C); See Invisibility's save chain passes it at +0x2FFA091"
+      "says": "a probe during Osi.ApplyStatus of HOLD_PERSON shows 1 call from esv::StatusBoost::Enter; See Invisibility's save chain passes it"
     }
   ]
 }
