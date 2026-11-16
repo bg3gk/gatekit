@@ -944,3 +944,21 @@ explosions and statuses (who is to thank for a kill); which interrupt changed a 
 it was; what a creature can do to another now (the AI's candidates joined with the game's
 chance); the combat log's tooltip lines readable and the flag that cuts them fixable; a
 reaction a mod can raise from a roll event without an interrupt of its own.
+
+## 29. Whose interrupt changed a roll, and what a creature weighed
+
+- **Whose interrupt.** At the moment a roll is changed the cast's own record of interrupts used
+  names, for that roll's id, each interrupt's entity (its name and its owner), the roller and the
+  other party, and what that interrupt asked - a fixed die or an amount to add. It can be read
+  from Lua inside the change's event. Seen for a staged set-roll (owner, name, the fixed 1) and
+  for the game's own Bardic Inspiration on a save (+3). An interrupt listed as used is not
+  always the one that changed the roll: two were listed on one save and one did nothing. The
+  one-frame components and the story's event come a tick or two later and do not name the roll.
+- **What a creature weighed.** The game's AI keeps, for the creature whose turn it is
+  calculating, every action it considered: the spell, the target, where it would cast from, the
+  ranges, the scores and their parts, the cost, the damage it expects. The list is whole 10 to
+  22 ticks before the cast; the chosen action is marked in the tick the cast's state appears. A
+  goblin weighed a bite (191), a weapon attack and Sacred Flame (131 each) and a dash (25), and
+  bit. The chance the AI starts each attack's score from is the game's own chance (section 22),
+  number for number. Outside an AI calculation there is no such list; the game's own "can this
+  be cast at that" check is not placed in this build.
