@@ -920,3 +920,27 @@ Taken back:
 
 Seen once and not again: in a fresh game a forced roll lowered the debt and the hit still said
 "miss".
+
+## 28. What five more mods would gain, and what they still lack
+
+Read, never run: a trader-inventory cleaner, a knock-out mod, a modder's own combat logger, a
+re-layout of the combat log, and a mod that punishes a critical miss.
+
+- The modder's combat logger (2.4 thousand lines of Lua, written to settle the same "the
+  tooltip shows wrong dice" that sections 24-26 settle) reads hits, statuses, casts, functors
+  and damage events, and polls the game's AI for every candidate action with its scores - which
+  this toolkit does not have. The roll events would replace its reading of rolls out of hits
+  (about 120 lines) and add what a hit never holds: checks, initiative, each die, and a roll as
+  it was before an interrupt changed it.
+- The critical-miss mod builds "on a natural 1 of an attack" out of an interrupt, a marker
+  status and two passives, and picks the counter-attack from a hand-made table of 132 spell
+  names with ranges written in. The roll event is that condition in one handler; the game's own
+  chance for each candidate would rank them.
+- The re-layout of the combat log is pure interface: the tooltip's text is built by the game's
+  code, so the lost terms of a damage die of 1 cannot be mended there.
+
+What they lack, most wanted first: the chain of causes of a hit or a death through items,
+explosions and statuses (who is to thank for a kill); which interrupt changed a roll and whose
+it was; what a creature can do to another now (the AI's candidates joined with the game's
+chance); the combat log's tooltip lines readable and the flag that cuts them fixable; a
+reaction a mod can raise from a roll event without an interrupt of its own.
