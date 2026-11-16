@@ -81,6 +81,96 @@ public static class RegistryCommands
             root.Subcommands.Add(c);
         }
         {
+            var c = new Command("mappings", "the binding layer of a Script Extender (its BinaryMappings.xml) against the registry: what a table written by hand leads to, and a mapping written from the registry alone");
+            var limit = new Option<int>("--limit") { Description = "the most bytes a pattern may take (default 64)", DefaultValueFactory = _ => 64 };
+            var coverage = new Option<string?>("--coverage") { Description = "the coverage record beside the registry" };
+            {
+                var file = new Argument<string>("file") { Description = "a BinaryMappings.xml" };
+                var verbose = new Option<bool>("--verbose") { Description = "every symbol, not only those that do not land or that the registry calls otherwise" };
+                var check = new Command("check", "for every symbol of the table and every binary of the game: where its pattern lands, whether a function starts there, what the registry calls the place, and whether the registry could write the mapping itself") { file, limit, coverage, verbose };
+                check.SetAction(p => Invoke(p, s => Mappings.Check(p.GetValue(file)!, Reader(s, null),
+                    RegistryStore.Find(p.GetValue(coverage)) ?? throw new SymbolsException("no registry found"), p.GetValue(limit), p.GetValue(verbose), s.Out)));
+                c.Subcommands.Add(check);
+            }
+            {
+                var file = new Argument<string>("file") { Description = "a BinaryMappings.xml" };
+                var binary = new Option<string>("--binary") { Description = "the binary whose places are noted (the other binaries follow by `registry reanchor`)", DefaultValueFactory = _ => "bg3_dx11.exe" };
+                var write = new Option<bool>("--write") { Description = "write the notes into the live layer; without it only say what would be noted" };
+                var adopt = new Command("adopt", "take the names of the table's functions into the registry: every function the table leads to and the registry does not name yet is noted under the table's name at rung extender, with the mapping as its evidence") { file, binary, write, limit, coverage };
+                adopt.SetAction(p => Invoke(p, s =>
+                {
+                    var store = RegistryStore.Find(p.GetValue(coverage)) ?? throw new SymbolsException("no registry found");
+                    var landings = Mappings.Land(Mappings.Read(p.GetValue(file)!), Reader(s, null), store, p.GetValue(limit));
+                    var live = LiveLayer.OfHome();
+                    int noted = 0, refused = 0;
+                    foreach (var l in landings.Where(l => l.Binary.Equals(p.GetValue(binary), StringComparison.OrdinalIgnoreCase) && l.Rva is not null && l.Function && l.Id is null))
+                    {
+                        var id = Mappings.IdOf(l.Symbol);
+                        var at = string.Create(CultureInfo.InvariantCulture, $"{l.Binary}+0x{l.Rva:X}");
+                        if (!p.GetValue(write)) { s.Out.WriteLine($"would note {id} at {at}"); noted++; continue; }
+                        try
+                        {
+                            LiveCommands.Note(s, new NoteRequest(id)
+                            {
+                                Kind = "function", At = at, Rung = "extender", Who = "mappings", Task = "binding layer",
+                                Evidence = [$"extender-name:Script Extender's table of byte patterns names this function: the pattern of its mapping {l.Mapping} is found once in the binary and {(l.Indirect ? "an instruction it marks refers here" : "marks this place")}"],
+                                Ask = ["What the function does: it is named from Script Extender's table and has not been read"], AskAbout = "meaning",
+                            }, live, store);
+                            s.Out.WriteLine($"noted {id} at {at}");
+                            noted++;
+                        }
+                        catch (Exception e) when (e is RegistryException or SymbolsException)
+                        {
+                            s.Out.WriteLine($"not noted {id} at {at}: {e.Message}");
+                            refused++;
+                        }
+                    }
+                    s.Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{noted} {(p.GetValue(write) ? "noted" : "would be noted")}, {refused} refused; places that are not a function's start are left (the registry has no pattern-free way to find them again yet)"));
+                    return refused == 0 ? 0 : 1;
+                }));
+                c.Subcommands.Add(adopt);
+            }
+            {
+                var ids = new Argument<string[]>("function") { Description = "registry ids of functions", Arity = ArgumentArity.ZeroOrMore };
+                var all = new Option<bool>("--all") { Description = "every function the registry places in a binary" };
+                var count = new Option<bool>("--count") { Description = "print only how many got a mapping and which did not" };
+                var emit = new Command("emit", "a <Mapping> for each function, from the registry alone: one pattern of its start that is found once in every binary the registry places it in") { ids, all, count, limit, coverage };
+                emit.SetAction(p => Invoke(p, s =>
+                {
+                    var store = RegistryStore.Find(p.GetValue(coverage)) ?? throw new SymbolsException("no registry found");
+                    var reader = Reader(s, null);
+                    var bad = 0;
+                    if (p.GetValue(all) || p.GetValue(count))
+                    {
+                        var wanted = p.GetValue(all)
+                            ? store.All().Where(e => e.Kind == EntryKind.Function && store.Places(e.Id).Count > 0).Select(e => e.Id).Order(StringComparer.Ordinal).ToList()
+                            : [.. p.GetValue(ids)!];
+                        var got = 0;
+                        foreach (var id in wanted)
+                        {
+                            var written = Mappings.Emit(id, reader, store, p.GetValue(limit), out var why);
+                            if (written is not null) { got++; if (!p.GetValue(count)) { s.Out.WriteLine(written); s.Out.WriteLine(); } }
+                            else { bad++; s.Out.WriteLine($"    <!-- {id}: no mapping: {why} -->"); }
+                        }
+                        s.Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"    <!-- {got} of {wanted.Count} functions have a mapping from the registry alone (limit {p.GetValue(limit)} bytes) -->"));
+                        return 0;
+                    }
+                    foreach (var given in p.GetValue(ids)!)
+                    {
+                        var entries = store.Lookup(given);
+                        if (entries.Count != 1) { s.Out.WriteLine($"    <!-- {given}: {(entries.Count == 0 ? "the registry has no such function" : "more than one entry answers to the name")} -->"); bad++; continue; }
+                        var written = Mappings.Emit(entries[0].Id, reader, store, p.GetValue(limit), out var why);
+                        if (written is null) { s.Out.WriteLine($"    <!-- {entries[0].Id}: no mapping: {why} -->"); bad++; }
+                        else s.Out.WriteLine(written);
+                        s.Out.WriteLine();
+                    }
+                    return bad == 0 ? 0 : 1;
+                }));
+                c.Subcommands.Add(emit);
+            }
+            root.Subcommands.Add(c);
+        }
+        {
             var coverage = new Option<string?>("--coverage") { Description = "the coverage record beside the registry" };
             var c = new Command("stamp", "give every function named by evidence the build of the game its address is in and its fingerprint") { coverage };
             c.SetAction(p => Invoke(p, s => StampCommand(s, p.GetValue(coverage))));
