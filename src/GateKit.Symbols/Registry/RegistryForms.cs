@@ -24,6 +24,49 @@ public static class Rungs
     /// <summary>The higher of two rungs (the lower index).</summary>
     public static int Rank(string? rung) => rung is null ? All.Count : All.ToList().IndexOf(rung) is var i && i >= 0 ? i : All.Count;
 
+    /// <summary>The kinds of evidence there are; <c>reach</c> says that the code ran in a situation, not what it does.</summary>
+    public static readonly IReadOnlyList<string> EvidenceKinds = ["watch", "read", "reach", "pairing", "game-name", "toolkit-name", "extender-name", "test", "text"];
+
+    /// <summary>
+    /// The bar (registry/README.md, "Rungs"): the highest rung the evidence of an entry or of a member
+    /// carries, and in <paramref name="why"/> what a higher one would need. A store's name puts a
+    /// thing on the store's rung when the name is tied to it: for a function (<paramref name="code"/>)
+    /// by the store's own match or pair, or by an instrument's evidence of this build's function in the
+    /// entry (a read, a watch, a test); a type, a field or a value carries its name itself. A name of
+    /// ours is <c>confirmed</c> by a read and a watch together, or by a test. Everything else - a
+    /// reading alone, a watch alone, a counter of reach, a pairing, Script Extender's name, a text -
+    /// is <c>inferred</c>.
+    /// </summary>
+    public static string Ceiling(JsonNode? evidence, bool code, out string why)
+    {
+        var items = (evidence as JsonArray ?? []).OfType<JsonObject>().ToList();
+        var kinds = items.Select(e => JsonText.Text(e["kind"]) ?? "").ToHashSet(StringComparer.Ordinal);
+        var body = kinds.Contains("read") || kinds.Contains("watch") || kinds.Contains("test");
+        bool Tied(string kind) => !code || body || items.Any(e => JsonText.Text(e["kind"]) == kind && JsonText.Text(e["tie"]) is "match" or "pair");
+        var has = kinds.Count == 0 ? "it has none" : "it has " + string.Join(", ", kinds.Order(StringComparer.Ordinal));
+        why = "";
+        if (kinds.Contains("game-name") && Tied("game-name")) return "game";
+        if (kinds.Contains("toolkit-name") && Tied("toolkit-name")) return "toolkit";
+        if (kinds.Contains("test") || (kinds.Contains("read") && kinds.Contains("watch"))) return "confirmed";
+        why = kinds.Contains("game-name") || kinds.Contains("toolkit-name")
+            ? "a store's name that nothing ties to this function (no match, no pair, no read, watch or test); " + has
+            : "a name of ours is confirmed by a read and a watch together, or by a test; " + has;
+        return "inferred";
+    }
+
+    /// <summary>The rung an entry or a member stands on by its evidence: the rung asked, lowered to the
+    /// <see cref="Ceiling"/> when it is above it; and a name of ours that is <c>confirmed</c> takes the
+    /// store's rung once the store's name is among its evidence. Null <paramref name="why"/>: unchanged.</summary>
+    public static string? Settle(string? asked, JsonNode? evidence, bool code, out string? why)
+    {
+        why = null;
+        if (asked is null) return null;
+        var ceiling = Ceiling(evidence, code, out var short_);
+        if (Rank(asked) < Rank(ceiling)) { why = short_.Length > 0 ? short_ : $"its evidence carries {ceiling}"; return ceiling; }
+        if (asked == "confirmed" && ceiling is "game" or "toolkit") { why = $"the name is the {(ceiling == "game" ? "game's" : "Toolkit's")}: its evidence says where it is held"; return ceiling; }
+        return asked;
+    }
+
     /// <summary>The kind an evidence sentence of an earlier store is carried as: the name's own source where the rung says it, else plain text.</summary>
     public static string EvidenceKindOf(string? rung) => rung switch
     {
@@ -288,6 +331,11 @@ public static partial class RegistryForms
             var was = before.FirstOrDefault(b => b["offset"]?.GetValue<long>() == field["offset"]?.GetValue<long>() && JsonText.Text(b["name"]) == JsonText.Text(field["name"]))
                 ?? before.FirstOrDefault(b => b["offset"]?.GetValue<long>() == field["offset"]?.GetValue<long>());
             if (was is null) continue;
+            // A layout carries a field's evidence as one sentence; where that sentence and the rung are
+            // what the entry already says, the entry's own evidence stays, each piece with its kind.
+            if (was["evidence"] is JsonArray kept && JsonText.Text(was["rung"]) == JsonText.Text(field["rung"])
+                && EvidenceText(kept) == EvidenceText(field["evidence"]))
+                field["evidence"] = kept.DeepClone();
             foreach (var (key, value) in was)
                 if (key is not ("offset" or "name" or "type" or "rung" or "evidence") && !field.ContainsKey(key)) field[key] = value?.DeepClone();
         }

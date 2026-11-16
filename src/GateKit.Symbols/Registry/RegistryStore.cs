@@ -50,6 +50,130 @@ public sealed record BuildInfo(string Build, IReadOnlyDictionary<string, string?
 }
 
 /// <summary>
+/// Where the file of an id lies under a folder, on any disk (registry/README.md, "The file of an
+/// id"): the path <see cref="RegistryId.ToPath"/> gives, except that of the names in one folder
+/// that differ only by case - a namespace <c>status</c> beside a class <c>Status</c> - the one that
+/// sorts first by its characters' codes keeps its name and each other has every letter whose case
+/// differs from that one's written as <c>%XX</c>. The names then differ on a disk that ignores
+/// case, the rule depends on the set of names and not on which came first, and
+/// <see cref="RegistryId.FromPath"/> reads every one of them back as it is.
+/// </summary>
+public sealed class CasePaths
+{
+    readonly Dictionary<(string Folder, bool Files), List<string>> listed = [];
+
+    /// <summary>Forgets the folders read, after a write.</summary>
+    public void Forget() => listed.Clear();
+
+    /// <summary>A written name with the letters the case rule escaped put back.</summary>
+    public static string Unmarked(string written)
+    {
+        if (!written.Contains('%')) return written;
+        var b = new System.Text.StringBuilder(written.Length);
+        for (var i = 0; i < written.Length; i++)
+        {
+            if (written[i] == '%' && i + 2 < written.Length && byte.TryParse(written.AsSpan(i + 1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var x) && char.IsAsciiLetter((char)x))
+            {
+                b.Append((char)x);
+                i += 2;
+            }
+            else b.Append(written[i]);
+        }
+        return b.ToString();
+    }
+
+    /// <summary>A name as it is written beside the names that differ from it only by case.</summary>
+    public static string Marked(string name, IEnumerable<string> variants)
+    {
+        var least = variants.Append(name).Min(StringComparer.Ordinal)!;
+        if (least == name) return name;
+        var b = new System.Text.StringBuilder(name.Length + 8);
+        for (var i = 0; i < name.Length; i++)
+        {
+            if (name[i] == least[i]) b.Append(name[i]);
+            else b.Append('%').Append(((byte)name[i]).ToString("X2", CultureInfo.InvariantCulture));
+        }
+        return b.ToString();
+    }
+
+    List<string> Written(string folder, bool files)
+    {
+        if (listed.TryGetValue((folder, files), out var known)) return known;
+        return listed[(folder, files)] = !Directory.Exists(folder) ? []
+            : files ? [.. Directory.EnumerateFiles(folder, "*.json").Select(f => Path.GetFileName(f)[..^5])]
+            : [.. Directory.EnumerateDirectories(folder).Select(d => Path.GetFileName(d)!)];
+    }
+
+    /// <summary>
+    /// The file of an id under <paramref name="root"/>. With <paramref name="arrange"/> (a write) the
+    /// names beside it that the rule now writes otherwise are moved to where it puts them, before
+    /// the id's own folders are made.
+    /// </summary>
+    public string Of(string root, string id, bool arrange = false)
+    {
+        if (arrange) Forget();
+        var segments = RegistryId.ToPath(id).Split('/');
+        var folder = root;
+        for (var i = 0; i < segments.Length; i++)
+        {
+            var last = i == segments.Length - 1;
+            var name = last ? segments[i][..^5] : segments[i];
+            var written = Written(folder, last);
+            var variants = written.Select(Unmarked).Where(v => v != name && string.Equals(v, name, StringComparison.OrdinalIgnoreCase)).Distinct(StringComparer.Ordinal).ToList();
+            if (variants.Count > 0)
+            {
+                if (arrange)
+                    foreach (var other in written.Where(w => variants.Contains(Unmarked(w))))
+                    {
+                        var plain = Unmarked(other);
+                        var belongs = Marked(plain, variants.Where(v => v != plain).Append(name));
+                        if (belongs == other) continue;
+                        var (from, to) = (Path.Combine(folder, other + (last ? ".json" : "")), Path.Combine(folder, belongs + (last ? ".json" : "")));
+                        if (last) File.Move(from, to);
+                        else Directory.Move(from, to);
+                    }
+                name = Marked(name, variants);
+            }
+            folder = Path.Combine(folder, last ? name + ".json" : name);
+        }
+        if (arrange) Forget();
+        return folder;
+    }
+
+    /// <summary>After the file of an id is gone: the names that differ from its parts only by case are
+    /// moved to where the rule puts them without it.</summary>
+    public void Rearrange(string root, string id)
+    {
+        Forget();
+        var segments = RegistryId.ToPath(id).Split('/');
+        var folder = root;
+        for (var i = 0; i < segments.Length; i++)
+        {
+            var last = i == segments.Length - 1;
+            var name = last ? segments[i][..^5] : segments[i];
+            var written = Written(folder, last);
+            var variants = written.Select(Unmarked).Where(v => string.Equals(v, name, StringComparison.OrdinalIgnoreCase)).Distinct(StringComparer.Ordinal).ToList();
+            string? next = null;
+            foreach (var other in written.Where(w => variants.Contains(Unmarked(w))))
+            {
+                var plain = Unmarked(other);
+                var belongs = Marked(plain, variants.Where(v => v != plain));
+                if (belongs != other)
+                {
+                    var (from, to) = (Path.Combine(folder, other + (last ? ".json" : "")), Path.Combine(folder, belongs + (last ? ".json" : "")));
+                    if (last) File.Move(from, to);
+                    else Directory.Move(from, to);
+                }
+                if (plain == name) next = belongs;
+            }
+            if (next is null) break;
+            folder = Path.Combine(folder, next);
+        }
+        Forget();
+    }
+}
+
+/// <summary>
 /// The registry of our reading of the game's code, <c>research/coverage/registry</c>: one file an
 /// entity under <c>functions/</c>, <c>types/</c> and <c>globals/</c>, at the path its id gives
 /// (<see cref="RegistryId.ToPath"/>), and one table a build and binary under
@@ -117,8 +241,10 @@ public sealed class RegistryStore(string root)
 
     public static string Name(EntryKind kind) => kind.ToString().ToLowerInvariant();
 
-    public string PathOf(EntryKind kind, string id) =>
-        System.IO.Path.Combine([Root, Folder(kind), .. RegistryId.ToPath(id).Split('/')]);
+    readonly CasePaths cases = new();
+
+    /// <summary>The file of an id of a kind (<see cref="CasePaths"/>).</summary>
+    public string PathOf(EntryKind kind, string id) => cases.Of(System.IO.Path.Combine(Root, Folder(kind)), id);
 
     public static string Hex(long value) => string.Create(CultureInfo.InvariantCulture, $"0x{value:X}");
 
@@ -146,7 +272,11 @@ public sealed class RegistryStore(string root)
     }
 
     /// <summary>Forgets what was read, so that the next read sees the files again.</summary>
-    public void Refresh() => cache = null;
+    public void Refresh()
+    {
+        cache = null;
+        cases.Forget();
+    }
 
     /// <summary>The entry of an id (an entity's, or the owner of a member), or null.</summary>
     public RegistryEntry? Get(string id)
@@ -155,8 +285,10 @@ public sealed class RegistryStore(string root)
         foreach (var kind in Enum.GetValues<EntryKind>())
         {
             var path = PathOf(kind, entity);
-            if (File.Exists(path) && ExactName(path))
-                return cache?.FirstOrDefault(e => e.Path == path) ?? new RegistryEntry(kind, path, JsonText.Read(path, Schema(kind)).AsObject());
+            if (File.Exists(path) && ExactName(path)
+                && (cache?.FirstOrDefault(e => e.Path == path) ?? new RegistryEntry(kind, path, JsonText.Read(path, Schema(kind)).AsObject())) is { } found
+                && found.Id == entity)                                    // a disk that ignores case finds a folder by another case too
+                return found;
         }
         return null;
     }
@@ -178,40 +310,25 @@ public sealed class RegistryStore(string root)
 
     /// <summary>
     /// Writes an entry at the path of its id, held to its kind's schema. With <paramref name="create"/>
-    /// an id that exists is refused, naming the file that holds it; an id that differs from an
-    /// existing one only by case is always refused.
+    /// an id that exists is refused, naming the file that holds it. An id that differs from an
+    /// existing one only by case is written beside it under the rule of <see cref="CasePaths"/>.
     /// </summary>
     public string Write(EntryKind kind, JsonObject entry, bool create)
     {
         var id = JsonText.Text(entry["id"]) ?? throw new RegistryException("an entry carries its id");
-        var path = PathOf(kind, id);
-        foreach (var other in Enum.GetValues<EntryKind>())
+        if (RegistryId.Parse(id).Member is not null) throw new RegistryException($"{id} is a member: it lives in the file of {RegistryId.EntityOf(id)}");
+        if (Get(id) is { } held)
         {
-            var there = PathOf(other, id);
-            if (File.Exists(there) && ExactName(there))
-            {
-                if (other != kind) throw new RegistryException($"{id} is already a {Name(other)}: {Relative(there)} holds it");
-                if (create) throw new RegistryException($"{id} exists: {Relative(there)} holds it; one id, one file");
-            }
-            else if (CaseTwin(there) is { } twin)
-                throw new RegistryException($"{id} differs only by case from the id of {Relative(twin)}: on a file system without case they would be one file");
+            if (held.Kind != kind) throw new RegistryException($"{id} is already a {Name(held.Kind)}: {Relative(held.Path)} holds it");
+            if (create) throw new RegistryException($"{id} exists: {Relative(held.Path)} holds it; one id, one file");
         }
+        var path = cases.Of(System.IO.Path.Combine(Root, Folder(kind)), id, arrange: true);
         var ordered = new JsonObject { ["schema"] = Schema(kind) };
         foreach (var (key, value) in entry)
             if (key != "schema") ordered[key] = value?.DeepClone();
         JsonText.Write(path, ordered, Schema(kind));
-        cache = null;
+        Refresh();
         return path;
-    }
-
-    /// <summary>A file in the same folder whose name equals this one's but for case, or null.</summary>
-    static string? CaseTwin(string path)
-    {
-        var folder = System.IO.Path.GetDirectoryName(path)!;
-        if (!Directory.Exists(folder)) return null;
-        var name = System.IO.Path.GetFileName(path);
-        return Directory.EnumerateFiles(folder).FirstOrDefault(f =>
-            string.Equals(System.IO.Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase) && System.IO.Path.GetFileName(f) != name);
     }
 
     /// <summary>Removes an entry's file and the folders it leaves empty.</summary>
@@ -225,7 +342,8 @@ public sealed class RegistryStore(string root)
             Directory.Delete(folder);
             folder = System.IO.Path.GetDirectoryName(folder);
         }
-        cache = null;
+        cases.Rearrange(top, entry.Id);
+        Refresh();
     }
 
     public string Relative(string path) => System.IO.Path.GetRelativePath(Root, path).Replace('\\', '/');

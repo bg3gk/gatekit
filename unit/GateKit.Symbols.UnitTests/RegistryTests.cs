@@ -122,12 +122,16 @@ public sealed class RegistryTests : IDisposable
     JsonObject Function(string id, string does = "Rolls the dice of one request.") => new() { ["id"] = id, ["rung"] = "inferred", ["does"] = does };
 
     [Fact]
-    public void One_id_has_one_file_and_two_ids_that_differ_by_case_are_refused()
+    public void One_id_has_one_file_and_two_ids_that_differ_by_case_have_two()
     {
         store.Write(EntryKind.Function, Function("esv::RollSystem::RollDice"), create: true);
         Assert.Contains("one id, one file", Assert.Throws<RegistryException>(() => store.Write(EntryKind.Function, Function("esv::RollSystem::RollDice"), create: true)).Message);
         Assert.Contains("already a function", Assert.Throws<RegistryException>(() => store.Write(EntryKind.Type, new JsonObject { ["id"] = "esv::RollSystem::RollDice", ["kind"] = "struct" }, create: true)).Message);
-        Assert.Contains("only by case", Assert.Throws<RegistryException>(() => store.Write(EntryKind.Function, Function("esv::RollSystem::ROLLDICE"), create: true)).Message);
+        // the one that sorts first keeps its name; the other is found again under its own id
+        store.Write(EntryKind.Function, Function("esv::RollSystem::ROLLDICE"), create: true);
+        Assert.Equal("functions/esv/RollSystem/ROLLDICE.json", store.Relative(store.Get("esv::RollSystem::ROLLDICE")!.Path));
+        Assert.Equal("functions/esv/RollSystem/R%6F%6C%6CD%69%63%65.json", store.Relative(store.Get("esv::RollSystem::RollDice")!.Path));
+        Assert.Empty(RegistryCheck.Run(store).Refusals);
     }
 
     [Theory]
