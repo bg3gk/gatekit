@@ -47,9 +47,33 @@ removes it. It needs a character root template of the global bank
 (`Ext.Template.GetAllRootTemplates()` lists them; a character whose look is on a placed object of
 a level, such as Raphael's human form, has none) and a level on the client, which the menu and the
 splash screen have. The new figure is drawn on the splash screen too, where the menu's own parked
-dummies are not. It stands in its animation blueprint's pose; no timeline plays an animation on
+dummies are not. It stands in its animation blueprint's idle; no timeline plays an animation on
 it. `Ext.Entity.GetAllEntitiesWithComponent("TLPreviewDummy")` does not list it: a scene keeps the
 entity it was given.
+
+**Animation.** A figure carries a character's animation blueprint, and the client can send it
+what gameplay sends a character's: `Ext.ClientVisual.PlayAnimation(entity, start, loop, finish)`
+calls `code:ls::AnimationBlueprintSystem::TriggerGameplayEvent<EoCGE::ASAnimation>`, the event of
+the client's "play an animation" action state (`code:ecl::ASAnimation::Update`);
+`Ext.ClientVisual.StopAnimation(entity)` calls the cancel event's twin. The three lists hold
+animation short names; an animation resource becomes one when it is linked into the figure's
+plain animation sets under its own id (`orin.lua`, `link`). What the blueprints raise is read
+from two singletons that hold it for one frame: `AnimationTextKeyEventsSingleton` (a playing
+animation's text keys) and `AnimationGameplayEventsSingleton` (an animation that is over, or
+stopped, raises events for its entity). Root motion is written into the entity's `Transform`,
+and while a blueprint plays the visual follows `Transform`: a scene that moves or turns an
+animated figure writes `Transform` and the visual both. A figure of the two templates `orin.lua`
+uses looks along -z when it is not turned. An animation named `..._SCENE_...` is authored in its
+cinematic's space and plays metres off the figure's place.
+
+**Effects.** `Ext.ClientVisual.PlayEffect(name, position, rotation, scale, levelOf)` calls
+`code:ls::EffectsManager::PlayEffect` and answers a client entity with `Effect`; the key is the
+effect's name, not its resource id. `entity.Effect.Flags` says `Playing`, then `Stopped` when an
+effect that does not loop is over; `Ext.ClientVisual.StopEffect(entity, "Destroy")` takes it away.
+
+**Hiding.** Writing a figure's `CullFlags` or `VisualFlags`, or giving it
+`ClientInvisibilityVisual`, hides nothing. A scene removes the figure, or writes a scale near
+zero to `Transform` and `Visual:SetWorldScale`.
 
 **Light.** The place before the menu's camera is dark. A light of the level that carries
 `LightMovement` (the torches' flickering lights) is put where its `Transform` says every frame,
@@ -67,6 +91,47 @@ root template) and the four adventurers left on the stairs. The light `213b0683-
 camera at chest height (`light`, `light_toward`, `light_up`; `light = false` leaves the figure
 dark). State: `GKScene.menu_dancer_new`. The off script removes the figure and puts the light
 back; so does leaving the menu.
+
+## orin - Orin kills a townswoman, turns to the opening door and vanishes
+
+    ./gatekit --instance <copy> exec client "$(cat stand/menu/orin.lua)"       # arm
+    ./gatekit --instance <copy> exec client "$(cat stand/menu/orin_off.lua)"   # disarm
+
+Client context; armed on the splash screen or in the menu, it fires when the menu's camera has
+come down and stands, as `dancer_new` does. Two figures of the scene's own stand before the
+camera, to the picture's right of its middle (`ahead`, `right`, `apart`, `down`), lit by a
+borrowed torch light: `28c8bd46-...`, another torch's than `dancer_new` takes, so the two scenes
+can stand together (`light`, `light_toward`, `light_up`).
+
+- **Orin** is the root template `Trailer_Dream_Orin`: the template her actor is shape-shifted
+  into in the dialogs `WYR_OrinsImpersonation_*` (`gatekit data timeline
+  WYR_OrinsImpersonation_OrinFlamingFist`, the `TLShapeShift` track). **The victim** is
+  `Humans_Female_Civilian`.
+- **The kill.** The victim cowers in `HUM_F_Rig_DFLT_CINE_Fear_Loop_01` for `fear` seconds; Orin
+  plays her own `HUM_F_Rig_DWS_CMBT_Skill_Orin_DeathbringerAssault_01_Attack`; at its first `Cast`
+  text key the victim plays `HUM_F_Rig_DFLT_DIE_Physical_Stationary_Front_01` and stays in
+  `HUM_F_Rig_DFLT_DIE_Generic_Deathpose_01`. The attack is over when the blueprint says so.
+- **The door** is in the level: the scenery actor `13045dab-...` of `MM_Accept_Temple` is a
+  timeline dummy whose visual is `DOOR_Bhaal_Stone_Double_Big_A`, the slab in the temple's gate
+  behind the adventurers. The timeline lifts it by about thirteen metres in about twelve seconds,
+  beginning as the camera comes down. The scene reads the dummy's `Transform` every tick: the
+  door opens when it has risen `door_rise` metres above where it stood when the scene began.
+  After the kill Orin waits for that, turns to the door in `turn` seconds and looks for `look`.
+  `GKScene.menu_orin.door = { found, start, now, openedBy }` says what was read; a door that did
+  not move in `door_wait` seconds stood open already, and the state says so.
+- **Vanishing** is what she does in those dialogs when a disguise is dropped: the animation
+  `HUM_F_Rig_SCENE_WYR_Orin_TwistRing` (a twist of her teleport ring), `burst` seconds into it
+  the effect `VFX_Cinematic_Orin_Teleportation_01` at her feet, and `cover` seconds later the
+  figure is removed. The effect entity is destroyed when its flags say `Stopped`.
+
+The victim's body and the light stay until the scene is disarmed or the menu is left; the off
+script removes the figures and the effect and puts the light back. State: `GKScene.menu_orin =
+{ armed, fired, stage, waiting, error, door, log }`, `stage` one of `loading`, `fear`, `attack`,
+`killed`, `turning`, `looking`, `ring`, `burst`, `gone`.
+
+Rough: `fear`, `look`, `burst` and `cover` are the scene's own beats, counted in seconds; the
+moment of the burst inside the twist is set by eye, not read from the dialogs' timelines. The
+door has usually begun to rise by the time the kill is over, so she turns as soon as she is done.
 
 ## statue - someone behind the statue on the splash screen
 
