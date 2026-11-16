@@ -13,10 +13,10 @@
 -- decides the outcome after the debt is counted from the die first thrown.
 -- Staging (cheat): the host first, Karmic Dice on for the scope, a hostile goblin beside it kept
 -- alive, the fight; the attacks, the action given back between them. Reading: observation.
--- Run: gatekit --instance <copy> test tests -k quirks/karmic/forced_shows_a_die
+-- Run: gatekit --instance <copy> test tests -k quirks/karmic/forced_draws_no_dice
 
 test { level = "GustavX:Basic_Level_A", surprises = { "combat_started" },
-           about = "A hit forced by Karmic Dice shows a natural die that was never thrown." }
+           about = "A roll forced by Karmic Dice throws no dice of the roll, and the hit still shows a natural die." }
 
 local function uuid(id) return id and string.match(id, "(%x+%-%x+%-%x+%-%x+%-%x+)$") or id end
 
