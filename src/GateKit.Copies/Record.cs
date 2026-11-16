@@ -13,7 +13,7 @@ namespace GateKit.Copies;
 ///
 /// The summary files beside them (<c>seen/index.json</c>, <c>coverage.json</c>) say what is known;
 /// these say when, by which copy, in which role and run - the questions two unattended runs could
-/// not answer from the record (docs/contracts/cli.md 8.11).
+/// not answer from the record (docs/contracts/cli.md, "record").
 /// </summary>
 public static class Record
 {

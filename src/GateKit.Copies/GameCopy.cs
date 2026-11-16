@@ -17,8 +17,11 @@ namespace GateKit.Copies;
 /// <param name="GameArgs">Extra raw game arguments.</param>
 /// <param name="MainMenu">Stop in the main menu (first-launch screens gone through in an instance)
 /// instead of loading the last save: what a recipe of the menus starts from.</param>
+/// <param name="Splash">Stop on the splash screen before the main menu ("press any key"), which is
+/// left standing for the caller to pass; first-launch screens are gone through as for the main menu.</param>
 public sealed record UpOptions(string? Level = null, string? Save = null, IReadOnlyList<string>? Mods = null,
-    bool StoryLog = false, IReadOnlyList<string>? GameArgs = null, bool MainMenu = false);
+    bool StoryLog = false, IReadOnlyList<string>? GameArgs = null, bool MainMenu = false, bool Splash = false,
+    bool StartupVideos = false);
 
 /// <summary>
 /// A game copy: the installed game or an instance. Starts the game directly (no launcher), talks
@@ -231,7 +234,7 @@ public sealed class GameCopy
     const string MenuProbe = """
         local stuck, screen = GK.Gui.Stuck()
         local out = { stuck = stuck, widget = screen and screen.widget }
-        if (stuck == "firstlaunch" and PRESS) or stuck == "splash" then
+        if (stuck == "firstlaunch" and PRESS) or (stuck == "splash" and SPLASH) then
             local result = GK.Cheat.Recover() or {}
             out.did, out.ok = result.did, result.ok
             out.error = result.error and tostring(result.error)
@@ -241,15 +244,21 @@ public sealed class GameCopy
 
     /// <summary>One look at what holds a starting client in the menu, passing the screens a start
     /// passes (the splash screen always, the first-launch screens in an instance): what holds it,
-    /// and whether the look moved the game on.</summary>
-    async Task<(string? Stuck, bool Moved, bool Answered)> LookInMenuAsync(GameSession session, CancellationToken cancel)
+    /// and whether the look moved the game on. With <paramref name="passSplash"/> false the splash
+    /// screen is named and left standing.</summary>
+    async Task<(string? Stuck, bool Moved, bool Answered)> LookInMenuAsync(GameSession session, CancellationToken cancel, bool passSplash = true)
     {
         var press = Instance is not null;
         JsonNode? seen = null;
-        try { seen = await session.LuaAsync("ui", "local PRESS = " + (press ? "true" : "false") + ";\n" + MenuProbe, TimeSpan.FromSeconds(10), cancel); }
+        try
+        {
+            seen = await session.LuaAsync("ui", "local PRESS, SPLASH = " + (press ? "true" : "false") + ", " + (passSplash ? "true" : "false") + ";\n" + MenuProbe,
+                TimeSpan.FromSeconds(10), cancel);
+        }
         catch (CopyException) { return (null, false, false); }  // a look that failed is no answer; the menu time still counts
         var stuck = seen.Field("stuck")?.GetValue<string>();
         var widget = seen.Field("widget")?.GetValue<string>();
+        if (stuck == "splash" && !passSplash) return (stuck, false, true);
         if (stuck is "firstlaunch" or "splash")
         {
             if (stuck == "firstlaunch" && !press)
@@ -300,8 +309,10 @@ public sealed class GameCopy
         using var start = TakeStart("up");
         if (GamePids().Count > 0) throw new CopyException($"the game is already running ({OwnerText()}); run `down` first");
         if (options.Level is { } asked && LevelProblem(asked) is { } problem) throw new CopyException(problem);
-        if (options.MainMenu && (options.Level is not null || options.Save is not null))
+        if ((options.MainMenu || options.Splash) && (options.Level is not null || options.Save is not null))
             throw new CopyException("a start in the main menu takes no level and no save");
+        if (options.MainMenu && options.Splash)
+            throw new CopyException("--splash stops before the main menu and --main-menu in it: give one of them");
         if (Instance is not null) PrepareInstance(options.Save, allSaves: options.Level is null, withMods: options.Mods is { Count: > 0 });
         RecordOwner();
         RetireFormerBridge();
@@ -315,7 +326,7 @@ public sealed class GameCopy
         if (Instance is null) backup.Save();
 
         List<string>? extra = options.GameArgs is { Count: > 0 } given ? [.. given] : null;
-        if (options.MainMenu) extra ??= [];   // without -continueGame the game stays in its main menu
+        if (options.MainMenu || options.Splash) extra ??= [];   // without -continueGame the game stays in its main menu
         if (options.Save is { } save)
         {
             if (!Directory.Exists(Path.Combine(Layout.Saves, save)))
@@ -333,7 +344,9 @@ public sealed class GameCopy
         EditModSettings(text => ModSettings.EnableBridge(text, BridgeMods));
         if (Instance is not null) Instance.Spread();
         else backup.LendDebugProfiles(withSaves: options.Level is null);
-        SkipSplash(true);
+        // The studio's startup video is shadowed by an empty loose file so a start does not wait on
+        // it; a start that asks for the game's own startup videos gets them (and loses the shadow).
+        SkipSplash(!options.StartupVideos);
         ConfigureExtender(options.StoryLog);
         var se = SeSwitch.ApplyForRun(Settings.ScriptExtender, Layout.SeSettings,
             keepInstalled: Instance is not null && !Settings.ScriptExtenderStock);
@@ -396,6 +409,12 @@ public sealed class GameCopy
         // game's own first-launch and licence screens are gone through in an instance (the
         // owner's standing consent covers GateKit's copies, never the installed game); anything else
         // that keeps the game in the menu for MenuLimit fails the start, naming it.
+        if (options.Splash)
+        {
+            await ReachMainMenuAsync(session, started, cancel, stopOnSplash: true);
+            Out.WriteLine($"on the splash screen after {started.Elapsed.TotalSeconds:0} s (GK.Cheat.Recover() on the UI context passes it)");
+            return session;
+        }
         if (options.MainMenu)
         {
             await ReachMainMenuAsync(session, started, cancel);
@@ -446,19 +465,22 @@ public sealed class GameCopy
 
     /// <summary>A start that is to stop in the main menu: the client reaches Menu, the splash screen
     /// and (in an instance) the first-launch screens are gone through, and GK.Gui.Stuck() names the
-    /// main menu.</summary>
-    async Task ReachMainMenuAsync(GameSession session, Stopwatch started, CancellationToken cancel)
+    /// main menu. With <paramref name="stopOnSplash"/> the splash screen is not passed and the
+    /// start ends when GK.Gui.Stuck() names it.</summary>
+    async Task ReachMainMenuAsync(GameSession session, Stopwatch started, CancellationToken cancel, bool stopOnSplash = false)
     {
         await session.WaitStateAsync("Menu", Side.Client, TimeSpan.FromSeconds(300), started, cancel);
         var until = Stopwatch.StartNew();
         string? stuck = null;
         while (until.Elapsed < TimeSpan.FromSeconds(180))
         {
-            (stuck, var moved, _) = await LookInMenuAsync(session, cancel);
-            if (stuck == "mainmenu") return;
+            (stuck, var moved, _) = await LookInMenuAsync(session, cancel, passSplash: !stopOnSplash);
+            if (stuck == (stopOnSplash ? "splash" : "mainmenu")) return;
+            if (stopOnSplash && stuck == "mainmenu")
+                throw new CopyException("the game shows its main menu and never showed its splash screen; the game is left running - `down` before trying again");
             await Task.Delay(moved ? 250 : 1000, cancel);
         }
-        throw new CopyException($"the game did not show its main menu in 180 s of the menu state (GK.Gui.Stuck(): {stuck ?? "nothing"}); "
+        throw new CopyException($"the game did not show its {(stopOnSplash ? "splash screen" : "main menu")} in 180 s of the menu state (GK.Gui.Stuck(): {stuck ?? "nothing"}); "
             + "the game is left running for a look - `down` before trying again");
     }
 
@@ -615,7 +637,9 @@ public sealed class GameCopy
         JsonFiles.Edit(Layout.SeSettings, s =>
         {
             s["CreateConsole"] = false;
-            s["DeveloperMode"] = true;
+            // Developer mode, unless the run is to see the extender as a player's game has it
+            // (GATEKIT_SE_DEVELOPER_MODE=0): what a mod's user gets, and what he does not.
+            s["DeveloperMode"] = Environment.GetEnvironmentVariable("GATEKIT_SE_DEVELOPER_MODE") != "0";
             s["LogRuntime"] = true;
             s["EnableLogging"] = storyLog;
             s["LogDirectory"] = Platform.ToGamePath(Layout.SeLogs);
@@ -819,13 +843,16 @@ public sealed class GameCopy
     /// <paramref name="width"/> at most. The bridge takes it inside the game, off the frame the
     /// renderer is about to show and before anything of the extender's is drawn over it, which
     /// needs no window and works on every platform; the window is only photographed when the
-    /// bridge cannot do it.</summary>
-    public string Shot(string output, int width = 1150)
+    /// bridge cannot do it. With <paramref name="overlay"/> the frame is taken after the extender's
+    /// own layer is drawn (its windows, a picture of GK.Show); only the game can take that one.</summary>
+    public string Shot(string output, int width = 1150, bool overlay = false)
     {
         var path = Path.GetFullPath(output);
-        var picture = ShotFromGame();
+        var picture = ShotFromGame(overlay);
         if (picture is null)
         {
+            if (overlay) throw new CopyException("the game took no picture with the extender's layer in it: that needs the bridge "
+                + "answering, GateKit's newest Script Extender build under the DX11 renderer (gatekit se status), and no other picture on its way");
             if (!Platform.CanCaptureWindow) throw new CopyException(Platform.WhyNot("shot")
                 + "; the bridge could not take one either (is the game up with GateKit's Script Extender build?)");
             try { picture = Platform.CaptureWindow(FirstPid()); }
@@ -840,7 +867,7 @@ public sealed class GameCopy
 
     /// <summary>The frame as the game itself writes it into the channel folder, or null when the
     /// bridge is not there or its renderer cannot read the frame.</summary>
-    Screenshot? ShotFromGame()
+    Screenshot? ShotFromGame(bool overlay = false)
     {
         var session = Session();
         if (session.State(Side.Client) is null) return null;
@@ -848,7 +875,7 @@ public sealed class GameCopy
         var file = Path.Combine(Layout.Channel, name);
         try
         {
-            var asked = session.LuaAsync("client", $"return GK.Shot(\"{ModSettings.BridgeFolder}/{name}\")",
+            var asked = session.LuaAsync("client", $"return GK.Shot(\"{ModSettings.BridgeFolder}/{name}\"{(overlay ? ", true" : "")})",
                 TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
             if (asked is not JsonValue value || !value.TryGetValue<bool>(out var ok) || !ok) return null;
             var waited = Stopwatch.StartNew();

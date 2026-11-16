@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "state/registry-journal/1",
+  "title": "One act of the registry's tools on an id (<home>/state/registry-live/journal.jsonl)",
+  "description": "What the tools themselves did or held while notes were written and committed: a rung lowered or raised, a name found in a store, a store's name that differs, a duplicate folded, addresses turned into ids, a refusal. Appended by `registry note`, `registry commit` and `registry tidy`; read by `registry digest`.",
+  "type": "object",
+  "required": ["when", "act", "id"],
+  "additionalProperties": false,
+  "properties": {
+    "when": {"type": "string", "format": "time"},
+    "act": {
+      "enum": ["lowered", "raised", "matched", "differs", "folded", "turned", "stale", "collapsed", "refused", "held"],
+      "description": "lowered, raised: the rung moved to what the evidence carries (from, to, why); matched: a store holds the id's name (store, tie); differs: a store holds another name for the function (store, name); folded: an unnamed id became the named id at its address (into); turned: addresses in sentences became ids (count) or were written with their binary and build (qualified), the rest not placed (left); stale: addresses of a build a reanchor could not carry to the new one (count, why); collapsed: repeated sentences of evidence became one (count); refused: a note or a commit was refused (why); held: a clash not settled held the id (why)."
+    },
+    "qualified": {"type": "integer", "minimum": 0},
+    "id": {"type": "string", "minLength": 1},
+    "member": {"type": "string", "minLength": 1, "description": "The field or value the act is about, when it is not the entry itself."},
+    "from": {"type": "string", "minLength": 1},
+    "to": {"type": "string", "minLength": 1},
+    "why": {"type": "string", "minLength": 1},
+    "store": {"type": "string", "minLength": 1},
+    "tie": {"type": "string", "minLength": 1},
+    "name": {"type": "string", "minLength": 1},
+    "into": {"type": "string", "minLength": 1},
+    "count": {"type": "integer", "minimum": 0},
+    "left": {"type": "integer", "minimum": 0},
+    "who": {"type": "string", "minLength": 1},
+    "task": {"type": "string", "minLength": 1}
+  }
+}

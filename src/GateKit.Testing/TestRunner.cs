@@ -52,7 +52,7 @@ public sealed record CaseRecord(string Name, string Outcome, TimeSpan Took, stri
 }
 
 /// <summary>
-/// Runs Lua tests against a real game in a copy (docs/contracts/cli.md, section 3).
+/// Runs Lua tests against a real game in a copy (docs/contracts/cli.md, "Tests in the game").
 ///
 /// Tests that need the same start (level, mods, save) share one game session, so ten
 /// tests cost one start, not ten. A test that wants the world as it was right after the
@@ -427,7 +427,7 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
     {
         var results = new List<TestResult>();
         string? speedBefore = null;
-        var actions = new GameResetActions(GameCopy, session, restart);
+        var actions = new GameResetActions(GameCopy, session, restart, Limits);
         var ladder = new ResetLadder(actions, Out);
         // A copy found running: a baseline it keeps from earlier tests means they may have left
         // something, so the first test is prepared too. A fresh start opens the scope anew.
@@ -544,6 +544,9 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
 
     /// <summary>`test --trace`: one trace of the entity system a step on both sides (<see cref="StepTraces"/>).</summary>
     public bool Trace { get; set; }
+
+    /// <summary>The reset ladder's waits counted in time (<see cref="ResetLimits"/>).</summary>
+    public ResetLimits Limits { get; set; } = ResetLimits.Default;
 
     /// <summary>Sets the game to <paramref name="speed"/> when it runs at another, and takes the
     /// stage's baseline again at it. Returns the speed the game had, or null when nothing changed.</summary>
@@ -663,7 +666,7 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
     public static int ExitCode(IReadOnlyList<TestResult> results) =>
         results.Any(r => r.NotRun || (!r.Passed && !r.Unmet)) ? 1 : results.Any(r => r.Unmet) ? 2 : 0;
 
-    /// <summary>The results of a run as data (record/test-run, docs/contracts/cli.md 3.2):
+    /// <summary>The results of a run as data (record/test-run, docs/contracts/cli.md, "The tree of tests"):
     /// <c>&lt;run folder&gt;/results.json</c>, printed by <c>test --json</c>.</summary>
     public static JsonObject Results(IReadOnlyList<TestResult> results, TimeSpan took, int exitCode) => new()
     {

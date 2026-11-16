@@ -36,6 +36,7 @@ root.Add(CopyCommands.InstanceOption);
 root.Add(CopyCommands.InstalledGameOption);
 foreach (var command in CopyCommands.Create()) root.Add(command);
 foreach (var command in ProjectCommands.Discover(root)) root.Add(command);
+root.Add(CallJournal.CreateCommand());
 
 // `@file` is GateKit's own: `gatekit exec server @scene.lua` runs that file's Lua. System.
 // CommandLine claims the same spelling for response files and expands the file into arguments
@@ -44,29 +45,36 @@ foreach (var command in ProjectCommands.Discover(root)) root.Add(command);
 // this program has ever offered.
 // A database that is not there, or a gatekit.json that cannot be read, is a sentence for the
 // person whatever command met it - never a stack trace, and never an empty answer.
+var parsed = root.Parse(args, new ParserConfiguration { ResponseFileTokenReplacer = null });
+var ready = CallJournal.SinceStart();
+var exit = 1;
 try
 {
-    return await root.Parse(args, new ParserConfiguration { ResponseFileTokenReplacer = null })
-        .InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false });
+    return exit = await parsed.InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false });
 }
 catch (Exception e) when (e is GateKit.Home.MissingDatabaseException or GateKit.Home.HomeException)
 {
     Console.Error.WriteLine(e.Message);
-    return 1;
+    return exit = 1;
 }
 catch (OperationCanceledException)
 {
-    return 130;
+    return exit = 130;
 }
 catch (Exception e)
 {
     // What System.CommandLine's own handler said, which this replaces.
     Console.Error.WriteLine("Unhandled exception: " + e);
-    return 1;
+    return exit = 1;
+}
+finally
+{
+    CallJournal.Write(parsed, ready, exit);
 }
 
 namespace GateKit.Cli
 {
+
     /// <summary>
     /// The one place where the other GateKit projects join the command tree.
     ///

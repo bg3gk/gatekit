@@ -9,33 +9,105 @@
 # down, under a configuration and a target framework, which is not something a first-time reader
 # should have to know.
 #
-# It uses a build if there is one and builds once if there is not, preferring Release over Debug
-# so that a developer who has both gets the faster one. `dotnet run` is deliberately not used for
-# every call: it re-evaluates the project each time, which costs a second or two on a command
-# meant to be typed over and over.
+# It runs a Release build published ReadyToRun (compiled ahead, so the start costs no JIT) into
+# artifacts/gatekit/, a folder no `dotnet build` writes: a build never meets a running GateKit's
+# locked files there, and each publish goes to a folder of its own, so a new one never writes over
+# an old one still running. The publish is made again whenever a build in bin is newer than it:
+# that call and the ones during the publish run the build in bin, the publish is made in the
+# background (artifacts/gatekit/publish.log), and the calls after it run the publish. Without a
+# build in bin and without a publish, the first call publishes and waits; if the publish fails, it
+# builds into bin as `dotnet build` does and runs that.
+#
+# Every test of what to run is a shell builtin: the check costs no process. GATEKIT_PUBLISH=0 runs
+# the build in bin and never publishes. `dotnet run` is deliberately not used for every call: it
+# re-evaluates the project each time, which costs a second or two on a command typed over and over.
 set -eu
 
-here=$(cd "$(dirname "$0")" && pwd)
+case $0 in
+    */*) here=${0%/*} ;;
+    *) here=$(cd "$(dirname "$(command -v "$0")")" && pwd) ;;
+esac
 project="$here/src/GateKit.Cli"
+tool="$here/artifacts/gatekit"
 
-exe=""
-for configuration in Release Debug; do
-    for candidate in "$project/bin/$configuration"/*/gatekit "$project/bin/$configuration"/*/gatekit.exe; do
-        [ -x "$candidate" ] || continue
-        exe="$candidate"
-        break
+# The newest build in bin, Debug or Release.
+built=""
+for configuration in Debug Release; do
+    for candidate in "$project/bin/$configuration"/*/gatekit.exe "$project/bin/$configuration"/*/gatekit; do
+        [ -f "$candidate" ] || continue
+        if [ -z "$built" ] || [ "$candidate" -nt "$built" ]; then built="$candidate"; fi
     done
-    [ -n "$exe" ] && break
 done
 
-if [ -z "$exe" ]; then
-    echo "building GateKit once (this does not happen again)..." >&2
-    dotnet build "$project" -c Release --nologo >&2
-    for candidate in "$project/bin/Release"/*/gatekit "$project/bin/Release"/*/gatekit.exe; do
-        [ -x "$candidate" ] && exe="$candidate" && break
+# The publish, and whether a build in bin is newer than it: any of its assemblies.
+published=""
+if [ "${GATEKIT_PUBLISH:-1}" != 0 ] && [ -f "$tool/current" ]; then
+    read -r name < "$tool/current" || name=""
+    for candidate in "$tool/$name/gatekit.exe" "$tool/$name/gatekit"; do
+        [ -f "$candidate" ] && published="$candidate" && break
+    done
+fi
+stale=""
+if [ -n "$published" ] && [ -n "$built" ]; then
+    for assembly in "${built%/*}"/GateKit.*.dll; do
+        if [ "$assembly" -nt "$tool/stamp" ]; then stale=1; break; fi
     done
 fi
 
-[ -n "$exe" ] || { echo "GateKit did not build; run 'dotnet build' and read what it says" >&2; exit 1; }
+# Publishes into a new folder and makes it current; one publish at a time (the folder `publishing`
+# is the lock; one left by a publish that died is taken after an hour).
+publish() {
+    mkdir -p "$tool"
+    if ! mkdir "$tool/publishing" 2>/dev/null; then
+        [ -n "$(find "$tool/publishing" -maxdepth 0 -mmin +60 2>/dev/null)" ] || return 1
+    fi
+    case $(uname -s) in
+        MINGW*|MSYS*|CYGWIN*) rid=win-x64 ;;
+        Darwin) [ "$(uname -m)" = arm64 ] && rid=osx-arm64 || rid=osx-x64 ;;
+        *) [ "$(uname -m)" = aarch64 ] && rid=linux-arm64 || rid=linux-x64 ;;
+    esac
+    name="run-$(date +%Y%m%d%H%M%S)-$$"
+    touch "$tool/publishing/stamp"
+    if dotnet publish "$project" -c Release -r "$rid" --self-contained false -p:PublishReadyToRun=true \
+        --artifacts-path "$tool/build" -o "$tool/$name" --nologo -v q > "$tool/publish.log" 2>&1; then
+        mv -f "$tool/publishing/stamp" "$tool/stamp"
+        echo "$name" > "$tool/current"
+        # older publishes go when nothing runs from them any more
+        for old in "$tool"/run-*; do
+            [ "$old" = "$tool/$name" ] && continue
+            mv "$old" "$old.gone" 2>/dev/null && rm -rf "$old.gone" 2>/dev/null || true
+        done
+        rm -rf "$tool/publishing"
+        return 0
+    fi
+    rm -rf "$tool/publishing"
+    return 1
+}
 
-exec "$exe" "$@"
+if [ -n "$published" ] && [ -z "$stale" ]; then
+    exec "$published" "$@"
+fi
+
+if [ -n "$built" ]; then
+    if [ "${GATEKIT_PUBLISH:-1}" != 0 ]; then
+        ( publish ) < /dev/null > /dev/null 2>&1 &
+    fi
+    exec "$built" "$@"
+fi
+
+if [ "${GATEKIT_PUBLISH:-1}" != 0 ]; then
+    echo "publishing GateKit once into artifacts/gatekit (this does not happen again)..." >&2
+    if publish; then
+        read -r name < "$tool/current"
+        for candidate in "$tool/$name/gatekit.exe" "$tool/$name/gatekit"; do
+            [ -f "$candidate" ] && exec "$candidate" "$@"
+        done
+    fi
+    echo "the publish did not succeed (artifacts/gatekit/publish.log); building into bin instead" >&2
+fi
+dotnet build "$project" --nologo >&2
+for candidate in "$project/bin/Debug"/*/gatekit.exe "$project/bin/Debug"/*/gatekit; do
+    [ -f "$candidate" ] && exec "$candidate" "$@"
+done
+echo "GateKit did not build; run 'dotnet build' and read what it says" >&2
+exit 1

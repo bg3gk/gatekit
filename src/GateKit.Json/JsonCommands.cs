@@ -14,7 +14,7 @@ public static class JsonCommands
         + "schema prints or lists the schemas.";
 
     /// <summary>Folders a walk of the tree never enters: build output, dependencies, other checkouts, state.</summary>
-    static readonly HashSet<string> Skipped = new(StringComparer.OrdinalIgnoreCase) { ".git", "bin", "obj", "node_modules", "external", ".claude", ".state", ".vs" };
+    static readonly HashSet<string> Skipped = new(StringComparer.OrdinalIgnoreCase) { ".git", "bin", "obj", "artifacts", "node_modules", "external", ".claude", ".state", ".vs" };
 
     public static Command CreateCommand()
     {

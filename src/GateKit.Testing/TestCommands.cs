@@ -50,7 +50,7 @@ static class TestHost
     }
 }
 
-/// <summary>`gatekit test [folder] [-k name] [--clean]` (docs/contracts/cli.md, 3.1).</summary>
+/// <summary>`gatekit test [folder] [-k name] [--clean]` (docs/contracts/cli.md, "test").</summary>
 public static class TestCommand
 {
     public static Command CreateCommand()
@@ -77,7 +77,7 @@ public static class TestCommand
     }
 }
 
-/// <summary>`gatekit run &lt;test.lua&gt; [--keep] [--attach]` (docs/contracts/cli.md, 3.4).</summary>
+/// <summary>`gatekit run &lt;test.lua&gt; [--keep] [--attach]` (docs/contracts/cli.md, "run").</summary>
 public static class RunCommand
 {
     public static Command CreateCommand()

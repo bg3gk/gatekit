@@ -13,7 +13,7 @@ public sealed record PlanInputs
 }
 
 /// <summary>
-/// The plan kinds of the second sweep (docs/contracts/cli.md, 8.13): status types only the
+/// The plan kinds of the second sweep (docs/contracts/cli.md, "sweep"): status types only the
 /// extender's enum names, every surface type stepped into, passive functor contexts staged, spell
 /// types and animation kinds cast by a party member through GK.Act (and checked), interrupt
 /// contexts provoked, item boosts and passives equipped, and summon/spawn functors.

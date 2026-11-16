@@ -312,6 +312,8 @@ public sealed class GateKitHome
     /// <summary>The bridge mods packed for each game copy (rebuilt from the sources at will).</summary>
     public Location BuildCache => InHome("build-cache", "cache/build", LocationKind.Folder, null, "packed bridge mods");
     public Location IndexWork => InHome("index-work", "cache/index-work", LocationKind.Folder, null, "index build work");
+    /// <summary>`registry check`'s verdicts of the files it read, by their content, one file a checkout.</summary>
+    public Location CheckCache => InHome("check-cache", "cache/registry-check", LocationKind.Folder, null, "registry check's verdicts of unchanged files");
     /// <summary>Mods unpacked to be read (`gatekit mod unpack`); never loaded by a game.</summary>
     public Location UnpackCache => InHome("unpack-cache", "cache/unpack", LocationKind.Folder, null, "mods unpacked to be read (never loaded)");
     public Location Scratch => InHome("scratch", "scratch", LocationKind.Folder, null, "scratch space");
@@ -340,7 +342,7 @@ public sealed class GateKitHome
     public IReadOnlyList<Location> All =>
     [
         HomeLocation, Index, Symbols, Decomp, DecompDb, Tools, SeBuilds, MacosSymbols, Downloads, StudyMods, ModLibrary, ModSets, Characters, Saves,
-        State, WikiCache, RunCache, BuildCache, IndexWork, UnpackCache, Scratch, Backups, McpTools, SeFork, Game, Toolkit,
+        State, WikiCache, RunCache, BuildCache, IndexWork, CheckCache, UnpackCache, Scratch, Backups, McpTools, SeFork, Game, Toolkit,
     ];
 
     /// <summary>The databases among the locations.</summary>

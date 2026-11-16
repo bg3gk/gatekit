@@ -469,7 +469,17 @@ public static class GameVerifier
         cancel.ThrowIfCancellationRequested();
         if (depth > 64) throw new IOException($"{folder}: folders nested more than 64 deep (a link loop?)");
         var dir = new DirectoryInfo(folder);
-        foreach (var file in dir.EnumerateFiles("*", Flat)) into[prefix + file.Name] = file.Length;
+        foreach (var file in dir.EnumerateFiles("*", Flat))
+        {
+            // On Linux a link whose target is gone cannot be told to be a folder's and is listed
+            // among the files; on Windows such a junction is still listed among the folders.
+            if (file.LinkTarget is not null && file.ResolveLinkTarget(returnFinalTarget: true) is { Exists: false })
+            {
+                broken.Add(prefix + file.Name);
+                continue;
+            }
+            into[prefix + file.Name] = file.Length;
+        }
         foreach (var sub in dir.EnumerateDirectories("*", Flat))
         {
             if (sub.LinkTarget is not null && !Directory.Exists(sub.ResolveLinkTarget(returnFinalTarget: true)?.FullName))

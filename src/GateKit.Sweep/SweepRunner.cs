@@ -6,7 +6,7 @@ using GateKit.Copies;
 
 namespace GateKit.Sweep;
 
-/// <summary>How a run is driven (docs/contracts/cli.md, 8.13).</summary>
+/// <summary>How a run is driven (docs/contracts/cli.md, "sweep").</summary>
 public sealed record SweepOptions
 {
     /// <summary>The first step (0-based index into the plan); null resumes where the state file stopped.</summary>

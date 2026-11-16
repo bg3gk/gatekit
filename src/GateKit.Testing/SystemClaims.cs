@@ -12,7 +12,7 @@ namespace GateKit.Testing;
 
 /// <summary>
 /// Claims about systems that the game checks (research/coverage/systems.md;
-/// docs/contracts/cli.md 3.6). A claim is an item of a description's <c>does</c>; it becomes
+/// docs/contracts/cli.md, "Claims the game checks"). A claim is an item of a description's <c>does</c>; it becomes
 /// checkable by carrying
 /// <c>"check": {"when": "&lt;recipe in tests/_coverage&gt;", "expect": [{"appears"|"gone"|"equals"|"changes": {...}}]}</c>
 /// or says <c>"check": "not checkable live: &lt;why&gt;"</c>. <c>systems check</c> replays the recipe on a
@@ -125,7 +125,7 @@ public static class SystemClaims
         var failures = 0;
         // --clean: the reset ladder before each claim (a clean of what the last recipe staged in a
         // simple test level, the level's checkpoint elsewhere); the copy is never restarted here.
-        var actions = new GameResetActions(copy, session, restart: null);
+        var actions = new GameResetActions(copy, session, restart: null, runner.Limits);
         var ladder = new ResetLadder(actions, output);
         bool? simple = null;
         var untouched = false;
@@ -235,7 +235,7 @@ public static class SystemClaims
     }
 }
 
-/// <summary>`gatekit systems tally` and `gatekit --instance X systems check SYSTEM` (cli.md 3.6).</summary>
+/// <summary>`gatekit systems tally` and `gatekit --instance X systems check SYSTEM` (cli.md, "Claims the game checks").</summary>
 public static class SystemsCommand
 {
     /// <summary>The checkout the command is run in (a worktree's own files), else the one the program

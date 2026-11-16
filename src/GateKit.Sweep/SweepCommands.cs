@@ -9,7 +9,7 @@ using GateKit.Copies;
 
 namespace GateKit.Sweep;
 
-/// <summary>`gatekit sweep plan|run|status|tour` (docs/contracts/cli.md, 8.13).</summary>
+/// <summary>`gatekit sweep plan|run|status|tour` (docs/contracts/cli.md, "sweep").</summary>
 public static class SweepCommands
 {
     /// <summary>Where a sweep starts when nothing says: the engine's basic level, which loads in a

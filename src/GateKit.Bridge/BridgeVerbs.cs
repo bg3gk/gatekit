@@ -61,8 +61,8 @@ public static partial class BridgeVerbs
         return found;
     }
 
-    /// <summary>The client files whose functions run inside the UI context (lua-api.md section 2,
-    /// "(UI)"): bg3_call and bg3_lua reach them with side "ui".</summary>
+    /// <summary>The client files whose functions run inside the UI context (lua-api.md, "The files and
+    /// what each defines", "(UI)"): bg3_call and bg3_lua reach them with side "ui".</summary>
     static readonly HashSet<string> UiFiles = new(StringComparer.OrdinalIgnoreCase)
     {
         "Client/UI.lua", "Client/Stage.lua", "Client/Windows.lua", "Client/WindowReaders.lua", "Client/Popups.lua", "Client/Places.lua",
