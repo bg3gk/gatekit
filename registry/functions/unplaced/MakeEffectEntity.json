@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::MakeEffectEntity",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Makes the bare entity of an effect: a new entity with ls::VisualComponent, ls::EffectComponent, ls::TransformComponent and the one-frame EffectCreate tag, and ls::LevelComponent copied from the level entity when that carries ls::LevelInstanceStateComponent.",
+  "fingerprint": {
+    "calls": [
+      "fp:24c801b0780dfd1d",
+      "fp:30c7b9626ca9abdd",
+      "fp:45dc6e5176859392",
+      "fp:63c8a1b1588c8672",
+      "fp:af751420366b1853",
+      "fp:e4d053ad9455ea7c",
+      "fp:edc766c0dec9c98a",
+      "fp:ef8bb443388e96cf"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The component adds are in that order; the level's handle is checked for LevelInstanceState before Level is added with RootLevel set to it; bit 0x100 of the effect component's word at +0x60 is set."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Reached only through unplaced::CreateEffectFromResource: confirm with a probe while a client effect is played.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

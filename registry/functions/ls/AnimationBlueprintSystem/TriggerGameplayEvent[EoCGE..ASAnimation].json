@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::AnimationBlueprintSystem::TriggerGameplayEvent<EoCGE::ASAnimation>",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Sends an entity's animation blueprint the gameplay event ASAnimation (id d6c855f3-a9c0-45dc-86dd-d3da429e33b1): arguments 0 to 2 are the start, loop and end sets of animation short names, 3 a float, 4 a flag. The third parameter is the event as a tuple laid out last member first: flag at +0, float at +4, end set at +8, loop set at +0x20, start set at +0x38; the arrays are moved out of the sets.",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:b1b17f167907c02d",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It builds an event description with the id global the init of the gameplay events fills from the string d6c855f3-..., writes the flag and the float as arguments 4 and 3, and +0x1BC5130 moves the three sets into arguments 2, 1 and 0 before the generic TriggerGameplayEvent; the macOS build names the same code TriggerGameplayEvent<EoCGE::ASAnimation>."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while Osi.PlayAnimation runs on the host shows 2 calls, one of them from the client's sender at +0x1BC4C50. Called for a client-only timeline dummy with one linked animation in the start set, the figure plays it: text keys, root motion and an end."
+    },
+    {"kind": "test", "test": "figure/client_animation"}
+  ]
+}

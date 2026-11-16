@@ -1,0 +1,27 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::EffectsManager::PlayEffect",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Makes an effect entity from an effect resource found by the effect's name and starts it: parameters are the manager, the reference to fill, the name, the level's entity, the scene, a position, a rotation and a scale. The name is turned into a resource id through the map at +0x50 of the global resource manager; a name that is not in it, a resource id included, makes nothing.",
+  "fingerprint": {
+    "calls": [
+      "fp:5227b96c8688ff31",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::CreateEffectFromResource",
+      "unplaced::FindEffectResourceByName",
+      "unplaced::QueueEffectOrder"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It looks the name up with +0x3D29420, creates the entity with +0x3B1BC70 and, when the reference is valid, queues the play order with +0x3B1DF20; the Toolkit exports ls::EffectsManager::PlayEffect(FixedString const&, EntityHandle, Scene*, Vector3f const&, Quaternionf const&, float) with the same eight parameters."
+    },
+    {
+      "kind": "watch",
+      "says": "Called on the client with the name VFX_Cinematic_Orin_Teleportation_01, a level's scene and a place, it answers an entity with Effect, Visual, Transform at the place and Level, whose flags say Playing within a second and Stopped when the five seconds effect is over; with the effect's resource id it answers an invalid reference."
+    },
+    {"kind": "test", "test": "figure/client_effect"}
+  ]
+}
