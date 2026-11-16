@@ -61,6 +61,15 @@ dropped, and `bg3_plugin_errors` (listed only while something failed) says why. 
 the name of a core tool. `mcp-tools/_example.json` is ignored, as every name starting with `_` is,
 and is there to be copied.
 
+A bridge mod brings its tools the same way, in the folder `tools` beside its `Mods` folder
+(`mods/AI/tools/ai.json`). Three fields are the host's: `"timeout"` (seconds; 20 when left out),
+`"attention": false` (no `attention` block is added to the tool's answer) and
+`"files": {"prompt_file": "prompt"}` (the host reads the UTF-8 text file the first argument
+names - at most 16,000 characters, a relative path from the folder that holds the tools folder -
+and gives its text to the chunk as the second). `gatekit mcp --only <prefix>` serves the tools of
+one prefix alone; `gatekit mcp tools --format functions` prints the tools as the `tools` array of
+a chat-completions request.
+
 A tool file is read, never executed: nothing in `mcp-tools/` can run host code, so a tool file,
 live on the next `tools/list`, can do no more than the Lua it sends.
 

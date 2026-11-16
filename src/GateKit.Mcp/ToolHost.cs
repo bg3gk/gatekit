@@ -21,13 +21,14 @@ public sealed class ToolHost
     }
 
     /// <summary>The settings the CLI uses: GATEKIT_INSTANCE unless an instance is named here.</summary>
-    public static ToolHost FromEnvironment(string? instance = null, bool installedGame = false)
+    public static ToolHost FromEnvironment(string? instance = null, bool installedGame = false, string? only = null)
     {
         var platform = GamePlatform.Current;
         var settings = CopySettings.Resolve(platform, instanceOverride: instance, installedGame: installedGame);
         return new ToolHost(output => new Copies.GameCopy(settings, platform, output))
         {
             Instance = settings.Instance,
+            Only = only,
             Fair = Environment.GetEnvironmentVariable("GATEKIT_FAIR") is "1" or "true",
         };
     }
@@ -44,8 +45,27 @@ public sealed class ToolHost
     /// is research/coverage of the repository. A test points it at a folder of its own.</summary>
     public string? CoverageRoot { get; init; }
 
+    /// <summary>A prefix: the server lists and calls only the tools whose name begins with it
+    /// (`gatekit mcp --only ai_`); null is every tool.</summary>
+    public string? Only { get; init; }
+
     /// <summary>Where tools added without rebuilding the server live (see the project's README).</summary>
     public string PluginFolder { get; }
+
+    /// <summary>The tools a bridge mod brings: the folder `tools` beside its `Mods` folder
+    /// (mods/AI/tools), for every mod of the bridge source. Empty when there is no bridge source.</summary>
+    public IReadOnlyList<string> ModToolFolders()
+    {
+        try
+        {
+            var (copy, _) = Begin();
+            return [.. copy.BridgeMods.Select(m => Path.Combine(m.Root, "tools")).Distinct(StringComparer.Ordinal).Where(Directory.Exists)];
+        }
+        catch (Exception e) when (e is CopyException or IOException or UnauthorizedAccessException)
+        {
+            return [];
+        }
+    }
 
     /// <summary>GATEKIT_MCP_TOOLS, else the checkout's mcp-tools, else &lt;home&gt;/mcp-tools.</summary>
     static string DefaultPluginFolder() => GateKit.Home.GateKitHome.Current.McpTools.Path!;

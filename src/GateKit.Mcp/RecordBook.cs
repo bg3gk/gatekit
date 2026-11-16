@@ -10,7 +10,7 @@ namespace GateKit.Mcp;
 /// The queries and writers of the coverage ledgers (<see cref="Record"/>): the sightings rows the
 /// capture tools add, the wishes, and the three questions asked of the whole record - the counts
 /// (<c>tally</c>), whether it holds together (<c>check</c>) and what a run produced (<c>yield</c>).
-/// docs/contracts/cli.md 8.11 and docs/contracts/mcp.md 3.9.
+/// docs/contracts/cli.md, "record", and docs/contracts/mcp.md, "The ledgers".
 /// </summary>
 public static class RecordBook
 {

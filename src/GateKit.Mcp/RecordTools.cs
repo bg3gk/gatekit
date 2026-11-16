@@ -6,7 +6,7 @@ using ModelContextProtocol.Protocol;
 
 namespace GateKit.Mcp;
 
-/// <summary>The ledgers as tools (docs/contracts/mcp.md 3.9): <c>bg3_wish</c> and <c>bg3_record</c>.
+/// <summary>The ledgers as tools (docs/contracts/mcp.md, "The ledgers"): <c>bg3_wish</c> and <c>bg3_record</c>.
 /// No game is needed for either.</summary>
 static class RecordTools
 {
@@ -92,7 +92,7 @@ static class RecordTools
         });
 }
 
-/// <summary>`gatekit record ...`: the coverage ledgers from the command line (docs/contracts/cli.md 8.11).</summary>
+/// <summary>`gatekit record ...`: the coverage ledgers from the command line (docs/contracts/cli.md, "record").</summary>
 public static class RecordCommands
 {
     static readonly JsonSerializerOptions Indented = new()

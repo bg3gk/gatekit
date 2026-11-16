@@ -9,7 +9,7 @@ namespace GateKit.Mcp;
 
 /// <summary>
 /// The server's end of a stdio connection: one JSON message per line (docs/contracts/mcp.md,
-/// section 2.2):
+/// "Transport and calls"):
 ///
 /// <list type="bullet">
 /// <item>A JSON-RPC <b>batch</b> (an array on one line): every element is handed to the session on its own and the answers are collected back into one array,
