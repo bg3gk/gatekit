@@ -37,9 +37,8 @@ exactly where it stands. Staged at 10, 25, 35, 45 and 55 m from the only party m
   members, each with a radius of about 30 m; the camera is no anchor.
 
 So a focus on a far creature shows its place and not the creature. What decides the radius and
-whether a creature can be woken without a party member beside it is not found. The focus's
-test of a far creature passes on the camera's place alone and does not say that the creature is
-not drawn: that is owed to the test and to the verb's answer.
+how a creature is woken without a party member beside it is in the next section; the focus now
+says `drawn = false` with a warning for such a creature, and its tests assert that.
 
 ## Who wakes the space, and how the game crosses a long way
 

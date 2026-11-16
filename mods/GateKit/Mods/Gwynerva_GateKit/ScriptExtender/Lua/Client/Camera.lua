@@ -39,6 +39,7 @@ function Camera.State()
         -- added for GK.Camera.Focus: whether the camera glides now, its mode, and the focus held
         moving = c.MovingToTarget, mode = c.CameraMode,
         focus = Camera.Current and Camera.Current.what or nil,
+        leashRaised = Camera.LeashSaved ~= nil,
     }
 end
 
@@ -120,10 +121,21 @@ end
 -- instead of 120, not drawn, and its Transform stays where it was when it became a stub (measured:
 -- moved by the server, the client kept the old point). Such an entity is refused here; the server's
 -- GK.Camera.Focus (Server/Camera.lua) sends the server's own point instead, over GK_Camera.
+--
+-- The long way (research/studies/camera-focus.md): a move onto an entity the client holds whole,
+-- farther than the snap distance from where the camera is, is the game's own fade - black within a
+-- tick, the cut, the black held while the place gets ready, the fade in. The black is read from the
+-- HUD's ScreenFade widget (CurrentPlayer.UIData.ScreenFadeOpacity and ScreenFadeVisibility), found
+-- again each tick: a proxy of the UI does not outlive its tick. The camera does not go farther from
+-- the controlled character than the switches' MaxDistFromChar (50 m, four switches): the leash is
+-- raised for a focus beyond it and put back by the return.
 
 Camera.SnapDistance = 50          -- the game's TargetSnapDistance, read back from the switches
 Camera.GlideSnap = 200            -- the snap distance while a glide is asked for
+Camera.LeashRaised = 100000       -- MaxDistFromChar while a focus beyond the leash is held
 Camera.SettleMs = 4000            -- the limit of an answer: a guard, in ms of a running game
+Camera.FarMs = 15000              -- the same for a move past the snap distance, whose black waits for the place
+Camera.WholeMs = 8000             -- the limit of a wait for entities to be whole on the client
 Camera.Near = 0.5                 -- metres (x, z) between the camera's target and the thing
 local INF = 3.4028234663852886e38
 
@@ -158,6 +170,44 @@ local function positionOf(e)
 end
 
 local function flat(a, b) return math.sqrt((a[1] - b[1]) ^ 2 + (a[3] - b[3]) ^ 2) end
+
+local function has(e, component)
+    local ok, value = pcall(function() return e[component] end)
+    if ok and value then return true end
+    return false
+end
+
+-- What the client holds of an entity: { present, whole, drawn }. Whole: it has a level presence and
+-- its visual (Level and GameObjectVisual). A creature is drawn when it is whole. An item's stub is
+-- drawn all the same (a chest seen at 55 m, with Visual and neither of the two), so an item is
+-- drawn when the client holds it with a Visual; `kind` ("item") is the server's word for it.
+local function held(uuid, kind)
+    local e = Ext.Entity.Get(uuid)
+    if not e then return { present = false, whole = false, drawn = false } end
+    local w = has(e, "Level") and has(e, "GameObjectVisual")
+    return { present = true, whole = w, drawn = w or (kind == "item" and has(e, "Visual")) }
+end
+
+-- The HUD's screen fade now: its opacity and whether it shows, or nil when the widget is not found.
+local function fadeNow()
+    local found
+    local function walk(e, depth)
+        if found or depth > 6 then return end
+        local ok, name = pcall(function() return e.Name end)
+        if ok and name == "ScreenFade" then found = e return end
+        local okc, count = pcall(function() return e.VisualChildrenCount end)
+        if okc and count then
+            for i = 1, count do walk(e:VisualChild(i), depth + 1) end
+        end
+    end
+    if not pcall(function() walk(Ext.UI.GetRoot(), 0) end) or not found then return nil end
+    local ok, opacity, shown = pcall(function()
+        local data = found.DataContext.CurrentPlayer.UIData
+        return data.ScreenFadeOpacity or 0, tostring(data.ScreenFadeVisibility) ~= "Collapsed"
+    end)
+    if not ok then return nil end
+    return opacity, shown
+end
 
 local function inFight(who)
     local ok, handle = pcall(function() return who.CombatParticipant.CombatHandle end)
@@ -231,9 +281,51 @@ local function raiseSnap()
     return true
 end
 
+-- The leash: how far from the controlled character the camera may go (MaxDistFromChar of the four
+-- switches). Raised for a focus beyond it; it stays raised while that focus is held and is put
+-- back by the return, by a focus within it, and by the server's clean (the op "leash").
+local function restoreLeash()
+    local saved = Camera.LeashSaved
+    if not saved then return false end
+    Camera.LeashSaved = nil
+    local list = switches()
+    for i, value in pairs(saved) do pcall(function() list[i].MaxDistFromChar = value end) end
+    return true
+end
+
+local function leash()
+    local list = switches()
+    local ok, value = pcall(function() return list[1].MaxDistFromChar end)
+    if Camera.LeashSaved then return Camera.LeashSaved[1] end
+    return ok and value or nil
+end
+
+local function raiseLeash()
+    if Camera.LeashSaved then return true end
+    local list = switches()
+    if not list then return false end
+    local saved = {}
+    for i = 1, #list do
+        saved[i] = list[i].MaxDistFromChar
+        pcall(function() list[i].MaxDistFromChar = Camera.LeashRaised end)
+    end
+    Camera.LeashSaved = saved
+    return true
+end
+
+-- A row of the event log for a move that ended (the client's log).
+local function logMove(kind, answer, extra)
+    if not (GK.EventLog and GK.EventLog.Append) then return end
+    local payload = { ok = answer.ok, how = answer.how, far = answer.far, away = answer.away, drawn = answer.drawn,
+        faded = answer.faded, blackTicks = answer.blackTicks, snapped = answer.snapped, ticks = answer.ticks,
+        at = answer.at, error = answer.error }
+    for k, v in pairs(extra or {}) do payload[k] = v end
+    pcall(GK.EventLog.Append, kind, payload)
+end
+
 -- Resolves what to focus: { { entity, uuid, point } } with a point for each, or nil and why.
 -- `given` are the server's points by uuid (a stub is focused there).
-local function resolve(at, given)
+local function resolve(at, given, kinds)
     local list = at
     if type(at) ~= "table" or pointOf(at) then list = { at } end
     if #list == 0 or #list > 2 then return nil, "focus one thing or two: a uuid or a point {x, y, z}" end
@@ -245,10 +337,11 @@ local function resolve(at, given)
         elseif type(item) == "string" and item ~= "" then
             local e = Ext.Entity.Get(item)
             local served = given and given[item]
+            local kind = kinds and kinds[item] or nil
             if whole(e) then
-                out[#out + 1] = { entity = e, uuid = item, point = positionOf(e) }
+                out[#out + 1] = { entity = e, uuid = item, point = positionOf(e), kind = kind }
             elseif served then
-                out[#out + 1] = { uuid = item, point = served, stub = e ~= nil }
+                out[#out + 1] = { uuid = item, point = served, stub = e ~= nil, kind = kind }
             elseif e then
                 return nil, "a far creature's stub (" .. item .. "): the client's position of it is stale; "
                     .. "focus it with GK.Camera.Focus on the server, which sends the server's point"
@@ -308,6 +401,23 @@ local function answerOf(cam, targets, how, extra)
         screens[i] = s and s.u and { u = s.u, v = s.v, inside = s.inside } or s
     end
     out.onScreen = #targets == 1 and screens[1] or screens
+    -- drawn: every entity focused is drawn on the client now (a point has nothing to draw: no `drawn`)
+    local notDrawn, entities = {}, 0
+    for _, t in ipairs(targets) do
+        if t.uuid then
+            entities = entities + 1
+            if not held(t.uuid, t.kind).drawn then notDrawn[#notDrawn + 1] = t.uuid end
+        end
+    end
+    if entities > 0 then
+        out.drawn = #notDrawn == 0
+        if #notDrawn > 0 then
+            out.notDrawn = notDrawn
+            out.warning = "not drawn: the client holds no more than a stub of " .. table.concat(notDrawn, ", ")
+                .. " (asleep, or beyond what the client is sent): the camera shows its place and not the thing. "
+                .. "GK.Camera.Focus(at, { wake = \"one\" | \"place\" }) on the server wakes it first"
+        end
+    end
     return out
 end
 
@@ -315,19 +425,53 @@ local returnNow   -- below: a focus's hold ends with it
 
 -- The observation every move shares: settled when the game says the camera is no longer moving
 -- and its target stood still for three frames; cancelled when the player takes the camera.
-local function observe(result, cam, targets, how, options, done)
+--
+-- `watch` = { far, away, fade }: the move is `away` metres long, `far` when that is past the snap
+-- distance, and `fade` when the game's own fade may come (far and no glide asked). Then the screen
+-- fade is read every tick, and the answer waits until a fade that began has ended; a move onto an
+-- entity is given eight ticks for the black to begin before "no fade" is believed.
+local function observe(result, cam, targets, how, options, done, watch)
+    watch = watch or {}
     local c = cam.GameCameraBehavior
     local last, still, snapped, maxStep = vec(c.TargetCurrent), 0, false, 0
     local inControl = c.PlayerInControl
     local generation = Camera.Generation
+    local fade = { seen = false }
+    local limit = watch.far and Camera.FarMs or Camera.SettleMs
+    local least = (watch.fade and how ~= "destination") and 8 or 2
     return GK.Observe(result, function(ticks, final)
         local function finish(answer)
             restoreSnap()
+            answer.far, answer.away = watch.far == true, watch.away
+            if watch.fade then
+                answer.faded = fade.seen
+                if fade.seen then
+                    answer.fadeTicks = fade.last - fade.first + 1
+                    answer.blackTicks = fade.blackFirst and (fade.blackLast - fade.blackFirst + 1) or 0
+                end
+                if fade.unread then answer.fadeUnread = "the ScreenFade widget was not found on some ticks" end
+            end
             if done then done(answer) end
             return answer
         end
         if Camera.Generation ~= generation then
-            return finish({ ok = false, error = "a newer camera move took over", ticks = ticks })
+            return finish({ ok = false, error = "a newer camera move took over", superseded = true, ticks = ticks })
+        end
+        local fading = false
+        if watch.fade then
+            local opacity, shown = fadeNow()
+            if opacity == nil then
+                fade.unread = true
+            elseif shown then
+                -- the fade is over when the widget is collapsed: its opacity then keeps a last value
+                fading = true
+                if not fade.seen then fade.seen, fade.first = true, ticks end
+                fade.last = ticks
+                if opacity >= 0.99 then
+                    fade.blackFirst = fade.blackFirst or ticks
+                    fade.blackLast = ticks
+                end
+            end
         end
         local cc = cam.GameCameraBehavior
         if cc.PlayerInControl and not inControl then
@@ -340,8 +484,8 @@ local function observe(result, cam, targets, how, options, done)
         if step > 8 then snapped = true end
         last = now
         local zooming = math.abs((cc.DistanceCurrent or 0) - (cc.DistanceDestination or 0)) > 0.05
-        if step < 0.01 and not cc.MovingToTarget and not zooming and ticks >= 2 then still = still + 1 else still = 0 end
-        if still >= 3 then
+        if step < 0.01 and not cc.MovingToTarget and not zooming and ticks >= least then still = still + 1 else still = 0 end
+        if still >= 3 and not fading then
             local answer = answerOf(cam, targets, how, { ticks = ticks, snapped = snapped })
             if #targets == 1 then
                 answer.ok = answer.off ~= nil and answer.off <= Camera.Near
@@ -366,18 +510,31 @@ local function observe(result, cam, targets, how, options, done)
             return finish(answer)
         end
         if final then
-            return finish(answerOf(cam, targets, how, { ok = false, ticks = ticks, snapped = snapped,
-                error = "the camera did not settle in " .. GK.LimitTicks(Camera.SettleMs) .. " ticks" }))
+            local why = fading
+                and ("the fade did not end in " .. ticks .. " ticks: the screen is still "
+                    .. (fade.blackLast == ticks and "black" or "fading"))
+                or ("the camera did not settle in " .. ticks .. " ticks")
+            return finish(answerOf(cam, targets, how, { ok = false, ticks = ticks, snapped = snapped, error = why }))
         end
-    end, Camera.SettleMs)
+    end, limit)
 end
 
--- The focus itself; `given` are the server's points by uuid, `done(answer)` is told the answer.
-local function focus(at, options, given, done)
+-- The switches' snap distance as the game has it (the saved one while a glide holds it raised).
+local function snapDistance()
+    if Camera.SnapSaved and Camera.SnapSaved[1] then return Camera.SnapSaved[1] end
+    local list = switches()
+    local ok, value = pcall(function() return list[1].TargetSnapDistance end)
+    if ok and value then Camera.SnapDistance = value end
+    return Camera.SnapDistance or 50
+end
+
+-- The focus itself; `given` are the server's points by uuid and `kinds` its word for each
+-- ("character", "item"), `done(answer)` is told the answer.
+local function focus(at, options, given, done, kinds)
     options = options or {}
     local cam = cameraEntity()
     if not cam then return { ok = false, error = "no game camera" } end
-    local targets, why = resolve(at, given)
+    local targets, why = resolve(at, given, kinds)
     if not targets then return { ok = false, error = why } end
     local c = cam.GameCameraBehavior
     local who = controlled()
@@ -388,22 +545,36 @@ local function focus(at, options, given, done)
     Camera.Generation = Camera.Generation + 1
     restoreSnap()
     local want = centre(targets)
-    local far = c.TargetCurrent and flat(c.TargetCurrent, want) or 0
+    local snap = snapDistance()
+    local away = c.TargetCurrent and flat(c.TargetCurrent, want) or 0
+    local far = away >= snap
     local glide = false
-    if options.glide and far >= (Camera.SnapDistance or 50) - 1 then glide = raiseSnap() end
+    if options.glide and away >= snap - 1 then glide = raiseSnap() end
+    -- the leash: raised for a thing beyond it, put back for a thing within it
+    local home = who and positionOf(who)
+    local reach = leash()
+    local leashed = false
+    if home and reach and flat(home, want) >= reach - 1 then
+        leashed = raiseLeash()
+    else
+        restoreLeash()
+    end
     local ok, how = pcall(move, cam, targets)
     if not ok then
         restoreSnap()
+        if leashed then restoreLeash() end
         return { ok = false, error = "the camera refused the write: " .. tostring(how) }
     end
     local what = {}
     for i, t in ipairs(targets) do what[i] = t.uuid or t.point end
-    Camera.Current = { what = what, how = how, fight = fight }
-    return observe({ ok = true, how = how, from = vec(c.TargetCurrent), to = want, far = far, glide = glide },
+    Camera.Current = { what = what, how = how, fight = fight, leash = leashed }
+    return observe({ ok = true, how = how, from = vec(c.TargetCurrent), to = want, away = away, far = far, glide = glide },
         cam, targets, how, options, function(answer)
             answer.fight = fight
+            answer.leashRaised = leashed
+            logMove("camera_focused", answer, { what = what })
             if done then done(answer) end
-        end)
+        end, { far = far, away = away, fade = far and not glide })
 end
 
 --- Moves the game's camera to `at` - an entity's uuid, a point {x, y, z}, or a list of two (framed
@@ -412,7 +583,13 @@ end
 --- options.glide: glide past the game's snap distance (50 m) instead of cutting; options.hold:
 --- seconds before the camera returns by itself (default: it stays until GK.Camera.Return, a new
 --- focus or the game's own next move). Observed: { ok, at, distance, ticks, how, snapped, fight,
---- onScreen = { u, v }, off } once the camera settled; ok = false with the reason otherwise.
+--- onScreen = { u, v }, off, far, away, drawn, leashRaised } once the camera settled; ok = false
+--- with the reason otherwise. `away` is the length of the move and `far` whether it is past the
+--- snap distance; `drawn` whether every entity focused is drawn on the client (`notDrawn` and a
+--- `warning` name those that are not; a point has no `drawn`). A far move with no glide also says
+--- `faded` - the game's own fade to black came - with `blackTicks` and `fadeTicks`, and answers
+--- when the fade has ended. A thing beyond the camera's leash (MaxDistFromChar) raises it until the
+--- return. A row `camera_focused`.
 --- Client side; a far creature's stub is refused (GK.Camera.Focus on the server sends its point).
 function Camera.Focus(at, options)
     return focus(at, options)
@@ -429,8 +606,10 @@ returnNow = function(done, options)
     restoreSnap()
     local home = positionOf(who)
     local glide = false
-    if options and options.glide and home and c.TargetCurrent
-        and flat(c.TargetCurrent, home) >= (Camera.SnapDistance or 50) - 1 then
+    local snap = snapDistance()
+    local away = (home and c.TargetCurrent) and flat(c.TargetCurrent, home) or 0
+    local far = away >= snap
+    if options and options.glide and away >= snap - 1 then
         glide = raiseSnap()
     end
     local fight = inFight(who)
@@ -453,7 +632,8 @@ returnNow = function(done, options)
     Camera.Current, Camera.Saved = nil, nil
     local u = who.Uuid and who.Uuid.EntityUuid
     local targets = { { entity = who, uuid = u, point = positionOf(who) } }
-    return observe({ ok = true, how = fight and "combat target" or "targets", to = targets[1].point, glide = glide },
+    return observe({ ok = true, how = fight and "combat target" or "targets", to = targets[1].point, glide = glide,
+            away = away, far = far },
         cam, targets, fight and "combat target" or "targets", nil, function(answer)
             if saved and saved.distance then
                 answer.restoredDistance = saved.distance
@@ -461,14 +641,19 @@ returnNow = function(done, options)
                     answer.ok, answer.error = false, "back on the character, at another distance"
                 end
             end
+            -- the leash goes back with the camera; a newer move that took over keeps its own
+            if not answer.superseded then answer.leashRestored = restoreLeash() end
+            logMove("camera_returned", answer)
             if done then done(answer) end
-        end)
+        end, { far = far, away = away, fade = far and not glide })
 end
 
 --- Brings the camera back to the controlled character by the game's own restore (in a fight the
 --- combat target's TargetMode 1 with the Position reset; outside, the behaviour's targets and the
 --- distance saved by the first focus). options.glide as GK.Camera.Focus's. Observed like
---- GK.Camera.Focus, with `restoredDistance`. Client side.
+--- GK.Camera.Focus, with `restoredDistance` and `leashRestored` (a leash the focus raised was put
+--- back); from farther than the snap distance and with no glide the game fades, and the answer
+--- comes when the fade has ended (`faded`, `blackTicks`). A row `camera_returned`. Client side.
 function Camera.Return(options)
     return returnNow(nil, options)
 end
@@ -488,13 +673,58 @@ local function followTick()
     end
 end
 
+-- The server's question "what of these does the client hold whole": `must` and `also` are lists of
+-- uuids. Without `wait` the answer is at once. With it, the answer comes when every one of `must`
+-- is whole and the number of whole ones among `also` stood still for five ticks; at the limit it
+-- names those of `must` that are not whole.
+local function wholeOf(msg)
+    local must, also, kinds = msg.must or {}, msg.also or {}, msg.kinds or {}
+    local function read()
+        local map, missing, count = {}, {}, 0
+        for _, u in ipairs(must) do
+            local h = held(u, kinds[u])
+            map[u] = h.whole
+            if not h.whole then missing[#missing + 1] = u end
+        end
+        for _, u in ipairs(also) do
+            local h = held(u, kinds[u])
+            map[u] = h.whole
+            if h.whole then count = count + 1 end
+        end
+        return map, missing, count
+    end
+    if not msg.wait then
+        local map, missing, count = read()
+        return { ok = true, whole = map, missing = missing, count = count }
+    end
+    local settle = #also > 0 and 5 or 0
+    local lastCount, since = -1, 0
+    return GK.Observe({ ok = true, waiting = "whole on the client" }, function(ticks, final)
+        local map, missing, count = read()
+        if count ~= lastCount then lastCount, since = count, ticks end
+        if #missing == 0 and ticks - since >= settle then
+            return { ok = true, whole = map, count = count, ticks = ticks }
+        end
+        if final then
+            return { ok = #missing == 0, whole = map, missing = missing, count = count, ticks = ticks,
+                error = #missing > 0 and ("not whole on the client after " .. ticks .. " ticks: " .. table.concat(missing, ", ")) or nil }
+        end
+    end, msg.within or Camera.WholeMs)
+end
+
 local function fromServer(msg)
     if type(msg) ~= "table" or not msg.id then return end
     local result
     if msg.op == "focus" then
-        result = focus(msg.at, msg.options, msg.points)
+        result = focus(msg.at, msg.options, msg.points, nil, msg.kinds)
     elseif msg.op == "return" then
         result = returnNow(nil, msg.options)
+    elseif msg.op == "whole" then
+        result = wholeOf(msg)
+    elseif msg.op == "leash" then
+        -- the server's clean: the switches as the game has them
+        restoreSnap()
+        result = { ok = true, leashRestored = restoreLeash() }
     else
         result = { ok = false, error = "unknown camera request " .. tostring(msg.op) }
     end
