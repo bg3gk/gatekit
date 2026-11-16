@@ -75,6 +75,40 @@ public static class Mappings
         return named;
     }
 
+    /// <summary>
+    /// The registry's own table: a mapping (<see cref="Emit(string, FingerprintReader, RegistryStore, int, bool, out string)"/>,
+    /// named) for every function the registry places in a binary, in one document a Script Extender
+    /// can load beside its own table. Answers how many functions got a mapping and the ids that did not.
+    /// </summary>
+    public static (int Written, IReadOnlyList<(string Id, string Why)> Missing) Write(string path, FingerprintReader reader, RegistryStore store, int limit)
+    {
+        var ids = store.All().Where(e => e.Kind == EntryKind.Function && store.Places(e.Id).Count > 0).Select(e => e.Id).Order(StringComparer.Ordinal).ToList();
+        var builds = store.Tables().Select(t => t.Build).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToList();
+        var body = new StringBuilder();
+        var missing = new List<(string, string)>();
+        var written = 0;
+        foreach (var id in ids)
+        {
+            var mapping = Emit(id, reader, store, limit, named: true, out var why);
+            if (mapping is null) { missing.Add((id, why)); continue; }
+            body.AppendLine(mapping).AppendLine();
+            written++;
+        }
+        var b = new StringBuilder();
+        b.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        b.AppendLine("<!-- The registry's own table: written by `gatekit registry mappings write`; do not edit by hand. -->");
+        b.AppendLine("<!-- A mapping per function the registry names and places; its target binds to the registry's id (Name), not to a symbol declared in code. -->");
+        b.Append("<BinaryMappings Source=\"registry\" Builds=\"").Append(string.Join(' ', builds)).AppendLine("\">");
+        b.AppendLine("  <Mappings Version=\"registry\" Default=\"true\">");
+        b.Append(body);
+        foreach (var (id, why) in missing) b.Append("    <!-- ").Append(id).Append(": no mapping: ").Append(why).AppendLine(" -->");
+        b.AppendLine("  </Mappings>");
+        b.AppendLine("</BinaryMappings>");
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+        File.WriteAllText(path, b.ToString().ReplaceLineEndings("\n"));
+        return (written, missing);
+    }
+
     /// <summary>The outcome of one symbol of a table in one binary.</summary>
     public sealed record Landing(string Symbol, string Binary, int Found, long? Rva, string? Id, bool Function, bool Agrees, bool Regenerates)
     {
@@ -149,7 +183,13 @@ public static class Mappings
     /// differs between the binaries left open. Null with <paramref name="why"/> when there is none
     /// within the limit.
     /// </summary>
-    public static string? Emit(string id, FingerprintReader reader, RegistryStore store, int limit, out string why)
+    public static string? Emit(string id, FingerprintReader reader, RegistryStore store, int limit, out string why) =>
+        Emit(id, reader, store, limit, named: false, out why);
+
+    /// <summary>The same; with <paramref name="named"/> the mapping is of the registry's own table: its
+    /// name is <c>registry:&lt;id&gt;</c> and its target binds to the id itself (<c>Name</c>), not to a
+    /// symbol a Script Extender declares in its code.</summary>
+    public static string? Emit(string id, FingerprintReader reader, RegistryStore store, int limit, bool named, out string why)
     {
         why = "";
         var places = store.Places(id).Select(p => (p.Binary, p.Row.Rva)).Distinct().OrderBy(p => p.Binary, StringComparer.Ordinal).ToList();
@@ -186,7 +226,7 @@ public static class Mappings
             {
                 var b = new StringBuilder();
                 b.Append("    <!-- code:").Append(id).Append("; ").AppendJoin(", ", places.Select(p => string.Create(CultureInfo.InvariantCulture, $"{p.Binary}+0x{p.Rva:X}"))).AppendLine(" -->");
-                b.Append("    <Mapping Name=\"").Append(RegistryId.Unplace(id)).AppendLine("\" AllowFail=\"true\">");
+                b.Append("    <Mapping Name=\"").Append(named ? "registry:" + id : RegistryId.Unplace(id)).AppendLine("\" AllowFail=\"true\">");
                 k = 0;
                 for (var line = 0; line < lines.Count; line++)
                 {
@@ -194,7 +234,8 @@ public static class Mappings
                     b.Append("      ").Append(line == 0 ? "@start " : "").Append(written).Append(" // ").AppendLine(lines[line].Text);
                     k += tokens[line].Length;
                 }
-                b.Append("      <Target Type=\"Absolute\" Offset=\"@start\" Symbol=\"").Append(SymbolOf(id)).AppendLine("\" />");
+                if (named) b.Append("      <Target Type=\"Absolute\" Offset=\"@start\" Name=\"").Append(id).AppendLine("\" />");
+                else b.Append("      <Target Type=\"Absolute\" Offset=\"@start\" Symbol=\"").Append(SymbolOf(id)).AppendLine("\" />");
                 b.Append("    </Mapping>");
                 return b.ToString();
             }

@@ -168,6 +168,19 @@ public static class RegistryCommands
                 }));
                 c.Subcommands.Add(emit);
             }
+            {
+                var file = new Argument<string>("file") { Description = "the table to write" };
+                var write = new Command("write", "the registry's own table in one document: a mapping for every function the registry names and places, its target bound to the registry's id - what a Script Extender loads beside its own table") { file, limit, coverage };
+                write.SetAction(p => Invoke(p, s =>
+                {
+                    var store = RegistryStore.Find(p.GetValue(coverage)) ?? throw new SymbolsException("no registry found");
+                    var (written, missing) = Mappings.Write(p.GetValue(file)!, Reader(s, null), store, p.GetValue(limit));
+                    s.Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"wrote {p.GetValue(file)}: {written} mappings; {missing.Count} functions have none within {p.GetValue(limit)} bytes"));
+                    foreach (var (id, why) in missing) s.Out.WriteLine($"  {id}: {why}");
+                    return 0;
+                }));
+                c.Subcommands.Add(write);
+            }
             root.Subcommands.Add(c);
         }
         {
