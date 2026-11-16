@@ -53,6 +53,39 @@ function Memory.Field(entity, component, field)
     return f
 end
 
+-- observation: where a value below an object's top level lies and how wide it is. `object` is any
+-- reference to an object of the game Lua holds (a component, a system's manager, a struct inside
+-- one) and `path` names the way down from it, as Lua writes it: "Streams[2].State.NumRolls",
+-- "Hit.ConditionRolls[1]". Every step but the last is taken through Lua's own references; the
+-- last gives the address of a property or of an array's element (indexes from 1). Returns
+-- { Address, Size, Offset, ObjectAddress, Path }, the shape Watch, Read and Freeze take, or nil
+-- and why. Needs the Script Extender build with Ext.Debug.GetPropertyAddress.
+function Memory.Path(object, path)
+    require_available()
+    if not Debug.GetPropertyAddress then return nil, "this Script Extender build has no Ext.Debug.GetPropertyAddress" end
+    if type(path) ~= "string" or path == "" then error("GK.Memory.Path(object, path): the path is a string such as Streams[2].State.NumRolls", 2) end
+    local steps = {}
+    for step in path:gsub("%[(%d+)%]", ".#%1"):gmatch("[^%.]+") do steps[#steps + 1] = step end
+    local at = object
+    for i = 1, #steps - 1 do
+        local step = steps[i]
+        local key = step:sub(1, 1) == "#" and tonumber(step:sub(2)) or step
+        local ok, below = pcall(function() return at[key] end)
+        if not ok or below == nil then return nil, ("nothing at %s of %s"):format(step:gsub("^#", "index "), path) end
+        at = below
+    end
+    local last = steps[#steps]
+    local found, why
+    if last:sub(1, 1) == "#" then
+        found, why = Debug.GetElementAddress(at, tonumber(last:sub(2)))
+    else
+        found, why = Debug.GetPropertyAddress(at, last)
+    end
+    if type(found) ~= "table" then return nil, why end
+    found.Path = path
+    return found
+end
+
 -- observation: the address of a system's own object (esv::roll::stream::SaveSystem), or nil. What a
 -- system keeps outside the components - a manager, a cache - is reached from here with Read.
 function Memory.System(name)

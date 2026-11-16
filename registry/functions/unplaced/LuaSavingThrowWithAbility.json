@@ -1,0 +1,27 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::LuaSavingThrowWithAbility",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The Lua binding of SavingThrow() for the overload with an ability and a DC: reads the arguments 'ability' and the DC from the Lua stack, calls the SavingThrow condition (code:unplaced::ConditionSavingThrow) and pushes the result.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::ConditionSavingThrow"
+    ],
+    "components": ["ls::thoth::shared::Env"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "reads named arguments through 0x10F4F20 and 0x10F4F40 (the second with the string 'ability'), calls code:unplaced::ConditionSavingThrow"
+    },
+    {
+      "kind": "watch",
+      "says": "every stats-condition save in the chains passes it at bg3_dx11.exe@25605617+0x10EDD97"
+    }
+  ]
+}

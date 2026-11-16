@@ -1,0 +1,46 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculatePositionScore2",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Adds to an AI score the worth of a position for a character under the given PositionScoreOptions: AI hint triggers, invisibility, statuses and items near the position, written to the AI score log.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::GetOriginalTranslate",
+      "fp:123b79ba6c390bab",
+      "fp:34b8cfa71d52c309",
+      "fp:5227b96c8688ff31",
+      "fp:752e6552b5417c49",
+      "fp:8efc2b447ddf1668",
+      "fp:91c3d48dff57ab4c",
+      "fp:a4b0881bb0cdbe1e",
+      "fp:d1045bdeed38dbc1",
+      "fp:d649436bbbe7d47a",
+      "fp:e4d053ad9455ea7c",
+      "fp:ff70794bd6411e45"
+    ],
+    "strings": ["716b005c5134c382"],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::spatial_grid::DataComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "esv::AiHelpers"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the position-scoring log line about a nearby item; takes character, position and PositionScoreOptions and fills the AiScore it is given"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, CalculatePositionScore (about 15 000 calls)"
+    },
+    {
+      "kind": "read",
+      "says": "takes esv::Character, a position and esv::PositionScoreOptions and fills an esv::AiScore; calls esv::AiHelpers::CheckAiHintTrigger, reads eoc::InvisibilityComponent, BoundComponent and esv::Item, the log line about a nearby item"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the text constants both refer to"
+    }
+  ]
+}

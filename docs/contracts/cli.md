@@ -1,30 +1,30 @@
 # Host CLI contract
 
 Every command of `gatekit` (assembly `gatekit`, `src/GateKit.Cli` and each project's
-`CreateCommand()`), what it does to a game copy and what it prints. Sections 1, 2 and 4-7 are the
-commands that start and drive a copy (`src/GateKit.Copies`); section 3 is the tests in the game
-(`test`, `run`, `src/GateKit.Testing`); section 8 is the rest of the toolkit and its settings. The
-bridge's file channel is its own contract:
+`CreateCommand()`), what it does to a game copy and what it prints. First the commands that start
+and drive a copy (`src/GateKit.Copies`), then [the tests in the game](#tests-in-the-game-test-and-run)
+(`test`, `run`, `src/GateKit.Testing`), then [the rest of the toolkit](#gatekit-the-toolkit) and
+its settings. The bridge's file channel is its own contract:
 [bridge-protocol.md](bridge-protocol.md).
 
 Conventions:
 
 - **copy**: the game `gatekit` works on. With no instance named (`--instance NAME`, else
   `GATEKIT_INSTANCE`) it is the **installed game** and the player's real profile; with one it is
-  an **instance**, a game copy of its own: a cloned game folder and a private profile (section 5).
-- `<state>`: the home's `state` folder (8.1) for the installed game, `<state>/instances/<name>`
+  an **instance**, a game copy of its own: a cloned game folder and a private profile ([how an instance is made](#how-an-instance-is-made)).
+- `<state>`: the home's `state` folder ([settings](#settings)) for the installed game, `<state>/instances/<name>`
   for an instance. Instances also read the installed game's state folder (its backup and links).
 - **bridge**: the in-game mods `mods/GateKit` (folder `Gwynerva_GateKit`) and `mods/Weave`, read
-  from `GATEKIT_BRIDGE` (8.3).
+  from `GATEKIT_BRIDGE` ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots)).
 - Exit codes: unless said otherwise `0` = success, `1` = error: a `CopyException`, a platform
   capability that is missing, or a file the game or another call held, printed to stderr as
   `ERROR: <message>`.
 
 ---
 
-## 1. Process-wide behaviour
+## Process-wide behaviour
 
-### 1.1 Command line shape
+### Command line shape
 
 ```
 gatekit [--instance NAME | --installed-game] <command> [options] [-- extra game args]
@@ -46,61 +46,63 @@ one check is `CopyLayout.RequireNamed` (`src/GateKit.Copies/CopyLayout.cs`):
   (`src/GateKit.Copies/GameSession.cs`, `<verb>` = `a chunk of Lua for the game`), so every chunk
   for a game is held to it, whoever sends it: a command's, a test's, every MCP tool's (`bg3_lua`,
   `bg3_call`, `bg3_dialog`, `bg3_fast_scenes`, `bg3_sound`, the coverage tools, the plugin tools;
-  [mcp.md](mcp.md) section 2) and the deck's (frame caps, mirroring, sound).
+  [mcp.md](mcp.md#the-server)) and the deck's (frame caps, mirroring, sound).
 - The writing commands call it themselves before they touch a file or send a chunk: `build`,
   `up`, `down`, `exec`, `key`, `link`, `reload` (and `bridge-reload`, through `link`), `watch`,
   `checkpoint`, `reset`, `sound set|mute|unmute` and `sound unfocused on|off`.
 - `test` and `run` start the game with `up` or send their chunks to a running one, and
   `systems check` and `sweep run|tour` send chunks, so all of them are refused too.
 - `se install` and `se remove` write into the installed game only with `--installed-game`
-  (section 4); `gatekit --installed-game mcp` is the server whose tools may reach the installed
+  ([the Script Extender switch](#script-extender-switch-se)); `gatekit --installed-game mcp` is the server whose tools may reach the installed
   game.
 
 Needs no name, because it sends no chunk and writes into no game: `status`, `doctor`, `game verify`
-(it writes only the fingerprint into the state folder, 8.2), `logs`, `crashes`, `firewall`,
+(it writes only the fingerprint into the state folder, [`game verify`](#game-verify-the-games-files-as-their-store-delivered-them)), `logs`, `crashes`, `firewall`,
 `instances` (`list`), `save list|export` and `se status`. `shot` needs none while the bridge does
 not answer and the window is photographed; while the client's heartbeat is fresh it asks the game
 for the frame, a chunk, and is refused. `sound`, `sound list` and `sound unfocused` without a word
 read the volumes and the flag with a chunk (`src/GateKit.Copies/Sound.cs`), and are refused too.
 `destroy`, `instances create|rename|destroy` and `save import|copy` work on a named instance only.
 
-### 1.2 Environment variables and folders
+### Environment variables and folders
 
-The settings and folders of the toolkit are in section 8.1 and [docs/design/home.md](../design/home.md).
+The settings and folders of the toolkit are in [settings](#settings) and [docs/design/home.md](../design/home.md).
 
 ---
 
-## 2. Commands of a copy (`src/GateKit.Cli/CopyCommands.cs`, `src/GateKit.Copies/GameCopy.cs`)
+## Commands of a copy
 
-### 2.1 Summary table
+`src/GateKit.Cli/CopyCommands.cs`, `src/GateKit.Copies/GameCopy.cs`.
+
+### Summary table
 
 | # | Command | One line |
 |---|---|---|
-| 1 | `doctor [--json]` | check that this machine has what GateKit needs; list every location (8.1) |
+| 1 | `doctor [--json]` | check that this machine has what GateKit needs; list every location ([settings](#settings)) |
 | 2 | `build` | pack the bridge mods to `.pak`s and install them into the copy's profile |
 | 3 | `up` | back up, configure, start the game, wait until playable |
 | 4 | `down [--stock]` | close the game, restore saves and mod list |
 | 5 | `status` | instance, platform, game processes, Script Extender build, heartbeats |
 | 6 | `instances [list\|create\|rename\|destroy]` | the copies that exist and which run; make, rename, delete one |
 | 7 | `destroy` | `down`, then delete this copy |
-| 8 | `crashes [--json] [--limit N]` | the crash dumps this copy left (3.2) |
-| 9 | `save list\|export\|import\|copy` | a copy's saves (2.13) |
+| 8 | `crashes [--json] [--limit N]` | the crash dumps this copy left ([the tree of tests](#the-tree-of-tests-steps-and-the-three-outcomes)) |
+| 9 | `save list\|export\|import\|copy` | a copy's [saves](#save-a-copys-saves-and-one-copys-save-in-another) |
 | 10 | `exec` | run Lua on client, server or ui; print JSON |
 | 11 | `shot` | a picture of the game |
 | 12 | `key` | press a key in the game |
-| 13 | `sound` | the copy's volumes (8.4) |
+| 13 | `sound` | the copy's [volumes](#sound) |
 | 14 | `link`, `reload`, `bridge-reload` (`bridge reload`), `watch` | hot reload of mods' Lua |
 | 15 | `logs` | Script Extender's output, or the Osiris trace |
 | 16 | `checkpoint`, `reset` | a restore point of the live world, and the way back to it |
-| 17 | `se status\|install\|remove` | which Script Extender build the copy loads (section 4) |
-| 18 | `firewall` | which copies the firewall lets listen (8.8) |
-| 19 | `test`, `run` | tests in the game (section 3) |
-| 20 | `systems tally\|check` | the claims of the systems' descriptions the game checks (3.6) |
+| 17 | `se status\|install\|remove` | which Script Extender build the copy loads ([the switch](#script-extender-switch-se)) |
+| 18 | `firewall` | which copies the firewall lets listen ([the deck](#the-deck)) |
+| 19 | `test`, `run` | [tests in the game](#tests-in-the-game-test-and-run) |
+| 20 | `systems tally\|check` | the claims of the systems' descriptions [the game checks](#claims-the-game-checks-systems-tally-systems-check-the-preludes-expect) |
 
-### 2.2 `build`
+### `build`
 
 1. If a game process of this copy runs -> `the game is running and holds the mod files open; run `down` first`.
-2. Each bridge mod is packed with the packer (8.3, point 3) into `<home>/cache/build/<copy>/<Folder>.pak`
+2. Each bridge mod is packed with the packer ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 3) into `<home>/cache/build/<copy>/<Folder>.pak`
    (the installed game's under `installed`; without a build cache `<state>/build/`), beside its
    place and moved over it, then copied into the copy's `<profile>/Mods/`.
 3. `<state>/bridge-built.json` records the bridge source the paks came from.
@@ -118,62 +120,64 @@ meanwhile is refused at once and changes nothing: `another `up` or `build` of in
 under way in another process; this `up` changed nothing (the copy's last start: ...). When that
 one ends, `status` says whether the game is up.` (exit 1).
 
-### 2.3 `up`
+### `up`
 
 Synopsis:
 ```
-gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,...] [--story-log] [--main-menu] [-- GAME_ARGS...]
+gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,...] [--story-log] [--main-menu | --splash] [-- GAME_ARGS...]
 ```
 - `--level`: start a fresh test game, no menu, no save. It must be `MODULE:LEVEL` (one colon, both parts non-empty, no spaces): anything else is refused before the game starts (`level 'X' is not MODULE:LEVEL ...`), since the game given a bare level only sits in the main menu. While the client sits in `Menu` waiting for `Running` (any start), `gatekit` asks every 2 s what holds it (`GK.Gui.Stuck()` on the UI context): the splash screen before the main menu (`splash`) is passed with `GK.Cheat.Recover()` on every start (the event its own page raises on a key, `OpenMainMenu`); the game's own first-launch and licence screens (`firstlaunch`: Eula, Larian's mod policy, SensitiveSettings, HDR/Gamma calibration) are gone through with `GK.Cheat.Recover()` in an instance only (a copy GateKit made for itself), and in the installed game fail the start at once naming the screen. Each screen passed is printed (`  splash screen: SplashScreen raised OpenMainMenu, as its key does`). Anything else that keeps the client in `Menu` for 60 s with nothing moving it on fails the start (`the game stayed in the menu for 60 s (<what holds it>) instead of loading level 'X' ...` / `... loading a save`); the game is left running for a look and `down`.
 - `--save`: a save folder name under `Savegames/Story` to load instead of the last.
 - `--mods`: comma-separated folder names, empty entries dropped. `--mods ""` gives an empty list (still a bare start); not passing it gives none.
 - `--story-log`: also record the Osiris trace (`logs --story`).
-- `--main-menu`: see 3.5.
+- `--main-menu`: see [a start in the main menu](#a-start-in-the-main-menu).
+- `--splash`: as `--main-menu`, and the splash screen before the main menu is not passed: the start returns when `GK.Gui.Stuck()` names it (`on the splash screen after N s ...`), and `GK.Cheat.Recover()` on the UI context passes it (the event `OpenMainMenu`). Refused together with `--main-menu`; a main menu met with no splash screen before it fails the start.
+- `--startup-videos`: the game plays its own startup video (the studio's logo, `Video/Splash_Logo_Larian.bk2`). By default every start shadows it with an empty loose file of that name so that a start does not wait on it; with this option the shadow is not written, and one left by an earlier start is removed. A start takes the length of the video longer; the bridge answers only after it.
 - `GAME_ARGS`: extra raw game arguments after `--`.
 
 In order (`GameCopy.UpAsync`):
-1. Without an instance, `up` is refused unless `--installed-game` names the installed game (1.1). The copy's start lock is taken (2.2). A game process of **this** copy's `bin` -> `the game is already running (<who started it>); run `down` first`. A level that is not `MODULE:LEVEL` is refused; `--main-menu` with `--level` or `--save` -> `a start in the main menu takes no level and no save`.
-2. Instance only: the clone and profile are made ready (2.3.1).
+1. Without an instance, `up` is refused unless `--installed-game` names the installed game ([command line shape](#command-line-shape)). The copy's start lock is taken ([`build`](#build)). A game process of **this** copy's `bin` -> `the game is already running (<who started it>); run `down` first`. A level that is not `MODULE:LEVEL` is refused; `--main-menu` with `--level` or `--save` -> `a start in the main menu takes no level and no save`.
+2. Instance only: the clone and profile are made ready ([below](#an-instance-made-ready-instance-only)).
 3. `<state>/owner.json` records who starts the copy: GateKit's build, the checkout, the bridge source, the process and the time.
 4. A profile that carries the bridge under the folder name `Gwynerva_DevKit` is brought over: its pak deleted, its channel folder merged into `Gwynerva_GateKit`, `<game>/Data/Mods/Gwynerva_DevKit/` removed.
-5. The bridge paks are rebuilt when stale (2.2).
-6. Installed game only: the backup (2.3.2).
+5. The bridge paks are rebuilt when stale ([`build`](#build)).
+6. Installed game only: [the backup](#the-backup-installed-game-only-profilebackup).
 7. With `--save`: the folder must exist under the copy's `Savegames/Story`, else `no save folder 'S' in <saves>; there are: [...]`; the game gets `-loadSaveGame S`. With `--level`: `-testLoadLevel L` (with both: `-testLoadLevel L -loadSaveGame S ...`).
-8. In an instance always, and in the installed game when `--level` or `--mods` is given: the mod list is cut down (2.3.3). A copy therefore starts bare - the base game and the bridge mods - unless `--mods` names more; only the installed game keeps the player's own list when nothing is asked.
-9. The bridge mods are enabled (2.3.4).
-10. Instance: every player profile gets Public's mod list, and Public's saves are merged into the `Debug_Client_Profile_n` folders (2.13: nothing is wiped). Installed game: the debug profiles are lent (2.3.5).
-11. The splash video is skipped (2.3.6).
-12. Script Extender is configured (2.3.7), and the components' layouts are written for named reads (3.6).
-13. The Script Extender build for the run (section 4): the one `GATEKIT_SE` or `se install` names is installed and `"SendCrashReports": false` written into `ScriptExtenderSettings.json` (`Script Extender for this run: <folder>`); with none named an instance keeps the build it has; otherwise stock.
-14. Linked mods (`<state>/loose.json`, 2.10) are copied in.
+8. In an instance always, and in the installed game when `--level` or `--mods` is given: the [mod list is cut down](#the-mod-list-cut-down-modsettingsisolate). A copy therefore starts bare - the base game and the bridge mods - unless `--mods` names more; only the installed game keeps the player's own list when nothing is asked.
+9. [The bridge mods are enabled](#the-bridge-enabled-modsettingsenablebridge).
+10. Instance: every player profile gets Public's mod list, and Public's saves are merged into the `Debug_Client_Profile_n` folders ([`save`](#save-a-copys-saves-and-one-copys-save-in-another): nothing is wiped). Installed game: [the debug profiles are lent](#debug-profiles-lent-installed-game-only).
+11. [The splash video is skipped](#the-splash-video-skipped).
+12. [Script Extender is configured](#script-extender-configured), and the components' layouts are written for named reads ([claims the game checks](#claims-the-game-checks-systems-tally-systems-check-the-preludes-expect)).
+13. The Script Extender build for the run ([the switch](#script-extender-switch-se)): the one `GATEKIT_SE` or `se install` names is installed and `"SendCrashReports": false` written into `ScriptExtenderSettings.json` (`Script Extender for this run: <folder>`); with none named an instance keeps the build it has; otherwise stock.
+14. Linked mods (`<state>/loose.json`, [hot reload](#link-reload-bridge-reload-watch-hot-reload)) are copied in.
 15. Stale channel files of the last start are deleted from `<profile>/Script Extender/Gwynerva_GateKit/`: `state_*.json`, `res_*.json`, `queue_*.jsonl`, `cmd_*.tmp`, `seen_armed_*.json`, `seen_spill_*.json`; `process.txt` gets a new name for the event log.
-16. Launch: `<bin>/<exe> --skip-launcher` and the arguments above, or `-continueGame` when there are none (`--level`, `--save`, `--main-menu` and game arguments each drop it); working folder `<bin>`; the environment gets `SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN=1` unless already set (8.3, point 9).
+16. Launch: `<bin>/<exe> --skip-launcher` and the arguments above, or `-continueGame` when there are none (`--level`, `--save`, `--main-menu` and game arguments each drop it); working folder `<bin>`; the environment gets `SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN=1` unless already set ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 9).
 17. Up to **2 attempts**: the crash marker `<profile>/ModCrashSanityCheck` is deleted; the game is started; within **60 s** a process must appear in this copy's `bin`, else `the game process did not appear`; then `gatekit` waits for the client's heartbeat. While it waits it reads the game process and Script Extender's runtime log of this start (`StartCheck`): the process gone (`the game process ended N s after it started, before the bridge reported ...`) or the log showing the module loaded (`OnGameStateChanged(): Loaded module`) with no bootstrap script of the bridge's folder (`the game loaded its module with the bridge's mod off ...`) ends the wait at once; otherwise the limit is `GATEKIT_START_TIMEOUT` (75 s default) of no progress - the log not growing - and four limits in all, read then as no log at all (`Script Extender wrote no log in <folder>: the extender did not load ...`), the bridge's Lua loaded and silent (with the log's last line), or the module not loaded yet (with the log's last line; a busy machine slows a start). The game is closed; only the mods-off reading starts it once more (`<reading>; restarting`, the second start with a log of its own); any other reading, or the second start's, fails with `the bridge did not report[ in the second start either]: <reading>; the game was closed`.
 18. The client is awaited until `Running` (300 s), printing `  <secs> s  <state>` on each new game state; `the game process is gone` if it dies, `client did not reach state Running in 300 s; last: {...}` on timeout.
 19. Prints `playable after N s`.
 
 Only the **client** reaching `Running` is awaited, not the server. The game never takes the
-foreground (8.3, point 9).
+foreground ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 9).
 
-#### 2.3.1 An instance made ready (instance only)
+#### An instance made ready (instance only)
 
 1. The mod list it starts from: the player's own, which is `<state>/backup/modsettings.lsx` of the installed game while that is up, else the real `PlayerProfiles/Public/modsettings.lsx`.
-2. The clone is brought up to date (section 5), leaving out the installed game's hot-reload mods.
-3. The profile is brought up to date (section 5): the player's mod paks are copied into the copy only when `--mods` names at least one; a bare copy's `Mods` folder holds the bridge paks alone (a pak there can load without being in the list, as an override). `gatekit doctor` marks a copy whose mod list holds anything beyond the base game and the bridge mods (`- not bare`, and a `copy-mods` warning naming those mods).
+2. The clone is brought up to date ([how an instance is made](#how-an-instance-is-made)), leaving out the installed game's hot-reload mods.
+3. The profile is brought up to date (the same): the player's mod paks are copied into the copy only when `--mods` names at least one; a bare copy's `Mods` folder holds the bridge paks alone (a pak there can load without being in the list, as an override). `gatekit doctor` marks a copy whose mod list holds anything beyond the base game and the bridge mods (`- not bare`, and a `copy-mods` warning naming those mods).
 4. That mod list is copied to the copy's `PlayerProfiles/Public/modsettings.lsx`.
 5. Saves from the player's real profile: the one `--save` names, when the copy has none of that name; else, for a start without `--level`, all of them, merged - never over a newer one of the copy's.
-6. The copy's fingerprint is recorded (8.2), and a missing firewall rule for the copy is said (`note: no firewall rule for this copy ...`).
+6. The copy's fingerprint is recorded ([`game verify`](#game-verify-the-games-files-as-their-store-delivered-them)), and a missing firewall rule for the copy is said (`note: no firewall rule for this copy ...`).
 
 Errors on the way -> `instance NAME: <msg>\n(instances live in <root>; GATEKIT_INSTANCES names another folder - writable, on the game's drive)`.
 
-#### 2.3.2 The backup (installed game only, `ProfileBackup`)
+#### The backup (installed game only, `ProfileBackup`)
 
 If `<state>/backup/` exists, nothing is done (an earlier `up` without `down`: that backup is the
 original). Else `<state>/backup.tmp/` gets the saves (`Savegames/Story` -> `Story`), the mod list
 (`modsettings.lsx`, which must exist: `<file> does not exist; start the game once normally first`)
 and `ScriptExtenderSettings.json` of `<bin>` if there is one, and is renamed to `backup`.
 
-#### 2.3.3 The mod list cut down (`ModSettings.Isolate`)
+#### The mod list cut down (`ModSettings.Isolate`)
 
 Every `<node id="ModuleShortDesc"> ... </node>` of `PlayerProfiles/Public/modsettings.lsx` whose
 `Folder` is neither `GustavX` nor a folder `--mods` names is removed; a wanted folder that is not
@@ -181,7 +185,7 @@ in the list -> `not in the mod list, enable them in the game once first: [...]`.
 as text, so everything else stays byte for byte. The original comes back from the backup on `down`
 (installed game); an instance's list is its own.
 
-#### 2.3.4 The bridge enabled (`ModSettings.EnableBridge`)
+#### The bridge enabled (`ModSettings.EnableBridge`)
 
 When the list holds every bridge mod's UUID, nothing changes. Otherwise any of them that are there
 are taken out, and all are inserted, in dependency order (Weave first), at the start of the line
@@ -200,7 +204,7 @@ with a 24-space indent and `\n` line ends, from the mod's `meta.lsx`; the GateKi
                         </node>
 ```
 
-#### 2.3.5 Debug profiles lent (installed game only)
+#### Debug profiles lent (installed game only)
 
 Only when any game process runs on the machine: a game started while another one runs uses
 `PlayerProfiles/Debug_Client_Profile_<n>` instead of `Public`. For `n=1..4`: if nothing is
@@ -210,14 +214,14 @@ then a fresh folder gets a copy of the mod list and, for a start without `--leve
 `down` puts them back, and deletes the cloud mirrors `_SAVE_<name>`/`_PROFILE_<name>` of a profile
 marked `.nocloud`.
 
-#### 2.3.6 The splash video skipped
+#### The splash video skipped
 
 `<game>/Data/Video/Splash_Logo_Larian.bk2`: at `up`, when there is none, an empty file is written
 (in an instance the links on the way become real folders first, and the place is checked to be
 inside the instance). At `down` it is deleted only while it is still empty, and `Data/Video` with
 it when that is left empty. A file that is not empty is never touched.
 
-#### 2.3.7 Script Extender configured
+#### Script Extender configured
 
 `<state>/se-logs/` is emptied, and `<bin>/ScriptExtenderSettings.json` gets `CreateConsole=false`,
 `DeveloperMode=true`, `LogRuntime=true`, `EnableLogging=<--story-log>`, `LogDirectory=<state>/se-logs`,
@@ -226,36 +230,36 @@ and in an instance `CrashDumpDirectory=<state>/crash-dumps` and `LaunchCrashRepo
 instance the loader's `ScriptExtenderUpdaterConfig.json` gets `ShiftOpensConsole=false` too,
 written as a new file. The installed game's original settings come back from the backup on `down`.
 
-### 2.4 `down`
+### `down`
 
 `gatekit down [--stock]` (`GameCopy.Down`):
 1. Kills every game process of this copy's `bin`, waits up to **60 s** until none is left (and for
    the copy's `BG3ScriptExtender.dll` to be let go, up to 30 s), then deletes the crash marker.
-2. Installed game: the backup is put back (2.4.1).
-3. Installed game, or an instance with `--stock`: the stock Script Extender back (section 4). **An
+2. Installed game: [the backup is put back](#the-backup-put-back).
+3. Installed game, or an instance with `--stock`: the stock Script Extender back ([the switch](#script-extender-switch-se)). **An
    instance otherwise keeps the build `se install` gave it** (the line ends `, its Script Extender
    build kept`), so the copy's next start loads that build again. The
    installed game always gets stock back: it is the player's, and the updater, crash reports and
    other mods expect the signed build. A dll still locked after 60 s is a `note:` line after the
    usual one, not an error - the loader's switch is already off, so the next start loads stock anyway.
-4. The splash stub is removed (2.3.6).
-5. Linked Lua is removed from the game folder and `<state>/loose.json` deleted (2.10).
+4. The [splash stub](#the-splash-video-skipped) is removed.
+5. Linked Lua is removed from the game folder and `<state>/loose.json` deleted ([hot reload](#link-reload-bridge-reload-watch-hot-reload)).
 
 Prints `instance NAME: game closed` (`, stock Script Extender back` / `, its Script Extender build
 kept`) or `game closed, saves and mod list restored`; a copy another checkout started ends with
 `(it was started by ...)`.
 
-#### 2.4.1 The backup put back
+#### The backup put back
 
 If `<state>/backup/` is missing, nothing. Else:
 - If it has `Story`: the copy's current saves are **moved** to `<state>/saves-after-run/<yyyyMMdd-HHmmss>/` (the newest 3 kept), and `Story` copied back.
 - `modsettings.lsx` is copied back.
 - Steam's cloud mirrors (`<Steam>/userdata/*/1086940/remote`, of the Steam root and of the game's library): when the backup had `Story`, every save in `_SAVE_Public/Savegames/Story` that is not among the backup's is deleted; `_PROFILE_Public/modsettings.lsx`, where it exists, is overwritten from the backup.
 - `ScriptExtenderSettings.json` is copied back into `<bin>` when the backup has one (if there was no original, the run's file stays).
-- The debug profiles come back (2.3.5).
+- The [debug profiles](#debug-profiles-lent-installed-game-only) come back.
 - `<state>/backup/` is deleted.
 
-### 2.5 `status`
+### `status`
 
 Prints, in order: `instance: <name>  (<root>)` or `instance: none (the installed game)`;
 `platform: <name>`; `processes: [pids]`; `script extender: local build from <source>` or
@@ -264,25 +268,25 @@ the last heartbeat whatever its age (`none` without one); last `event kinds: ...
 event log's rows are placed by and how the game's differs from the host's build (bridge-protocol.md,
 "The event log"); `doctor` gives the same as its `event kinds` check. Exit 0.
 
-### 2.6 `instances`
+### `instances`
 
 `instances` (or `instances list`) prints one line per instance folder under the instances root that
 holds `game/bin`, sorted: `<name, 16 wide> <running, pid [..] | stopped, 24 wide> <root>`, running
 meaning a game process whose executable lies inside the instance. Last `(installed game)` the same
 way for the installed game's `bin`. It lists every copy whatever `--instance` names.
-`instances create NAME` makes or refreshes an instance (2.3.1) without starting it (`instance NAME
+`instances create NAME` makes or refreshes an instance ([made ready](#an-instance-made-ready-instance-only)) without starting it (`instance NAME
 ready in <root>`); `instances rename NAME NEW` moves its clone and records, nothing else changes,
 and a deck's label follows it (`instance NAME is now NEW`); `instances destroy NAME` is `destroy`
 for that instance. `create` and `rename` refuse a running copy.
 
-### 2.7 `destroy`
+### `destroy`
 
 Needs an instance (`` `destroy` needs an instance: GATEKIT_INSTANCE or --instance <name> ``).
 `down`, then the clone, the private profile and the instance's records are deleted (links removed
 as links, never followed), and the instances root too when it is left empty. Prints
 `instance NAME deleted`.
 
-### 2.8 `exec`
+### `exec`
 
 `gatekit exec {client|server|ui} CODE [--timeout S]` (default 20 s). `CODE` starting with `@` is a
 Lua file (read as UTF-8, a BOM dropped). The chunk goes through the bridge (bridge-protocol.md);
@@ -291,19 +295,75 @@ JSON (`null` for nil). A Lua error -> `ERROR: Lua error on <side>:\n<traceback>`
 `ERROR: no answer from <side>: <why> (state: {...})`; no game of this copy -> `ERROR: no game is
 running for <copy>; nothing was sent`. Side `ui` is the client side with the command flagged
 `"ui": true` (the bridge runs it inside `Ext.UI.Defer`). Every chunk is sent after the prelude
-`local GK = Mods.GateKit.GK` (8.3, point 4).
+`local GK = Mods.GateKit.GK` ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 4).
 
-### 2.9 `shot`, `key`
+### `probe`
 
-- `shot OUT [--width N]`: a picture of the game, taken by the game itself (8.3, point 12), or of
-  its window when the bridge cannot; scaled down to `--width` (1150; 0 for full size) when wider;
-  `.png` writes PNG, anything else JPEG quality 82. Prints the absolute path. Failures:
-  `screenshot failed: ...`, `the game accepted the screenshot but wrote no file in 10 s`.
+`gatekit probe ID... [--do CODE] [--seconds S] [--note] [--json]` joins the registry and the running game
+both ways. Each `ID` is a registry id of a function, looked up in the build table of the
+executable the game runs, or a `binary+0xRVA`; each gets a count-only probe
+(`Ext.Debug.ProbeFunction`). `--do` is Lua run on the server once the probes are on - the action
+to watch; the game then runs `--seconds` (default 3), the probes are read and taken off. For each
+function the answer gives its place, how often it was called, and every caller: the registry id
+whose function holds the caller's address with the offset inside it (`code:<id>+0x..`), or
+`unknown` with the address. A function that was called also gets a line `evidence  watch:...`,
+the sentence a `registry note --evidence` takes; the callers the registry does not name are
+listed last, as what to read next. Which function holds a caller's address is asked of the
+databases as `registry at` asks (a function may lie in several parts); a row's size answers only
+where they are not at hand. `--note` writes each unnamed caller into the live layer as
+`unplaced::unnamed_<token>` (the token of its fingerprint, rung `unknown`) with the functions it
+was seen to call and the question what it is for, so that what is still to read is kept; a caller
+an id already names is left as it is. `--json`: `[ { id, address, hits, otherCallers, callers = [
+{ id, offset, address, count } ] } ]`. An id with no place in the running executable -> `ERROR`
+and nothing is probed; a function the extender cannot probe is named on the error stream and the
+rest go on. Needs the Script Extender build with function probes: without it -> `ERROR: this
+Script Extender build has no function probes`.
+
+### `cover`, `cover-fold`, `cover-diff`
+
+The record of coverage: which functions of the running executable run, and from where, while the
+game is played. Needs the Script Extender build with coverage counters
+(`Ext.Debug.StartCoverage`).
+
+- `gatekit cover start [--min-size N] [--limit N] [--hot N]` puts a counter on the functions of
+  the executable the game runs, as the pseudo-code database lists them: thunks and functions
+  shorter than `--min-size` bytes (default 64) left out; `--limit` takes that many, spread evenly
+  (default: all). The extender refuses an address that its own table of functions does not give
+  as a function's start. A function called more often than `--hot` (default 200000) is taken off
+  by itself, with the count it reached. Prints `<binary>: <asked> functions asked, <counted>
+  counted, <refused> refused`. A second start adds to the first.
+- `gatekit cover status` prints `{ Functions, Attached, Hot, Seen, Calls, Pairs, Lost }`.
+- `gatekit cover save FILE [--reset]` writes the counts to `FILE`: `F <module> <rva> <calls>
+  <hot>` for every function called, `E <module> <rva> <module> <rva> <calls>` for every pair of a
+  function and the address that called it, `L <calls lost>`; rvas in hex. `--reset` starts the
+  counts again, so that each file holds one stretch of play.
+- `gatekit cover stop` takes every counter off; the counts stay for a last `save`.
+- `gatekit cover-fold FILE... [--top N] [--where inCombat|inDialog|neither] [--names]` needs no
+  game: it adds the files up and reads them against the registry - how many functions ran, how
+  many of them an id names, the named ones and the unnamed ones that ran the most (default 30 of
+  each), each unnamed one with the number of places it was called from. A function taken off as
+  hot counts once, with the most it reached in any file. `--where` takes only the files whose
+  state file beside them (the same name, `.json`) says the game was in that situation; `--names`
+  puts beside an unnamed function the name the databases give it (slower).
+- `gatekit cover-diff FILE... --against FILE... [--top N] [--names]` needs no game: the functions
+  that ran in the first set of files and in none of the second - a scene with a mechanic against
+  the same scene without it names the mechanic's functions.
+
+### `shot`, `key`
+
+- `shot OUT [--width N] [--overlay]`: a picture of the game, taken by the game itself ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point
+  12), or of its window when the bridge cannot; scaled down to `--width` (1150; 0 for full size)
+  when wider; `.png` writes PNG, anything else JPEG quality 82. The picture is the game's frame
+  alone; `--overlay` takes the frame after the extender's own layer is drawn (its windows,
+  GateKit's console, a picture of `GK.Show`), which only the game can take: where it cannot, the
+  command fails and no window is photographed. Prints the absolute path. Failures:
+  `screenshot failed: ...`, `the game accepted the screenshot but wrote no file in 10 s`,
+  `the game took no picture with the extender's layer in it: ...`.
 - `key NAME [--hold S]`: the names of `GameKeys` (`escape`, `enter`, `space`, `tab`, `backspace`,
   `left`, `up`, `right`, `down`, `f1`..`f12`, or one letter or digit); else `unknown key 'X';
-  known: ...`. Pressed through the game (8.3, point 11). Prints nothing on success.
+  known: ...`. Pressed through the game ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 11). Prints nothing on success.
 
-### 2.10 `link`, `reload`, `bridge-reload`, `watch` (hot reload)
+### `link`, `reload`, `bridge-reload`, `watch` (hot reload)
 
 State: `<state>/loose.json` = `{ "<ModFolder>": "<absolute path of the mod's .../ScriptExtender/Lua>" }`.
 Target: `<game>/Data/Mods/<ModFolder>/ScriptExtender/Lua` (loose Lua wins over the same files in a
@@ -314,16 +374,16 @@ Target: `<game>/Data/Mods/<ModFolder>/ScriptExtender/Lua` (loose Lua wins over t
 - `bridge-reload` (also `bridge reload`): links the bridge mods' own roots, then the same reload; prints `bridge Lua reloaded in X.X s (linked: it also survives `reset`; `down` removes the link)`.
 - `watch`: prints `watching <mods>` (or `watching nothing (run `link` first)`); every 0.5 s takes the newest modification time of any `*.lua` below the linked sources; on a change prints `HH:mm:ss reloaded in X.X s` or `HH:mm:ss reload failed: <msg>`. Ctrl+C ends it with exit 0.
 
-### 2.11 `logs`
+### `logs`
 
 `logs [--story] [--lines N=80] [--grep REGEX]`: the last N non-blank lines, filtered by `--grep`
 (case-insensitive), from the log files of this start in `<state>/se-logs/`, oldest file first:
 `Extender Runtime *.log` (prints, warnings, Lua errors), or with `--story` `Osiris Runtime *.log`
 (the Osiris trace; empty without `up --story-log`). A game started another way has no runtime log
-and is read from its Script Extender console window (8.3, point 5); where neither is there the
+and is read from its Script Extender console window ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 5); where neither is there the
 error says so.
 
-### 2.12 `checkpoint`, `reset` (a clean world without a restart)
+### `checkpoint`, `reset` (a clean world without a restart)
 
 - `checkpoint` (`GameSession.CheckpointAsync`): waits for the server's `Running` (60 s); notes the level (`GK.Stage.CurrentLevel()`); remembers every `PlayerProfiles/*/Savegames/Story/*` folder; turns autosaves on with `GK.AutoSave(true)` on both sides; server `Osi.AutoSave()`; polls every 0.5 s up to 40 s for a **new** save folder holding a `.lsv` (`the game made no save for the checkpoint`); autosaves off again on both sides whatever happened; waits 1 s; writes the folder name to `<state>/checkpoint.txt` and the level to `<state>/checkpoint.level.txt`; prints `checkpoint: <name>`.
 - `reset [--keep-scenes]` (`GameSession.ResetAsync`, 120 s): the name from this session or `checkpoint.txt` (`no checkpoint to return to; run `checkpoint` first`); notes both `boot`s; sends `Osi.LoadGame("<name>")` to the server without waiting; for client then server waits (poll 0.3 s) until `boot` changed **and** `gameState == "Running"` (`the game closed during the reset`, `<side> did not come back from the reset in 120 s; last: ...`), then a `return true` round trip; then, unless `--keep-scenes`, plays the level's opening scene through (client `GK.FastScenes(20)`; polls `GK.Scenes()` every 0.4 s up to 60 s until a scene that is not `gameplay` has appeared and ended, or none appeared within 3 s; finally `GK.FastScenes(1)`). Prints `world reset in X.X s`.
@@ -332,7 +392,7 @@ Loading a save made right after the start gives the world back as it was with no
 which a fresh process cannot skip. Depends on the bridge's `GK.AutoSave`,
 `GK.Scenes`, `GK.FastScenes`, `GK.Stage.CurrentLevel`.
 
-### 2.13 `save`: a copy's saves, and one copy's save in another
+### `save`: a copy's saves, and one copy's save in another
 
 `gatekit --instance X save list` prints every save of the copy, newest first, one line per name
 (`<time>  <name>  (<player profile>)`), across its player profiles (Public and the
@@ -352,15 +412,17 @@ are merged in only where the copy has none newer of the same name.
 
 ---
 
-## 3. Tests in the game: `test` and `run` (`src/GateKit.Testing`)
+## Tests in the game: `test` and `run`
 
-### 3.1 `test`
+`src/GateKit.Testing`.
 
-`test [FOLDER] [-k TEXT] [--clean] [--attach] [--reset RUNG] [--repeat N] [--speed S] [--trace] [--json]` runs the tests of a folder (default: `tests` of the checkout); `run FILE` runs one (3.4). How a test is written - its header `test { ... }`, its steps, its cases and the `game` object - is [docs/writing-tests.md](../writing-tests.md); the runner is `src/GateKit.Testing`. A header field the runner does not know is refused when the file is read, naming the field and the fields it knows (`GameTest.HeaderFields`).
+### `test`
 
-Tests that declare the same start (level, mods, save, main menu) share one game. A start that fails fails every test of its group (`FAIL (game did not start: ...)`); a game that dies inside a group leaves the rest `FAIL (not run: the game closed)`. A `*.lua` that declares no test (neither `test { }` nor `function run(game)`) is not loaded: `test` prints `SKIP  <name>: not replayable: a free-form recipe ... (it declares no `test { }` and no `function run(game)`)` and goes on (with `-k` matching only such files: `ERROR: no tests in <folder> (N file(s) skipped: they declare no test)`), and `run` refuses it with that line. **A running game** (one this copy already has up, e.g. from `bg3_up`) is never started over nor closed: without `--attach` a copy in the level a group declares runs that group (3.3), and in any other level `test` refuses at once (`ERROR: the game is already running in <level>, and no test asked for is declared for that level; pass --attach ... Nothing was stopped`). `test --attach` runs every selected test in that game and leaves it running; a test that declares a level other than the one the game is in (`GK.Stage.CurrentLevel()` on the server, compared with the part after `MODULE:`) is not run: `SKIP  <name> ... NOT RUN: it declares <MODULE:LEVEL> and the running game is in <LEVEL>; ...`, counted apart (`N passed, M failed, K not run`), and a test not run makes the exit code 1 as a failure does - a replay in the wrong level proves nothing either way. When the game does not say its level the test runs. `--attach` with no game: `ERROR: --attach needs a running game (start one with `up`)`. Each test's verdict line (`PASS|FAIL|SKIP  <name>  <seconds> s  <why>`) is printed the moment it is known and written to `<run folder>/<name>/verdict.txt`, beside `failure.jpg` and `console.txt` of a failure; the summary repeats them after a `--` line. A test under `tests/_coverage` of a checkout that has `research/coverage` (a coverage recipe) also leaves a row in `research/coverage/record/replays.jsonl`, passed or failed, and a passed one a `repeated` row in `record/sightings.jsonl` (8.11); a record that cannot be written is said (`note: the replay of <file> was not written into the record: ...`) and the verdict stands.
+`test [FOLDER] [-k TEXT] [--clean] [--attach] [--reset RUNG] [--repeat N] [--speed S] [--trace] [--json]` runs the tests of a folder (default: `tests` of the checkout); `run FILE` runs one ([`run`](#run)). How a test is written - its header `test { ... }`, its steps, its cases and the `game` object - is [docs/writing-tests.md](../writing-tests.md); the runner is `src/GateKit.Testing`. A header field the runner does not know is refused when the file is read, naming the field and the fields it knows (`GameTest.HeaderFields`).
 
-### 3.2 The tree of tests, steps and the three outcomes
+Tests that declare the same start (level, mods, save, main menu) share one game. A start that fails fails every test of its group (`FAIL (game did not start: ...)`); a game that dies inside a group leaves the rest `FAIL (not run: the game closed)`. A `*.lua` that declares no test (neither `test { }` nor `function run(game)`) is not loaded: `test` prints `SKIP  <name>: not replayable: a free-form recipe ... (it declares no `test { }` and no `function run(game)`)` and goes on (with `-k` matching only such files: `ERROR: no tests in <folder> (N file(s) skipped: they declare no test)`), and `run` refuses it with that line. **A running game** (one this copy already has up, e.g. from `bg3_up`) is never started over nor closed: without `--attach` a copy in the level a group declares runs that group ([the reset ladder](#the-reset-ladder)), and in any other level `test` refuses at once (`ERROR: the game is already running in <level>, and no test asked for is declared for that level; pass --attach ... Nothing was stopped`). `test --attach` runs every selected test in that game and leaves it running; a test that declares a level other than the one the game is in (`GK.Stage.CurrentLevel()` on the server, compared with the part after `MODULE:`) is not run: `SKIP  <name> ... NOT RUN: it declares <MODULE:LEVEL> and the running game is in <LEVEL>; ...`, counted apart (`N passed, M failed, K not run`), and a test not run makes the exit code 1 as a failure does - a replay in the wrong level proves nothing either way. When the game does not say its level the test runs. `--attach` with no game: `ERROR: --attach needs a running game (start one with `up`)`. Each test's verdict line (`PASS|FAIL|SKIP  <name>  <seconds> s  <why>`) is printed the moment it is known and written to `<run folder>/<name>/verdict.txt`, beside `failure.jpg` and `console.txt` of a failure; the summary repeats them after a `--` line. A test under `tests/_coverage` of a checkout that has `research/coverage` (a coverage recipe) also leaves a row in `research/coverage/record/replays.jsonl`, passed or failed, and a passed one a `repeated` row in `record/sightings.jsonl` ([`record`](#record-the-ledgers-of-the-coverage-record)); a record that cannot be written is said (`note: the replay of <file> was not written into the record: ...`) and the verdict stands.
+
+### The tree of tests, steps and the three outcomes
 
 `test [FOLDER] [-k SUBSTR] [--json] ...` reads every `*.lua` of `FOLDER` and of its subfolders at
 any depth (`tests/<domain>/<mechanic>/<test>.lua`). A test's id is its path under `FOLDER` without
@@ -373,7 +435,7 @@ apart. A file whose name starts with `_` is shared code. A subfolder whose `_sui
 given (`tests/_coverage`: `test tests/_coverage`).
 
 A test ends in one of three outcomes: **pass**; **fail**; **unmet** - a precondition (`need`,
-lua-api.md section 19) does not hold here, which says nothing of the thing tested: `UNMET  <id>
+[lua-api.md](lua-api.md#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson)) does not hold here, which says nothing of the thing tested: `UNMET  <id>
 <s> s   UNMET: <why>`, no screenshot. A failure inside a named step reads `FAIL: step <name>
 (<class>) failed: <why>`. Under each verdict line the test's steps follow, one a line: `step <name>
 (<class>) <pass|fail|unmet> <s> s`. The summary counts `N passed, M failed[, U unmet][, K not
@@ -406,7 +468,7 @@ lose it, and a copy left running gets back the speed it had. One run at `--speed
 A ceiling names its finding (`ceiling_finding = "<where it is written>"`); without it the test is
 refused when it is read. Under `--attach` the speed is held the same way, before every test.
 
-`--trace` traces the entity system through every step on both sides (`GK.Trace`, lua-api.md 16.1):
+`--trace` traces the entity system through every step on both sides ([`GK.Trace`](lua-api.md#gktrace-the-entity-tracer-as-rows-of-the-event-log-sharedtracelua-both-sides)):
 a trace begins with each step and ends with it, and is written as `trace/<nn>-[<case>-]<step>.json`
 in the test's output folder - `{ step, case, outcome, server, client }`, each side `GK.Trace.End`'s
 answer, at most 500 changes and 500 system changes a side and step. The event log holds each step's
@@ -453,7 +515,7 @@ allows it to every test under it with the same list in `_suite.json`. An entry i
 blocking state, or `participants` for every creature outside the cast. An unplaced row cannot be
 allowed.
 
-### 3.3 The reset ladder
+### The reset ladder
 
 `test [FOLDER] [-k TEXT] [--clean] [--attach] [--reset none|fixture|venue|game] [--repeat N]`.
 `--repeat N` runs the selection N times in a row in the same game (`name#2`, `name#3` ...). Every
@@ -474,7 +536,7 @@ cheapest first:
    time.
 2. **`venue`: the level reloaded** (the checkpoint of this level, in the same process) - it costs
    real time even in the sandbox. Near-absolutely clean, because the game rebuilds the level from
-   nothing; what survives a level load (lua-api.md 14, "What survives a level load") is restored
+   nothing; what survives a level load ([lua-api.md](lua-api.md#what-survives-a-level-load)) is restored
    or flagged.
 3. **`game`: the game restarted** - the last resort, only when nothing else can do (a new
    extender DLL, a hang, a crash, or state that survives a level load). Absolutely clean.
@@ -485,7 +547,7 @@ it must, and says which rung held and why.
 | rung | what it does |
 |---|---|
 | `none` | nothing; the stage scope is opened (`GK.Stage.Begin`) |
-| `fixture` | server `GK.Stage.Clean()`, then the client's half (an aim given back, a window that holds the game gone through with `GK.Cheat.Recover`, windows opened since the baseline closed, the capture label put back, a test's plain globals forgotten), then `GK.Stage.Verify()` and the client's windows and attention record, again every 0.25 s for up to 4 s - while Verify says `pending` (the game's own work under way: a deletion, a turn resource it refills, a weapon it puts away; lua-api.md 14) for up to 12 s of the game's own time, read from Verify's clock, so the wait holds at any speed - and once more after 0.3 s of settle; a second clean when the first is not clean (what the game had not done yet, or what began after it: a fight a late reaction started). What Verify lists as kept by the game is printed under the reset line (`kept by the game (not dirt): ...`) |
+| `fixture` | server `GK.Stage.Clean()`, then the client's half (an aim given back, a window that holds the game gone through with `GK.Cheat.Recover`, windows opened since the baseline closed, the capture label put back, a test's plain globals forgotten), then `GK.Stage.Verify()` and the client's windows and attention record, again every 0.25 s for up to 4 s - while Verify says `pending` (the game's own work under way: a deletion, a turn resource it refills, a weapon it puts away; [lua-api.md](lua-api.md#the-stage-scope-gkstagebegin-clean-verify-track-serverstagelua)) for up to 12 s of the game's own time, read from Verify's clock, so the wait holds at any speed - and once more after 0.3 s of settle; a second clean when the first is not clean (what the game had not done yet, or what began after it: a fight a late reaction started). What Verify lists as kept by the game is printed under the reset line (`kept by the game (not dirt): ...`) |
 | `venue` | the checkpoint of this level loaded in the same process (`reset`), then what survives a load put back, a new baseline. The scene skip waits out a level's opening dialogue that does not end at 20 times speed, so in such a level a restart costs no more |
 | `game` | `down` and `up` with the group's start, a new baseline (and a checkpoint when a later test needs `venue`) |
 
@@ -529,16 +591,16 @@ it must, and says which rung held and why.
 - A bridge without the stage ledger (`GK.Stage.Begin` not there): nothing can be cleaned; only
   what a test declares is done.
 
-### 3.4 `run`
+### `run`
 
 `run FILE [--keep] [--attach] [--level MODULE:LEVEL] [--save NAME] [--mods A,B] [-- GAME_ARGS]`.
 Loads the test (a file that declares none is refused: `ERROR: <name>: not replayable: ...`) and makes `<state>/runs/<stamp>-<name>/`; `--attach` needs a running game (`--attach needs a running game (start one with `up`)`) and implies `--keep`; otherwise it starts the game as `up` does, with `--level`, `--save` and `--mods` in place of what the test declares. It runs the test as `test` runs one, without the reset ladder, prints `PASS <name>  (output: <dir>)`, `UNMET <name>: <why>` or `FAIL <name>: <why>` with the steps under it, and exits as `test` does; the game is closed afterwards unless `--keep`.
 
-### 3.5 A start in the main menu
+### A start in the main menu
 
 `up --main-menu` starts the game without `-continueGame`, waits for the client's `Menu` state, passes the splash screen and goes through the first-launch screens (instances only), as above, and returns when `GK.Gui.Stuck()` names the main menu (`in the main menu after N s`; 180 s of menu without it fails, the game left running); it refuses `--level` and `--save`. A test declares it with `test { menu = true }` (its start key is `<main menu>`), and `test --attach` does not run such a test in a game that is in a level. `bg3_recipe` writes it for `level: "main menu"` and waits for the client's `Menu` instead of the server's `Running`.
 
-### 3.6 Claims the game checks: `systems tally`, `systems check`, the prelude's `expect`
+### Claims the game checks: `systems tally`, `systems check`, the prelude's `expect`
 
 A system's description (`research/coverage/systems/<ns with :: as __>/<Name>.json`,
 `research/coverage/systems.md`) has `does`, a list of claims `{"method", "text",
@@ -598,12 +660,14 @@ a name in a merged layout reaches a running copy at its next bridge reload, no e
 
 ---
 
-## 4. Script Extender switch (`se`, `src/GateKit.Copies/ScriptExtenderSwitch.cs`)
+## Script Extender switch: `se`
+
+`src/GateKit.Copies/ScriptExtenderSwitch.cs`.
 
 The stock loader `bin/DWrite.dll` loads `bin/BG3ScriptExtender.dll` instead of the signed build in
 its cache when `bin/ScriptExtenderUpdaterConfig.json` holds `"DebugLoadSE": true`. Switching is
 adding those files and taking them away again; no file of the game or of Script Extender changes.
-`up` and `down` use the same switch on the copy's `bin` (2.3 step 13, 2.4 step 3).
+`up` and `down` use the same switch on the copy's `bin` ([`up`](#up) step 13, [`down`](#down) step 3).
 
 - `se status`: `{fork, dll, source, sha256, managed}` as indented JSON. `fork` = `DebugLoadSE` is
   true and the dll is there; `source` comes from the record; `managed` = a record exists.
@@ -630,7 +694,9 @@ adding those files and taking them away again; no file of the game or of Script 
 
 ---
 
-## 5. Instances (`src/GateKit.Copies/Instance.cs`)
+## How an instance is made
+
+`src/GateKit.Copies/Instance.cs`.
 
 Layout:
 ```
@@ -646,7 +712,7 @@ game finds the private profile through `USERPROFILE`, `LOCALAPPDATA` and `APPDAT
 The clone is brought up to date at every `up` and `instances create` (`SyncGame`):
 1. `no game in <game>` unless the real `bin` holds `steam_appid.txt` or a `bg3*.exe`.
 2. Every file under the real `bin`, except the folder `db`, `BG3ScriptExtender.dll`, `BG3ScriptExtender.pdb`, `ScriptExtenderUpdaterConfig.json` and `*.log`: `ScriptExtenderSettings.json` only while the clone has none (afterwards it is the copy's own); `steam_appid.txt` *written* as `2147483646`, an app id that is not the game's, so Steam does not mirror the clone's saves into its cloud; every other file copied when it changed.
-3. The loader config of the clone, when the Script Extender cache is known and no local build is installed in the clone (no record and no `bin/BG3ScriptExtender.dll`): the real one without `DebugLoadSE`, plus `CachePath` = the real cache, so the clone does not download again; written only when different. With a local build installed the switch writes it (section 4).
+3. The loader config of the clone, when the Script Extender cache is known and no local build is installed in the clone (no record and no `bin/BG3ScriptExtender.dll`): the real one without `DebugLoadSE`, plus `CachePath` = the real cache, so the clone does not download again; written only when different. With a local build installed [the switch](#script-extender-switch-se) writes it.
 4. `Data`: every entry but `Mods` and `Video` is linked - a folder by a folder link (a link to another target is replaced; a real folder the copy made its own is left), a file by a hard link (replaced when it is another file: the game was updated; a failure -> `could not hard-link ... Instances must be on the game's drive; set GATEKIT_INSTANCES to a folder there.`). `Data/Mods` and `Data/Video` are real folders whose entries are linked the same way, except the installed game's hot-reload mods and empty files (the installed game's splash stub).
 
 Before loose files are written under `Data`, every link on the way becomes an empty real folder
@@ -663,22 +729,22 @@ into theirs. `destroy`: 2.7.
 
 ---
 
-## 6. The bridge channel
+## The bridge channel
 
 What `gatekit` writes to the game and reads from it - the files, the queue, the heartbeats, the
 answers - is [bridge-protocol.md](bridge-protocol.md). A game of this copy is a process whose
 executable lies in this copy's `bin`; other copies' games are never seen, awaited or killed.
 
-## 7. Paths and files
+## Paths and files
 
-Where everything GateKit keeps lies: [docs/design/home.md](../design/home.md) and section 8.1; a
-copy's own files: sections 2, 4 and 5.
+Where everything GateKit keeps lies: [docs/design/home.md](../design/home.md) and [settings](#settings); a
+copy's own files: [commands of a copy](#commands-of-a-copy), [the Script Extender switch](#script-extender-switch-se) and [how an instance is made](#how-an-instance-is-made).
 
 ---
 
-## 8. `gatekit`, the toolkit
+## `gatekit`, the toolkit
 
-`src/GateKit.Platform` (OS layer), `src/GateKit.Copies` (the copies), `src/GateKit.Cli` (assembly `gatekit`). Commands: `doctor`, `game verify` (8.2) `build up down status instances [list|create NAME|rename NAME NEW|destroy NAME] crashes save destroy exec shot key sound [list|set|mute|unmute|unfocused] link reload watch bridge-reload bridge reload logs checkpoint reset se status|install|remove firewall`, global `--instance NAME` and `--installed-game`. `deck` and `window [list|maximize|grid|label|release|mirror|adopt|fps]` come from `GateKit.Deck` (8.8). `test`, `run` and `systems` (section 3) come from `GateKit.Testing`, which the CLI finds by its `CreateCommand()` classes. `names` comes from `GateKit.Names` and `wiki` from `GateKit.Wiki` (8.9). `symbols`, `decomp`, `registry` and `refs` come from `GateKit.Symbols` (8.15, 8.16, 8.18-8.21, 8.23).
+`src/GateKit.Platform` (OS layer), `src/GateKit.Copies` (the copies), `src/GateKit.Cli` (assembly `gatekit`). Commands: `doctor`, `game verify` `build up down status instances [list|create NAME|rename NAME NEW|destroy NAME] crashes save destroy exec probe cover cover-fold cover-diff shot key sound [list|set|mute|unmute|unfocused] link reload watch bridge-reload bridge reload logs checkpoint reset se status|install|remove firewall`, `calls`, global `--instance NAME` and `--installed-game`. `deck` and `window [list|maximize|grid|label|release|mirror|adopt|fps]` come from `GateKit.Deck`. `test`, `run` and `systems` come from `GateKit.Testing`, which the CLI finds by its `CreateCommand()` classes. `names` comes from `GateKit.Names` and `wiki` from `GateKit.Wiki`. `symbols`, `decomp`, `registry` and `refs` come from `GateKit.Symbols`. Each has its section in this document.
 
 `--instance` is an option of the root and parses before any command. The commands of
 `GateKit.Symbols` - `symbols`, `decomp`, `registry`, `refs` - read the home's databases and the
@@ -686,7 +752,7 @@ repository and no game copy: given `--instance NAME` they refuse with `` `gateki
 no game copy: --instance NAME means nothing here; leave it out (nothing was done)`` and exit 1.
 `GATEKIT_INSTANCE` in the environment is not refused.
 
-### 8.1 Settings
+### Settings
 
 Everything GateKit keeps lives in one **home** folder; its layout and the one exception (the
 game copies) are in [docs/design/home.md](../design/home.md). The home is, in this order:
@@ -742,6 +808,7 @@ GateKit's own settings:
 | real profile | `GATEKIT_PROFILE` | `profile` | Windows `%LOCALAPPDATA%\Larian Studios\Baldur's Gate 3`; Linux `<library>/steamapps/compatdata/1086940/pfx/drive_c/users/steamuser/AppData/Local/Larian Studios/Baldur's Gate 3` |
 | instances | `GATEKIT_INSTANCES` | `instances` | `<game's parent>/Baldurs Gate 3 GateKit` (on the game's volume: copies are hard links) |
 | Script Extender | `GATEKIT_SE` | `scriptExtender` | stock; a folder with `BG3ScriptExtender.dll` (or `stock`) |
+| Script Extender's developer mode | `GATEKIT_SE_DEVELOPER_MODE` | - | on; `0` starts the game as a mod's user has it (no developer-only functions of the extender) |
 | packer | `GATEKIT_PACKER` | `packer` | `builtin`: LSLib in this process. `divine` uses LSLib's Divine instead |
 | Divine | `GATEKIT_DIVINE` | `divine` | none; only `GATEKIT_PACKER=divine` needs it |
 | runtime for Divine | `GATEKIT_DOTNET_ROOT` | `dotnetRoot` | none: Divine runs with `DOTNET_ROLL_FORWARD=Major` on the newest installed runtime |
@@ -751,7 +818,9 @@ GateKit's own settings:
 | Proton (Linux) | `GATEKIT_PROTON` | - | `umu-run` on PATH, else the newest `steamapps/common/Proton*/proton` |
 
 
-### 8.2 `game verify`: the game's files as their store delivered them (`src/GateKit.Copies/GameVerifier.cs`)
+### `game verify`: the game's files as their store delivered them
+
+`src/GateKit.Copies/GameVerifier.cs`.
 
 `gatekit [--instance NAME] game verify [--quick] [--json] [--limit N] [--threads N] [--source ID]
 [--reference FILE] [--write-reference [--out FILE]]` holds the installed game, or a copy, to the
@@ -853,7 +922,7 @@ and `symbols build` write `game_build` (the Steam build, else the build of the r
 game matched) and
 `game_verdict` (the fingerprint's verdict while it still matches that game folder and build, else
 `unverified`) into the database's `meta` table. A database made without these rows gets them from
-evidence instead: `data stamp` (8.7) for an index, `decomp stamp` (8.23) for the pseudo-code
+evidence instead: [`data stamp`](#data-stamp-the-build-of-an-index-from-its-recorded-inputs) for an index, [`decomp stamp`](#decomp) for the pseudo-code
 database, which is never made again from scratch. The evidence is the SHA-256 of the files the
 database was made from, looked up in the reference lists (`BuildEvidence`,
 `src/GateKit.Platform/BuildEvidence.cs`); `game_build` may name several builds, comma-separated,
@@ -865,10 +934,10 @@ was made from the installed game's build with every listed file as delivered (`c
 made from, the game's build, and, for a database with a `binary_meta` table, each game binary's
 build or SHA-256.
 
-### 8.3 Bridge mods, packing, window, keys and screenshots
+### Bridge mods, packing, window, keys and screenshots
 
 1. **Two bridge mods.** The bridge is `mods/GateKit` + `mods/Weave`. `gatekit` reads each mod's identity and dependencies from its `meta.lsx`, packs each into `<Folder>.pak`, installs both, enables both in the mod list in dependency order (Weave first; if only some are listed they are taken out and appended again), keeps both out of an instance's copied paks, and `bridge-reload` links both. A single mod root (a folder holding `Mods/` itself) also works as `GATEKIT_BRIDGE`.
-2. **Script Extender default is stock**: set `GATEKIT_SE`, or `se install` (section 4); Weave and the bridge need GateKit's v34-based build.
+2. **Script Extender default is stock**: set `GATEKIT_SE`, or `se install` ([the switch](#script-extender-switch-se)); Weave and the bridge need GateKit's v34-based build.
 3. **Packing**: `IModPacker`, by default `LSLibPacker` — LSLib in this process (the submodule `external/lslib`, compiled by `external/lslib-core`), writing a version 18 package compressed with LZ4 at its fast level, the same thing Divine writes for `-g bg3 -c lz4` and what the game's own packages use. Nothing has to be installed and nothing is native, so `build` works wherever `gatekit` does. A file or folder whose name starts with `.` is left out, as Divine leaves it out, but only when the name is inside the mod root: a repository under `.claude/worktrees` packs normally. A source with no files in it is an error rather than an empty package. `GATEKIT_PACKER=divine` picks `DivinePacker` instead (LSLib's Divine as a process, `GATEKIT_DIVINE`), kept for anyone who would rather use their own copy; it packs such a source from a temp copy, because Divine itself writes an empty package there, and a package of 64 bytes or less is an error.
 4. **Prelude** sent with every chunk is `local GK = Mods.GateKit.GK` (no `DK` alias); protocol 0 (one file for every call) is not spoken.
 5. **Window and console**: the game window is found by process id and class `SDL_app` (title prefix as fallback), never the Script Extender console. `up` writes `CreateConsole=false`, `ShiftOpensConsole=false` (GateKit's extender build reads it; Shift held at the start otherwise opens the console anyway; in an instance the loader's `ScriptExtenderUpdaterConfig.json` gets the same key, written as a new file) and `LogRuntime=true`, so a game GateKit starts has no console window at all; a classic console window (`ConsoleWindowClass`) of the starting copy that opens anyway is hidden - never closed, which would end the game - by the start's foreground guard, and once more when the start is over (a console hosted in Windows Terminal is not touched) and `logs` reads `<STATE>\se-logs\Extender Runtime *.log` (`logs --story` reads `Osiris Runtime *.log` from the same folder, `up --story-log`). A game started another way has no such file, and is read from its console window by a short-lived copy of `gatekit` (`gatekit __read-console PID`, attached with `AttachConsole`). No PowerShell anywhere.
@@ -883,14 +952,16 @@ build or SHA-256.
     Extender build for the frame the renderer is about to show; the extender copies it out of the
     swap chain before it draws any window of its own, encodes a PNG on a thread of its own and
     renames it into the channel folder. `gatekit` waits up to 10 s for that file, reads it,
-    deletes it, and then scales and saves it (`--width`, `.png` or JPEG 82).
+    deletes it, and then scales and saves it (`--width`, `.png` or JPEG 82). `GK.Shot(path, true)`
+    (`shot --overlay`, `game.shot(path, width, true)`) asks for the frame after the extender's
+    windows are drawn.
     The picture is the game alone — no extender overlay, no console — and the game is neither
     paused nor moved to take it. The window is photographed with `IGamePlatform.CaptureWindow`
     only when the bridge is not there or its renderer cannot read frames (only the DX11 backend
     can; on the Vulkan executable `GK.Shot` returns false and the window is used). Most of its
     time is the encoding of the full-size PNG, none of it on the thread the game renders with.
 
-### 8.4 `sound`
+### `sound`
 
 `gatekit [--instance NAME] sound [list]` prints the game's twelve sound categories, one per line -
 GateKit's short name, the game's own `ConfigKey`, the volume from 0 to 100, `(muted)` where
@@ -912,15 +983,15 @@ digit or `_` is refused before a chunk is built. The twelve keys, in the options
 `VoiceVolumeDialog` (dialogue), `VoiceVolumeNarrator` (narrator), `VoiceVolumeOverhead`
 (overhead), `RumbleVolume` (rumble).
 
-Everything runs on the client through the bridge (`GK.Sound`, [lua-api.md](lua-api.md) section 8),
+Everything runs on the client through the bridge ([`GK.Sound`](lua-api.md#gksound)),
 so it needs no audio API of the operating system and is the same on every platform; as every
-chunk, it reaches the installed game only when that is named (1.1). It changes the copy's
+chunk, it reaches the installed game only when that is named ([command line shape](#command-line-shape)). It changes the copy's
 running game only: the game does not publish the slider values behind its options
 screen, so GateKit writes the Wwise values underneath them and never the player's own settings.
 The options screen therefore keeps showing the player's positions, and nothing is written to a
 profile. A volume set this way is lost when the game restarts, and a `reset` leaves it as it is.
 
-### 8.5 Prebuilt databases: `export-release` and `install`
+### Prebuilt databases: `export-release` and `install`
 
 The index and the symbol database can be fetched instead of built. Building is first-class; these
 are the alternative. Implemented in `src/GateKit.Release` and
@@ -956,7 +1027,7 @@ added to both command groups, so the two databases behave identically. See
   each database as present or missing and says whether it was built here or installed, and from
   where.
 
-### 8.6 Languages the installation does not have: `data build --localization`
+### Languages the installation does not have: `data build --localization`
 
 `gatekit data build --localization DIR` (repeatable) reads language packs from a folder shaped
 like `Data/Localization` as well as from the game's own: `DIR/*.pak` and `DIR/<language>/*.pak`
@@ -965,7 +1036,9 @@ way without touching the installation, from a Steam depot fetched on its own. A 
 is its folder's name (`Chinese`, `ChineseTraditional`, `BrazilianPortuguese`, `LatinSpanish`).
 Implemented in `GamePackages.Find`; tested in `unit/GateKit.GameData.UnitTests/PackageFindTests.cs`.
 
-### 8.7 `data stamp`: the build of an index from its recorded inputs (`src/GateKit.GameData/Index/IndexStamp.cs`)
+### `data stamp`: the build of an index from its recorded inputs
+
+`src/GateKit.GameData/Index/IndexStamp.cs`.
 
 `gatekit data [--db FILE] stamp [--game DIR | --data DIR] [--localization DIR]... [--jobs N] [--dry-run]`
 holds an index to what it says it was made from. Every input of its `inputs` row (each package
@@ -986,7 +1059,9 @@ earlier ones in one transaction; `--dry-run` prints them and writes nothing. An 
 `meta` has no `inputs` row is refused: there is nothing to hold it to. Packages are hashed in
 parallel (`--jobs`).
 
-### 8.8 The deck (`src/GateKit.Deck`, `docs/design/deck.md`)
+### The deck
+
+`src/GateKit.Deck`; the design is [docs/design/deck.md](../design/deck.md).
 
 | Command | What it does |
 |---|---|
@@ -1052,7 +1127,7 @@ that moves the offsets is found by `gatekit test` rather than by someone wonderi
 copies are slow.
 
 **Sound follows what you are looking at.** With the same rule: the tile in view is heard and the
-rest are muted, through `GK.Sound` (8.4; [lua-api.md](lua-api.md) section 8) and so through the game's own volume settings. With a
+rest are muted, through `GK.Sound` ([`sound`](#sound); [lua-api.md](lua-api.md#gksound)) and so through the game's own volume settings. With a
 grid and nothing clicked, nobody is being watched in particular and no copy is silenced. Each tile's
 caption carries a level bar and a mute; touching either pins that copy and the deck stops policing
 it, because listening to two fights at once is a legitimate thing to want. `GATEKIT_DECK_SOUND` /
@@ -1078,7 +1153,9 @@ its copy. GateKit never writes a firewall rule itself: that is a change to the m
 and the person makes it knowingly or not at all. Making a copy says the same thing before the game
 in it first starts, so the dialog is never a surprise.
 
-### 8.9 `names` and `wiki` (`src/GateKit.Names`, `src/GateKit.Wiki`)
+### `names` and `wiki`
+
+`src/GateKit.Names`, `src/GateKit.Wiki`.
 
 Neither needs a game.
 
@@ -1149,7 +1226,9 @@ name, a layout or a claim about what a system does, and a file in this repositor
 title and revision and says what it says in its own words, never in the wiki's (the wiki's text is
 CC BY-NC-SA or CC BY-SA; this repository is MIT).
 
-### 8.10 `mod`: what mods use of the engine (`src/GateKit.Mods`)
+### `mod`: what mods use of the engine
+
+`src/GateKit.Mods`.
 
 A static scan of a mod's text, and its files unpacked to be read. Nothing of a mod is executed or loaded; a `.pak` is read with
 GateKit's own package code, any other archive or binary is left alone. The extender's component
@@ -1168,7 +1247,9 @@ index Osiris names are not checked and goals and overrides are not read (said on
 `research/coverage/demand.jsonl` is committed: names and counts only, the header says which mods
 and which scanner produced it, so anyone can rebuild it from their own collection.
 
-### 8.11 `record`: the ledgers of the coverage record (`src/GateKit.Mcp/RecordTools.cs`, `RecordBook.cs`)
+### `record`: the ledgers of the coverage record
+
+`src/GateKit.Mcp/RecordTools.cs`, `RecordBook.cs`.
 
 No game needed. The record is `research/coverage` of the checkout the command is run in, else the
 one the program was built in (`--coverage DIR` names another); `--json` on every subcommand.
@@ -1182,11 +1263,11 @@ summaries.
 
 | Ledger | A row | Written by |
 |---|---|---|
-| `record/sightings.jsonl` | `{type, side (client\|server), time (UTC ISO), instance, role, run, stretch, level, label, source (tick\|trace), state (sighted\|repeated), capture, system?}` | `bg3_seen_new` and `bg3_seen_drain` ([mcp.md](mcp.md) 3.9); a passed replay of a coverage recipe (`state: repeated`, `label: replay of <recipe>`) |
+| `record/sightings.jsonl` | `{type, side (client\|server), time (UTC ISO), instance, role, run, stretch, level, label, source (tick\|trace), state (sighted\|repeated), capture, system?}` | `bg3_seen_new` and `bg3_seen_drain` ([mcp.md](mcp.md#the-ledgers-who-saw-what-when-and-the-wishes)); a passed replay of a coverage recipe (`state: repeated`, `label: replay of <recipe>`) |
 | `record/replays.jsonl` | `{recipe, time, instance, by (role), run, game (Ext.Utils.GameVersion), gatekit (informational version), ok, before, most, seconds, via (test\|systems check)}` - `before`/`most`: holders when the watch began and the most at once, from the recipe's `alive` | `test` and `run` for every test under `tests/_coverage` of a checkout that has `research/coverage` (pass or fail; a test not run is not written), and `systems check` for each claim |
 | `record/wishes.jsonl` | `{id (W-0001 and on), time, from, text, state (open\|sent\|fixed\|seen_live\|dropped), commit?, note?, was?}` - a change of state is a new row with the same id; the last row of an id is where it stands; `was` is another number the wish is known by (`3`, `D14`, `N41`) | `record wish`, `bg3_wish` |
 | `record/counts.jsonl` | `{time, run, definition, types, seen, never_seen, unseen_mapped, verified, fields, fields_named, fields_extender_unchecked, fields_named_unknown, fields_named_by_rung {game, toolkit, inferred, extender, unknown}, owed, systems_described, systems_sure, claims_written, claims_checked, claims_passed}` | `record tally --write` |
-| `findings.jsonl` | as `bg3_recipe` writes it ([mcp.md](mcp.md) 3.3): `evidence` (sighting\|repeated\|replayed\|field_value), `reached_by` (play\|cheat\|play_with_cheat_setup), `kind` (finding\|lead), free text only in `note`; a line whose recipe was removed has `recipe: null` and `moved_to` | `bg3_recipe` |
+| `findings.jsonl` | as `bg3_recipe` writes it ([mcp.md](mcp.md#evidence-enforced-by-the-schema)): `evidence` (sighting\|repeated\|replayed\|field_value), `reached_by` (play\|cheat\|play_with_cheat_setup), `kind` (finding\|lead), free text only in `note`; a line whose recipe was removed has `recipe: null` and `moved_to` | `bg3_recipe` |
 
 **Role, run and stretch** come from `bg3_seen_start`'s `role`, `run`, `stretch` (kept by that MCP
 server for the rest of its life), else `GATEKIT_ROLE`, `GATEKIT_RUN`, `GATEKIT_STRETCH`, else
@@ -1202,7 +1283,9 @@ tool host drives (`installed` for the installed game).
 | `wish set ID STATE [--commit C] [--note N]` | appends the wish's new state, its text, `from` and `was` carried over, the commit kept unless a new one is given | 1 for an unknown id or state |
 | `wish list [--state S]` | the wishes as they stand: `<id>  <state>  <from>: <text>` | 0 |
 
-### 8.12 `json`: GateKit's own data files (`src/GateKit.Json`)
+### `json`: GateKit's own data files
+
+`src/GateKit.Json`.
 
 No game needed. The rules are [data-format.md](data-format.md). The tree is `--root DIR`, else the
 checkout around the working folder (the first folder up with `schemas/index.json`); its `schemas/`
@@ -1216,7 +1299,9 @@ is used when it has one, else the schemas built into the program. A walk of the 
 | `show FILE [POINTER] [--limit N]` | any JSON or JSONL file for a person: an object as aligned `key  value` lines, containers below their key, an array of objects (a ledger's rows) as a table of at most `--limit` (50) rows. `POINTER` (RFC 6901; a ledger's rows are `/0`, `/1`, ...) shows one part | 1 when the pointer names nothing |
 | `schema KIND` / `schema --list` | the schema of a kind (`record/sightings` or `record/sightings/1`), or every kind with its version, what it is, and the paths and tools bound to it | 1 for an unknown kind |
 
-### 8.13 `sweep`: plans from the game's data, run with no model in the loop (`src/GateKit.Sweep`)
+### `sweep`: plans from the game's data, run with no model in the loop
+
+`src/GateKit.Sweep`.
 
 A large class of component types is reachable by plain enumeration of the game's own data: every
 boost a shipping stats entry carries, every status type and status flag, every functor and spell
@@ -1277,7 +1362,7 @@ makes sure of the dummies - temporary neutral humans from `GK.Stage.Spawn`, repl
 step was `fresh` (it changes its dummy beyond what `undo` takes back), failed, or `--fresh-every`
 steps have passed, and when one is dead or gone; runs `how`; lets `settle` game seconds pass; runs
 the `fallback` (label `...:direct`) when `expects` did not rise; asks `bg3_seen_new` (which writes
-the sightings, [mcp.md](mcp.md) 3.9); runs `undo`. Every `--drain-every` steps `bg3_seen_drain` moves the
+the sightings, [mcp.md](mcp.md#the-ledgers-who-saw-what-when-and-the-wishes)); runs `undo`. Every `--drain-every` steps `bg3_seen_drain` moves the
 samples and verifies in the tick of capture; the types it records as verified are put on the step.
 Each step's outcome `{index, id, ok, error, seconds, new [{type, side, step, by}], verified,
 fallback_used, hang, checked, check_note, blocked}` goes into the state file as soon as it is known; `--from` and the state file
@@ -1318,7 +1403,7 @@ each followed by a world reset. `--verify` ends the tour with `bg3_verify` on bo
 `record`, so the long-lived types of the level are compared too; the summary then has `verify`, and
 `disagreements` holds those of the drains and of the verification together.
 
-### 8.14 `mcp sequence`
+### `mcp sequence`
 
 `gatekit --instance <copy> mcp sequence <plan.json> [--set NAME=VALUE ...]` runs a plan of tool
 calls in one MCP server - one attention cursor, one connection - some of them side by side, and
@@ -1333,13 +1418,15 @@ the live attention proofs are `tests/_selftest/attention/*.json` (`fixture_event
 `dialogue_phases.json`, `roll_speed.json --set FAST=10`). It starts a wait and triggers an event a
 moment later from the toolkit alone.
 
-### 8.15 `decomp name`, `decomp names`, `decomp code`: functions named by evidence and our reading of them (`src/GateKit.Symbols/Decomp/FunctionNames.cs`, `Reading.cs`)
+### `decomp name`, `decomp names`, `decomp code`: functions named by evidence and our reading of them
+
+`src/GateKit.Symbols/Decomp/FunctionNames.cs`, `Reading.cs`.
 
 `decomp name <module+0xRVA> <name> [--source inferred] --evidence <text> [--evidence-kind <kind>]
 [--does <text>] [--coverage] [--dry-run]` gives the function that holds the address a name. The
 address may be anywhere inside the function, as `GK.Memory.Hits` reports an instruction; the name is
 placed at the function's start, found as `decomp at` finds it. Where the registry holds functions
-(`registry/`, 8.16) the name is its entry - `registry/functions/<scope>/<Name>.json` - and the
+(`registry/`, [`registry`](#registry-our-reading-of-the-games-code)) the name is its entry - `registry/functions/<scope>/<Name>.json` - and the
 function's row in the table of the build `decomp stamp` recorded for the binary, with its
 fingerprint; where it holds none, a row of `functions.jsonl` of the coverage record (schema
 `record/functions`). Our own words and facts, never code of the game.
@@ -1363,7 +1450,7 @@ rung, and how they stand together (below); `given_name`, `given_live`, `given_ru
 lists the names, or those whose row holds the text, the highest rung of a function first, a name
 in a clash marked so, and ends with `N names by evidence[, N guesses][, N names on the rung
 unknown] (N functions)`: a guess and a name on the rung `unknown` are not named by evidence. Both
-read the registry and the home's live layer (8.16.1): every live claim of a function is a name of
+read the registry and the home's [live layer](#the-live-layer): every live claim of a function is a name of
 its own, marked `(live)` - a guess beside an id too - and a live claim not yet committed takes the
 place of the registry's row of the same id.
 
@@ -1437,7 +1524,9 @@ types, in `structs.jsonl` of the coverage record, schema `record/structs`); a co
 with `names set`, in its layout. A machine's name (`field_...`) and a
 name without evidence are refused. `decomp struct [name]` lists the structures, or one's fields.
 
-### 8.16 `registry`: our reading of the game's code (`src/GateKit.Symbols/Registry`, `registry/README.md`)
+### `registry`: our reading of the game's code
+
+`src/GateKit.Symbols/Registry`; the rules are [registry/README.md](../../registry/README.md).
 
 `registry fingerprint <binary+0xRVA | id> [--json]` prints the facts about a function that are not
 code, read from the home's databases: what it calls (a callee by its registry id, one without by
@@ -1467,8 +1556,8 @@ Where the registry holds an entry kind, `names` and `decomp name`, `names`, `var
 `struct`, `at` and `code` read and write the registry for that kind; the coverage record's files
 of that kind are left as they are and are not written.
 
-`registry check [--strict] [--notes N]`: every entry valid against its schema and at the path of its
-id, ids unique across the kinds and by case, every build table sorted with each row in its shard and
+`registry check [--strict] [--verbose] [--notes N] [--full]`: every entry valid against its schema and at the path of its
+id (ids that differ only by case each at the path the README's rule gives), ids unique across the kinds, every build table sorted with each row in its shard and
 an entry for each id, `build.json` beside each build, every citation of code and of tests in the
 repository resolved (the prefixed mentions `code:<id>` and `test:<path>` in any text file, and the
 typed fields of the entries), and the refusals: a sentence that names the work (an agent's role, a
@@ -1476,14 +1565,53 @@ conversation), a date, a time of day, a model or a machine's path, or quotes the
 decompiler's names, a cast through a pointer); an empty sentence; a name on an applied rung without
 evidence that can confirm it; a guess without what it rests on; a variable with storage and a
 decompiler's name. Exit 1 on any refusal. Provenance and code inside evidence an import carried in from
-the coverage record's stores, and an unconfirmed entry with no question of how the game reaches it, are owed work,
-listed and counted (failures with `--strict`); an address where an id belongs, a variable known only
-by its temporary, a test's case and step not yet resolvable are notes. CI runs it.
+the coverage record's stores, and an unconfirmed entry with no question of how the game reaches it, are owed work
+(failures with `--strict`); an address in a sentence without its binary and build, a rung above what
+its evidence carries (the bar of `registry/README.md`, the function the writers apply), a variable known only
+by its temporary, a test's case and step not yet resolvable are notes. An address is never refused.
+Owed work and notes are counted in the last line, by rule - `0 refused, N owed (questions n, ...), M
+notes (address m, ...)` - and listed only with `--verbose`, `--notes N` of each kind. CI runs it with `--full`.
+
+What the check takes from each file - an entry's schema refusals, id, members, typed citations and
+the verdicts of its content alone; a text file's prefixed mentions - is kept in the home's
+`check-cache` (`<home>/cache/registry-check/`, one file a checkout) under the SHA-256 of the file's
+content, and a file whose content is unchanged is not parsed again; one whose size and time of
+writing are the ones kept with that hash is taken as unchanged without being read. The rules across
+files - a path by its id, one file an id, the build tables, every citation resolved, the places of
+the mods' data - run whole every time. The memory is dropped when the program's check or the schemas
+change. A line before the last says `N of M files read and checked; K unchanged since the last check
+gave what they gave then`; `--full` reads and checks every file and writes the memory anew. Both say
+the same verdict.
 
 `registry rename <old> <new>` renames an entry: its file moves, its rows in every build table and
 every citation of it or its members - in any text of the repository and in the entries' fields - are
-rewritten at once; the old id is left nowhere. `gatekit refs <id or test path>` lists every place
-that cites it, its members included.
+rewritten at once, the live layer's claims of the id move to the new one and the claims that cite it
+are rewritten, and a data file under `mods/` that holds places has the bare id under its keys `id`
+rewritten and its places written again; the old id is left nowhere. `gatekit refs <id or test path>`
+lists every place that cites it, its members included.
+
+`registry remove <id>` takes a committed entry out: its file, its rows in every build table, its live
+claims. Refused, exit 1, while anything outside the entry cites it.
+
+`registry tidy [scope] [--since <commit | A..B | time>] [--keep-rungs] [--dry-run]` does to committed
+entries (all, those whose id or `owner` starts with the scope, those git says were added or changed
+since) what a commit does to a note ([the live layer](#the-live-layer)): the source of each name from the stores, addresses in
+sentences made durable, sentences said twice kept once, every rung where its evidence carries it
+(not with `--keep-rungs`), unnamed duplicates folded. One line an act, then the counts; nothing is
+written with `--dry-run`.
+
+`registry digest [--since <commit | A..B | time>] [--json]` is the page read after a run that wrote
+into the registry. From git (the registry's files against the commit; default the checkout's last
+commit): the entries `added` by kind and rung, `changed`, `removed`, and how rungs moved. From the
+journal of the tools' own acts since the commit's time (`<home>/state/registry-live/journal.jsonl`,
+schema `state/registry-journal/1`, written by `note`, `commit`, `tidy` and `reanchor`): `lowered` and
+`raised` with why and the first ids, `above` (rungs standing above their evidence), `folded`,
+`names` found in a store by store and tie and how many stand under another name there, `addresses`
+turned into ids, written with binary and build, stale and not placed, `repeated`, `clashes` not
+settled and refusals. Last, `a person is needed: N`, one line an id with what to decide: a clash to
+settle, a store's other name to take or leave, a refusal. `--json` gives the same as one object
+(`since, added, changed, removed, rungs_moved, lowered, raised, above, folded, names, differs,
+addresses, repeated, clashes, refused, person`). Outside a git repository only the journal speaks.
 
 `registry mend` puts every build table back in order after a merge: sorted, each row in the shard of
 its id's top scope, a row twice kept once, a merge's marker lines dropped; two different rows for one
@@ -1504,50 +1632,120 @@ rules) - and the rest is listed `for a person` with the reason (no pair above th
 partner, the target's table holding the id at another address). One line per function (`moved` with
 the pair's state, rule, score and margin and whether the bodies are equal, differ or could not be
 compared), then the counts; the target's table and its binary's SHA-256 in `build.json` are written
-unless `--dry-run`. Without stored pairs of the two binaries it exits 1.
+unless `--dry-run`. Without stored pairs of the two binaries it exits 1. When source and target are
+one binary in two builds, the addresses the entries' sentences hold of the source build
+(`binary@build+0xRVA`) follow: one inside a function that moved with an equal body moves by the
+same offset and takes the target's build; any other is left as written and counted stale
+(`addresses in sentences: N moved with their functions to build B, N stale`).
 
-`registry questions [scope]` lists every open question of the entries (whose id starts with the
-scope): what is not known of a thing, above all how the game reaches it.
+`registry places FILE [--check]` writes into a JSON data file where the build tables put every
+function id the file names: every string under a key `id`, at any depth, is looked up, and the
+answer is written under the top-level key `places` as `{ <build>: { <binary>: { <id>: [rva, size] } } }`.
+Code that meets raw addresses in the game (the roll log, with the frames above a roll) names them
+from such a file and holds no table written by hand. An id with no place is printed (`no place:
+<id>`) and left out. `--check` writes nothing and exits 1 when the file's places are not the
+registry's.
+`registry check` refuses (rule `places`) a JSON file under `mods/` whose top-level `places` are not
+what the build tables hold now, so a table moved by a commit or a reanchor is not left stale in
+the mod.
 
-#### 8.16.1 The live layer
+
+`registry signature <id | name | binary+0xRVA> [--limit N]` prints a byte pattern for the start of
+a function, for every binary the registry places the id in (or for the one address given): whole
+instructions from the function's first byte, one a line as hex with its text after `//`, a byte
+that a relocation or another layout would change written `??` (the displacement of a RIP-relative
+operand, the target of a near call or jump, an absolute address), taken as far as is needed for
+the pattern to be found exactly once in the executable sections of the binary's file - at most
+`--limit` bytes (default 48). The first line says `found once, N bytes` or `NOT unique within the
+limit: K places`. It is what a hook or a Script Extender mapping is written from. Exit 1 when a
+binary's file cannot be read or a pattern is not unique.
+
+`registry mappings` is the binding layer between the registry and a Script Extender's table of
+byte patterns (`BinaryMappings.xml`: a pattern found once in the game's code, and the symbols it
+leads to - the place itself, or what an instruction there refers to). Its symbols are the
+registry's ids with `::` written `__`.
+
+| Command | What it does |
+|---|---|
+| `registry mappings check <file> [--limit N] [--verbose]` | reads a table written by hand and, for every symbol and every binary the registry has a table for, says where the pattern lands (found once), whether a function starts there, what the registry calls the place, and whether a pattern of the function's own start is found once within `--limit` bytes (default 64) - a mapping the registry could write itself. Counts per binary, then the symbols that do not land (a pattern found several times is one a condition of the table picks among; conditions are not read) and the places the registry calls otherwise; `--verbose` lists every symbol. Reads only |
+| `registry mappings emit <id>...` | writes a `<Mapping>` for each function from the registry alone: whole instructions from its start, as short as is found exactly once in EVERY binary the registry places it in, a byte that differs between the binaries written `??`; one `Target` of type `Absolute` at `@start` with the id as its symbol; a comment with the id and its place in each binary. A function with no such pattern within the limit gets a comment that says so; exit 1 then |
+| `registry mappings emit --all [--count]` | the same for every function the registry places in a binary; `--count` prints only the functions with no mapping and the count |
+| `registry mappings write <file> [--limit N]` | the registry's own table in one document: the mapping of `emit` for every function the registry names and places, each named `registry:<id>` with a target that names the registry's id itself (`Name`, no `Symbol`), the functions with no mapping as comments. A GateKit build of the extender reads it as `RegistryMappings.xml` beside its dll and answers every name it finds (`Ext.Debug.GetSymbolAddress`, `GetSymbolNames` with `Source = "registry"`, and the C entries `GateKitSymbolAddress` / `GateKitSymbolCount` / `GateKitSymbolName` of the dll); `se install <folder>` copies the table from the build folder with the dll. It scans both binaries for every function: minutes |
+| `registry mappings adopt <file> [--binary B] [--write]` | takes the names of the table's functions into the registry: every function the table leads to in the binary (default `bg3_dx11.exe`) that the registry does not name is noted in the live layer under the table's name at rung `extender`, the mapping as its evidence and a question of what it does; the tool looks the name up in the stores as for any note. Without `--write` it only says what it would note. Places that are not a function's start (data, a place inside a function) are left |
+
+`registry questions [scope]` lists every open question of the entries (whose id, or whose `owner`,
+starts with the scope): what is not known of a thing, above all how the game reaches it.
+
+#### The live layer
 
 The home's `state/registry-live/` is shared by every GateKit process on the machine, whatever
 checkout or branch it runs from: one file an id, `entries/<kind>/<scope>/<name>.json` (`kind`
 `functions`, `types` or `globals`; the id's scopes as folders), changed only under its lock,
 written whole, its format the schema `state/registry-live/1`; a settlement is
 `settled/<binary>/<build or any>/<rva>.json` (the binary's name escaped as a part of an id's
-path, `bg3%2Eexe`). A read sees every claim written before it.
+path, `bg3%2Eexe`). A read sees every claim written before it. `journal.jsonl` beside them is what
+the tools did by themselves, a line an act (`state/registry-journal/1`); `registry digest` reads it.
 
-- `registry note <id> [--kind function|type|global] [--at binary+0xRVA] [--rung R] [--does T]
-  [--about T] [--evidence kind:T]... [--test path]... [--rests-on T --would-confirm T] [--ask T]...
-  [--ask-about reach|conditions|meaning|other] [--field off:name[:type]]... [--who] [--task]` adds a
-  claim: the id's newest claim (else its committed entry) with what the note says over it, where the
-  function or global is (its start, its build), and who wrote it, when and for which task
-  (`GATEKIT_WHO`, `GATEKIT_TASK` by default). A guess without `--rests-on` and `--would-confirm` is
-  refused, and so is an entry its schema refuses.
+- `registry note <id> [--kind function|type|global] [--at binary+0xRVA [--snap]] [--rung R] [--does T]
+  [--about T] [--evidence kind:T]... [--test path]... [--amend] [--rests-on T --would-confirm T] [--ask T]...
+  [--ask-about reach|conditions|meaning|other] [--owner scope] [--field off:name[:type]]...
+  [--field-rung R] [--field-evidence kind:T]... [--who] [--task]` adds a
+  claim: what the id says now - its newest claim, or its committed entry once a commit has merged
+  that claim - with what the note says over it, where the function or global is (its start, its
+  build), and who wrote it, when and for which task (`GATEKIT_WHO`, `GATEKIT_TASK` by default). The
+  kinds of evidence are `watch`, `read`, `reach` (a counter showed it running in a situation),
+  `pairing`, `game-name`, `toolkit-name`, `extender-name`, `text`. The tools add by themselves, one
+  printed line each (`registry/README.md`, "What the tools do by themselves"): the `toolkit-name`
+  or `game-name` evidence of where the name comes from (`name found: ...`), a store's other name
+  for the function (`another name: ...`), and the rung its evidence carries (`lowered: <id>
+  confirmed -> inferred: <why>`). A sentence the entry already says is not added again; with
+  `--amend` each `--evidence` takes the place of the entry's newest of its kind (one a kind) and
+  each `--ask` of its newest open question of that subject. `--field` names a field with its own
+  `--field-rung` (default the note's) and `--field-evidence`. `--owner` is kept on an id under
+  `unplaced::` and left out, with a line, on any other. Refused: a guess without `--rests-on` and
+  `--would-confirm`; an entry its schema refuses; and `--at` an address that is not the start of
+  a function the databases know (`... is not the start of a function the database knows: it lies
+  in, or beside, the function at ...`) - `--snap` takes the function the address falls to and
+  prints where it landed.
 - `registry withdraw <id> [--all] [--who W]` takes claims back out, under the id's lock: the id's
   newest claim (the claim before it is what the id says again), or with `--all` every one, and the
   id's file goes when none is left; `--who` takes only that writer's claims. Gone for every reader
   at once; what a checkout committed stays. It prints each claim withdrawn and what the id says now;
   no claim of the id (of that writer) is refused, exit 1.
-- `registry at <binary+0xRVA> [--json]`: the function that holds the address, its names in the
-  databases, the committed ids there and the live claims, each marked live or committed.
-- `registry show <id or another source's name> [--json]`: the committed entry with its places, and
-  the live claims.
+- `registry at <binary+0xRVA | binary@build+0xRVA> [--json]`: the function that holds the address, its names in the
+  databases, the committed ids there and the live claims, each marked live or committed. The second
+  form is the one sentences hold: the tables of that build answer, with a `note` when the databases
+  at hand are of another.
+- `registry show <id or another source's name> [--json]`: whose the name is by the entry's evidence
+  (`name  ours`), the committed entry with its places, and the live claims.
 - `registry clashes`: two different ids claimed for one function, among the live claims or against
-  the committed table, not settled: both kept, the higher rung first. `registry settle
+  the committed table, not settled: both kept, the higher rung first. An `unnamed_*` id beside a
+  named one is no clash. `registry settle
   <binary+0xRVA> (--keep <id> | --folded)` settles one: one id stays, or the ids stand together
   (the linker folded identical code).
-- `registry commit` writes the live layer into this checkout's registry in its one canonical form:
+- `registry commit [--dry-run]` writes the live layer into this checkout's registry in its one canonical form:
   each id's newest claim merged over its entry, its place in the build's table. Who, when and which
-  task stay in the live layer. An id in a clash not settled is held (the others are committed), an id
+  task stay in the live layer. A claim is merged once: one a commit already merged into an entry
+  this checkout holds is passed over, so what is written into the entry afterwards stands. On the
+  way in the tools do what `registry/README.md` lists under "What the tools do by themselves" and
+  "Citing code and tests", a line each under the entry's own: the source of the name, an address
+  of a named function turned into `code:<id>` and any other written `binary@build+0xRVA`
+  (`addresses: <id> - N turned into ids, N written with binary and build, N not placed`), a
+  sentence said twice kept once, the rung where the evidence carries it; then an `unnamed_*` id
+  at the address of a named one is folded into it (`folded: <unnamed> into <id>`). An id in a clash
+  not settled is held (the others are committed), an id
   a settlement dropped is left out, an entry whose new sentences the check refuses is refused, and an
-  entry the checkout already holds as it is is not written again.
+  entry the checkout already holds as it is is not written again. `--dry-run` prints all of it
+  (`would commit: ...`) and writes nothing. A claim carries the size of the
+  one part of the function its address is in, so after writing, the build tables' rows are stamped
+  as `registry stamp` does - the whole function's size, its split-off parts included, and the hash
+  of its body; where the databases are not at hand the rows stay as the claims gave them and a
+  line says so.
 
 The MCP tools `bg3_registry_note`, `bg3_registry_withdraw`, `bg3_registry_at` and `bg3_registry_show` do the same
 (`docs/contracts/mcp.md`).
 
-### 8.17 `mcp config`
+### `mcp config`
 
 `gatekit --instance <copy> mcp config [--out <folder>]` prints, or writes as `<folder>/.mcp.json`,
 the registration of the MCP server for one game copy: `command` is this build's own program (when
@@ -1557,7 +1755,31 @@ refuses with exit 1: a registration that names none would drive the installed ga
 repository's own `.mcp.json` starts the server with `dotnet run --no-build`, so it never builds
 under running games, and sets `GATEKIT_INSTANCE` to `agent` unless the environment names another.
 
-### 8.18 `symbols describe-systems` (the symbols layer of the systems' descriptions)
+### `symbols`: the symbol database's queries
+
+`src/GateKit.Symbols/SymbolsCommands.cs`. `gatekit symbols <query>` reads the symbol database (`--db`, default `BG3_SYMBOLS_DB` or the
+home's `symbols/symbols.sqlite`; `symbols build` makes it, `symbols install` fetches one) and
+needs no game and no copy. A missing database, or a name it does not hold, is said in one line,
+exit 1. How to use them together: [offline-databases.md](../offline-databases.md).
+
+| Query | Answers |
+|---|---|
+| `find <text>...`, `classes <text>...`, `class <name>` | qualified names that hold every word (and, for `find`, the macOS build's functions); classes; every exported member of one class |
+| `strings <text>...`, `types <text>...`, `ecs <text>... [--context C]` | text constants and the functions that use them; type names kept in the executable; ECS types with their registration context and where the index is kept |
+| `game [text]... [--unnamed]`, `se [text]... [--report]` | Toolkit functions found again in the game's executable; symbols Script Extender's patterns locate there |
+| `layout <name>`, `fields <name>`, `enum <name>` | a type's fields with offsets; a class's fields from the Toolkit's accessors and Script Extender's layout; an enumeration's values |
+| `callers <text>`, `callees <text>`, `users <text>... [--per N] [--callers [DEPTH]]` | direct callers and callees of a function (`binary+0xRVA` or part of a name); the functions that touch an ECS type's index, a virtual table or a Script Extender symbol |
+| `system <name>`, `vtable <name or binary+0xRVA>` | one ECS system: registration, components, methods, virtual table, addresses; the slots of a virtual table |
+| `savemodel <name>`, `replication <name> [--code]` | how a component is written to a save (functions, model versions with sizes); a replicated component's registration, handler tables and fields |
+| `signature <text> [--limit N]` | a byte signature for a game function in Script Extender's mapping syntax (the registry's own is `registry signature`) |
+| `export [--format json\|ghidra\|x64dbg\|ida] [--dll B] [--out FILE]` | every name known for an executable, for a debugger or a disassembler |
+| `importers <text>`, `stats`, `strings-managed <assembly>` | which binaries import matching exports; what the database holds; string literals per method of a .NET assembly, read without loading it |
+
+The searching queries share `--dll` (a part of the file name), `--kind`, `--limit` (default 200),
+`--mangled` and `--full`. The rest of `symbols` - `describe-systems`, `se-layouts`, `creators`,
+`digest`, `meta-layouts` - has a section each below.
+
+### `symbols describe-systems` (the symbols layer of the systems' descriptions)
 
 `gatekit symbols describe-systems [--out research/coverage/systems] [--ns PREFIX] [--survey CSV]
 [--dll bg3_dx11.exe]` writes, for every system of `--survey` (default `<out>/survey.csv`, its
@@ -1586,7 +1808,7 @@ the compiler inlined, those deeper than depth 2, and what a method other than th
 `N written (M new), K unchanged, of T systems listed; in <folder>`. A file that is not a JSON
 object is an error (exit 1), nothing written to it; `--dll` absent from the database is exit 1.
 
-### 8.19 `symbols se-layouts` (layouts from Script Extender's declarations, for review)
+### `symbols se-layouts` (layouts from Script Extender's declarations, for review)
 
 `gatekit symbols se-layouts --out DIR [--coverage research/coverage] [--ns PREFIX]` writes
 `DIR/<engine name with :: as .>.json`, in the layout-file shape of `research/coverage/layouts`, for
@@ -1604,13 +1826,13 @@ arguments too), `status: "declared"`, `from`, `names` (why the rung is `extender
 record's layouts: `gatekit names take DIR` checks the files and moves those that hold together. It prints
 `N layout files written to DIR; K mapped types already have one; M ... have no declaration`.
 
-### 8.20 `symbols creators` (who adds a component)
+### `symbols creators` (who adds a component)
 
 `gatekit symbols creators NAME [--dll BINARY]` lists the functions that call an `add` helper of the
 component (`ecs_helpers` of decomp.sqlite, `gatekit decomp helpers`), in `bg3_dx11.exe` and then
 `bg3.exe` (or only `--dll`), one line each:
 `<binary>+0x<rva>  <function name>  (adds through <binary>+0x<helper>)  update of <systems>` - the
-last part when a system's per-frame update reaches the function (the walk of `uses`, 8.18). NAME
+last part when a system's per-frame update reaches the function (the walk of `uses`, [`describe-systems`](#symbols-describe-systems-the-symbols-layer-of-the-systems-descriptions)). NAME
 is the component's full name or the end of it after `::` when only one component ends so. It prints
 `<type>: N functions add it, M of them reached from a system's update (depth 2); K systems` to the
 error stream. A component no add helper is known of is said (`no add helper of ... is known`),
@@ -1618,7 +1840,7 @@ exit 0; several components ending with NAME are listed; decomp.sqlite without `e
 1 with the command that makes it. What is added inline (no helper) or through a command buffer the
 helpers do not cover is not seen.
 
-### 8.21 `symbols digest` (what a system's update does, in facts)
+### `symbols digest` (what a system's update does, in facts)
 
 `gatekit symbols digest SYSTEM [--dll BINARY] [--json]` prints, for `bg3_dx11.exe` and `bg3.exe`
 (or only `--dll`), what a model needs to describe the system - names, addresses, short conditions
@@ -1628,7 +1850,7 @@ and short texts, never a function body:
 |---|---|
 | header | the system and its namespace; one line per row of `system_updates` (entry, update, the update's name when it has one, the note) |
 | counterparts | the Toolkit function the update is matched to (symbols.sqlite `matches`: method and relation; decomp.sqlite `code_matches`: score and margin, "weak" below 0.6 / 0.2) or "no matched Toolkit function"; the macOS build's `ecs::_private::SystemRegistrationHelper::SystemUpdate<SYSTEM>` (by name: certain) and the class's methods by name |
-| operations | the component operations of `uses` (8.18) in call order (the update's own by call site, then those of each function in the order the update calls it), one line each: number, kind, type, the function, the site, `[confidence, depth]` and the guard; identical neighbours are one line `(xN)` |
+| operations | the component operations of `uses` ([`describe-systems`](#symbols-describe-systems-the-symbols-layer-of-the-systems-descriptions)) in call order (the update's own by call site, then those of each function in the order the update calls it), one line each: number, kind, type, the function, the site, `[confidence, depth]` and the guard; identical neighbours are one line `(xN)` |
 | calls out | named functions the update calls; Osiris and stats functions called by the update or a function it calls; other systems (their methods, and `TypeIndex<X>_SystemsContext` read: their queue or state) |
 | constants, strings | the constants of the guards; texts with a space (logs, asserts), identifiers and FixedStrings the update and its callees refer to, each cut at 60 characters |
 | unknowns | unnamed functions the update calls (count, the largest), helpers of no known family, component indices read inline (an operation the list cannot show), fields the record has no name for, types without a layout, operations without a call site, why guards were not extracted |
@@ -1667,12 +1889,14 @@ terms can be the decompiler's locals (`lVar4 != 0`, `[lVar5+0x20]`): "extracted"
 was read, not that it is readable. decomp.sqlite missing, or without `system_updates`, is
 exit 1; neither a name nor `--all` is exit 1.
 
-### 8.22 `leads`: what to try next for each type never seen alive (`src/GateKit.Leads`)
+### `leads`: what to try next for each type never seen alive
+
+`src/GateKit.Leads`.
 
 `gatekit leads build | next | report | list | tally`, all with `--coverage FOLDER` (default
 `GATEKIT_COVERAGE`, else `research/coverage` of the checkout) and `--json`. The file is
 `research/coverage/leads.jsonl`, one JSON object per line, sorted by type, LF endings; `build`,
-`next` and `report` write it under the coverage record's lock (8.11). No game is needed.
+`next` and `report` write it under the coverage record's lock ([`record`](#record-the-ledgers-of-the-coverage-record)). No game is needed.
 
 `build [--decomp DB] [--symbols DB] [--index DB] [--no-wiki]` writes one row per type the ledger
 calls `unseen` (mapped, never seen alive), plus every row the file already held. It reads
@@ -1687,7 +1911,7 @@ the row's `hand` array; the tries read from the runs' prose are read again each 
 | `class` | the first line of `Rules.ClassByName` that matches the name: `online_ugc`, `editor_debug`, `split_screen_controller`, `multiplayer`, `boost`, `cinematic`, `lifecycle`, `gameplay_event`, `gameplay_state`; an entry on a load/save path makes a gameplay class `lifecycle` |
 | `reachable` | by class (`solo`, `needs_pad`, `needs_two_copies`, `needs_network`); `unknown` for a solo type nothing is known to add; `not_in_shipping_game` when nothing adds it and no more than two functions of `bg3_dx11.exe` read its index (its registration) |
 | `index_users` | functions of `bg3_dx11.exe` that read the type's index (symbols.sqlite `ecs_ids` + `xrefs`) |
-| `creators` | up to 12 of `{system, function, name?, binary, site, depth, confidence}`: the adds of the systems' facts (`symbols.uses`, 8.18), then the callers of the type's add helpers in `bg3_dx11.exe`, then the callers of the macOS build's add templates found by name (`confidence: "name"`); `creators_more` counts the rest |
+| `creators` | up to 12 of `{system, function, name?, binary, site, depth, confidence}`: the adds of the systems' facts (`symbols.uses`), then the callers of the type's add helpers in `bg3_dx11.exe`, then the callers of the macOS build's add templates found by name (`confidence: "name"`); `creators_more` counts the rest |
 | `entry` | `{kind, detail, depth, function, basis, guard?, condition?}`: see below; `{kind: "unknown"}` when the walk reaches nothing |
 | `data` | `{what, where}`: for a boost, the stats entries whose boost fields call it (count, up to five, shipping first); for a functor entry, the entries whose functor fields call it; for an Osiris entry, its story uses; an Osiris call whose name holds the type's own words (`Rules.Core`) is listed as evidence `by name` |
 | `wiki` | a bg3.wiki title equal to the display name of the first spell, status or passive of `data` (at most 300 asks per build; cached) |
@@ -1707,7 +1931,7 @@ client's copy made from the server's; used only when nothing else is found). Fro
 the walk goes on through the functions that read that system's index - those that hand it its
 requests - when there are at most 8 (`basis: "queue"`); `guard` lists the components the update
 reads when there are at most 6. For a `system_update` entry that is not reached through a queue, `condition` is
-the guard of the call that creates the type (8.21), of both levels for a depth-2 creator: the
+the guard of the call that creates the type ([`symbols digest`](#symbols-digest-what-a-systems-update-does-in-facts)), of both levels for a depth-2 creator: the
 first creating operation of the system, shallowest first, whose guard names something; its place
 among the calls of the same helper in its function is that of its site. Only the terms that name
 a component (`has(T)`), a field (`T.Field`), a named call's answer (`World::IsEntityAlive()`) or a
@@ -1732,13 +1956,18 @@ outcome or instrument, or a type with no lead, is exit 1 and nothing is written.
 reachability, entry and instrument, with the class x state x reachable table and the ceiling: every
 lead minus `not_in_shipping_game`.
 
-### 8.23 `decomp` (`src/GateKit.Symbols/Decomp`, `tools/ghidra`)
+### `decomp`
+
+`src/GateKit.Symbols/Decomp`, `tools/ghidra`.
 
 The subcommands: `run load refresh serve code at name names vars field struct grep systems helpers
 tally pair queries match matches fixedstrings dotnet csharp status stamp vtable` (`at`, `name`,
-`names`, `vars`, `field`, `struct` and `code`: 8.15). `GateKit.Symbols` has two command factories the command line finds:
+`names`, `vars`, `field`, `struct` and `code`: [above](#decomp-name-decomp-names-decomp-code-functions-named-by-evidence-and-our-reading-of-them)). `GateKit.Symbols` has two command factories the command line finds:
 `SymbolsCommands.CreateCommand()` (`symbols`) and `DecompCommands.CreateCommand()` (`decomp`, with
-`vtable` added from the symbol side). Settings are the environment's: `BG3_DECOMP_WORK` (the work
+`vtable` added from the symbol side). `symbols find <text>...` lists the Toolkit's exports whose
+declaration holds every word and, after them, the functions of the macOS build whose name does
+(`bg3_macos_x64+0xRVA  <name>`, read from the pseudo-code database; left out with `--kind`, with a
+`--dll` that is another binary, or without that database). Settings are the environment's: `BG3_DECOMP_WORK` (the work
 folder: one folder per binary with its Ghidra project and the decompiler's export `pseudocode.jsonl`
 - an export named `functions.jsonl` is renamed by the first `run`, `load` or `refresh` that
 meets it - and `decomp.sqlite`;
@@ -2046,3 +2275,32 @@ invents it.
 
 The summary says `N names and M structures and K component helpers [and J functions of systems] applied`.
 `--dry-run` counts the helpers that changed and their callers.
+
+### `calls`: how often the program is called
+
+`src/GateKit.Cli/CallJournal.cs`.
+
+Every call of the program appends one line to `<state>/calls/journal.jsonl` (schema `state/calls`)
+as it ends: the time, the command's words (never the values of its arguments or options), the
+milliseconds from the process's start to its end and until the command began, the exit code, and
+whether it ran from the launcher's publish (`artifacts/`), a build in `bin` or elsewhere.
+`GATEKIT_CALLS=0` writes nothing; a journal that cannot be written is left alone. `calls [--since
+TIME] [--top N]` prints the number of calls, their durations (median, p90, p99, max, the sum), the
+time before the commands began, the calls by where the program ran from, and the commands by count.
+
+The launcher `./gatekit` runs a Release build published ReadyToRun into `artifacts/gatekit/run-*`,
+a folder no `dotnet build` writes, each publish a folder of its own. When a build in `bin` is newer
+than the publish, that call and those during the new publish run the build in `bin` while the
+publish is made in the background (`artifacts/gatekit/publish.log`); with neither, the first call
+publishes and waits, and builds into `bin` if the publish fails. `GATEKIT_PUBLISH=0` runs the build
+in `bin` and never publishes.
+
+### `symbols meta-layouts` (layouts from the engine's metadata, against the confirmed ones)
+
+`symbols meta-layouts [--ns PREFIX] [--top 20]` reads nothing but the registry and the symbol
+database: for every type of the registry made from a layout whose survey status is `confirmed`, the
+facts `names suggest` reads (FieldMeta with the macOS names, the Toolkit's accessors) that place a
+field are held against the layout's fields. It prints how many fields the metadata gives an offset,
+a name settled by itself (against the names on an applied rung and against Script Extender's) and a
+size equal to the layout's where both types say one; the types it places most in; and every
+difference, one line each. The finding: [research/studies/layouts-from-metadata.md](../../research/studies/layouts-from-metadata.md).

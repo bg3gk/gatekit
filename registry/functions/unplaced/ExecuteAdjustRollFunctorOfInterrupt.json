@@ -1,0 +1,41 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ExecuteAdjustRollFunctorOfInterrupt",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Executes an interrupt's AdjustRoll functor on the roll it interrupts: evaluates the functor's dice expression (Bardic Inspiration's die) through the expression evaluator, which the registry does not name, and adds the result to the roll's RollAdjustments, which esv::interrupt::ResolveRollAdjustmentsForRoll then turns into the new total.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:29d30deb89b59e38",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3bba8475365606e0",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:9cf846c45c116fc3",
+      "fp:9e24d4c02110e384",
+      "fp:a4fcd6458dbd5380",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "ls::thoth::shared::ContextData::ContextData",
+      "thoth::shared::ContextData::Destroy"
+    ],
+    "components": ["esv::StatsSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "called from esv::ExecuteStatsFunctor_InterruptContext; builds a thoth ContextData, calls 0x1052660 on the expression and looks the roll up in the RollAdjustments map (0x14378B600)"
+    },
+    {
+      "kind": "watch",
+      "says": "frame of the return chain of the Generic one-die roll thrown when Interrupt_BardicInspiration_SavingThrow was used on a Sacred Flame save (natural 6, then the save's bonus +0x4 rose by it); from esv::interrupt::UseInterrupt's call 0x3786EE0 through the extender's functor hook"
+    }
+  ]
+}

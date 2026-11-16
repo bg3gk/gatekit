@@ -1,0 +1,19 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::TLPreviewDummyHelpers::AttachDummyToScene",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Puts a loaded dummy's visual into a scene: when the dummy has a visual resource and its entity is alive it attaches the entity's visual to the scene given as the third parameter.",
+  "fingerprint": {"calls": ["fp:10aeb129f42cb8df", "fp:45dc6e5176859392", "fp:5227b96c8688ff31"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It tests the dummy's 0x54 against the empty id, reads the entity's scene data and calls ls::VisualHelpers::AttachToScene with the scene; the Toolkit's ecl::TLPreviewDummyHelpers::AttachDummyToScene(WorldView&, TLPreviewDummy*, Scene*) has the same parameters."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts records 27 calls, each from one of the two callbacks the timeline system runs when a dummy's load has ended, with the level's scene as the third argument."
+    },
+    {"kind": "toolkit-name", "says": "ecl::TLPreviewDummyHelpers::AttachDummyToScene"}
+  ]
+}

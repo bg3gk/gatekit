@@ -1976,7 +1976,7 @@ local function forgetGlobals(base)
 end
 
 --- What lives outside the level and so outlives a level load (measured 2026-11-14: the engine's
---- global switches do; the list is docs/contracts/lua-api.md 14): the game speed as GK.Speed holds
+--- global switches do; the list is docs/contracts/lua-api.md, "What survives a level load"): the game speed as GK.Speed holds
 --- it and every plain value of Ext.Utils.GetGlobalSwitches(). { speed, switches }.
 function Stage.OutOfLevel()
     local switches = {}

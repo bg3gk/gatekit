@@ -1,0 +1,22 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::StatsDamage::StringVisit",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Writes a hit's damage of one type into a StatsExprStringBuilder: visits the resolved stats expression at +0x20 (each roll through the builder's StatsRoll), then the damage modifiers of the lists at +0x80 and +0x10 that match the type, then the multiplier at +0xD0.",
+  "fingerprint": {"calls": ["fp:5227b96c8688ff31", "fp:72b4801e8e903ffc", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the symbol builds name it; the same visit of +0x20, the two lists of 0x90-byte items filtered by the type byte at +8 and the builder's slots +0x28 and +0x30 as the symbol build's eoc::StatsDamage::StringVisit"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe over a weapon hit shows 1 call from inside unplaced::CombatLogDamageRollTooltipLine; the damage roll's StatsRoll write is reached from bg3_dx11.exe@25605617+0xF1883F (bg3_dx11.exe@25605617+0xF187F0) below it"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; the symbol database finds the export again in the executable at this function by the likeness of the two pseudo-codes"
+    }
+  ]
+}

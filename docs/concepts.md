@@ -28,9 +28,12 @@ interface's own context. The whole protocol: [contracts/bridge-protocol.md](cont
 party, scenes and dialogues, the engine's components, staging a scene, the game's speed, the
 interface. The API's reference is [contracts/lua-api.md](contracts/lua-api.md).
 **[Weave](../mods/Weave/README.md)** is separate and usable on its own: in-game windows written as
-`.weave` files. Both need **GateKit's build of Script Extender**
+`.weave` files. **[GateKit AI](../mods/AI/README.md)** (`mods/AI`) stands on GateKit's verbs: four
+tools for an AI agent that plays, each answer carrying what changed since the agent's previous
+call. All of them need **GateKit's build of Script Extender**
 ([bg3gk/bg3se](https://github.com/bg3gk/bg3se)), which `gatekit se install` fetches; on the stock
-extender the mods load and the bridge stays silent.
+extender the mods load and the bridge stays silent. What that build adds, and how a modder uses
+it, is its own [GATEKIT.md](https://github.com/bg3gk/bg3se/blob/gatekit-native/GATEKIT.md).
 
 ## The home
 
@@ -89,6 +92,15 @@ again by the cheapest reset rung that holds, verified each time: `fixture`, then
 Every verb of the API is **fair** (what a player could do, the player's way), a **cheat** (it sets
 the world directly) or an **observation** (it changes nothing), and its namespace says which. The
 rules: [api-rules.md](api-rules.md).
+
+## The registry
+
+Our reading of the game's machine code - functions, types, globals, and where each lies in every
+build - is one registry in the repository (`registry/`), from which every other store is derived:
+the decompiler's names, the tables a build of Script Extender reads (`RegistryMappings.xml`), the
+roll log's places. A claim enters it with its evidence and a rung that says how sure it is. With
+the tests it is one of the two things the project holds strictly. The rules:
+[registry/README.md](../registry/README.md); the commands: [contracts/cli.md](contracts/cli.md#registry-our-reading-of-the-games-code).
 
 ## What needs no game
 

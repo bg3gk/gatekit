@@ -1,0 +1,57 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::GetSuccessSkillCheckString",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Gives the translated text shown when a skill check succeeds, one localisation handle per skill.",
+  "fingerprint": {
+    "calls": ["fp:36ea95f2ce33bd6a", "fp:74095d1efd9aa634", "fp:e4d053ad9455ea7c"],
+    "strings": [
+      "0e7ebef532de14f8",
+      "0ef0a9a737b8cb28",
+      "1bdb0a0929d5a399",
+      "32a3c71be94c8879",
+      "3532a997a6179829",
+      "45aa35795d390228",
+      "5f2c2831718c6d92",
+      "62e0438539a06b1b",
+      "63d9dbfe13375147",
+      "6d54d42935b67577",
+      "84bb4c6f5ce9e0f9",
+      "a9730ab0e627c147",
+      "b11bafc63a2eaf09",
+      "b8c5f669fac3b4f9",
+      "d171a41edef75b9d",
+      "e01b23e5cef59bd9",
+      "f078bcf26d4365c0",
+      "f721f8f6fb540c31"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "a switch over the skill id building TranslatedStrings from fixed handles; chosen by its caller when the roll's skill id is below 0x12 | A counter on every function over a play of the prologue shows it called only while a dialogue was on (segment 5), once from 1 place, the active-roll result text code at code:unplaced::UpdateActiveRollResultText"
+    },
+    {
+      "kind": "read",
+      "says": "a switch over the skill id building TranslatedStrings from fixed handles; chosen by its caller when the roll's skill id is below 0x12"
+    },
+    {
+      "kind": "watch",
+      "says": "a counter on every function over a play of the prologue shows it called only while a dialogue was on, once from 1 place, the active-roll result text code at code:unplaced::UpdateActiveRollResultText"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCShared.dll",
+      "tie": "match",
+      "says": "EoCShared.dll exports this name; the symbol database matches the export to this function by strings"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A passed dialogue skill check with the returned text read would show the line per skill.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

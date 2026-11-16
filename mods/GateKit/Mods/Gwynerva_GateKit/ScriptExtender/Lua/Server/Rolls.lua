@@ -19,13 +19,7 @@
 GK.Rolls = GK.Rolls or {}
 local Rolls = GK.Rolls
 
---- Each verb's class, for the fair/cheat/observation split.
-Rolls.Class = {
-    Pin = "cheat", Unpin = "cheat", Pins = "observation", Kinds = "observation",
-    Karmic = "observation", SetKarmic = "cheat", Finished = "observation",
-    Inspiration = "observation", SetInspiration = "cheat", Streams = "observation", SetStreams = "cheat",
-    WriteInspiration = "cheat", WriteKarmic = "cheat", WriteStreams = "cheat",
-}
+-- Each verb's class is in the registry of verbs (Shared/VerbClasses.json), which sets GK.Rolls.Class.
 
 local CAUSE = "GKPin"
 local FIXTURE = "Rolls"
@@ -358,7 +352,8 @@ local function modifiersOf(rolled)
     try(function() for skill, v in pairs(md.SkillBonuses) do add("skill " .. tostring(skill), v) end end)
     try(function() for ability, v in pairs(md.AbilityBoosts) do add("ability " .. tostring(ability), v) end end)
     add("proficiency", try(function() return md.ProficiencyBonus end))
-    add("roll bonus", try(function() return md.RollBonus end))
+    -- md.RollBonus is not a term: it is a sum the game keeps of terms listed here already (the roll
+    -- bonuses of a check; the proficiency and the roll bonuses of an attack). Listed, it counted twice.
     add("high ground", try(function() return md.HighGroundBonus end))
     add("low ground", try(function() return -md.LowGroundPenalty end))
     for _, list in ipairs({ "ResolvedRollBonuses", "FixedRollBonuses" }) do
@@ -637,6 +632,241 @@ function Rolls.WriteStreams(list)
         if spec.seed ~= nil then back.stream.State.Seed = spec.seed end
         if spec.rolls ~= nil then back.stream.State.NumRolls = spec.rolls end
     end
+end
+
+-- The game's generator (Server/RollGenerator.lua, loaded after this file).
+local function outputs(seed, upto) return Rolls.Generator.Outputs(seed, upto) end
+local function face(x, faces) return Rolls.Generator.Face(x, faces) end
+local function drawnAt(count, k) return Rolls.Generator.DrawnAt(count, k) end
+
+local function oneStream(spec, verb)
+    if type(spec) ~= "table" or type(spec.type) ~= "string" then
+        error("GK.Rolls." .. verb .. "{ type, player, combat, ... }: the stream's type, got " .. tostring(spec and spec.type), 3)
+    end
+    local found = matching(spec)
+    if #found > 1 then error(("GK.Rolls.%s: %d streams of type %s - name the player or the combat"):format(verb, #found, spec.type), 3) end
+    return found[1] and found[1].read
+end
+
+--- The dice the stream `spec` names gives to its next roll, computed from its seed and count and
+--- not drawn: { ok, type, player, combat, seed, rolls, dice = { ... } }. `spec.dice` is how many
+--- dice the roll draws (default 2: the game draws a pair for every d20 roll and keeps the first
+--- unless advantage or disadvantage chooses), `spec.faces` their faces (default 20), `spec.rolls`
+--- a count to compute from instead of the stream's own. A roll forced by Karmic Dice, a die
+--- thrown again by a reroll boost and a die replaced by a guaranteed-outcome boost are not these.
+function Rolls.Next(spec)
+    local s = oneStream(spec, "Next")
+    if not s then return { ok = false, error = "no stream of type " .. spec.type .. " (the game makes a stream at its first roll)" } end
+    local dice, faces, count = spec.dice or 2, spec.faces or 20, spec.rolls or s.rolls
+    if not (integer(dice) and dice >= 1 and dice <= 64) then error("GK.Rolls.Next: dice is a whole number from 1 to 64, got " .. tostring(spec.dice), 2) end
+    if not (integer(faces) and faces >= 2) then error("GK.Rolls.Next: faces is a whole number from 2, got " .. tostring(spec.faces), 2) end
+    if not (integer(count) and count >= 0) then error("GK.Rolls.Next: rolls is a whole number from 0, got " .. tostring(spec.rolls), 2) end
+    local out = outputs(s.seed, drawnAt(count, dice - 1))
+    local list = {}
+    for k = 0, dice - 1 do list[#list + 1] = face(out[drawnAt(count, k)], faces) end
+    return { ok = true, type = s.type, player = s.player, combat = s.combat, seed = s.seed, rolls = count, dice = list }
+end
+
+local SEARCH = 4000   -- counts looked through for a wanted die; one in `faces` fits (one in its square for both dice)
+
+--- Chooses the natural die of the next d20 roll drawn from the stream `spec` names, for the
+--- length of the stage scope: moves the stream's count forward to the nearest one at which the
+--- first die of the pair is `spec.die` and, with `spec.both`, the second too (so that advantage
+--- and disadvantage keep it as well). One roll is chosen: the roll after it draws what the
+--- stream gives at the count it is left at. `spec.faces` (default 20) and `spec.dice` (default 2)
+--- describe another roll, every die of which is then `spec.die` with `both`. Not chosen: a roll
+--- Karmic Dice forces, a die a boost throws again or bounds, a die replaced outside the streams.
+--- Refused outside a scope. { ok, type, player, combat, seed, rolls, was, dice }.
+function Rolls.SetNext(spec)
+    local s = oneStream(spec, "SetNext")
+    needScope("SetNext")
+    if not s then return { ok = false, error = "no stream of type " .. spec.type .. " (the game makes a stream at its first roll)" } end
+    local dice, faces = spec.dice or 2, spec.faces or 20
+    if not (integer(faces) and faces >= 2) then error("GK.Rolls.SetNext: faces is a whole number from 2, got " .. tostring(spec.faces), 2) end
+    if not (integer(dice) and dice >= 1 and dice <= 4) then error("GK.Rolls.SetNext: dice is a whole number from 1 to 4, got " .. tostring(spec.dice), 2) end
+    if not (integer(spec.die) and spec.die >= 1 and spec.die <= faces) then
+        error(("GK.Rolls.SetNext: die is a whole number from 1 to %d, got %s"):format(faces, tostring(spec.die)), 2)
+    end
+    local last = s.rolls + SEARCH
+    local out = outputs(s.seed, drawnAt(last, dice - 1))
+    for count = s.rolls, last do
+        local fits = face(out[count], faces) == spec.die
+        if fits and spec.both then
+            for k = 1, dice - 1 do fits = fits and face(out[drawnAt(count, k)], faces) == spec.die end
+        end
+        if fits then
+            local set = Rolls.SetStreams{ { type = s.type, player = s.player, combat = s.combat, rolls = count } }
+            local list = {}
+            for k = 0, dice - 1 do list[#list + 1] = face(out[drawnAt(count, k)], faces) end
+            return { ok = set.ok, type = s.type, player = s.player, combat = s.combat, seed = s.seed, rolls = count, was = s.rolls, dice = list }
+        end
+    end
+    return { ok = false, error = ("no count within %d of %d gives the die %d"):format(SEARCH, s.rolls, spec.die), rolls = s.rolls }
+end
+
+-- ---------------------------------------------------------------------------------------
+-- Rig: one throw decided at the moment it is made, through the extender's roll event
+
+local rigs, rigOrder, rigSeq, rigSubscription = {}, {}, 0, nil
+
+local function uuidOf(id) return id and tostring(id):match("(%x+%-%x+%-%x+%-%x+%-%x+)$") or id end
+
+-- Whether a roll is one a rig names: every field the rig gives must agree. `kind` is the roll's
+-- type as the game names it, or the umbrella Attack or Damage for every type that ends so.
+local function rigFits(r, e)
+    if r.who then
+        local ok, roller = pcall(function() return Ext.Entity.HandleToUuid(e.Roller) end)
+        if not ok or uuidOf(roller) ~= r.who then return false end
+    end
+    if r.kind then
+        local kind = tostring(e.RollType)
+        if kind ~= r.kind and not ((r.kind == "Attack" or r.kind == "Damage") and kind:sub(-#r.kind) == r.kind) then return false end
+    end
+    if r.stream and not (e.HasStream and tostring(e.Stream) == r.stream) then return false end
+    -- what the roll is for, on a build of the extender that says so: the parties, the spell, the status
+    if r.source or r.target or r.spell or r.status then
+        local ok, fits = pcall(function()
+            if r.source and uuidOf(Ext.Entity.HandleToUuid(e.Source)) ~= r.source then return false end
+            if r.target and uuidOf(Ext.Entity.HandleToUuid(e.Target)) ~= r.target then return false end
+            if r.spell and tostring(e.Spell) ~= r.spell then return false end
+            if r.status and tostring(e.Status) ~= r.status then return false end
+            return true
+        end)
+        if not ok or not fits then return false end
+    end
+    return true
+end
+
+local function stopRigging()
+    if rigSubscription and next(rigs) == nil then
+        pcall(function() Ext.Events.Roll:Unsubscribe(rigSubscription) end)
+        rigSubscription = nil
+    end
+end
+
+local function onRigRoll(e)
+    for _, id in ipairs(rigOrder) do
+        local r = rigs[id]
+        if r and rigFits(r, e) then
+            r.seen = r.seen + 1
+            if r.seen >= r.nth then
+                local was = { natural = e.Natural, total = e.Total }
+                if r.natural then e.Natural = r.natural end
+                if r.total then e.Total = r.total end
+                r.decided = r.decided + 1
+                GK.EventLog.Append("roll_rigged", { id = id, who = r.who, kind = tostring(e.RollType), stream = e.HasStream and tostring(e.Stream) or nil,
+                    natural = r.natural, total = r.total, was = was })
+                -- for the roll log, which hears the same event after this: the extender moves the
+                -- total with a changed natural only when every handler has returned
+                Rolls.JustRigged = { id = id, was = was, total = r.total or (was.total + (e.Natural - was.natural)) }
+                if r.times > 0 and r.decided >= r.times then rigs[id] = nil end
+                break   -- one rig decides a roll
+            end
+        end
+    end
+    stopRigging()
+end
+
+-- ---------------------------------------------------------------------------------------
+-- The game's own chance
+
+-- Which weapon set a spell's roll is made with, from the spell's own roll text.
+local function setOf(spell)
+    local roll = try(function() return Ext.Stats.Get(spell).SpellRoll end)
+    local text = type(roll) == "table" and tostring(roll.Default or "") or tostring(roll or "")
+    if text:find("RangedWeaponAttack", 1, true) or text:find("RangedOffHandWeaponAttack", 1, true) then return "Ranged" end
+    if text:find("MeleeWeaponAttack", 1, true) or text:find("MeleeOffHandWeaponAttack", 1, true) then return "Melee" end
+    return nil
+end
+
+--- The chance, from 0 to 1, that the roll of `spell` cast by `who` (default the host) at `target`
+--- succeeds, as the game itself works it out - the number its combat AI weighs and its cursor
+--- shows, advantage and disadvantage folded in. Nothing is rolled. The game counts the weapons of
+--- the caster's active weapon set, and switches the set only when an attack is really made; so
+--- for a weapon attack the set the attack would be made with (`set`: "Melee" or "Ranged"; default:
+--- read from the spell's roll) is put on for the length of the question and put back.
+--- { ok, chance, set, was }, or { ok = false, error }.
+function Rolls.Chance(spec)
+    if type(spec) ~= "table" or type(spec.spell) ~= "string" or spec.target == nil then
+        error("GK.Rolls.Chance{ who, spell, target, set }: a table with a spell and a target, got " .. tostring(spec), 2)
+    end
+    local who = bare(spec.who or Osi.GetHostCharacter())
+    local caster, target = try(Ext.Entity.Get, who), try(Ext.Entity.Get, bare(spec.target))
+    if not caster or not target then return { ok = false, error = "the caster or the target is no entity of the game" } end
+    local want = spec.set or setOf(spec.spell)
+    local was = try(function() return tostring(caster.WeaponSet.WeaponSet) end)
+    local switched = false
+    if want and was and want ~= was then
+        switched = pcall(function() caster.WeaponSet.WeaponSet = want end)
+    end
+    local ok, chance = pcall(Ext.Stats.GetSpellRollChance, caster, spec.spell, target)
+    if switched then pcall(function() caster.WeaponSet.WeaponSet = was end) end
+    if not ok or type(chance) ~= "number" then
+        return { ok = false, error = "the game did not work out a chance for " .. spec.spell .. (ok and "" or (": " .. tostring(chance))) }
+    end
+    return { ok = true, chance = chance, set = switched and want or was, was = was }
+end
+
+--- Whether this Script Extender build raises the roll event a rig acts through.
+function Rolls.CanRig()
+    -- Ext.Events answers for any name: the event is there when its parameters' type is (GK.Verbs.Has)
+    return GK.Verbs.Has("Events.Roll")
+end
+
+--- Decides one throw at the moment it is made, for the length of the stage scope. `spec` names the
+--- roll by what the game says of it - `who` (the roller), `kind` (the roll's type, or Attack /
+--- Damage for every type that ends so), `stream` (the roll stream's type); a field left out
+--- matches any - and says which of the rolls that fit is meant: `nth` (default 1: the next) and
+--- `times` (how many it decides from there, default 1; 0: every one until Unrig or Clean). The
+--- throw gets `natural` (the die that counts; the total follows, and the critical by the game's
+--- rule) or `total`. Every other roll is left as the game throws it. Needs the Script Extender
+--- build with the roll event; refused outside a scope. { ok, id } or { ok = false, error }.
+function Rolls.Rig(spec)
+    if type(spec) ~= "table" then error("GK.Rolls.Rig{ who, kind, stream, nth, times, natural | total }: a table, got " .. tostring(spec), 2) end
+    needScope("Rig")
+    if not Rolls.CanRig() then return { ok = false, error = "this Script Extender build has no roll event (Ext.Events.Roll): a rig needs a build that has it" } end
+    if spec.natural == nil and spec.total == nil then error("GK.Rolls.Rig: give natural or total - what the throw becomes", 2) end
+    for _, field in ipairs({ "natural", "total", "nth", "times" }) do
+        if spec[field] ~= nil and not integer(spec[field]) then error("GK.Rolls.Rig: " .. field .. " is a whole number, got " .. tostring(spec[field]), 2) end
+    end
+    rigSeq = rigSeq + 1
+    local id = rigSeq
+    rigs[id] = { who = uuidOf(spec.who), kind = spec.kind, stream = spec.stream, nth = spec.nth or 1, times = spec.times or 1,
+                 source = uuidOf(spec.source), target = uuidOf(spec.target), spell = spec.spell, status = spec.status,
+                 natural = spec.natural, total = spec.total, seen = 0, decided = 0 }
+    rigOrder[#rigOrder + 1] = id
+    trackUndo("rig:" .. id, { op = "rig", id = id }, ("rig %d taken off"):format(id))
+    if not rigSubscription then rigSubscription = Ext.Events.Roll:Subscribe(function(e) pcall(onRigRoll, e) end) end
+    return { ok = true, id = id }
+end
+
+--- Takes a rig off (every rig without an id): { ok, removed }.
+function Rolls.Unrig(id)
+    needScope("Unrig")
+    local removed = 0
+    for key in pairs(rigs) do
+        if id == nil or key == id then rigs[key] = nil removed = removed + 1 end
+    end
+    stopRigging()
+    return { ok = true, removed = removed }
+end
+
+--- The rigs in force: { { id, who, kind, stream, nth, times, natural, total, seen, decided } }.
+function Rolls.Rigs()
+    local out = {}
+    for _, id in ipairs(rigOrder) do
+        local r = rigs[id]
+        if r then out[#out + 1] = { id = id, who = r.who, kind = r.kind, stream = r.stream, nth = r.nth, times = r.times,
+                                    source = r.source, target = r.target, spell = r.spell, status = r.status,
+                                    natural = r.natural, total = r.total, seen = r.seen, decided = r.decided } end
+    end
+    return out
+end
+
+--- Takes a rig off and nothing else: the undo of Rig.
+function Rolls.WriteRig(id)
+    rigs[id] = nil
+    stopRigging()
 end
 
 function Rolls.SetKarmic(on)

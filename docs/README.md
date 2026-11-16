@@ -10,6 +10,9 @@
 | [driving-the-game.md](driving-the-game.md) | an AI agent driving a copy through the MCP server |
 | [offline-databases.md](offline-databases.md) | the game index, symbols, pseudo-code, the wiki, the memory instrument |
 | [api-rules.md](api-rules.md) | what every verb, tool and command is held to |
+| [working-with-agents.md](working-with-agents.md) | a long run of work by agents: a coordinator, executors, packages, the accept loop |
+| [GateKit AI](../mods/AI/README.md) | the tools an AI agent plays the game with |
+| [the fork's GATEKIT.md](https://github.com/bg3gk/bg3se/blob/gatekit-native/GATEKIT.md) | what GateKit's Script Extender adds for any mod, and how to use it |
 
 ## Contracts: the exact reference
 
@@ -20,6 +23,7 @@
 | [contracts/mcp.md](contracts/mcp.md) | every tool of the MCP server |
 | [contracts/lua-api.md](contracts/lua-api.md) | the `GK.*` API inside the game |
 | [contracts/data-format.md](contracts/data-format.md) | GateKit's JSON files and their schemas |
+| [../registry/README.md](../registry/README.md) | the registry of the game's code: its entries, rungs, evidence and citations |
 
 ## About the game
 

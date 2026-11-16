@@ -185,8 +185,9 @@ public sealed class GameSession
 
     /// <summary>Brings back the world of the last checkpoint without restarting the game. Returns
     /// the time until both sides answer again and (unless <paramref name="skipIntro"/> is false)
-    /// the level's opening scene has been played through.</summary>
-    public async Task<TimeSpan> ResetAsync(TimeSpan? timeout = null, bool skipIntro = true)
+    /// the level's opening scene has been played through (<paramref name="appear"/>: how long the
+    /// scene is given to appear, as <see cref="SkipScenesAsync"/>).</summary>
+    public async Task<TimeSpan> ResetAsync(TimeSpan? timeout = null, bool skipIntro = true, TimeSpan? appear = null)
     {
         _layout.RequireNamed("reset");
         var name = CheckpointName;
@@ -210,7 +211,7 @@ public sealed class GameSession
             }
             await LuaAsync(side.Name(), "return true");
         }
-        if (skipIntro) await SkipScenesAsync();
+        if (skipIntro) await SkipScenesAsync(appear);
         return watch.Elapsed;
     }
 

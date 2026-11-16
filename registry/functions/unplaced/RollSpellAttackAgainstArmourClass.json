@@ -1,0 +1,50 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RollSpellAttackAgainstArmourClass",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Rolls a spell attack against the target's armour class through the roll against a difficulty and decides the hit.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
+      "eoc::roll::stream::RollManager::RollDiceWithBoostsAgainstDC",
+      "fp:123b79ba6c390bab",
+      "fp:24c801b0780dfd1d",
+      "fp:3a8dcddf5119e2e0",
+      "fp:3dc70372a826ba29",
+      "fp:487cb3ad377ac4c8",
+      "fp:5227b96c8688ff31",
+      "fp:6dbec13f747384e3",
+      "fp:72b4801e8e903ffc",
+      "fp:73b6437b8a0b46c5",
+      "fp:8efc2b447ddf1668",
+      "fp:91c3d48dff57ab4c",
+      "fp:a4616baec98bd920",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:ea10e4db14e26c19",
+      "fp:f8c904b320f1070b",
+      "import:9c9aac12eb379696",
+      "unplaced::DecideAttackHit",
+      "unplaced::RollDodgeAttack"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The same flow as the weapon attack, reached for attack types 6 and 7"
+    },
+    {
+      "kind": "watch",
+      "says": "A Fire Bolt cast by the player asks the roll against a difficulty from bg3_dx11.exe@25605617+0x106DF78 inside this function, a pair of dice on the PlayerSpell stream, the roll type a ranged spell attack"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A spell attack by the player, watched on the PlayerSpell stream",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

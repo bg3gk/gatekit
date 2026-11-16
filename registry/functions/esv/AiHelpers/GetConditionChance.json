@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::GetConditionChance",
+  "state": "described",
+  "rung": "game",
+  "does": "Gives the AI the chance that one thoth condition (by its index; -1 gives 1.0) holds in a context: looks it up in the AI helpers' cache at +0x3D8 (map of condition index to entries of 0x38: the context's source +0, target +8, a third handle +0x10, two positions, the chance as a float at +0x30), and on a miss asks ls::thoth::shared::Machine::CalculateConditionChance and stores the answer. The cache is empty again outside the AI's request.",
+  "fingerprint": {"calls": ["fp:5227b96c8688ff31", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the -1 test returning 1.0, the cache walk at this+0x3D8/+0x3F8/+0x408 comparing the context's handles and positions, the call of CalculateConditionChance on a miss; the Toolkit's esv::AiHelpers::GetConditionChance has the same structure (pseudo-code pair 0.24)"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe with the float return on a goblin's turn: condition indices with 1.0 or 0.0, -1 with 1.0, and one with 0.35 for source goblin, target host - the host's chance to fail the bite's DC 10 Constitution save at +2 (7 in 20); read after the AI system's update the cache holds nothing"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

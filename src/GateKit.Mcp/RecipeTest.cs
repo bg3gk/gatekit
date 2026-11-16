@@ -7,7 +7,7 @@ namespace GateKit.Mcp;
 
 /// <summary>
 /// The test <c>bg3_recipe</c> writes: a file <c>gatekit test tests/_coverage -k name</c>
-/// replays (docs/contracts/mcp.md 3.4).
+/// replays (docs/contracts/mcp.md, "A recipe is a test that replays").
 ///
 /// A recipe used to be free Lua for the game, which the test runner cannot run: the runner
 /// executes a file's top level on the host to read its declaration, and <c>Osi</c> is not there.

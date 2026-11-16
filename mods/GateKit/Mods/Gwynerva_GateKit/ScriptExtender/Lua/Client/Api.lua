@@ -207,9 +207,15 @@ end
 --- the profile, as `Ext.IO.SaveFile` takes it, and the PNG appears there a few frames later -
 --- `GK.ShotPending()` is false once it is written. The window needs neither focus nor to be
 --- visible. False when the renderer cannot do it (so far only the DX11 one can) or when a
---- picture is already on its way.
-function GK.Shot(path)
+--- picture is already on its way. `overlay = true` asks for the frame after the extender's own
+--- layer is drawn - its windows, GateKit's console, a picture of GK.Show - and is false on a
+--- Script Extender build that cannot take that frame (GK.Features.imageFiles tells it).
+function GK.Shot(path, overlay)
     if not Ext.ClientRender then return false end
+    if overlay then
+        if not GK.Features.imageFiles then return false end
+        return Ext.ClientRender.Screenshot(path, true)
+    end
     return Ext.ClientRender.Screenshot(path)
 end
 

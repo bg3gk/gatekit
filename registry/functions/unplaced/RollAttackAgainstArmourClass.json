@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "unplaced::RollAttackAgainstArmourClass",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "The attack roll of one attacker against one target: takes the target's armour class from eoc::ResistancesComponent.AC, rolls the d20 on the roll manager's stream, lets a GuaranteedChanceRollOutcome boost or the target's DodgeAttackRoll boost replace the result, has the hit decided against the armour class, writes the outcome into the hit's EffectFlags (Hit; Dodge and Miss; Critical; AttackAdvantage or AttackDisadvantage) and appends the roll and the armour class to the hit's ConditionRolls. Answers whether it hit.",
   "locals": [
     {"storage": "unresolved", "name": "hit", "decompiler_name": "bVar28"},
@@ -14,7 +14,9 @@
   "ties": [{"type": "eoc::ConditionRoll", "via": "conditionRoll"}],
   "fingerprint": {
     "calls": [
-      "esv::roll::stream::RollOnStream",
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
+      "eoc::roll::stream::RollManager::RollDiceWithBoostsAgainstDC",
       "fp:123b79ba6c390bab",
       "fp:24c801b0780dfd1d",
       "fp:3a8dcddf5119e2e0",
@@ -22,7 +24,6 @@
       "fp:487cb3ad377ac4c8",
       "fp:5227b96c8688ff31",
       "fp:6dbec13f747384e3",
-      "fp:72b4801e8e903ffc",
       "fp:8efc2b447ddf1668",
       "fp:91c3d48dff57ab4c",
       "fp:a4616baec98bd920",
@@ -32,13 +33,22 @@
       "fp:f8c904b320f1070b",
       "fp:f8d99f5891680858",
       "import:9c9aac12eb379696",
-      "unplaced::DecideAttackHit"
+      "unplaced::DecideAttackHit",
+      "unplaced::RollDodgeAttack"
     ]
   },
   "evidence": [
     {
       "kind": "text",
-      "says": "GK.Memory.Watch on the host's PlayerSpell roll stream NumRolls (roll manager, Element(+0x8, 1, 0x78, 0x70)) over fair melee attacks pinned at 2 and 15: both d20 draws (+0x105AAE3) return through +0x106CE8B of this function; the hit's HitDesc.ConditionRolls[1] read MeleeWeaponAttack, Difficulty 13 = the goblin's Resistances.AC, NaturalRoll 15, Total 20, flags Hit; with GK.Memory.Freeze of the goblin's eoc::ResistancesComponent.AC at 21 the same pinned 15 missed (Dodge|Miss) and Difficulty read 21"
+      "says": "GK.Memory.Watch on the host's PlayerSpell roll stream NumRolls (roll manager, Element(+0x8, 1, 0x78, 0x70)) over fair melee attacks pinned at 2 and 15: both d20 draws (bg3_dx11.exe@25605617+0x105AAE3) return through bg3_dx11.exe@25605617+0x106CE8B of this function; the hit's HitDesc.ConditionRolls[1] read MeleeWeaponAttack, Difficulty 13 = the goblin's Resistances.AC, NaturalRoll 15, Total 20, flags Hit; with GK.Memory.Freeze of the goblin's eoc::ResistancesComponent.AC at 21 the same pinned 15 missed (Dodge|Miss) and Difficulty read 21"
+    },
+    {
+      "kind": "watch",
+      "says": "The count writes of the PlayerSpell stream in a weapon attack by the player return through bg3_dx11.exe@25605617+0x106CE8B inside this function, itself called from bg3_dx11.exe@25605617+0x106FE82"
+    },
+    {
+      "kind": "read",
+      "says": "The difficulty passed down is the target's armour class and the roll is made through the roll against a difficulty"
     }
   ]
 }

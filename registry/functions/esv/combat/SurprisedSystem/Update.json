@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat::SurprisedSystem::Update",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Each tick it gathers who is to be surprised - first the creatures joining a fight whose party or allied combat group already holds a surprised member, then the allies of every creature that carries a new stealth request - and gives each esv::combat::SurprisedJoinRequestOneFrameComponent.",
+  "fingerprint": {
+    "calls": [
+      "esv::combat::SurprisedSystem::SurpriseAlliesOfStealthAttackTargets",
+      "esv::combat::SurprisedSystem::SurpriseEntitiesJoiningCombat",
+      "fp:a8827c5475d002dc",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": ["esv::combat::SurprisedJoinRequestOneFrameComponent"]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "the Toolkit's EoCServer.dll exports esv::combat::SurprisedSystem::Update with the same two calls and the same loop that adds the join request"
+    },
+    {
+      "kind": "read",
+      "says": "two gatherers fill one set, then every member of the set gets the one-frame join request"
+    },
+    {
+      "kind": "watch",
+      "says": "in a hidden archer's shot at one of two hostile humans the target gets the stealth request in the tick it joins and its ally the join request one tick later"
+    },
+    {"kind": "test", "test": "surprise/from_hiding"}
+  ]
+}

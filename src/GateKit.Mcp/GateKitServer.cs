@@ -34,14 +34,21 @@ public sealed class GateKitServer
 
     public PluginTools Plugins => _plugins;
 
-    /// <summary>What `tools/list` answers: the core tools, then the folder's.</summary>
-    public IReadOnlyList<GateKitTool> Tools() => [.. _core, .. _plugins.Current()];
+    /// <summary>What `tools/list` answers: the core tools, then the folders'; with
+    /// <see cref="ToolHost.Only"/>, those whose name begins with it and no other.</summary>
+    public IReadOnlyList<GateKitTool> Tools()
+    {
+        IReadOnlyList<GateKitTool> all = [.. _core, .. _plugins.Current()];
+        return _host.Only is { Length: > 0 } only ? [.. all.Where(t => t.Name.StartsWith(only, StringComparison.Ordinal))] : all;
+    }
 
     /// <summary>What `tools/call` answers; a failure is a result with isError, never a protocol error.</summary>
     public async Task<CallToolResult> CallAsync(string name, Args args, CancellationToken cancel = default)
     {
         try
         {
+            if (_host.Only is { Length: > 0 } only && !name.StartsWith(only, StringComparison.Ordinal))
+                throw new CopyException($"unknown tool {name}: this server offers the tools whose name begins with {only}");
             var tool = _core.FirstOrDefault(t => t.Name == name)
                 ?? _plugins.Find(name)
                 ?? throw new CopyException($"unknown tool {name}");
@@ -50,7 +57,7 @@ public sealed class GateKitServer
             CallToolResult result;
             try { result = await tool.Invoke(args, cancel); }
             catch (MissingArgumentException missing) { throw Refuse.Missing(tool, [missing.Name]); }
-            if (GameTools.Contains(name) || _plugins.Find(name) is not null) AddAttention(result);
+            if (GameTools.Contains(name) || (_plugins.Find(name) is not null && !_plugins.SaysAttentionItself(name))) AddAttention(result);
             return result;
         }
         catch (OperationCanceledException) when (cancel.IsCancellationRequested) { throw; }
@@ -86,7 +93,10 @@ public sealed class GateKitServer
             Version = typeof(GateKitServer).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0]
                 ?? "0.1.0",
         },
-        ServerInstructions = "Drives a real Baldur's Gate 3 through the GateKit bridge mod: bg3_up starts the game, bg3_state and "
+        // a server narrowed to one set of tools (--only) names none of the others: each tool says what it is for
+        ServerInstructions = _host.Only is { Length: > 0 }
+            ? "Drives a real Baldur's Gate 3 through the GateKit bridge mod; each tool's description says what it does."
+            : "Drives a real Baldur's Gate 3 through the GateKit bridge mod: bg3_up starts the game, bg3_state and "
             + "bg3_events read it, bg3_lua and bg3_call run anything the bridge offers (bg3_api lists it), bg3_down closes it again.",
         Capabilities = new ServerCapabilities { Tools = new ToolsCapability() },
         Handlers = new McpServerHandlers

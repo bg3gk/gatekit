@@ -196,7 +196,7 @@ Added beyond the brief, and why:
 ### `rolls/pin/binding`
 - **Rule.** A boost takes effect about 3 server ticks after it is added and leaves 3-4 ticks after
   it is removed; a roll's die is decided when it is asked for (passive) or thrown (window); so a
-  `once` pin also decides a roll asked before its boost has left. Source: ours (lua-api §17).
+  `once` pin also decides a roll asked before its boost has left. Source: ours (lua-api, "GK.Rolls").
 - **Cases.** once_check, once_save, asked_before_boost_left.
 - **Rows.** `event:roll_unpin` with `ticks` (exists). **Today.** Yes.
 
@@ -372,7 +372,7 @@ Added beyond the brief, and why:
 
 ### `time/clock`
 - **Rule.** The server ticks about 30 times a second at any speed; the speed lengthens the game time
-  of a tick; a paused game (hypothesis) ticks and adds no game time. Source: ours (lua-api §18).
+  of a tick; a paused game (hypothesis) ticks and adds no game time. Source: ours (lua-api, "GK.Speed").
 - **Cases.** speed_1, working, paused.
 - **Steps.** cheat: speed, pause; observation: `GK.Speed.Clock()` at two `event:game_state` rows.
 - **Rows.** `event:game_state` (exists). **Today.** Yes; declares `fixed` (decided, not built).
@@ -380,7 +380,7 @@ Added beyond the brief, and why:
 ### `time/speed_limits`
 - **Rule.** What the game itself breaks above the working speed: from 16 the party-defeated check
   fires while a downed member is raised; from 24 a turn starts before the previous hit lands.
-  Source: ours (lua-api §18).
+  Source: ours (lua-api, "GK.Speed").
 - **Cases.** downed_raised (12 against 16), turn_before_hit (16 against 24).
 - **Rows.** `event:gameover`, `event:game_turn`, `event:game_hit` (exist). **Today.** Yes, at the
   risk of a game-over box (a load is its way out).
@@ -388,12 +388,12 @@ Added beyond the brief, and why:
 ### `level/survivors_of_a_load`
 - **Rule.** A level load rebuilds the level from its save; the engine's global switches (Karmic
   Dice among them) and the game speed outlive it, the client's frame cap and the party's state do
-  not. Source: ours (lua-api §14, "What survives a level load"; `scenarios/stage_level_survivors`).
+  not. Source: ours (lua-api, "What survives a level load"; `scenarios/stage_level_survivors`).
 - **Rows.** `event:loading`, `event:loading_ended` (exist). **Today.** Yes.
 
 ### `level/kept_components`
 - **Rule.** The engine adds some components at a creature's first use of a system and never removes
-  them, holding their default. Source: ours (`Server/GameKeeps.json`, lua-api §14).
+  them, holding their default. Source: ours (`Server/GameKeeps.json`, lua-api, "The stage scope").
 - **Cases.** story_boost_requests (first `Osi.AddBoosts`), unsheath_default (first weapon request),
   killer (first kill).
 - **Rows.** `event:component_created` (exists; the family on for the scope). **Today.** Yes.
@@ -425,7 +425,7 @@ Added beyond the brief, and why:
   out of combat a spent one comes back almost at once (ours: a round later, while the cooldown
   tracking component is held); a resource used to start a fight is not refilled on the first turn
   ("disable free first strikes"); rest resources do not refill with turns. Source: wiki
-  "Resources"; ours (lua-api §14, the table "After an action").
+  "Resources"; ours (lua-api, "The stage scope", the table "After an action").
 - **Cases.** turn_start, fight_end, out_of_combat, first_strike, rest_resource.
 - **Rows.** `event:game_turn`, `event:combat_ended`, `event:component_destroyed` (exist); the
   resource row of the test above (gap). **Today.** By reads at those rows.
@@ -614,3 +614,154 @@ Statements from his play are hypotheses with their source, checked like any othe
   and the subject will be deepened then. For now only the most basic: no reader of the package;
   `saveload/second_save` compares what the listing and the sizes give.
 - **Speeds that break (11).** Yes: the game is to be tried at 16 and 24 on purpose, in a copy.
+
+## Revision after the real coverage of rolls
+
+A proposal, as the rest of this document is. The stage that read the roll machinery
+(`research/studies/rolls.md`, from "Who asks for a die" to "After the throw") left instruments the tree above did not have, and
+tests that stand. This section says what that changes.
+
+### What stands (under `tests/`, each run at `--speed 1` and `--speed working`)
+
+```
+rolls/
+  log/
+    origins                 passive check, dialogue check, status applied, status on its turn, weapon attack,
+                            spell attack and damage, target's save (the pair of a d20: the first kept,
+                            the second discarded), three rays, creature's attack
+    adjusted                (one run) an interrupt sets the roll after the throw: thrown 15, kept 1
+  rig/
+    one_of_several          nth of four (the third of four checks in one tick), by spell (the save
+                            against one spell of two)
+  streams/
+    chosen_die              passive check, attack 20, attack 1
+  chance/
+    agrees_with_dice        melee, ranged: the game's own chance against the dice then thrown
+  karmic/
+    forced                  (one run) a roll forced by Karmic Dice has no dice of its own
+fight/
+  log/
+    intent                  (one run) the cast is in the log before its die, its id joins the hit
+    options                 (one run) what the AI weighed, its choice, the chance against the dice
+    membership              (one run) joined at the start and under way, left killed (the death's
+                            row names the killer too) and because the fight ended
+    reaction                (one run) an attack of opportunity with what set it off
+    resisted                die 7: what was rolled and what was dealt against a resistance
+    unlisted                (one run) the dice of a stats expression are in the hit, the terms add up
+  npc/
+    without_the_party       (one run) two creatures fight to a death with no party member
+    surprised               what Surprised does to the first turn
+    asleep                  sleeping enemies start no fight; a fight keeps its members awake
+surprise/
+  from_hiding   hit_before_the_fight   already_fighting   alert
+wake/
+  two_distances   one   place
+camera/focus/
+  matrix                    point near, object middling, point far, object far, npc far; each
+                            with the return to the host at the old distance
+  two_targets   in_a_fight   far
+gui/
+  look/main_menu
+  look/creation             (one run) lists, a slider, a swatch and its panel, the point buy, the way on
+  tips/ability   tips/chain
+figure/
+  client_dummy   client_animation   client_effect
+store/kept/
+  round_trip                (one run) what a store holds at a save is what it holds after the load
+show/
+  picture   menu
+quirks/
+  attack/weapon_set_in_hand
+  damage/critical_flag_of_a_sum
+  damage/ground_row
+  damage/resistance_floor   weapon_of_one, three_becomes_one, fire_bolt_of_one
+```
+
+Out of the tree, and where each is: the toolkit's own checks that need a game are self tests
+(`tests/_selftest/rolls/log_unknown`, `fight/options_verb`, `say/overhead`, `store/refused`); the
+three books placed again from a store alone are a demonstration (`research/demos/three_books.lua`,
+its result in `research/studies/save-kept-data.md`); the wiki's list of bugged actions compared
+with the game's data is a `gatekit data` query (`research/studies/rolls.md`, "The second sweep" and "The faults held by tests")
+and no test; the experiment of one fight shared by several cases is recorded in
+`research/rolls-todo.md` ("The experiment's result").
+
+### What the new instruments change in the proposed tests
+
+- **The roll log is the row to read.** Where a proposed test read `event:game_roll` or
+  `event:game_hit` and could not see a die that was thrown and not kept, `dice_thrown` gives
+  every die, the stream, who asked and what for. `rolls/advantage/kept_die` becomes one roll a
+  case: both dice are in the row, kept and discarded, whatever the verdict. `rolls/damage/dice`
+  reads the dice of a damage roll directly. `rolls/streams/which_stream` is the cases of
+  `rolls/log/origins` and is not needed as a test of its own.
+- **One throw is decided by the rig, not by a pin.** `rolls/verdict/natural_extremes`,
+  `total_against_dc` and `critical/threshold` want "this roll is a 20": a rig names the roll by
+  who, kind and stream and leaves every other roll alone, so a case no longer needs Karmic Dice
+  off for the whole scope nor a pin taken off afterwards. The pin stays for a standing rule
+  ("every check of this creature") and for stock Script Extender.
+- **`rolls/pin/binding` loses its reason.** "Once" was the pin's way to one roll; with the rig
+  the cases `once_check` and `once_save` are the rig's `times = 1`. What stays of the test is
+  one case: a pin asked before the boost of an earlier pin has left.
+- **`rolls/karmic/forced_success` can say "forced" from the row** (`forced = true`, no dice
+  drawn), and `karmic/debt` can read the debts of a stream beside it.
+- **The verdict has a second chapter.** An interrupt may change a roll after the throw; a test
+  of a verdict on an attack or a save states which it reads - the throw (`dice_thrown`) or what
+  the game goes on with (`dice_adjusted`, the hit).
+
+### Proposed next, in the order of what they would catch
+
+```
+rolls/
+  log/
+    hidden                  failed_perception_shown, failed_perception_hidden, stealth_check, athletics_shown
+    after_the_throw         set_roll, adjust_roll (Bardic), reroll (Lucky), boost_reroll (Halfling Luck: inside the throw)
+    one_action_many_rolls   extra_attack, off_hand, scorching_ray, concentration_after_damage
+  rig/
+    one_of_several          + by status (a save of this status only: the rig told by `status`)
+  generator/
+    predicted               the next die of a stream said before it is thrown: check, attack, damage (Karmic off)
+  verdict/
+    natural_extremes        ... the proposed cases, each with a rig
+```
+
+- `rolls/log/hidden` - "The combat log leaves out what the ruleset says to hide, and the roll
+  log does not." Source: the ruleset modifier `HIDE_FAILED_PERCEPTION_ROLLS` (study, section
+  14); the combat log's entry counted through the game's own table of entry types. It would
+  catch a roll that is thrown and shown nowhere.
+- `rolls/log/after_the_throw` - "Each way an interrupt changes a roll is in the log as thrown
+  and as kept." It would catch a kind of change that does not pass the one function hooked.
+- A rig named by `spell` stands as the case `by spell` of `rolls/rig/one_of_several`; by `status`,
+  `source` and `target` the rig matches too, and no case holds them.
+- `rolls/generator/predicted` - "The die a stream gives next is the generator's" (study,
+  "Who asks for a die"): `GK.Rolls.Next` against the row. It would catch a patch that changes the
+  generator, which every rewind of a stream depends on.
+
+Not proposed, and why: a death saving throw (not stageable in the test level: open items); the
+order of initiative with equal rolls (belongs to `combat/turn/order`).
+
+### Proposed: tests that hold a known fault of the game as it is
+
+The sweeps (`research/studies/rolls.md`, "The dice against the wiki" and "The second sweep") found places where
+the game does not do what its text or the wiki says, each reproduced with rigged dice. A test
+that states the fault as found - its rule is "the game does this, and the wiki says that" -
+turns a patch that mends it into a failing test, which is how a tool that leans on the fault
+(a damage preview, a log reader) learns of the change. Proposed as a tree of its own, so that
+its failures are read as news of the game and not as faults of the toolkit:
+
+```
+quirks/
+  damage/
+    resistance_floor        fire_bolt_of_one, weapon_of_one, three_becomes_one   (1 stays 1; the wiki rounds down to 0)   stands
+    critical_flag_of_a_sum  (the flag is of the sum of the dice)                 stands
+    ground_row              a_miss_still_throws_it   (thrown on every weapon attack, never takes hit points)   stands
+  attack/
+    weapon_set_in_hand      melee_asked_with_the_bow, sand_toss      (Strength used in place of the weapon's ability)   stands
+    ai_weighs_the_set       goblin_in_its_ranged_set                 (the scorer's number against the dice)
+```
+
+Each case names its source (the wiki page and section, or the study) in its leading comment and
+asserts the numbers found. What the sweeps proposed here and is not a fault of the game stands
+elsewhere or nowhere: the dice of a stats expression are in the hit (`fight/log/unlisted`); a
+damage bonus of a boost is doubled on a critical (the finding was taken back: the study,
+"The faults held by tests"); a forced roll's die is the wiki's own rule (`rolls/karmic/forced`); the second d20 of every
+roll is the study's "Advantage and disadvantage" (`rolls/log/origins`); the wiki's list of bugged actions is read
+from the game's data by a query, not by a test.

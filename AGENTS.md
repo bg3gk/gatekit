@@ -7,7 +7,8 @@ at is [docs/design/what-this-is-for.md](docs/design/what-this-is-for.md).
 
 "Agent" means three things around GateKit, each with its own page:
 
-- **an agent working on GateKit** - you, if you are reading this to change it;
+- **an agent working on GateKit** - you, if you are reading this to change it; a long run of
+  such agents, one coordinating and a few executing → [docs/working-with-agents.md](docs/working-with-agents.md);
 - **an agent using GateKit** to drive the game from outside → [docs/driving-the-game.md](docs/driving-the-game.md);
 - **an agent playing inside the game**, a character or a side in combat →
   [docs/design/ai-controllers.md](docs/design/ai-controllers.md).
@@ -25,6 +26,7 @@ at is [docs/design/what-this-is-for.md](docs/design/what-this-is-for.md).
 | tools an agent sees | `src/GateKit.Mcp` | `docs/contracts/mcp.md` |
 | the `GK.*` API inside the game | `mods/GateKit/.../Lua/` | `docs/contracts/lua-api.md`, `lua-types/GateKit.lua` |
 | in-game windows | `mods/Weave` | `lua-types/Weave.lua`, `mods/Weave/README.md` |
+| the bridge for an AI agent that plays | `mods/AI` | `mods/AI/README.md`, `mods/AI/tools/ai.json`, `lua-types/GateKitAI.lua` |
 | reading or writing any JSON file or tool answer of ours | `src/GateKit.Json` (`JsonText`, `SchemaSet`) | `docs/contracts/data-format.md` + `schemas/` |
 | tests (they run in the game) | `tests/` (a tree by the game's notions), the runner in `src/GateKit.Testing` | `docs/writing-tests.md`, `docs/contracts/cli.md` (`test`) |
 | unit tests: checks of the toolkit itself, with no game | `unit/`, projects named `*.UnitTests` | `dotnet test` (Checking your work, below) |
@@ -35,7 +37,8 @@ commit as the code, or do not change the behaviour.
 ## Rules
 
 1. **English only** — code, comments, documentation, commit messages. Localized text comes from
-   the game's own data, never a hardcoded table. The exceptions are in `CONTRIBUTING.md`.
+   the game's own data, never a hardcoded table. No exceptions: a test that needs another alphabet writes it as escapes
+   (`CONTRIBUTING.md`).
 2. **Name things as the game does.** Where the game has its own name for a field or a function,
    that name wins; the names other sources give the same thing (Script Extender's, the
    Toolkit's) stay as cross-references (`known_as`), never as aliases (rule 15).
@@ -79,7 +82,7 @@ commit as the code, or do not change the behaviour.
     - **machine and people specifics** — this machine's paths, a person's name, a model's name;
     - **the words the project does not use** — listed where each word is owned:
       [docs/writing-tests.md](docs/writing-tests.md), "Words";
-      [docs/api-rules.md](docs/api-rules.md), rule 4; [docs/concepts.md](docs/concepts.md), "Copies".
+      [docs/api-rules.md](docs/api-rules.md#fair-cheat-observation); [docs/concepts.md](docs/concepts.md), "Copies".
     Plain professional prose, short, in the present tense. A work record that is a chronicle by
     nature (a run's log, a wish with its date) is data under `research/` - what is still to do is
     the open items, `research/open-items.md` - not prose in a document. If removing a sentence loses nothing a reader needs to use or change the thing,
@@ -114,8 +117,12 @@ commit as the code, or do not change the behaviour.
 ```bash
 dotnet build                               # the whole solution
 dotnet test                                # the unit tests (unit/), no game needed
+GATEKIT_SLOW_TESTS=1 dotnet test --filter Speed=slow   # the unit tests that read the whole installed game (minutes)
 ./gatekit --instance <yours> test tests    # the tests (tests/), in a game copy
 ```
+
+The ordinary `dotnet test` skips the slow ones and says so; run them before a change to what reads
+the game's files (`src/GateKit.GameData`) is merged.
 
 **Never touch the installed game or a copy that is not yours.** Always pass `--instance <name>`:
 what a copy is and why it is safe is in [docs/concepts.md](docs/concepts.md). Close every game you

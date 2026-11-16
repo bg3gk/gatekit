@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "eoc::HitDesc",
   "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The description of one hit: its damage, flags and the spell that made it.",
   "fields": [
     {
       "offset": 44,
@@ -11,7 +14,7 @@
       "evidence": [
         {
           "kind": "extender-name",
-          "says": "RollAttackAgainstArmourClass (+0x106CA40) ors 1 into the hit record's +0x2C on a hit and 2|4 on a miss; Script Extender's HitDesc.EffectFlags read Hit|HitpointsDamaged for the pinned 15 and Dodge|Miss for the pinned 2 and for 15 against AC 21 (Ext.Enums.DamageFlags: Hit 1, Dodge 2, Miss 4, Critical 8)"
+          "says": "RollAttackAgainstArmourClass (code:unplaced::RollAttackAgainstArmourClass) ors 1 into the hit record's +0x2C on a hit and 2|4 on a miss; Script Extender's HitDesc.EffectFlags read Hit|HitpointsDamaged for the pinned 15 and Dodge|Miss for the pinned 2 and for 15 against AC 21 (Ext.Enums.DamageFlags: Hit 1, Dodge 2, Miss 4, Critical 8)"
         }
       ]
     },
@@ -23,7 +26,7 @@
       "evidence": [
         {
           "kind": "extender-name",
-          "says": "Script Extender's HitDesc puts HitWith (uint8) at +0x4C; RollAttackAgainstArmourClass (+0x106CA40) writes 1 (HitWith Weapon) at the hit record's +0x4C only in its hit branch; a live miss read HitDesc.HitWith None"
+          "says": "Script Extender's HitDesc puts HitWith (uint8) at +0x4C; RollAttackAgainstArmourClass (code:unplaced::RollAttackAgainstArmourClass) writes 1 (HitWith Weapon) at the hit record's +0x4C only in its hit branch; a live miss read HitDesc.HitWith None"
         }
       ]
     },
@@ -34,9 +37,36 @@
       "evidence": [
         {
           "kind": "extender-name",
-          "says": "RollAttackAgainstArmourClass (+0x106CA40) appends with eoc::ConditionRolls::AddNew at the hit record's +0x50; Script Extender's HitDesc.ConditionRolls held that one element (MeleeWeaponAttack) after the hit"
+          "says": "RollAttackAgainstArmourClass (code:unplaced::RollAttackAgainstArmourClass) appends with eoc::ConditionRolls::AddNew at the hit record's +0x50; Script Extender's HitDesc.ConditionRolls held that one element (MeleeWeaponAttack) after the hit"
+        }
+      ]
+    },
+    {
+      "offset": 336,
+      "name": "SpellId",
+      "type": "FixedString",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "unplaced::EvaluateSpellRollOnTarget (code:unplaced::EvaluateSpellRollOnTarget) copies the spell's FixedString into the HitDesc it fills at +0x150 before the spell's roll is evaluated"
+        },
+        {
+          "kind": "watch",
+          "says": "during a goblin's weapon attack the HitDesc reached through +0x68 of the condition context holds Target_MainHandAttack's FixedString at +0x150 at the moment of the attack roll"
         }
       ]
     }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "unplaced::EvaluateSpellRollOnTarget (code:unplaced::EvaluateSpellRollOnTarget) copies the spell's FixedString into the HitDesc it fills at +0x150 before the spell's roll is evaluated"
+    },
+    {
+      "kind": "watch",
+      "says": "during a goblin's weapon attack the HitDesc reached through +0x68 of the condition context holds Target_MainHandAttack's FixedString at +0x150 at the moment of the attack roll"
+    },
+    {"kind": "toolkit-name", "store": "EoCShared.dll", "says": "EoCShared.dll exports this name"}
   ]
 }

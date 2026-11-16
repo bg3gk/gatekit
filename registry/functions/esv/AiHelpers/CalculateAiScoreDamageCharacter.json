@@ -1,0 +1,50 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateAiScoreDamageCharacter",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Scores for the AI a damage functor against a character: the expected damage after resistances, heal and remove-status side effects, written into the AI score.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
+      "eoc::StatsSystem::LEGACY_CreateStatsRollContext",
+      "eoc::stats::ApplyResistance",
+      "esv::AiHelpers::CheckInvisibility",
+      "fp:123b79ba6c390bab",
+      "fp:24c801b0780dfd1d",
+      "fp:3dc70372a826ba29",
+      "fp:5227b96c8688ff31",
+      "fp:6b4368df995c2bd5",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:ae83f30752301b99",
+      "fp:c8384249d433cc07",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8c904b320f1070b",
+      "ls::thoth::shared::ContextData::ContextData",
+      "thoth::shared::ContextData::Destroy",
+      "unplaced::AddAiScore",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::ReleaseAiScore"
+    ],
+    "strings": ["f6329d877a9eb0ef"],
+    "components": ["esv::AiHelpers", "esv::StatsSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the log strings of the AI score for character damage (final damage and damage before resistance) and the heal-exit and remove-event lines; calls CheckInvisibility"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 2 places, nearly all from CalculateAiScoreStatsFunctors"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the text constants both refer to"
+    }
+  ]
+}

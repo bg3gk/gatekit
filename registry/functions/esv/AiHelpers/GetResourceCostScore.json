@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::GetResourceCostScore",
+  "state": "described",
+  "rung": "game",
+  "does": "Scores for the AI the action resources an action costs against what the character has.",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:3c74753dbe89f457",
+      "fp:5227b96c8688ff31",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "walks the action's eoc::action_resource::ActionResourceCost array against eoc::ActionResourcesComponent of the character"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 1 place, the function at bg3_dx11.exe@25605617+0x37726F0"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the likeness of the two pseudo-codes"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

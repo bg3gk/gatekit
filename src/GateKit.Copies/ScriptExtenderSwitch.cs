@@ -14,6 +14,9 @@ public sealed class ScriptExtenderSwitch(string bin, string state)
 {
     public string Dll => Path.Combine(bin, "BG3ScriptExtender.dll");
     public string Pdb => Path.Combine(bin, "BG3ScriptExtender.pdb");
+    /// <summary>The registry's table of patterns a GateKit build of the extender reads beside its dll
+    /// (`gatekit registry mappings write`): copied with the dll when the build folder has one.</summary>
+    public string Mappings => Path.Combine(bin, "RegistryMappings.xml");
     public string Config => Path.Combine(bin, "ScriptExtenderUpdaterConfig.json");
     /// <summary>What <see cref="Install"/> did, so <see cref="Remove"/> undoes exactly that.</summary>
     public string Record => Path.Combine(state, "sefork.json");
@@ -58,6 +61,9 @@ public sealed class ScriptExtenderSwitch(string bin, string state)
         FileTree.CopyFile(built, Dll);
         var pdb = Path.ChangeExtension(built, ".pdb");
         if (File.Exists(pdb)) FileTree.CopyFile(pdb, Pdb);
+        var table = Path.Combine(Path.GetDirectoryName(built)!, "RegistryMappings.xml");
+        if (File.Exists(table)) FileTree.CopyFile(table, Mappings);
+        else if (File.Exists(Mappings)) File.Delete(Mappings);   // a build without a table does not inherit another build's
         var config = File.Exists(SavedConfig) ? JsonFiles.ReadObject(SavedConfig) : [];
         config["DebugLoadSE"] = true;
         JsonFiles.WriteObject(Config, config);
@@ -77,7 +83,7 @@ public sealed class ScriptExtenderSwitch(string bin, string state)
             File.Delete(Config);
         // A game just killed keeps the dll locked for a moment.
         var deadline = DateTime.UtcNow + (lockedFor ?? TimeSpan.FromSeconds(20));
-        foreach (var path in new[] { Dll, Pdb })
+        foreach (var path in new[] { Dll, Pdb, Mappings })
         {
             while (File.Exists(path))
             {

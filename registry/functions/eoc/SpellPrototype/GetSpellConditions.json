@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::SpellPrototype::GetSpellConditions",
+  "state": "described",
+  "rung": "game",
+  "does": "Gives one kind of a spell prototype's conditions (eoc::spell::Condition, 0x18 bytes) for one text key: RCX the SpellPrototype, RDX the condition written, R8 the eoc::spell::ESpellConditionsType (1 the spell roll), R9 a FixedString pointer, the text key.",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a", "fp:5227b96c8688ff31", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "a switch over R8 picks the stats property name of that kind of condition and looks it up per text key; the macOS build anchors the name"
+    },
+    {
+      "kind": "watch",
+      "says": "called with type 1 and the spell's default text key it returns condition id 1 for Target_MainHandAttack and 0x35 for Target_Shove, the ids the AI passes to eoc::spell::CalculateModifiableSpellRollChance for those spells; with the text key of CastOffhand it returns id 2"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

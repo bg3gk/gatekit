@@ -4,7 +4,7 @@ GateKit produces three kinds of data. They look similar — all of them come out
 they are not the same thing at all. This page draws the line once, so it is not argued again
 every time something new is generated.
 
-## 1. What we worked out — published
+## What we worked out — published
 
 The engine's component layouts, field offsets, the names a field really deserves, what a system
 does, which component appears on what kind of entity, timings, the coverage numbers. None of it
@@ -23,7 +23,7 @@ The identifiers of the game appear inside these findings, because a finding like
 is on the entities of that dialogue" cannot be written without naming the dialogue. Names used
 to say what we found are part of the finding.
 
-## 2. What the game ships — published separately, and withdrawn on request
+## What the game ships — published separately, and withdrawn on request
 
 A full index of the game's own content — every dialogue line, stat, template and localized
 string — read out of the `.pak` files into one database. It is the game's own material,
@@ -75,14 +75,14 @@ upload and write a `manifest.json` saying what each one weighs, what it hashes t
 of the game it was read from; `index-release.json` at the root pins the release the install
 commands read, the way `se-release.json` pins the Script Extender build; and `publish/map/`
 holds the page the releases are published with, withdrawal promise first. See
-[docs/contracts/cli.md](../contracts/cli.md), section 8.5.
+[docs/contracts/cli.md](../contracts/cli.md#prebuilt-databases-export-release-and-install).
 
 Published there: the game-data index, the symbol database (names, addresses, sizes, layouts, the
 call graph and the string literals of the engine's binaries — facts about the code) and the
 component map from `research/coverage/`. The same repository is the engine of the map site,
 built on its server from the released databases - see [map-site.md](map-site.md).
 
-## 3. The code itself — never published
+## The code itself — never published
 
 Decompiled pseudo-code from the game's executables, and anything that is a transcription of
 compiled code. GateKit ships the pipeline that produces it; what it produces stays on the
@@ -97,8 +97,8 @@ the binary into a fingerprint is kept only as a hash.
 
 A place in the code is pointed at by its id in the [registry](../../registry/README.md)
 (`code:esv::RollSystem::RollDice`), together with a sentence of our own saying what the code there does;
-an address `<binary>+0xRVA` appears only in the registry's tables of builds and in what an instrument
-prints. No line of the code is quoted, in a document, a registry entry or a comment.
+a place with no id of its own (a call site, a callee with no name) may be written as an address
+with its binary and build, as the registry's README says. An address is a number, not code. No line of the code is quoted, in a document, a registry entry or a comment.
 
 ## In practice
 
@@ -112,4 +112,4 @@ prints. No line of the code is quoted, in a document, a registry entry or a comm
   only reason any of this is tolerated.
 
 Nothing here is legal advice, and none of it has been tested against Larian's terms by anyone
-qualified. It is the line the project draws for itself, accepting what section 2 carries.
+qualified. It is the line the project draws for itself, accepting what "What the game ships" carries.

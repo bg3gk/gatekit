@@ -1,0 +1,44 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::FindVideoFile",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Finds the file of a video name: walks the loaded mods from the last to the first, builds the path of the name with each extension the video manager accepts (code:ls::VideoManager::GetVideoPath) and answers the first that exists packed or loose.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:482916027a6ce3fa",
+      "fp:48b3c693e44c8b1d",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:7ec6bc773f10ca24",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:deb071044df2cd7c",
+      "fp:e4d053ad9455ea7c",
+      "import:37b5ff602440c248",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "import:ff1221ec46901464",
+      "ls::VideoManager::GetVideoPath"
+    ],
+    "strings": ["702b3dc2591e61e4"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "loops over the mod manager's modules downwards, compares a path prefix with the text Video, calls code:ls::VideoManager::GetVideoPath and tests each candidate with the packed-file and file-exists checks"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Probe it while a video starts and compare the path it answers with the files of the game's video package.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

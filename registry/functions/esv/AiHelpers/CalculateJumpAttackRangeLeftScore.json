@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateJumpAttackRangeLeftScore",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Gives the AI score of the attack range a character has left after a jump, memoised per (source, target) pair in the helper's list at +0x2D0 and computed on first use by a function the registry does not name.",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "linear search of the 0x18-byte entries at +0x2D0/+0x2DC by the two entity handles, returning the cached AiScore with its count at +0x34 raised; else calls the computing function, a small body comparing the movement left after the jump to the attack range, and appends the result"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from one place in the AI's scoring code: it ran in a fight, which does not show what it does"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the likeness of the two pseudo-codes"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "reading of the body is thin; a goblin with Jump in a fight would show when it is called",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

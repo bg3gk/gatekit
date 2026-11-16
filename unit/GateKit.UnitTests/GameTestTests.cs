@@ -7,12 +7,16 @@ using MoonSharp.Interpreter;
 
 namespace GateKit.UnitTests;
 
-/// <summary>The test runner against FakeBridge: grouping, verdicts, failure artefacts.</summary>
-public sealed partial class GameTestTests : IAsyncLifetime
+/// <summary>
+/// The test runner against FakeBridge: a fake game of its own for every test. The runner's tests
+/// are spread over several classes, each a collection xUnit runs beside the others; they share no
+/// state, only these helpers.
+/// </summary>
+public abstract class FakeGameRuns : IAsyncLifetime
 {
-    readonly FakeGame _game = new();
-    readonly List<FakeBridge> _bridges = [];
-    readonly List<string> _chunks = [];
+    protected readonly FakeGame _game = new();
+    protected readonly List<FakeBridge> _bridges = [];
+    protected readonly List<string> _chunks = [];
 
     public Task InitializeAsync() => Task.CompletedTask;
 
@@ -24,7 +28,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
 
     /// <summary>A copy whose game answers Lua: every chunk is recorded, `return 1 + 1` style
     /// arithmetic is not evaluated - a test asks for what the handler knows.</summary>
-    Copies.GameCopy CopyWithGame(string? instance = null, Func<string, JsonNode?>? answer = null)
+    protected Copies.GameCopy CopyWithGame(string? instance = null, Func<string, JsonNode?>? answer = null)
     {
         var copy = _game.GameCopy(instance);
         _game.Platform.OnStart = _ =>
@@ -39,7 +43,14 @@ public sealed partial class GameTestTests : IAsyncLifetime
         return copy;
     }
 
-    string Tests(params (string name, string code)[] files)
+    /// <summary>The reset ladder's waits for a game that answers at once and plays no scene: what
+    /// a rung does is the same, only the time it gives the game is shorter
+    /// (<see cref="ResetLadderTests.A_real_game_gets_the_ladders_own_waits"/> holds the real ones).</summary>
+    internal static readonly ResetLimits Quick = new(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(200));
+
+    protected TestRunner Runner(Copies.GameCopy copy) => new(copy, _game.Output) { Limits = Quick };
+
+    protected string Tests(params (string name, string code)[] files)
     {
         var folder = _game.Temp["tests"];
         Directory.CreateDirectory(folder);
@@ -47,6 +58,56 @@ public sealed partial class GameTestTests : IAsyncLifetime
         return folder;
     }
 
+    /// <summary>A recipe as bg3_recipe writes it: a component, its side, steps.</summary>
+    protected static string Recipe(double within = 10) => GateKit.Mcp.RecipeTest.Write("-- esv::Test: header\n\n", "GustavX:TUT_Avernus_C",
+        "esv::lock::LockComponent", "server", GateKit.Mcp.RecipeTest.Steps(JsonNode.Parse("""
+            [{"side": "server", "lua": "Osi.Lock(\"chest\", \"\") -- a ]] inside", "note": "lock it"},
+             {"key": "Escape", "wait": 0.1},
+             {"key": "w", "hold": 0.05, "note": "N49: a held key"},
+             {"side": "client", "until": "true", "timeout": 5}]
+            """)), within);
+
+    /// <summary>A copy whose game answers `alive` with <paramref name="seen"/> (the JSON of its read).</summary>
+    protected Copies.GameCopy CopySeeing(string instance, Func<string> seen) => CopyWithGame(instance, code =>
+        code.Contains("Ext.Events.Tick:Subscribe", StringComparison.Ordinal) ? JsonNode.Parse("""{"Before": 0}""")
+        : code.Contains("Watched =", StringComparison.Ordinal) ? JsonNode.Parse(seen())
+        : code.StartsWith("return (", StringComparison.Ordinal) ? JsonValue.Create(true)
+        : null);
+
+    protected static IEnumerable<string> RecordProblems(string root) =>
+        Record.Read(root, "replays").Concat(Record.Read(root, "sightings")).SelectMany(r => Record.Problems(r.ContainsKey("recipe") ? "replays" : "sightings", r));
+
+    /// <summary>A game with the stage ledger: GK.Stage.* answered as the bridge does, in a level of
+    /// <paramref name="characters"/> characters; <paramref name="dirty"/> makes the next Verify fail.
+    /// A checkpoint makes a save in <paramref name="saves"/>(), and its load restarts both Lua states.</summary>
+    protected Func<string, JsonNode?> Ledger(string level, int characters, Func<string> saves, Func<bool>? dirty = null) => code =>
+        code.Contains("Osi.AutoSave()", StringComparison.Ordinal) ? Saved(saves())
+        : code.Contains("Osi.LoadGame(", StringComparison.Ordinal) ? Reloaded()
+        : code.Contains("GK.Stage.CurrentLevel()", StringComparison.Ordinal) ? JsonValue.Create(level)
+        : code.Contains("GK.Stage.Begin(", StringComparison.Ordinal) ? JsonNode.Parse($$"""{"level": "{{level}}", "kept": false}""")
+        : code.Contains("GK.Stage.Census()", StringComparison.Ordinal) ? JsonNode.Parse($$"""{"level": "{{level}}", "characters": {{characters}}}""")
+        : code.Contains("GK.Stage.Clean()", StringComparison.Ordinal) ? JsonNode.Parse("""{"notUndone": [], "sideEffects": ["combat_started"]}""")
+        : code.Contains("GK.Stage.Verify()", StringComparison.Ordinal)
+            ? JsonNode.Parse(dirty?.Invoke() == true ? """{"clean": false, "differences": ["a goblin that was not there"]}""" : """{"clean": true, "differences": []}""")
+        : null;
+
+    static JsonNode? Saved(string saves)
+    {
+        Directory.CreateDirectory(Path.Combine(saves, "AutoSave_1"));
+        File.WriteAllText(Path.Combine(saves, "AutoSave_1", "AutoSave_1.lsv"), "save");
+        return null;
+    }
+
+    JsonNode? Reloaded()
+    {
+        lock (_bridges) foreach (var bridge in _bridges) bridge.Reboot();
+        return null;
+    }
+}
+
+/// <summary>The runner: grouping by start, verdicts, failure artefacts, attaching, claims and the data it gives the bridge.</summary>
+public sealed class GameTestTests : FakeGameRuns
+{
     [Fact]
     public void A_test_declares_the_start_it_needs()
     {
@@ -90,7 +151,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
             ("b_second", "test { level = 'GustavX:TUT_Avernus_C', mods = {} }\nfunction run(game) game.server('return 2') end"),
             ("c_other", "test { level = 'Other:Level', mods = {} }\nfunction run(game) game.server('return 3') end"));
         var copy = CopyWithGame("grouped"); // an instance: its profile is its own, nothing to restore
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
 
         Assert.Equal(0, await runner.RunSuiteAsync(folder, null, false));
 
@@ -125,7 +186,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
             ("passes", "function run(game) end"));
         var copy = CopyWithGame(answer: code => code == "return hp" ? JsonValue.Create(7) : null);
         _game.Platform.Window = true;
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
 
         Assert.Equal(1, await runner.RunSuiteAsync(folder, null, false));
 
@@ -192,7 +253,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
             _bridges.Add(server);
         };
 
-        Assert.Equal(0, await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, null, false));
+        Assert.Equal(0, await Runner(copy).RunSuiteAsync(folder, null, false));
         var load = _chunks.FindIndex(c => c.Contains("Osi.LoadGame(", StringComparison.Ordinal));
         var restore = _chunks.FindIndex(c => c.Contains("GK.Stage.RestoreOutOfLevel(", StringComparison.Ordinal) && c.Contains("AiEnableSwarm", StringComparison.Ordinal));
         Assert.True(load >= 0 && restore > load, "the out-of-level state is set again after the load");
@@ -202,16 +263,11 @@ public sealed partial class GameTestTests : IAsyncLifetime
         Assert.Contains("reset before b_venue: venue", _game.Output.ToString());
         Assert.Contains("2 passed, 0 failed", _game.Output.ToString());
     }
+}
 
-    /// <summary>A recipe as bg3_recipe writes it: a component, its side, steps.</summary>
-    static string Recipe(double within = 10) => GateKit.Mcp.RecipeTest.Write("-- esv::Test: header\n\n", "GustavX:TUT_Avernus_C",
-        "esv::lock::LockComponent", "server", GateKit.Mcp.RecipeTest.Steps(JsonNode.Parse("""
-            [{"side": "server", "lua": "Osi.Lock(\"chest\", \"\") -- a ]] inside", "note": "lock it"},
-             {"key": "Escape", "wait": 0.1},
-             {"key": "w", "hold": 0.05, "note": "N49: a held key"},
-             {"side": "client", "until": "true", "timeout": 5}]
-            """)), within);
-
+/// <summary>The runner replaying recipes: a component that must come alive, and the record a replay writes.</summary>
+public sealed class RecipeReplayTests : FakeGameRuns
+{
     [Fact]
     public async Task A_recipe_replays_and_passes_only_if_its_component_came_alive()
     {
@@ -227,7 +283,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
                                        : """{"Watched": true, "Most": 0, "Ticks": 9, "Before": 0, "Now": 0}""")
             : code.StartsWith("return (", StringComparison.Ordinal) ? JsonValue.Create(true) // the `until` step
             : null);
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
 
         var code = await runner.RunSuiteAsync(folder, null, false);
         var output = _game.Output.ToString();
@@ -249,13 +305,6 @@ public sealed partial class GameTestTests : IAsyncLifetime
         Assert.Contains("1 file(s) skipped", only.Message);
         Assert.Contains("not replayable", Assert.Throws<NotATestException>(() => GameTest.Load(Path.Combine(folder, "old_free_form.lua"))).Message);
     }
-
-    /// <summary>A copy whose game answers `alive` with <paramref name="seen"/> (the JSON of its read).</summary>
-    Copies.GameCopy CopySeeing(string instance, Func<string> seen) => CopyWithGame(instance, code =>
-        code.Contains("Ext.Events.Tick:Subscribe", StringComparison.Ordinal) ? JsonNode.Parse("""{"Before": 0}""")
-        : code.Contains("Watched =", StringComparison.Ordinal) ? JsonNode.Parse(seen())
-        : code.StartsWith("return (", StringComparison.Ordinal) ? JsonValue.Create(true)
-        : null);
 
     [Fact]
     public async Task A_type_held_before_the_steps_fails_its_replay_unless_it_may_exist_and_more_holders_come()
@@ -315,37 +364,12 @@ public sealed partial class GameTestTests : IAsyncLifetime
             ((string)sighting["type"]!, (string)sighting["side"]!, (string)sighting["state"]!, (string)sighting["label"]!));
         Assert.Empty(RecordProblems(root));
     }
+}
 
-    static IEnumerable<string> RecordProblems(string root) =>
-        Record.Read(root, "replays").Concat(Record.Read(root, "sightings")).SelectMany(r => Record.Problems(r.ContainsKey("recipe") ? "replays" : "sightings", r));
-
-    /// <summary>A game with the stage ledger: GK.Stage.* answered as the bridge does, in a level of
-    /// <paramref name="characters"/> characters; <paramref name="dirty"/> makes the next Verify fail.
-    /// A checkpoint makes a save in <paramref name="saves"/>(), and its load restarts both Lua states.</summary>
-    Func<string, JsonNode?> Ledger(string level, int characters, Func<string> saves, Func<bool>? dirty = null) => code =>
-        code.Contains("Osi.AutoSave()", StringComparison.Ordinal) ? Saved(saves())
-        : code.Contains("Osi.LoadGame(", StringComparison.Ordinal) ? Reloaded()
-        : code.Contains("GK.Stage.CurrentLevel()", StringComparison.Ordinal) ? JsonValue.Create(level)
-        : code.Contains("GK.Stage.Begin(", StringComparison.Ordinal) ? JsonNode.Parse($$"""{"level": "{{level}}", "kept": false}""")
-        : code.Contains("GK.Stage.Census()", StringComparison.Ordinal) ? JsonNode.Parse($$"""{"level": "{{level}}", "characters": {{characters}}}""")
-        : code.Contains("GK.Stage.Clean()", StringComparison.Ordinal) ? JsonNode.Parse("""{"notUndone": [], "sideEffects": ["combat_started"]}""")
-        : code.Contains("GK.Stage.Verify()", StringComparison.Ordinal)
-            ? JsonNode.Parse(dirty?.Invoke() == true ? """{"clean": false, "differences": ["a goblin that was not there"]}""" : """{"clean": true, "differences": []}""")
-        : null;
-
-    static JsonNode? Saved(string saves)
-    {
-        Directory.CreateDirectory(Path.Combine(saves, "AutoSave_1"));
-        File.WriteAllText(Path.Combine(saves, "AutoSave_1", "AutoSave_1.lsv"), "save");
-        return null;
-    }
-
-    JsonNode? Reloaded()
-    {
-        lock (_bridges) foreach (var bridge in _bridges) bridge.Reboot();
-        return null;
-    }
-
+/// <summary>The runner and the reset ladder in a game with the stage ledger: a clean between tests, a
+/// copy found in its level, a fixture that stays dirty.</summary>
+public sealed class LadderRunTests : FakeGameRuns
+{
     [Fact]
     public async Task In_a_simple_level_tests_are_cleaned_between_not_reloaded()
     {
@@ -354,7 +378,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
             ("b_second", "test { level = 'GustavX:Basic_Level_A' }\nfunction run(game) game.server('return 2') end"));
         Copies.GameCopy? copy = null;
         copy = CopyWithGame("simple", Ledger("Basic_Level_A", 4, () => copy!.Layout.Saves));
-        Assert.Equal(0, await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, null, false));
+        Assert.Equal(0, await Runner(copy).RunSuiteAsync(folder, null, false));
         var output = _game.Output.ToString();
         Assert.Contains("a simple test level", output);
         Assert.Contains("reset before b_second: fixture", output);
@@ -373,7 +397,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
         await copy.UpAsync(new UpOptions(Level: "GustavX:Basic_Level_A"));
         var started = _game.Platform.Started.Count;
 
-        Assert.Equal(0, await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, null, false));
+        Assert.Equal(0, await Runner(copy).RunSuiteAsync(folder, null, false));
         var output = _game.Output.ToString();
         Assert.Contains("in the copy already running (Basic_Level_A)", output);
         Assert.Contains("after the suite: cleaned", output);
@@ -390,7 +414,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
             ("b_second", "test { level = 'GustavX:Basic_Level_A', reset = 'fixture' }\nfunction run(game) end"));
         Copies.GameCopy? copy = null;
         copy = CopyWithGame("dirty", Ledger("Basic_Level_A", 4, () => copy!.Layout.Saves, dirty: () => true));
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
         // the checkpoint made at the start is the next rung: a reload, not a restart
         Assert.Equal(0, await runner.RunSuiteAsync(folder, null, false));
         var output = _game.Output.ToString();
@@ -400,7 +424,12 @@ public sealed partial class GameTestTests : IAsyncLifetime
         Assert.DoesNotContain("-> game", output);
         Assert.Contains(_chunks, c => c.Contains("Osi.LoadGame(\"AutoSave_1\")", StringComparison.Ordinal));
     }
+}
 
+/// <summary>The runner against a game already running (attach), a claim about a system checked in the
+/// game, the verbs of the tick watch, the layouts the bridge is given, and recipes read as tests.</summary>
+public sealed class AttachedRunTests : FakeGameRuns
+{
     [Fact]
     public async Task Test_attaches_to_a_running_game_and_never_closes_one_it_did_not_start()
     {
@@ -410,7 +439,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
         var copy = CopyWithGame("attach");
         await copy.UpAsync(new UpOptions(Level: "Other:Level"));
         var started = _game.Platform.Started.Count;
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
 
         var refused = await Assert.ThrowsAsync<CopyException>(() => runner.RunSuiteAsync(folder, null, false));
         Assert.Contains("--attach", refused.Message);
@@ -436,7 +465,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
             ("c_fails", "test { level = 'GustavX:WLD_Main_A' }\nfunction run(game) check(false, 'what went wrong') end"));
         var copy = CopyWithGame("level", code => code.Contains("GK.Stage.CurrentLevel()") ? JsonValue.Create("WLD_Main_A") : null);
         await copy.UpAsync(new UpOptions(Level: "GustavX:WLD_Main_A"));
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
 
         Assert.Equal(1, await runner.RunSuiteAsync(folder, null, false, attach: true));
 
@@ -459,7 +488,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
         // Seven recipes of the third run watched "esv": the replay failed as if the component never came.
         var folder = Tests(("bare", "function run(game) watch('server', 'esv') end"));
         var copy = CopyWithGame();
-        Assert.Equal(1, await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, null, false));
+        Assert.Equal(1, await Runner(copy).RunSuiteAsync(folder, null, false));
         Assert.Contains("not a component type: esv", _game.Output.ToString());
         Assert.DoesNotContain(_chunks, c => c.Contains("GKTestWatches", StringComparison.Ordinal));
     }
@@ -540,7 +569,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
             : code.Contains("GameVersion", StringComparison.Ordinal) ? JsonValue.Create("v4.1.1.test")
             : null);
         await copy.UpAsync(new UpOptions(Level: "GustavX:WLD_Main_A"));
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
 
         Assert.Equal(1, await SystemClaims.CheckAsync(runner, "esv::toy::PokeSystem", systems, recipes, clean: false));
 
@@ -596,7 +625,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
             : code.Contains("local w = (GKExpect or {})", StringComparison.Ordinal)
                 ? JsonNode.Parse("""{"Ticks": 9, "Entities": {"10": {"AtBegin": true, "First": 0, "Gone": 5, "Values": [[0, 1], [4, 2]]}, "11": {"AtBegin": false, "First": 3, "Values": [[3, 9]]}}, "Errors": []}""")
             : null);
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
         Assert.True(await runner.RunSuiteAsync(folder, null, false) == 0, _game.Output.ToString());
     }
 
@@ -618,6 +647,30 @@ public sealed partial class GameTestTests : IAsyncLifetime
         Assert.Equal("int32_t", (string)poked["fields"]!["Count"]![1]!);
         Assert.Null(poked["fields"]!["_Pad4"]);
         Assert.Single(data["components"]!.AsObject());
+    }
+
+    [Fact]
+    public void A_layout_written_since_the_last_start_reaches_the_next_one()
+    {
+        // the data is built again only when a file of the folder changed: an edit, a new file, a removal is seen
+        var repository = _game.Temp["kept"];
+        var layouts = Path.Combine(repository, "research", "coverage", "layouts", "alive");
+        Directory.CreateDirectory(layouts);
+        var channel = _game.Temp["channel"];
+        string Layout(string field) => $$"""{"component": "esv::toy::PokedComponent", "size": 8, "fields": [{"name": "{{field}}", "offset": 0, "type": "int32_t"}]}""";
+        File.WriteAllText(Path.Combine(layouts, "a.json"), Layout("Count"));
+        string Written() => File.ReadAllText(Path.Combine(channel, LayoutData.FileName));
+        Assert.Equal(1, LayoutData.Write(repository, channel));
+        Assert.Contains("\"Count\"", Written());
+        File.WriteAllText(Path.Combine(layouts, "a.json"), Layout("Total"));
+        File.SetLastWriteTimeUtc(Path.Combine(layouts, "a.json"), DateTime.UtcNow.AddMinutes(1));
+        Assert.Equal(1, LayoutData.Write(repository, channel));
+        Assert.Contains("\"Total\"", Written());
+        File.WriteAllText(Path.Combine(layouts, "b.json"), Layout("Count").Replace("Poked", "Other", StringComparison.Ordinal));
+        Assert.Equal(2, LayoutData.Write(repository, channel));
+        File.Delete(Path.Combine(layouts, "a.json"));
+        Assert.Equal(1, LayoutData.Write(repository, channel));
+        Assert.DoesNotContain("Poked", Written());
     }
 
     [Fact]
@@ -674,7 +727,7 @@ public sealed partial class GameTestTests : IAsyncLifetime
         var folder = Tests(("single", "test { level = 'GustavX:TUT_Avernus_C' }\nfunction run(game)\n" +
             "  check(game.server('return hp') == 7, 'hit points')\n  game.save('note.txt', 'written by the test')\nend"));
         var copy = CopyWithGame(answer: code => code == "return hp" ? JsonValue.Create(7) : null);
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
 
         Assert.Equal(0, await runner.RunFileAsync(Path.Combine(folder, "single.lua"), keep: false, attach: false));
         Assert.Contains("PASS single", _game.Output.ToString());
@@ -719,9 +772,9 @@ public sealed class LuaBindingTests
             "has({ 'a', 'b' }, 'b')", "count({ x = 1, y = 2 }) == 2",
             "contains('hello world', 'lo w')", "startswith('abc', 'ab')", "endswith('abc', 'bc')",
             "join({ 'a', 'b' }) == 'a, b'", "join({}, ', ', 'nothing') == 'nothing'",
-            // gatekit:allow-non-english  `bytes` counts bytes, not characters, and only a string
-            // outside ASCII can tell the two apart - which is the whole of what this asserts.
-            "lua_list({ 'a', 'b' }) == '{\"a\", \"b\"}'", "bytes('hello мир') == 12",
+            // `bytes` counts bytes, not characters, and only a string outside ASCII can tell the
+            // two apart - which is the whole of what this asserts (three Cyrillic letters, escaped).
+            "lua_list({ 'a', 'b' }) == '{\"a\", \"b\"}'", "bytes('hello " + new string(new[] { (char)0x43C, (char)0x438, (char)0x440 }) + "') == 12",
         })
             Assert.True(script.DoString("return " + expression).CastToBool(), expression);
         var failed = Assert.Throws<ScriptRuntimeException>(() => script.DoString("check(false, 'wrong', { 1, 2 })"));
@@ -795,7 +848,7 @@ public sealed class BridgeLuaSyntaxTests
         var folder = LuaBindingTests.Repository(Path.Combine("mods", "GateKit", "Mods", "Gwynerva_GateKit", "ScriptExtender", "Lua"));
         var broken = new List<string>();
         // Lua 5.3's integer operators (`//`, `|`), which the game's Lua has and MoonSharp (5.2) does not.
-        string[] newer = ["UI.lua", "Situation.lua"];
+        string[] newer = ["UI.lua", "Situation.lua", "RollGenerator.lua"];
         foreach (var file in Directory.EnumerateFiles(folder, "*.lua", SearchOption.AllDirectories))
         {
             if (newer.Contains(Path.GetFileName(file))) continue;

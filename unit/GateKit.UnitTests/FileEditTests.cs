@@ -66,8 +66,9 @@ public sealed class FileEditTests : IDisposable
         var repo = CopySettings.RepositoryRoot();
         Assert.NotNull(repo);
         var mods = BridgeMods.Find(Path.Combine(repo, "mods"));
-        Assert.Equal(["Gwynerva_Weave", "Gwynerva_GateKit"], mods.Select(m => m.Folder));
+        Assert.Equal(["Gwynerva_Weave", "Gwynerva_GateKit", "Gwynerva_GateKitAI"], mods.Select(m => m.Folder));
         Assert.Equal(FakeGame.WeaveUuid, mods[0].Uuid);
+        Assert.Equal([ModSettings.BridgeUuid], mods[2].Dependencies);
     }
 
     [Fact]

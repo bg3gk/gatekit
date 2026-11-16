@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "state/calls/1",
+  "title": "One call of the gatekit program (<home>/state/calls/journal.jsonl)",
+  "description": "Appended by the program as it ends, unless GATEKIT_CALLS is 0; read by `gatekit calls`. The command's words only, never the values of its arguments or options.",
+  "type": "object",
+  "required": ["at", "command", "ms", "start_ms", "exit", "from"],
+  "additionalProperties": false,
+  "properties": {
+    "at": {"type": "string", "format": "time", "description": "When the call ended."},
+    "command": {"type": "string", "description": "The command's words (`registry show`); empty for the program alone (`--help`)."},
+    "ms": {"type": "number", "minimum": 0, "description": "From the process's start to its end."},
+    "start_ms": {"type": "number", "minimum": 0, "description": "From the process's start until the command began: the runtime, loading, finding the commands."},
+    "exit": {"type": "integer"},
+    "from": {"enum": ["publish", "build", "other"], "description": "Where the program ran from: the launcher's publish (artifacts/), a build in bin, or elsewhere (an installed GateKit)."}
+  }
+}

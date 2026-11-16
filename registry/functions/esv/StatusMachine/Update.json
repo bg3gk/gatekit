@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::StatusMachine::Update",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Updates one status machine: adds the statuses requested since the last update (entering them), then processes its lifetimes and removals.",
+  "fingerprint": {
+    "calls": [
+      "fp:07fdd00e8710fd31",
+      "fp:123b79ba6c390bab",
+      "fp:175ac60533e9dfb9",
+      "fp:2c5bc602a3eaa4fa",
+      "fp:5227b96c8688ff31",
+      "fp:643e3cf8b7abf688",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:e7bb55a1095b8383"
+    ],
+    "components": ["esv::combat::System", "ls::AnimationBlueprintSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports esv::StatusMachine::Update(GameTime const&); this function takes the StatusMachine and the game time and drains the pending list at +0xE0. The macOS build's symbols do not hold the name."
+    },
+    {
+      "kind": "watch",
+      "says": "a probe shows its calls coming from code:unplaced::UpdateStatusMachines, many a frame; See Invisibility's save chain passes it"
+    }
+  ]
+}

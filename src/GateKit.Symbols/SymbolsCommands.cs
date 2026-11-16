@@ -353,6 +353,14 @@ public static class SymbolsCommands
             c.SetAction(p => Run(p, s => SymbolText.Replication(s, p.GetValue(name)!, p.GetValue(dll), p.GetValue(code))));
             root.Subcommands.Add(c);
         }
+        // meta-layouts
+        {
+            var ns = new Option<string?>("--ns") { Description = "only the types whose id starts with this" };
+            var top = new Option<int>("--top") { Description = "how many types and differences to list (default 20)", DefaultValueFactory = _ => 20 };
+            var c = new Command("meta-layouts", "how much of the layouts confirmed in the game the engine's metadata gives by itself (FieldMeta with the macOS names, the Toolkit's accessors): offsets, names, sizes") { ns, top };
+            c.SetAction(p => Run(p, s => SymbolText.MetaLayouts(s, p.GetValue(ns), p.GetValue(top))));
+            root.Subcommands.Add(c);
+        }
         // signature
         {
             var text = new Argument<string>("text") { Description = "bg3.exe+0xRVA, or part of a function name that was found in the game" };

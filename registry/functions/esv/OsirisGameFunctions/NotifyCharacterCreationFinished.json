@@ -1,0 +1,79 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::OsirisGameFunctions::NotifyCharacterCreationFinished",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The Osiris call NotifyCharacterCreationFinished has no body of its own in this build: its registration passes a shared stub that answers true and does nothing, the same one registered for NotifyCharacterCreationSkipped, DebugBreak and RequestModalTutorial.",
+  "fingerprint": {
+    "vtables": [
+      {"slot": 0},
+      {"slot": 1},
+      {"slot": 2},
+      {"slot": 3},
+      {"slot": 4},
+      {"slot": 5},
+      {"slot": 6},
+      {"slot": 7},
+      {"slot": 8},
+      {"slot": 9},
+      {"slot": 10},
+      {"slot": 11},
+      {"slot": 12},
+      {"slot": 13},
+      {"slot": 14},
+      {"slot": 15},
+      {"slot": 16},
+      {"slot": 17},
+      {"slot": 18},
+      {"slot": 19},
+      {"slot": 20},
+      {"slot": 21},
+      {"slot": 22},
+      {"slot": 23},
+      {"slot": 24},
+      {"slot": 25},
+      {"slot": 26},
+      {"slot": 27},
+      {"slot": 28},
+      {"slot": 29},
+      {"slot": 30},
+      {"slot": 31},
+      {"slot": 34},
+      {"slot": 35},
+      {"slot": 37},
+      {"slot": 38},
+      {"slot": 40},
+      {"slot": 44},
+      {"slot": 45},
+      {"slot": 49},
+      {"slot": 52},
+      {"slot": 56},
+      {"slot": 58},
+      {"slot": 59},
+      {"slot": 60}
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "in code:unplaced::RegisterOsirisGameFunctions the handler stored before the text NotifyCharacterCreationFinished is this function, whose whole body returns true; the macOS build's symbols hold the name esv::OsirisGameFunctions::NotifyCharacterCreationFinished; the decompiler shows it under the name of another folded function, ls::Level::PreLoad"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe on the stub counts thousands of calls from sixteen unrelated callers in four seconds: the address is shared by folding and a count on it says nothing of this call"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "what finishes character creation on the server, since this call does not: the creation system's own events (esv::character_creation::CreationFinishedOneFrameComponent) are the candidates",
+      "about": "meaning",
+      "state": "open"
+    }
+  ]
+}

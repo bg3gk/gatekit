@@ -68,7 +68,30 @@ internal static partial class SymbolText
         long total = PyText.L(c.Db.Scalar($"SELECT count(*) FROM symbols s JOIN dlls d ON d.id=s.dll_id WHERE {cond}", [.. args]));
         var rows = c.Db.Query("SELECT d.name, s.rva, s.signature, s.mangled, s.forwarder FROM symbols s JOIN dlls d ON d.id=s.dll_id"
                               + $" WHERE {cond} ORDER BY s.namespace, s.class, s.method, d.name LIMIT ?", With(args, o.Limit)).ToList();
-        Show(c, rows, o, total);
+        var macos = MacosNames(c, text, o);
+        if (rows.Count > 0 || macos.Count == 0) Show(c, rows, o, total);
+        foreach (var (rva, name) in macos) c.WriteLine($"{$"{Macos}+0x{X(rva)}",-32} {name}");
+        if (macos.Count == o.Limit) c.Note($"... first {o.Limit} names of the macOS build shown; raise --limit or narrow the search");
+    }
+
+    const string Macos = "bg3_macos_x64";
+
+    /// <summary>The functions of the macOS build whose name holds every word: the game's own names, kept
+    /// in the pseudo-code database. None when that database is not there, or the search is for one kind
+    /// of export or another binary.</summary>
+    static List<(long Rva, string Name)> MacosNames(SymbolContext c, IReadOnlyList<string> text, QueryOptions o)
+    {
+        if (!string.IsNullOrEmpty(o.Kind) || (!string.IsNullOrEmpty(o.Dll) && !Macos.Contains(o.Dll, StringComparison.OrdinalIgnoreCase)) || c.Decomp.Db is not { } db) return [];
+        try
+        {
+            var args = new List<object?> { Macos };
+            args.AddRange(text.Select(t => (object?)Sql.Like(t)));
+            args.Add(o.Limit);
+            return db.Query("SELECT f.rva, f.name FROM functions f JOIN binaries b ON b.id = f.binary_id WHERE b.name = ? AND f.name NOT LIKE 'FUN!_%' ESCAPE '!'"
+                            + string.Concat(text.Select(_ => " AND f.name LIKE ? ESCAPE '\\'")) + " ORDER BY f.name LIMIT ?", [.. args])
+                .Select(r => (PyText.L(r[0]), PyText.Str(r[1]))).ToList();
+        }
+        catch (Microsoft.Data.Sqlite.SqliteException) { return []; }
     }
 
     public static void Class(SymbolContext c, string name, QueryOptions o)

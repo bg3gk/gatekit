@@ -15,12 +15,28 @@ public sealed class GameFactAttribute : FactAttribute
     }
 }
 
+/// <summary>A test of the installed game that takes minutes: run only when GATEKIT_SLOW_TESTS is 1, and
+/// then only where the game is installed. Its trait (Speed=slow) selects the slow tests alone:
+/// <c>GATEKIT_SLOW_TESTS=1 dotnet test --filter Speed=slow</c>.</summary>
+public sealed class SlowGameFactAttribute : FactAttribute
+{
+    public const string Variable = "GATEKIT_SLOW_TESTS";
+
+    public SlowGameFactAttribute()
+    {
+        if (Environment.GetEnvironmentVariable(Variable) != "1")
+            Skip = $"a slow test, run when {Variable}=1 (dotnet test --filter Speed=slow)";
+        else if (new GameFactAttribute().Skip is { } missing)
+            Skip = missing;
+    }
+}
+
 /// <summary>
 /// Reads the installed game: builds a scenes-only index into a temporary folder (a few minutes).
 /// </summary>
 public class GameIntegrationTests
 {
-    [GameFact]
+    [SlowGameFact, Trait("Speed", "slow")]
     public void ScenesOnlyIndexOfTheInstalledGame()
     {
         var data = DataPaths.GameData(null, null)!;

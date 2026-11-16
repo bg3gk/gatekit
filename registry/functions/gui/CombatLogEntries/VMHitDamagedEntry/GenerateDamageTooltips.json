@@ -1,0 +1,54 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::CombatLogEntries::VMHitDamagedEntry::GenerateDamageTooltips",
+  "state": "described",
+  "rung": "game",
+  "does": "Builds, once when a hit's combat log entry is made on the client, the tooltip lines of its damage text (VMCombatLogTooltipEntry each: armour class, attack roll, damage roll, resistances) from the HitEntry the server sent; the damage roll line is written from the hit's resolved stats expression, not from its list of damage rolls. Hovering only shows what this built.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:25775885d1a67594",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3c1b457638f3ac4f",
+      "fp:41179a63bb31e7df",
+      "fp:5227b96c8688ff31",
+      "fp:663d7536abf1ccc4",
+      "fp:72b4801e8e903ffc",
+      "fp:76c1bf97cda2007d",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:b70839e52859db22",
+      "fp:ce1ea44345f8f104",
+      "fp:d6829d94468fa392",
+      "fp:dcea881daf8a8e04",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8c904b320f1070b",
+      "unplaced::CombatLogDamageRollTooltipLine"
+    ],
+    "strings": [
+      "0125ffe607d50fba",
+      "22ac98062089e61a",
+      "35100afcdc503b98",
+      "3f36722d4ee4b4c4",
+      "57de700634a2998c",
+      "a7ff7f771ca8ec38",
+      "afd3cd9b997c530c",
+      "b0b0fccaba46a5d4",
+      "b71b11263d2015c8"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the macOS build names it (VMHitDamagedEntry::GenerateDamageTooltips, called by the VMHitDamagedEntry constructor); here it is the one function calling eoc::StatsDamage::ResistanceToDisplayString, twice as there, and the only caller of the Damage Roll line builder at code:unplaced::CombatLogDamageRollTooltipLine that runs eoc::StatsDamage::StringVisit"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe over one weapon hit shows 1 call, from code:gui::CombatLogEntries::VMHitDamagedEntry::VMHitDamagedEntry (itself called once from bg3_dx11.exe@25605617+0x16BD9CE); the lines it built, read from the view model's nested trans strings, are the player's tooltip (Sneak Attack: 'Damage Roll: 2 (1d4) + 3 (Dex) + 5 (1d6) = 10' while the hit's DamageRolls list only 1d4+3)"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

@@ -12,7 +12,7 @@ namespace GateKit.Testing;
 ///    verified every time.
 /// 2. <see cref="Venue"/> - RELOADING THE LEVEL (its checkpoint, in the same process): real time
 ///    even in the simple test level; near-absolutely clean, the game rebuilds the level from
-///    nothing - and what survives a level load (lua-api.md 14) is put back or flagged.
+///    nothing - and what survives a level load (lua-api.md, "What survives a level load") is put back or flagged.
 /// 3. <see cref="Game"/> - RESTARTING THE GAME: the last resort; only when nothing else can do (a
 ///    new extender, a hang, a crash, state that survives a level load). Absolutely clean.
 /// <see cref="None"/>: nothing is done.</summary>
@@ -192,20 +192,37 @@ public sealed class ResetLadder(IResetActions actions, TextWriter output)
     static string First(string message) => message.Split('\n')[0];
 }
 
+/// <summary>The waits of the ladder's rungs that are counted in time (<see cref="GameResetActions"/>
+/// says what each is). A real game runs with <see cref="Default"/>; the unit tests' fake game,
+/// which answers at once and plays no scene, runs with shorter ones.</summary>
+/// <param name="SceneAppear">After a reload, how long a level's opening scene is given to appear
+/// before none is taken to come (<see cref="GameSession.SkipScenesAsync"/>).</param>
+public sealed record ResetLimits(TimeSpan Settle, TimeSpan VerifyFor, TimeSpan PendingFor, TimeSpan SceneAppear)
+{
+    public static ResetLimits Default { get; } = new(TimeSpan.FromMilliseconds(300), TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(12), TimeSpan.FromSeconds(3));
+}
+
 /// <summary>The ladder's rungs in a real game: GK.Stage on both sides, the copy's checkpoint
 /// reset, and a restart through `up`.</summary>
 public sealed class GameResetActions : IResetActions
 {
     readonly Copies.GameCopy _copy;
     readonly UpOptions? _restart;
+    readonly TimeSpan _sceneAppear;
 
     /// <param name="restart">How to start the game again for the game rung; null: that rung is
     /// not allowed (a game somebody else started, `--attach`).</param>
-    public GameResetActions(Copies.GameCopy copy, GameSession session, UpOptions? restart)
+    /// <param name="limits">The waits counted in time; <see cref="ResetLimits.Default"/> when null.</param>
+    public GameResetActions(Copies.GameCopy copy, GameSession session, UpOptions? restart, ResetLimits? limits = null)
     {
         _copy = copy;
         Session = session;
         _restart = restart;
+        limits ??= ResetLimits.Default;
+        Settle = limits.Settle;
+        VerifyFor = limits.VerifyFor;
+        PendingFor = limits.PendingFor;
+        _sceneAppear = limits.SceneAppear;
     }
 
     /// <summary>The session after the last rung (a new one after a restart).</summary>
@@ -219,12 +236,12 @@ public sealed class GameResetActions : IResetActions
     /// game counted in the server's ticks (Verify's `ticks`): a window or a fight the clean itself
     /// set off shows in the attention record by then. GAP: a settle for want of the game's event
     /// that what the clean set going has ended.</summary>
-    public TimeSpan Settle { get; init; } = TimeSpan.FromMilliseconds(300);
+    public TimeSpan Settle { get; init; }
 
     /// <summary>How long Verify is asked again while deletions are pending or values settle, in
     /// seconds of a running game counted in the server's ticks; a game that stands still for
     /// <see cref="Bridge.BridgeClient.StallGuard"/> ends it too (a hang guard).</summary>
-    public TimeSpan VerifyFor { get; init; } = TimeSpan.FromSeconds(4);
+    public TimeSpan VerifyFor { get; init; }
 
     static long? TicksOf(JsonObject verify) =>
         verify["ticks"] is JsonValue v && v.TryGetValue<double>(out var t) ? (long)t : null;
@@ -232,7 +249,7 @@ public sealed class GameResetActions : IResetActions
     /// <summary>How long, in the game's own time (GK.Speed.Clock), Verify is asked again while it
     /// says the only differences are the game's own work under way (`pending`): a turn resource it
     /// refills out of combat takes a round of 6 game seconds.</summary>
-    public TimeSpan PendingFor { get; init; } = TimeSpan.FromSeconds(12);
+    public TimeSpan PendingFor { get; init; }
 
     /// <summary>What the last clean's Verify found the game made and keeps at its default (not dirt), a line each.</summary>
     public List<string> Kept { get; } = [];
@@ -446,7 +463,7 @@ public sealed class GameResetActions : IResetActions
     }
 
     /// <summary>The checkpoint loaded, and then what lives outside the level put back as the old
-    /// baseline had it (the game speed, the global switches, the frame cap: lua-api.md 14, "What
+    /// baseline had it (the game speed, the global switches, the frame cap: lua-api.md, "What
     /// survives a level load"). The Lua state does not outlive the load, so the host carries it.</summary>
     public async Task ReloadVenueAsync()
     {
@@ -456,7 +473,7 @@ public sealed class GameResetActions : IResetActions
         catch (CopyException) { }
         try { frameCap = await Session.UiAsync("return GKStageFrameCap", TimeSpan.FromSeconds(10)); }
         catch (CopyException) { }
-        await Session.ResetAsync();
+        await Session.ResetAsync(appear: _sceneAppear);
         if (outOfLevel is JsonObject saved)
         {
             try

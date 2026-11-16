@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::TLPreviewDummyHelpers::LoadDummy",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Starts the loading of a prepared dummy: when the dummy has a visual resource (0x54) it asks the visual system to load the visual, or reloads one that exists, then loads the physics and sets the physics group. The third parameter is a shared pointer to a callback object that is called when the visual load ends.",
+  "fingerprint": {
+    "calls": [
+      "ecl::TLPreviewDummy::LoadVisualInternal",
+      "fp:36ea95f2ce33bd6a",
+      "fp:45dc6e5176859392",
+      "fp:5227b96c8688ff31",
+      "fp:60acceb46c01dfc1",
+      "fp:65a8a14ac08460bd",
+      "fp:e4d053ad9455ea7c",
+      "fp:fada153afbc2fa6c",
+      "fp:fcaff1dceb7c3011"
+    ],
+    "components": ["ls::PhysicsComponent", "ls::PhysicsECSSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The visual branch calls the dummy's internal visual load with the callback, the physics branch reads ls::PhysicsComponent and the level's physics scene at 0x30 of the current level; the Toolkit's ecl::TLPreviewDummyHelpers::LoadDummy(WorldView&, TLPreviewDummy*, SharedPtr<Callback<void(bool)>> const&) has the same three parameters."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts records 27 calls, one for each dummy that has something to load, each with the dummy returned by CreateDummy."
+    },
+    {"kind": "toolkit-name", "says": "ecl::TLPreviewDummyHelpers::LoadDummy"}
+  ]
+}

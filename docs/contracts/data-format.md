@@ -2,7 +2,7 @@
 
 One format for every file GateKit writes or reads of its own, and for every answer its tools give:
 **strict JSON, held to a schema.** This page is the contract; `src/GateKit.Json` is the one
-implementation (`JsonText`, `SchemaSet`), and `gatekit json` (cli.md 8.12) is how a person or a
+implementation (`JsonText`, `SchemaSet`), and [`gatekit json`](cli.md#json-gatekits-own-data-files) is how a person or a
 CI job checks it.
 
 Why strict JSON and not a friendlier format: JSON5, JSONC, YAML, TOML, KDL and Lua tables were

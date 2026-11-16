@@ -5,23 +5,16 @@ and its rules, for people and agents alike; this page adds what a contributor ne
 
 ## Language
 
-English is the language of everything in this repository (AGENTS rule 1). The exceptions:
+English is the language of everything in this repository (AGENTS rule 1), with no exceptions:
 
 - **Localization**: text meant to be shown in many languages comes from the game's own data
-  (localization handles, stat ids) or from translation files made for that purpose — never a
-  hardcoded table in one language.
-- **Test data**: non-ASCII strings that test text handling stay as they are; that is what they
-  test.
-- **Quotes**: names or text quoted verbatim from the game or from another source.
+  (localization handles, stat ids), never a table written in the repository.
+- **Test data**: a test that needs characters outside ASCII writes them as escapes (`"\u{43C}"`
+  in Lua, a `(char)0x43C` in C#), so the file itself stays English.
+- **Quotes**: text the game showed in another language is quoted in English translation, saying
+  which language it was shown in.
 
-A file that needs one of these exceptions says so in itself, on a line of its own:
-
-```
-gatekit:allow-non-english  the game's own strings, to test that they survive the channel
-```
-
-Continuous integration fails on non-English text in any other file. `research/` is working
-material and is exempt; see its README.
+Continuous integration fails on any non-English text, in every file, `research/` included.
 
 ## Repositories
 

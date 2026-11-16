@@ -2,11 +2,11 @@
   "schema": "registry/function/1",
   "id": "esv::roll::stream::SaveSystem::SaveStreams",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "The SaveSystem's update: makes the roll streams component when there is none, its BaseSeed the time in seconds, and copies the roll manager's streams and last frame into it when the manager has changes, clearing that flag.",
   "fingerprint": {
     "calls": [
-      "esv::roll::stream::CopyStreams",
+      "eoc::roll::stream::CopyStreams",
       "fp:0ebf764eadcd2eb7",
       "fp:162417c7d4bdf002",
       "fp:5227b96c8688ff31",
@@ -24,7 +24,19 @@
   "evidence": [
     {
       "kind": "text",
-      "says": "The watch on the component's NumRolls hit inside the stream copy with a return chain +0x105D985, +0x342DDF9, SystemUpdate<esv::roll::stream::SaveSystem> (+0x23993CC); the component's BaseSeed (+0x18), read with GK.Memory.Read, equals the Unix time of the load in seconds (seen by a test of the first tree, to be written anew)"
+      "says": "The watch on the component's NumRolls hit inside the stream copy with a return chain bg3_dx11.exe@25605617+0x105D985, bg3_dx11.exe@25605617+0x342DDF9, SystemUpdate<esv::roll::stream::SaveSystem> (bg3_dx11.exe@25605617+0x23993CC); the component's BaseSeed (+0x18), read with GK.Memory.Read, equals the Unix time of the load in seconds (seen by a test of the first tree, to be written anew)"
+    },
+    {
+      "kind": "watch",
+      "says": "The copy of an array of streams is called from bg3_dx11.exe@25605617+0x342DDF9 inside this function once after rolls were made and not otherwise"
+    },
+    {
+      "kind": "read",
+      "says": "The copy is made only when the manager's changed flag at +0x2A is set, and the flag is cleared after it"
+    },
+    {
+      "kind": "text",
+      "says": "The member's name is ours: the Toolkit exports the system esv::roll::stream::SaveSystem and no member of this name, and the macOS build's symbols hold none."
     }
   ]
 }

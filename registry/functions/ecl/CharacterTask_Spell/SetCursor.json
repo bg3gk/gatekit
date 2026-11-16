@@ -1,0 +1,34 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::CharacterTask_Spell::SetCursor",
+  "state": "described",
+  "rung": "game",
+  "does": "Builds a TargetingInfo, calls GetTaskInfo, then calls every UI feedback listener with the player, the target and the TargetingInfo (the inlined UIFeedbackManager::UpdateEntityTargeting).",
+  "fingerprint": {
+    "calls": [
+      "ecl::CharacterTask_Spell::GetTaskInfo",
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:73797869de93c7d1",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "fp:fd1c6b74f136fa9c"
+    ],
+    "vtables": [{"slot": 15}]
+  },
+  "evidence": [
+    {"kind": "read", "says": "listener loop over DAT_146008a68+0x28 after GetTaskInfo"},
+    {
+      "kind": "watch",
+      "says": "a count-only probe over 5 s of the host holding Target_MainHandAttack on a goblin shows about 165 calls, one per frame at a 30 fps cap"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCClient.dll exports this name; the symbol database finds the export again in the executable at this function by its slot in the class's virtual table"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

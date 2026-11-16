@@ -1,0 +1,37 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::RollManager::RollDiceWithBoostsAgainstDC",
+  "state": "described",
+  "rung": "game",
+  "does": "Rolls a formula for a roller against a difficulty on the stream named by its id: finds the stream, marks the manager changed, and, when weighted rolls are on and the stream's type is weighted, first lets the weighted decision force the outcome; otherwise rolls with boosts and moves the debts.",
+  "fingerprint": {
+    "calls": [
+      "eoc::roll::stream::RollManager::CheckStreamAgainstDC",
+      "eoc::roll::stream::RollManager::InternalRollDiceWithBoosts",
+      "fp:5227b96c8688ff31",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "GK.Memory.Watch on the roll stream counts: both d20 draws of a fair melee attack return through bg3_dx11.exe@25605617+0x105B9ED of this function, called from RollAttackAgainstArmourClass (bg3_dx11.exe@25605617+0x106CE8B); it scans the manager's streams (0x78 bytes each, the layout the rolls executor confirmed) for the one asked; callers include eoc::stats::AbilityCheck (code:eoc::stats::AbilityCheck) and the check against a DC at code:unplaced::RollSkillCheck"
+    },
+    {
+      "kind": "watch",
+      "says": "The count writes of a weapon attack's d20 pair return through bg3_dx11.exe@25605617+0x105B9ED inside this function, called from the attack roll against armour class"
+    },
+    {
+      "kind": "read",
+      "says": "The stream is looked up by the id at its +0x58; the manager's byte at +0x28 equal to 1 and a stream type other than 0, 6 and 7 lead to the weighted decision"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

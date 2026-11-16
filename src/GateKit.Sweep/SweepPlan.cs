@@ -18,7 +18,7 @@ public sealed record Fallback(Carrier Carrier, string How, string? Undo, string 
 /// <summary>
 /// One step of a sweep plan. <see cref="How"/> and <see cref="Undo"/> are server Lua with two
 /// locals set: <c>D</c>, the dummy the step is done to, and <c>T</c>, a second dummy for spells
-/// that need a target (docs/contracts/cli.md, 8.13).
+/// that need a target (docs/contracts/cli.md, "sweep").
 /// </summary>
 public sealed record SweepStep
 {

@@ -1,0 +1,51 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::status::RequestSystem::GatherCombatEvents",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Among the combat events it turns into status requests: every creature that newly carries the surprised join request or the surprised stealth request gets a request to create the status SURPRISED on itself for 6 seconds, with no source.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<>,ls::TypeList<>,ls::TypeList<esv::combat::SurprisedJoinRequestOneFrameComponent,esv::combat::SurprisedStealthRequestOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<esv::combat::SurprisedJoinRequestOneFrameComponent,esv::combat::SurprisedStealthRequestOneFrameComponent>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<esv::combat::LeftEventOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<esv::combat::LeftEventOneFrameComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "the Toolkit exports the name esv::status::RequestSystem::GatherCombatEvents at EoCServer.dll+0x91CF50 (kept under unplaced here: the namespace esv::status and the class esv::Status differ only by case, which a folder cannot hold on a disk that ignores case); its second loop builds a create-status request from the fixed string SURPRISED and the constant 6.0"
+    },
+    {
+      "kind": "read",
+      "says": "the same loop here compares against the fixed string SURPRISED and writes 0x40c00000 as the duration; the query it walks is the one registered for either of the two request components, newly added"
+    },
+    {
+      "kind": "watch",
+      "says": "the status comes on the target 4 ticks after its stealth request and on an ally 4 ticks after its join request, with turns 1 and no giver; a target with StatusImmunity(SURPRISED) gets the request and no status"
+    },
+    {"kind": "test", "test": "surprise/alert"}
+  ],
+  "questions": [
+    {
+      "ask": "A probe that counts its calls says nothing: a system's gatherer runs every tick. Reading which query index the second loop walks would tie it to the two request components directly.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

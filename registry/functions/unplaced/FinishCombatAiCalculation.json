@@ -1,0 +1,36 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::FinishCombatAiCalculation",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Completes a character's combat AI calculation: logs 'Calculation complete', warns when a flying spell needs a navigation-cloud trigger, and removes the request from the AI's tables.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "strings": ["009ea8d884c455c5", "119939b7f6090cdc"]
+  },
+  "evidence": [
+    {"kind": "read", "says": "the two log strings and a hash-table Remove on the AI data"},
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, 30 times, once per finished enemy decision, from 1 place, UpdateCombatAiRequest"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A probe at the end of an enemy's decision that reads the AI's request table before and after the call would show the request removed.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

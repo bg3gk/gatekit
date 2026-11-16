@@ -1,0 +1,136 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::Character",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The character object of the server. NeedsUpdate and ForceSynch keep a character awake far from the party; Flags3 holds SpreadActivation; UserID is the user who controls it and the second user id at +0x188 the user it is reserved for. Script Extender: ServerCharacter.",
+  "fields": [
+    {
+      "offset": 373,
+      "name": "NeedsUpdate",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Character.h of Script Extender binds ServerCharacter to this engine name; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the host ServerCharacter.ForceSynch reads 0, then 1 right after Osi.SetForceUpdate(host, 1) and 0 after Osi.SetForceUpdate(host, 0), NeedsUpdate staying 0; UserID and UserID2 both read 65537, the user of the host"
+        },
+        {
+          "kind": "read",
+          "says": "the handler of the Osiris call StartChangeAppearance (code:esv::OsirisGameFunctions::StartChangeAppearance) compares the int at +0x188 of the character it resolved with the unassigned user id, where the Toolkit function of the same name calls esv::Character::GetReservedForUserID"
+        }
+      ]
+    },
+    {
+      "offset": 374,
+      "name": "ForceSynch",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Character.h of Script Extender binds ServerCharacter to this engine name; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the host ServerCharacter.ForceSynch reads 0, then 1 right after Osi.SetForceUpdate(host, 1) and 0 after Osi.SetForceUpdate(host, 0), NeedsUpdate staying 0; UserID and UserID2 both read 65537, the user of the host"
+        },
+        {
+          "kind": "read",
+          "says": "the handler of the Osiris call StartChangeAppearance (code:esv::OsirisGameFunctions::StartChangeAppearance) compares the int at +0x188 of the character it resolved with the unassigned user id, where the Toolkit function of the same name calls esv::Character::GetReservedForUserID"
+        }
+      ]
+    },
+    {
+      "offset": 377,
+      "name": "Flags3",
+      "type": "CharacterFlags3",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Character.h of Script Extender binds ServerCharacter to this engine name; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the host ServerCharacter.ForceSynch reads 0, then 1 right after Osi.SetForceUpdate(host, 1) and 0 after Osi.SetForceUpdate(host, 0), NeedsUpdate staying 0; UserID and UserID2 both read 65537, the user of the host"
+        },
+        {
+          "kind": "read",
+          "says": "the handler of the Osiris call StartChangeAppearance (code:esv::OsirisGameFunctions::StartChangeAppearance) compares the int at +0x188 of the character it resolved with the unassigned user id, where the Toolkit function of the same name calls esv::Character::GetReservedForUserID"
+        }
+      ]
+    },
+    {
+      "offset": 388,
+      "name": "UserID",
+      "type": "UserId",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Character.h of Script Extender binds ServerCharacter to this engine name; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the host ServerCharacter.ForceSynch reads 0, then 1 right after Osi.SetForceUpdate(host, 1) and 0 after Osi.SetForceUpdate(host, 0), NeedsUpdate staying 0; UserID and UserID2 both read 65537, the user of the host"
+        },
+        {
+          "kind": "read",
+          "says": "the handler of the Osiris call StartChangeAppearance (code:esv::OsirisGameFunctions::StartChangeAppearance) compares the int at +0x188 of the character it resolved with the unassigned user id, where the Toolkit function of the same name calls esv::Character::GetReservedForUserID"
+        }
+      ]
+    },
+    {
+      "offset": 392,
+      "name": "UserID2",
+      "type": "UserId",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Character.h of Script Extender binds ServerCharacter to this engine name; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the host ServerCharacter.ForceSynch reads 0, then 1 right after Osi.SetForceUpdate(host, 1) and 0 after Osi.SetForceUpdate(host, 0), NeedsUpdate staying 0; UserID and UserID2 both read 65537, the user of the host"
+        },
+        {
+          "kind": "read",
+          "says": "the handler of the Osiris call StartChangeAppearance (code:esv::OsirisGameFunctions::StartChangeAppearance) compares the int at +0x188 of the character it resolved with the unassigned user id, where the Toolkit function of the same name calls esv::Character::GetReservedForUserID"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "the header Character.h of Script Extender binds ServerCharacter to this engine name; the offsets are from its layout (gatekit symbols layout)"
+    },
+    {
+      "kind": "watch",
+      "says": "on the host ServerCharacter.ForceSynch reads 0, then 1 right after Osi.SetForceUpdate(host, 1) and 0 after Osi.SetForceUpdate(host, 0), NeedsUpdate staying 0; UserID and UserID2 both read 65537, the user of the host"
+    },
+    {
+      "kind": "read",
+      "says": "the handler of the Osiris call StartChangeAppearance (code:esv::OsirisGameFunctions::StartChangeAppearance) compares the int at +0x188 of the character it resolved with the unassigned user id, where the Toolkit function of the same name calls esv::Character::GetReservedForUserID"
+    },
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types), as class esv::Character; the Toolkit exports the class"
+    },
+    {"kind": "toolkit-name", "store": "EoCServer.dll", "says": "EoCServer.dll exports this name"}
+  ],
+  "questions": [
+    {
+      "ask": "the registry entry of esv::ActivationManager::GetActivationResult reads NeedsUpdate and ForceSynch at +0x1A1 and +0x1A2 of its character pointer, 0x2C beyond +0x175 and +0x176 of the extender layout, while +0x188 agrees with the extender here: find what the pointer of the rule points at with a memory watch on the byte that Osi.SetForceUpdate writes",
+      "about": "meaning",
+      "state": "open"
+    }
+  ]
+}

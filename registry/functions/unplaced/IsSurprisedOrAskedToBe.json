@@ -1,0 +1,21 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::IsSurprisedOrAskedToBe",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Answers whether a creature counts as surprised for the surprise system: it carries esv::combat::SurprisedStealthRequestOneFrameComponent this tick, or its status container holds the status SURPRISED on a status entity with esv::status::ActiveComponent.",
+  "fingerprint": {
+    "calls": ["fp:325b7c5be6e46690", "fp:5227b96c8688ff31", "fp:fe90d0f73c646f26"],
+    "components": ["esv::combat::SurprisedStealthRequestOneFrameComponent"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "one lookup of the one-frame component by its type index, then a walk of the status container comparing each status id with the fixed string SURPRISED"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe during a hidden archer's shot at one of two hostile humans shows 6 calls: 3 and 1 from the gatherer of joining creatures, 2 from the gatherer of a stealth target's allies"
+    }
+  ]
+}

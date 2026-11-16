@@ -1,0 +1,98 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::SpellCastHandleSystemEvents",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Handles the events of one spell cast in a switch on the event type. Event 0x44 is the result of the cast's interrupts: cast entity at +8, the per-roll RollAdjustments map (Guid key, 0x58 values) at +0x18, the damage roll adjustments at +0x58, and the usage map at +0x98 keyed by the creature that used interrupts, whose values (0x50: costs, then a map keyed by the interrupt entity of maps InterruptEvent to InterruptUsageEntry, 0x78) name each interrupt used, the roll it was used on (the event's RollUuid at +0) and that interrupt's own adjustments (entry +0x18). It applies them through unplaced::AdjustCastRollsByInterrupts and esv::interrupt::AdjustFunctorConditionRolls (both given event+8 / event+0x18), then adds esv::spell_cast::InterruptsUsedOneFrameComponent to each user.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Destroy",
+      "esv::interrupt::AdjustFunctorConditionRolls",
+      "fp:03049b61a34ef076",
+      "fp:0a96aeef33707f71",
+      "fp:123b79ba6c390bab",
+      "fp:1391a87bb8249ef3",
+      "fp:13ddf19cc6797441",
+      "fp:17d64f4f53906deb",
+      "fp:1daa350ea22bace4",
+      "fp:1ef354d06a5d0216",
+      "fp:21c2e0cc5ffe9640",
+      "fp:249d9c80cf27bdfd",
+      "fp:24c801b0780dfd1d",
+      "fp:2918e99cd950f428",
+      "fp:2b64a61b96ff6fb9",
+      "fp:2c99100dbddd144b",
+      "fp:2fa4f46b96a4f356",
+      "fp:36ea95f2ce33bd6a",
+      "fp:4d043fc8e6187d7c",
+      "fp:4d7890a6c6fbb798",
+      "fp:50b7a8c77f878f8a",
+      "fp:514e085ab3b6f0cc",
+      "fp:5227b96c8688ff31",
+      "fp:63c8a1b1588c8672",
+      "fp:6d7f78aaa1f980ea",
+      "fp:6e589d0cc2ddc9a7",
+      "fp:72de467838477821",
+      "fp:846a307bbcd75597",
+      "fp:84fc643981bad1ec",
+      "fp:88417f074e49ad09",
+      "fp:91c3d48dff57ab4c",
+      "fp:955919bfe3c2aa1d",
+      "fp:9cf846c45c116fc3",
+      "fp:9f44c8ba1c9f9996",
+      "fp:aa6b15dbf29bca38",
+      "fp:abcc79fb4bbcc835",
+      "fp:abd2983f0ea393e7",
+      "fp:ae386cf1cbeb2115",
+      "fp:b06cb3814930169a",
+      "fp:bfad429aea9d01c6",
+      "fp:c34beeccbc5e39f1",
+      "fp:c438e6acc9121a11",
+      "fp:c53b48bfc1c27974",
+      "fp:c65e3408d5f2b808",
+      "fp:c8bace08d15c1891",
+      "fp:ceb33a1829da5b3c",
+      "fp:d1045bdeed38dbc1",
+      "fp:d396356d158b613d",
+      "fp:da77f21fa951c985",
+      "fp:dc2b41816829be26",
+      "fp:e2de9f877de8a2b0",
+      "fp:e4d053ad9455ea7c",
+      "fp:ea88ebb2113e9ef6",
+      "fp:ebded19f66f90b86",
+      "fp:f0c0446258ac114a",
+      "fp:f0c2e8131ff32882",
+      "fp:f1a98cd1be9f8c15",
+      "fp:f2583ee3628ff30e",
+      "fp:f303d0dab8b2459d",
+      "fp:fc6e333c1e97429e",
+      "fp:fc7a91e7e6596fa5",
+      "unplaced::AdjustCastRollsByInterrupts"
+    ],
+    "components": [
+      "eoc::spell_cast::CastEventOneFrameComponent",
+      "eoc::spell_cast::FinishedEventOneFrameComponent",
+      "eoc::spell_cast::LogicExecutionStartEventOneFrameComponent",
+      "eoc::spell_cast::OutcomeComponent",
+      "esv::spell_cast::ZoneRangeComponent",
+      "navcloud::PathResultComponent"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "case 0x44 passes event+8 and event+0x18 to AdjustCastRollsByInterrupts and event+0x18 to AdjustFunctorConditionRolls, then walks the keys at event+0xB8 (count +0xC4, values +0xC8) adding InterruptsUsedOneFrameComponent to each"
+    },
+    {
+      "kind": "watch",
+      "says": "read from inside RollAdjusted through the open frame of either caller (event = arg - 0x18): a SetRoll(1) interrupt of the host on its attack (15 to 1) and Bardic Inspiration on the host's save against a bite (total 7 to 10, its entry BaseAdjustment 3) each found under the host with the interrupt's name and the roll's Guid equal to RollUuid; the one-frame component appeared only in the next tick"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the other event types of the switch; whether a reaction the player is asked for (Lucky) arrives through the same event",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

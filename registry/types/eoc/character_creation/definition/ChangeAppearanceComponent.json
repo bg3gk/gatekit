@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "eoc::character_creation::definition::ChangeAppearanceComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "On the session entity of a change-appearance session: the character being edited and the definition entity. Script Extender: CCDefinitionChangeAppearance.",
   "size": 16,
   "fields": [
     {
@@ -12,7 +15,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "serializer bg3.exe+0x9BCFB0/0x9BD160 member 1: entity writer bg3.exe+0x4017090 at +0 (global offset = 0); macOS ctor dup of 0xFFC0000000000000 (null handles) over +0..+0x10. Neighbours definition::FullRespecComponent/RespecComponent have (Character, Respec) handles here."
+          "says": "serializer bg3.exe@25605617+0x9BCFB0/0x9BD160 member 1: entity writer bg3.exe@25605617+0x4017090 at +0 (global offset = 0); macOS ctor dup of 0xFFC0000000000000 (null handles) over +0..+0x10. Neighbours definition::FullRespecComponent/RespecComponent have (Character, Respec) handles here."
         }
       ]
     },
@@ -30,6 +33,16 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "CCDefinitionChangeAppearance", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) the handle at +0x0 is the host's entity and the one at +0x8 is the entity that carries CCChangeAppearanceDefinition and CCDefinitionCommon"
+    }
+  ],
   "survey": {
     "batch": "replicated",
     "confidence": "high",

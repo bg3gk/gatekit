@@ -4,7 +4,7 @@ using GateKit.Testing;
 namespace GateKit.UnitTests;
 
 /// <summary>Tests in a tree of folders, named steps with their class, and preconditions (need).</summary>
-public sealed partial class GameTestTests
+public sealed class TestStepsTests : FakeGameRuns
 {
     [Fact]
     public void Tests_are_found_in_a_tree_and_named_by_their_path()
@@ -62,7 +62,7 @@ public sealed partial class GameTestTests
             File.WriteAllText(Path.Combine(root, part, "case.lua"), $"function run(game) game.save('mine.txt', '{part}') end");
         }
         var copy = CopyWithGame("same");
-        Assert.Equal(0, await new TestRunner(copy, _game.Output).RunSuiteAsync(root, null, false));
+        Assert.Equal(0, await Runner(copy).RunSuiteAsync(root, null, false));
         var run = Directory.EnumerateDirectories(Path.Combine(copy.Layout.State, "runs")).Single();
         Assert.Equal("a", File.ReadAllText(Path.Combine(run, "a", "case", "mine.txt")));
         Assert.Equal("b", File.ReadAllText(Path.Combine(run, "b", "case", "mine.txt")));
@@ -81,7 +81,7 @@ public sealed partial class GameTestTests
             end
             """));
         var copy = CopyWithGame("stepped", code => code.StartsWith("return '", StringComparison.Ordinal) ? JsonValue.Create(code[8..^1]) : null);
-        var runner = new TestRunner(copy, _game.Output);
+        var runner = Runner(copy);
 
         Assert.Equal(0, await runner.RunSuiteAsync(folder, null, false));
 
@@ -115,7 +115,7 @@ public sealed partial class GameTestTests
             end
             """));
         var copy = CopyWithGame("broken", code => code == "return boom" ? throw new InvalidOperationException("a fair step called the cheat GK.Cheat.Attack") : null);
-        Assert.Equal(1, await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, null, false));
+        Assert.Equal(1, await Runner(copy).RunSuiteAsync(folder, null, false));
         var output = _game.Output.ToString();
         Assert.Contains("step swing (fair) failed:", output);
         Assert.Contains("a fair step called the cheat GK.Cheat.Attack", output);
@@ -128,11 +128,12 @@ public sealed partial class GameTestTests
         var folder = Tests(
             ("fair_resets", "function run(game) step('reset', 'fair', function() game.reset() end) end"),
             ("observation_presses", "function run(game) step('press', 'observation', function() game.key('escape') end) end"),
-            ("cheat_resets", "function run(game) step('reset', 'cheat', function() pcall(game.checkpoint) end) end"),
+            // the fake game makes no save: the checkpoint is let go after half a second, not the 40 a real save is given
+            ("cheat_resets", "function run(game) step('reset', 'cheat', function() pcall(game.checkpoint, 0.5) end) end"),
             ("nested", "function run(game) step('outer', 'cheat', function() step('inner', 'fair', function() end) end) end"),
             ("bad_class", "function run(game) step('x', 'honest', function() end) end"));
         var copy = CopyWithGame("held");
-        Assert.Equal(1, await new TestRunner(copy, _game.Output).RunSuiteAsync(folder, null, false));
+        Assert.Equal(1, await Runner(copy).RunSuiteAsync(folder, null, false));
         var output = _game.Output.ToString();
         Assert.Contains("a fair step called the cheat game.reset", output);
         Assert.Contains("an observation step called the fair game.key", output);
@@ -154,7 +155,8 @@ public sealed partial class GameTestTests
                 """),
             ("plain", "function run(game) end"));
         var copy = CopyWithGame("unmet");
-        var runner = new TestRunner(copy, _game.Output) { Json = true };
+        var runner = Runner(copy);
+        runner.Json = true;
 
         Assert.Equal(2, await runner.RunSuiteAsync(folder, null, false));
 

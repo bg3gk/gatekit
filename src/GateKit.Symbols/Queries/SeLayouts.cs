@@ -8,7 +8,7 @@ namespace GateKit.Symbols.Queries;
 
 /// <summary>
 /// Layout files, for review, of the types Script Extender declares that the record has no layout
-/// for (`gatekit symbols se-layouts`, docs/contracts/cli.md 8.19). They are written from the
+/// for (`gatekit symbols se-layouts`, docs/contracts/cli.md, "symbols se-layouts"). They are written from the
 /// extender's own declarations in the symbol database (se_types, se_fields): the offsets and types
 /// are what its headers compute, the names are its author's.
 ///

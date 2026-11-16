@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "registry/evidence/1",
   "title": "One item of the evidence of a registry entry",
-  "description": "What backs a name, a type or a sentence, in our own words. A place in the code is named by its registry id (`concerns`), never by an address; a test by its path under tests/ without the extension, its case and step as deeper levels. Kinds that can confirm (put an entry on an applied rung): watch, read, game-name, toolkit-name, test. Kinds that cannot alone: pairing, extender-name, text.",
+  "description": "What backs a name, a type or a sentence, in our own words. The entry the item concerns is named by its registry id (`concerns`); in the sentence a function the registry names is cited as code:<id>, and a place with no id of its own is an address with its binary and build (registry/README.md, \"Citing code and tests\"); a test by its path under tests/ without the extension, its case and step as deeper levels. What the kinds carry is the bar of registry/README.md, \"Rungs\": a read and a watch together or a test confirm a name of ours, game-name and toolkit-name put a thing on the store's rung, and reach, pairing, extender-name and text lift nothing.",
   "oneOf": [
     {
       "type": "object",
@@ -41,6 +41,8 @@
       "properties": {
         "kind": {"const": "game-name", "description": "The game's own name: the macOS build's symbols, FieldMeta, a type name the engine keeps as text."},
         "concerns": {"$ref": "registry/parts#/$defs/id"},
+        "store": {"$ref": "#/$defs/store"},
+        "tie": {"$ref": "#/$defs/tie"},
         "says": {"type": "string", "minLength": 1}
       }
     },
@@ -50,6 +52,18 @@
       "additionalProperties": false,
       "properties": {
         "kind": {"const": "toolkit-name", "description": "The Toolkit's own exported name."},
+        "concerns": {"$ref": "registry/parts#/$defs/id"},
+        "store": {"$ref": "#/$defs/store"},
+        "tie": {"$ref": "#/$defs/tie"},
+        "says": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["kind", "says"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"const": "reach", "description": "A counter showed the code running in a situation (a coverage pass, a count of calls): that it ran and when, not what it does."},
         "concerns": {"$ref": "registry/parts#/$defs/id"},
         "says": {"type": "string", "minLength": 1}
       }
@@ -88,5 +102,16 @@
         "says": {"type": "string", "minLength": 1}
       }
     }
-  ]
+  ],
+  "$defs": {
+    "store": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Written by the tool that looked the name up, never by hand: the store that holds it - a Toolkit binary (EoCShared.dll), the macOS build (bg3_macos_x64), the type names the executable keeps (type-names)."
+    },
+    "tie": {
+      "enum": ["match", "pair", "name"],
+      "description": "With `store`: what ties the store's name to this thing. match - the symbol database matched the Toolkit's export to this function; pair - a stored pair (a seed or an accepted pair of `decomp pair`) joins the macOS function to this one; name - nothing but the name given."
+    }
+  }
 }

@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::SendASAnimationAndRecord",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "A method of ecl::animation::GameplaySystem: appends the id of the ASAnimation event to the entity's list in the map at +0x178 of the system, then sends the event to the entity's blueprint through the animation blueprint system kept at +0x18.",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It finds or adds the entity's array in the map at +0x178, pushes the id global of ASAnimation and calls TriggerGameplayEvent<EoCGE::ASAnimation> with the pointer at +0x18; the macOS ecl::ASAnimation::Update has the same steps inline."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while Osi.PlayAnimation runs on the host shows 1 call, from bg3_dx11.exe@25605617+0x1BC3C2B inside ecl::ASAnimation::Update."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "What reads the list at +0x178: is it how the system knows which finished event to hand back to the action state?",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

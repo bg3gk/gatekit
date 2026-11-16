@@ -8,7 +8,7 @@ using GateKit.Copies;
 
 namespace GateKit.Cli;
 
-/// <summary>The commands of a game copy: up, down, exec, ... (docs/contracts/cli.md, section 2).</summary>
+/// <summary>The commands of a game copy: up, down, exec, ... (docs/contracts/cli.md, "Commands of a copy").</summary>
 public static class CopyCommands
 {
     /// <summary>`--instance NAME`, valid before or after any command.</summary>
@@ -50,6 +50,10 @@ public static class CopyCommands
         yield return SaveCommand();
         yield return Simple("destroy", "close this copy's game and delete its clone, profile and records", s => s.Out.WriteLine(s.Destroy()));
         yield return Exec();
+        yield return Probe();
+        yield return Cover();
+        yield return CoverFold();
+        yield return CoverDiff();
         yield return Shot();
         yield return Key();
         yield return Sound();
@@ -178,19 +182,21 @@ public static class CopyCommands
         var mods = new Option<string?>("--mods") { Description = "comma-separated mod folders to load besides the base game (default: none in a cloned copy or with --level; the installed game without --level keeps your own list)" };
         var storyLog = new Option<bool>("--story-log") { Description = "also write Script Extender's logs, the Osiris trace included (see `logs --story`)" };
         var mainMenu = new Option<bool>("--main-menu") { Description = "stop in the main menu instead of loading the last save (first-launch screens gone through in a cloned copy, never in the installed game)" };
+        var splash = new Option<bool>("--splash") { Description = "stop on the splash screen before the main menu (\"press any key\") and leave it standing; first-launch screens are gone through as with --main-menu" };
+        var startupVideos = new Option<bool>("--startup-videos") { Description = "play the game's own startup videos (the studio's logo) instead of skipping them as every start does by default" };
         var gameArgs = new Argument<string[]>("game-args") { Description = "extra game arguments, after `--`", Arity = ArgumentArity.ZeroOrMore };
-        var command = new Command("up", "back up, configure, start the game, wait until it is playable") { level, save, mods, storyLog, mainMenu, gameArgs };
+        var command = new Command("up", "back up, configure, start the game, wait until it is playable") { level, save, mods, storyLog, mainMenu, splash, startupVideos, gameArgs };
         command.SetAction((parse, cancel) => Run(parse, async s =>
         {
             var modList = parse.GetValue(mods) is { } text ? text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) : null;
             await s.UpAsync(new UpOptions(parse.GetValue(level), parse.GetValue(save), modList, parse.GetValue(storyLog), parse.GetValue(gameArgs),
-                parse.GetValue(mainMenu)), cancel);
+                parse.GetValue(mainMenu), parse.GetValue(splash), parse.GetValue(startupVideos)), cancel);
         }));
         return command;
     }
 
     /// <summary>`save list|export|import|copy`: a copy's saves, and moving one to another copy
-    /// (docs/contracts/cli.md 2.13).</summary>
+    /// (docs/contracts/cli.md, "save").</summary>
     static Command SaveCommand()
     {
         var command = new Command("save", "a copy's saves, and bringing one copy's save into another (then `up --save NAME`)");
@@ -313,14 +319,362 @@ public static class CopyCommands
         return command;
     }
 
+    /// <summary>Probes on functions named by registry id, an action, and what was seen named back by
+    /// registry id: the registry and the running game joined both ways.</summary>
+    static Command Probe()
+    {
+        var ids = new Argument<string[]>("ids") { Description = "registry ids of functions (or binary+0xRVA), each gets a count-only probe", Arity = ArgumentArity.OneOrMore };
+        var action = new Option<string?>("--do") { Description = "Lua run on the server once the probes are on: the action to watch (or @file.lua)" };
+        var seconds = new Option<double>("--seconds") { Description = "how long to let the game run after the action before the probes are read", DefaultValueFactory = _ => 3 };
+        var asJson = new Option<bool>("--json") { Description = "the answer as JSON" };
+        var note = new Option<bool>("--note") { Description = "write each caller the registry does not name into the live layer, as unplaced::unnamed_<token>, with what it was seen to call" };
+        var command = new Command("probe", "put count-only probes on functions named by registry id, run an action, and name what called them by registry id; needs the Script Extender build with function probes") { ids, action, seconds, asJson, note };
+        command.SetAction((parse, _) => Run(parse, async s =>
+        {
+            var store = GateKit.Symbols.Registry.RegistryStore.Find(null) ?? throw new InvalidOperationException("no registry found (run from a checkout that has registry/)");
+            var module = (await s.ExecAsync("server", "local a = Ext.Debug.GetSymbolAddress and Ext.Debug.GetSymbolAddress('ecs__EntityWorld__Update') local m = a and Ext.Debug.ModuleFromAddress(a) return m and m.Module", TimeSpan.FromSeconds(20)))?.GetValue<string>()
+                ?? throw new InvalidOperationException("this Script Extender build has no function probes (Ext.Debug.GetSymbolAddress): start the copy with the build that has them");
+
+            // registry -> game: each id's place in the executable that runs
+            var wanted = new List<(string Name, long Rva)>();
+            foreach (var id in parse.GetValue(ids)!)
+            {
+                var at = id.IndexOf("+0x", StringComparison.OrdinalIgnoreCase);
+                if (at > 0) { wanted.Add((id, long.Parse(id[(at + 3)..], NumberStyles.HexNumber, CultureInfo.InvariantCulture))); continue; }
+                var place = store.Places(id).FirstOrDefault(p => string.Equals(p.Binary, module, StringComparison.OrdinalIgnoreCase));
+                if (place.Row is null) throw new InvalidOperationException($"{id} has no place in {module} in the registry's build tables");
+                wanted.Add((id, place.Row.Rva));
+            }
+
+            var list = string.Join(", ", wanted.Select(w => string.Create(CultureInfo.InvariantCulture, $"{w.Rva}")));
+            var placed = await s.ExecAsync("server", $$"""
+                GKProbeSlots = {}
+                local failed = {}
+                for i, rva in ipairs({ {{list}} }) do
+                    local slot, why = (Ext.Debug.AddProbe or Ext.Debug.ProbeFunction)(Ext.Debug.AddressFromModule("{{module}}", rva), { Record = false })
+                    if slot then GKProbeSlots[i] = slot else failed[#failed + 1] = { i, tostring(why) } end
+                end
+                return failed
+                """, TimeSpan.FromSeconds(20));
+            foreach (var failure in placed?.AsArray() ?? [])
+                Console.Error.WriteLine($"not probed: {wanted[failure![0]!.GetValue<int>() - 1].Name}: {failure[1]}");
+
+            if (parse.GetValue(action) is { Length: > 0 } code) await s.ExecAsync("server", code, TimeSpan.FromSeconds(60));
+            await Task.Delay(TimeSpan.FromSeconds(parse.GetValue(seconds)));
+
+            var read = await s.ExecAsync("server", """
+                local bySlot = {}
+                for _, p in ipairs((Ext.Debug.GetProbes or Ext.Debug.ListProbes)()) do bySlot[p.Slot] = p end
+                local out = {}
+                for i, slot in pairs(GKProbeSlots or {}) do
+                    local p = bySlot[slot]
+                    local callers = {}
+                    for _, c in ipairs(p and p.Callers or {}) do callers[#callers + 1] = { module = c.Caller.Module, rva = c.Caller.RVA, count = c.Count } end
+                    out[#out + 1] = { index = i, hits = p and p.Hits or 0, other = p and p.OtherCallers or 0, callers = callers }
+                    (Ext.Debug.RemoveProbe or Ext.Debug.ClearProbe)(slot)
+                end
+                GKProbeSlots = nil
+                return out
+                """, TimeSpan.FromSeconds(20));
+
+            // game -> registry: every caller named by the id whose function holds it. Which function
+            // holds an address is the binary's own fact (a function may lie in several parts), so it
+            // is asked of the databases as `registry at` asks; a row's size alone answers when they
+            // are not there.
+            var live = GateKit.Symbols.Registry.LiveLayer.OfHome();
+            var known = new Dictionary<string, (string? Id, long? Start)>(StringComparer.OrdinalIgnoreCase);
+            (string? Id, long? Start) Named(string binary, long at)
+            {
+                var address = string.Create(CultureInfo.InvariantCulture, $"{binary}+0x{at:X}");
+                if (known.TryGetValue(address, out var seen)) return seen;
+                (string? Id, long? Start) found = (null, null);
+                try
+                {
+                    var answerAt = GateKit.Symbols.Registry.LiveCommands.AtJson(address, store, live, TextWriter.Null);
+                    var id = (answerAt["committed"] as JsonArray)?.FirstOrDefault()?["id"]?.GetValue<string>()
+                        ?? (answerAt["live"] as JsonArray)?.FirstOrDefault()?["id"]?.GetValue<string>();
+                    var function = answerAt["function"]?.GetValue<string>();
+                    long? begins = function is null ? null : long.Parse(function[(function.IndexOf("+0x", StringComparison.Ordinal) + 3)..], NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    found = (id, id is null ? null : begins ?? at);
+                }
+                catch (Exception e) when (e is GateKit.Symbols.SymbolsException or GateKit.Symbols.Registry.RegistryException or InvalidOperationException)
+                {
+                    var row = store.At(binary, at).Select(a => a.Row).FirstOrDefault();
+                    found = (row?.Id, row?.Rva);
+                }
+                return known[address] = found;
+            }
+            var answer = new JsonArray();
+            foreach (var probe in read?.AsArray() ?? [])
+            {
+                var (name, rva) = wanted[probe!["index"]!.GetValue<int>() - 1];
+                var callers = new JsonArray();
+                foreach (var caller in probe["callers"]?.AsArray() ?? [])
+                {
+                    var callerModule = caller!["module"]?.GetValue<string>();
+                    var callerRva = caller["rva"]?.GetValue<long>() ?? 0;
+                    var (callerId, callerStart) = callerModule is null ? (null, (long?)null) : Named(callerModule, callerRva);
+                    callers.Add(new JsonObject
+                    {
+                        ["id"] = callerId, ["offset"] = callerStart is { } start ? GateKit.Symbols.Registry.RegistryStore.Hex(callerRva - start) : null,
+                        ["address"] = string.Create(CultureInfo.InvariantCulture, $"{callerModule ?? "?"}+0x{callerRva:X}"), ["count"] = caller["count"]?.GetValue<long>() ?? 0,
+                    });
+                }
+                answer.Add(new JsonObject
+                {
+                    ["id"] = name, ["address"] = string.Create(CultureInfo.InvariantCulture, $"{module}+0x{rva:X}"),
+                    ["hits"] = probe["hits"]!.GetValue<long>(), ["otherCallers"] = probe["other"]!.GetValue<long>(), ["callers"] = callers,
+                });
+            }
+
+            if (parse.GetValue(asJson)) { s.Out.WriteLine(GateKit.Json.JsonText.Format(answer)); return; }
+            var unknown = new SortedDictionary<string, SortedSet<string>>(StringComparer.Ordinal);
+            foreach (var probe in answer)
+            {
+                s.Out.WriteLine($"{probe!["id"]}  {probe["address"]}  called {probe["hits"]}");
+                var named = new List<string>();
+                foreach (var caller in probe["callers"]!.AsArray())
+                {
+                    var id = caller!["id"]?.GetValue<string>();
+                    if (id is null)
+                    {
+                        var address = caller["address"]!.GetValue<string>();
+                        if (!unknown.TryGetValue(address, out var calls)) unknown[address] = calls = new(StringComparer.Ordinal);
+                        calls.Add(probe["id"]!.GetValue<string>());
+                    }
+                    s.Out.WriteLine($"    from {(id is null ? "unknown" : $"code:{id}+{caller["offset"]}")}  {caller["address"]}  x{caller["count"]}");
+                    named.Add($"{caller["count"]} from {(id is null ? caller["address"] : "inside code:" + id)}");
+                }
+                if (probe["hits"]!.GetValue<long>() > 0)
+                    s.Out.WriteLine($"    evidence  reach:A count-only probe on it shows {probe["hits"]} calls: {string.Join(", ", named)}");
+            }
+            if (unknown.Count > 0)
+            {
+                s.Out.WriteLine("callers the registry does not name (gatekit decomp at <address>):");
+                foreach (var (address, calls) in unknown)
+                {
+                    // --note: the function goes into the live layer as one seen at work and not named,
+                    // so that what is still to read is kept and not only printed
+                    string? noted = null;
+                    if (parse.GetValue(note))
+                    {
+                        var called = string.Join(", ", calls.Where(c => !c.Contains("+0x", StringComparison.Ordinal)).Select(c => "code:" + c));
+                        if (called.Length > 0)
+                            noted = GateKit.Symbols.Registry.LiveCommands.NoteUnnamed(address,
+                                [$"reach:A count-only probe shows this function calling {called}"],
+                                [$"What this function is for: it calls {called}"], live, store, TextWriter.Null)?.Id;
+                    }
+                    s.Out.WriteLine("    " + address + (noted is null ? "" : "  noted " + noted));
+                }
+            }
+        }));
+        return command;
+    }
+
+    /// <summary>The record of coverage while the game is played: counters on the functions of the
+    /// running executable, their counts saved to a file, the file folded against the registry.</summary>
+    static Command Cover()
+    {
+        var command = new Command("cover", "record which functions run and who calls them while the game is played; needs the Script Extender build with coverage counters");
+
+        const string Module = "local a = Ext.Debug.GetSymbolAddress and Ext.Debug.GetSymbolAddress('ecs__EntityWorld__Update') local m = a and Ext.Debug.ModuleFromAddress(a) return m and m.Module";
+
+        var minimum = new Option<long>("--min-size") { Description = "leave out functions shorter than this many bytes: the shortest are called the most", DefaultValueFactory = _ => 64 };
+        var limit = new Option<int>("--limit") { Description = "at most this many functions, spread evenly over the executable (0: all)", DefaultValueFactory = _ => 0 };
+        var hot = new Option<long>("--hot") { Description = "a function called more often than this is taken off by itself", DefaultValueFactory = _ => 200_000 };
+        var start = new Command("start", "put a counter on the functions of the running executable") { minimum, limit, hot };
+        start.SetAction((parse, _) => Run(parse, async s =>
+        {
+            var module = (await s.ExecAsync("server", Module, TimeSpan.FromSeconds(20)))?.GetValue<string>()
+                ?? throw new InvalidOperationException("this Script Extender build has no coverage counters: start the copy with the build that has them");
+            var starts = GateKit.Symbols.Registry.LiveCommands.FunctionStarts(module, parse.GetValue(minimum), TextWriter.Null);
+            if (parse.GetValue(limit) is > 0 and var most && starts.Count > most)
+            {
+                var step = (double)starts.Count / most;
+                starts = [.. Enumerable.Range(0, most).Select(i => starts[(int)(i * step)])];
+            }
+            long placed = 0, refused = 0;
+            const int Batch = 2000;
+            for (var from = 0; from < starts.Count; from += Batch)
+            {
+                var list = string.Join(",", starts.Skip(from).Take(Batch).Select(r => string.Create(CultureInfo.InvariantCulture, $"{r}")));
+                var answer = await s.ExecAsync("server", $$"""
+                    local base = Ext.Debug.AddressFromModule("{{module}}", 0)
+                    local list = { {{list}} }
+                    for i = 1, #list do list[i] = base + list[i] end
+                    return (Ext.Debug.StartCoverage or Ext.Debug.CoverStart)(list, {{parse.GetValue(hot)}})
+                    """, TimeSpan.FromSeconds(120));
+                placed += answer?["Placed"]?.GetValue<long>() ?? 0;
+                refused += answer?["Refused"]?.GetValue<long>() ?? 0;
+            }
+            s.Out.WriteLine($"{module}: {starts.Count} functions asked, {placed} counted, {refused} refused");
+        }));
+        command.Subcommands.Add(start);
+
+        var status = new Command("status", "how many functions are counted, were called, were taken off as called too often");
+        status.SetAction((parse, _) => Run(parse, async s =>
+            s.Out.WriteLine(GateKit.Json.JsonText.Inline(await s.ExecAsync("server", "return (Ext.Debug.GetCoverageStatus or Ext.Debug.CoverStatus)()", TimeSpan.FromSeconds(30)), compact: false))));
+        command.Subcommands.Add(status);
+
+        var file = new Argument<string>("file") { Description = "the file the counts are written to" };
+        var reset = new Option<bool>("--reset") { Description = "start the counts again from zero, so that the next file holds the next stretch of play" };
+        var save = new Command("save", "write the counts so far to a file: a line for every function called, a line for every pair of a function and the address that called it") { file, reset };
+        save.SetAction((parse, _) => Run(parse, async s =>
+        {
+            var path = Path.GetFullPath(parse.GetValue(file)!).Replace('\\', '/');
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            var answer = await s.ExecAsync("server", $"return (Ext.Debug.SaveCoverage or Ext.Debug.CoverSave)(\"{path}\", {(parse.GetValue(reset) ? "true" : "false")})", TimeSpan.FromSeconds(120));
+            s.Out.WriteLine($"{path}: {answer?["Functions"]} functions called, {answer?["Pairs"]} pairs");
+        }));
+        command.Subcommands.Add(save);
+
+        var stop = new Command("stop", "take every counter off; the counts stay for a last `cover save`");
+        stop.SetAction((parse, _) => Run(parse, async s =>
+            s.Out.WriteLine($"{(await s.ExecAsync("server", "return (Ext.Debug.StopCoverage or Ext.Debug.CoverStop)()", TimeSpan.FromSeconds(300)))} counters taken off")));
+        command.Subcommands.Add(stop);
+        return command;
+    }
+
+    /// <summary>What saved records of coverage hold, added up: a function taken off as hot keeps its
+    /// count in every later file, so its count is the largest seen, not the sum.</summary>
+    sealed class CoverSet
+    {
+        public Dictionary<string, long> Calls { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> Hot { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<(string Callee, string Caller), long> Pairs { get; } = new();
+        public long Lost { get; private set; }
+        public int Files { get; private set; }
+
+        /// <summary>Reads the files; <paramref name="where"/> keeps only those whose state file beside
+        /// them (same name, .json) has that key true, or, as "neither", has inCombat and inDialog false.</summary>
+        public static CoverSet Read(IEnumerable<string> files, string? where)
+        {
+            var set = new CoverSet();
+            foreach (var path in files)
+            {
+                if (where is not null)
+                {
+                    var beside = Path.ChangeExtension(path, ".json");
+                    if (!File.Exists(beside)) continue;
+                    var state = GateKit.Json.JsonText.Read(beside);
+                    bool Is(string key) => state?[key]?.GetValue<bool>() ?? false;
+                    var fits = where == "neither" ? !Is("inCombat") && !Is("inDialog") : Is(where);
+                    if (!fits) continue;
+                }
+                set.Files++;
+                foreach (var line in File.ReadLines(path))
+                {
+                    var p = line.Split(' ');
+                    if (p[0] == "F" && p.Length >= 5)
+                    {
+                        var key = $"{p[1]}+0x{p[2]}";
+                        var count = long.Parse(p[3], CultureInfo.InvariantCulture);
+                        if (p[4] == "1") { set.Hot.Add(key); set.Calls[key] = Math.Max(set.Calls.GetValueOrDefault(key), count); }
+                        else set.Calls[key] = set.Calls.GetValueOrDefault(key) + count;
+                    }
+                    else if (p[0] == "E" && p.Length >= 6)
+                    {
+                        var k = ($"{p[1]}+0x{p[2]}", $"{p[3]}+0x{p[4]}");
+                        set.Pairs[k] = set.Pairs.GetValueOrDefault(k) + long.Parse(p[5], CultureInfo.InvariantCulture);
+                    }
+                    else if (p[0] == "L" && p.Length >= 2) set.Lost += long.Parse(p[1], CultureInfo.InvariantCulture);
+                }
+            }
+            return set;
+        }
+
+        public int Places(string function) => Pairs.Keys.Count(k => k.Callee.Equals(function, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>The registry's id of each function that begins at one of the addresses.</summary>
+    static Dictionary<string, string> NamedStarts(IEnumerable<string> addresses)
+    {
+        var named = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (GateKit.Symbols.Registry.RegistryStore.Find(null) is not { } store) return named;
+        foreach (var address in addresses)
+        {
+            var at = address.IndexOf("+0x", StringComparison.Ordinal);
+            var rva = GateKit.Symbols.Registry.RegistryStore.ParseHex(address[(at + 1)..]);
+            if (store.At(address[..at], rva).Select(a => a.Row).FirstOrDefault(r => r.Rva == rva) is { } row) named[address] = row.Id;
+        }
+        return named;
+    }
+
+    /// <summary>The lines of a list of functions: the count, the id or the address, and for an
+    /// unnamed one the places it was called from and, when asked, the name the databases give it.</summary>
+    static void PrintFunctions(CoverSet set, IEnumerable<string> functions, Dictionary<string, string> named, int top, bool names)
+    {
+        var listed = functions.OrderByDescending(f => set.Places(f)).ThenByDescending(f => set.Calls.GetValueOrDefault(f)).Take(top).ToList();
+        var other = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        if (names)
+            foreach (var (address, _, _, name) in GateKit.Symbols.Registry.LiveCommands.NameMany(listed.Where(f => !named.ContainsKey(f)),
+                         GateKit.Symbols.Registry.RegistryStore.Find(null), GateKit.Symbols.Registry.LiveLayer.OfHome(), TextWriter.Null))
+                other[address] = name;
+        foreach (var f in listed)
+        {
+            var calls = set.Calls.GetValueOrDefault(f);
+            var count = set.Hot.Contains(f) ? $">{calls}" : calls.ToString(CultureInfo.InvariantCulture);
+            Console.Out.WriteLine(named.TryGetValue(f, out var id)
+                ? $"    {count,10}  from {set.Places(f),4} places  code:{id}"
+                : $"    {count,10}  from {set.Places(f),4} places  {f}{(other.GetValueOrDefault(f) is { } name ? "  " + name : "")}");
+        }
+    }
+
+    /// <summary>A saved record of coverage read against the registry: what ran, what of it has a
+    /// name, and the unnamed functions called from the most places. Needs no game.</summary>
+    public static Command CoverFold()
+    {
+        var files = new Argument<string[]>("files") { Description = "files written by `cover save`", Arity = ArgumentArity.OneOrMore };
+        var top = new Option<int>("--top") { Description = "how many functions of each list to print", DefaultValueFactory = _ => 30 };
+        var where = new Option<string?>("--where") { Description = "only the files whose state file beside them (same name, .json) says so: inCombat, inDialog, or neither" };
+        var names = new Option<bool>("--names") { Description = "beside an unnamed function, the name the databases give it (slower)" };
+        var command = new Command("cover-fold", "read saved records of coverage against the registry: how many functions ran, how many of them an id names, the named ones and the unnamed ones called from the most places") { files, top, where, names };
+        command.SetAction(parse =>
+        {
+            var set = CoverSet.Read(parse.GetValue(files)!, parse.GetValue(where));
+            var named = NamedStarts(set.Calls.Keys);
+            Console.Out.WriteLine($"{set.Files} files: {set.Calls.Count} functions ran ({set.Hot.Count} taken off as hot), {set.Pairs.Count} pairs of a function and a calling address, {set.Lost} calls lost by the ring");
+            Console.Out.WriteLine($"{named.Count} of them the registry names; {set.Calls.Count - named.Count} it does not");
+            Console.Out.WriteLine("named:");
+            PrintFunctions(set, named.Keys, named, parse.GetValue(top), false);
+            Console.Out.WriteLine("unnamed:");
+            PrintFunctions(set, set.Calls.Keys.Where(f => !named.ContainsKey(f)), named, parse.GetValue(top), parse.GetValue(names));
+            return 0;
+        });
+        return command;
+    }
+
+    /// <summary>Differential coverage: the functions that ran in one set of records and in none of
+    /// another - a scene with a mechanic against the same scene without it names the mechanic's code.</summary>
+    public static Command CoverDiff()
+    {
+        var files = new Argument<string[]>("files") { Description = "files written by `cover save`: the scene with the thing", Arity = ArgumentArity.OneOrMore };
+        var against = new Option<string[]>("--against") { Description = "files of the scene without it", Arity = ArgumentArity.OneOrMore, Required = true, AllowMultipleArgumentsPerToken = true };
+        var top = new Option<int>("--top") { Description = "how many functions to print", DefaultValueFactory = _ => 60 };
+        var names = new Option<bool>("--names") { Description = "beside an unnamed function, the name the databases give it (slower)" };
+        var command = new Command("cover-diff", "the functions that ran in the first records and in none of the --against ones, the registry's ids where it names them") { files, against, top, names };
+        command.SetAction(parse =>
+        {
+            var with = CoverSet.Read(parse.GetValue(files)!, null);
+            var without = CoverSet.Read(parse.GetValue(against)!, null);
+            var only = with.Calls.Keys.Where(f => !without.Calls.ContainsKey(f)).ToList();
+            var named = NamedStarts(only);
+            Console.Out.WriteLine($"{with.Calls.Count} functions ran in the first, {without.Calls.Count} in the other; {only.Count} only in the first, {named.Count} of them named by the registry");
+            PrintFunctions(with, only, named, parse.GetValue(top), parse.GetValue(names));
+            return 0;
+        });
+        return command;
+    }
+
     static Command Shot()
     {
         var output = new Argument<string>("out") { Description = "picture file: .jpg (default) or .png" };
         var width = new Option<int>("--width") { Description = "scale down to this width when wider (0: full size)", DefaultValueFactory = _ => 1150 };
-        var command = new Command("shot", "a picture of the game, taken inside it (the window may stay behind other windows)") { output, width };
+        var overlay = new Option<bool>("--overlay") { Description = "with the extender's own layer in it: its windows, GateKit's console, a picture of GK.Show" };
+        var command = new Command("shot", "a picture of the game, taken inside it (the window may stay behind other windows)") { output, width, overlay };
         command.SetAction((parse, _) => Run(parse, s =>
         {
-            s.Out.WriteLine(s.Shot(parse.GetValue(output)!, parse.GetValue(width)));
+            s.Out.WriteLine(s.Shot(parse.GetValue(output)!, parse.GetValue(width), parse.GetValue(overlay)));
             return Task.CompletedTask;
         }));
         return command;

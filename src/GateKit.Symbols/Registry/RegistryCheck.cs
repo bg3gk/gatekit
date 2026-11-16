@@ -26,7 +26,10 @@ public sealed class CheckReport
 public static partial class RegistryCheck
 {
     /// <summary>The keys of an entry that hold our own sentences.</summary>
-    static readonly HashSet<string> SentenceKeys = ["does", "about", "says", "rests_on", "would_confirm", "ask", "tried", "answer", "text"];
+    internal static readonly HashSet<string> SentenceKeys = ["does", "about", "says", "rests_on", "would_confirm", "ask", "tried", "answer", "text"];
+
+    /// <summary>How many addresses stand in a sentence where an id belongs.</summary>
+    public static int Addresses(string text) => Address().Count(text);
 
     [GeneratedRegex(@"\b20\d\d-[01]\d-[0-3]\d\b")] private static partial Regex Date();
     [GeneratedRegex(@"(?<![\d.:+x])\b[0-2]?\d:[0-5]\d(:[0-5]\d)?\b(?![\d:])")] private static partial Regex Clock();
@@ -37,47 +40,80 @@ public static partial class RegistryCheck
     [GeneratedRegex(@"\*\s*\(\s*[A-Za-z_][A-Za-z0-9_ ]*\*+\s*\)\s*\(")] private static partial Regex PointerArithmetic();
     [GeneratedRegex(@"\b(FUN|DAT|PTR|thunk_FUN)_[0-9a-fA-F]{6,}\b|\b[A-Za-z0-9_]+\.(exe|dll)\+0x[0-9A-Fa-f]+\b|(?<![\w.])\+0x[0-9A-F]{5,}\b")] private static partial Regex Address();
 
-    public static CheckReport Run(RegistryStore store)
+    /// <summary>The whole check, every file read.</summary>
+    public static CheckReport Run(RegistryStore store) => Run(store, CheckCache.None());
+
+    /// <summary>
+    /// The check with what it found in each file kept by the file's content (<see cref="CheckCache"/>):
+    /// a file whose content is unchanged gives its verdicts and what the rules across files need of
+    /// it - its id, its members, its citations - without being read as JSON or held to its schema
+    /// again; the rules across files (a path by its id, one file an id, the build tables, every
+    /// citation resolved, the places of the mod's data) run whole every time on what the files give.
+    /// The verdict is the same as with every file read.
+    /// </summary>
+    public static CheckReport Run(RegistryStore store, CheckCache cache)
     {
         var report = new CheckReport();
-        var entries = new List<RegistryEntry>();
+        var entries = new List<(string Path, FileFacts Facts)>();
         foreach (var kind in Enum.GetValues<EntryKind>())
         {
             var folder = Path.Combine(store.Root, RegistryStore.Folder(kind));
             if (!Directory.Exists(folder)) continue;
-            foreach (var path in Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+            foreach (var info in new DirectoryInfo(folder).EnumerateFiles("*", SearchOption.AllDirectories).OrderBy(f => f.FullName, StringComparer.Ordinal))
             {
+                var path = info.FullName;
                 var rel = store.Relative(path);
                 if (!path.EndsWith(".json", StringComparison.Ordinal)) { report.Refuse("file", rel, "not an entry: an entry's file ends in .json"); continue; }
-                JsonObject json;
-                try { json = JsonText.Read(path, RegistryStore.Schema(kind)).AsObject(); }
-                catch (JsonProblemException e)
-                {
-                    foreach (var p in e.Problems) report.Refuse("schema", rel, p.ToString());
-                    continue;
-                }
-                var entry = new RegistryEntry(kind, path, json);
-                entries.Add(entry);
+                if (cache.Of("entry:" + RegistryStore.Name(kind) + ":" + rel, info, bytes => EntryFacts(kind, path, rel, bytes)) is not { } facts) continue;
+                foreach (var (rule, where, what) in facts.Refusals.Where(r => r.Rule == "schema")) report.Refuse(rule, where, what);
+                if (facts.Id is not { } id) continue;
+                entries.Add((path, facts));
                 try
                 {
-                    var expected = store.PathOf(kind, entry.Id);
+                    var expected = store.PathOf(kind, id);
                     if (!string.Equals(Path.GetFullPath(expected), Path.GetFullPath(path), StringComparison.Ordinal))
-                        report.Refuse("path", rel, $"its id {entry.Id} belongs at {store.Relative(expected)}");
+                        report.Refuse("path", rel, $"its id {id} belongs at {store.Relative(expected)}");
                 }
                 catch (RegistryException e) { report.Refuse("id", rel, e.Message); }
             }
         }
 
-        // one id, one file - across the kinds, and by case
-        foreach (var group in entries.GroupBy(e => RegistryId.CaseKey(e.Id)).Where(g => g.Count() > 1))
-            report.Refuse("unique", string.Join(", ", group.Select(e => store.Relative(e.Path))),
-                group.Select(e => e.Id).Distinct().Count() == 1 ? $"{group.First().Id} has more than one file" : "these ids differ only by case: one file system would keep one of them");
-        var ids = entries.Select(e => e.Id).ToHashSet(StringComparer.Ordinal);
-        var known = entries.ToDictionary(e => e.Id, StringComparer.Ordinal);
+        // one id, one file - across the kinds; ids that differ only by case lie apart by the rule of CasePaths, which the path check holds
+        foreach (var group in entries.GroupBy(e => e.Facts.Id!, StringComparer.Ordinal).Where(g => g.Count() > 1))
+            report.Refuse("unique", string.Join(", ", group.Select(e => store.Relative(e.Path))), $"{group.Key} has more than one file");
+        var ids = entries.Select(e => e.Facts.Id!).ToHashSet(StringComparer.Ordinal);
+        var known = new Dictionary<string, FileFacts>(StringComparer.Ordinal);
+        foreach (var (_, facts) in entries) known.TryAdd(facts.Id!, facts);
 
         CheckTables(store, ids, report);
-        foreach (var entry in entries) CheckEntry(store, entry, report);
-        CheckCitations(store, known, report);
+        foreach (var (_, facts) in entries)
+        {
+            foreach (var (rule, where, what) in facts.Refusals.Where(r => r.Rule != "schema")) report.Refuse(rule, where, what);
+            foreach (var (rule, where, what) in facts.Owed) report.Owe(rule, where, what);
+            foreach (var (rule, where, what) in facts.Notes) report.Note(rule, where, what);
+        }
+        CheckCitations(store, entries, known, cache, report);
+        // A data file of the bridge mod that holds places written from the build tables
+        // (`registry places`) must hold them as the tables are now: a hook or a log that names
+        // code by a stale place names the wrong code.
+        var mods = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(store.Root))!, "mods");
+        if (Directory.Exists(mods))
+            foreach (var path in Directory.EnumerateFiles(mods, "*.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+            {
+                JsonObject? root;
+                try
+                {
+                    var text = File.ReadAllText(path);
+                    if (!text.Contains("\"places\"", StringComparison.Ordinal)) continue;
+                    root = JsonText.Read(path) as JsonObject;
+                }
+                catch (Exception e) when (e is IOException or JsonProblemException or ArgumentException) { continue; }
+                if (root?["places"] is not JsonObject held) continue;
+                var (places, _, _) = LiveCommands.PlacesOf(store, root);
+                if (JsonText.Inline(held) != JsonText.Inline(places))
+                    report.Refuse("places", Path.GetRelativePath(Path.GetDirectoryName(mods)!, path).Replace(Path.DirectorySeparatorChar, '/'),
+                        "its places are not what the build tables hold: run `gatekit registry places` on it");
+            }
         return report;
     }
 
@@ -124,16 +160,44 @@ public static partial class RegistryCheck
         }
     }
 
-    static void CheckEntry(RegistryStore store, RegistryEntry entry, CheckReport report)
+    /// <summary>What one entry's file gives the check: its schema's refusals, or its id, its members,
+    /// its typed citations and the verdicts that depend on its content alone.</summary>
+    static FileFacts EntryFacts(EntryKind kind, string path, string rel, byte[] bytes)
     {
-        var rel = store.Relative(entry.Path);
-        var json = entry.Json;
+        var facts = new FileFacts();
+        JsonObject json;
+        try
+        {
+            var parsed = JsonText.Parse(bytes, path);
+            JsonText.Check(parsed, RegistryStore.Schema(kind));
+            json = parsed.Root.AsObject();
+        }
+        catch (JsonProblemException e)
+        {
+            foreach (var p in e.Problems) facts.Refusals.Add(("schema", rel, p.ToString()));
+            return facts;
+        }
+        facts.Id = JsonText.Text(json["id"]);
+        foreach (var list in new[] { "fields", "parameters", "locals", "values" })
+            foreach (var member in (json[list] as JsonArray ?? []).OfType<JsonObject>())
+                if (JsonText.Text(member["name"]) is { } name) facts.Members.Add(name);
+        facts.Typed.AddRange(RegistryRefs.Typed(json, ""));
+        var report = new CheckReport();
+        CheckEntry(kind, rel, json, report);
+        facts.Refusals.AddRange(report.Refusals);
+        facts.Owed.AddRange(report.Owed);
+        facts.Notes.AddRange(report.Notes);
+        return facts;
+    }
+
+    static void CheckEntry(EntryKind kind, string rel, JsonObject json, CheckReport report)
+    {
         CheckSentences(json, rel, report);
         if (json["survey"] is JsonObject survey)
             foreach (var (key, value) in survey)
                 if (value is JsonValue && JsonText.Text(value) is { } text && (Date().IsMatch(text) || MachinePath().IsMatch(text)))
                     report.Note("survey", rel + "#/survey/" + key, "the survey's carried text names a date or a machine's path; it is to become our sentences");
-        CheckRest(json, rel, report);
+        CheckRest(json, rel, report, kind == EntryKind.Function);
     }
 
     /// <summary>Our sentences: no provenance, no code, never empty. An address where an id belongs is a note.</summary>
@@ -154,22 +218,23 @@ public static partial class RegistryCheck
                 if (regex.Match(text) is { Success: true } m) flag("provenance", at, $"names {what}: \"{m.Value}\"");
             if (DecompilerName().Match(text) is { Success: true } name) flag("code", at, $"quotes the decompiler's name {name.Value}: name the thing by its storage or its id");
             if (PointerArithmetic().Match(text) is { Success: true } arithmetic) flag("code", at, $"quotes the game's code: \"{arithmetic.Value}\"");
+            // an address is never refused: one that names nothing with an id is a lead, and only lacks its binary and build here
             foreach (Match address in Address().Matches(text))
-                report.Note("address", at, $"an address where an id belongs: {address.Value} (code:<id>)");
+                report.Note("address", at, $"an address without its binary and build: {address.Value} (`gatekit registry tidy` writes binary@build+0xRVA, or the id where the registry names the function)");
         }
     }
 
-    static void CheckRest(JsonObject json, string rel, CheckReport report)
+    static void CheckRest(JsonObject json, string rel, CheckReport report, bool code)
     {
         // the state of the description
         if (JsonText.Text(json["state"]) == "described" && JsonText.Text(json["does"]) is null && JsonText.Text(json["about"]) is null)
             report.Refuse("sentence", rel, "described, and no sentence says what it is (does or about)");
 
         // rungs: applied needs evidence that can confirm, a guess its reason
-        CheckRung(json, rel, "", report);
+        CheckRung(json, rel, "", report, code);
         foreach (var (list, label) in new[] { ("fields", "field"), ("parameters", "parameter"), ("locals", "local"), ("values", "value") })
             foreach (var (member, i) in (json[list] as JsonArray ?? []).OfType<JsonObject>().Select((m, i) => (m, i)))
-                CheckRung(member, rel, $"/{list}/{i}", report);
+                CheckRung(member, rel, $"/{list}/{i}", report, false);
 
         // what is below the line says how it could be reached from the game
         var rung = JsonText.Text(json["rung"]);
@@ -193,7 +258,7 @@ public static partial class RegistryCheck
                 report.Refuse("tie", rel, $"ties {JsonText.Text(tie["type"])} through {via}, which is no parameter or local of it");
     }
 
-    static void CheckRung(JsonObject json, string rel, string pointer, CheckReport report)
+    static void CheckRung(JsonObject json, string rel, string pointer, CheckReport report, bool code)
     {
         var rung = JsonText.Text(json["rung"]);
         var at = rel + (pointer.Length > 0 ? "#" + pointer : "");
@@ -204,6 +269,9 @@ public static partial class RegistryCheck
             if (!kinds.Any(k => k is not null && Rungs.Confirming.Contains(k)))
                 report.Refuse("rung", at, $"{label}on the applied rung {rung} with no evidence that can confirm it ({string.Join(", ", Rungs.Confirming)}); "
                     + (kinds.Count == 0 ? "it has none" : "it has " + string.Join(", ", kinds)));
+            // the bar the writers apply (Rungs.Settle): a rung its evidence does not carry is lowered by the next `registry tidy`, never by a person
+            else if (Rungs.Settle(rung, json["evidence"], code, out var why) is { } settled && Rungs.Rank(settled) > Rungs.Rank(rung))
+                report.Note("rung", at, $"{label}{rung} is above what its evidence carries ({settled}): {why} (`gatekit registry tidy` lowers it)");
             if (json["guess"] is not null) report.Refuse("rung", at, $"{label}a guess is not on an applied rung");
         }
         if (rung == "guess" && json["guess"] is null) report.Refuse("rung", at, $"{label}a guess says what it rests on and what would confirm it");
@@ -243,16 +311,31 @@ public static partial class RegistryCheck
         return [.. report.Refusals.Concat(report.Owed).Where(r => !(texts.TryGetValue(r.Where, out var t) && old.Contains(t))).Select(r => $"{r.Where} {r.What}")];
     }
 
-    static void CheckCitations(RegistryStore store, Dictionary<string, RegistryEntry> known, CheckReport report)
+    /// <summary>Every citation of the repository (<see cref="RegistryRefs.All"/>: the prefixed mentions
+    /// in its text files, then the typed fields of the entries), each resolved against the entries as
+    /// they are now.</summary>
+    static void CheckCitations(RegistryStore store, List<(string Path, FileFacts Facts)> entries, Dictionary<string, FileFacts> known, CheckCache cache, CheckReport report)
     {
-        foreach (var c in RegistryRefs.All(store))
+        var repository = store.Repository;
+        var all = new List<Citation>();
+        foreach (var (file, info) in RegistryRefs.TextFileInfos(repository))
+        {
+            if (cache.Of("text:" + file, info, TextFacts) is not { } facts) continue;
+            foreach (var (kind, address, line) in facts.Mentions) all.Add(new Citation(kind, address, file, line, null));
+        }
+        foreach (var (path, facts) in entries)
+        {
+            var file = Path.GetRelativePath(repository, path).Replace('\\', '/');
+            foreach (var (kind, value, pointer) in facts.Typed) all.Add(new Citation(kind, value, file, 0, pointer));
+        }
+        foreach (var c in all)
         {
             if (c.Kind == "code")
             {
                 if (!RegistryId.IsValid(c.Address)) { report.Refuse("cite-code", c.Where, $"{c.Address} is not a registry id"); continue; }
                 var parts = RegistryId.Parse(c.Address);
                 if (!known.TryGetValue(parts.Entity, out var entry)) { report.Refuse("cite-code", c.Where, $"{c.Address}: no entry {parts.Entity}"); continue; }
-                if (parts.Member is { } member && !HasMember(entry.Json, member))
+                if (parts.Member is { } member && !entry.Members.Contains(member.Split('.')[0]))
                     report.Refuse("cite-code", c.Where, $"{c.Address}: {parts.Entity} has no member {member}");
             }
             else
@@ -264,10 +347,14 @@ public static partial class RegistryCheck
         }
     }
 
-    static bool HasMember(JsonObject entry, string member)
+    /// <summary>The prefixed mentions of one text file (<see cref="RegistryRefs.Mentions"/>).</summary>
+    static FileFacts TextFacts(byte[] bytes)
     {
-        var first = member.Split('.')[0];
-        return new[] { "fields", "parameters", "locals", "values" }.Any(list =>
-            (entry[list] as JsonArray ?? []).OfType<JsonObject>().Any(m => JsonText.Text(m["name"]) == first));
+        var facts = new FileFacts();
+        var text = System.Text.Encoding.UTF8.GetString(bytes);
+        if (text.Length > 0 && text[0] == '﻿') text = text[1..];
+        if (text.Contains("code:", StringComparison.Ordinal) || text.Contains("test:", StringComparison.Ordinal))
+            facts.Mentions.AddRange(RegistryRefs.Mentions(text));
+        return facts;
     }
 }

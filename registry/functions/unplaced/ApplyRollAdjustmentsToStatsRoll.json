@@ -1,0 +1,19 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ApplyRollAdjustmentsToStatsRoll",
+  "owner": "esv::interrupt::AdjustConditionRoll",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "The body of esv::interrupt::AdjustConditionRoll for a StatsRoll: from the RollAdjustments (BaseAdjustment +0x0, FixedRollBonuses +0x8, ResolvedRoll +0x48) writes into the StatsRoll the new Result.Total (+0x20), Result.NaturalRoll as ResolvedRoll minus the bonus (+0x24), the bonus (+0x4 and +0x4C), the fixed bonuses into the metadata (+0xF8), Advantage and Disadvantage (+0xD, +0xE), the criticality of an attack (+0x2C, metadata IsCritical +0xE4) and the reroll record into Result.RollsCount (+0x38); keeps Result.DiscardedDiceTotal (+0x28).",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its only caller is esv::interrupt::AdjustConditionRoll; pairs with the Toolkit's lambda FUN_1810b0620 called there at 0.43; stores +0x20 and +0x24 from RollAdjustments+0x48"
+    },
+    {
+      "kind": "watch",
+      "says": "64-byte snapshots of its second argument on entry and return: SetRoll(20) total 0x14->0x19, natural 0x0F->0x14, +0x2C 0->1; SetRoll(1) 0x16->0x06, 0x11->0x01, +0x2C 0->2; Lucky 0x08->0x10, 0x03->0x0B and +0x38 filled; Bardic Inspiration bonus +0x4 5->6, total 7->8, natural kept"
+    }
+  ]
+}

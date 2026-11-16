@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "eoc::character_creation::SessionCommonComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "On the session entity of a creation, respec or change-appearance session: NetId and two more values. Script Extender: CCSessionCommon.",
   "size": 12,
   "fields": [
     {
@@ -42,6 +45,16 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "CCSessionCommon", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) one entity carries it with ServerCCSessionOwner and CCDefinitionChangeAppearance; NetId reads 65537, the same number as the owner's UserId; the two other members read 0"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/CharacterCreation.h:166, kind component), by gatekit symbols se-layouts on 2026-11-14",

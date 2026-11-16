@@ -4,9 +4,11 @@
 --
 --     set GATEKIT_SE=<se-fork>\builds\v34
 --     gatekit test -k se_fork
--- gatekit:allow-non-english  the game's own strings and other alphabets, to prove the channel
--- carries them unchanged: a clipboard and an injected keystroke that only work in ASCII are
--- broken for most of the people who play this game.
+-- Other alphabets prove the channel carries them unchanged: a clipboard and an injected
+-- keystroke that only work in ASCII are broken for most of the people who play this game. The
+-- characters are written as escapes (a check mark and Cyrillic), so the file stays English.
+local CHECK_MARK = "\u{2713}"
+local CYRILLIC_CHECK = "\u{43F}\u{440}\u{43E}\u{432}\u{435}\u{440}\u{43A}\u{430}"
 
 test { level = "GustavX:TUT_Avernus_C", mods = {} }
 
@@ -69,7 +71,7 @@ function run(game)
     end
 
     if has.clipboard then
-        local text = "GateKit clipboard ✓ проверка"
+        local text = "GateKit clipboard " .. CHECK_MARK .. " " .. CYRILLIC_CHECK
         local result = game.client(([[
             local before = Ext.IMGUI.GetClipboardText()
             local stored = Ext.IMGUI.SetClipboardText("%s")
@@ -138,12 +140,12 @@ function run(game)
         local done, trouble = pcall(function()
             game.wait("client", "Mods.GateKit.SeForkField.window.LastSize[1] > 0", 10)
             game.client("Mods.GateKit.SeForkField.input:Activate()")
-            game.client('Ext.Input.InjectText("hello мир")')
+            game.client('Ext.Input.InjectText("hello \\u{43C}\\u{438}\\u{440}")')
             local typed = game.wait("client", [[(function()
                 local i = Mods.GateKit.SeForkField.input
-                return i.Text == "hello мир" and { text = i.Text, cursor = i.CursorPos } or nil
+                return i.Text == "hello \u{43C}\u{438}\u{440}" and { text = i.Text, cursor = i.CursorPos } or nil
             end)()]], 10)
-            check(typed.cursor == bytes("hello мир"), "the cursor counts bytes", typed)
+            check(typed.cursor == bytes("hello \u{43C}\u{438}\u{440}"), "the cursor counts bytes", typed)
             game.client('Ext.Input.InjectKeyPress("UP")')
             game.wait("client", [[(function()
                 local s = Mods.GateKit.SeForkField

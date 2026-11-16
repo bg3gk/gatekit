@@ -1,0 +1,46 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::AiHelpers::CalculateAiScoreSurface",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Scores for the AI a surface created over an area: for every AI-grid tile touched, the characters and items on it and the statuses the surface would give them.",
+  "fingerprint": {
+    "calls": [
+      "esv::AiHelpers::CalculateAiScoreSurfaceTile",
+      "fp:0459e0b95853b07b",
+      "fp:123b79ba6c390bab",
+      "fp:24c801b0780dfd1d",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:8efc2b447ddf1668",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:b64bf67d316ead69",
+      "fp:d1045bdeed38dbc1",
+      "fp:d3713deebd9a4a36",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::AddAiScoreWeighted",
+      "unplaced::CreateAiScore",
+      "unplaced::CreateAiScoreScratchBlock",
+      "unplaced::ReleaseAiScore",
+      "unplaced::ReleaseAiScoreScratchBlock"
+    ],
+    "strings": ["c621b4e1dda44ccd"],
+    "components": ["esv::AiHelpers", "esv::Character", "esv::Item"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "walks tiles with eoc::AiGrid::ToTilePos and ToWorldPos, separates esv::Character and esv::Item, checks esv::SurfaceManager::CheckSurfaceTransformRequirement and esv::StatusMachine::HasActiveStatus; calls CalculateAiScoreSurfaceTile about 2000 times from one loop"
+    },
+    {
+      "kind": "watch",
+      "says": "A counter on every function over a play of the prologue shows it called only while a fight was on, from 2 places, CalculateAiScoreDestroyItem"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the symbol database finds the export again in the executable at this function by the text constants both refer to"
+    }
+  ]
+}

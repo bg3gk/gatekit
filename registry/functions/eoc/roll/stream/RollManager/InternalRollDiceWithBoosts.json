@@ -1,0 +1,52 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::RollManager::InternalRollDiceWithBoosts",
+  "state": "described",
+  "rung": "game",
+  "does": "Rolls a formula for a roller with its boosts: doubles the dice of a d20, rolls them, applies the roller's reroll boosts, bounds each die by the roller's minimum and maximum roll result boosts, keeps the higher or lower die of each pair with advantage or disadvantage and the first die otherwise, and fills the result with the total, the kept and the discarded dice and the critical state.",
+  "fingerprint": {
+    "calls": [
+      "eoc::roll::stream::ApplyRollResultBoosts",
+      "eoc::roll::stream::CollectRerollBoosts",
+      "eoc::roll::stream::RerollDiceInternal",
+      "eoc::roll::stream::RollManager::InternalRollDice",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "The draw's hits return through bg3_dx11.exe@25605617+0x105CDA1 into bg3_dx11.exe@25605617+0x105CB3D; one d20 check draws two dice (the count moves by two; a test of the first tree showed both dice, and it is to be written anew); with the pin at 20 the draw still ran twice and the dice came 20/20"
+    },
+    {
+      "kind": "watch",
+      "says": "The count writes of a passive check, a weapon attack and a damage roll return through bg3_dx11.exe@25605617+0x105CDA1 inside this function"
+    },
+    {
+      "kind": "watch",
+      "says": "Without advantage the natural die the game reports is the first of the pair: counts chosen so that the two dice differ gave the first die four times of four"
+    },
+    {
+      "kind": "read",
+      "says": "The dice count is doubled when the die type is the d20's, and the pair is reduced after the bounds are applied"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

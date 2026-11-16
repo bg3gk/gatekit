@@ -1,0 +1,17 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::StatusMachine::Tick",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Ticks every active status of one status list of a status machine whose tick type matches (or that ticks always), calling each status's Tick through its vtable (+0x78).",
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports esv::StatusMachine::Tick(PrimitiveSet<Status*>&, Guid, float, EStatusTickType, bool); this function takes the same five arguments: the list, the guid, the time, the tick type compared to the status's +0x180, and the bool compared to whether +0xD0 holds a handle. The macOS build's symbols do not hold the name."
+    },
+    {
+      "kind": "watch",
+      "says": "a probe shows its calls coming from eight sites of code:unplaced::TickStatusMachinesInRealTime, many a frame; HOLD_PERSON's repeat save chain passes it"
+    }
+  ]
+}

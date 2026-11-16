@@ -59,7 +59,7 @@ Each game side — `server` and `client` — has its own Lua state and its own f
 - `class` — optional, `fair`, `cheat` or `observation`: the class of a test's step. A verb the
   chunk calls that the class does not allow fails the command with `a fair step called the cheat
   GK.<verb>` (or `an observation step called the ...`), also when the chunk caught it
-  (lua-api.md section 19). Absent: nothing is refused.
+  ([lua-api.md](lua-api.md#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson)). Absent: nothing is refused.
 - `t` — seconds since 1970 when written; used only by the host to drop lines nobody can still wait for.
 
 ### An answer (`schemas/bridge/answer.schema.json`)
@@ -181,7 +181,7 @@ game through `exec` in the same moment.
 
 ## The event log
 
-Each side keeps one append-only log of what happened (`Shared/EventLog.lua`, lua-api.md 15) and
+Each side keeps one append-only log of what happened (`Shared/EventLog.lua`, [lua-api.md](lua-api.md#the-event-log-gkeventlog-sharedeventloglua-both-sides)) and
 writes it to the channel folder.
 
 ```json
@@ -313,7 +313,7 @@ What waits for the player, and what changed, is a view of the event log
   `dialogue_started`, `dialogue_ended_server`, `level_started`, `level_unloading`,
   `tutorial_shown`, `trade_requested`, `job_done` (a GK.Act job; `job`, `kind`, `status`,
   `error`). `hold` and `release` rows change what waits without being told. A `roll` and its
-  `roll_ended` carry the roll's numbers (lua-api.md, section 17), and the host keeps them in what
+  `roll_ended` carry the roll's numbers ([lua-api.md](lua-api.md#gkrolls-rolls-decided-in-advance-serverrollslua)), and the host keeps them in what
   it tells: `check`, `skill`, `dc`, `advantage`, `modifiers`, `bonus`, then `natural`, `total`,
   `success`, `critical`.
 - **How long ago**: `since_ms` is the side's clock from the row to the last row of the log, plus

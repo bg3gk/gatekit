@@ -1,0 +1,43 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::TurnBasedCanAct",
+  "state": "described",
+  "rung": "game",
+  "does": "Answers whether a creature may act on its turn: no for a dead or incapacitated one, and no for a character holding an active status whose id is the fixed string SURPRISED - the status's name itself, apart from its boosts, ends the turn.",
+  "fingerprint": {
+    "calls": [
+      "fp:0ecd6dc807759127",
+      "fp:175ac60533e9dfb9",
+      "fp:1cfe15017ce91cc4",
+      "fp:3167698532c6d680",
+      "fp:88470cc915be953f",
+      "fp:b9a18e1f1379aafa",
+      "fp:d649436bbbe7d47a"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; the decompiler's name of the function comes from that export, matched by calls"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "read",
+      "says": "the walk of the character's statuses returns false on a status of type 3 other than one named id, and on the id SURPRISED"
+    },
+    {
+      "kind": "text",
+      "says": "a surprised creature's turn, a human's or the player's own character's, ends 30 ticks after it began with no action and no input: the game's behaviour agrees with the read, and this function itself was not watched"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A probe on it while a surprised creature's turn begins would show who asks; a status given another name with the same four boosts would show whether the name alone ends the turn.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

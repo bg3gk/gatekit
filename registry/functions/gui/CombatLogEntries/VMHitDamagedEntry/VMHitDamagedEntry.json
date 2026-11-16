@@ -1,0 +1,60 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::CombatLogEntries::VMHitDamagedEntry::VMHitDamagedEntry",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Constructs the client's view model of a hit that damaged (the 'X takes N damage' line of the combat log) from a HitEntry, and has its tooltip lines built by GenerateDamageTooltips.",
+  "fingerprint": {
+    "calls": [
+      "fp:25775885d1a67594",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3c1b457638f3ac4f",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:92dd4fee11aeea92",
+      "fp:a678d5b8d1e84280",
+      "fp:ce1ea44345f8f104",
+      "fp:d6829d94468fa392",
+      "fp:e4d053ad9455ea7c",
+      "gui::CombatLogEntries::VMHitDamagedEntry::GenerateDamageTooltips"
+    ],
+    "strings": [
+      "049b0526b97f3db9",
+      "16d5637185768573",
+      "1e959ceae42e9657",
+      "37a013a359750bfe",
+      "796a0f9ace0be55c",
+      "89f018caf6b0a6da",
+      "8f4df57fa119971e",
+      "add33e34de6590d2",
+      "c0f8962730a3287d",
+      "c639107c3bf5106d",
+      "f2f494f4c4589ed4",
+      "fac06c2e7c6587fc",
+      "ffdaf55929e0653f"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the macOS constructor of this name calls GenerateDamageTooltips; here the only caller of code:gui::CombatLogEntries::VMHitDamagedEntry::GenerateDamageTooltips is this function"
+    },
+    {
+      "kind": "watch",
+      "says": "called once per damaging weapon hit, from bg3_dx11.exe@25605617+0x16BD9CE"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "read the dx11 body against the macOS constructor (VMHitEntry base, the damage param text) to settle the pairing; bg3_dx11.exe@25605617+0x16BD9CE's function is likely gui::CombatLogSystem::AddCombatLogEntriesFromHitDamage",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

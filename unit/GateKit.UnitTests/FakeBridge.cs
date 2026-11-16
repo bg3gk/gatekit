@@ -122,7 +122,7 @@ public sealed class FakeBridge : IAsyncDisposable
             using var s = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             text = new StreamReader(s).ReadToEnd();
         }
-        catch (IOException) { return list; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return list; }   // a queue being deleted reads as denied on Windows
         foreach (var line in text.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
             try

@@ -1,0 +1,46 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RollCastOnInitialTarget",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Resolves the roll of a cast for one initial target in the cast's targeting state: reads the cast's spell modifications and casting state (ModificationContainerComponent, IsCastingComponent) and the InitialTarget (sixth argument), and evaluates the spell roll on the target through code:unplaced::EvaluateSpellRollOnTarget; also called for every attack of a goblin's weapon spell.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
+      "eoc::SpellPrototype::GetRollSpellConditionsPerTextKey",
+      "fp:09d4fb7172fe616a",
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:46dcd657eca2c360",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:761258e787b32efb",
+      "fp:7c6f6a52d0f820ca",
+      "fp:91c3d48dff57ab4c",
+      "fp:9d23c34b7e5c768a",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:ebe06448cf825ccb",
+      "unplaced::EvaluateSpellRollOnTarget",
+      "unplaced::GetSpellDefaultTextKey"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its typed arguments are a WorldView of eoc::spell::ModificationContainerComponent and eoc::spell_cast::IsCastingComponent and an InitialTarget; it calls code:unplaced::EvaluateSpellRollOnTarget"
+    },
+    {
+      "kind": "watch",
+      "says": "one call per Sacred Flame cast, from bg3_dx11.exe@25605617+0x37CF5D9; the chains of Sacred Flame, Hold Person and a goblin's weapon attack pass it at bg3_dx11.exe@25605617+0x37D0718"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the InitialTarget's layout (which offset holds the target entity) - read it from a watch of the sixth argument during a Fire Bolt cast",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

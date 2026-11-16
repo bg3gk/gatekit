@@ -1,0 +1,40 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::RollManager::RollDiceGuaranteed",
+  "state": "described",
+  "rung": "game",
+  "does": "Makes a roll whose outcome is decided beforehand: draws the natural die uniformly among the faces that reach the difficulty, or among those that miss it, draws a second die consistent with advantage or disadvantage, and fills the result without the roller's boosts.",
+  "fingerprint": {
+    "calls": [
+      "fp:5227b96c8688ff31",
+      "fp:acb56e21874356cf",
+      "std::mt19937_64::discard",
+      "std::mt19937_64::operator()"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The lower and upper face are computed from the difficulty less the bonus, and no boost of the roller is read"
+    },
+    {
+      "kind": "watch",
+      "says": "A roll forced under weighted rolls came as a hit at natural 14 and 13 for a roller whose attack die was pinned at 1: the roller's minimum and maximum roll result boosts did not act on it"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A forced outcome of the weighted decision: the natural die of a pinned roller then ignores the pin",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

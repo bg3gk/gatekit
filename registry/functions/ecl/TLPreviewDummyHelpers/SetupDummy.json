@@ -1,0 +1,90 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::TLPreviewDummyHelpers::SetupDummy",
+  "state": "described",
+  "rung": "game",
+  "does": "Gives a new dummy entity the components of its kind, chosen by a bit set in the second parameter: 0x1FC7 for a character, 8 for a light, 0x1005 for an item or scenery, 0x25 for an effect, 0x15 for a camera, 4 for a sound. The fourth parameter is the timeline type.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:150f018b19506081",
+      "fp:161716b1af051722",
+      "fp:162a9008fc1f12c3",
+      "fp:169357a5b3566f18",
+      "fp:24b7188a79145a99",
+      "fp:2758833242eef855",
+      "fp:2a629a05574c4a44",
+      "fp:2d2e7745fcc56203",
+      "fp:30c7b9626ca9abdd",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3e876ea05b4c67a4",
+      "fp:4336f0416d4880cf",
+      "fp:451a3bb3aecbcf6a",
+      "fp:45dc6e5176859392",
+      "fp:5227b96c8688ff31",
+      "fp:56960dc713c2b4cf",
+      "fp:6179bb16ef6ddd43",
+      "fp:63c8a1b1588c8672",
+      "fp:65cdbf16ef79e7eb",
+      "fp:6e456152879c980c",
+      "fp:793be2ea95b2efaa",
+      "fp:91c3d48dff57ab4c",
+      "fp:96199aaf2345441c",
+      "fp:a5b63321bce824e4",
+      "fp:af5e01def3bd971a",
+      "fp:b72b55929af538be",
+      "fp:b7faf2e01917cd10",
+      "fp:b87a62c9a9a87876",
+      "fp:bf2b09f04a2d631c",
+      "fp:c8384249d433cc07",
+      "fp:dc28b630ffad2582",
+      "fp:e130cc275d202f09",
+      "fp:e4d053ad9455ea7c",
+      "fp:eb153bf7cccaefe7",
+      "fp:f02c3a0c7324264b",
+      "fp:f21e55528df2e606",
+      "fp:fc070702caf9a6fa",
+      "fp:fc272463a88998e6",
+      "fp:fcaff1dceb7c3011"
+    ],
+    "components": [
+      "ecl::TimelineAutomatedLookatComponent",
+      "ecl::TimelineCameraSystem",
+      "ecl::TimelineEmotionMaterialComponent",
+      "ecl::TimelineEyeLookAtOverrideComponent",
+      "ecl::TimelineMaterialComponent",
+      "ecl::TimelineShapeShiftComponent",
+      "ecl::TimelineSplatterComponent",
+      "ecl::TimelineSpringsComponent",
+      "eoc::timeline::steering::TimelineSteeringComponent",
+      "ls::CameraComponent",
+      "ls::ClothTeleportDataComponent",
+      "ls::EffectComponent",
+      "ls::LevelComponent",
+      "ls::LightComponent",
+      "ls::SoundComponent"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Each bit of the second parameter guards the adding of one group of components; the callers pass 0x1FC7 when the source has ecl::Character or the template's type is character, 8 for ls::LightComponent, and so on down to 4 for ls::SoundComponent."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts records 93 calls, one after each CreateDummy, with the bit sets 0x25, 8 and 0x1005 and the timeline type 1 in the fourth argument."
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "the private ecl::TLPreviewDummyHelpers::SetupDummy(ID const&, EDummyComponents, EntityRef const&, ETimelineType)"
+    },
+    {
+      "kind": "watch",
+      "says": "A probe while a dialog starts records 93 calls, one after each CreateDummy, with the bit sets 0x25, 8 and 0x1005 and the timeline type 1 in the fourth argument. Called with 0x1FC7 on a dummy just created, the entity then carries Transform, Level, Sound, AnimationBlueprint, AnimationSet, Physics, Tag, Unsheath, ArmorSetState, TimelineSteering, ClothTeleportData and the client timeline components for look-at, material, shape shift, splatter and animation state."
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

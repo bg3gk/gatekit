@@ -1,6 +1,6 @@
 {
   "schema": "bridge/game-keeps/1",
-  "about": "Components of a creature that GK.Stage.Verify does not count as dirt, each with the reason and how it is checked. kept: the engine creates it at a creature's first use of a system, never removes it, and it then holds its default - it is not dirt while it holds that, and Verify lists it under `kept`; `any` marks one that holds the game's record of its last request, not dirt whatever it holds. passing: the engine removes it by itself a moment later (a timer of its own); Verify counts it as a moment's matter (`pending`) and lists it under `passing`. A component whose engine name ends in OneFrameComponent lives one tick and is passing without an entry. docs/contracts/lua-api.md 14.",
+  "about": "Components of a creature that GK.Stage.Verify does not count as dirt, each with the reason and how it is checked. kept: the engine creates it at a creature's first use of a system, never removes it, and it then holds its default - it is not dirt while it holds that, and Verify lists it under `kept`; `any` marks one that holds the game's record of its last request, not dirt whatever it holds. passing: the engine removes it by itself a moment later (a timer of its own); Verify counts it as a moment's matter (`pending`) and lists it under `passing`. A component whose engine name ends in OneFrameComponent lives one tick and is passing without an entry. docs/contracts/lua-api.md#the-stage-scope-gkstagebegin-clean-verify-track-serverstagelua",
   "kept": {
     "esv::boost::StoryRequestsComponent": {
       "lua": "ServerBoostStoryRequests",
@@ -15,7 +15,7 @@
     "esv::unsheath::DefaultComponent": {
       "lua": "ServerUnsheath",
       "any": true,
-      "why": "created at a creature's first weapon request (a fight, the player's toggle, Osi.SetWeaponUnsheathed) and kept; esv::unsheath::DefaultSystem writes field_0 (a StatsUnsheathState) at every request - the player's toggle writes 3, Osi.SetWeaponUnsheathed(1) writes 2, a fight 1 - so it holds what the last request wrote, and the stage's own restore of the weapons writes it too (traced with the systems tracked: research/studies/weapon-in-hand.md, section 7)"
+      "why": "created at a creature's first weapon request (a fight, the player's toggle, Osi.SetWeaponUnsheathed) and kept; esv::unsheath::DefaultSystem writes field_0 (a StatsUnsheathState) at every request - the player's toggle writes 3, Osi.SetWeaponUnsheathed(1) writes 2, a fight 1 - so it holds what the last request wrote, and the stage's own restore of the weapons writes it too (traced with the systems tracked: research/studies/weapon-in-hand.md#interrupted-testscombatweaponinterruptedlua)"
     }
   },
   "passing": {

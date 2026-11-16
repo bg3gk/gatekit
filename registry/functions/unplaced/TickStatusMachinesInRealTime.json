@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::TickStatusMachinesInRealTime",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Ticks the statuses of every status machine whose owner is out of turn-based combat, by time: calls esv::StatusMachine::Tick on each machine's own and external status lists with tick type 2.",
+  "fingerprint": {
+    "calls": [
+      "esv::StatusMachine::Tick",
+      "fp:123b79ba6c390bab",
+      "fp:13ddf19cc6797441",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "loops the machines at +0x70, filters them, and calls code:esv::StatusMachine::Tick twice per machine with tick type 2 and the bool 0 then 1"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe shows esv::StatusMachine::Tick called 11016 times in 15 s from eight sites inside it; out of combat HOLD_PERSON's RemoveConditions were evaluated in that time"
+    }
+  ]
+}

@@ -27,6 +27,12 @@ only the rows of the event log a player could know (`knows = player`), in `bg3_e
 attention alike. The filter is the host's, set by whoever starts the server, never by the client.
 What fair means: [api-rules.md](api-rules.md).
 
+**An agent that plays.** For a model that plays the game rather than studies it, serve GateKit
+AI's four tools alone: `gatekit --instance <copy> mcp --only ai_`. Its first call is
+`ai_session` with the mode (`blind`, what a player at the screen has, or `open`) and the owner's
+prompt; without MCP, `mcp --only ai_ tools --format functions` and `mcp call` are the loop around
+any model. → [mods/AI/README.md](../mods/AI/README.md)
+
 ## The tools
 
 | Group | Tools |

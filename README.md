@@ -39,6 +39,9 @@ Script Extender. [Getting started](docs/getting-started.md) goes through it step
 
 - **Drive the game from an agent.** `gatekit mcp` serves a copy to any MCP client; the
   repository's `.mcp.json` registers it. → [docs/driving-the-game.md](docs/driving-the-game.md)
+- **Let an agent play.** GateKit AI gives a model four tools - begin a session, act, look, direct
+  a scene - each answer saying what changed since the last; `gatekit --instance <copy> mcp --only
+  ai_` serves them. → [mods/AI/README.md](mods/AI/README.md)
 - **Write a test.** A test is a Lua file in `tests/` that runs in a copy, preferably in the
   sandbox level, and passes, fails or reports a precondition unmet. → [docs/writing-tests.md](docs/writing-tests.md)
 - **Read the engine's code.** The game index, the symbol and pseudo-code databases, the wiki
@@ -56,7 +59,12 @@ Script Extender. [Getting started](docs/getting-started.md) goes through it step
   waits for an answer. → [docs/contracts/bridge-protocol.md](docs/contracts/bridge-protocol.md)
 - **The API inside the game.** `GK.*`, every verb fair, cheat or observation.
   → [docs/api-rules.md](docs/api-rules.md), [docs/contracts/lua-api.md](docs/contracts/lua-api.md)
-- **The Script Extender fork** it builds on: [bg3gk/bg3se](https://github.com/bg3gk/bg3se).
+- **The registry.** Our reading of the game's machine code, one entry per function, type and
+  global, with its evidence and its place in every build. → [registry/README.md](registry/README.md)
+- **The Script Extender fork** it builds on: [bg3gk/bg3se](https://github.com/bg3gk/bg3se); what
+  it adds for any modder - roll events, the game's chance of a roll, client-only figures and
+  effects, injected input, the game's functions by the registry's names - is its
+  [GATEKIT.md](https://github.com/bg3gk/bg3se/blob/gatekit-native/GATEKIT.md).
 
 All documents: [docs/](docs/README.md). Changing GateKit itself: [AGENTS.md](AGENTS.md) and
 [CONTRIBUTING.md](CONTRIBUTING.md).

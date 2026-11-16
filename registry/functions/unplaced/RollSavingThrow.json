@@ -1,0 +1,42 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RollSavingThrow",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Rolls a saving throw of an ability against a difficulty through the roll against a difficulty and marks the hit when the save succeeds.",
+  "fingerprint": {
+    "calls": [
+      "eoc::CopyStatsRollResult",
+      "eoc::roll::stream::RollManager::RollDiceWithBoostsAgainstDC",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f8c904b320f1070b",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The ability is 1 to 6, the stream comes from the roll stream provider called with the condition's context, and bit 0x100 of the hit's flags is set on success"
+    },
+    {
+      "kind": "watch",
+      "says": "A target's save against Sacred Flame and Hold Person asks the roll against a difficulty from bg3_dx11.exe@25605617+0x10707A0 inside this function: on the caster's PlayerSpell stream when the player casts, on the Generic stream for a status's repeating save and for an NPC's spell outside a fight; the roller named is the target"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A spell that asks its target for a save, watched: which stream it draws from",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

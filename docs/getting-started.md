@@ -12,7 +12,8 @@ cd gatekit
 ./gatekit doctor
 ```
 
-`./gatekit` builds the toolkit the first time it runs. `doctor` prints what it found and what it
+`./gatekit` builds the toolkit the first time it runs (into `artifacts/gatekit`, and again in the
+background after a `dotnet build`: [contracts/cli.md](contracts/cli.md#calls-how-often-the-program-is-called)). `doctor` prints what it found and what it
 did not, each with the setting that fixes it. It finds the game in your Steam library; if it
 cannot, set `BG3_GAME` to the game's folder.
 
@@ -107,6 +108,8 @@ same for GateKit's own mod.
 ## Next
 
 - Driving the game from an AI agent → [driving-the-game.md](driving-the-game.md)
+- An AI agent that plays: GateKit AI's four tools → [mods/AI](../mods/AI/README.md)
 - The databases of the game's data and code → [offline-databases.md](offline-databases.md)
 - In-game windows → [Weave](../mods/Weave/README.md)
 - The API inside the game → [contracts/lua-api.md](contracts/lua-api.md)
+- What GateKit's Script Extender adds for any mod → its [GATEKIT.md](https://github.com/bg3gk/bg3se/blob/gatekit-native/GATEKIT.md)

@@ -79,12 +79,32 @@ public static class LayoutData
     public static int? Write(string? repository, string channel)
     {
         if (repository is null || Folder(repository) is not { } layouts) return null;
-        var data = Build(layouts);
+        var (text, count) = Built(layouts);
         Directory.CreateDirectory(channel);
         var target = Path.Combine(channel, FileName);
         var temporary = target + ".tmp";
-        File.WriteAllText(temporary, data.ToJsonString(), new System.Text.UTF8Encoding(false));
+        File.WriteAllText(temporary, text, new System.Text.UTF8Encoding(false));
         File.Move(temporary, target, overwrite: true);
-        return data["components"]!.AsObject().Count;
+        return count;
+    }
+
+    static readonly Lock Gate = new();
+    static (string Folder, string Files, string Text, int Count)? last;
+
+    /// <summary>The data of a folder, built again only when one of its files was added, removed or
+    /// written since the last build in this process (a server that starts copies all day, a test run).</summary>
+    static (string Text, int Count) Built(string layouts)
+    {
+        var files = new System.Text.StringBuilder();
+        if (Directory.Exists(layouts))
+            foreach (var file in new DirectoryInfo(layouts).EnumerateFiles("*.json", SearchOption.AllDirectories))
+                files.Append(file.FullName).Append('|').Append(file.Length).Append('|').Append(file.LastWriteTimeUtc.Ticks).Append('\n');
+        var seen = files.ToString();
+        lock (Gate)
+            if (last is { } known && known.Folder == layouts && known.Files == seen) return (known.Text, known.Count);
+        var data = Build(layouts);
+        var built = (layouts, seen, data.ToJsonString(), data["components"]!.AsObject().Count);
+        lock (Gate) last = built;
+        return (built.Item3, built.Item4);
     }
 }

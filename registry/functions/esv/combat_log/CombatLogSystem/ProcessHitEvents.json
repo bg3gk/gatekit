@@ -1,0 +1,35 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::ProcessHitEvents",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Builds a HitEntry for each new HitResultEvent whose inflicter and target merit an entry: the originator, the hit's condition rolls (attack roll and saves, 0x138 bytes each), a HitDescLog made by the helper from the hit description, the inflicter and target as net entities, Lethal, ShouldBeDowned and AC; killing blows are grouped; the entries go to the protocol at the end.",
+  "fingerprint": {
+    "calls": [
+      "esv::combat_log::CombatLogSystem::EntitiesMeritLogEntry",
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<esv::hit::HitResultEventOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<esv::hit::HitResultEventOneFrameComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "queries HitResultEventOneFrameComponent (added), calls the two-entity EntitiesMeritLogEntry on Hit.Inflicter (+0x50) and Target (+0x1D8), helper slots 0x18 (HitDescLog) and 0x10 (net entity), pushes entry type 0"
+    },
+    {
+      "kind": "watch",
+      "says": "over a weapon hit, a weapon miss, Sacred Flame saved and Hold Person's repeating save (a HitResultEvent of cause StatusTick with one condition roll) it calls the merit test once and hands one Hit entry to the protocol"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

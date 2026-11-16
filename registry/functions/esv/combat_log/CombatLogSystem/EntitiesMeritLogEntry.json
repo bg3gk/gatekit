@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::EntitiesMeritLogEntry",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Decides whether a pair of entities deserves a combat log entry: no when the target is invisible and not a player; yes when either is a player or near a player, or either takes part in a fight with a player; otherwise no.",
+  "fingerprint": {
+    "calls": [
+      "fp:752e6552b5417c49",
+      "fp:a4616baec98bd920",
+      "unplaced::IsInFightWithPlayer",
+      "unplaced::IsPlayerOrNearPlayer"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "HasComponent Invisibility and Player on the target, then a player-or-near-player test and a fight-with-player test on each of the two"
+    },
+    {
+      "kind": "watch",
+      "says": "called once from ProcessHitEvents for each hit of the scenes (hit, miss, save, status tick)"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

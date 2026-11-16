@@ -1,0 +1,35 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::roll::stream::RerollDiceInternal",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Throws again each die at or below a reroll boost's face, through the whole-number draw on the stream, and keeps the new die when the boost says it always stands or when it is higher.",
+  "fingerprint": {"calls": ["eoc::roll::stream::DrawNumber", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "It draws with the roll's own faces, records the old and the new value in the result's list, and keeps the new die when the boost says it always stands or when it is higher"
+    },
+    {
+      "kind": "watch",
+      "says": "A count-only probe on it shows one call for each roll with boosts, from code:eoc::roll::stream::RollManager::InternalRollDiceWithBoosts, with no die thrown again when the roller has no reroll boost"
+    },
+    {
+      "kind": "watch",
+      "says": "A passive check of a creature with Halfling Luck whose first die was chosen as 1 drew a third die inside this function, and the roll's natural die became that third die; the same check without the passive drew two dice and kept the 1"
+    },
+    {
+      "kind": "text",
+      "says": "The name is ours: the Toolkit exports no function of this name and the macOS build's symbols hold none; it stands in the namespace of the functions that call it."
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A natural 1 of a roller with Halfling Luck: one more draw returning through here",
+      "about": "reach",
+      "state": "answered",
+      "answer": "A third die is drawn inside this function and becomes the roll's natural die; without the passive two dice are drawn and the 1 is kept.",
+      "source": "this entry's watch of the passive check"
+    }
+  ]
+}

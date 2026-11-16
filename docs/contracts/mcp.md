@@ -1,8 +1,8 @@
 # MCP contract
 
 Every tool of `gatekit mcp`, the MCP server of the toolkit (`src/GateKit.Mcp`): what it does to
-the copy the server works on, what it answers and how it fails. Section 1 is the core tools,
-section 2 the server itself, sections 3-5 the coverage loop, attention and the event log. The
+the copy the server works on, what it answers and how it fails: the core tools, the server itself,
+then the coverage loop, attention and the event log. The
 exact argument schema of every tool is what `gatekit mcp tools` lists, written in its source file.
 
 Every failed call answers `isError` with one text block `<kind>: <message>`: `CopyError` for what a
@@ -12,37 +12,39 @@ value that is not a string is indented JSON (one space, nothing escaped; `Result
 
 ---
 
-## 1. Core tools (`src/GateKit.Mcp/CoreTools.cs`)
+## Core tools
+
+`src/GateKit.Mcp/CoreTools.cs`.
 
 #### `bg3_up`
 
 - **Arguments**: `level` (`MODULE:LEVEL`), `save` (a folder name under `Savegames/Story`), `mods` (folder names), `story_log`, `main_menu`, `game_args`.
-- **Calls**: `GameCopy.UpAsync` with those, as `gatekit up` (cli.md 2.3).
+- **Calls**: `GameCopy.UpAsync` with those, as [`gatekit up`](cli.md#up).
 - **Result**: everything `up` printed (state changes `  12.3 s  Running`, `Script Extender for this run: ...`, `bridge pak rebuilt ...`, `playable after N s`), or `playable` when nothing was printed.
 - **Errors**: whatever `up` refuses (already running, a level without its module, the bridge never reported, ...) as `CopyError`.
 
 #### `bg3_down`
 
-- **Calls**: `GameCopy.Down` (cli.md 2.4).
+- **Calls**: `GameCopy.Down` ([cli.md](cli.md#down)).
 - **Result**: the line `down` prints: `game closed, saves and mod list restored`, or for an instance `instance NAME: game closed` and what happened to its Script Extender build.
 
 #### `bg3_status`
 
 - **Calls**: the copy's game processes and last heartbeats; with a game running, the client's `GK.Gui.FilmPlaying()` (5 s).
-- **Result**: JSON `{instance, drives, channel, processes, client, server, client_alive, film}` (2.5). A heartbeat is shown as `{side, boot, time, gameState, queue, done}` only while it is fresh and a game of this copy runs; otherwise `{gameState: null, stale: "last heartbeat written ...; ..."}`, or null when there is none.
+- **Result**: JSON `{instance, drives, channel, processes, client, server, client_alive, film}` ([below](#bg3_status-names-the-copy)). A heartbeat is shown as `{side, boot, time, gameState, queue, done}` only while it is fresh and a game of this copy runs; otherwise `{gameState: null, stale: "last heartbeat written ...; ..."}`, or null when there is none.
 - **Errors**: none for a missing game.
 
 #### `bg3_lua`
 
 - **Arguments**: `side` (`client`, `server`, `ui`), `code`, `timeout` (s, default 20).
-- **Calls**: `GameSession.LuaAsync` (cli.md 2.8). `ui` is the client with `ui: true`.
+- **Calls**: `GameSession.LuaAsync` ([cli.md](cli.md#exec)). `ui` is the client with `ui: true`.
 - **Result**: the lines the chunk logged (`  [<side>] <line>` per `GK.Log`), then a newline, then the result as JSON (`null` for nil); without log lines the JSON alone. A code argument is always a chunk, never a file.
 - **Errors**: `CopyError: Lua error on <side>:\n<traceback>`; `CopyError: no answer from <side>: ...`; `CopyError: no game is running for <copy>; nothing was sent`.
 
 #### `bg3_wait`
 
 - **Arguments**: `side` (`client`, `server`, `ui`; default client), `expression`, `until_attention` (default true), `timeout` (s, default 30).
-- **Calls**: section 4: the wait ends on a new attention item, or when `return (<expression>)` is truthy by Lua's own truth (only `nil` and `false` are false), whichever comes first.
+- **Calls**: [attention and event-ended waits](#attention-and-event-ended-waits): the wait ends on a new attention item, or when `return (<expression>)` is truthy by Lua's own truth (only `nil` and `false` are false), whichever comes first.
 - **Result**: the expression's value when it came true; otherwise `{endedBy: attention|timeout, attention: [...], waitedMs}`.
 - **Errors**: `ValueError: nothing to wait for: ...` without an expression and with `until_attention` off; `CopyError: timed out waiting on <side> for: <expression>` when an expression was given; Lua errors as `bg3_lua`.
 
@@ -54,18 +56,18 @@ value that is not a string is indented JSON (one space, nothing escaped; `Result
 #### `bg3_events`
 
 - **Arguments**: `since` (the `next` of an earlier answer), `kinds`, `family`, `limit` (default 200).
-- **Result**: section 5: `{rows, next, more?, dropped?, unplaced?, counts, on}`. Reads the event log's files; asks nothing of the game.
+- **Result**: [the event log as one stream](#bg3_events-the-event-log-as-one-stream): `{rows, next, more?, dropped?, unplaced?, counts, on}`. Reads the event log's files; asks nothing of the game.
 
 #### `bg3_logs`
 
 - **Arguments**: `lines` (default 60), `grep`, `story`.
-- **Calls**: `GameCopy.Logs` (cli.md 2.11).
+- **Calls**: `GameCopy.Logs` ([cli.md](cli.md#logs)).
 - **Result**: the lines joined by `\n`, or `(nothing)`.
 
 #### `bg3_reload`
 
 - **Arguments**: `mod_root`.
-- **Calls**: with `mod_root`, `GameCopy.Link` (its full path); then `GameCopy.ReloadAsync` (cli.md 2.10).
+- **Calls**: with `mod_root`, `GameCopy.Link` (its full path); then `GameCopy.ReloadAsync` ([cli.md](cli.md#link-reload-bridge-reload-watch-hot-reload)).
 - **Result**: `reloaded <A, B> in X.X s`.
 - **Errors**: `CopyError: no Mods/<Folder>/ScriptExtender/Lua under ...`, `nothing is linked ...`, `<side> Lua did not come back after the reset ...`.
 
@@ -84,31 +86,31 @@ value that is not a string is indented JSON (one space, nothing escaped; `Result
 
 #### `bg3_checkpoint`
 
-- **Calls**: `GameSession.CheckpointAsync` (cli.md 2.12).
+- **Calls**: `GameSession.CheckpointAsync` ([cli.md](cli.md#checkpoint-reset-a-clean-world-without-a-restart)).
 - **Result**: `checkpoint saved: <save folder name>`.
 - **Errors**: `CopyError: the game made no save for the checkpoint` etc.
 
 #### `bg3_reset`
 
-- **Calls**: `GameSession.ResetAsync` (120 s, the opening scene played through; cli.md 2.12).
+- **Calls**: `GameSession.ResetAsync` (120 s, the opening scene played through; [cli.md](cli.md#checkpoint-reset-a-clean-world-without-a-restart)).
 - **Result**: `world reset in X.X s; a standing capture (bg3_seen_start) does not survive it - start it again if one was running`.
 - **Errors**: `CopyError: no checkpoint to return to...`, `<side> did not come back from the reset ...`.
 
 #### `bg3_key`
 
 - **Arguments**: `key`, `hold` (0 to 30 s).
-- **Calls**: `GameCopy.Key` (cli.md 2.9): through the game (`GK.Key`), else the window's own key messages; with `hold`, `GK.Key(key, nil, hold)` and a wait until it is up.
+- **Calls**: `GameCopy.Key` ([cli.md](cli.md#shot-key)): through the game (`GK.Key`), else the window's own key messages; with `hold`, `GK.Key(key, nil, hold)` and a wait until it is up.
 - **Result**: `pressed <key>`; with `hold`, `held <key> for <s> s, released`.
 - **Errors**: `CopyError: unknown key ...` / `key not sent: ...` / `a hold is 0 to 30 seconds ...` / `a held key needs the bridge ...` (the window's own key messages only tap).
 
 #### `bg3_sound`
 
-- Section 2.1.
+- [Sound and windows](#sound-and-windows).
 
 #### `bg3_screenshot`
 
-- **Arguments**: `width` (default 1150).
-- **Calls**: `GameCopy.Shot` into `<state>/shots/mcp-HHmmss.jpg` (cli.md 2.9).
+- **Arguments**: `width` (default 1150), `overlay` (default false: the game's frame alone; true: with the extender's own layer in it).
+- **Calls**: `GameCopy.Shot` into `<state>/shots/mcp-HHmmss.jpg` ([cli.md](cli.md#shot-key)).
 - **Result**: an image block (`image/jpeg`, base64) and a text block `saved: <path>`. The file stays on disk (calls in the same second overwrite it).
 - **Errors**: `CopyError: screenshot failed: ...`.
 
@@ -127,14 +129,14 @@ value that is not a string is indented JSON (one space, nothing escaped; `Result
 
 ---
 
-## 2. The server (`src/GateKit.Mcp`)
+## The server
 
-`gatekit mcp` serves the copies' tools over stdio; `gatekit mcp tools` lists what it offers without
+`src/GateKit.Mcp`. `gatekit mcp` serves the copies' tools over stdio; `gatekit mcp tools` lists what it offers without
 starting anything. The instance comes from the same settings as every other command (`--instance`,
 `GATEKIT_INSTANCE`, `BG3_GATEKIT_INSTANCE`); one process serves one instance. The repository's
 `.mcp.json` registers it as `gatekit`. `src/GateKit.Mcp/README.md` is the guide for modders.
 
-**The installed game is reached only when it is named** ([cli.md](cli.md) 1.1, where the rule and
+**The installed game is reached only when it is named** ([cli.md](cli.md#command-line-shape), where the rule and
 its one check stand). Without an instance, every tool that sends the game a chunk of Lua -
 `bg3_lua`, `bg3_call`, `bg3_dialog`, `bg3_fast_scenes`, `bg3_sound`, `bg3_state`, `bg3_wait` with
 an expression, the coverage tools that read the game (`bg3_pause`,
@@ -148,15 +150,15 @@ without a name: `bg3_status` (its `film` is then `null`), `bg3_events`, `bg3_log
 Built on the official C# SDK (NuGet `ModelContextProtocol` 2.4.0, which ships a `net10.0` target):
 the handshake, capabilities, `tools/list`, `tools/call`, `ping` and cancellation are the SDK's. The
 **transport** is GateKit's own (`BatchStdioTransport`), because batches are not in the SDK - the
-spec version 2025-06-18 has none - and 2.2 keeps them.
+spec version 2025-06-18 has none - and [the transport](#transport-and-calls) keeps them.
 
-### 2.1 Sound and windows
+### Sound and windows
 
-The core tools of section 1: `bg3_up`, `bg3_down`, `bg3_status`, `bg3_lua`, `bg3_wait`,
+The [core tools](#core-tools): `bg3_up`, `bg3_down`, `bg3_status`, `bg3_lua`, `bg3_wait`,
 `bg3_state`, `bg3_events`, `bg3_logs`, `bg3_reload`, `bg3_dialog`, `bg3_fast_scenes`,
 `bg3_checkpoint`, `bg3_reset`, `bg3_key`, `bg3_screenshot`, `bg3_call`, `bg3_api`, and the MCP
 half of `gatekit sound`
-([cli.md](cli.md) 8.4, [docs/design/deck.md](../design/deck.md), section "Sound"):
+([cli.md](cli.md#sound), [docs/design/deck.md](../design/deck.md#sound)):
 
 - **`bg3_sound`** - `{action: list|set|mute|unmute|unfocused, category?, volume?, on?}`: how loud
   this copy of the game is, so an agent watching several runs can quieten the ones it is not
@@ -170,7 +172,7 @@ half of `gatekit sound`
   anything reaches the game. It changes the running copy only, never the player's own settings.
 
 And two for the MCP half of `gatekit window ...`
-([docs/design/deck.md](../design/deck.md), [cli.md](cli.md) 8.8):
+([docs/design/deck.md](../design/deck.md), [cli.md](cli.md#the-deck)):
 
 - **`bg3_windows`** - every running copy: instance, label, process id, its tile, and the tiles kept
   for a game that is away. No arguments. Needs no deck.
@@ -186,7 +188,7 @@ And two for the MCP half of `gatekit window ...`
 Neither touches a game. Reading a copy, driving it and photographing it work the same whether it is
 in a tile, behind another window, out of view or in no deck at all.
 
-### 2.2 Transport and calls
+### Transport and calls
 
 | What | How |
 |---|---|
@@ -195,15 +197,15 @@ in a tile, behind another window, out of view or in no deck at all.
 | a long call | requests are served side by side: `ping`, `tools/list` and a second tool are answered while `bg3_up` or `bg3_reset` runs. Each call gets a `GameCopy` object of its own with its own output buffer, so two calls never mix their log lines. |
 | plugin errors | the tools folder is re-read by modification time and an entry is dropped as soon as its file loads, is removed, or stops clashing. |
 
-### 2.3 Not offered
+### Not offered
 
 - **Tools for Larian's Toolkit** (the editor): there is no Toolkit bridge.
 - **Agent-play tools** of their own: every `GK.*` function (`GK.Act`, `GK.See`, ...) is callable
   through `bg3_call`, and `bg3_api` lists it.
 - **An offline server**: the lookups over the databases are the CLI's (`data query`, `symbols`,
-  `decomp`; [cli.md](cli.md) section 8).
+  `decomp`; [cli.md](cli.md#gatekit-the-toolkit)).
 
-### 2.4 Behaviour
+### Behaviour
 
 1. **`serverInfo`** is `gatekit` with the assembly's version. Tool names are what an agent's
    prompts depend on.
@@ -224,12 +226,23 @@ in a tile, behind another window, out of view or in no deck at all.
    (`GATEKIT_MCP_TOOLS`), each a description plus one bridge call or Lua chunk, re-read when its
    modification time changes. A file that fails to load is named by `bg3_plugin_errors`, a tool
    listed only while there is such a file; a tool whose name is taken is skipped and named there
-   too. The README has the format.
-7. **`bg3_reload`'s `mod_root`** is resolved to a full path.
-8. **`bg3_api`** reads the bridge mods `up` would install (`GATEKIT_BRIDGE`, default
+   too. The README has the format. A bridge mod brings its own tools the same way: the folder
+   `tools` beside its `Mods` folder (`mods/AI/tools`) is read with `mcp-tools/`. Two fields of a
+   tool file belong to the host: `"attention": false` (the tool's answer says what waits by
+   itself, so no `attention` block is added to it) and `"files": {"<argument>": "<argument>"}`
+   (the argument on the left is a path of a UTF-8 text file, at most 16,000 characters, a
+   relative one read from the folder that holds the tools folder; the host reads it and gives
+   its text to the chunk as the argument on the right).
+7. **A server of one set of tools**: `gatekit mcp --only <prefix>` lists and calls the tools
+   whose name begins with the prefix and no other (`--only ai_`: the four tools of GateKit AI);
+   `mcp tools` and `mcp call` take it too. `gatekit mcp tools --format functions` prints the
+   tools as the `tools` array of a chat-completions request (`{"type": "function", "function":
+   {name, description, parameters}}`), for a client that has no MCP; `mcp call` is its call.
+8. **`bg3_reload`'s `mod_root`** is resolved to a full path.
+9. **`bg3_api`** reads the bridge mods `up` would install (`GATEKIT_BRIDGE`, default
    `<repo>/mods`), so it covers Weave as well as GateKit.
 
-### 2.5 `bg3_status` names the copy
+### `bg3_status` names the copy
 
 `bg3_status` answers with `instance`: the game copy this server drives, `null` for the installed
 game. With several agents each driving a copy, it is how one checks that its tools reach its own.
@@ -252,9 +265,9 @@ reaches a copy.
 
 ---
 
-## 3. The coverage loop (`CoverageTools.cs`): mapping the engine
+## The coverage loop: mapping the engine
 
-The tools an agent maps the engine with, all through this server.
+`CoverageTools.cs`. The tools an agent maps the engine with, all through this server.
 The Lua they use is part of the bridge (`Shared/Probe.lua`: `GK.Probe`, `GK.Seen`), and the data
 work around it is C# (`Ledger.cs`, `Survey.cs`).
 
@@ -262,14 +275,14 @@ work around it is C# (`Ledger.cs`, `Survey.cs`).
 |---|---|
 | `bg3_pause` | stops the world while an agent thinks; `GK.Pause` |
 | `bg3_seen_start` / `_mark` / `_new` / `_drain` / `_status` | the standing capture: which types have holders, and their bytes. A reset, Lua reload or level change stops it; `_drain` then asks `GK.Seen.Status()` per side, drains the sides that run, and names the others under `not_running` (`no capture is running on <side> - ...; call bg3_seen_start`) instead of failing. A side that gives no answer at all (the server in the main menu stays in `UnloadLevel`) does not fail any of the five: `_drain` names it under `not_running` (`not drained: no answer from server ...`) and drains the other; `_start`, `_mark` and `_status` answer `{ gone }` for it, `_new` lists it under `gone` |
-| `bg3_coverage_todo` | the ledger of the unseen (3.2) |
+| `bg3_coverage_todo` | the ledger of the unseen ([its groups](#the-groups-of-the-ledger)) |
 | `bg3_probe` | the per-offset survey of one component |
 | `bg3_probe_fields` | raw bytes beside what Script Extender returns for the same instance |
-| `bg3_recipe` | a confirmed finding writes `tests/_coverage/<name>.lua`, a test `gatekit test` replays (3.4), and a line in `findings.jsonl` |
+| `bg3_recipe` | a confirmed finding writes `tests/_coverage/<name>.lua`, a test `gatekit test` [replays](#a-recipe-is-a-test-that-replays), and a line in `findings.jsonl` |
 | `bg3_run_report` | a run's hand-over and what it spent, in `runs.jsonl` |
-| `bg3_wish` / `bg3_record` | the ledgers of the record (3.9): wishes under one id scheme; the counts, a run's yield, the record's own check |
+| `bg3_wish` / `bg3_record` | the [ledgers of the record](#the-ledgers-who-saw-what-when-and-the-wishes): wishes under one id scheme; the counts, a run's yield, the record's own check |
 
-### 3.1 What `bg3_pause` actually is
+### What `bg3_pause` actually is
 
 Baldur's Gate 3 has no pause a mod can press. `GK.Pause` is the engine's own time scale
 (`ls::GlobalSwitches::DeltaTimeScale`) at its floor of 0.001, which the engine itself clamps:
@@ -280,7 +293,7 @@ agent that believes it has a true pause will write a finding that depends on one
 `GK.Speed` rule of the highest priority, so Speed's half-second poll cannot put the pace back
 under it.
 
-### 3.2 The groups of the ledger
+### The groups of the ledger
 
 Besides mapped / waiting / alive / dead - which say nothing about where work is left - the ledger
 has the two groups that do:
@@ -293,7 +306,7 @@ has the two groups that do:
 `bg3_coverage_todo {"group": "unseen", "namespaces": true}` is what a run picks its theme from:
 a namespace is usually one system, so a run that takes one has a theme and an end.
 
-### 3.3 Evidence, enforced by the schema
+### Evidence, enforced by the schema
 
 `bg3_recipe` requires `evidence` (`sighting`, `repeated`, `replayed` or `field_value`) and
 `reached_by` (`play`, `cheat` or `play_with_cheat_setup`), closed vocabularies validated before
@@ -305,12 +318,12 @@ sighting is one appearance; a finding needs the action
 repeated, or a value forced, or the code read. How it was reached is part of the record, because
 a component seen in ordinary play is a stronger fact than one that only appears after a cheat.
 
-### 3.4 A recipe is a test that replays
+### A recipe is a test that replays
 
 `bg3_recipe` writes `tests/_coverage/<name>.lua` in the checkout the server runs from, and
 `gatekit --instance <copy> test tests/_coverage -k <name>` replays it. A recipe written as free Lua for the game (`Osi.GetHostCharacter()` at the top
 level), which the test runner cannot read on the host, is skipped by `test` as not replayable
-([cli.md](cli.md) 3.1).
+([cli.md](cli.md#test)).
 
 It takes, besides `component`, `name`, `evidence`, `reached_by`, `claim`, `fields`, `open`:
 
@@ -354,20 +367,20 @@ replay then passes only when the most holders in one tick, or the holders at the
 the count at the start, or an entity holds it that did not at the start (`... before the steps and
 the steps added none` otherwise). `alive` returns `new` beside `before`, `most`, `now`, `ticks`,
 `first`, and leaves what it saw in `RECIPE_ALIVE` for the runner, which writes it into
-`replays.jsonl` ([cli.md](cli.md) 8.11).
+`replays.jsonl` ([cli.md](cli.md#record-the-ledgers-of-the-coverage-record)).
 
 A recipe that carries the comment `-- unreplayed since rewrite` was written from its own steps by
 hand and carries it until it is replayed live.
 
-### 3.5 `bg3_names` and `bg3_wiki` (no game needed)
+### `bg3_names` and `bg3_wiki` (no game needed)
 
-`bg3_names` is `gatekit names` as a tool ([cli.md](cli.md) 8.9): `action` is `tally` (the
+`bg3_names` is `gatekit names` as a tool ([cli.md](cli.md#names-and-wiki)): `action` is `tally` (the
 default), `worst`, `suggest` (with `component`, or a namespace `prefix`; `all`), `adopt` (`write:
 true` writes), `set` (`names`: one object or an array of `{component, offset, name, source,
 evidence, struct?, type?, legacy?}`; `write: false` only checks; `force`), or `pending`. Every
 answer is JSON. The same refusals apply, and a refused batch writes nothing.
 
-`bg3_wiki` is `gatekit wiki` as a tool ([cli.md](cli.md) 8.9): `text` with `action` `find`
+`bg3_wiki` is `gatekit wiki` as a tool ([cli.md](cli.md#names-and-wiki)): `text` with `action` `find`
 (the default), `page`, `ids`, `uid`, `card`, `rules`, `table` or `tables` (which needs no `text`).
 `chars` cuts a page; `refresh` asks the wiki again. `card` answers an array of `{table, page, ids,
 row}`. `rules` answers `{title, revision, sections: [{level, heading, text, links, unsure}]}` with
@@ -377,24 +390,26 @@ field=text"`, `fields` (comma-separated, default `page,name,uid,uuid`) and `limi
 and answers `{rows, shown}`. The pacing and the fifteen quiet minutes after a refusal are the
 reader's and apply here as they do on the command line; a refusal comes back as the tool's error.
 
-### 3.6 `bg3_registry_note`, `bg3_registry_withdraw`, `bg3_registry_at`, `bg3_registry_show` (no game needed)
+### `bg3_registry_note`, `bg3_registry_withdraw`, `bg3_registry_at`, `bg3_registry_show` (no game needed)
 
-The registry's live layer as tools ([cli.md](cli.md) 8.16.1), for agents
+The registry's live layer as tools ([cli.md](cli.md#the-live-layer)), for agents
 that find code while they work in the game. `bg3_registry_note` is `registry note`: `id` with
 `kind`, `at`, `rung`, `does`, `about`, `evidence` (strings `kind:sentence`), `tests`, `rests_on`,
-`would_confirm`, `ask` with `ask_about`, `fields` (`offset:name[:type]`), `who`, `task`; it answers
-what `bg3_registry_show` answers for the id. `bg3_registry_withdraw` is `registry withdraw`: `id`,
+`would_confirm`, `ask` with `ask_about`, `fields` (`offset:name[:type]`) with `field_rung` and
+`field_evidence`, `snap`, `amend`, `owner`, `who`, `task`; it answers what `bg3_registry_show`
+answers for the id, and under `said` the lines of what the tools did to the note by themselves (a
+rung lowered, a name found in a store). `bg3_registry_withdraw` is `registry withdraw`: `id`,
 `all` (default false), `who`; it answers `{id, withdrawn: [...], now?}`, `now` the claim the id
 says after it, and an id with no claim (of that writer) is the tool's error. `bg3_registry_at` takes `address` and answers
 `{address, function?, decompiler?, symbols?, committed: [...], live: [...]}`; `bg3_registry_show`
-takes `id` (or a name another source gives the thing) and answers `{id, committed?, file?, places?,
-live: [...]}`. Every item of `committed` and `live` carries `id`, `live`, `rung?`, `says?`, and a live
+takes `id` (or a name another source gives the thing) and answers `{id, name?, committed?, file?, places?,
+live: [...]}`, `name` saying whose the name is by the entry's evidence (`the game's`, `the Toolkit's`, `ours`). Every item of `committed` and `live` carries `id`, `live`, `rung?`, `says?`, and a live
 one `who`, `when`, `task`, `at?`. A refusal - a guess without its reason, an entry its schema refuses
 - comes back as the tool's error.
 
-### 3.7 `bg3_lead`: no stretch without a lead (no game needed)
+### `bg3_lead`: no stretch without a lead (no game needed)
 
-`bg3_lead` is `gatekit leads` as a tool ([cli.md](cli.md) 8.22): `action` is `tally` (the
+`bg3_lead` is `gatekit leads` as a tool ([cli.md](cli.md#leads-what-to-try-next-for-each-type-never-seen-alive)): `action` is `tally` (the
 default), `next` (`instrument`, `count`, `instance`), `report` (`type`, `outcome` lit|empty|blocked,
 `note`; `instrument`, `instance`, `run`), `show` (`type`: the row in full), `list` (`class`,
 `state`, `reachable`, `prefix`, `limit`, default 30) or `build` (`wiki`, default true). `instance`
@@ -402,7 +417,7 @@ defaults to `GATEKIT_INSTANCE` (the server's own copy). Every answer is JSON: a 
 rows, the tally, or `{lead, wish}` for a report (`wish` is null unless the report parked the lead).
 The refusals are the command's, and a refused report writes nothing.
 
-### 3.8 A capture survives a load
+### A capture survives a load
 
 `GK.Seen.Start` (`bg3_seen_start`) **arms** the capture: its options are kept in
 `<channel>/seen_armed_<side>.json` and the layouts it was handed in `seen_specs_<side>.json`. At
@@ -416,10 +431,10 @@ first (with their own level), and `GK.Seen.Types` includes the types met before 
 re-armed; drain before closing). What it misses: what the engine creates and removes between the
 last tick of the old Lua state and the first of the new one.
 
-### 3.9 The ledgers: who saw what, when, and the wishes
+### The ledgers: who saw what, when, and the wishes
 
 The record a run leaves is queried through append-only ledgers in `research/coverage/record/`
-(their rows and vocabularies: [cli.md](cli.md) 8.11).
+(their rows and vocabularies: [cli.md](cli.md#record-the-ledgers-of-the-coverage-record)).
 
 - **`bg3_seen_start`** takes `role`, `run` and `stretch` beside its options; this server keeps them
   for every row it writes afterwards, and starts a new *capture* (instance and start time). Not
@@ -441,7 +456,7 @@ The record a run leaves is queried through append-only ledgers in `research/cove
   `{"action": "check"}` answer what `gatekit record tally`, `yield` and `check` print, as JSON
   (`check`: `{ok: true}` or `{ok: false, problems: [...]}`).
 
-### 3.10 The comparison in the tick of capture
+### The comparison in the tick of capture
 
 For every type Script Extender has a layout for, the standing capture compares the raw bytes of a
 sample against the fields read through the extender **in the tick of capture**, and records the
@@ -463,11 +478,11 @@ types that agree as `verified`:
 `bg3_verify` uses the same `Compare`, which refuses to count an instance where no field could be
 compared.
 
-## 4. Attention and event-ended waits
+## Attention and event-ended waits
 
 - **Every answer of a game tool** (`bg3_lua`, `bg3_call`, `bg3_state`, `bg3_events`, `bg3_dialog`,
   `bg3_key`, `bg3_screenshot`, `bg3_status`, `bg3_checkpoint`, `bg3_reset`, `bg3_reload`,
-  `bg3_fast_scenes`, `bg3_sound` and the plugin tools) gets one more text block when anything waits
+  `bg3_fast_scenes`, `bg3_sound` and the plugin tools that do not declare `"attention": false`) gets one more text block when anything waits
   in the game or changed since the caller's last call: `attention: [{seq?, what, window?,
   choices?, waiting?, side, since_ms, ...}]` (docs/contracts/bridge-protocol.md, "Attention").
   The tool's own blocks are unchanged; with nothing to say there is no block. Nothing is read when
@@ -494,7 +509,7 @@ compared.
   (bridge-protocol.md, "One stream"). The attention block and `bg3_wait`'s items are held to
   `common/attention`: a misfit is said in the block, and fails `bg3_wait`.
 
-## 5. `bg3_events`: the event log as one stream
+## `bg3_events`: the event log as one stream
 
 Observation. `{since?, kinds?, family?, limit?}` -> `{rows, next, more?}` (`schemas/events/answer`,
 bound to the tool in `schemas/index.json`; an answer that does not fit fails the call). `rows` are

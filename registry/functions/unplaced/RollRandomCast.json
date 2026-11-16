@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RollRandomCast",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Rolls the d20 of a random cast check against its difficulty on the caster's random cast stream, through the dice roll against a difficulty.",
+  "fingerprint": {
+    "calls": [
+      "eoc::roll::stream::RollManager::RollDiceAgainstDC",
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:aff219af4b1a5d3c",
+      "fp:e2e22d76c4eeb4eb",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "components": ["esv::spell_cast::random::RequestComponent"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The stream is the player's or the creature's random cast stream, the Generic one failing those"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "A wild magic sorcerer's spell: the PlayerRandomCast stream appears",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

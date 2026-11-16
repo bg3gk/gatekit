@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::combat_log::CombatLogSystem::ProcessStatusAddedRequests",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Builds StatusAddedEntry (type 9) entries from the system's list of status-added requests (+0x80), with saving-throw entries for the condition rolls a request carries.",
+  "fingerprint": {
+    "calls": [
+      "eoc::HitDesc::Construct",
+      "esv::combat_log::CombatLogSystem::SendSavingThrowEntriesForHitDesc",
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "walks the array at +0x80 (count +0x8C), calls SendSavingThrowEntriesForHitDesc when a request has rolls"
+    },
+    {
+      "kind": "watch",
+      "says": "SNEAKING applied by Hide gives one StatusAdded entry handed to the protocol from inside this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

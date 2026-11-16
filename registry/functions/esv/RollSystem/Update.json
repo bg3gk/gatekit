@@ -1,0 +1,57 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::RollSystem::Update",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The roll system's work of one frame: processes concentration damage rolls, rolls the new requests, creates rolls asked by calls and one-frame requests, applies active-roll modifiers and cancels, and throws the active rolls the player threw (code:unplaced::ThrowActiveRoll).",
+  "fingerprint": {
+    "calls": [
+      "esv::RollSystem::ProcessCreateEvents",
+      "fp:078ab1597615d7c1",
+      "fp:123b79ba6c390bab",
+      "fp:22779a94550dfb63",
+      "fp:5227b96c8688ff31",
+      "fp:5484a76c19bbd873",
+      "fp:67e6320f5ae8f495",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:997a86f5ef5025ad",
+      "fp:9d3cd2c7b627131f",
+      "fp:b2e1c2683d667e92",
+      "fp:b80129b10dc06696",
+      "fp:cb7cd990bc47e1d1",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f6257d1edc77e89d",
+      "unplaced::ThrowActiveRoll"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<eoc::RequestedRollComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<esv::active_roll::StartRequestOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<esv::roll::DeathSavingThrowFinishedEventOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "eoc::active_roll::InProgressComponent",
+      "esv::active_roll::InProgressComponent"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its one caller is the system update of esv::RollSystem; it calls, in order, the processing of concentration damage rolls, code:esv::RollSystem::ProcessCreateEvents, the creation of rolls from call requests and from one-frame requests, and the processing of active-roll cancels, none of the last three named in the registry"
+    },
+    {
+      "kind": "watch",
+      "says": "the chains of every roll-system roll pass it, at one place for new requests and at another for a dialogue check the player threw"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by its place under the system's update alone, and the member's own name is the open question"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the game's member name of this body (the update of the system is a virtual; read the RollSystem vtable)",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

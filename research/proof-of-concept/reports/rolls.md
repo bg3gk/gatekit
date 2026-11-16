@@ -144,8 +144,8 @@ taught spell).
 - finding: `Osi.GiveInspirationPoints` with a negative amount does nothing; the points are an
   action resource of an entity without a uuid.
 - bug (suspected, ours, the runner): the host's interpreter (MoonSharp) mangles a pattern over
-  Russian text - `s:gsub("<[^>]->", "")` and the trims turned the localized "посмотреть" into
-  "постреть"; the same chunk in the game's Lua is right. The test strips the markup in the game.
+  Russian text - `s:gsub("<[^>]->", "")` and the trims turned a localized Russian word ("to look") into
+  the same word with two letters gone from its middle; the same chunk in the game's Lua is right. The test strips the markup in the game.
 - noise (suspected, ours): `GK.Gui.Resolve{ dialogue = 'last' }` called while an answer just given
   has not yet taken chose "Attack" once during the study; the tests only resolve after the roll
   window has opened.

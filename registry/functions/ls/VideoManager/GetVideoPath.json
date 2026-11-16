@@ -1,0 +1,43 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::VideoManager::GetVideoPath",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Builds the path of a video name inside a mod: the mod's folder, Localization, the language's folder and Video, with the English folder as the fallback.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:1613a1d748e711ef",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:48b3c693e44c8b1d",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "strings": ["49825d7b98bad6d4"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "appends the name to a path made with the texts Localization/English/Video and the current language's folder; the decompiler pairs it with the Toolkit's function of this name by its strings"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "GameEngine.dll exports this name; the symbol database finds the export again in the executable at this function by the text constants both refer to"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Probe it while a video starts and read the path it builds.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

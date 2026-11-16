@@ -1,0 +1,765 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::DummyDefinitionComponent",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "On the client's definition entity of a character creation, respec or change-appearance session: what the shown dummy is built from. Dummy names the client-only entity that is drawn; RootTemplate, Origin, Race, Subrace, BodyType, BodyShape, Classes fill the dummy's target visual when ChangeId moves, and Visual (the look: visuals, elements, colours) when ChangeId2 moves; the dummy keeps the last applied counters in ecl::character_creation::DummyComponent.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Dummy",
+      "type": "EntityHandle",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "ChangeId",
+      "type": "int32_t",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "ChangeId2",
+      "type": "int32_t",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "EquipmentChangeId",
+      "type": "int32_t",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "field_18_Map_unk_FS",
+      "type": "HashMap<ItemSlot, FixedString>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "ArmorSetState",
+      "type": "std::optional<ArmorSetState>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 96,
+      "name": "RootTemplate",
+      "type": "Guid",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 112,
+      "name": "Origin",
+      "type": "Guid",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 128,
+      "name": "BodyType",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 129,
+      "name": "BodyShape",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 136,
+      "name": "Race",
+      "type": "Guid",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 152,
+      "name": "Subrace",
+      "type": "Guid",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 168,
+      "name": "Classes",
+      "type": "Array<Guid>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 184,
+      "name": "Subclasses",
+      "type": "Array<Guid>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 200,
+      "name": "Visual",
+      "type": "eoc::character_creation::Appearance",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        }
+      ]
+    },
+    {
+      "offset": 416,
+      "name": "Identity",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+        }
+      ]
+    },
+    {
+      "offset": 424,
+      "name": "Character",
+      "type": "EntityHandle",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+        },
+        {
+          "kind": "read",
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+        },
+        {
+          "kind": "watch",
+          "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+    },
+    {
+      "kind": "watch",
+      "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+    },
+    {
+      "kind": "extender-name",
+      "says": "Script Extender exposes it as ClientCCDummyDefinition with the fields Dummy, Race, Subrace, BodyType, BodyShape, RootTemplate, Visual, ChangeId, ChangeId2"
+    },
+    {
+      "kind": "watch",
+      "says": "in SYS_CC_I, writing Race, RootTemplate and Visual and adding 1 to ChangeId redrew the dummy as the new race with the old look (the dummy's ClientCharacterCreationTargetVisual kept 3 Visuals); adding 1 to ChangeId2 then drew the 7 written Visuals and the skin colour"
+    },
+    {
+      "kind": "read",
+      "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares the int at +0x8 with ecl::character_creation::DummyComponent.ChangeId and on a difference copies it and refills the target visual from +0x60, +0x70, +0x88, +0x80, +0x81; it compares the int at +0xC with DummyComponent.ChangeId2 and on a difference copies it and passes +0xC8 to the colours-and-materials fill"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host) a client write of ChangeId2 + 1 is followed by the dummy's ClientCCDummy.ChangeId2 taking the same value and by exactly one call of the colours-and-materials fill (code:ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials) from inside the update; ChangeId + 1 is followed by ClientCCDummy.ChangeId"
+    },
+    {
+      "kind": "watch",
+      "says": "a client write of +1 to the int at +0x10 (Script Extender: field_10) is followed by the dummy's ClientCCDummy.EquipmentChangeId taking the same value; the handle at +0x1A8 (Script Extender: field_1A8) names the client character being edited in a change-appearance session (it carries ClientCharacter, CCState, CharacterCreationAppearance)"
+    },
+    {
+      "kind": "extender-name",
+      "says": "Script Extender declares these fields for its component ClientCCDummyDefinition (Components/CharacterCreation.h); the offsets are the ones its legacy field names carry"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session Dummy names a client-only entity with ClientCCDummy, ClientCharacterCreationTargetVisual, ClientCharacterCreationCurrentVisual, Visual and Transform; RootTemplate, Race, BodyType and Identity read the edited character's values"
+    },
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps the type name struct ecl::character_creation::DummyDefinitionComponent among its ECS type names (gatekit symbols types), and Script Extender binds ClientCCDummyDefinition to that name"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which function rebuilds the dummy when the server's CharacterDefinition changes, to learn whether a saved appearance written into the definition is drawn",
+      "about": "reach",
+      "state": "open"
+    },
+    {
+      "ask": "Which client system reads the counters and builds ClientCharacterCreationTargetVisual; read it in the decompiler from the component's type index",
+      "about": "reach",
+      "state": "open"
+    },
+    {
+      "ask": "read the equipment update that compares +0x10 with DummyComponent +0x10 in this build, and the writer of +0x1A8; in plain character creation see what +0x1A8 holds",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

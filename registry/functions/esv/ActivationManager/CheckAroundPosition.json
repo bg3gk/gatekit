@@ -1,0 +1,34 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::ActivationManager::CheckAroundPosition",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Wakes what stands near one anchor point: asks the level's spatial grid for the cells within the largest radius, activates items within the item radius (or the low-item radius) and, when the anchor is a party member, characters within the character activation radius that the per-character rule left waiting; things within the deactivation radius are taken out of the to-sleep set.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:3a47fbcf22fd449c",
+      "fp:5227b96c8688ff31",
+      "fp:8b478da24f22a464",
+      "fp:91c3d48dff57ab4c",
+      "fp:9755153be85889a5",
+      "fp:d1045bdeed38dbc1",
+      "fp:d17cd6554897aca4",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "radii from the manager's +0xD0/+0xD4 (characters 40/45), +0xD8/+0xDC (items 40/45), +0xE0/+0xE4 (low items 10/15) chosen by its sixth argument; the character branch runs only when its fifth argument (HasComponent<eoc::party::MemberComponent> of the anchor) is set; a caret's position replaces a patrolling character's"
+    },
+    {
+      "kind": "watch",
+      "says": "called once per tick per anchor (101 calls in 3 s with one party member, 2 per tick with a second anchor); a sleeping creature moved to 39 m from the party member is woken by SetActive called from bg3_dx11.exe@25605617+0x41A6C52 inside it, one at 40.5 or 42.5 m is not; a ForceSynch character without party membership woke no character 8 m away, the same character given a party member component and put into the party view woke characters 8 and 20 m away"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    }
+  ]
+}

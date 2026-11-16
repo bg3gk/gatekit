@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "esv::roll::stream::RollManager::CreateStream",
   "state": "described",
-  "rung": "inferred",
+  "rung": "game",
   "does": "Adds a roll stream of a type to the roll manager: the manager's last stream id plus one becomes the stream's id, the base seed plus that id its seed, its count zero; sets the manager's HasChanges.",
   "parameters": [
     {"storage": "reg:rcx", "name": "manager"},
@@ -14,7 +14,23 @@
   "evidence": [
     {
       "kind": "text",
-      "says": "GK.Memory.Watch on the roll manager's +0x18 (the last stream id) over the first dialogue check: one change 1->2 written at +0x309FD9E, and the new Dialog stream read seed = base seed + 2 with id 2 (Generic: id 1, seed base+1); same shape as EoCServer.dll esv::roll::stream::RollManager::CreateStream"
+      "says": "GK.Memory.Watch on the roll manager's +0x18 (the last stream id) over the first dialogue check: one change 1->2 written at bg3_dx11.exe@25605617+0x309FD9E, and the new Dialog stream read seed = base seed + 2 with id 2 (Generic: id 1, seed base+1); same shape as EoCServer.dll esv::roll::stream::RollManager::CreateStream"
+    },
+    {
+      "kind": "watch",
+      "says": "A write watch on the roll manager's last stream id shows 1 to 2 at bg3_dx11.exe@25605617+0x309FD9E inside this function over the first dialogue check; the Dialog stream then reads the base seed plus 2"
+    },
+    {
+      "kind": "read",
+      "says": "The new stream's id is the last id plus one, its seed the base seed plus that id, its count 0"
+    },
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports this name; it is tied to this function by the job its read shows"
+    },
+    {
+      "kind": "game-name",
+      "says": "the macOS build's symbols hold this name; it is tied to this function by the job its read shows"
     }
   ]
 }
