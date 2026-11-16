@@ -130,6 +130,7 @@ gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,
 - `--story-log`: also record the Osiris trace (`logs --story`).
 - `--main-menu`: see 3.5.
 - `--splash`: as `--main-menu`, and the splash screen before the main menu is not passed: the start returns when `GK.Gui.Stuck()` names it (`on the splash screen after N s ...`), and `GK.Cheat.Recover()` on the UI context passes it (the event `OpenMainMenu`). Refused together with `--main-menu`; a main menu met with no splash screen before it fails the start.
+- `--startup-videos`: the game plays its own startup video (the studio's logo, `Video/Splash_Logo_Larian.bk2`). By default every start shadows it with an empty loose file of that name so that a start does not wait on it; with this option the shadow is not written, and one left by an earlier start is removed. A start takes the length of the video longer; the bridge answers only after it.
 - `GAME_ARGS`: extra raw game arguments after `--`.
 
 In order (`GameCopy.UpAsync`):
@@ -1619,6 +1620,19 @@ the pattern to be found exactly once in the executable sections of the binary's 
 `--limit` bytes (default 48). The first line says `found once, N bytes` or `NOT unique within the
 limit: K places`. It is what a hook or a Script Extender mapping is written from. Exit 1 when a
 binary's file cannot be read or a pattern is not unique.
+
+`registry mappings` is the binding layer between the registry and a Script Extender's table of
+byte patterns (`BinaryMappings.xml`: a pattern found once in the game's code, and the symbols it
+leads to - the place itself, or what an instruction there refers to). Its symbols are the
+registry's ids with `::` written `__`.
+
+| Command | What it does |
+|---|---|
+| `registry mappings check <file> [--limit N] [--verbose]` | reads a table written by hand and, for every symbol and every binary the registry has a table for, says where the pattern lands (found once), whether a function starts there, what the registry calls the place, and whether a pattern of the function's own start is found once within `--limit` bytes (default 64) - a mapping the registry could write itself. Counts per binary, then the symbols that do not land (a pattern found several times is one a condition of the table picks among; conditions are not read) and the places the registry calls otherwise; `--verbose` lists every symbol. Reads only |
+| `registry mappings emit <id>...` | writes a `<Mapping>` for each function from the registry alone: whole instructions from its start, as short as is found exactly once in EVERY binary the registry places it in, a byte that differs between the binaries written `??`; one `Target` of type `Absolute` at `@start` with the id as its symbol; a comment with the id and its place in each binary. A function with no such pattern within the limit gets a comment that says so; exit 1 then |
+| `registry mappings emit --all [--count]` | the same for every function the registry places in a binary; `--count` prints only the functions with no mapping and the count |
+| `registry mappings write <file> [--limit N]` | the registry's own table in one document: the mapping of `emit` for every function the registry names and places, each named `registry:<id>` with a target that names the registry's id itself (`Name`, no `Symbol`), the functions with no mapping as comments. A GateKit build of the extender reads it as `RegistryMappings.xml` beside its dll and answers every name it finds (`Ext.Debug.GetSymbolAddress`, `GetSymbolNames` with `Source = "registry"`, and the C entries `GateKitSymbolAddress` / `GateKitSymbolCount` / `GateKitSymbolName` of the dll); `se install <folder>` copies the table from the build folder with the dll. It scans both binaries for every function: minutes |
+| `registry mappings adopt <file> [--binary B] [--write]` | takes the names of the table's functions into the registry: every function the table leads to in the binary (default `bg3_dx11.exe`) that the registry does not name is noted in the live layer under the table's name at rung `extender`, the mapping as its evidence and a question of what it does; the tool looks the name up in the stores as for any note. Without `--write` it only says what it would note. Places that are not a function's start (data, a place inside a function) are left |
 
 `registry questions [scope]` lists every open question of the entries (whose id, or whose `owner`,
 starts with the scope): what is not known of a thing, above all how the game reaches it.

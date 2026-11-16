@@ -291,7 +291,7 @@ public sealed class FingerprintReader(SqliteConnection symbols, SqliteConnection
     /// places the pattern matches when the limit of bytes was reached (1: unique). Null when the
     /// binary's file cannot be read.
     /// </summary>
-    public IReadOnlyList<SignatureLine>? Signature(string binary, long start, int limit, out int found)
+    public IReadOnlyList<SignatureLine>? Signature(string binary, long start, int limit, out int found, int minimum = 0)
     {
         found = 0;
         if (ImageOf(binary) is not { } at) return null;
@@ -353,10 +353,71 @@ public sealed class FingerprintReader(SqliteConnection symbols, SqliteConnection
             }
             else candidates = [.. candidates.Where(Matches)];
             found = candidates.Count;
-            if (found <= 1) break;
+            if (found <= 1 && length >= minimum) break;   // a caller may ask for more than the shortest: a pattern for several binaries
         }
         return lines;
     }
+
+    /// <summary>The RVAs in the executable sections of a binary's file where a byte pattern is found
+    /// (<paramref name="wild"/> marks the bytes that may be anything), at most <paramref name="cap"/>
+    /// of them. Null when the binary's file cannot be read.</summary>
+    public IReadOnlyList<long>? Scan(string binary, byte[] bytes, bool[] wild, int cap = 8)
+    {
+        if (ImageOf(binary) is not { } at) return null;
+        var image = at.Image;
+        var found = new List<long>();
+        var anchor = Array.FindIndex(wild, w => !w);
+        if (anchor < 0 || bytes.Length == 0) return found;
+        foreach (var s in image.Sections.Where(s => s.Executable))
+        {
+            var raw = (int)s.Raw;
+            var span = image.Data.AsSpan(raw, (int)Math.Min(s.RawSize, (uint)(image.Data.Length - s.Raw)));
+            var from = anchor;
+            while (from < span.Length)
+            {
+                var hit = span[from..].IndexOf(bytes[anchor]);
+                if (hit < 0) break;
+                var place = from + hit - anchor;
+                if (place + bytes.Length <= span.Length)
+                {
+                    var same = true;
+                    for (var k = 0; k < bytes.Length && same; k++) same = wild[k] || span[place + k] == bytes[k];
+                    if (same)
+                    {
+                        found.Add(s.Va + place);
+                        if (found.Count >= cap) return found;
+                    }
+                }
+                from += hit + 1;
+            }
+        }
+        return found;
+    }
+
+    /// <summary>The bytes of a binary's file at an RVA; null when they are not in the file.</summary>
+    public byte[]? BytesAt(string binary, long rva, int count)
+    {
+        if (ImageOf(binary) is not { } at) return null;
+        var o = at.Image.Offset(rva);
+        return o < 0 || o + count > at.Image.Data.Length ? null : at.Image.Data.AsSpan(o, count).ToArray();
+    }
+
+    /// <summary>The RVA the instruction at an RVA refers to: the target of a near call or jump, or the
+    /// address of its RIP-relative operand. Null when the instruction refers to nothing of the kind.</summary>
+    public long? Refers(string binary, long rva)
+    {
+        if (ImageOf(binary) is not { } at || BytesAt(binary, rva, 16) is not { } bytes) return null;
+        var decoder = Iced.Intel.Decoder.Create(64, new ByteArrayCodeReader(bytes), at.Image.ImageBase + (ulong)rva);
+        decoder.Decode(out var insn);
+        if (insn.IsInvalid) return null;
+        if (insn.Op0Kind is OpKind.NearBranch16 or OpKind.NearBranch32 or OpKind.NearBranch64) return (long)(insn.NearBranchTarget - at.Image.ImageBase);
+        if (insn.IsIPRelativeMemoryOperand) return (long)(insn.IPRelativeMemoryAddress - at.Image.ImageBase);
+        return null;
+    }
+
+    /// <summary>Whether the symbol database knows a function that starts at the RVA.</summary>
+    public bool StartsFunction(string binary, long rva) =>
+        Dll(binary) is { } dll && symbols.Scalar("SELECT 1 FROM functions WHERE dll_id = ? AND rva = ?", dll, rva) is not null;
 
     (PeImage Image, string Note)? ImageOf(string binary)
     {

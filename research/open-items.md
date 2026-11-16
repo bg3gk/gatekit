@@ -356,6 +356,20 @@ Found on the way, about tests and tools:
 
 ### Studies
 
+- **Bones, brought to the end, with the game's own blending.** A creature's skeleton is read
+  (named bones, the live pose) and a pose of our own can be held - frozen, or over a playing idle
+  by rewriting the skinning each frame from Lua; both work, but the layer over an animation costs
+  milliseconds a frame per limb, needs developer mode, flickered until its moment in the frame was
+  found, and carries neither the sockets nor the cloth; entering and leaving a written pose is
+  smoothed by hand, because the game's own blending (about 0.17 s between two of its animations)
+  does not reach a pose written from outside. To be done: a native override of bones in the fork,
+  applied where the game builds the pose, so that sockets and cloth follow, with no developer mode
+  and no per-frame Lua; and the game's own blending into and out of such a pose - found and used,
+  not written by us (its blend between animations exists; whether a weight or a layer of the
+  animation blueprint carries an outside pose is the question). Then a verb any mod can use: a
+  creature posed or partly moved by a table of bone to rotation, entered and left smoothly by the
+  game, held over its own idle. What is known and where to dig:
+  [research/leads/bones-in-the-fork.md](leads/bones-in-the-fork.md).
 - **Appearance, and changing it on the fly.** Cover the machine code that carries a character's
   appearance and applies a change of it, for controlled characters and for NPCs alike: where
   creation writes it, what the camp's Magic Mirror does to a living character, what the many

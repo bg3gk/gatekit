@@ -6,6 +6,7 @@
   "does": "Executes one stats functor in an attack-target context (called per functor by esv::ExecuteStatsFunctor_AttackTargetContext): copies the context's HitDesc (+0x140) and AttackDesc (+0x300), checks the functor's conditions, then dispatches on the functor's type byte (+0x45): ApplyStatus to code:unplaced::ExecuteApplyStatusFunctor, DealDamage to stats::DealDamageFunctor::ApplyDamage, a heal to code:unplaced::ExecuteRegainHitPointsFunctor, and so on.",
   "fingerprint": {
     "calls": [
+      "eoc::HitDesc::Destroy",
       "fp:04ab8f2d356f36e5",
       "fp:08b104754cef3fb2",
       "fp:123b79ba6c390bab",
@@ -24,7 +25,6 @@
       "fp:5227b96c8688ff31",
       "fp:5d864bc42ee4f230",
       "fp:62ace37632f4a901",
-      "fp:62f004f3de547120",
       "fp:72b4801e8e903ffc",
       "fp:76f0057ce141e772",
       "fp:867b063cbc232207",
@@ -48,6 +48,8 @@
       "import:b33789c665322f52",
       "import:bd04c300f6726048",
       "import:be9a21e4e446c342",
+      "stats::DealDamageFunctor::ApplyDamage",
+      "thoth::shared::ContextData::Destroy",
       "unplaced::ExecuteApplyStatusFunctor",
       "unplaced::ExecuteRegainHitPointsFunctor"
     ],

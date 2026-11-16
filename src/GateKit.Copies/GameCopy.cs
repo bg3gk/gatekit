@@ -20,7 +20,8 @@ namespace GateKit.Copies;
 /// <param name="Splash">Stop on the splash screen before the main menu ("press any key"), which is
 /// left standing for the caller to pass; first-launch screens are gone through as for the main menu.</param>
 public sealed record UpOptions(string? Level = null, string? Save = null, IReadOnlyList<string>? Mods = null,
-    bool StoryLog = false, IReadOnlyList<string>? GameArgs = null, bool MainMenu = false, bool Splash = false);
+    bool StoryLog = false, IReadOnlyList<string>? GameArgs = null, bool MainMenu = false, bool Splash = false,
+    bool StartupVideos = false);
 
 /// <summary>
 /// A game copy: the installed game or an instance. Starts the game directly (no launcher), talks
@@ -343,7 +344,9 @@ public sealed class GameCopy
         EditModSettings(text => ModSettings.EnableBridge(text, BridgeMods));
         if (Instance is not null) Instance.Spread();
         else backup.LendDebugProfiles(withSaves: options.Level is null);
-        SkipSplash(true);
+        // The studio's startup video is shadowed by an empty loose file so a start does not wait on
+        // it; a start that asks for the game's own startup videos gets them (and loses the shadow).
+        SkipSplash(!options.StartupVideos);
         ConfigureExtender(options.StoryLog);
         var se = SeSwitch.ApplyForRun(Settings.ScriptExtender, Layout.SeSettings,
             keepInstalled: Instance is not null && !Settings.ScriptExtenderStock);

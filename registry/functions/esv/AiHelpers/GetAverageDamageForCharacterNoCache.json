@@ -6,6 +6,8 @@
   "does": "Computes the average damage a character can deal, as the AI estimates it: for each spell of its spell book unplaced::EstimateSpellDamage fills the damage list of a context with no target, and the result is the largest sum over the spells divided by a global count; no target, no resistance. RCX the helper, RDX a pointer to the entity, R8 the class descriptions; the float in XMM0.",
   "fingerprint": {
     "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
       "fp:123b79ba6c390bab",
       "fp:36ea95f2ce33bd6a",
       "fp:5227b96c8688ff31",
@@ -15,6 +17,7 @@
       "fp:77b26de95fac76d5",
       "fp:91c3d48dff57ab4c",
       "fp:e4d053ad9455ea7c",
+      "thoth::shared::ContextData::Destroy",
       "unplaced::EstimateSpellDamage"
     ],
     "components": ["esv::StatsSystem"]

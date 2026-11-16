@@ -6,6 +6,8 @@
   "does": "Fills the local player's VMUIData for the aimed creature: clears the damage roll lists, resolves the spell's tooltip damages, creates a stats roll context and applies the target's resistances to each roll's minimum and maximum, setting DamagePreviewWithResistances and the hit chance description from the TargetingInfo it is given.",
   "fingerprint": {
     "calls": [
+      "eoc::HitDesc::Construct",
+      "eoc::HitDesc::Destroy",
       "eoc::StatsSystem::LEGACY_CreateStatsRollContext",
       "eoc::stats::ApplyResistance",
       "fp:123b79ba6c390bab",
@@ -31,7 +33,8 @@
       "fp:fd1c6b74f136fa9c",
       "gui::statsDescriptionHelper::ResolveStatsTooltipDamages",
       "import:19360286d0fa965d",
-      "ls::thoth::shared::ContextData::ContextData"
+      "ls::thoth::shared::ContextData::ContextData",
+      "thoth::shared::ContextData::Destroy"
     ],
     "strings": ["d071b7913060e201", "f5abdca162d207ae"],
     "components": ["ecl::StatsSystem"]

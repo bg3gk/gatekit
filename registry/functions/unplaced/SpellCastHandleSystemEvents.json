@@ -6,6 +6,7 @@
   "does": "Handles the events of one spell cast in a switch on the event type. Event 0x44 is the result of the cast's interrupts: cast entity at +8, the per-roll RollAdjustments map (Guid key, 0x58 values) at +0x18, the damage roll adjustments at +0x58, and the usage map at +0x98 keyed by the creature that used interrupts, whose values (0x50: costs, then a map keyed by the interrupt entity of maps InterruptEvent to InterruptUsageEntry, 0x78) name each interrupt used, the roll it was used on (the event's RollUuid at +0) and that interrupt's own adjustments (entry +0x18). It applies them through unplaced::AdjustCastRollsByInterrupts and esv::interrupt::AdjustFunctorConditionRolls (both given event+8 / event+0x18), then adds esv::spell_cast::InterruptsUsedOneFrameComponent to each user.",
   "fingerprint": {
     "calls": [
+      "eoc::HitDesc::Destroy",
       "esv::interrupt::AdjustFunctorConditionRolls",
       "fp:03049b61a34ef076",
       "fp:0a96aeef33707f71",
