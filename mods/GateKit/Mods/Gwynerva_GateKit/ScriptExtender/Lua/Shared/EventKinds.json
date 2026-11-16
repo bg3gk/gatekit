@@ -17,7 +17,8 @@
     "fight": {"about": "what a fight's game log does not say (GK.FightLog): a creature's cast as it begins, reactions used, who joins and leaves and why, turns ended and rounds begun, concentration, items used: on for a check"},
     "trace": {"about": "the entity tracer's record, cut into steps (GK.Trace): on while a trace runs"},
     "memory": {"always": true, "about": "the memory instrument's watches that moved with their component (GK.Memory)"},
-    "stand": {"always": true, "about": "the video stand: what the playing agent said and pointed at (GK.Stand, stand/README.md)"}
+    "stand": {"always": true, "about": "the video stand: what the playing agent said and pointed at (GK.Stand, stand/README.md)"},
+    "show": {"always": true, "about": "pictures put over the game (GK.Show): each as it is first drawn and as it leaves"}
   },
   "kinds": {
     "game_state": {"family": "state", "class": "observation", "knows": "player", "payload": {"from": "the state left", "to": "the state entered"}},
@@ -130,7 +131,9 @@
     "said_overhead": {"family": "scope", "class": "cheat", "knows": "player", "payload": {"who": "the creature the line shows over", "text": "the caller's text, as given", "status": "the toolkit's status that carries it (GK_SAY_<slot>)", "slot": "its slot in the pool of lines", "style": "the name of the style, when one was named", "effect": "the effect played as it showed"}},
     "stand_said": {"family": "stand", "class": "cheat", "knows": "player", "payload": {"who": "the speaker", "name": "its name", "say": "the line shown over its head, as shown (cut when too long)", "think": "what the character thinks: the feed's only", "do": "the plain reason: the feed's only", "at": "what the line is about: a uuid or { x, y, z }", "atName": "its name", "style": "the style's name, or custom"}},
     "stand_accent": {"family": "stand", "class": "cheat", "knows": "player", "payload": {"at": "what was pointed at: a uuid or { x, y, z }", "atName": "its name", "style": "the style's name, or custom"}},
-    "scope_verify": {"family": "scope", "class": "observation", "knows": "omniscient", "payload": {"clean": "", "differences": "", "pending": "", "kept": "components the game made and keeps, at their default (Server/GameKeeps.json)", "ms": ""}},
+    "picture_shown": {"family": "show", "class": "cheat", "knows": "player", "payload": {"handle": "the picture's handle", "file": "its file, a path under the game's Data folder", "resource": "its texture resource or icon, when not a file", "where": "the rectangle it is fitted into: x, y, w, h in parts of the screen", "fit": "contain, cover or stretch", "over": "the layer: everything", "seconds": "how long it stays at full strength, when limited", "skip": "the keys that take it off", "state": "the client's game state"}},
+    "picture_hidden": {"family": "show", "class": "cheat", "knows": "player", "payload": {"handle": "the picture's handle", "why": "seconds (its time was up), skipped (a key), hidden (GK.Show.Hide), or failed: with the reason", "key": "the key that skipped it", "shownMs": "real milliseconds from its first frame to its last", "file": "its file", "resource": "its resource"}},
+    "scope_verify": {"family": "scope","class": "observation", "knows": "omniscient", "payload": {"clean": "", "differences": "", "pending": "", "kept": "components the game made and keeps, at their default (Server/GameKeeps.json)", "ms": ""}},
 
     "family_on": {"family": "log", "class": "observation", "knows": "omniscient", "payload": {"families": "", "seconds": "", "scope": ""}},
     "family_off": {"family": "log", "class": "observation", "knows": "omniscient", "payload": {"families": "", "why": ""}},
