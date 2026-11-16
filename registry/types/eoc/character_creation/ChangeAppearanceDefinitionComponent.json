@@ -1,0 +1,95 @@
+{
+  "schema": "registry/type/1",
+  "id": "eoc::character_creation::ChangeAppearanceDefinitionComponent",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The server's definition of a change-appearance session, replicated to the client: Definition (the character as a full respec definition), Appearance (Name, BodyType, BodyShape, RootTemplate, Voice, Identity and the look Visual), Version, Synced and Character, the character being edited. Script Extender: CCChangeAppearanceDefinition.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Definition",
+      "type": "eoc::character_creation::FullRespecDefinition",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds CCChangeAppearanceDefinition to this engine name; the offsets of Version, Synced and Character are the ones its legacy field names carry, and Appearance (ChangeAppearanceDefinitionBase) lies between Definition and Version"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) one entity carries it together with CCDefinitionCommon, on the server and replicated on the client; Version reads 1, Synced true, Character the host's entity; Appearance reads the host's name, body type 0, his voice id, Identity 3, a RootTemplate other than his own template and a Visual with real colour ids and an accessory set"
+        }
+      ]
+    },
+    {
+      "offset": 736,
+      "name": "Version",
+      "type": "int32_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds CCChangeAppearanceDefinition to this engine name; the offsets of Version, Synced and Character are the ones its legacy field names carry, and Appearance (ChangeAppearanceDefinitionBase) lies between Definition and Version"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) one entity carries it together with CCDefinitionCommon, on the server and replicated on the client; Version reads 1, Synced true, Character the host's entity; Appearance reads the host's name, body type 0, his voice id, Identity 3, a RootTemplate other than his own template and a Visual with real colour ids and an accessory set"
+        }
+      ]
+    },
+    {
+      "offset": 740,
+      "name": "Synced",
+      "type": "bool",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds CCChangeAppearanceDefinition to this engine name; the offsets of Version, Synced and Character are the ones its legacy field names carry, and Appearance (ChangeAppearanceDefinitionBase) lies between Definition and Version"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) one entity carries it together with CCDefinitionCommon, on the server and replicated on the client; Version reads 1, Synced true, Character the host's entity; Appearance reads the host's name, body type 0, his voice id, Identity 3, a RootTemplate other than his own template and a Visual with real colour ids and an accessory set"
+        }
+      ]
+    },
+    {
+      "offset": 744,
+      "name": "Character",
+      "type": "EntityHandle",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds CCChangeAppearanceDefinition to this engine name; the offsets of Version, Synced and Character are the ones its legacy field names carry, and Appearance (ChangeAppearanceDefinitionBase) lies between Definition and Version"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) one entity carries it together with CCDefinitionCommon, on the server and replicated on the client; Version reads 1, Synced true, Character the host's entity; Appearance reads the host's name, body type 0, his voice id, Identity 3, a RootTemplate other than his own template and a Visual with real colour ids and an accessory set"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "Script Extender's header Components/CharacterCreation.h binds CCChangeAppearanceDefinition to this engine name; the offsets of Version, Synced and Character are the ones its legacy field names carry, and Appearance (ChangeAppearanceDefinitionBase) lies between Definition and Version"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) one entity carries it together with CCDefinitionCommon, on the server and replicated on the client; Version reads 1, Synced true, Character the host's entity; Appearance reads the host's name, body type 0, his voice id, Identity 3, a RootTemplate other than his own template and a Visual with real colour ids and an accessory set"
+    },
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types), as struct eoc::character_creation::ChangeAppearanceDefinitionComponent"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the offset of Appearance inside the component and the layout of FullRespecDefinition, from the Toolkit's eocnet::ChangeAppearanceUpdateMessage::FillDefinition and esv::character_creation::System::RequestUpdateChangeAppearance",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

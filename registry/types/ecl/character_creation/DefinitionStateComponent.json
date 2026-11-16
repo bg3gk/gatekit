@@ -2,6 +2,7 @@
   "schema": "registry/type/1",
   "id": "ecl::character_creation::DefinitionStateComponent",
   "kind": "struct",
+  "rung": "game",
   "size": 200,
   "fields": [
     {
@@ -68,6 +69,16 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "ClientCCDefinitionState", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) it sits on the client's definition entity; Entity names that same entity, ChangeId reads 1 like the common ChangeId, the two ints between read 16129 and 61"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/CharacterCreation.h:263, kind component), by gatekit symbols se-layouts on 2026-11-14",

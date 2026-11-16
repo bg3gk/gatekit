@@ -1,0 +1,47 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::ChangeAppearanceDefinitionComponent",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The client's pending copy of a change-appearance definition: what the window edits before it is sent. Script Extender: ClientCCChangeAppearanceDefinition.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Definition",
+      "type": "eoc::character_creation::ChangeAppearanceDefinitionBase",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds ClientCCChangeAppearanceDefinition to this engine name with the one member Definition"
+        },
+        {
+          "kind": "watch",
+          "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) the client's definition entity carries it beside the replicated CCChangeAppearanceDefinition, ClientCCDefinitionState, ClientCCDefinitionStateEx, ClientCCDummyDefinition, the appearance cache and the icon definition"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "Script Extender's header Components/CharacterCreation.h binds ClientCCChangeAppearanceDefinition to this engine name with the one member Definition"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) the client's definition entity carries it beside the replicated CCChangeAppearanceDefinition, ClientCCDefinitionState, ClientCCDefinitionStateEx, ClientCCDummyDefinition, the appearance cache and the icon definition"
+    },
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types), as struct ecl::character_creation::ChangeAppearanceDefinitionComponent"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "write a look here and into the dummy definition with ChangeId2 + 1, then find the window's command that sends it (the Toolkit's ecl::character_creation::_private::SendUpdate is the sender): this is the client's own path to a changed appearance",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

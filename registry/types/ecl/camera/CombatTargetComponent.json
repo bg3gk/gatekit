@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "ecl::camera::CombatTargetComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "What the camera frames in a fight: Target with Targets, Position, Distance, CameraDistance, TargetMode, ZoomToDistance, SetPlayerTargets and flags. Script Extender: CameraCombatTarget.",
   "size": 48,
   "fields": [
     {
@@ -18,6 +21,20 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "CameraCombatTarget", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "watch",
+      "says": "on the level Basic_Level_A, outside a fight, it sits on the camera entity with SetPlayerTargets true, TargetMode 1, Flags 1, Distance and CameraDistance -1, ZoomToDistance false"
+    },
+    {
+      "kind": "text",
+      "says": "reported from the study of the camera focus, not read again here: the engine acts on it only when it is marked changed, and on the own turn of the player a write is copied and not obeyed"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Camera.h:338, kind component), by gatekit symbols se-layouts on 2026-11-14",

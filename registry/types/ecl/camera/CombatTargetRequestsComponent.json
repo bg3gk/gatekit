@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "ecl::camera::CombatTargetRequestsComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The queue of camera requests of a fight on the camera entity: each with a Type, a Target or Targets, a Position, a FallbackTimer and a CameraDistance. Script Extender: CameraCombatTargetRequests.",
   "size": 16,
   "fields": [
     {
@@ -18,6 +21,17 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "CameraCombatTargetRequests", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {"kind": "watch", "says": "on the level Basic_Level_A, outside a fight, Requests is empty"},
+    {
+      "kind": "text",
+      "says": "reported from the study of the camera focus, not read again here: a ranged attack files two requests, one to frame the caster and the target and one to restore; the Type values seen are 0 SetPlayerTargets, 1 Follow, 2 Projectile, 3 Spell, 4 Status, 5 Restore, 9 PlayerTurn"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Camera.h:370, kind component), by gatekit symbols se-layouts on 2026-11-14",

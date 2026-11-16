@@ -1,0 +1,71 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::BaseDefinitionComponent",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The client's own copy of the character being created, the one the creation window edits and the client sends whole to the server on the window's next change. A look, a name, abilities and a voice written into its Definition reach the server's CharacterDefinition with that message and land on the created character.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Definition",
+      "type": "eoc::character_creation::CharacterDefinition",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "Script Extender exposes it as ClientCCBaseDefinitionState with the field Definition (Definition, Visual, Name, Abilities, LevelUpData)"
+        },
+        {
+          "kind": "watch",
+          "says": "in SYS_CC_I, Visual (7 Visuals, 9 Elements, colours), Name, Abilities and Definition.Voice written on the client, then the window's command ChangeCharacterName run: the server's CCCharacterDefinition.Definition read all of them back, and after FinishCreating the player in TUT_Avernus_C carried them in CharacterCreationAppearance, CharacterCreationStats and Voice"
+        },
+        {
+          "kind": "extender-name",
+          "says": "Script Extender's header Components/CharacterCreation.h binds ClientCCBaseDefinitionState to this engine name with the one member Definition (Name, Definition, Visual, Abilities, LevelUpData)"
+        },
+        {
+          "kind": "watch",
+          "says": "no entity carries it in a change-appearance session, where the client's pending copy is ecl::character_creation::ChangeAppearanceDefinitionComponent instead"
+        },
+        {
+          "kind": "text",
+          "says": "reported from a run of character creation, not read again here: writing Visual, Name, Abilities and Definition.Voice here and then running the window's command ChangeCharacterName sends the whole definition, and the server's definition reads it back"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "Script Extender exposes it as ClientCCBaseDefinitionState with the field Definition (Definition, Visual, Name, Abilities, LevelUpData)"
+    },
+    {
+      "kind": "watch",
+      "says": "in SYS_CC_I, Visual (7 Visuals, 9 Elements, colours), Name, Abilities and Definition.Voice written on the client, then the window's command ChangeCharacterName run: the server's CCCharacterDefinition.Definition read all of them back, and after FinishCreating the player in TUT_Avernus_C carried them in CharacterCreationAppearance, CharacterCreationStats and Voice"
+    },
+    {
+      "kind": "extender-name",
+      "says": "Script Extender's header Components/CharacterCreation.h binds ClientCCBaseDefinitionState to this engine name with the one member Definition (Name, Definition, Visual, Abilities, LevelUpData)"
+    },
+    {
+      "kind": "watch",
+      "says": "no entity carries it in a change-appearance session, where the client's pending copy is ecl::character_creation::ChangeAppearanceDefinitionComponent instead"
+    },
+    {
+      "kind": "text",
+      "says": "reported from a run of character creation, not read again here: writing Visual, Name, Abilities and Definition.Voice here and then running the window's command ChangeCharacterName sends the whole definition, and the server's definition reads it back"
+    },
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types); Script Extender binds ClientCCBaseDefinitionState to it"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Which function composes the message and what the server checks in it; the companion definition has no such component and no window change was found that sends its look",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

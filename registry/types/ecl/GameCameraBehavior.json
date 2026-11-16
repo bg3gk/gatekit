@@ -1,0 +1,315 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::GameCameraBehavior",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The behaviour of the game camera on the camera entity of the client: what it follows (Targets), where its look-at point is going and is (TargetDestination, TargetCurrent), its distance going and current, whether it is gliding (MovingToTarget) and whether the player has taken it (PlayerInControl). A write of Targets and TargetDestination moves the camera in and out of a fight. The set at +0x208 and the two optional points at +0x238 and +0x248 hold a cut behind a black screen that is pending. Script Extender: GameCameraBehavior.",
+  "fields": [
+    {
+      "offset": 8,
+      "name": "Target",
+      "type": "EntityHandle",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 18,
+      "name": "MovingToTarget",
+      "type": "bool",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 36,
+      "name": "TargetDestination",
+      "type": "vec3",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "TargetCurrent",
+      "type": "vec3",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "DistanceCurrent",
+      "type": "float",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 92,
+      "name": "DistanceDestination",
+      "type": "float",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 304,
+      "name": "Targets",
+      "type": "Array<EntityHandle>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 324,
+      "name": "PlayerInControl",
+      "type": "bool",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 498,
+      "name": "AtLeashLimit",
+      "type": "bool",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 499,
+      "name": "IsSnapping",
+      "type": "bool",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 512,
+      "name": "field_200",
+      "type": "uint8_t",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 520,
+      "name": "field_208",
+      "type": "HashSet<int16_t>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 568,
+      "name": "field_238",
+      "type": "std::optional<vec3>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    },
+    {
+      "offset": 584,
+      "name": "field_248",
+      "type": "std::optional<vec3>",
+      "rung": "extender",
+      "evidence": [
+        {
+          "kind": "extender-name",
+          "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+        },
+        {
+          "kind": "watch",
+          "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+        },
+        {
+          "kind": "text",
+          "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "the header Components/Camera.h of Script Extender binds GameCameraBehavior to this engine name and declares the fields; the offsets are from its layout (gatekit symbols layout)"
+    },
+    {
+      "kind": "watch",
+      "says": "on the level Basic_Level_A one client entity carries it, with Camera, CameraTarget, CameraCombatTarget, CameraCombatTargetRequests, CameraSelectorMode, DefaultCameraBehavior and EffectCameraBehavior; at rest Targets holds one entity, TargetCurrent equals TargetDestination to a hair, DistanceCurrent and DistanceDestination read 10, MovingToTarget, PlayerInControl, IsSnapping and AtLeashLimit read false, the byte at +0x200 reads 1 and both optional points are empty"
+    },
+    {
+      "kind": "text",
+      "says": "the registry entry of ecl::CameraSystem::SnapFade reads +0x24 and +0x48 as the destination and current target, the set at +0x208 as the filed fade request and +0x248 (flag +0x254) and +0x238 (flag +0x244) as the pending target and destination; not read again here"
+    },
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types), as struct ecl::GameCameraBehavior in the queries of the camera systems"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "names for +0x200, +0x208, +0x238 and +0x248 from the function that applies the pending cut once the screen is black; the reader of PlayerInControl that cancels a glide",
+      "about": "meaning",
+      "state": "open"
+    }
+  ]
+}

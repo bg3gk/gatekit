@@ -1,0 +1,29 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::DCCharacterCreation",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The data context of the creation windows of the interface. It serves the widget CharacterCreation of a new game and the widget CharacterChangeAppearance, the mirror, which the client opens when a change-appearance session starts.",
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the interface reports this type name for the data context of the open widget CharacterChangeAppearance"
+    },
+    {
+      "kind": "watch",
+      "says": "after Osi.StartChangeAppearance(host) the widget CharacterChangeAppearance is the one open widget outside the HUD and its data context is gui::DCCharacterCreation; closing the widget leaves the session standing on both sides (the session entity, the definition entity and CCState.HasDummy remain)"
+    },
+    {
+      "kind": "watch",
+      "says": "after Osi.StartRespec(host) the widget CharacterRespec is the one open widget outside the HUD, with the same data context"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the command of this data context that confirms and the one that cancels a change-appearance session, so that a session is ended and not only hidden",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -2,6 +2,7 @@
   "schema": "registry/type/1",
   "id": "ecl::character_creation::TargetVisualComponent",
   "kind": "struct",
+  "rung": "game",
   "about": "Visual the character-editor dummy should get (filled by SubsystemHelper::FillTargetVisualComponent / ...ColorsAndMaterials from the template, race, origin, body type/shape and eoc::character_creation::Appearance). situation 'respec' (Osi.StartRespec on the host, then the character editor's commands, level SYS_CC_I); born together with the other ecl::character_creation components of this batch.",
   "size": 240,
   "fields": [
@@ -297,6 +298,27 @@
     "ext_name": "ClientCharacterCreationTargetVisual",
     "one_frame": false
   },
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the game's executable keeps this type name among its ECS type names (gatekit symbols types)"
+    },
+    {
+      "kind": "read",
+      "says": "ecl::character_creation::SubsystemHelper::FillTargetVisualComponentColorsAndMaterials (bg3_dx11.exe+0x20173E0) adds one to the int at +0x8 on every fill unless the value at +0x0 is -1, and writes +0x10, +0x20, +0x30 and the colour ids at +0x40..+0x7F"
+    },
+    {
+      "kind": "watch",
+      "says": "in a change-appearance session (Osi.StartChangeAppearance on the host of a running level) it sits on the dummy entity; its colour ids, Race, Origin, BodyType read the edited character's, the int at +0x8 reads 1 and the one at +0x4 reads 1 after the first fill"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the int at +0x8 behaves as a revision of the target that the current visual is compared against; read the consumer that copies target to current (the query of TargetVisualComponent, CurrentVisualComponent, ls::VisualComponent) to name it",
+      "about": "meaning",
+      "state": "open"
+    }
+  ],
   "survey": {
     "batch": "alive",
     "confidence": "medium",
