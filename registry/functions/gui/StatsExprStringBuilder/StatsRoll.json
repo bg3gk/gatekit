@@ -1,0 +1,38 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::StatsExprStringBuilder::StatsRoll",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Writes one stats roll into a tooltip's trans string: the die term through gui::StatsExprStringBuilder::Roll, then, unless the roll's result is a critical failure (Critical = 2 at the roll's +0x2C), the roll's own modifiers (its flat bonus, roll bonuses, ability and skill modifiers) and, when asked, ' = ' and the total (+0x20). A roll flagged critical failure is written as its die alone, so a damage die of 1 on a 1dN weapon roll shows '1 (1d4 Piercing)' with no modifier and no total, while the damage dealt has both.",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:503cc917cad103cf",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:b70839e52859db22",
+      "fp:e4d053ad9455ea7c",
+      "fp:f3b9baddf94b8164",
+      "gui::StatsExprStringBuilder::Roll"
+    ],
+    "strings": ["0d8707639b5d07ed", "d071b7913060e201", "f5abdca162d207ae", "f7a77f2da0e439ab"],
+    "vtables": [{"slot": 3}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "slot 2 of the builder's virtual table at +0x55EE970; the same sequence of loca handles (h613ff7dd, h5b45ed1d, h6143324b, h4c5b5289) and lists (+0xF8, +0xE8, +0x80, +0xC0) as the macOS build's gui::StatsExprStringBuilder::StatsRoll; one test of the byte at +0x2C against 2 guards every term after the die"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe with a 64-byte snapshot of the third argument over a dagger hit: die 1 -> natural 1, total 4, flat 3, Critical 2, line '1 (1d4 Piercing)'; die 2 -> Critical 0, '2 (1d4) + 3 (Dex) = 5'; die 4 -> Critical 1, '4 (1d4) + 3 = 7'; the server's Critical set to None in Ext.Events.BeforeDealDamage on a 1 gave '1 (1d4) + 3 (Dex) = 4', set to Fail on a 4 gave '4 (1d4)'; an attack die of 1 gives '1 (Critical!) (1d20)'"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Whether the game means the rule only for attack rolls (a natural 1 misses whatever the bonus) and applies it to damage by sharing this writer: no patch note or code comment says.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

@@ -876,3 +876,22 @@ sweep saw a total above everything listed (Sneak Attack cast as the spell) was n
 
 The game's rows now carry both (`game_hit`: `rolls` with where each came from, `modifiers`,
 and `unlisted` when the listed terms fall short of the total).
+
+## 26. Why a damage die of 1 shows without its terms
+
+The cause is on the client, in the function that writes one stats roll into a tooltip's line
+(`gui::StatsExprStringBuilder::StatsRoll`). It writes the die, then looks at the roll's critical
+flag: on a critical failure it writes nothing more - no flat bonus, no ability modifier. The
+line's builder adds "= total" only when two terms or more were written, so the total goes with
+them. The rule is the attack roll's - a natural 1 misses whatever the bonus, and its line reads
+"1 (Critical!)" - and it is applied to every roll.
+
+The game flags a damage roll a critical failure exactly when its dice sum to 1 (and a success
+when they sum to the die's size or more), which only a roll of one die can do: a weapon's d4 or
+d6 landing on 1. The weapon's ability modifier is inside that same roll, so it vanishes from the
+line. A heal's die of 1 adds up, because its modifier is a roll of its own.
+
+What the server holds and what it sends is whole: natural 1, total 4, the flat 3. Proven both
+ways by changing the flag before the hit reaches the log: a die of 1 with the flag taken off
+reads "1 (1d4) + 3 (Dexterity modifier) = 4"; a die of 4 with the flag put on reads "4 (1d4)".
+The damage dealt is right throughout.
