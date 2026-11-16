@@ -1,7 +1,9 @@
 -- An interrupt may change a roll after it is thrown: the game's own Portent, Shield, Lucky and
 -- Bardic Inspiration do (wiki: Reactions; research/studies/rolls.md, section 18). The roll log
 -- then holds two rows: `dice_thrown` says what was thrown, `dice_adjusted` what the game goes on
--- with, naming what it replaced (docs/contracts/lua-api.md, section 17, GK.RollLog). Staged with
+-- with, naming what it replaced and the interrupts listed as used on it, each with its owner,
+-- what it asked and whether it is the change seen (`by`; docs/contracts/lua-api.md, sections 17
+-- and 21, GK.RollLog). Staged with
 -- an interrupt of the game's own kind that sets a roll to 1 (Illusory Self's `SetRoll`), made to
 -- fire by itself on the host's own attack; the host's die is rigged to 15 so that the change is
 -- one the test can name: 15 thrown, 1 kept, a hit turned into a critical miss.
@@ -76,5 +78,18 @@ function run(game)
         eq(kept.critical, "Fail", "a natural 1 is a critical miss")
         eq(kept.dc, thrown.dc, "the same difficulty: the goblin's Armour Class")
         check(kept.outcomeChanged == (thrown.total >= thrown.dc), "the outcome changed exactly when 15 had hit", kept, thrown)
+    end)
+    step("the change names who made it", "observation", function()
+        local kept = row(mark, "dice_adjusted", nil, 30).payload
+        local mine
+        for _, one in ipairs(kept.by or {}) do
+            if one.interrupt == "GK_RollLog_SetRoll1" then mine = one end
+        end
+        check(mine ~= nil, "the row names the interrupt that set the die", kept)
+        eq(uuid(mine.owner), host, "its owner: the host")
+        eq(mine.set, 1, "what it asked: the die set to 1")
+        check(mine.applied == true, "and its own adjustment is the change seen", mine)
+        eq(uuid(kept.source), host, "the roller: the host")
+        eq(uuid(kept.target), goblin, "the other party: the goblin")
     end)
 end
