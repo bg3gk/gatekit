@@ -2,6 +2,9 @@
   "schema": "registry/type/1",
   "id": "ecl::ClientTimelineActorControlComponent",
   "kind": "struct",
+  "state": "described",
+  "rung": "extender",
+  "about": "Ties a client timeline dummy to the timeline that drives it: Actor (the actor's id in the timeline), Timeline (the running timeline's id), Slot, IsListener, IsAdditional. While Timeline names a running timeline, that timeline's transform track writes the dummy's Transform every frame; with the null guid there the dummy is left alone and keeps its animation.",
   "size": 40,
   "fields": [
     {
@@ -71,6 +74,23 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "ClientTimelineActorControl", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "the component ClientTimelineActorControl, engine name from Ext.Debug.GetComponentTypes"
+    },
+    {
+      "kind": "watch",
+      "says": "in the main menu level SYS_Menuscreen_Act3_B a Transform written to an adventurer dummy of MM_Accept_Temple is back at the timeline's value on the next read, also when written on every tick; after Timeline is set to the null guid the written Transform stays, and with Visual:SetWorldTranslate the figure is drawn at the new place"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which function of the timeline systems (ecl::TimelineTransformFlushSystem is a candidate by name) reads Timeline and writes the Transform; a probe on its update while a dummy is detached would show it",
+      "about": "reach",
+      "state": "open"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Timeline.h:418, kind component), by gatekit symbols se-layouts on 2026-11-14",

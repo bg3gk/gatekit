@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CameraMoveTargetGlideOrFade",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Moves the game camera's target toward its destination: within the camera switch's TargetSnapDistance (50 m) of the current target it lets the camera glide, beyond it hands the move to ecl::CameraSystem::SnapFade (fade to black, cut, fade in).",
+  "fingerprint": {
+    "calls": ["ecl::CameraSystem::SnapFade", "fp:5227b96c8688ff31", "fp:e4d053ad9455ea7c"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "compares the squared distance between GameCameraBehavior TargetCurrent (+0x48) and TargetDestination (+0x24) with the square of a float of ls::GlobalSwitches (+0x7BC, +0x950 or +0xC78 by the input mode: TargetSnapDistance of the camera switch set), and calls SnapFade when it is greater"
+    },
+    {
+      "kind": "watch",
+      "says": "called once (from +0x1E15C51) on a switch to a party member 80 m away and on GK.Camera.Focus of a creature 100 m away, each followed by the black screen; a switch at 45 m glides with no fade, one at 52 m fades"
+    }
+  ]
+}

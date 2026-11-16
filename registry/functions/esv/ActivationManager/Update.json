@@ -1,0 +1,48 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::ActivationManager::Update",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "The server's activation pass of one frame: runs the per-character rule over every character on a level, gathers the anchors (the party view's characters, characters with ForceSynch above 0, characters with the SpreadActivation flag, the positions of running synced timelines), wakes and puts to sleep around each anchor, and sends each change through the activation helper's SetActive.",
+  "fingerprint": {
+    "calls": [
+      "esv::ActivationManager::CheckAroundPosition",
+      "esv::ActivationManager::UpdateCharacterActivation",
+      "esv::ActivationSystemHelper::SetActive",
+      "fp:04c1ed033984a176",
+      "fp:123b79ba6c390bab",
+      "fp:1cfe15017ce91cc4",
+      "fp:24c801b0780dfd1d",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3e632fc23c71d808",
+      "fp:5227b96c8688ff31",
+      "fp:7da315d7735f8df1",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:9755153be85889a5",
+      "fp:aa8b2f6641ae0f6d",
+      "fp:b09b967bca27aad0",
+      "fp:b599991f1c006cc7",
+      "fp:d1045bdeed38dbc1",
+      "fp:d17cd6554897aca4",
+      "fp:e4d053ad9455ea7c",
+      "fp:fafc80e13eaaf8f5"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<esv::ActivationGroupContainerComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<esv::Character,ls::LevelComponent,ls::TransformComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::ActiveComponent,eoc::combat::ParticipantComponent,eoc::ftb::ParticipantComponent,eoc::ftb::RespectComponent,eoc::improvised_weapon::WieldedComponent,eoc::PlayerComponent,eoc::SyncedTimelineActorControlComponent,esv::ActivationGroupContainerComponent,esv::combat::JoinEventOneFrameComponent,esv::crowds::DeactivateCharacterComponent,esv::patrol::CaretComponent>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<esv::Item,ls::TransformComponent,ls::LevelComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::ActiveComponent,eoc::combat::ParticipantComponent,eoc::ftb::ParticipantComponent,eoc::ftb::RespectComponent,eoc::improvised_weapon::WieldedComponent,eoc::platform::PassengerComponent,eoc::platform::RepresentativeComponent,eoc::SyncedTimelineActorControlComponent,esv::ActivationGroupContainerComponent,esv::combat::JoinEventOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "esv::ActivationGroupContainerComponent"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its one caller is SystemUpdate<esv::ActivationManager> (0x238A8D0); it calls eoc::party::GetCharacters, the per-character rule 0x41A7C10 inside the Character+Level+Transform query, CheckAroundPosition 0x41A6510 three times (party set with the member flag, SpreadActivation set with the low item radius, timeline points with reason 0xD), and the helper's virtual SetActive with 0 for the characters left in the to-sleep set"
+    },
+    {
+      "kind": "watch",
+      "says": "a count-only probe shows it about 33 times a second, once per server tick, from +0x238A91C; moving an awake creature from 44 to 46 m from the only party member calls SetActive from +0x41A4EB0 (its to-sleep loop) and Active, AnubisActive and AnimationBlueprint leave the creature within 0.1 s"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::character_creation::DummyDefinitionComponent",
+  "kind": "struct",
+  "state": "described",
+  "rung": "extender",
+  "about": "On the client's character creation definition entity (the one with eoc::character_creation::CharacterDefinitionComponent): what the shown dummy is built from (Race, Subrace, BodyType, BodyShape, RootTemplate, Origin, Classes, Visual) and Dummy, the client-only entity drawn on the creation screen (it carries ecl::character_creation::DummyComponent, Visual, AnimationBlueprint, Transform).",
+  "evidence": [
+    {
+      "kind": "extender-name",
+      "says": "the component ClientCCDummyDefinition, engine name from Ext.Debug.GetComponentTypes"
+    },
+    {
+      "kind": "watch",
+      "says": "in SYS_CC_I two entities carry it (the character and the companion definition); the character's Dummy stands at 9.99 0.89 111.14 before the creation camera, while the server's player characters stand elsewhere and are not in the view"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which function rebuilds the dummy when the server's CharacterDefinition changes, to learn whether a saved appearance written into the definition is drawn",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}
