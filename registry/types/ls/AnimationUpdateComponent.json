@@ -3,7 +3,7 @@
   "id": "ls::AnimationUpdateComponent",
   "kind": "struct",
   "state": "described",
-  "rung": "confirmed",
+  "rung": "game",
   "about": "A tag on a client entity whose animation blueprint is run every frame. Without it the entity's local pose, world pose and skinning matrices are no longer rewritten and the figure stands as it was; given back, the animation resumes.",
   "size": 1,
   "fields": [
@@ -26,7 +26,13 @@
       "kind": "watch",
       "says": "after RemoveComponent a rotation written into the live local pose is found unchanged on 58 of 59 ticks (0 of 113 with the component), and written skinning matrices are the same bytes seconds later"
     },
-    {"kind": "test", "test": "figure/client_bones"}
+    {"kind": "test", "test": "figure/client_bones"},
+    {
+      "kind": "game-name",
+      "store": "type-names",
+      "says": "The executable keeps this type's name as text"
+    },
+    {"kind": "toolkit-name", "store": "GameEngine.dll", "says": "GameEngine.dll exports this name"}
   ],
   "questions": [
     {

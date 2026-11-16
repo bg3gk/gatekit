@@ -13,7 +13,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "Creator bg3.exe+0x201BD20 (size 0x18: null handle, 12 zero bytes). bg3.exe+0x2018950 (creates the character creation dummy, name prefix \"DUM_\") writes *param_10 here. bg3.exe+0x1FED5C0 takes this handle and fetches ecl::character_creation::DummyDefinitionComponent from it (bg3.exe+0x1FEE6D0) to get the RootTemplate at +0x60 - the entity holding the dummy's definition (its DummyDefinitionComponent.Dummy points back)."
+          "says": "Creator bg3.exe@25605617+0x201BD20 (size 0x18: null handle, 12 zero bytes). bg3.exe@25605617+0x2018950 (creates the character creation dummy, name prefix \"DUM_\") writes *param_10 here. bg3.exe@25605617+0x1FED5C0 takes this handle and fetches ecl::character_creation::DummyDefinitionComponent from it (bg3.exe@25605617+0x1FEE6D0) to get the RootTemplate at +0x60 - the entity holding the dummy's definition (its DummyDefinitionComponent.Dummy points back)."
         }
       ]
     },
@@ -25,7 +25,7 @@
       "evidence": [
         {
           "kind": "read",
-          "says": "the per-frame dummy update (bg3_dx11.exe+0x202EB00) compares these two ints with +0x8 and +0xC of ecl::character_creation::DummyDefinitionComponent and copies the definition's value in before refilling the target visual"
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares these two ints with +0x8 and +0xC of ecl::character_creation::DummyDefinitionComponent and copies the definition's value in before refilling the target visual"
         },
         {
           "kind": "watch",
@@ -41,7 +41,7 @@
       "evidence": [
         {
           "kind": "read",
-          "says": "the per-frame dummy update (bg3_dx11.exe+0x202EB00) compares these two ints with +0x8 and +0xC of ecl::character_creation::DummyDefinitionComponent and copies the definition's value in before refilling the target visual"
+          "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares these two ints with +0x8 and +0xC of ecl::character_creation::DummyDefinitionComponent and copies the definition's value in before refilling the target visual"
         },
         {
           "kind": "watch",
@@ -57,7 +57,7 @@
       "evidence": [
         {
           "kind": "text",
-          "says": "bg3.exe+0x20302F0: compared with the int at +0x10 of the DummyDefinitionComponent (Script Extender: field_10) and overwritten with it; the function fetches ecl::character_creation::EquipmentVisualComponent of the same entity next to it (bg3.exe+0x2032710) and rebuilds the equipment."
+          "says": "bg3.exe@25605617+0x20302F0: compared with the int at +0x10 of the DummyDefinitionComponent (Script Extender: field_10) and overwritten with it; the function fetches ecl::character_creation::EquipmentVisualComponent of the same entity next to it (bg3.exe@25605617+0x2032710) and rebuilds the equipment."
         }
       ]
     },
@@ -78,7 +78,7 @@
   "evidence": [
     {
       "kind": "read",
-      "says": "the per-frame dummy update (bg3_dx11.exe+0x202EB00) compares these two ints with +0x8 and +0xC of ecl::character_creation::DummyDefinitionComponent and copies the definition's value in before refilling the target visual"
+      "says": "the per-frame dummy update (code:unplaced::ApplyDummyDefinitionChanges) compares these two ints with +0x8 and +0xC of ecl::character_creation::DummyDefinitionComponent and copies the definition's value in before refilling the target visual"
     },
     {
       "kind": "watch",

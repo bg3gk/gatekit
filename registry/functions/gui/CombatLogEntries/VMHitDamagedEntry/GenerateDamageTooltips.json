@@ -40,11 +40,11 @@
   "evidence": [
     {
       "kind": "read",
-      "says": "the macOS build names it (VMHitDamagedEntry::GenerateDamageTooltips, called by the VMHitDamagedEntry constructor); here it is the one function calling eoc::StatsDamage::ResistanceToDisplayString, twice as there, and the only caller of the Damage Roll line builder at +0x13E9BE0 that runs eoc::StatsDamage::StringVisit"
+      "says": "the macOS build names it (VMHitDamagedEntry::GenerateDamageTooltips, called by the VMHitDamagedEntry constructor); here it is the one function calling eoc::StatsDamage::ResistanceToDisplayString, twice as there, and the only caller of the Damage Roll line builder at code:unplaced::CombatLogDamageRollTooltipLine that runs eoc::StatsDamage::StringVisit"
     },
     {
       "kind": "watch",
-      "says": "a count-only probe over one weapon hit shows 1 call, from +0x14BEC90 (itself called once from +0x16BD9CE); the lines it built, read from the view model's nested trans strings, are the player's tooltip (Sneak Attack: 'Damage Roll: 2 (1d4) + 3 (Dex) + 5 (1d6) = 10' while the hit's DamageRolls list only 1d4+3)"
+      "says": "a count-only probe over one weapon hit shows 1 call, from code:gui::CombatLogEntries::VMHitDamagedEntry::VMHitDamagedEntry (itself called once from bg3_dx11.exe@25605617+0x16BD9CE); the lines it built, read from the view model's nested trans strings, are the player's tooltip (Sneak Attack: 'Damage Roll: 2 (1d4) + 3 (Dex) + 5 (1d6) = 10' while the hit's DamageRolls list only 1d4+3)"
     },
     {
       "kind": "game-name",

@@ -16,11 +16,11 @@
   "evidence": [
     {
       "kind": "text",
-      "says": "With MinimumRollResult and MaximumRollResult (SkillCheck,20) on the host, GK.Memory.Watch on the roll manager's count saw both draws run (0 to 1, 1 to 2) and the check came 20/20 instead of the stream's 9/11 at count 0; this is the only function called on each drawn die between the draw and the keeping of one (read in +0x105CCA0). A read watch on the boost's Result closed the game twice, so no read hit backs it. Independently: GK.Memory.Freeze of the Result (+0x1) of the host's attack pin's two boosts from 19 to 2 made the next fair melee attack miss plainly where 19 hit, and the function reads exactly those two components"
+      "says": "With MinimumRollResult and MaximumRollResult (SkillCheck,20) on the host, GK.Memory.Watch on the roll manager's count saw both draws run (0 to 1, 1 to 2) and the check came 20/20 instead of the stream's 9/11 at count 0; this is the only function called on each drawn die between the draw and the keeping of one (read in code:eoc::roll::stream::RollManager::InternalRollDiceWithBoosts). A read watch on the boost's Result closed the game twice, so no read hit backs it. Independently: GK.Memory.Freeze of the Result (+0x1) of the host's attack pin's two boosts from 19 to 2 made the next fair melee attack miss plainly where 19 hit, and the function reads exactly those two components"
     },
     {
       "kind": "watch",
-      "says": "A count-only probe on it shows six calls for three passive checks, one for each die of a pair, from +0x105D15D inside the roll with boosts"
+      "says": "A count-only probe on it shows six calls for three passive checks, one for each die of a pair, from bg3_dx11.exe@25605617+0x105D15D inside the roll with boosts"
     },
     {
       "kind": "watch",
