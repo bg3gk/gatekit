@@ -24,7 +24,9 @@
 -- x twists; Spine and Neck y leans to the figure's left, z bends forward. The figure's left is +x
 -- of its model space and it looks along -z.
 -- Options, before arming: GKSceneOptions = { withers = { at = {x, y, z}, yaw = degrees, move = 0.4,
--- who = <character root template>, pose = { Bone = { x, y, z } } } }.
+-- who = <character root template>, pose = { Bone = { x, y, z } }, light = <uuid of the level's
+-- light to borrow, or false>, light_toward = 1.6, light_up = 1.8 } }.
+-- The figure is on the client only: no blast, hit or shove of the game reaches it.
 -- State: GKScene.withers = { armed, fired, stage, error, at, yaw, wrote, log }.
 GKScene = GKScene or {}
 local old = GKScene.withers
@@ -34,7 +36,13 @@ local S = { armed = true, fired = false, stage = "armed", log = {} }
 GKScene.withers = S
 local O = (GKSceneOptions and GKSceneOptions.withers) or {}
 local WITHERS = O.who or "0133f2ad-e121-4590-b5f0-a79413919805" -- S_GLO_JergalAvatar
-local TRANSPONDER = { -79.3, 19.1, -389.0 }                      -- the helm marker of TUT_Avernus_C
+-- Beside the helm's transponder of TUT_Avernus_C (it stands at -82.4, 18.1, -389.0), to the north of
+-- it, clear of where a character stands to use it.
+local TRANSPONDER = { -80.6, 18.45, -385.6 }
+-- The helm is dark. A point light of the level that carries LightMovement follows its Transform
+-- (stand/menu/README.md, "Light"): one from a deck far under the helm is borrowed and put back.
+local LIGHT = "8e89e599-51da-4f07-883a-0ee43a14c027"
+if O.light ~= nil then LIGHT = O.light end
 local POSE = O.pose or {
     Spine1_M = { 0, 6, 4 }, Spine2_M = { 0, 8, 4 },
     Neck_M = { 0, 8, 25 }, Head_M = { 0, 6, 20 },
@@ -198,6 +206,31 @@ local function place()
     return at, yaw
 end
 
+local function moveLight(light, to)
+    local transform = light.Transform.Transform
+    transform.Translate = to
+    light.Transform.Transform = transform
+end
+
+-- The light stands between the figure and the camera, at the height of its chest.
+local function borrowLight()
+    if not LIGHT then return end
+    local light
+    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("Light")) do
+        if tostring(e.Light.UUID) == LIGHT and e.LightMovement then light = e break end
+    end
+    if not light then note("no light " .. LIGHT .. " with LightMovement in the level: the figure stays in the dark") return end
+    local cam = camera()
+    local c = cam and cam.Transform.Transform.Translate or { S.at[1], S.at[2], S.at[3] + 1 }
+    local dx, dz = c[1] - S.at[1], c[3] - S.at[3]
+    local reach = math.max(0.01, math.sqrt(dx * dx + dz * dz))
+    local toward = O.light_toward or 1.6
+    local at = light.Transform.Transform.Translate
+    S.light, S.lightHome = light, { at[1], at[2], at[3] }
+    moveLight(light, { S.at[1] + dx / reach * toward, S.at[2] + (O.light_up or 1.8), S.at[3] + dz / reach * toward })
+    note("a light of the level is put before the figure")
+end
+
 local function tick()
     if not S.armed or S.error or S.stage == "held" then return end
     if S.stage == "armed" then
@@ -218,6 +251,7 @@ local function tick()
         S.loadedAt = S.loadedAt or now()
         if now() - S.loadedAt < 1000 then return end -- its first animated frames give the meshes a pose
         e:RemoveComponent("AnimationUpdate")
+        borrowLight()
         S.stage, S.frames = "stopping", 0
         note("its animation is stopped")
     elseif S.stage == "stopping" then
@@ -246,6 +280,8 @@ end)
 function S.off()
     S.armed = false
     if S.subscription then pcall(function() Ext.Events.Tick:Unsubscribe(S.subscription) end) S.subscription = nil end
+    if S.light and S.lightHome then pcall(moveLight, S.light, S.lightHome) end
+    S.light = nil
     if S.figure then pcall(Ext.ClientVisual.DestroyDummy, S.figure) end
     S.figure, S.targets, S.stage = nil, nil, "off"
     return true

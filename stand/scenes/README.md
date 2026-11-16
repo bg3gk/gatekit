@@ -1,6 +1,40 @@
 # The stand's scenes
 
-Three staged surprises for the video, each one Lua chunk that **arms** a scene on the server and
+## The driver's order of the whole video
+
+`S`, `C` and `U` are `./gatekit --instance <copy> exec server`, `client` and `ui`. A scene is
+armed by running its file and disarmed by its `_off` file; a load restarts Lua, so a scene of the
+prologue is armed again after every `reset`.
+
+| # | Beat | File, context | Arms it | The driver calls or waits for | Takes | Rough |
+|---|---|---|---|---|---|---|
+| 1 | the channel's logo | `stand/splash/logo.lua`, `U` | on `up --splash`, once the splash screen stands | `GKScene.splash_logo.left` | fades and three seconds | the splash screen is seen for a moment before it; not in `gatekit shot` |
+| 2 | the splash screen with the company | `stand/menu/company.lua`, `C` | on the splash screen | `GKScene.menu_company.fired` | stands until the key | places set by eye |
+| 3 | "press any key" | - | - | `U "return GK.Cheat.Recover()"`; `GK.Gui.Stuck()` answers `mainmenu` | at once | - |
+| 4 | the descent, Orin | `stand/menu/orin.lua`, `C` | on the splash screen, before the key | `GKScene.menu_orin.done` | about twenty seconds from the key | her beats counted in seconds |
+| 5 | creation, the lanceboard player | `stand/creation/onlooker.lua`, `S` | in creation (`SYS_CC_I`), after the film of a new game | seated and playing about five seconds after arming; the window's steps are in `stand/creation/README.md` | as long as the creation | - |
+| 6 | the stargazer's ambush | `stand/creation/scenes/stargazer_ambush.lua`, `S` | in creation | the calls and the state in the file's head | the file's head | the file's head |
+| 7 | Orpheus on the guardian's page | `stand/creation/scenes/orpheus.lua`, `S` (with `solid.lua`, `C`) | in creation | `show()` on the guardian's page, `hide()` off it: the file's head | while the page stands | the file's head |
+| 8 | the prologue, the watchers | `watchers.lua`, `S` | at the prologue's start | the agent is told to go up to each; `GKScene.watchers.who.<name>.vanished` | four seconds each | Raphael's platform is off the shortest way |
+| 9 | the queen's answer | `queen.lua`, `S` | after the first fight | a checkpoint while `GKScene.queen.ready`; the agent shoves Lae'zel; `done`; `reset` | eleven seconds, then the death screen | - |
+| 10 | skill issue | `skill_issue.lua`, `S` | before the helm, after the reset of 9 | the agent casts Command: Drop at Zhalk; `awaiting = "reply"`; `GKScene.skill_issue.reply()`; `done` | about twelve seconds after the reply | - |
+| 11 | Withers at the transponder | `withers.lua`, `C` | in the helm's fight, before the finale | `GKScene.withers.stage` is `held` | two seconds | lit by one borrowed light |
+| 12 | the finale | `finale.lua`, `S`; `finale_credits.lua`, `U` | in the helm's fight, both before the owner's command | on the command `S "return GKScene.finale.go()"`; `GKScene.finale.done`; then nothing | ten seconds to the credits, plus `black` | the section below |
+
+Where the owner's wishes changed, the later one is followed: Orin under the ground replaced the
+dancer to the right of the menu (`dancer.lua`, `dancer_new.lua`); the company replaced the figure
+behind the statue (`statue.lua`); the lanceboard player and the stargazer replaced a plain
+onlooker in creation; the stargazer's ambush replaced her standing at the telescope
+(`stand/creation/stargazer.lua`); the thrown barrel replaced the brain blowing itself up with a
+recoloured effect, which replaced pressing the transponder. The replaced files are kept and are
+not part of the video.
+
+**The run is over** when `GKScene.finale.done` is true: the credits roll, the game goes to its
+main menu by itself when they end, and the driver does nothing more - no key, no call, no reset.
+
+## How a scene of the prologue is made
+
+Each of `watchers`, `queen` and `skill_issue` is one Lua chunk that **arms** a scene on the server and
 returns at once. The scene then fires by itself when its condition comes true in the game, however
 the agent got there, and fires once. Each keeps its state in a global table `GKScene.<name>` for
 the stand's feed: `armed`, `fired`, `log` (`{ tick, ms, text }`, in order) and the fields below.
@@ -63,3 +97,108 @@ matters gets `GK.Camera.Focus` (with a hold); nothing opens a window.
   rounds; he is immortal while it lasts (its one hit point would end it at the first blow).
 - The fight goes on: the helm's countdown went on (15 -> 14), his turn passed as the wheel, and the
   transponder took the party to the next level as usual.
+
+## withers - Withers in a dab beside the transponder
+
+    C "$(cat stand/scenes/withers.lua)"       # arm
+    C "$(cat stand/scenes/withers_off.lua)"   # disarm
+
+Client context, in the helm. A figure of the scene's own (`Ext.ClientVisual.CreateDummy`, the
+root template `S_GLO_JergalAvatar`) stands at `-80.6, 18.45, -385.6`, to the north of the
+transponder and clear of where a character stands to use it, turned to the game's camera as it
+is when the scene is armed, and holds a pose that is a table of the scene's own (the file's head
+says how a pose is written into a figure). The helm is dark: a point light of the level that
+carries `LightMovement` (`8e89e599-...`, from a deck far under the helm) is put between him and
+the camera and goes back when the scene is disarmed. `stage` goes `loading`, `stopping`, `moving`,
+`held`. Options: `at`, `yaw`, `light` and the others of the file's head.
+
+He is a watcher of the finale and it cannot touch him: the figure is on the client only, the
+server holds no creature for a blast, a hit or a shove to reach.
+
+Rough: he is lit from one side by one light and reads as a dark robed figure with an arm thrown
+out; the facing is the camera's of the moment of arming and does not follow it.
+
+## finale - the barrel, the black screen, the credits
+
+    S "$(cat stand/scenes/finale.lua)"               # arm; nothing happens in the game yet
+    U "GKSceneOptions = { finale = { credits = { ... } } } $(cat stand/scenes/finale_credits.lua)"   # optional: the stand's own block
+    S "return GKScene.finale.go()"                   # on the owner's command
+    S "$(cat stand/scenes/finale_off.lua)"           # disarm
+
+Nobody uses the transponder. From `go`, `GKScene.finale.stage` goes:
+
+| Stage | What happens | Ends when |
+|---|---|---|
+| `leaving` | every party member is barred from joining a fight (`Osi.SetCanJoinCombat(member, 0)`) and the fight is ended (`Osi.EndCombat`), the story's own pair for taking a creature out of a fight | `Osi.IsInCombat` of the character answers 0 |
+| `coming` | only when the character is farther than `reach` from the brain's place: it walks there | it is within `reach` |
+| `arriving` | the burst of the brain's last confrontation; the brain (`Elder_Brain_Crowned_Highres`, the template of the last level's `S_GLO_Netherbrain`, under that object's name) stands at `at`, 8 m from the transponder on the deck, turned to the character, at `scale` 2, the crown glowing; the camera on it | `behold` seconds |
+| `arming` | the party gets `INVULNERABLE_NOT_SHOWN` and the character the cloud giant elixir's status; a Runepowder Barrel comes into the pack and its hit points are set to 1 | the barrel reads 1 hit point and the statuses are on |
+| `throwing` | `GK.Cheat.Throw(character, barrel, brain)`, the game's Throw; the barrel breaks on landing and explodes by its own rule | the brain is dead (`GKScene.finale.death` = the game's row: who killed it) |
+| `blast` | the explosion on the screen | `after` seconds |
+| `fading` | `Osi.ScreenFadeTo`, the story's fade to black; the black held for `black` seconds | the Osiris event `ScreenFadeDone` |
+| `credits` | `PROC_StartMovie("Credits")`, the story's line at the end of the game; `done = true` | - |
+
+What is staged, and why:
+
+- **Leaving.** The game's own Flee is refused in the helm (`GK.Act.Flee`: "this place does not
+  allow fleeing"). With `companions = "fight"` only the character is barred: the others are at
+  once in a new fight, which waits on their turn.
+- **The helm's creatures** begin a fight of their own, Zhalk against the mind flayer. The story's
+  clock - the fifteen rounds, the cambions of round 6, the crash at round 16 - counts the rounds
+  of the fight that was ended, so none of it comes.
+- **The brain's hit points** are set to `hp` (20 of 275) with `Osi.SetHitpoints`, so that one
+  barrel kills it: a barrel deals 50 to 120, half on a saved throw.
+- **The barrel's hit points** are set to 1: a thrown barrel takes 1 to 4 from the throw and
+  explodes only when it breaks.
+- **The strength.** A barrel weighs 16 kg and the game refuses a throw by a weak character ("the
+  thrown thing weighs 16000"): the elixir's status is the game's own way to be strong enough. Its
+  name floats over the character once.
+- **Nobody of the party is hurt or thrown**: the status is the story's `PROC_SetInvulnerable`.
+
+**The credits and the end.** The credits are the page the main menu's Credits button opens,
+started as the story starts them. The page closes when it has rolled out or when its own command
+`CreditsEnded` runs (its close button; `U "return GK.Cheat.Run('Credits', 'CreditsEnded')"`), and
+by itself it only raises the Osiris event `CreditsEnded`: started in a level, the game is back in
+that level when they close. It is the story that leaves the session: it answers the event with
+the Osiris call `GameEnd` (`PROC_GameEndWithMovie("")` at Moonrise; the last goal calls
+`GameEnd` after its closing scenes). The scene answers the event with the same line, and the game
+unloads the level and stands on its splash screen, in the state `Menu`. With `menu = false` the
+scene does not, and the game stays in the level under the black screen.
+
+**The stand's own block at the head of the credits** (`finale_credits.lua`, UI context, armed
+before `go`; with no options the credits are the game's own):
+
+    GKSceneOptions = { finale = { credits = {
+        logo = "Stand/gatekit-logo.png", seconds = 4,
+        lines = {
+            { text = "GateKit", bold = true, size = 72, color = "gold" },
+            { text = "MAP · EXTEND · AUTOMATE" },
+            { text = "From Gwynerva, to the game I love most" },
+            { text = "Made entirely with AI" },
+            { text = "Built on Norbyte's Script Extender" },
+            { text = "and on the study of the community's mods" },
+        } } } }
+
+and on the server `GKSceneOptions = { finale = { black = 6 } }` before arming `finale.lua`, the
+picture's seconds and fades.
+
+- **The picture is the stand's.** The credits page has no picture entry: its view model holds
+  text lines and sections only. The logo is drawn by `GK.Show.Picture` on the black screen before
+  the credits start, from a file under the copy's `Data` folder (once per copy:
+  `cp assets/brand/logo-round-512.png "<copy's game folder>/Data/Stand/gatekit-logo.png"`). It is
+  not in `gatekit shot`.
+- **The lines are the credits' own first entry.** The credits are the file
+  `Public/Game/Credits/credits.txt`, lines of the game's markup (`<font size='42'>`, `<br>`), read
+  into the page's view model. A line of the view model is read-only for the extender, so the text
+  is written into the page's first text block, which is an empty line: plain text, `bold`, `size`.
+  All the lines are that one block, so they share the first entry's look. A colour is one of the
+  page's own brushes: `"gold"`, or the credits' white. A brush cannot be made from Lua, and a
+  brush's `Color` written from Lua reads back unchanged: no violet, and no line of its own colour
+  or size.
+- **A mod's way** gives all of it: a `credits.txt` of a mod overrides the game's, and every line
+  takes the markup the file already uses.
+
+Rough: the throw's attack roll is the game's and is not decided; `black` is counted in seconds,
+the UI part reads the black from the HUD's fade and the server does not hear when the picture
+left; the walk of `coming` and the fight of `companions = "fight"` are written and were not run to
+the end.

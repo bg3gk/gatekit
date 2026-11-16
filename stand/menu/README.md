@@ -18,6 +18,23 @@ Only the client runs there: the game state is `Menu`, there is no server and no 
   keeps its animation; its picture moves with `entity.Visual.Visual:SetWorldTranslate{x,y,z}` and
   `:SetWorldRotate{x,y,z,w}`. Writing `Transform` alone moves nothing on the screen.
 
+## The driver's order in the menu
+
+The video's whole order is in [../scenes/README.md](../scenes/README.md). Its part here, `C` being
+`./gatekit --instance <copy> exec client` and `U` `exec ui`:
+
+| Step | Call | Wait for | Rough |
+|---|---|---|---|
+| the start | `gatekit --instance <copy> up --splash` | `U "return GK.Gui.Stuck()"` answers `splash` | - |
+| the company, armed | `C "$(cat stand/menu/company.lua)"` | `GKScene.menu_company.fired`, no `waiting`: the figures stand and play their idles within two seconds | the places are set for this camera by eye |
+| Orin, armed | `C "$(cat stand/menu/orin.lua)"` | nothing yet: it fires under the ground | - |
+| press any key | `U "return GK.Cheat.Recover()"` | `GKScene.menu_company.done` at once; the camera's descent; `GKScene.menu_orin.stage` goes `loading` ... `gone`, `done` about twenty seconds after the key | Orin's beats are counted in seconds |
+| on | `U "return GK.Gui.NewGame()"` (stand/creation/README.md) | - | - |
+
+`statue.lua` (a figure behind the statue) and the two dancers are kept and are not part of the
+video: the company took the statue's place on the splash screen, and Orin the dancer's under the
+ground.
+
 ## dancer - an adventurer dances to the right of the menu
 
     ./gatekit --instance <copy> exec client "$(cat stand/menu/dancer.lua)"       # arm
@@ -137,7 +154,29 @@ Rough: `fear`, `look`, `burst` and `cover` are the scene's own beats, counted in
 moment of the burst inside the twist is set by eye, not read from the dialogs' timelines. The
 door has usually begun to rise by the time the kill is over, so she turns as soon as she is done.
 
+## company - the Emperor and intellect devourers beside the statue on the splash screen
+
+    ./gatekit --instance <copy> exec client "$(cat stand/menu/company.lua)"       # arm
+    ./gatekit --instance <copy> exec client "$(cat stand/menu/company_off.lua)"   # disarm
+
+Client context, armed while the splash screen stands. Four figures of the scene's own stand on
+the grass about the statue, their backs to the watcher, looking at the city, which lies straight
+ahead of the splash's camera: the Emperor in his mind flayer form (the root template
+`Mindflayer_Emperor`) to the statue's left, two intellect devourers (`Intellect_Devourer`) before
+him and one to the statue's right. Each plays an idle of its own kind as a loop
+(`MFL_M_Rig_DFLT_IDLE_Random_Peace_02`, `INTDEV_Rig_DFLT_IDLE_Random_Peace_01`). `face = "statue"`
+turns them to the statue instead. The places are given from the camera (`ahead`, `right`, `down`
+for each member), clear of the "press any key" text. The splash screen is in daylight: no light
+is borrowed, so the scene stands together with `orin.lua` and `dancer_new.lua`. The figures are
+removed the moment the splash screen is passed. State: `GKScene.menu_company = { armed, fired,
+waiting, error, done, members, log }`; options and the members' table: the file's head.
+
+Rough: the ground's height under each member is a number set by eye (`down`), not read from the
+level; the devourer to the statue's right stands in tall grass and is half hidden by it.
+
 ## statue - someone behind the statue on the splash screen
+
+Kept, and not part of the video: the company stands on the splash screen instead.
 
     ./gatekit --instance <copy> exec client "$(cat stand/menu/statue.lua)"       # arm
     ./gatekit --instance <copy> exec client "$(cat stand/menu/statue_off.lua)"   # disarm
