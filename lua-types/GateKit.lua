@@ -3470,3 +3470,67 @@ function GK.Say.Shown(who) end
 ---@param options { effect: string?, sound: string?, scale: number? }?
 ---@return { ok: boolean, effect: string?, at: (string|number[])?, error: string? }
 function GK.Say.Accent(at, options) end
+
+---@class GK.Show
+GK.Show = {}
+
+---What a picture is asked with.
+---@class GK.Show.PictureOptions
+---@field file string? @ a png, jpg, tga or bmp under the game's Data folder, named as a mod ships it ("Mods/<Mod>/...", "Public/<Mod>/..."), in a package or loose
+---@field resource string? @ instead of a file: a texture resource's uuid or an icon's name
+---@field where ("screen"|number[]|{ x: number, y: number, w: number, h: number })? @ the rectangle it is fitted into, in parts of the screen (0 to 1); default the whole screen
+---@field fit ("contain"|"cover"|"stretch")? @ default "contain"
+---@field back (string|number[])? @ a colour behind it over the whole screen: "black", "white", "#rrggbb[aa]", { r, g, b[, a] }
+---@field opacity number? @ 0 to 1
+---@field fade (number|{ ["in"]: number?, out: number? })? @ real seconds
+---@field seconds number? @ real seconds at full strength; none: until hidden
+---@field skip (string|string[]|boolean)? @ keys that take it off: "escape", "enter", "space", a letter, a digit, "any"; while it shows the picture holds the keyboard
+---@field over "everything"? @ the only layer
+
+---A picture shown or gone.
+---@class GK.Show.PictureState
+---@field ok boolean?
+---@field handle string
+---@field file string?
+---@field resource string?
+---@field size number[] @ the picture's own width and height in pixels
+---@field where number[] @ x, y, w, h asked, in parts of the screen
+---@field covers number[]? @ x, y, w, h it covers, in parts of the screen
+---@field pixels integer[]? @ the same in pixels of the game's frame
+---@field screen integer[]? @ the frame's width and height
+---@field fit string
+---@field over string
+---@field phase ("in"|"on"|"out")? @ while shown
+---@field alpha number? @ while shown
+---@field seconds number?
+---@field fade number[] @ in, out
+---@field skip string[]?
+---@field state string @ the client's game state when it was asked
+---@field shownMs integer? @ real milliseconds since its first frame
+---@field left boolean? @ true once it is gone
+---@field why string? @ once gone: "seconds", "skipped", "hidden", or "failed: ..."
+---@field key string? @ the key that skipped it
+---@field ticks integer?
+---@field error string?
+---@field hint string?
+
+---Puts a picture over the game's whole frame, straight from a file: drawn by Script Extender's drawing layer, in any client state that draws frames. A row `picture_shown` at its first frame and `picture_hidden` when it is gone. Client (UI context). Cheat. Observed once the first frame with it is drawn.
+---@param options GK.Show.PictureOptions|string
+---@return GK.Show.PictureState
+function GK.Show.Picture(options) end
+
+---Refuses: no video can be played from Lua; the answer says what plays one. Client. Cheat.
+---@param options { file: string? }|string
+---@return { ok: false, error: string, hint: string, file: string? }
+function GK.Show.Video(options) end
+
+---Takes a picture off, or every picture when no handle is given. options.fade: seconds of the fade out (default the picture's own). Client. Cheat. Observed once it is gone.
+---@param handle string?
+---@param options { fade: number? }?
+---@return { ok: boolean, hidden: string[]?, left: GK.Show.PictureState[]?, ticks: integer?, error: string? }
+function GK.Show.Hide(handle, options) end
+
+---The pictures on the screen; with a handle, that picture - shown, or gone with `left`, `why`, `key`, `shownMs` - or nil. Client. Observation.
+---@param handle string?
+---@return GK.Show.PictureState[]|GK.Show.PictureState|nil
+function GK.Show.Shown(handle) end

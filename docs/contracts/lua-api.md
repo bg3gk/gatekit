@@ -1410,3 +1410,68 @@ story's own force update, a running timeline). Of a point: the same anchor, and 
 **The ledger and the log.** `One` and `Place` are rows of the stage ledger (`GK.Stage.Track`;
 `Place`'s helper is also the stage's spawn), so `GK.Stage.Clean` lets everything go. Rows
 `wake_kept`, `wake_place` and `wake_released` are written when each answer comes.
+
+## 24. `GK.Show`: a picture over the game, straight from a file (Client/Show.lua)
+
+| Verb | Class | Answers |
+|---|---|---|
+| `GK.Show.Picture(options)` | cheat | observed once the first frame with the picture is drawn: `{ ok, handle, file \| resource, size, where, covers, pixels, screen, fit, over, phase, alpha, seconds, fade, skip, state, shownMs, ticks }` |
+| `GK.Show.Hide([handle] [, { fade }])` | cheat | observed once it is gone: `{ ok, hidden = { handles }, left = { ... }, ticks }`; no handle: every picture |
+| `GK.Show.Shown([handle])` | observation | the pictures on the screen; with a handle that picture, shown or gone (`left`, `why`, `key`, `shownMs`), or nil |
+| `GK.Show.Video(options)` | cheat | `{ ok = false, error, hint }`: see "Video" below |
+
+**What draws it.** Script Extender's drawing layer (IMGUI) in GateKit's build decodes png, jpg,
+tga and bmp files and draws them after the game's whole frame. A picture is a window of that
+layer without a frame, the size of the game's frame, holding one canvas. So a picture is over
+everything the game shows - the interface, a dialogue, a loading screen's picture - in any client
+state that draws frames (shown in `Menu`, on the splash screen and the main menu, and in
+`Running`), needs no texture resource, no atlas and no XAML, and is not in the picture
+`GK.Shot` takes, which is the game's frame before that layer.
+
+**Options.**
+
+- `file`: a path under the game's Data folder as a mod ships it (`Mods/<Mod>/...`,
+  `Public/<Mod>/...`), inside a package or loose; a file put under Data while the game runs is
+  found. The game's file system is the only reader: a drive path, a path with `..` and a file
+  elsewhere on the disk are refused, and so is a file that is not png, jpg, tga or bmp. Files are
+  decoded under the DX11 renderer only.
+- `resource`: instead of a file, a texture resource's uuid or an icon's name (`Action_Dash`).
+- `where`: `"screen"` (default) or `{ x, y, w, h }` in parts of the screen, 0 to 1: the rectangle
+  the picture is fitted into. It is worked out again when the frame's size changes.
+- `fit`: `contain` (default: the whole picture inside the rectangle, centred, its shape kept),
+  `cover` (the rectangle filled, the picture's middle part drawn), `stretch`.
+- `back`: a colour drawn behind the picture over the whole screen (`"black"`, `"white"`,
+  `"#rrggbb"`, `"#rrggbbaa"`, `{ r, g, b[, a] }`); `opacity`: 0 to 1.
+- `fade`: seconds, or `{ in, out }`; `seconds`: how long it stays at full strength (none: until
+  hidden). Both are real seconds: the layer draws on the client's frames, which the game's speed
+  does not change.
+- `skip`: key names that take the picture off - `escape`, `enter`, `space`, a letter, a digit, or
+  `"any"`. A picture with `skip` holds the keyboard while it shows: it carries a text field of the
+  drawing layer that has the focus, so a key pressed - by hand or through the bridge (`GK.Key`) -
+  goes to the picture and not to the game, and what is under it (the splash screen's "press any
+  key", the escape menu) does not hear it. The field tells a typed character and the end of typing;
+  the end of typing is Escape, and a click of the mouse ends it too and is read as Escape. A key
+  that types nothing (an arrow, a function key) cannot be named and reaches neither. A key pressed
+  through the bridge is a key event with no text: of those the field hears Escape and Enter; a
+  letter, a digit or the space bar is heard when typed (the keyboard, `Ext.ClientInput.InjectText`)
+  and is otherwise swallowed. Without `skip` the picture takes no input at all. The mouse always passes through to the game.
+- `over`: `"everything"`, the only layer. Under the game's interface is refused: only the
+  interface itself draws there, and its images are the game's own texture files (a mod's XAML names
+  `Assets/x.png` and ships `x.DDS`).
+
+**Rows** (family `show`, always on): `picture_shown` at the first frame (`handle, file | resource,
+where, fit, over, seconds, skip, state`) and `picture_hidden` when the last frame is gone
+(`handle, why, key, shownMs`): `why` is `seconds`, `skipped` (with `key`), `hidden`
+(`GK.Show.Hide`) or `failed: <reason>`.
+
+**Video.** No verb plays one. The game's player takes Bink 2 files only (`.bk2`:
+`code:bik::BinkManager::LoadVideo`), found by name through `code:ls::VideoManager::LoadVideo`
+(the game's own lie in `Video/` and in `Mods/<Mod>/Localization/<language>/Video/`), and nothing of
+Script Extender calls it. The interface library has a video element, `ls.LSVideoPanel`
+(properties `Video`, the name, and `AutoPlay`; commands `PlayCommand`, `StopCommand`;
+`code:unplaced::LSVideoPanelLoadVideo`), which no widget under `Public/Game/GUI` uses; it plays inside
+a widget a mod ships as XAML, and Lua cannot create an element. The drawing layer decodes still
+pictures only.
+
+What is not covered: a picture is not taken off by `GK.Stage.Clean` or a test's reset (hide it);
+several pictures are drawn each in its own window, in no promised order; Vulkan draws no files.
