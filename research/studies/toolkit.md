@@ -7,7 +7,7 @@ and what is a suggestion is marked. The decompiled sources are searched with
 `gatekit decomp csharp Glasses/Glasses/GlassesApp.cs --file`. `EoCPlugin.dll` (mixed C++/CLI)
 decompiles only in part.
 
-## 1. How Glasses loads plugins — and how to get one in
+## How Glasses loads plugins — and how to get one in
 
 **It does not discover plugins.** `Glasses.GlassesApp.InitPlugins()`
 (`Glasses/Glasses/GlassesApp.cs`, about lines 290–410) is one long list of
@@ -94,7 +94,7 @@ the stand when the editor is ready, when a level finished loading and when game 
 without any code of ours inside. There is no listener in the Toolkit: commands cannot be sent in
 this way.
 
-## 2. Command line
+## Command line
 
 `FrameworkClass.Init(string[] args)` (`EditorFramework/EditorFramework/FrameworkClass.cs:261`)
 turns the arguments into a dictionary: a token starting with `-` is a key (without the dash); if
@@ -121,7 +121,7 @@ them need plugins it disables.
 `Program.Main` refuses to start a second editor ("Can't run 2 editor instances at the same time!")
 and warns when the game is running.
 
-## 3. Managed calls
+## Managed calls
 
 Reach everything from `EditorFramework.FrameworkClass.Instance` (a static singleton).
 `EditorFramework.MacrosHelper.GetService<T>()` and `GetPlugin<T>()` are shorthand for
@@ -156,7 +156,7 @@ editor mode is not active.
 type 181 from the game client, fill it with `eocnet::ServerCommand::Loadgame(name, modSettings)`
 and send it to the host.
 
-## 4. Script Extender inside the Toolkit
+## Script Extender inside the Toolkit
 
 Not supported. `BG3Extender/Extender/Shared/dllmain.cpp:42`:
 
@@ -188,10 +188,10 @@ itself - its own plugin inside Glasses, not a port of Script Extender.
 1. `GateKit.Toolkit.dll`, .NET Framework 4.7.1, references `EditorFramework.dll`,
    `LSFrameworkPlugin.dll`, `EoCPlugin.dll` from the Toolkit folder (reference only, do not copy).
 2. An `AppDomainManager` subclass whose `InitializeNewDomain` starts the watcher described in
-   section 1.
+   "How Glasses loads plugins".
 3. `class GateKitPlugin : LSToolFramework.PluginBase`: in `Start()` subscribe to
    `FrameworkClass.Instance.Game.EndFrame` and, in the handler, look for a command file, run the
-   command through the calls of section 3 and write a result file — the same file protocol the
+   command through the calls of "Managed calls" and write a result file — the same file protocol the
    game bridge uses. The level and game callbacks become events in a state file.
 4. The stand starts `Glasses.exe -project <mod> -lvl <level>` with the two environment variables
    set, and listens on UDP 6666 for `LevelLoaded` to know when to begin.

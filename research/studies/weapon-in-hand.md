@@ -4,7 +4,7 @@ When the game draws a weapon and puts it away, what holds it out, what tells tha
 and the player's own request. Tests: `tests/combat/weapon/`. Row: `weapon_state` (Server/Act.lua,
 from the game's `esv::unsheath::StateChangedEventOneFrameComponent`).
 
-## 1. The rule (bg3.wiki and wider)
+## The rule (bg3.wiki and wider)
 
 The wiki has no page on drawing and sheathing; the game's own key list names the action
 "Sheathe/Unsheathe Weapon" (localisation handle h4524f746g7d30g459bg97beg8f933a3a5dae). Players'
@@ -13,13 +13,13 @@ out of combat draws it and the game puts it away after the attack; toggled quick
 seems to skip its animation and appear on the back at once. Not read yet: forum threads on the
 toggle - a wish.
 
-## 2. The mods
+## The mods
 
 None of the study mods touches `esv::unsheath` or `eoc::unsheath` (`gatekit mod usage` over the
 home's study mods, searched for "unsheath"); they use `Osi.SetWeaponUnsheathed` where they use
 anything. A mod for weapon visibility would be the next to read (none downloaded).
 
-## 3. Script Extender
+## Script Extender
 
 Declares `eoc::unsheath::StateComponent` (`MainHandWeapon`, `OffHandWeapon`, `State`:
 `stats::UnsheathState`) and the server's family: `UserRequestComponent` (a counter of the player's
@@ -34,7 +34,7 @@ in the coverage data to be set to 8 s of game time), `SpellAnimationLifetimeComp
 `AnimationRequestOneFrameComponent`. Every field read here read as declared. `DefaultComponent` is
 not an `ExtComponentType` label of this build (subscribing to it by that name fails); not pursued.
 
-## 4. The instruments (component subscriptions on the server, rows with ticks)
+## The instruments (component subscriptions on the server, rows with ticks)
 
 - **The player's request is a key.** The game's toggle is the input event `ToggleCombatMode` (its
   description is the "Sheathe/Unsheathe Weapon" handle); the profile's binding is read from the
@@ -54,7 +54,7 @@ not an `ExtComponentType` label of this build (subscribing to it by that name fa
   not applied either (`GK.Cheat.Sheathe`: "still out" after 4 s). Not in a test: an absence needs an
   event after it to be shown within a step.
 - **Toggled quickly** (twice, 0.3 s apart): two complete changes, Sheathed -> Melee -> Sheathed,
-  each two ticks after its request; what the client shows is in section 7.
+  each two ticks after its request; what the client shows is in "Interrupted".
 - **The hotbar's weapon buttons** (`UseMeleeWeaponCommand`) draw the set by way of an animation the
   logic holds: `SpellAnimationLifetimeComponent` is created and the state changes; that component
   then keeps the weapon out after a later request to put it away, until it goes (about 3 s at speed
@@ -71,10 +71,10 @@ not an `ExtComponentType` label of this build (subscribing to it by that name fa
 | a fight's end puts the weapon away (the brief) | yes, once nothing else holds it |
 | the leaving component's timer (8 s, reading of the code) holds the weapon after a fight | no: it lives a few ticks and holds nothing seen here |
 | drawing and sheathing is a state with a duration the logic waits for | no for the player's request: an instant change, the animation requested beside it; yes for an attack's or a weapon button's animation, which holds the state until it ends |
-| quick toggles skip the animation (the owner) | the logic does both changes in full; the model stays on the back (section 7) |
+| quick toggles skip the animation (the owner) | the logic does both changes in full; the model stays on the back ("Interrupted") |
 | the player's own request exists as a component (the brief) | yes: `esv::unsheath::UserRequestComponent`, made by the game from the key |
 
-## 5. The tests
+## The tests
 
 - `tests/combat/weapon/after_fight.lua`: two cases, a fight ended by a scripted kill and by the
   host's fair killing blow; the weapon_state row against the leaving component's creation and the
@@ -83,7 +83,7 @@ not an `ExtComponentType` label of this build (subscribing to it by that name fa
   hand and with the other set (put in hand by the stage): the request component, the state two
   ticks later, the verb's answer equal to the row.
 
-## 6. What uses it
+## What uses it
 
 - `GK.Stage.Clean` leaves a weapon the game is putting away to the game and waits for its
   `StateChangedEvent` to `Sheathed`, drawing it again a tick later when the baseline had it drawn.
@@ -92,7 +92,7 @@ not an `ExtComponentType` label of this build (subscribing to it by that name fa
   server's order (`Osi.SetWeaponUnsheathed`). The client's `ecl::unsheath::VisualStateComponent`
   has no replication event (Script Extender refuses `OnChange` for it).
 
-## 7. Interrupted (`tests/combat/weapon/interrupted.lua`)
+## Interrupted (`tests/combat/weapon/interrupted.lua`)
 
 The client's `ecl::unsheath::VisualStateComponent` (`State`, `State2`), read every tick with the
 prelude's `expect` (raw values: 3 is Sheathed, 1 Melee here), against the logic's rows.
@@ -140,7 +140,7 @@ prelude's `expect` (raw values: 3 is Sheathed, 1 Melee here), against the logic'
 | a walk interrupts the drawing (the brief) | no: the weapon stays drawn |
 | an aim begun while the weapon is on its way interrupts it (the brief) | no: the aim's animation component holds the weapon out until it goes |
 
-## 8. Open
+## Open
 
 - A cast begun and carried out (not cancelled) during the draw; the toggle in a fight, refused,
   shown by a test.

@@ -561,7 +561,7 @@ problem written down as it happens; then the questions of the descent.
 what changes when a creature becomes unseen. Copy `aim`, TestLevel_Tom, one goblin, three other
 games running beside it the whole time.
 
-### 1. The memory instrument (`GK.Memory`) - works; "who writes this field" is built
+### The memory instrument (`GK.Memory`) - works; "who writes this field" is built
 
 The documents disagree: `docs/writing-tests.md` and lua-api.md section 16 describe `Watch` and
 `Hits`; the open items speak of it as wanted. **Built and working**: a hardware write watch that
@@ -592,7 +592,7 @@ Problems, as met:
   only change): what `Before` holds is not clear.
 - `Hits` drains: an answer cut by my own `head` lost the hits for good. Not a defect; a care.
 
-### 2. `gatekit decomp at` and `decomp code` - work, about 0.8 s an address
+### `gatekit decomp at` and `decomp code` - work, about 0.8 s an address
 
 | Address | `decomp at` names | My reading |
 |---|---|---|
@@ -607,7 +607,7 @@ Problems, as met:
 "AddComponent<eoc::InvisibilityComponent>"` took 56 s and matched by words, not the exact name
 (it listed systems that only read the component) - the writer of `Invisibility` is not found yet.
 
-### 3. The tracer (`Ext.Entity.SetupTracing` / `EnableTracing` / `GetTrace` / `ClearTrace`) - works
+### The tracer (`Ext.Entity.SetupTracing` / `EnableTracing` / `GetTrace` / `ClearTrace`) - works
 
 - `SetupTracing()` with no argument: "Param #1 missing"; its options are declared nowhere I could
   find (no type of them in `Ext.Types`); `SetupTracing({})` is accepted. `GetTrace()` is an
@@ -624,7 +624,7 @@ Problems, as met:
   modification of `ViewshedParticipant` is listed (modifications need options I do not know).
   The aims refused and taken: not traced yet.
 
-### 4. Names - `names suggest`, `set`, `extender` work
+### Names - `names suggest`, `set`, `extender` work
 
 - `names suggest eoc::InvisibilityComponent`: three fields at Script Extender's `field_0/4/10`.
 - `names set esv::sight::ViewshedParticipantComponent 0x10 CanSee --source inferred` with the watch

@@ -3,9 +3,9 @@
 How a weapon attack is decided and carried out, and how a test makes one the player's way. Tests:
 `tests/combat/melee/` (`attack_by_die.lua`, `scripted_attack.lua`), `ranged/`, `cast/`,
 `unarmed/`, `offhand/`. The verb: `GK.Act.Attack` /
-`Cast` (Client/Act.lua), the row: `game_hit` (Server/Act.lua); docs/contracts/lua-api.md, section 19.
+`Cast` (Client/Act.lua), the row: `game_hit` (Server/Act.lua); [lua-api.md](../../docs/contracts/lua-api.md#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson).
 
-## 1. The rule (bg3.wiki and wider)
+## The rule (bg3.wiki and wider)
 
 - bg3.wiki "Attacks": an attack roll is d20 + ability modifier + proficiency against the target's
   armour class; finesse weapons take the higher of Strength and Dexterity.
@@ -19,7 +19,7 @@ How a weapon attack is decided and carried out, and how a test makes one the pla
 - No disagreement between the pages was found. Not read yet: patch notes on attack rolls, forum
   measurements of critical damage (a wish, not a gap in the rule).
 
-## 2. The mods (study mods in the home, `gatekit mod usage`)
+## The mods (study mods in the home, `gatekit mod usage`)
 
 - Combat Extender reads `eoc::StatsComponent` and listens to Osiris `AttackedBy`; AI Allies writes
   `eoc::combat::ParticipantComponent.InitiativeRoll`; Sit This One Out listens to Osiris
@@ -28,7 +28,7 @@ How a weapon attack is decided and carried out, and how a test makes one the pla
   subscribes to the spell-cast or hit event components. A mod made for attack logging or a combat
   log would be the next to read (none downloaded).
 
-## 3. Script Extender
+## Script Extender
 
 Declares what the instruments touched: `eoc::spell_cast::IsCastingComponent` (`Cast`),
 `FinishedEventOneFrameComponent` (`Result`), `TargetHitEventOneFrameComponent` (`Hit`, `Attack`,
@@ -39,7 +39,7 @@ Critical ...). Every field read here read as declared. Not checked: the damage d
 component change's `Flags` cannot be read (the property is declared and missing).
 None found wrong among what was touched.
 
-## 4. The instruments
+## The instruments
 
 The fork's tracer over one fair melee attack in a fight (server and client, ECB and immediate):
 
@@ -71,14 +71,14 @@ The hits measured (Astarion, dagger 1d4, Dexterity +3, a goblin of armour class 
 shows 4-7 and 65%): die 1 a critical miss, 0 damage; die 19 a hit, every damage die pinned at 4:
 7; die 20 a critical, the same pin: 11 (4 + 4 + 3). The same at speed 1 and 8.
 
-## 5. The venue and the tests
+## The venue and the tests
 
 Basic_Level_A, two hostile goblins (one never attacked, so the fight outlives the kill), the host
 first by a pinned initiative. `attack_by_die.lua` (fair) and `scripted_attack.lua` (the contrast).
 Both pass at speed 1 and at the working speed (`gatekit test tests/combat --speed 1`, then
 `--speed working`).
 
-## 6. Names and code
+## Names and code
 
 No function was named: the events found are the game's components, named by the game; no code
 was read for this rung. The client-side end of a cast, the server's hit result and finished event
@@ -96,11 +96,11 @@ are enough for the tests and the verb.
   attack always hits and is free holds for the raw Osiris cast only.
 - finding: the client's end of a cast comes seconds after the server's (the animation); a fair verb
   that waits for the player's view must wait for the client.
-- bug (ours, suspected - see section 7): reading the ECS from Ext.UI.Defer.
+- bug (ours, suspected - see "The known instability of the first aim"): reading the ECS from Ext.UI.Defer.
 - todo: the critical threshold lowered (Improved Critical), advantage, resistance - the same rule
   with other inputs, each a test only when it is a rule of its own.
 
-## 7. The known instability of the first aim
+## The known instability of the first aim
 
 `tests/_selftest/clean/attack_in_fight.lua` failed once ("no character of this client is
 controlled", while three copies ran tests). What its answer shows: the
@@ -109,7 +109,7 @@ goblin) and, in the same call, `GK.Gui.Aiming()`, which found no controlled char
 identical reads of the ECS disagreeing inside one Lua call. Script Extender runs an `Ext.UI.Defer`
 callback on the render thread (`ScriptExtender::OnUiPredicatesManagerUpdate`, `PostUpdateNoesis`),
 holding only the Lua lock; the main thread runs native ECS work until its next Lua call. The crash
-of section 8 shows the main thread paused inside an ECS event dispatch while render-thread Lua ran.
+(below) shows the main thread paused inside an ECS event dispatch while render-thread Lua ran.
 Hypothesis, suspected: a read of the ECS from the deferred context can see the world mid-update.
 Not reproduced: 36,723 reads in the deferred context over four fights, and 67 callbacks with a read
 at the start and 3 ms later during a walk, saw no change; no `ClientControl` was created or
@@ -117,7 +117,7 @@ destroyed in a fight. What would settle it: the aim's ECS reads done on the main
 `PickingHelper` post-update hook) and the deferred check reading that snapshot - a change of
 `Client/Aim.lua`, the aiming executor's. Until then the failure is rare and not ours to work round.
 
-## 8. Crash
+## Crash
 
 The copy stopped once right after a fair attack ended: Script Extender's assertion
 `global_ != -1` (LuaReference.inl), with the verb having called `Ext.Entity.Unsubscribe` from its
@@ -125,7 +125,7 @@ deferred check. The unsubscription changes the hook list `EntityComponentEventHo
 main thread. The verb now subscribes once at load (main thread) and never unsubscribes; no crash
 since.
 
-## 9. Ranged weapons (`tests/combat/ranged/weapon_kinds.lua`)
+## Ranged weapons (`tests/combat/ranged/weapon_kinds.lua`)
 
 The rule (bg3.wiki, "Attack roll", "Damage", "Weapons"): a ranged weapon attack adds the
 Dexterity modifier to the roll and to the damage; the weapon gives its damage dice. The kinds by the
@@ -138,7 +138,7 @@ slot by script (a cheat); the die pinned at 19, every damage die at its largest 
 | Hypothesis (source) | Held? |
 |---|---|
 | every kind hits for its dice plus one and the same modifier (the wiki) | yes: 9, 11, 9, 11, 13 = the dice at most + 3, the cursor's maximum each time, at both speeds |
-| the ranged attack goes through the same fair verb as melee (api-rules, rule 1) | yes: GK.Act.Attack with the ranged spell |
+| the ranged attack goes through the same fair verb as melee (api-rules, "Universal, never a special case") | yes: GK.Act.Attack with the ranged spell |
 
 Found on the way: the stage's party baseline holds no weapon slot. `PARTY_SLOTS` (Server/Stage.lua)
 names them `MeleeMainHand`, `RangedMainHand` ..., but `Osi.GetEquippedItem` knows them as
@@ -146,7 +146,7 @@ names them `MeleeMainHand`, `RangedMainHand` ..., but `Osi.GetEquippedItem` know
 the ranged slot was empty and Verify named only one boost fewer. With the slot names corrected
 the clean equips the baseline's weapon again by itself, and the test leaves it to the clean.
 
-## 10. A spell's saving throw (`tests/combat/cast/saving_throw.lua`)
+## A spell's saving throw (`tests/combat/cast/saving_throw.lua`)
 
 The rule: bg3.wiki "Saving throws" (d20 + the save's ability modifier + proficiency against the
 caster's spell save DC; a success reaches the DC), "Dice rolls", Natural 1s and 20s (a spell's save
@@ -170,7 +170,7 @@ target binds the spell's save.
 | a natural 20 marks the roll a critical success (the dice) | the roll's `Critical` is Success for every natural 20, also the one that failed: it is not the verdict |
 | Osiris `RollResult` reports every save (the rolls executor's `game_roll` rows stand on it) | no: it came for every saved spell save and for none of the failed ones (four of each read from the log: three by the verb, one by script); and its row reads "passive check", without kind, DC or die, because no finished roll is there to join |
 
-## 11. The unarmed strike (`tests/combat/unarmed/strike.lua`)
+## The unarmed strike (`tests/combat/unarmed/strike.lua`)
 
 The rule: bg3.wiki "Unarmed Strike": an action of a creature with no melee weapon equipped; a
 melee unarmed attack roll; damage 1 + the Strength modifier, bludgeoning. The game's own formula:
@@ -199,7 +199,7 @@ again put it back. Proposed: in RestoreMember equip first and diff the spells on
 equipment is as it was, or leave the spells an item grants (`WeaponSpell`, and the `Guaranteed`
 unarmed strike) out of the diff. Until then the unarmed test equips the weapon again itself.
 
-## 12. The off-hand attack (`tests/combat/offhand/light_weapons.lua`)
+## The off-hand attack (`tests/combat/offhand/light_weapons.lua`)
 
 The rule: bg3.wiki "Light (weapon property)": with a light weapon in each hand, after the main-hand
 attack, a bonus action makes an off-hand attack; by default no ability modifier is added to its
@@ -226,7 +226,7 @@ pressed key changed nothing. A wish for `GK.Gui.Click` (not mine): fall back to 
 command when the chain names none. Not a case yet: the off-hand attack before any main-hand attack
 (the wiki says it comes after one).
 
-## 13. The attack roll in the machine code
+## The attack roll in the machine code
 
 Hypothesis (the wiki's "Attack roll": the d20 and the bonus against the armour class, a natural 1
 always misses, a natural 20 always hits): held, and located. A weapon attack's d20 is drawn twice on

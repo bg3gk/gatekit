@@ -83,7 +83,7 @@ fight - real and meant: allowed in `tests/combat/melee/_suite.json`. Nothing els
 
 ### Rung 1, owed: the verb's second case
 
-**Asked.** api-rules rule 1: GK.Act.Cast tried on a second unlike case - a spell attack at range,
+**Asked.** api-rules, "Universal, never a special case": GK.Act.Cast tried on a second unlike case - a spell attack at range,
 pinned to miss and to hit, the action paid, a refusal in the game's words.
 
 **Done.** `tests/combat/cast/spell_attack.lua` (commit `9584035`): Fire Bolt taught (ledger), a

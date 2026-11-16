@@ -2,7 +2,7 @@
 
 What stands between an actor and a target, and what the cursor says about it. The tests are
 under `tests/aiming/`; the verbs are `GK.Gui.Aim`, `Aiming`, `Confirm`, `CancelAim`
-(`Client/Aim.lua`, [lua-api.md](../../docs/contracts/lua-api.md) section 11).
+(`Client/Aim.lua`, [lua-api.md](../../docs/contracts/lua-api.md#aiming-clientaimlua-ui-side)).
 
 ## Rung 1: a clear aim, told truthfully
 
