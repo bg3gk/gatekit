@@ -20,9 +20,10 @@
 -- markup is read from Line only. A brush cannot be made, and a brush's Color written from Lua stays
 -- what it was, so a colour is one of the page's own brushes: `color = "gold"` is the page's list
 -- brush, anything else is left the credits' white. All the lines are one block with one look:
--- `bold`, `size` and `color` of the first, the texts joined by line breaks.
+-- `bold`, `size` and `color` of the first, the texts joined by line breaks. `gap` empty lines
+-- (of the block's own size) end the block and part it from the game's own credits.
 -- Options: GKSceneOptions = { finale = { credits = { logo = <file under Data>, height = 0.5,
--- seconds = 4, fade = { 0.8, 0.8 }, lines = { { text, bold, size, color } } } } }.
+-- seconds = 4, fade = { 0.8, 0.8 }, gap = 4, lines = { { text, bold, size, color } } } } }.
 -- State: GKScene.finale_credits = { armed, picture, wrote, waiting, error, log }.
 GKScene = GKScene or {}
 local old = GKScene.finale_credits
@@ -33,6 +34,7 @@ GKScene.finale_credits = S
 local GK = GK or Mods.GateKit.GK
 local O = (GKSceneOptions and GKSceneOptions.finale and GKSceneOptions.finale.credits) or {}
 local LINES = O.lines or {}
+local GAP = O.gap or 4 -- empty lines between the stand's block and the game's own credits
 
 local function note(text) S.log[#S.log + 1] = { ms = Ext.Utils.MonotonicTime(), text = text } end
 local function try(f) local ok, v = pcall(f) if ok then return v end end
@@ -75,7 +77,8 @@ local function write(page)
     end
     local first, texts = LINES[1], {}
     for _, entry in ipairs(LINES) do texts[#texts + 1] = tostring(entry.text or "") end
-    line.Text = table.concat(texts, "\n")
+    -- the gap: empty lines at the end of the block, so the game's own credits begin well below it
+    line.Text = table.concat(texts, "\n") .. string.rep("\n", GAP)
     if first.bold then line.FontWeight = "Bold" end
     if first.size then line.FontSize = first.size end
     if first.color == "gold" then

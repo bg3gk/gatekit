@@ -16,14 +16,19 @@
 -- frame while the figure is animated; a figure whose AnimationUpdate component is removed is no
 -- longer animated, and matrices written then stay. The scene writes
 --     skin = inverse bind * rest world * D,   D(bone) = W^-1 * R * W * D(parent)
--- where R is the bone's turn from POSE. The move into the pose is the scene's own: the matrices
--- are blended from those the figure had when it was stopped, over `move` seconds (the game's
--- blueprint cross-fades between its animations by itself, but knows nothing of a written pose).
+-- where R is the bone's turn from POSE. The pose is written whole at once (`move` = 0, the
+-- default): the target matrices come from the rest pose alone, so the figure needs no animated
+-- frame first and may stand out of every view. With `move` > 0 the matrices are blended from
+-- those the figure had when it was stopped, over `move` seconds (the game's blueprint cross-fades
+-- between its animations by itself, but knows nothing of a written pose).
+-- He waits: armed at the prologue's start (and again after every load), far from the party, he
+-- stands posed, lit and turned to the helm's door long before anyone comes in.
 --
 -- Axes, read off the human rig: Shoulder and Elbow y raises the arm sideways, z swings it forward,
 -- x twists; Spine and Neck y leans to the figure's left, z bends forward. The figure's left is +x
 -- of its model space and it looks along -z.
--- Options, before arming: GKSceneOptions = { withers = { at = {x, y, z}, yaw = degrees, move = 0.4,
+-- Options, before arming: GKSceneOptions = { withers = { at = {x, y, z}, yaw = degrees (default: to
+-- the helm's door in the helm, to the camera elsewhere), move = 0,
 -- who = <character root template>, pose = { Bone = { x, y, z } }, light = <uuid of the level's
 -- light to borrow, or false>, light_toward = 1.6, light_up = 1.8 } }.
 -- The figure is on the client only: no blast, hit or shove of the game reaches it.
@@ -36,18 +41,27 @@ local S = { armed = true, fired = false, stage = "armed", log = {} }
 GKScene.withers = S
 local O = (GKSceneOptions and GKSceneOptions.withers) or {}
 local WITHERS = O.who or "0133f2ad-e121-4590-b5f0-a79413919805" -- S_GLO_JergalAvatar
--- Beside the helm's transponder of TUT_Avernus_C (it stands at -82.4, 18.1, -389.0), to the north of
--- it, clear of where a character stands to use it.
-local TRANSPONDER = { -80.6, 18.45, -385.6 }
+-- At the helm's transponder of TUT_Avernus_C (-82.4, 18.1, -389.0): 2 m to the north-east of it, the
+-- transponder behind his right hand as he faces the door, 1.2 m from where a character stands to
+-- use it (1.7 m east of it). Straight north of it the transponder's overhang hides him from the
+-- game's camera. The height is read from the floor by a ray where one answers.
+local PLACE = { -81.0, 18.45, -387.5 }
+-- The helm's door (the sphincter the party comes through, 59 m east of him).
+local HELM_DOOR = { -21.9, 18.2, -389.0 }
 -- The helm is dark. A point light of the level that carries LightMovement follows its Transform
 -- (stand/menu/README.md, "Light"): one from a deck far under the helm is borrowed and put back.
 local LIGHT = "8e89e599-51da-4f07-883a-0ee43a14c027"
 if O.light ~= nil then LIGHT = O.light end
+-- The bones that lean over his idle (turned in their frame of each frame); every other bone of the
+-- pose, and what hangs under it, is held as posed on the living body (breathing, below).
+local LEAN = O.lean or { Spine1_M = true, Spine2_M = true }
+-- The spine leans a little to his right, toward the transponder.
 local POSE = O.pose or {
-    Spine1_M = { 0, 6, 4 }, Spine2_M = { 0, 8, 4 },
+    Spine1_M = { 0, -4, 3 }, Spine2_M = { 0, -5, 3 },
     Neck_M = { 0, 8, 25 }, Head_M = { 0, 6, 20 },
     Shoulder_L = { 0, 70, 0 },
-    Shoulder_R = { 0, 45, 75 }, Elbow_R = { 0, 0, 120 },
+    -- the bent arm crosses in front of the face, the hand about 0.1 m ahead of it
+    Shoulder_R = { 0, 45, 75 }, Elbow_R = { 0, 0, 95 },
 }
 
 local RM, WM = Ext.Debug.ReadMemory, Ext.Debug.WriteMemory
@@ -176,6 +190,155 @@ local function write(targets, amount, both)
     return wrote
 end
 
+-- Breathing: the pose laid over his idle every frame. After the client's Effect system (the
+-- skinning matrices of the frame are made then and drawn after it) each skinning buffer that holds
+-- a bone the pose moves, or a bone under one, is rewritten when the game made it anew this frame:
+-- S' = S * D, D(bone) = W^-1 * R * W * D(parent) with W the bone's LIVE world matrix, so the posed
+-- bones hang on the living skeleton. A buffer the game did not make anew (he is out of every view
+-- and not animated) still holds the bytes written last and is left. A binding has two skinning
+-- buffers and the game fills one of them a frame, in turn: both are watched.
+local function layerSetup(entity, pose)
+    local L = { slots = {}, frames = 0, ms = 0, wrote = 0, skipped = 0 }
+    local outerMoved
+    for slot, s in ipairs(entity.Visual.Visual.SkeletonSlots) do
+        if s.Skeleton then
+            local K = skeleton(s.Skeleton)
+            local moved, posed = {}, {}
+            for i = 0, K.n - 1 do
+                local name = K.name[i]
+                if (outerMoved and outerMoved[name]) or (not outerMoved and pose[name]) or moved[K.parent[i]] then moved[i] = true end
+                if not outerMoved and pose[name] then posed[#posed + 1] = i end
+            end
+            if slot == 1 then
+                outerMoved = {}
+                for i in pairs(moved) do outerMoved[K.name[i]] = true end
+                -- the held parts: each bone under a posed bone that is not a leaning one is held as
+                -- the pose made from the rest pose, carried by its anchor (the parent of the held
+                -- part's first bone): C = rest * D(rest) * rest(anchor)^-1, then C * the anchor's
+                -- world of the frame
+                local Drest, top, C, anchor = {}, {}, {}, {}
+                for i = 0, K.n - 1 do
+                    local p = K.parent[i]
+                    local name = K.name[i]
+                    if pose[name] and not LEAN[name] then
+                        local d = mul(mul(inverse(K.rest[i]), turn(pose[name])), K.rest[i])
+                        Drest[i] = Drest[p] and mul(d, Drest[p]) or d
+                        top[i] = top[p] or i
+                    elseif top[p] then
+                        Drest[i], top[i] = Drest[p], top[p]
+                    end
+                    if top[i] then
+                        anchor[i] = K.parent[top[i]]
+                        C[i] = mul(mul(K.rest[i], Drest[i]), inverse(K.rest[anchor[i]]))
+                    end
+                end
+                -- a held bone's skinning matrix is inverse bind * C * the anchor's world: IC is the
+                -- first two, made once
+                local IC = {}
+                for i, c in pairs(C) do IC[i] = mul(K.inv[i], c) end
+                L.C, L.IC, L.anchor = C, IC, anchor
+            elseif L.C then
+                -- the bones the head's skeleton shares with the body need the body's change itself
+                L.shared = L.shared or {}
+                for i = 0, K.n - 1 do L.shared[K.name[i]] = true end
+            end
+            -- each binding holds two skinning buffers, which the game fills in turn
+            local buffers = {}
+            for _, mb in ipairs(K.bindings) do
+                for j = 0, mb.bones - 1 do
+                    if moved[mb.map[j]] then
+                        buffers[#buffers + 1] = { mb = mb, at = mb.p1, probe = j, mark = RM(mb.p1, mb.bones * 48) }
+                        buffers[#buffers + 1] = { mb = mb, at = mb.p2, probe = j, mark = RM(mb.p2, mb.bones * 48) }
+                        break
+                    end
+                end
+            end
+            L.slots[#L.slots + 1] = { sk = s.Skeleton, K = K, buffers = buffers, body = slot == 1 }
+        end
+    end
+    return L
+end
+
+local function layerFrame(L, pose)
+    local t0 = now()
+    local outer
+    for _, slot in ipairs(L.slots) do
+        local K = slot.K
+        local D = {}
+        if slot.body then
+            local at = Ext.Debug.GetObjectAddress(slot.sk)
+            local raw = RM(u64(u64(at + 0xE0) + 4), K.n * 64)
+            local Wc = {}
+            local function W(i)
+                local w = Wc[i]
+                if not w then w = { unpack(F16, raw, i * 64 + 1) } w[17] = nil Wc[i] = w end
+                return w
+            end
+            local first = W(0)
+            if math.abs(first[1]) + math.abs(first[6]) + math.abs(first[11]) < 0.1 then return false end -- no live pose yet
+            local H, finals = {}, {}
+            slot.H = H
+            for i = 0, K.n - 1 do
+                local parent = D[K.parent[i]]
+                local name = K.name[i]
+                if L.C[i] then
+                    -- held: where the pose puts it on its anchor as the anchor stands this frame
+                    local a = L.anchor[i]
+                    local final = finals[a]
+                    if not final then final = D[a] and mul(W(a), D[a]) or W(a) finals[a] = final end
+                    H[i] = final
+                    if L.shared and L.shared[name] then D[i] = mul(inverse(W(i)), mul(L.C[i], final)) end
+                elseif pose[name] then
+                    -- leaning: turned in its own frame of this frame, so the idle carries it
+                    local d = mul(mul(inverse(W(i)), turn(pose[name])), W(i))
+                    D[i] = parent and mul(d, parent) or d
+                else
+                    D[i] = parent
+                end
+            end
+            outer = {}
+            for i, d in pairs(D) do outer[K.name[i]] = d end
+            L.D = D
+        else
+            for i = 0, K.n - 1 do D[i] = (outer and outer[K.name[i]]) or D[K.parent[i]] end
+        end
+        for _, buffer in ipairs(slot.buffers) do
+            local mb = buffer.mb
+            -- the matrix of its first moved bone tells whether the game filled it this frame: the
+            -- game's own differs from the one written there
+            local o = buffer.probe * 48
+            if RM(buffer.at + o, 48) == buffer.mark:sub(o + 1, o + 48) then
+                L.skipped = L.skipped + 1
+            else
+                local raw = RM(buffer.at, mb.bones * 48)
+                local parts = {}
+                local H = slot.H
+                for j = 0, mb.bones - 1 do
+                    local i = mb.map[j]
+                    local d = D[i]
+                    if H and H[i] then
+                        local m = mul(L.IC[i], H[i])
+                        parts[#parts + 1] = pack(F12, m[1], m[5], m[9], m[13], m[2], m[6], m[10], m[14], m[3], m[7], m[11], m[15])
+                    elseif d then
+                        local a = { unpack(F12, raw, j * 48 + 1) }
+                        local m = mul({ a[1], a[5], a[9], 0, a[2], a[6], a[10], 0, a[3], a[7], a[11], 0, a[4], a[8], a[12], 1 }, d)
+                        parts[#parts + 1] = pack(F12, m[1], m[5], m[9], m[13], m[2], m[6], m[10], m[14], m[3], m[7], m[11], m[15])
+                    else
+                        parts[#parts + 1] = raw:sub(j * 48 + 1, j * 48 + 48)
+                    end
+                end
+                local bytes = table.concat(parts)
+                WM(buffer.at, bytes)
+                buffer.mark = bytes
+                L.wrote = L.wrote + 1
+            end
+        end
+    end
+    L.frames = L.frames + 1
+    L.ms = L.ms + (now() - t0)
+    return true
+end
+
 local function camera()
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("Camera")) do
         if e.GameCameraBehavior then return e end
@@ -194,13 +357,22 @@ local function place()
             end
             break
         end
-        at = at or TRANSPONDER
+        if not at then
+            at = { PLACE[1], PLACE[2], PLACE[3] }
+            local ok, hit = pcall(Ext.Level.RaycastClosest, { at[1], at[2] + 2, at[3] }, { at[1], at[2] - 4, at[3] }, 1, 0xFFFFFFFF, 0, -1)
+            if ok and hit and hit.Position then at[2] = hit.Position[2] end
+            S.inHelm = true
+        end
     end
     local yaw = O.yaw
     if not yaw then
-        -- a figure with no turn looks along -z: turn it to the camera
-        local cam = camera()
-        local c = cam and cam.Transform.Transform.Translate
+        -- a figure with no turn looks along -z: in the helm turn it to the helm's door, whence the
+        -- party first sees him; elsewhere to the camera
+        local c = S.inHelm and HELM_DOOR
+        if not c then
+            local cam = camera()
+            c = cam and cam.Transform.Transform.Translate
+        end
         yaw = c and math.deg(math.atan(at[1] - c[1], at[3] - c[3])) or 0
     end
     return at, yaw
@@ -220,14 +392,16 @@ local function borrowLight()
         if tostring(e.Light.UUID) == LIGHT and e.LightMovement then light = e break end
     end
     if not light then note("no light " .. LIGHT .. " with LightMovement in the level: the figure stays in the dark") return end
-    local cam = camera()
-    local c = cam and cam.Transform.Transform.Translate or { S.at[1], S.at[2], S.at[3] + 1 }
-    local dx, dz = c[1] - S.at[1], c[3] - S.at[3]
-    local reach = math.max(0.01, math.sqrt(dx * dx + dz * dz))
+    -- before his face: the way he is turned (a figure turned by `yaw` looks along -sin, -cos)
+    local dx, dz = -math.sin(math.rad(S.yaw)), -math.cos(math.rad(S.yaw))
     local toward = O.light_toward or 1.6
     local at = light.Transform.Transform.Translate
     S.light, S.lightHome = light, { at[1], at[2], at[3] }
-    moveLight(light, { S.at[1] + dx / reach * toward, S.at[2] + (O.light_up or 1.8), S.at[3] + dz / reach * toward })
+    moveLight(light, { S.at[1] + dx * toward, S.at[2] + (O.light_up or 1.8), S.at[3] + dz * toward })
+    -- brighter than the deck's lamp it was: its Intensity and Radius, put back by the off file
+    S.lightWas = { Intensity = light.Light.Intensity, Radius = light.Light.Radius }
+    light.Light.Intensity = O.light_intensity or 20000
+    light.Light.Radius = O.light_radius or 5
     note("a light of the level is put before the figure")
 end
 
@@ -248,6 +422,21 @@ local function tick()
         local e = S.figure
         local ok = pcall(function() return e.Visual.Visual.SkeletonSlots[1].Skeleton.BoneCount end)
         if not (ok and e.SceneAttach and e.AnimationUpdate) then return end
+        if O.breathing ~= false then
+            -- the dab from the rest pose first: what is drawn should he be seen before he is
+            -- animated; then the layer over his idle from the first frame the game animates him
+            borrowLight()
+            S.wrote = write(prepare(e, POSE), 1, true)
+            S.layer = layerSetup(e, POSE) -- marks what the dab from the rest pose left in each buffer
+            S.layerSub = Ext.Entity.OnSystemPostUpdate("Effect", function()
+                if not S.armed or not S.layer then return end
+                local okFrame, problem = pcall(layerFrame, S.layer, POSE)
+                if not okFrame then S.layer.error = tostring(problem) end
+            end)
+            S.stage = "held"
+            note("the pose is held over his idle (breathing)")
+            return
+        end
         S.loadedAt = S.loadedAt or now()
         if now() - S.loadedAt < 1000 then return end -- its first animated frames give the meshes a pose
         e:RemoveComponent("AnimationUpdate")
@@ -262,7 +451,8 @@ local function tick()
         S.moveFrom = now()
         S.stage = "moving"
     elseif S.stage == "moving" then
-        local part = math.min(1, (now() - S.moveFrom) / ((O.move or 0.4) * 1000))
+        local move = O.move or 0
+        local part = move > 0 and math.min(1, (now() - S.moveFrom) / (move * 1000)) or 1
         local eased = part * part * (3 - 2 * part)
         S.wrote = write(S.targets, eased, part >= 1)
         if part >= 1 then
@@ -280,7 +470,12 @@ end)
 function S.off()
     S.armed = false
     if S.subscription then pcall(function() Ext.Events.Tick:Unsubscribe(S.subscription) end) S.subscription = nil end
+    if S.layerSub then pcall(Ext.Entity.Unsubscribe, S.layerSub) S.layerSub = nil end
+    S.layer = nil
     if S.light and S.lightHome then pcall(moveLight, S.light, S.lightHome) end
+    if S.light and S.lightWas then
+        pcall(function() S.light.Light.Intensity, S.light.Light.Radius = S.lightWas.Intensity, S.lightWas.Radius end)
+    end
     S.light = nil
     if S.figure then pcall(Ext.ClientVisual.DestroyDummy, S.figure) end
     S.figure, S.targets, S.stage = nil, nil, "off"

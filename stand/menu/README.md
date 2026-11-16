@@ -25,10 +25,12 @@ The video's whole order is in [../scenes/README.md](../scenes/README.md). Its pa
 
 | Step | Call | Wait for | Rough |
 |---|---|---|---|
-| the start | `gatekit --instance <copy> up --splash` | `U "return GK.Gui.Stuck()"` answers `splash` | - |
-| the company, armed | `C "$(cat stand/menu/company.lua)"` | `GKScene.menu_company.fired`, no `waiting`: the figures stand and play their idles within two seconds | the places are set for this camera by eye |
-| Orin, armed | `C "$(cat stand/menu/orin.lua)"` | nothing yet: it fires under the ground | - |
-| press any key | `U "return GK.Cheat.Recover()"` | `GKScene.menu_company.done` at once; the camera's descent; `GKScene.menu_orin.stage` goes `loading` ... `gone`, `done` about twenty seconds after the key | Orin's beats are counted in seconds |
+| the start | `gatekit --instance <copy> up --splash`, in the background | `U` answers (from the state `LoadModule`) | - |
+| the logo, at once | `U "GKSceneOptions = { splash_logo = { hold = { 'menu_company', 'menu_orin' } } } $(cat stand/splash/logo.lua)"` | - | - |
+| the company, armed | `C "$(cat stand/menu/company.lua)"` | `GKScene.menu_company.ready`: made on the splash screen under the logo, in their idles | the places are set for this camera by eye |
+| Orin, armed | `C "$(cat stand/menu/orin.lua)"` | `GKScene.menu_orin.ready`: made under the logo, posed, put under the ground | - |
+| the splash screen | - | `GKScene.splash_logo.left`: the logo fades out once both are ready | - |
+| press any key | `U "return GK.Cheat.Recover()"` | `GKScene.menu_company.done` at once; the camera's descent with Orin and the cowering victim already standing; `stage` `fear` ... `gone`, `done` about twenty seconds after the key | Orin's beats are counted in seconds |
 | on | `U "return GK.Gui.NewGame()"` (stand/creation/README.md) | - | - |
 
 `statue.lua` (a figure behind the statue) and the two dancers are kept and are not part of the
@@ -114,10 +116,18 @@ back; so does leaving the menu.
     ./gatekit --instance <copy> exec client "$(cat stand/menu/orin.lua)"       # arm
     ./gatekit --instance <copy> exec client "$(cat stand/menu/orin_off.lua)"   # disarm
 
-Client context; armed on the splash screen or in the menu, it fires when the menu's camera has
-come down and stands, as `dancer_new` does. Two figures of the scene's own stand before the
-camera, to the picture's right of its middle (`ahead`, `right`, `apart`, `down`), lit by a
-borrowed torch light: `28c8bd46-...`, another torch's than `dancer_new` takes, so the two scenes
+Client context, armed on the splash screen under the stand's logo. The two figures are made there
+in the splash camera's view, where they are animated while they load (the victim begins to
+cower), and are then put at their places under the ground, out of every view: a figure out of
+the picture is not animated and keeps the pose it had, so the descending camera finds them
+standing, the victim cowering, with no default pose seen. `ready` says they stand. Armed in a
+main menu that already stands there is no cover, and they are made at their places at once.
+The kill begins when the menu's camera has come down and stands, as `dancer_new` waits.
+They stand 7 m before the camera's resting pose (`camera`, the timeline's; `ahead`, `right`,
+`apart`), Orin a little left of the picture's middle and the victim to her right, on the floor
+read by a ray: the camera stands about 0.9 m above the floor and looks up, so a body nearer than
+about 6.5 m falls under the picture's lower edge or behind the rubble before it. They are lit by
+a borrowed torch light: `28c8bd46-...`, another torch's than `dancer_new` takes, so the two scenes
 can stand together (`light`, `light_toward`, `light_up`).
 
 - **Orin** is the root template `Trailer_Dream_Orin`: the template her actor is shape-shifted
@@ -147,8 +157,8 @@ can stand together (`light`, `light_toward`, `light_up`).
 
 The victim's body and the light stay until the scene is disarmed or the menu is left; the off
 script removes the figures and the effect and puts the light back. State: `GKScene.menu_orin =
-{ armed, fired, stage, waiting, error, door, log }`, `stage` one of `loading`, `fear`, `attack`,
-`killed`, `turning`, `looking`, `ring`, `burst`, `gone`.
+{ armed, fired, ready, covered, stage, waiting, error, door, log }`, `stage` one of `loading`,
+`posing`, `standing`, `fear`, `attack`, `killed`, `turning`, `looking`, `ring`, `burst`, `gone`.
 
 Rough: `fear`, `look`, `burst` and `cover` are the scene's own beats, counted in seconds; the
 moment of the burst inside the twist is set by eye, not read from the dialogs' timelines. The
@@ -159,7 +169,9 @@ door has usually begun to rise by the time the kill is over, so she turns as soo
     ./gatekit --instance <copy> exec client "$(cat stand/menu/company.lua)"       # arm
     ./gatekit --instance <copy> exec client "$(cat stand/menu/company_off.lua)"   # disarm
 
-Client context, armed while the splash screen stands. Four figures of the scene's own stand on
+Client context, armed under the stand's logo, before the splash screen is first seen; `ready`
+says the figures are loaded and have played their idles for `settle` seconds, and the logo waits
+for it. Four figures of the scene's own stand on
 the grass about the statue, their backs to the watcher, looking at the city, which lies straight
 ahead of the splash's camera: the Emperor in his mind flayer form (the root template
 `Mindflayer_Emperor`) to the statue's left, two intellect devourers (`Intellect_Devourer`) before

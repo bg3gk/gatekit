@@ -17,9 +17,13 @@
 -- The splash screen is in daylight and no light is borrowed: dancer_new.lua and orin.lua keep
 -- their two torch lights.
 -- The figures are removed the moment the splash screen is passed.
--- Options, before arming: GKSceneOptions = { menu_company = { face = "city", turn = 0,
+-- Nobody appears before the watcher: armed while the stand's logo covers the splash screen
+-- (stand/splash/logo.lua holds it until `ready`), the figures are made, loaded and in their idles
+-- before the picture is first seen. `ready` is true once each has played its idle for `settle`
+-- seconds.
+-- Options, before arming: GKSceneOptions = { menu_company = { face = "city", turn = 0, settle = 0.5,
 -- members = { { who = <root template>, loop = <animation resource>, ahead, right, down, turn, scale } } } }
--- State: GKScene.menu_company = { armed, fired, waiting, error, done, members, log }.
+-- State: GKScene.menu_company = { armed, fired, ready, waiting, error, done, members, log }.
 GKScene = GKScene or {}
 local old = GKScene.menu_company
 if old and old.off then pcall(old.off) end
@@ -142,12 +146,22 @@ local function animate()
                 else
                     m.playing = "the blueprint's own idle"
                 end
+                m.since = now()
             else
                 waiting = waiting + 1
             end
         end
     end
     S.waiting = waiting > 0 and (waiting .. " figures to load") or nil
+    -- ready once every figure has played its idle for `settle` seconds: no default pose is left
+    if waiting == 0 and not S.ready then
+        local last = 0
+        for _, m in ipairs(S.members) do if m.since and m.since > last then last = m.since end end
+        if now() - last >= (O.settle or 0.5) * 1000 then
+            S.ready = true
+            note("the company stands in its idles")
+        end
+    end
 end
 
 local function remove(why)

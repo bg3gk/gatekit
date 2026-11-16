@@ -6,20 +6,26 @@
 armed by running its file and disarmed by its `_off` file; a load restarts Lua, so a scene of the
 prologue is armed again after every `reset`.
 
-| # | Beat | File, context | Arms it | The driver calls or waits for | Takes | Rough |
-|---|---|---|---|---|---|---|
-| 1 | the channel's logo | `stand/splash/logo.lua`, `U` | on `up --splash`, once the splash screen stands | `GKScene.splash_logo.left` | fades and three seconds | the splash screen is seen for a moment before it; not in `gatekit shot` |
-| 2 | the splash screen with the company | `stand/menu/company.lua`, `C` | on the splash screen | `GKScene.menu_company.fired` | stands until the key | places set by eye |
-| 3 | "press any key" | - | - | `U "return GK.Cheat.Recover()"`; `GK.Gui.Stuck()` answers `mainmenu` | at once | - |
-| 4 | the descent, Orin | `stand/menu/orin.lua`, `C` | on the splash screen, before the key | `GKScene.menu_orin.done` | about twenty seconds from the key | her beats counted in seconds |
-| 5 | creation, the lanceboard player | `stand/creation/onlooker.lua`, `S` | in creation (`SYS_CC_I`), after the film of a new game | seated and playing about five seconds after arming; the window's steps are in `stand/creation/README.md` | as long as the creation | - |
-| 6 | the stargazer's ambush | `stand/creation/scenes/stargazer_ambush.lua`, `S` | in creation | the calls and the state in the file's head | the file's head | the file's head |
-| 7 | Orpheus on the guardian's page | `stand/creation/scenes/orpheus.lua`, `S` (with `solid.lua`, `C`) | in creation | `show()` on the guardian's page, `hide()` off it: the file's head | while the page stands | the file's head |
-| 8 | the prologue, the watchers | `watchers.lua`, `S` | at the prologue's start | the agent is told to go up to each; `GKScene.watchers.who.<name>.vanished` | four seconds each | Raphael's platform is off the shortest way |
-| 9 | the queen's answer | `queen.lua`, `S` | after the first fight | a checkpoint while `GKScene.queen.ready`; the agent shoves Lae'zel; `done`; `reset` | eleven seconds, then the death screen | - |
-| 10 | skill issue | `skill_issue.lua`, `S` | before the helm, after the reset of 9 | the agent casts Command: Drop at Zhalk; `awaiting = "reply"`; `GKScene.skill_issue.reply()`; `done` | about twelve seconds after the reply | - |
-| 11 | Withers at the transponder | `withers.lua`, `C` | in the helm's fight, before the finale | `GKScene.withers.stage` is `held` | two seconds | lit by one borrowed light |
-| 12 | the finale | `finale.lua`, `S`; `finale_credits.lua`, `U` | in the helm's fight, both before the owner's command | on the command `S "return GKScene.finale.go()"`; `GKScene.finale.done`; then nothing | ten seconds to the credits, plus `black` | the section below |
+Nobody appears while the watcher sees the place: every figure that is not a beat of its scene is
+made under a cover - the logo over black, the descent of the menu's camera, the film of a new
+game, the distance of a far deck - and stands in its pose before the place is first seen. The
+column "Cover" says which.
+
+| # | Beat | File, context | Arms it | Cover | The driver calls or waits for | Takes | Rough |
+|---|---|---|---|---|---|---|---|
+| 1 | the channel's logo | `stand/splash/logo.lua`, `U`, with `GKSceneOptions = { splash_logo = { hold = { 'menu_company', 'menu_orin' } } }` | at the first answer of the bridge after `up --splash` is begun (the client's Lua lives from the state `LoadModule`, after the game's own startup video): `up --splash` in the background, `U` asked until it answers | - (it is the cover) | `GKScene.splash_logo.left` | at least its fade and three seconds, and until both scenes of 2 and 4 say `ready` | the game's own startup video plays only in a copy given the video file (stand/splash/README.md); not in `gatekit shot` |
+| 2 | the splash screen with the company | `stand/menu/company.lua`, `C` | right after 1, while the logo stands | the logo | `GKScene.menu_company.ready` (made, loaded, in their idles) | stands until the key | places set by eye |
+| 3 | Orin and her victim, made | `stand/menu/orin.lua`, `C` | right after 1, while the logo stands | the logo, then out of every view under the ground | `GKScene.menu_orin.ready` (`stage` = `standing`) | - | - |
+| 4 | "press any key" | - | - | - | `U "return GK.Cheat.Recover()"`; `GK.Gui.Stuck()` answers `mainmenu` | at once | - |
+| 5 | the descent, Orin's kill | (3) | - | - | `GKScene.menu_orin.done`; the body stays until the menu is left | about twenty seconds from the key | her beats counted in seconds |
+| 6 | creation, the lanceboard player | `stand/creation/onlooker.lua`, `S` | while the film of a new game plays, once the server is `Running` in `SYS_CC_I` (else at once after the film is skipped) | the film | `GKScene.onlooker.fired` before the film is skipped; the window's steps are in `stand/creation/README.md` | as long as the creation | arming under the film is not yet seen in a run |
+| 7 | the stargazer's ambush | `stand/creation/scenes/stargazer_ambush.lua`, `S` | as 6 | the film | `stage` = `looking` before the film is skipped; the ambush itself by `go()` | the file's head | the bugbear's coming up behind her is the ambush's beat, with no effect |
+| 8 | Orpheus | `stand/creation/scenes/orpheus.lua`, `S` (with `solid.lua`, `C`) | as 6, shown | the film | `chained` before the film is skipped | from the start of creation: he hangs far in the sky on every page | `show()` on the guardian's page alone made him appear before the watcher |
+| 9 | the prologue, the watchers | `watchers.lua`, `S` | at the prologue's start, again after every `reset` | distance: both stand far from the party (the first dialogue of the prologue runs meanwhile) | the agent is told to go up to each; `GKScene.watchers.who.<name>.vanished` | four seconds each | Raphael's platform is off the shortest way |
+| 10 | Withers at the transponder | `withers.lua`, `C` | at the prologue's start, again after every `reset` | distance: the helm is about 75 m from the party until its door | `GKScene.withers.stage` is `held` | - | the section below |
+| 11 | the queen's answer | `queen.lua`, `S` | after the first fight | - (Vlaakith's arrival is the beat) | a checkpoint while `GKScene.queen.ready`; the agent shoves Lae'zel; `done`; `reset` | eleven seconds, then the death screen | - |
+| 12 | skill issue | `skill_issue.lua`, `S` | before the helm, after the reset of 11 | - (the polymorph is the beat) | the agent casts Command: Drop at Zhalk; `awaiting = "reply"`; `GKScene.skill_issue.reply()`; `done` | about twelve seconds after the reply | - |
+| 13 | the finale | `finale.lua`, `S`; `finale_credits.lua`, `U` | in the helm's fight, both before the owner's command | - (the brain's arrival is the beat) | on the command `S "return GKScene.finale.go()"`; `GKScene.finale.done`; then nothing | ten seconds to the credits, plus `black` | the section below |
 
 Where the owner's wishes changed, the later one is followed: Orin under the ground replaced the
 dancer to the right of the menu (`dancer.lua`, `dancer_new.lua`); the company replaced the figure
@@ -103,20 +109,34 @@ matters gets `GK.Camera.Focus` (with a hold); nothing opens a window.
     C "$(cat stand/scenes/withers.lua)"       # arm
     C "$(cat stand/scenes/withers_off.lua)"   # disarm
 
-Client context, in the helm. A figure of the scene's own (`Ext.ClientVisual.CreateDummy`, the
-root template `S_GLO_JergalAvatar`) stands at `-80.6, 18.45, -385.6`, to the north of the
-transponder and clear of where a character stands to use it, turned to the game's camera as it
-is when the scene is armed, and holds a pose that is a table of the scene's own (the file's head
-says how a pose is written into a figure). The helm is dark: a point light of the level that
-carries `LightMovement` (`8e89e599-...`, from a deck far under the helm) is put between him and
-the camera and goes back when the scene is disarmed. `stage` goes `loading`, `stopping`, `moving`,
-`held`. Options: `at`, `yaw`, `light` and the others of the file's head.
+Client context, `TUT_Avernus_C`, armed at the prologue's start (and after every load): he stands
+long before the party comes to the helm. A figure of the scene's own (`Ext.ClientVisual.CreateDummy`,
+the root template `S_GLO_JergalAvatar`) stands at the transponder, 2 m to its north-east
+(`-81.0, -387.5`, the floor's height read by a ray), turned to the helm's door, and holds a dab
+that is a table of the scene's own, the spine leaning a little to his right, toward the
+transponder; the bent arm crosses in front of the face. The helm is dark: a point light of the
+level that carries `LightMovement` (`8e89e599-...`, from a deck far under the helm) is put before
+his face and made brighter (`Intensity` 20000, `Radius` 5); both go back when the scene is
+disarmed.
+
+**Breathing** (`breathing = true`, the default): his own idle plays, and every frame the pose is
+laid over it after the client's `Effect` system - the leaning bones turned in their frame of the
+frame, the arms and the head held as posed on the living chest - so the body breathes and shifts
+while the dab holds. The skinning buffers the game fills are rewritten in the frame it fills them
+(it fills one of each binding's two, in turn; both are watched). Before he is first seen he holds
+the dab written from the rest pose, so no frame of the plain idle shows. `breathing = false`
+writes the dab once and stops his animation (a statue). Both need GateKit's Script Extender in
+developer mode (`Ext.Debug.ReadMemory`, `WriteMemory`, `GetObjectAddress`).
+
+`stage` is `held` once he stands posed. Options: `at`, `yaw`, `pose`, `lean`, `breathing`, `move`,
+`light`, `light_intensity`, `light_radius` and the others of the file's head.
 
 He is a watcher of the finale and it cannot touch him: the figure is on the client only, the
 server holds no creature for a blast, a hit or a shove to reach.
 
-Rough: he is lit from one side by one light and reads as a dark robed figure with an arm thrown
-out; the facing is the camera's of the moment of arming and does not follow it.
+Rough: breathing is Lua writing memory every frame: while he is in the picture it costs about 30 ms
+a frame (the frame rate fell from about 30 to about 25 with the camera on him); out of the picture
+nothing is written. A native bone override in the extender would cost microseconds.
 
 ## finale - the barrel, the black screen, the credits
 
@@ -169,7 +189,7 @@ scene does not, and the game stays in the level under the black screen.
 before `go`; with no options the credits are the game's own):
 
     GKSceneOptions = { finale = { credits = {
-        logo = "Stand/gatekit-logo.png", seconds = 4,
+        logo = "Stand/gatekit-logo.png", seconds = 4, gap = 4,
         lines = {
             { text = "GateKit", bold = true, size = 72, color = "gold" },
             { text = "MAP · EXTEND · AUTOMATE" },
@@ -191,7 +211,8 @@ picture's seconds and fades.
   `Public/Game/Credits/credits.txt`, lines of the game's markup (`<font size='42'>`, `<br>`), read
   into the page's view model. A line of the view model is read-only for the extender, so the text
   is written into the page's first text block, which is an empty line: plain text, `bold`, `size`.
-  All the lines are that one block, so they share the first entry's look. A colour is one of the
+  All the lines are that one block, so they share the first entry's look. The block ends with
+  `gap` empty lines (4), which part it from the game's own first line ("Larian Studios"). A colour is one of the
   page's own brushes: `"gold"`, or the credits' white. A brush cannot be made from Lua, and a
   brush's `Color` written from Lua reads back unchanged: no violet, and no line of its own colour
   or size.

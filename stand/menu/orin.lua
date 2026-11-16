@@ -25,17 +25,32 @@
 -- The place before the camera is dark: a torch's light of the level is borrowed as in
 -- dancer_new.lua (another torch's) and put back by the off file.
 --
--- Fires when the main menu is shown and the menu's camera has stood still for `still` seconds.
--- Options, before arming: GKSceneOptions = { menu_orin = { ahead = 5, right = 1.0, apart = 1.1,
--- down = 0.88, still = 0.5, fear = 1.5, settle = 0.1, door_rise = 0.25, door_wait = 40, turn = 0.7, look = 2.0,
--- burst = 2.2, cover = 0.45, light = <uuid of the level's light to borrow, or false>,
--- light_toward = 1.6, light_up = 1.6 } }
--- State: GKScene.menu_orin = { armed, fired, stage, waiting, error, log, door }.
+-- Nobody appears before the watcher. Armed on the splash screen, the scene makes both figures
+-- there, under the stand's logo (stand/splash/logo.lua holds the logo until `ready`): they load
+-- and take their pose in the splash camera's view (`stage_ahead`, `stage_right`), where they are
+-- animated, and are then put at their places under the ground, out of every view, where their
+-- pose stands still until the descending camera reaches them - the victim already cowering, Orin
+-- standing. The places are given from the menu camera's resting pose (`camera`, the timeline's;
+-- the camera is read again when it stands and a difference is logged). The ground under each is
+-- read by a ray (Ext.Level.RaycastClosest), `down` under the camera where none answers.
+-- Armed in a main menu that already stands there is no cover: the figures are made at their
+-- places at once, and the log says so.
+-- The body lies where the camera sees it: the camera stands about 0.9 m above the floor and looks
+-- up, so a body nearer than about 6.5 m lies under the picture's lower edge or behind the rubble
+-- in front of it; the pair stands 7 m ahead, the victim to the picture's right of Orin.
+-- The kill begins when the main menu is shown and the menu's camera has stood still for `still`
+-- seconds. The body stays, frozen, until the menu is left or the scene is disarmed.
+-- Options, before arming: GKSceneOptions = { menu_orin = { ahead = 7, right = -0.4, apart = 1.0,
+-- down = 0.75, stage_ahead = 4, stage_right = -2, pose = 0.8, still = 0.5, fear = 1.5, settle = 0.1,
+-- door_rise = 0.25, door_wait = 40, turn = 0.7, look = 2.0, burst = 2.2, cover = 0.45,
+-- camera = { at = {x, y, z}, ahead = {x, z}, right = {x, z} },
+-- light = <uuid of the level's light to borrow, or false>, light_toward = 1.6, light_up = 1.6 } }
+-- State: GKScene.menu_orin = { armed, fired, ready, stage, waiting, error, log, door, covered }.
 GKScene = GKScene or {}
 local old = GKScene.menu_orin
 if old and old.off then pcall(old.off) end
 
-local S = { armed = true, fired = false, stage = "armed", log = {}, door = {} }
+local S = { armed = true, fired = false, ready = false, stage = "armed", log = {}, door = {} }
 GKScene.menu_orin = S
 local O = (GKSceneOptions and GKSceneOptions.menu_orin) or {}
 local LEVEL = "SYS_Menuscreen_Act3_B"
@@ -51,6 +66,9 @@ local DIE = "5bb1d9e7-140a-3b91-8b9b-7787910cd33d"
 local ATTACK = "2f6c18c9-17bc-8013-5602-155c0c2eb692"
 local RING = "57eb927b-c716-c3dc-934c-afc55017fec9"
 local BURST = "VFX_Cinematic_Orin_Teleportation_01"
+-- Where the menu's camera rests at the end of its descent (MM_Accept's camera track): its place,
+-- and its look and its right on the ground plane.
+local CAMERA = O.camera or { at = { 1000.754, -141.116, -1083.233 }, ahead = { -0.9908, 0.1364 }, right = { 0.1396, 0.9902 } }
 
 local function now() return Ext.Utils.MonotonicTime() end
 local function note(text) S.log[#S.log + 1] = { ms = now(), text = text } end
@@ -137,22 +155,43 @@ local function raised(entity)
     return keys, ended
 end
 
-local function place(cam)
+-- A camera's place and its look and right on the ground plane.
+local function poseOf(cam)
     local view = cam.Camera.Controller.Camera.ViewMatrix
     local p = cam.Transform.Transform.Translate
     local fx, fz = view[3], view[11]
     local length = math.sqrt(fx * fx + fz * fz)
-    fx, fz = fx / length, fz / length
-    local rx, rz = view[1], view[9]
-    local ahead, right, apart = O.ahead or 5, O.right or 1.0, O.apart or 1.1
-    local y = p[2] - (O.down or 0.88)
-    S.orinAt = { p[1] + fx * ahead + rx * right, y, p[3] + fz * ahead + rz * right }
-    S.victimAt = { p[1] + fx * ahead + rx * (right + apart), y, p[3] + fz * ahead + rz * (right + apart) }
+    return { at = { p[1], p[2], p[3] }, ahead = { fx / length, fz / length }, right = { view[1], view[9] } }
+end
+
+-- The floor under a point, read by a ray from above; `fallback` where nothing answers.
+local function ground(at, fallback)
+    local y = try(function()
+        local hit = Ext.Level.RaycastClosest({ at[1], at[2] + 3, at[3] }, { at[1], at[2] - 6, at[3] }, 1, 0xFFFFFFFF, 0, -1)
+        return hit and hit.Position and hit.Position[2]
+    end)
+    return y or fallback
+end
+
+-- `ahead` metres along the camera's look, `right` to the picture's right, on the floor.
+local function spot(cam, ahead, right, down)
+    local p, f, r = cam.at, cam.ahead, cam.right
+    local at = { p[1] + f[1] * ahead + r[1] * right, p[2] - down, p[3] + f[2] * ahead + r[2] * right }
+    at[2] = ground(at, at[2])
+    return at
+end
+
+local function place(cam)
+    local ahead, right, apart = O.ahead or 7, O.right or -0.4, O.apart or 1.0
+    local down = O.down or 0.75
+    S.orinAt = spot(cam, ahead, right, down)
+    S.victimAt = spot(cam, ahead, right + apart, down)
     S.orinYaw = facing(S.orinAt, S.victimAt)
+    local p, r = cam.at, cam.right
     local dx, dz = p[1] - S.orinAt[1], p[3] - S.orinAt[3]
     local reach = math.sqrt(dx * dx + dz * dz)
     local toward = O.light_toward or 1.6
-    S.lightSpot = { S.orinAt[1] + dx / reach * toward + rx * apart / 2, y + (O.light_up or 1.6), S.orinAt[3] + dz / reach * toward + rz * apart / 2 }
+    S.lightSpot = { S.orinAt[1] + dx / reach * toward + r[1] * apart / 2, S.orinAt[2] + (O.light_up or 1.6), S.orinAt[3] + dz / reach * toward + r[2] * apart / 2 }
 end
 
 local function moveLight(light, to)
@@ -175,7 +214,9 @@ local function borrowLight()
     note("a light of the level is put before the figures")
 end
 
-local function fire(cam)
+-- Makes the figures: under cover (the splash screen and the logo over it) in the splash camera's
+-- view, where they are animated while they load; with no cover at their places.
+local function fire(splash)
     if not (Ext.ClientVisual and Ext.ClientVisual.CreateDummy and Ext.ClientVisual.PlayAnimation and Ext.ClientVisual.PlayEffect) then
         S.error = "this Script Extender build has no Ext.ClientVisual.PlayAnimation or PlayEffect"
         return
@@ -188,9 +229,19 @@ local function fire(cam)
     S.gameplay = Ext.Entity.GetAllEntitiesWithComponent("AnimationGameplayEventsSingleton")[1]
     S.textkeys = Ext.Entity.GetAllEntitiesWithComponent("AnimationTextKeyEventsSingleton")[1]
     if not (S.gameplay and S.textkeys) then S.error = "the animation blueprint system's event singletons are not there" return end
-    place(cam)
-    S.orin = Ext.ClientVisual.CreateDummy(ORIN, S.orinAt, quatY(S.orinYaw))
-    S.victim = Ext.ClientVisual.CreateDummy(VICTIM, S.victimAt, quatY(S.orinYaw + 180))
+    place(CAMERA)
+    S.covered = splash ~= nil
+    S.orinFirst, S.victimFirst = S.orinAt, S.victimAt
+    if splash then
+        local pose = poseOf(splash)
+        local a, r = O.stage_ahead or 4, O.stage_right or -2
+        S.orinFirst = spot(pose, a, r, 2.5)
+        S.victimFirst = spot(pose, a, r + (O.apart or 1.0), 2.5)
+    else
+        note("the main menu already stands: the figures are made at their places with no cover")
+    end
+    S.orin = Ext.ClientVisual.CreateDummy(ORIN, S.orinFirst, quatY(S.orinYaw))
+    S.victim = Ext.ClientVisual.CreateDummy(VICTIM, S.victimFirst, quatY(S.orinYaw + 180))
     if not (S.orin and S.victim) then S.error = "the figures were not made" return end
     S.fired = true
     stage("loading")
@@ -235,20 +286,50 @@ end
 
 local steps = {}
 
+-- Both are loaded where they were made; the victim begins to cower.
 function steps.loading()
     if not (loaded(S.orin) and loaded(S.victim)) then return end
     if link(S.victim, { FEAR, DIE }) == 0 or link(S.orin, { ATTACK, RING }) == 0 then
         S.error = "no animation set of the figures took the links"
         return
     end
+    put(S.orin, S.orinFirst, S.orinYaw)
+    put(S.victim, S.victimFirst, S.orinYaw + 180)
+    Ext.ClientVisual.PlayAnimation(S.victim, {}, { FEAR })
+    stage("posing")
+end
+
+-- After `pose` seconds of being animated in view the two are put at their places, out of every
+-- view: their pose stands still there until the descending camera sees them.
+function steps.posing()
+    if S.covered and elapsed() < (O.pose or 0.8) then return end
     put(S.orin, S.orinAt, S.orinYaw)
     put(S.victim, S.victimAt, S.orinYaw + 180)
     borrowLight()
+    S.ready = true
+    note(S.covered and "the two stand at their places, posed under cover" or "the two stand at their places")
+    stage("standing")
+end
+
+-- They stand until the main menu is shown and its camera has stood still for `still` seconds.
+function steps.standing()
+    if GK.Gui.Stuck() ~= "mainmenu" then S.waiting = "the main menu" return end
+    local cam = menuCamera()
+    if not cam then S.waiting = "the menu's camera" return end
+    local p = cam.Transform.Transform.Translate
+    local last = S.camAt
+    if not last or math.abs(last[1] - p[1]) + math.abs(last[2] - p[2]) + math.abs(last[3] - p[3]) > 0.001 then
+        S.camAt, S.camSince, S.waiting = { p[1], p[2], p[3] }, now(), "the camera to stand still"
+        return
+    end
+    if now() - S.camSince < (O.still or 0.5) * 1000 then return end
+    S.waiting = nil
+    local off = math.sqrt((p[1] - CAMERA.at[1]) ^ 2 + (p[2] - CAMERA.at[2]) ^ 2 + (p[3] - CAMERA.at[3]) ^ 2)
+    if off > 0.25 then note(string.format("the camera rests %.2f m from the pose the places were given from", off)) end
     S.doorEntity = findDoor()
     S.door.found = S.doorEntity ~= nil
     S.door.start = readDoor()
     if not S.door.found then note("the level has no door of the timeline actor " .. DOOR .. ": she will turn right after the kill") end
-    Ext.ClientVisual.PlayAnimation(S.victim, {}, { FEAR })
     stage("fear")
 end
 
@@ -370,18 +451,18 @@ local function tick()
         return
     end
     if S.error then return end
-    if not menu or GK.Gui.Stuck() ~= "mainmenu" then S.waiting = "the main menu" return end
-    local cam = menuCamera()
-    if not cam then S.waiting = "the menu's camera" return end
-    local p = cam.Transform.Transform.Translate
-    local last = S.camAt
-    if not last or math.abs(last[1] - p[1]) + math.abs(last[2] - p[2]) + math.abs(last[3] - p[3]) > 0.001 then
-        S.camAt, S.camSince, S.waiting = { p[1], p[2], p[3] }, now(), "the camera to stand still"
-        return
+    local screen = menu and GK.Gui.Stuck()
+    if screen == "splash" then
+        local cam = menuCamera()
+        if not cam then S.waiting = "the splash screen's camera" return end
+        S.waiting = nil
+        fire(cam)
+    elseif screen == "mainmenu" then
+        S.waiting = nil
+        fire(nil)
+    else
+        S.waiting = "the splash screen or the main menu"
     end
-    if now() - S.camSince < (O.still or 0.5) * 1000 then return end
-    S.waiting = nil
-    fire(cam)
 end
 
 S.subscription = Ext.Events.Tick:Subscribe(function()
