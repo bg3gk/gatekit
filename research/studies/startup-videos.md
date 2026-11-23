@@ -295,7 +295,7 @@ one tick:
 |---|---|---|
 | `Eula` | `gui::DCWidget` | nothing; with the switch off it raises `OpenSplashScreen` on loading, else `AcceptBtn` raises `OpenSensitiveSettings` |
 | `SensitiveSettings` | `gui::DCFirstTimeSetup` | the explicit-content choice (`SENSITIVE_CONTENT`): "No" turns `ShowGenitals` and `ShowExplicitRomanceScenes` off and writes `config.lsf` on `NextButton`, which raises `OpenHDR` with an HDR display, else `OpenGammaCalibration` |
-| `HDRCalibration` | `gui::DCHDRCalibration` | brightness, contrast, paper white (`graphicSettings.lsx`); not seen without an HDR display |
+| `HDRCalibration` | `gui::DCHDRCalibration` | the HDR display's calibration. The first slider sets `HDRMaxNits` in `graphicSettings.lsx`; `AcceptButton` advances to brightness and contrast, then opens the splash screen |
 | `GammaCalibration` | `gui::DCGammaCalibration` | the slider (0.5-1.5) sets `Gamma`; `AcceptButton` writes `SDRGamma` and raises `OpenSplashScreen` |
 | `SplashScreen` | - | any key raises `OpenMainMenu` |
 

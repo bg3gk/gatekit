@@ -1,19 +1,20 @@
 -- The first launch, walked as a player walks it: while the game's switch ShowFirstTimeSetup is on,
 -- the interface shows Eula, then SensitiveSettings (the explicit-content choice), then
--- GammaCalibration (on a display without HDR), then the "press any key" page, then the main menu,
+-- GammaCalibration on an SDR display or HDRCalibration on an HDR display, then the "press any
+-- key" page, then the main menu,
 -- whose page turns the switch off (research/studies/startup-videos.md, "The first launch";
 -- code:gui::DCMainMenu::OnCheckFirstTimeSetupValueCommand). Each page is an attention state of its
 -- own, key window:<page> (`setup`, the splash screen `splash`), opened with the controls a player
 -- has, and every page entered and left is a `ui_page` / `ui_page_ended` row
 -- (docs/contracts/bridge-protocol.md, "Attention"). The choices made are what the game keeps: the
 -- explicit-content choice is the switches ShowGenitals and ShowExplicitRomanceScenes after
--- SensitiveSettings' Next, the gamma the view model's Gamma as the slider moves and the profile's
--- graphicSettings.lsx SDRGamma after Accept.
--- Each page is awaited by its own row, never by a time. The choice and the gamma are set to
+-- SensitiveSettings' Next. Calibration saves the slider value as SDRGamma or HDRMaxNits in the
+-- profile's graphicSettings.lsx. HDR shows brightness and contrast before its OpenSplashScreen
+-- action. The SDR view model also holds Gamma as it moves.
+-- Each page is awaited by its own row, never by a time. The choice and the slider are set to
 -- something other than what the copy holds, so two runs in a row each change them.
--- HDRCalibration is not walked: it shows instead of GammaCalibration only on an HDR display
--- (SensitiveSettings' Next raises OpenHDR when gui::DCFirstTimeSetup's HasHDR is true), and the
--- machine this was written on has none. The mod policy page (ModBrowserSplashScreen) shows only
+-- SensitiveSettings' Next raises OpenHDR when gui::DCFirstTimeSetup's HasHDR is true.
+-- The mod policy page (ModBrowserSplashScreen) shows only
 -- while WasLarianModPolicyAccepted is off, which Lua cannot write.
 -- Venue: a start of its own as a first launch (`first_launch`: up --first-launch sets the switch
 -- at the first Lua and stops on Eula). The pages write the copy's own profile.
@@ -24,7 +25,11 @@
 test { first_launch = true, surprises = { "setup", "splash" },
        about = "The first-launch pages each wait as an attention state with their controls, and the choices made on them are what the game keeps; the main menu turns the switch off." }
 
-local PAGES = { "Eula", "SensitiveSettings", "GammaCalibration", "SplashScreen", "MainMenu" }
+-- The profile omits settings at their defaults, so both values must be overrides.
+local CALIBRATION = {
+    GammaCalibration = { handle = "GammaCalibration/Slider", setting = "SDRGamma", values = { 1.1, 1.2 } },
+    HDRCalibration = { handle = "GridRoot/Slider", setting = "HDRMaxNits", values = { 1050, 1100 } },
+}
 
 -- A cursor at the start of the client's current boot: the rows the start wrote before the test.
 local function boot_start(game)
@@ -49,6 +54,15 @@ local function switches(game)
         local s = Ext.Utils.GetGlobalSwitches()
         return { first = s.ShowFirstTimeSetup, genitals = s.ShowGenitals, romance = s.ShowExplicitRomanceScenes }
     ]])
+end
+
+local function saved_calibration(game, calibration, target)
+    local text = game.read(game.profile .. "/graphicSettings.lsx")
+    check(text, "the copy's profile has graphicSettings.lsx", game.profile)
+    local setting = CALIBRATION[calibration].setting
+    local saved = tonumber(string.match(text, 'value="' .. setting .. '".-id="Value"[^>]-value="([^"]+)"'))
+    check(saved, "graphicSettings.lsx holds " .. setting)
+    check(math.abs(saved - target) < 1e-3, "the profile keeps the calibration accepted", saved, target)
 end
 
 function run(game)
@@ -89,17 +103,26 @@ function run(game)
     step("SensitiveSettings: Next", "fair", function()
         check(game.ui("return GK.Gui.Click('SensitiveSettings', 'NextButton')").ok, "NextButton clicked")
     end)
-    local target
-    step("GammaCalibration: the slider moved and its view model holds it", "fair", function()
-        local page = opened(game, before, "setup", "GammaCalibration")
-        local slider = control(page.controls, "GammaCalibration/Slider")
-        check(slider and slider.kind == "slider", "the row names the slider", page.controls)
-        target = math.abs((slider.value or 1) - 1.1) < 0.01 and 1.2 or 1.1
-        local set = game.ui(string.format("return GK.Gui.Set('GammaCalibration', 'GammaCalibration/Slider', %.2f)", target))
-        check(set.ok and set.held and set.held.Gamma, "Set answers once the view model's Gamma holds the value", set)
-        check(math.abs(set.held.Gamma - target) < 1e-4, "Gamma holds the slider's value", set.held, target)
-        local back = game.ui("return GK.Gui.Data('GammaCalibration').Gamma")
-        check(math.abs(back - target) < 1e-4, "the view model reads it back", back, target)
+    local calibration, target
+    step("the display's calibration page: move its slider", "fair", function()
+        local row = game.wait_row(before, { "setup" }, function(p) return CALIBRATION[p.window] ~= nil end, 60)
+        calibration = row.payload.window
+        eq(row.key, "window:" .. calibration, "the calibration page waits under window:<page>")
+        local spec = CALIBRATION[calibration]
+        local slider = control(row.payload.controls, spec.handle)
+        check(slider and slider.kind == "slider", "the row names the slider", row.payload.controls)
+        check(control(row.payload.controls, "AcceptButton"), "the row names the acceptance button", row.payload.controls)
+        check(type(slider.value) == "number", "the row gives the current slider value", slider)
+        target = math.abs(slider.value - spec.values[1]) < 0.01 and spec.values[2] or spec.values[1]
+        local set = game.ui(string.format("return GK.Gui.Set(%q, %q, %.2f)", calibration, spec.handle, target))
+        check(set.ok and type(set.after) == "number" and math.abs(set.after - target) < 1e-4,
+            "the slider reads back the value", set, target)
+        if calibration == "GammaCalibration" then
+            check(set.held and set.held.Gamma, "Set answers once the view model's Gamma holds the value", set)
+            check(math.abs(set.held.Gamma - target) < 1e-4, "Gamma holds the slider's value", set.held, target)
+            local back = game.ui("return GK.Gui.Data('GammaCalibration').Gamma")
+            check(math.abs(back - target) < 1e-4, "the view model reads it back", back, target)
+        end
     end)
     step("the explicit-content choice is the game's switches", "observation", function()
         local s = switches(game)
@@ -108,18 +131,29 @@ function run(game)
     end)
 
     before = game.mark()
-    step("GammaCalibration accepted", "fair", function()
-        check(game.ui("return GK.Gui.Click('GammaCalibration', 'AcceptButton')").ok, "AcceptButton clicked")
+    step("the display's calibration advanced and accepted", "fair", function()
+        check(game.ui(string.format("return GK.Gui.Click(%q, 'AcceptButton')", calibration)).ok, "AcceptButton clicked")
+        if calibration == "HDRCalibration" then
+            local hdr = game.wait("ui", [[(function()
+                local look = GK.Gui.Look('HDRCalibration')
+                local sliders = 0
+                for _, control in ipairs(look.controls or {}) do
+                    if control.kind == 'slider' then sliders = sliders + 1 end
+                end
+                return sliders == 2 and look or nil
+            end)()]], 30)
+            local accept = control(hdr.controls, "AcceptButton")
+            check(accept and accept.command == "CustomEvent" and accept.parameter == "OpenSplashScreen",
+                "the visible HDR acceptance runs OpenSplashScreen", hdr)
+            check(game.ui("return GK.Gui.Click('HDRCalibration', 'AcceptButton')").ok,
+                "the visible HDR acceptance button was pressed")
+        end
     end)
-    step("the splash screen waits for a key; the gamma is in the profile", "observation", function()
+    step("the splash screen waits for a key", "observation", function()
         local splash = opened(game, before, "splash", "SplashScreen")
         check(splash.keys, "the row says which keys pass it", splash)
         eq(#(splash.controls or {}), 0, "the page has no control")
-        local text = game.read(game.profile .. "/graphicSettings.lsx")
-        check(text, "the copy's profile has graphicSettings.lsx", game.profile)
-        local saved = tonumber(string.match(text, 'value="SDRGamma".-id="Value"[^>]-value="([%d%.]+)"'))
-        check(saved, "graphicSettings.lsx holds SDRGamma")
-        check(math.abs(saved - target) < 1e-3, "the profile keeps the gamma accepted", saved, target)
+        if calibration == "GammaCalibration" then saved_calibration(game, calibration, target) end
     end)
 
     before = game.mark()
@@ -131,8 +165,10 @@ function run(game)
         check(game.wait("client", "Ext.Utils.GetGlobalSwitches().ShowFirstTimeSetup == false", 10), "ShowFirstTimeSetup is off")
         local s = switches(game)
         eq(s.genitals, wantYes, "the choice outlives the pages")
+        if calibration == "HDRCalibration" then saved_calibration(game, calibration, target) end
     end)
     step("every page was entered and left in order", "observation", function()
+        local pages = { "Eula", "SensitiveSettings", calibration, "SplashScreen", "MainMenu" }
         local rows = game.events(start, { "ui_page", "ui_page_ended" }).rows
         local entered, left = {}, {}
         for _, r in ipairs(rows) do
@@ -140,9 +176,9 @@ function run(game)
         end
         local at = 1
         for _, page in ipairs(entered) do
-            if page == PAGES[at] then at = at + 1 end
+            if page == pages[at] then at = at + 1 end
         end
-        eq(at, #PAGES + 1, "ui_page names each page in order", entered)
-        for i = 1, #PAGES - 1 do check(left[PAGES[i]], "ui_page_ended for " .. PAGES[i], rows) end
+        eq(at, #pages + 1, "ui_page names each page in order", entered)
+        for i = 1, #pages - 1 do check(left[pages[i]], "ui_page_ended for " .. pages[i], rows) end
     end)
 end

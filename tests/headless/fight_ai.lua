@@ -14,8 +14,9 @@
 -- health, statuses, equipment.
 
 test { level = "GustavX:Basic_Level_A", mods = {},
-       -- `gatekit logic-check`: the stretch the test switches on and off, every throw rigged
-       logic_diff = { window = "family_on:family_off", rigged = true } }
+       -- Before CombatStarted the participants draw independently: the same weapon transitions
+       -- occur in either order between rendered runs. Assert preparation and compare combat in order.
+       logic_diff = { window = "combat_started:family_off", rigged = true } }
 
 function run(game)
     game.wait_state("Running", "server", 60)
@@ -27,8 +28,10 @@ function run(game)
         'equipment = { "longsword", "shield" } }')
     check(#goblins == 2, "two goblins expected", goblins)
     game.wait("server", ("GK.Stage.Ready(%s)"):format(lua_list(goblins)), 10)
-    game.wait("server", ('(GK.Character("%s").equipment["Melee Main Weapon"] or {}).template'):format(goblins[1]) ..
-        ':find("Longsword", 1, true) ~= nil', 10)
+    for _, goblin in ipairs(goblins) do
+        game.wait("server", ('((GK.Character("%s").equipment["Melee Main Weapon"] or {}).template or "")'):format(goblin) ..
+            ':find("Longsword", 1, true) ~= nil', 10)
+    end
     check(game.server(('return GK.Stage.Combat("%s") == nil'):format(goblins[1])), "a neutral goblin is in no fight yet")
     check(game.server(('return GK.Rolls.Pin{ who = "%s", kind = "Initiative", n = 50 }'):format(goblins[1])).ok, "pin 1")
     check(game.server(('return GK.Rolls.Pin{ who = "%s", kind = "Initiative", n = 20 }'):format(goblins[2])).ok, "pin 2")
@@ -79,7 +82,7 @@ function run(game)
         turns = turns + 1
         game.wait("server", ('(function() local c = GK.Stage.Combat(); return c == nil or c.active ~= "%s" end)()'):format(host), 20)
     end
-    -- the scenario's stretch ended in round 4's own event (`logic-diff --window family_on:family_off`);
+    -- the scenario's stretch ended in round 4's own event (`logic-diff --window combat_started:family_off`);
     -- a fight over sooner ends it here
     game.server('if not GK.HeadlessFight.done then GK.HeadlessFight.done = true GK.EventLog.Off(nil, "the scenario ended") end return true')
     local fight = game.server("return GK.Stage.Combat()")

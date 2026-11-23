@@ -471,7 +471,7 @@ keeps its name and its meaning of "it worked"; fields are added, none renamed.
 
 | Verb | `ok` means |
 |---|---|
-| `GK.Gui.Click` | the click chain from GK.UICatalog, else from the game's own XAML (`chain = "xaml"`), ran and its effect was observed; the control's own command is asked first |
+| `GK.Gui.Click` | the control's command or its click chain ran and its effect was observed. The live binding supplies the command when XAML has no click triggers. A catalog chain takes precedence, and the control's own `CanExecute` is checked first |
 | `GK.Cheat.Run` | the command ran and its effect was observed |
 | `GK.Gui.Input` | the binding ran and its effect was observed |
 | `GK.Gui.ItemDo` | equip/unequip: the item's own `Equipped` changed; use/drop: the item or the windows changed |

@@ -1000,6 +1000,9 @@ function UI.Click(name, what, which)
     -- the control's own command, asked first: a command the game turns down is not pressed
     local own = guard(function() return row.element.Command end)
     if own then
+        -- XAML name lookup may describe another element with the same x:Name. The live
+        -- command carries this element's binding. A chain with triggers still needs its XAML.
+        if entry and entry.source == "xaml" and not entry.click then entry = nil end
         local parameter = guard(function() return row.element.CommandParameter end)
         if type(parameter) ~= "userdata" and parameter ~= nil then parameter = guard(function() return Ext.UI.Box(parameter) end) end
         local known, can = pcall(function() return own:CanExecute(parameter) end)
