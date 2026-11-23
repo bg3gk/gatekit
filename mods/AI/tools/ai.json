@@ -1,14 +1,26 @@
 [
   {
     "name": "ai_step",
-    "description": "Do ONE act in the game as the character, wait until the game has settled, and read what changed. Answers one line of JSON: ok, mode, did, why_not, hint, now. `now` holds only what changed since your last call: where, fight, can, party, waiting, near, heard, events, notes (and in mode open: rolls, scenes, route). If `now.waiting` is not empty, answer it first, exactly as its line says. When ok is false nothing was done: read why_not and make the call that hint gives.",
+    "description": "Do ONE act in the game as the character, wait until the game has settled, and read what changed. Answers one line of JSON: ok, mode, did, why_not, hint, now. `now` holds only what changed since your last call: where, fight, countdown, can, party, waiting, near, heard, events, notes (and in mode open: rolls, scenes, route). If `now.waiting` is not empty, answer it first, exactly as its line says. When ok is false nothing was done: read why_not and make the call that hint gives.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "do": {
           "type": "string",
-          "enum": ["go", "use", "talk", "loot", "jump", "cast", "attack", "end", "select", "answer", "continue", "roll", "take", "close", "wait", "plan", "cheat_cast", "cheat_teleport"],
-          "description": "The act. go: walk to target. use: walk up and use target (door, lever, ladder, pod). talk: walk up and talk to target. loot: walk up and open target (a body, a chest). jump: jump to target. cast: use the action `spell` at target. attack: weapon attack at target. end: end the turn. select: take control of party member `who`. answer: choose answer number `n` of what waits. continue: go on in a dialogue. roll: throw the dice of a roll window. take: take everything from the open loot window. close: close the window that waits. wait: do nothing until the game has settled. plan: do the act that now.route names (mode open). cheat_cast: cast `spell` at target by script. cheat_teleport: put the character at target. The two cheats are used only when the owner says so."
+          "enum": ["go", "use", "talk", "loot", "jump", "examine", "cast", "attack", "end", "select", "answer", "continue", "roll", "take", "close", "ui", "wait", "plan", "cheat_cast", "cheat_teleport"],
+          "description": "The act. go: walk to target. use: walk up and use target (door, lever, ladder, pod). talk: walk up and talk to target. loot: walk up and open target (a body, a chest). jump: jump to target. examine: read a creature in the game's Examine window (type, level, HP, AC, abilities, conditions, resistances, notable features, saves). cast: use the action `spell` at target. attack: weapon attack at target. end: end the turn. select: take control of party member `who`. answer: choose answer number `n` of what waits. continue: go on in a dialogue; press a key on the splash screen. roll: throw the dice of a roll window. take: take everything from the open loot window. close: close the window that waits; skip a film. ui: use a window's controls - with `window` only, list them; with `control`, click it; with `control` and `value`, set it. wait: do nothing until the game has settled. plan: do the act that now.route names (mode open). cheat_cast: cast `spell` at target by script. cheat_teleport: put the character at target. The two cheats are used only when the owner says so."
+        },
+        "window": {
+          "type": "string",
+          "description": "For ui: the name of an open window, as now.waiting names it (like MainMenu or CharacterCreation)."
+        },
+        "control": {
+          "type": "string",
+          "description": "For ui: a control's handle, as the list of the window's controls (now.window) gives it."
+        },
+        "value": {
+          "type": "string",
+          "description": "For ui: the value to set (a list's item by number or text, a slider's number, a text); without control, a part of a handle or text that finds controls."
         },
         "target": {
           "type": "string",
@@ -22,17 +34,29 @@
           "type": "integer",
           "description": "For answer: the number of the answer, as now.waiting numbers them."
         },
+        "provoke": {
+          "type": "boolean",
+          "description": "For go in a fight: true walks out of an enemy's reach anyway, taking its opportunity attack (left out, such a walk is refused with who would attack)."
+        },
         "who": {
           "type": "string",
           "description": "The party member who acts, by name. Left out: in a fight the member whose turn is open, else the character you control."
         },
         "say": {
           "type": "string",
-          "description": "A short first-person line shown over the character's head before the act (60 characters at most)."
+          "description": "A short first-person line shown over the character's head once the act has begun (60 characters at most); not shown when the act is refused."
         },
         "think": {
           "type": "string",
-          "description": "One line of what the character thinks. Kept in the run's record only."
+          "description": "Give it on every step: why you do this act, in a few words. Kept in the run's record only, never shown in the game."
+        },
+        "goals": {
+          "type": "string",
+          "description": "Your plan, up to 3 short goals separated by | (\"kill the archers on the ledge | keep Gale behind the wall | ✓ free Shadowheart\"); start a goal with ✓ when it is done; \"\" forgets them. Kept and told back in now.goals when they change and when a turn opens; shown over the head. Give it with any step, only when the plan changes."
+        },
+        "about": {
+          "type": "string",
+          "description": "With note: the creature or thing the note is of (a handle like #1a2b3c, or a name), instead of the place. Its lines then say how many notes it has and the last (\"[2 notes: \\\"betrayed me\\\"]\"); ai_look part=notes about=<it> reads them all. Kept across loads."
         },
         "note": {
           "type": "string",
@@ -41,7 +65,7 @@
       },
       "required": ["do"]
     },
-    "side": "server",
+    "side": "client",
     "timeout": 120,
     "attention": false,
     "lua": "return Mods.GateKitAI.AI.Tool('step', args)"
@@ -54,17 +78,21 @@
       "properties": {
         "part": {
           "type": "string",
-          "enum": ["all", "where", "fight", "can", "party", "waiting", "near", "heard", "events", "notes", "things", "actions", "prompt", "rolls", "scenes", "route", "plan"],
-          "description": "all (default): every key of now as it is at this moment. A key of now: only it. things: every object around, items included. actions: what the acting character can do. notes: your notes of this level. prompt: the owner's text for you, again. rolls, scenes, route, plan (every step of the route): mode open only."
+          "enum": ["all", "where", "fight", "countdown", "goals", "can", "party", "waiting", "ways", "near", "heard", "events", "notes", "things", "actions", "thoughts", "prompt", "rolls", "scenes", "route", "plan"],
+          "description": "all (default): every key of now as it is at this moment. A key of now: only it, whole (ways also with the open ground you see). things: every object around, items included. actions: what the acting character can do. thoughts: the last reasons (think) given with steps. notes: your notes of this level, or with about every note of one creature or thing. prompt: the owner's text for you, again. rolls, scenes, route, plan (every step of the route): mode open only."
+        },
+        "about": {
+          "type": "string",
+          "description": "With part notes: the creature or thing whose notes to read (a handle or a name)."
         },
         "detail": {
           "type": "string",
           "enum": ["brief", "full"],
-          "description": "brief (default): short lists. full: long lists and whole texts."
+          "description": "brief (default; full for one part): short lists. full: long lists and whole texts."
         }
       }
     },
-    "side": "server",
+    "side": "client",
     "timeout": 30,
     "attention": false,
     "lua": "return Mods.GateKitAI.AI.Tool('look', args)"
@@ -81,13 +109,18 @@
         },
         "call": {
           "type": "string",
-          "description": "The call of that scene to run (like go or reply). Left out: the scene's state and its calls."
+          "description": "The call of that scene to run (like go or reply); arm and off arm and disarm a scene of the stand's manifest. Left out: the scene's state and its calls."
+        },
+        "file": {
+          "type": "string",
+          "description": "For arm and off: the scene's file, read on the machine that runs the game; given once, the code is kept in the copy and armed again after a reload."
         }
       }
     },
-    "side": "server",
+    "side": "client",
     "timeout": 60,
     "attention": false,
+    "files": {"file": "code"},
     "lua": "return Mods.GateKitAI.AI.Tool('scene', args)"
   },
   {
@@ -109,6 +142,10 @@
           "type": "string",
           "description": "The same, given as the path of a plain text file on the machine that runs the game."
         },
+        "scenes_file": {
+          "type": "string",
+          "description": "The path of the stand's manifest of staged scenes (JSON) on the machine that runs the game: what ai_scene arms by name."
+        },
         "plan": {
           "type": "string",
           "description": "Mode open only: the name of a route plan to follow (like prologue), or off."
@@ -119,10 +156,10 @@
         }
       }
     },
-    "side": "server",
+    "side": "client",
     "timeout": 30,
     "attention": false,
-    "files": {"prompt_file": "prompt"},
-    "lua": "args.prompt_from = args.prompt_file; return Mods.GateKitAI.AI.Tool('session', args)"
+    "files": {"prompt_file": "prompt", "scenes_file": "scenes"},
+    "lua": "args.prompt_from = args.prompt_file; args.scenes_from = args.scenes_file; return Mods.GateKitAI.AI.Tool('session', args)"
   }
 ]

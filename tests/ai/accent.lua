@@ -12,7 +12,9 @@ local function uuid(id) return id and string.match(id, "(%x+%-%x+%-%x+%-%x+%-%x+
 
 function run(game)
     game.wait_state("Running", "server", 120)
-    local far = step("a hostile human 35 m off", "cheat", function()
+    local far = step("open mode; a hostile human 35 m off", "cheat", function()
+        -- out of every member's sight: blind mode would refuse it as a target
+        check(game.server("return Mods.GateKitAI.AI.Session.Start({ mode = 'open', plan = 'off' })").ok, "open mode")
         return uuid(game.server([[
             local x, y, z = Osi.GetPosition(Osi.GetHostCharacter())
             return GK.Stage.Spawn{ template = "human", at = { x, y, z + 35 }, faction = "hostile" }[1] ]]))

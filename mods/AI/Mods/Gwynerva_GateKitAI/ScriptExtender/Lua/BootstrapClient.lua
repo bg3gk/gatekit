@@ -8,5 +8,8 @@ if not AI.GK then
     return
 end
 
+Ext.Require("Shared/Encode.lua")
 Ext.Require("Shared/Scenes.lua")
+Ext.Require("Shared/Stand.lua")
 Ext.Require("Client/Bridge.lua")
+Ext.Require("Client/Tool.lua")

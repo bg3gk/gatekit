@@ -8,15 +8,16 @@
 --   AI.Mode.Knows(id)       whether a thing may be named or acted on
 --   AI.Mode.Refuse(what)    the sentence of a refusal: "not knowable to a player: ..."
 --   AI.Session              { mode, prompt, promptFrom, plan }: kept in a file of the copy
---   AI.Session.Start(args)  a session begun: the mode, the owner's prompt, a plan
+--   AI.Session.Start(args)  a session begun: the mode, the owner's prompt, the stand's scenes, a plan
 --
 -- blind: the agent knows what a player at the screen could know and nothing else. GateKit classes
 -- what it reads the same way - a reader's scope (`seen`: perceived now; `known`: also remembered;
 -- `all`: omniscient) and a row's `knows` (`player` or `omniscient`) - and every part of the bridge
 -- asks this file which of them it may use:
---   creatures and things   a step's block lists what is perceived now (`seen`) in both modes.
---                          blind: a target may also be one seen earlier (`known`), and nothing
---                          else. open: a look lists everything within the radius (`all`), the
+--   creatures and things   a step's block lists what is perceived now (`seen`). blind: only what
+--                          a member's sight holds (GK.See's `sight`), and a target may also be
+--                          one once in sight (`known`), and nothing else. open: what the party
+--                          is shown; a look lists everything within the radius (`all`), the
 --                          unperceived marked `unseen`, and a target may be anything on the level
 --   rows of the log        blind: `knows = player` only. open: all
 --   rolls                  blind: only the roll window, in `waiting`. open: every roll thrown
@@ -54,15 +55,18 @@ function M.Part(key)
 end
 
 --- Whether a thing (a uuid) may be named to the agent or acted on by it: always in open mode; in
---- blind mode a party member, what the party perceives now, or what it saw earlier on this level.
+--- blind mode a party member, what a member's sight holds now (GK.See.InSight: not behind a wall,
+--- on another floor or in magical darkness), or what was once in sight on this level.
 function M.Knows(id)
     if not M.Blind() then return true end
     local uuid = U.uuidOf(id) or id
     for _, m in ipairs(U.members()) do
         if (U.uuidOf(m) or m) == uuid then return true end
     end
-    if U.try(GK.See.PartyPerceives, uuid) then return true end
-    return U.try(GK.See.Remembers, uuid) and true or false
+    -- whatever the bridge has named to the agent (a line of ways, near, the countdown's goal)
+    if AI.Told and AI.Told[uuid] then return true end
+    if U.try(GK.See.PartyPerceives, uuid) and #(U.try(GK.See.InSight, uuid) or {}) > 0 then return true end
+    return U.try(GK.See.Remembers, uuid, true) and true or false
 end
 
 -- ---------------------------------------------------------------------------------------
@@ -70,21 +74,17 @@ end
 
 AI.Session = AI.Session or {}
 local S = AI.Session
-local FILE = "Gwynerva_GateKitAI/session.json"
 S.MaxPrompt = 16000
 
 local function save()
-    pcall(Ext.IO.SaveFile, FILE, Ext.Json.Stringify({ mode = M.name, prompt = S.prompt, promptFrom = S.promptFrom }))
+    AI.SessionFile.Write({ mode = M.name, prompt = S.prompt or false, promptFrom = S.promptFrom or false })
 end
 
 if not S.Restored then
     S.Restored = true
-    local ok, text = pcall(Ext.IO.LoadFile, FILE)
-    local kept = ok and text and text ~= "" and select(2, pcall(Ext.Json.Parse, text)) or nil
-    if type(kept) == "table" then
-        if M.Names[kept.mode] then M.name = kept.mode end
-        S.prompt, S.promptFrom = kept.prompt, kept.promptFrom
-    end
+    local kept = AI.SessionFile.Read()
+    if M.Names[kept.mode] then M.name = kept.mode end
+    S.prompt, S.promptFrom = kept.prompt, kept.promptFrom
 end
 
 --- Begins a session: `args.mode` ("open" or "blind"; left out: as it was), `args.prompt` (the
@@ -98,6 +98,8 @@ function S.Start(args)
     if args.mode ~= nil and args.mode ~= "" then
         if not M.Names[args.mode] then return { ok = false, error = "no such mode: " .. tostring(args.mode), hint = "mode is open or blind" } end
         M.name = args.mode
+        -- what was named under another mode is not what a player was shown
+        AI.Told = {}
     end
     if args.prompt ~= nil then
         local text = tostring(args.prompt)
@@ -106,6 +108,10 @@ function S.Start(args)
         end
         S.prompt = text ~= "" and text or nil
         S.promptFrom = S.prompt and args.prompt_from or nil
+    end
+    if args.scenes ~= nil then
+        local stand, problem = AI.Stand.Take(args.scenes, args.scenes_from)
+        if not stand then return { ok = false, error = problem, hint = "scenes_file is the path of the stand's manifest of scenes (JSON)" } end
     end
     local wantsPlan = args.plan ~= nil and args.plan ~= ""
     if M.Blind() then

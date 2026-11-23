@@ -328,7 +328,8 @@ What waits for the player, and what changed, is a view of the event log
 - **Told**: every `begin` (its kind), every `end` (`<kind>_ended`, or the end the kind names:
   `combat_ended`), and the `news` kinds: `death`, `downed`, `combat_elsewhere`,
   `dialogue_started`, `dialogue_ended_server`, `level_started`, `level_unloading`,
-  `tutorial_shown`, `trade_requested`, `job_done` (a GK.Act job; `job`, `kind`, `status`,
+  `tutorial_shown`, `tutorial_reset_request` (the story's `ResetTutorialsRequest`: `user`, `ask`),
+  `trade_requested`, `job_done` (a GK.Act job; `job`, `kind`, `status`,
   `error`). `hold` and `release` rows change what waits without being told. A `roll` and its
   `roll_ended` carry the roll's numbers ([lua-api.md](lua-api.md#gkrolls-rolls-decided-in-advance-serverrollslua)), and the host keeps them in what
   it tells: `check`, `skill`, `dc`, `advantage`, `modifiers`, `bonus`, then `natural`, `total`,

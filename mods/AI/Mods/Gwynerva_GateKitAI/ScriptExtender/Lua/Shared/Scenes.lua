@@ -60,10 +60,53 @@ function AI.SceneCalls(scene)
     return out
 end
 
---- Every scene of this side: name -> its line. `root` is GateKit's environment (Mods.GateKit).
-function AI.SceneLines(root)
+--- The one table of scenes of this side. A scene armed by this mod runs in GateKit's environment
+--- (Shared/Stand.lua), a scene armed by `gatekit exec` in the global one (GK.Run loads a chunk
+--- with no environment of its own); GateKit's environment reads a name it has not from the global
+--- one (its metatable's __index), so the first `GKScene` made in GateKit's environment would hide
+--- the global one. A table made there is moved into the global one, which GateKit's environment
+--- then reads. (A `load` in a mod's file defaults to that mod's environment, not the global one.)
+function AI.SceneTable()
+    local gk = Mods and Mods.GateKit
+    if type(gk) ~= "table" then return nil end
+    local meta = getmetatable(gk)
+    local GLOBAL = meta and type(meta.__index) == "table" and meta.__index or nil
+    if not GLOBAL then return gk.GKScene end
+    local own, shared = rawget(gk, "GKScene"), rawget(GLOBAL, "GKScene")
+    if type(own) == "table" and own ~= shared then
+        if type(shared) == "table" then
+            for name, scene in pairs(own) do if shared[name] == nil then shared[name] = scene end end
+        else
+            rawset(GLOBAL, "GKScene", own)
+        end
+        rawset(gk, "GKScene", nil)
+    end
+    return gk.GKScene
+end
+
+--- What a scene's call answered, read alike on both sides: a text, a number or a flag is said; a
+--- table `{ ok = false, error }` (or `why`) is a refusal; another table says its `answer` text.
+--- `ok, said, error`; `said` at most AI.SaidBytes (16000) bytes, cut with "..." past it.
+AI.SaidBytes = 16000
+local function capped(text)
+    if #text <= AI.SaidBytes then return text end
+    local last = AI.SaidBytes - 3
+    while last > 0 and text:byte(last + 1) and text:byte(last + 1) >= 0x80 and text:byte(last + 1) < 0xC0 do last = last - 1 end
+    return text:sub(1, last) .. "..."
+end
+function AI.SceneSaid(result)
+    local kind = type(result)
+    if kind == "string" or kind == "number" or kind == "boolean" then return true, capped(tostring(result)) end
+    if kind ~= "table" then return true, nil end
+    local why = result.error or result.why or (result.ok == false and "refused") or nil
+    if why then return false, nil, tostring(why) end
+    return true, type(result.answer) == "string" and capped(result.answer) or nil
+end
+
+--- Every scene of this side: name -> its line.
+function AI.SceneLines()
     local out = {}
-    local ok, scenes = pcall(function() return root.GKScene end)
+    local ok, scenes = pcall(AI.SceneTable)
     if not ok or type(scenes) ~= "table" then return out end
     for name, scene in pairs(scenes) do
         if type(name) == "string" and type(scene) == "table" then out[name] = AI.SceneLine(scene) end

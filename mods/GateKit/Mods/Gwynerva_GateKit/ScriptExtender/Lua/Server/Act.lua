@@ -227,8 +227,9 @@ function Act.CannotAct(who, anyTime)
     if not e then return "no such character" end
     if not See.IsMember(who) then return "not a party member (GK.Act acts for the player's party only, checked with GK.See.IsMember; a spawned or summoned creature is not in it - give it things with GK.Stage.Outfit, GK.Stage.Cast, GK.Stage.Use)" end
     if bool(try(Osi.IsDead, who)) then return "dead" end
+    -- downed is the game's status DOWNED; a member made immortal stands and acts at 0 hit points
     local hp = try(function() return e.Health.Hp end)
-    if hp == 0 then return "downed" end
+    if bool(try(Osi.HasActiveStatus, who, "DOWNED")) or (hp == 0 and try(Osi.IsImmortal, who) ~= 1) then return "downed" end
     if inDialog(who) then
         -- which one: a dialogue a script started (a teleport's, a level's) holds a character as
         -- surely as one it asked for, and "in a dialogue" alone sent a runner looking for the
@@ -323,6 +324,17 @@ end
 function Act.ApproachPoint(who, target, within, loose)
     local tp, mp = posOf(target), posOf(who)
     if not (tp and mp) then return nil end
+    -- a ladder is used from either end: its position is its foot, and a walker nearer its top
+    -- height walks to the top (the height of its box, Bound.AIBounds.Move, above the foot)
+    local le = entityOf(target)
+    if le and try(function() return le.Ladder end) ~= nil then
+        local h = try(function() return le.Bound.Bound.AIBounds.Move.Height end)
+        local scale = try(function() return le.Transform.Transform.Scale[2] end) or 1
+        if h and h > 1.5 then
+            local top = tp[2] + h * scale
+            if math.abs(mp[2] - top) < math.abs(mp[2] - tp[2]) then tp = { tp[1], top, tp[3] } end
+        end
+    end
     within = within or Act.Reach
     if flat(tp, mp) <= within + 0.6 and math.abs(tp[2] - mp[2]) < 2 then return mp, 0 end
     -- Candidates: where a path towards the object itself ends (a click on the object: the

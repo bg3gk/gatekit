@@ -15,7 +15,9 @@
 ---@class AI.NowBlock
 ---@field where string?
 ---@field fight string?
----@field can string[]?
+---@field countdown string[]? @ the story's timers: text, rounds left, the thing named
+---@field can string[]? @ the open turn: what is left, threats, enemies, actions by what they spend
+---@field thoughts string[]? @ ai_look part `thoughts` only
 ---@field party string[]?
 ---@field waiting string[]?
 ---@field near string[]?
@@ -34,14 +36,72 @@
 ---@field Acts table<string, { way: "fair"|"ordered"|"cheat", needs: string[]?, about: string, run: function }> @ the acts of a step
 ---@field Cap integer @ ticks a step waits at most
 ---@field Quiet integer @ ticks with nothing going on after which the game counts as settled
----@field Detail table<string, { chars: integer, list: integer, text: integer, radius: number }> @ the sizes of `now`: brief, full
----@field Limit { chars: integer, list: integer, text: integer, radius: number } @ the sizes a step uses
+---@field Detail table<string, { chars: integer, list: integer, text: integer, radius: number, ways: number, line: integer, can: integer }> @ the sizes of `now`: brief, full
+---@field Limit { chars: integer, list: integer, text: integer, radius: number, ways: number, line: integer, can: integer } @ the sizes a step uses
+---@field Told table<string, boolean> @ uuids the bridge has named to the agent by a handle: known in blind mode too
+---@field Tried table<string, boolean> @ uuids the agent has used (`do = use`)
+---@field Stuck { radius: number, steps: integer, every: integer } @ when steps without progress are told in `waiting`
+---@field StepRunning { do: string, since: number }? @ the step that runs now; another is refused, a `wait` waits for it
+---@field Ways AIWays @ the ways out of a place (Server/Ways.lua)
 ---@field NowKeys string[] @ the keys of `now`, in order
 ---@field Styles table<string, table> @ the looks of a line and its accent, by name
 ---@field MaxChars integer @ the longest line shown over a head
 ---@field Sessions table<string, table> @ the cursors, by session name
 ---@field Client { open: table[], blocking: table?, scenes: table<string, string> } @ what the client last told
+---@field Think { required: boolean } @ with `required`, a step without `think` is refused
 AI = {}
+
+---The lines of `now.can` for `actor`, whose turn is open (Server/Turn.lua). Observation.
+---@param actor string
+---@param limits table?
+---@return string[]
+function AI.Can(actor, limits) end
+
+---What is left of `actor`'s turn in words, and GK.See.Resources' table. Observation.
+---@param actor string
+---@return string, table
+function AI.Left(actor) end
+
+---A refusal in `actor`'s open turn told with what is left (why) and the action lines that still fit (hint). Observation.
+---@param actor string
+---@param why string
+---@return string, string
+function AI.TurnRefusal(actor, why) end
+
+---The lines of `now.countdown`: each story timer's text, its rounds left, the thing that text names when the mode lets the agent know it. Observation.
+---@return string[]
+function AI.Countdown() end
+
+---@class AIWays
+local AIWays = {}
+
+---The passages the agent may know of (GK.See.Passages within `limits.ways`): uuid -> { sig, text, d, class }. Observation.
+---@param limits table
+---@param wide boolean?
+---@return table<string, { sig: string, text: string, d: number, class: string }>
+function AIWays.Rows(limits, wide) end
+
+---One passage as a line of `now.ways`: its head (name, handle, kind) and the whole line. Observation.
+---@param row table
+---@return string, string
+function AIWays.Line(row) end
+
+---Why a walk the pathfinder refused does not get to `target`, and the call to make; nil when the error is not about the path. Observation.
+---@param actor string
+---@param target string|number[]
+---@param error string
+---@return string?, string?
+function AIWays.WhyNot(actor, target, error) end
+
+---The line `waiting` gains after steps without progress outside a fight and a dialogue (AI.Stuck), or nil. Observation.
+---@param state table
+---@return string?
+function AI.NoProgress(state) end
+
+---The last `n` reasons given with steps (rows ai_step with `think`), the newest last. Observation.
+---@param n integer?
+---@return string[]
+function AI.Thoughts(n) end
 
 ---The session's start (mode, prompt, prompt_from, plan, step) or, with none of them, its reading. Observed never. Cheat.
 ---@param args { mode: ("open"|"blind")?, prompt: string?, prompt_from: string?, plan: string?, step: integer? }?
@@ -53,7 +113,7 @@ function AI.SessionCall(args) end
 ---@return AI.Answer
 function AI.Step(args) end
 
----The whole picture, or one part. Moves the session's cursor; one row `ai_look`.
+---The whole picture, or one part. Moves the session's cursor; one row `ai_look` (the part `thoughts`: neither).
 ---@param args { part: string?, detail: ("brief"|"full")? }?
 ---@return AI.Answer
 function AI.Look(args) end

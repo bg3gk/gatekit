@@ -38,6 +38,8 @@
 --   GK.Cheat.Set(name, path, value)    sets any property of the widget's data and reads it back
 --   GK.Cheat.Step / Auto / Resolve     a window's choices made by its step function
 --   GK.Cheat.Quiet / Recover / AimBest
+--   GK.Cheat.Mark(name, control, opts) tints a control's text with a brush of the game's theme for
+--                                     a time of the game: what an agent is about to press, shown
 --
 -- Waiting is the caller's job (a widget appears a frame or more after the event): poll
 -- GK.Gui.IsOpen.
@@ -1140,6 +1142,9 @@ local function dataText(data)
         local value = readable(guard(function() return data[property] end))
         if type(value) == "string" and value ~= "" then return value end
     end
+    -- a spell's view model names it under Spell.Name (a translated string)
+    local spellName = readable(guard(function() return data.Spell.Name end))
+    if type(spellName) == "string" and spellName ~= "" then return spellName end
     -- a view model that has no name of its own is called by the property named as it is
     -- (ls.VMAbility.Ability, ls.VMSkill.Skill)
     local own = typeOf(data):match("VM(%w+)$")
@@ -1379,6 +1384,10 @@ local function describeRow(row, widgetData, options)
     if contextType and contextType ~= widgetData and contextType ~= "ui::DCWidget" then
         out.data = contextType
         out.of = dataText(context)
+        -- a number its view model holds as its value (an ability's score: ls.VMAbility.Value)
+        local held = guard(function() return context.Value end)
+        -- (a negative one is a placeholder: a background bonus button's row reads -1)
+        if type(held) == "number" and held >= 0 then out.ofValue = held end
         if options.detail then out.dataValues = dataScalars(context) end
     end
     if row.kind == "list" then
@@ -1536,6 +1545,92 @@ function UI.Handle(name, handle)
     return nil, "no control " .. tostring(handle) .. " in " .. tostring(name) .. " (GK.Gui.Look lists the handles)"
 end
 
+--- The text an open widget shows, as a player reads it: every visible TextBlock in the tree's
+--- order - its Text, or the Runs of its Inlines joined (a number written in a Run of a sentence) -
+--- with nothing a hidden element holds. { ok, widget, texts = { ... } }.
+function UI.Text(name)
+    local widget = UI.Widget(name)
+    if not widget then return { ok = false, error = "not open: " .. tostring(name) } end
+    local out, budget = {}, 20000
+    local function walk(element)
+        budget = budget - 1
+        if budget <= 0 then return end
+        if guard(function() return element.IsVisible end) == false then return end
+        local text = guard(function() return element.Text end)
+        if type(text) == "string" then
+            if text ~= "" then out[#out + 1] = text end
+        else
+            local inlines = guard(function() return element.Inlines end)
+            if inlines then
+                local parts = {}
+                local n = guard(function() return #inlines end) or 0
+                for i = 1, n do
+                    local t = guard(function() return inlines[i].Text end)
+                    if type(t) == "string" then parts[#parts + 1] = t end
+                end
+                local joined = table.concat(parts)
+                if joined ~= "" then out[#out + 1] = joined end
+            end
+        end
+        local n = guard(function() return element.VisualChildrenCount end) or 0
+        for i = 1, n do
+            local child = guard(function() return element:VisualChild(i) end)
+            if child then walk(child) end
+        end
+    end
+    walk(widget)
+    return { ok = true, widget = widgetName(name), texts = out }
+end
+
+-- The brush of the game's theme a mark tints with (Public/Game/GUI/Theme/DefaultTheme.Colours.xaml:
+-- ProgressionBarColor, #6600FF). The theme's brushes are frozen: a mark replaces a text's brush,
+-- it never changes a brush's colour, which other controls share.
+Cheat.MarkBrush = "ProgressionBarColor"
+
+--- Shows what is about to be pressed: every element of the control `handle` (GK.Gui.Look's
+--- handles) that has a Foreground takes the theme's brush `options.brush` (Cheat.MarkBrush) for
+--- `options.seconds` (1) of the game's time - the client's ticks, so a faster game shortens it.
+--- The control keeps that brush until the window rebuilds it (a pressed answer's list does); an
+--- element of one UI call is not valid in a later one, so it is not put back.
+--- { ok, marked = n, seconds, done = function: true once the time has passed }.
+function Cheat.Mark(name, handle, options)
+    options = options or {}
+    local row, problem = UI.Handle(name, handle)
+    if not row then return { ok = false, error = problem } end
+    local key = options.brush or Cheat.MarkBrush
+    local brush = guard(function() return row.element:Resource(key, true) end)
+    if not brush or guard(function() return brush.Color end) == nil then
+        return { ok = false, error = "the theme has no brush " .. tostring(key) }
+    end
+    local marked = 0
+    local function walk(element, depth)
+        if depth > 16 then return end
+        if guard(function() return element.Foreground end) ~= nil then
+            local _, failed = guard(function() element:SetProperty("Foreground", brush) end)
+            if not failed then marked = marked + 1 end
+        end
+        local n = guard(function() return element.VisualChildrenCount end) or 0
+        for i = 1, n do
+            local child = guard(function() return element:VisualChild(i) end)
+            if child then walk(child, depth + 1) end
+        end
+    end
+    walk(row.element, 0)
+    if marked == 0 then return { ok = false, error = "nothing in " .. tostring(handle) .. " has a text to tint" } end
+    local seconds = tonumber(options.seconds) or 1
+    local state = { left = seconds }
+    local subscription
+    subscription = Ext.Events.Tick:Subscribe(function(e)
+        local dt = guard(function() return e.Time.DeltaTime end) or 1 / 30
+        state.left = state.left - dt
+        if state.left <= 0 then
+            state.done = true
+            Ext.Events.Tick:Unsubscribe(subscription)
+        end
+    end)
+    return { ok = true, marked = marked, seconds = seconds, done = function() return state.done == true end }
+end
+
 -- A control found again after an act that may have hidden or shown it: by its handle, else by the
 -- same handle with or without the "~" of what is not shown.
 local function controlAgain(name, handle)
@@ -1659,11 +1754,14 @@ end
 function UI.Select(name, list, item)
     local widget = UI.Widget(name)
     if not widget then return { ok = false, error = "not open: " .. tostring(name) } end
-    local box = findElement(widget, list)
-    local row
-    if not box or kindOf(typeOf(box)) ~= "list" then
-        row = UI.Handle(name, list)
-        box = row and row.kind == "list" and row.element or box
+    -- the list a handle names first: an x:Name may also name a hidden copy of it (creation's
+    -- subTabsSpellsList), whose selection changes nothing shown
+    local row = UI.Handle(name, list)
+    local box = row and row.kind == "list" and row.element or nil
+    if not box then
+        row = nil
+        box = findElement(widget, list)
+        if box and kindOf(typeOf(box)) ~= "list" then box = nil end
     end
     if not box then return { ok = false, error = "no list " .. tostring(list) .. " in " .. tostring(name) } end
     if type(item) ~= "userdata" then

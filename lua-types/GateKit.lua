@@ -1919,6 +1919,8 @@ function GK.Stage.ExistedBefore(id) end
 ---@field who GK.Uuid? @ the viewpoint; default: the party
 ---@field all boolean? @ no perception filter (debugging, tests); same as scope "all"
 ---@field scope "seen"|"known"|"all"? @ seen (default): what the party perceives now; known: plus remembered; all: omniscient
+---@field sight boolean? @ seen and known narrowed to what a member's sight holds (GK.See.InSight), with a memory of its own
+---@field from GK.Uuid|GK.Pos|nil @ GK.See.Around: d, dir, dy and the radius measured from here (default the viewpoint)
 ---@field limit integer? @ rows per list
 
 ---The situation as a player could know it. Reads only. Filtered by what the party perceives.
@@ -1928,6 +1930,7 @@ function GK.Stage.ExistedBefore(id) end
 ---@field CameraRange number @ 16
 ---@field Scopes table<string, string>
 ---@field Memory table @ [level] = { [uuid] = { row, t, character } }
+---@field SightMemory table @ the same, for what was in a member's sight (options.sight)
 ---@field Skills string[]
 ---@field AbilityOf table<string, string>
 ---@field CheckHandles table
@@ -2011,6 +2014,28 @@ function GK.See.Clear(from, to, slack, target) end
 ---@return boolean
 function GK.See.Perceives(viewer, target) end
 
+---The members whose sight holds `target` (a character or an item) now, by the sight system's own
+---set: within the member's sight range, a clear line (walls, closed doors, floors block it), not in
+---magical darkness, not invisible, in every direction. Empty: out of every member's sight. Server.
+---@param target GK.Uuid|any
+---@param members GK.Uuid[]? @ whose sight counts; default the party
+---@return GK.Uuid[]
+function GK.See.InSight(target, members) end
+
+---A row of GK.See.Passages: an object row with where it leads.
+---@class GK.SeePassageRow: GK.SeeObjectRow
+---@field class "ordinary"|"mechanism" @ ladder, door, portal | a fixture worked in place by a StoryUse action
+---@field foot number? @ a ladder: the height of its foot
+---@field top number? @ a ladder: the height of its top (Bound.AIBounds.Move.Height above the foot)
+---@field way "up"|"down"|nil @ a ladder: the way it takes one from `from`
+---@field to { pos: GK.Pos, level: string?, name: string? }? @ a portal: its teleport's target
+
+---The ways from here to elsewhere the party knows of: ladders, doors, portals, and the mechanisms
+---worked in place by the story's own use. GK.See.Around's options. Server, observation.
+---@param options GK.SeeOptions?
+---@return { at: GK.Pos, passages: GK.SeePassageRow[] }
+function GK.See.Passages(options) end
+
 ---Whether the party is shown `target`, by GK.See.Perception's one rule (on the host's level, on
 ---stage, a member or without an Invisibility component). Every row's `knows` reads it. Server.
 ---@param target GK.Uuid|any
@@ -2063,10 +2088,12 @@ function GK.See.Classify(entity, id) end
 ---@return "seen"|"known"|"all"
 function GK.See.Scope(options) end
 
----Whether the party saw an object earlier (it is in the memory of the current level). Server.
+---Whether the party saw an object earlier (it is in the memory of the current level); with
+---`sight`, whether it was once in a member's sight. Server.
 ---@param id GK.Uuid
+---@param sight boolean?
 ---@return boolean
-function GK.See.Remembers(id) end
+function GK.See.Remembers(id, sight) end
 
 ---Forgets what the party saw (all levels, or one). Server.
 ---@param level string?
@@ -2768,6 +2795,21 @@ function GK.Gui.Click(name, what, which) end
 ---@param options string|{ under: string?, kind: string?, find: string?, items: integer?, detail: boolean?, all: boolean?, layout: boolean? }|nil
 ---@return { ok: boolean, widget: string, data: string, controls: GK.GuiLookControl[], laidOut: boolean? }|GK.Failure
 function GK.Gui.Look(name, options) end
+
+---The text an open widget shows, as a player reads it: visible TextBlocks in the tree's order,
+---Text or the Runs of Inlines joined (docs/contracts/lua-api.md). Observation. UI.
+---@param name string
+---@return { ok: boolean, widget: string, texts: string[] }|GK.Failure
+function GK.Gui.Text(name) end
+
+---Shows what an agent is about to press: the control's texts take a brush of the game's theme
+---(options.brush, default GK.Cheat.MarkBrush) for options.seconds (1) of the game's time
+---(docs/contracts/lua-api.md). Cheat: GateKit's own marker. UI.
+---@param name string
+---@param handle string
+---@param options { brush: string?, seconds: number? }?
+---@return { ok: boolean, marked: integer, seconds: number, done: fun(): boolean }|GK.Failure
+function GK.Cheat.Mark(name, handle, options) end
 
 ---The row of a handle of GK.Gui.Look (it holds the live element), and for an item's handle
 ---("list#3") the list's row and the item's number; nil and why when nothing has it. UI.

@@ -29,7 +29,7 @@ end
 
 local function call(tool, args)
     local parts = {}
-    for _, k in ipairs({ "do", "target", "spell", "n", "who", "part", "name", "call" }) do
+    for _, k in ipairs({ "do", "target", "spell", "n", "who", "window", "control", "value", "part", "name", "call", "file", "think" }) do
         if args[k] ~= nil then
             parts[#parts + 1] = string.format(type(args[k]) == "number" and '"%s":%s' or '"%s":"%s"', k, tostring(args[k]))
         end
@@ -46,10 +46,12 @@ end
 -- The acts
 
 -- Follows what a GateKit verb answered to its end: an observed answer, then the job it started.
+-- The poll asked `"begun"` says whether the verb has taken the act on (not refused it).
 local function follow(result)
     local step = GK.Follow(result)
     local final
-    return function()
+    return function(ask)
+        if ask == "begun" then return final ~= nil and not (type(final) == "table" and final.ok == false) end
         if final == nil then
             final = step()
             if final == nil then return nil end
@@ -73,7 +75,8 @@ end
 local function client(act)
     local got
     AI.Ask(act, function(a) got = a end)
-    return function()
+    return function(ask)
+        if ask == "begun" then return false end
         if got == nil then return nil end
         if type(got) == "table" and got.ok == false then
             return { ok = false, error = tostring(got.error or got.saw or got.did or "refused"), detail = got }
@@ -91,23 +94,37 @@ local CLOSE = { tutorial = "close", loot = "close", trade = "close", pickpocket 
 AI.Acts = AI.Acts or {}
 local A = AI.Acts
 A.go = { way = "ordered", needs = { "target" }, turn = true, about = "walk to a thing or a point",
-    run = function(c) return follow(GK.Cheat.Move(c.actor, c.target, { partial = true })), "walked to " .. label(c.target) end }
+    run = function(c) return follow(GK.Cheat.Move(c.actor, c.target, { partial = true, provoke = c.provoke })), "walked to " .. label(c.target) end }
 A.use = { way = "ordered", needs = { "target" }, entity = true, turn = true, about = "walk up and use: a door, a lever, a ladder, a pod",
-    run = function(c) return follow(GK.Cheat.Use(c.actor, c.target)), "used " .. label(c.target) end }
+    run = function(c)
+        if type(c.target) == "string" then AI.Tried[uuidOf(c.target) or c.target] = true end
+        return follow(GK.Cheat.Use(c.actor, c.target)), "used " .. label(c.target)
+    end }
 A.talk = { way = "ordered", needs = { "target" }, entity = true, about = "walk up and talk",
     run = function(c) return follow(GK.Cheat.Talk(c.actor, c.target)), "asked " .. label(c.target) .. " to talk" end }
 A.loot = { way = "ordered", needs = { "target" }, entity = true, about = "walk up and open a body or a container",
     run = function(c) return follow(GK.Cheat.Loot(c.actor, c.target)), "opened " .. label(c.target) end }
 A.jump = { way = "ordered", needs = { "target" }, turn = true, about = "jump to a point",
     run = function(c) return follow(GK.Cheat.Jump(c.actor, type(c.target) == "table" and c.target or U.posOf(c.target))), "jumped to " .. label(c.target) end }
-A.cast = { way = "fair", needs = { "spell", "target" }, turn = true, select = true, about = "cast a spell or use an action at a thing or a point",
+A.cast = { way = "fair", needs = { "spell", "target" }, turn = true, about = "cast a spell or use an action at a thing or a point",
     run = function(c) return client({ act = "cast", spell = c.spell, target = c.target }), "cast " .. c.spell .. " at " .. label(c.target) end }
-A.attack = { way = "fair", needs = { "target" }, entity = true, turn = true, select = true, about = "the weapon attack",
+A.attack = { way = "fair", needs = { "target" }, entity = true, turn = true, about = "the weapon attack",
     run = function(c) return client({ act = "attack", target = c.target }), "attacked " .. label(c.target) end }
 A["end"] = { way = "fair", turn = true, about = "end the turn",
     run = function(c) return follow(GK.Act.EndTurn(c.actor)), "ended the turn of " .. tostring(nameOf(c.actor)) end }
 A.select = { way = "fair", needs = { "who" }, about = "take control of a party member",
-    run = function(c) return follow(GK.Act.Select(c.actor)), "took control of " .. tostring(nameOf(c.actor)) end }
+    run = function(c)
+        local did = "took control of " .. tostring(nameOf(c.actor))
+        -- in a fight the acts go to the member whose turn is open, whoever is controlled
+        local t = AI.Turn()
+        if t.on and t.mine and (uuidOf(t.mine) or t.mine) ~= (uuidOf(c.actor) or c.actor) then
+            did = did .. "; the open turn is " .. tostring(nameOf(t.mine)) .. "'s: acts without who are still " .. tostring(nameOf(t.mine)) .. "'s"
+        end
+        return follow(GK.Act.Select(c.actor)), did
+    end }
+AI.Examined = AI.Examined or {}
+A.examine = { way = "fair", needs = { "target" }, entity = true, about = "examine a creature: the game's Examine window, as the T key opens it",
+    run = function(c) return client({ act = "examine", target = uuidOf(c.target) or c.target }), "examined " .. label(c.target) end }
 A.answer = { way = "fair", needs = { "n" }, answers = true, about = "choose answer n of what waits",
     run = function(c)
         local n = c.n
@@ -127,8 +144,18 @@ A.roll = { way = "fair", answers = true, about = "throw the dice of a roll windo
     run = function() return client({ act = "resolve", only = { roll = true }, policy = { roll = "throw" }, again = "roll" }), "threw the dice" end }
 A.take = { way = "fair", answers = true, about = "take everything from the open loot window",
     run = function() return client({ act = "resolve", only = { loot = true }, policy = { loot = "takeall" } }), "took everything" end }
-A.close = { way = "fair", answers = true, about = "close the window that waits",
-    run = function() return client({ act = "resolve", policy = CLOSE, never = { dialogue = true, roll = true } }), "closed the window" end }
+A.close = { way = "fair", answers = true, about = "close the window that waits; skip a film",
+    run = function()
+        -- a film is skipped by the game's own key, as a player skips it
+        if AI.Client.stuck == "film" then return client({ act = "key", key = "ESCAPE" }), "skipped the film" end
+        return client({ act = "resolve", policy = CLOSE, never = { dialogue = true, roll = true } }), "closed the window"
+    end }
+A.ui = { way = "fair", needs = { "window" }, answers = true, about = "a window's controls: read them, click one, set one",
+    run = function(c)
+        local what = (c.control == nil and "looked at " or (c.value ~= nil and "set " or "clicked ")) .. c.window
+            .. (c.control and ("/" .. c.control) or "") .. (c.value and (c.control and (" = " .. c.value) or (" for " .. c.value)) or "")
+        return client({ act = "ui", window = c.window, control = c.control, value = c.value }), what
+    end }
 A.wait = { way = "fair", answers = true, about = "do nothing until the game has settled",
     run = function() return nil, "waited" end }
 A.cheat_cast = { way = "cheat", needs = { "spell", "target" }, turn = true, about = "CHEAT: cast by script a spell the hotbar does not hold",
@@ -183,25 +210,164 @@ local function busy(state)
     return nil
 end
 
+local WALKS = { go = true, use = true, talk = true, loot = true }
+
+-- Steps without progress: outside a fight and a dialogue, steps that end within AI.Stuck.radius
+-- metres of where the count began. From AI.Stuck.steps of them on, every AI.Stuck.every-th step
+-- tells it as a fact, with the ways the agent knows here that it has not used (AI.Tried).
+AI.Stuck = AI.Stuck or { radius = 6, steps = 10, every = 5 }
+AI.Tried = AI.Tried or {}
+AI.Progress = AI.Progress or {}
+function AI.NoProgress(state)
+    local P, S = AI.Progress, AI.Stuck
+    -- only the steps that move the party count: a window's presses (creation, a menu) stand still
+    if not (state and state.args and (WALKS[state.args["do"]] or state.args["do"] == "jump")) then return nil end
+    local me = U.controlled()
+    local p = me and U.posOf(me)
+    if not p or AI.Turn().on or U.inDialogue() then
+        P.anchor, P.steps = p, 0
+        return nil
+    end
+    if not P.anchor or U.dist(p, P.anchor) > S.radius then
+        P.anchor, P.steps = p, 0
+        return nil
+    end
+    P.steps = (P.steps or 0) + 1
+    if P.steps < S.steps or (P.steps - S.steps) % S.every ~= 0 then return nil end
+    -- the ways known here, nearest first, each marked when the agent has used it: going back is
+    -- as much a way as going on
+    local rows, lines = {}, {}
+    for id, row in pairs(try(AI.Ways.Rows, AI.Limit) or {}) do rows[#rows + 1] = { id = id, row = row } end
+    table.sort(rows, function(a, b) return (a.row.d or 0) < (b.row.d or 0) end)
+    for i = 1, math.min(4, #rows) do lines[i] = rows[i].row.text .. (AI.Tried[rows[i].id] and " (used)" or "") end
+    local open = try(AI.Ways.Open, me)
+    return string.format("%d steps within %d m of %s,%s,%s with no new place reached; ways known here: %s%s",
+        P.steps, S.radius, U.round1(P.anchor[1]), U.round1(P.anchor[2]), U.round1(P.anchor[3]),
+        #lines > 0 and table.concat(lines, " | ") or "none", open and ("; open ground you see: " .. open) or "")
+end
+
 local function finish(state, final)
+    if state.mark and AI.StepRunning == state.mark then AI.StepRunning = nil end
     local args, result = state.args, state.result or { ok = true }
     local out
+    local window = type(result.result) == "table" and type(result.result.window) == "table" and result.result.window or nil
     if result.ok then
-        local summary = type(result.result) == "table" and result.result.summary or nil
-        out = answer(true, tostring(state.did or "") .. (summary and (": " .. tostring(summary)) or ""))
+        local summary = type(result.result) == "table" and (result.result.summary or result.result.examined or (args["do"] == "ui" and result.result.saw)) or nil
+        -- what the examine window showed that a fight turns on is kept for every creature of
+        -- that name (AI.Examined), and told with it in can's enemies line
+        if args["do"] == "examine" and type(result.result) == "table" and state.target then
+            local facts = {}
+            if result.result.ac then facts[#facts + 1] = "AC " .. tostring(result.result.ac) end
+            if result.result.resist then facts[#facts + 1] = tostring(result.result.resist) end
+            AI.Examined[tostring(nameOf(state.target))] = #facts > 0 and table.concat(facts, ", ") or "examined"
+        end
+        local did = tostring(state.did or "")
+        -- a walk that ended short of its goal says where it ended, never "walked to" the goal
+        if args["do"] == "go" and state.target and state.actor then
+            local tp = type(state.target) == "table" and state.target or U.posOf(state.target)
+            local mp = U.posOf(state.actor)
+            if tp and mp then
+                local dx, dy, dz = tp[1] - mp[1], tp[2] - mp[2], tp[3] - mp[3]
+                local gap = math.sqrt(dx * dx + dz * dz)
+                -- beside a creature but past a melee reach (1.5 m): the distance is said
+                if gap > 1.6 and gap <= 2.5 and math.abs(dy) <= 2.5 and type(state.target) == "string" and try(Osi.IsCharacter, state.target) == 1 then
+                    did = string.format("%s, %.1f m from it (a melee reach is 1.5 m)", did, gap)
+                end
+                if gap > 2.5 or math.abs(dy) > 2.5 then
+                    did = string.format("walked toward %s and stopped %.1f m short of it%s at %.1f,%.1f,%.1f",
+                        tostring(state.targetLabel), gap, math.abs(dy) > 2.5 and string.format(" (%.1f m %s)", math.abs(dy), dy > 0 and "below it" or "above it") or "",
+                        mp[1], mp[2], mp[3])
+                    -- why: the pathfinder's own answer from where it stopped, or that a walk does
+                    -- reach it from here and this one was cut off (a line spoken, a surface, a fight)
+                    -- in a fight a walk ends where the movement does: that is said first, and the
+                    -- path is asked only when movement is left
+                    local inFight = AI.Turn().on
+                    local left = inFight and (((try(GK.See.Resources, state.actor) or {}).movement or { 0 })[1] or 0) or nil
+                    local why, hint
+                    if not inFight or left >= 1 then why, hint = try(AI.Ways.WhyNot, state.actor, state.target, "no path") end
+                    if why then
+                        did = did .. ": " .. why .. (hint and (" -> " .. hint) or "")
+                    elseif inFight then
+                        did = did .. (left < 0.5 and ": the movement of this turn is spent"
+                            or string.format(": %.1f m of movement left this turn", left))
+                    else
+                        did = did .. ": a walk from here does reach it; this one was cut off - go again"
+                    end
+                end
+            end
+        end
+        -- a jump or a cast that moves its caster (Jump, Misty Step, a teleport) at a point: said
+        -- when the caster did not move
+        local spell = tostring(state.spell or "")
+        local moving = args["do"] == "jump"
+        if args["do"] == "cast" and type(state.target) == "table" then
+            for _, word in ipairs({ "Jump", "MistyStep", "Teleport", "DimensionDoor" }) do
+                if spell:find(word, 1, true) then moving = true end
+            end
+        end
+        if moving and state.startPos and state.actor then
+            local now = U.posOf(state.actor)
+            if now and U.dist(now, state.startPos) < 1 then
+                did = did .. "; but " .. tostring(nameOf(state.actor)) .. " did not move (read now.events: an opportunity attack or a fall may have stopped it)"
+            end
+        end
+        out = answer(true, did .. (summary and (": " .. tostring(summary)) or ""))
         if AI.Plan and AI.Plan.Did then pcall(AI.Plan.Did, args) end
     else
-        out = answer(false, "", result.error, state.hint or "read now.waiting and now.near, then try another act")
+        local why, hint = result.error, state.hint or "read now.waiting and now.near, then try another act"
+        -- a walk that ran out of time: where the character stands now
+        if WALKS[args["do"]] and state.actor and type(why) == "string" and why:find("did not end", 1, true) then
+            local mp = U.posOf(state.actor)
+            local tp = state.target and (type(state.target) == "table" and state.target or U.posOf(state.target))
+            if mp then
+                why = why .. string.format("; the character stands at %.1f,%.1f,%.1f%s", mp[1], mp[2], mp[3],
+                    tp and string.format(", %.1f m from %s", U.dist(mp, tp), tostring(state.targetLabel)) or "")
+            end
+        end
+        -- GateKit names its own option; the agent's is the argument of go
+        if type(why) == "string" then why = why:gsub("move with provoke = true", "do=go with provoke=true to the place") end
+        -- the weapon attack aimed through the hotbar found no weapon action to aim: the agent's way
+        -- is the action itself by its name
+        if type(why) == "string" and why:find("GK.Gui.UseSlot", 1, true) then
+            why = "the weapon attack could not be aimed from the hotbar"
+            hint = "cast the attack by its name from now.can: do=cast spell=Target_MainHandAttack (melee) or Projectile_MainHandAttack (ranged) with the same target"
+        end
+        -- a walk the pathfinder refuses: why, and the way that leads there (AI.Ways)
+        local pathWhy, pathHint
+        if state.target and WALKS[args["do"]] then pathWhy, pathHint = try(AI.Ways.WhyNot, state.actor, state.target, result.error) end
+        if pathWhy then
+            why, hint = pathWhy, pathHint or hint
+        else
+            -- the game refused an act of the member's open turn: what is left, and what still fits
+            local act = A[tostring(args["do"] or "")]
+            if state.acted and act and act.turn and state.actor and not U.inDialogue() then
+                local open = false
+                for _, row in ipairs(AI.Turn().turn or {}) do
+                    if row.mine and row.id == (uuidOf(state.actor) or state.actor) then open = true end
+                end
+                if open then why, hint = AI.TurnRefusal(state.actor, why) end
+            end
+        end
+        out = answer(false, "", why, hint)
     end
     local now, chars = AI.Now()
     if final or state.capped then
         now.waiting = now.waiting or {}
         now.waiting[#now.waiting + 1] = string.format("the game is still busy (%s) after %d ticks -> do=wait", tostring(state.busy or "?"), state.ticks or 0)
     end
+    if window then now.window = window end
+    local stuck = AI.NoProgress(state)
+    if stuck then
+        now.waiting = now.waiting or {}
+        now.waiting[#now.waiting + 1] = stuck
+    end
     out.now = now
+    local shown
+    if args.say then shown = state.said == true end
     AI.Row("ai_step", { ["do"] = args["do"], target = state.targetLabel, spell = state.spell, n = args.n, who = state.actor and nameOf(state.actor) or nil,
+        window = args.window, control = args.control, value = args.value,
         way = state.way, ok = out.ok, did = out.did ~= "" and out.did or nil, why_not = out.why_not ~= "" and out.why_not or nil,
-        say = args.say, think = args.think, ticks = state.ticks or 0, ms = math.floor(Ext.Utils.MonotonicTime() - state.started), chars = chars })
+        say = args.say, shown = shown, think = args.think, ticks = state.ticks or 0, ms = math.floor(Ext.Utils.MonotonicTime() - state.started), chars = chars })
     return out
 end
 
@@ -232,6 +398,14 @@ function AI.Step(args)
         return finish(state)
     end
     local name = tostring(args["do"] or ""):lower()
+    -- one step at a time: a call that comes while another still runs (its caller gave up waiting)
+    -- would act on a world the first one is still changing
+    local running = AI.StepRunning
+    if running and Ext.Utils.MonotonicTime() - running.since < 150000 then
+        -- a wait waits for it to end, then for the game to settle
+        if name == "wait" then state.behind = true else return refuse("a step is still running: " .. tostring(running["do"]) .. ", for " .. math.floor((Ext.Utils.MonotonicTime() - running.since) / 1000) .. " s",
+            call("ai_step", { ["do"] = "wait" }) .. " answers when it has ended") end
+    end
     if name == "plan" then
         if not AI.Mode.Part("plan") then
             return refuse(AI.Mode.Refuse("a route plan"), "choose the act yourself from now.near and your goals")
@@ -257,11 +431,29 @@ function AI.Step(args)
             return refuse(name .. " needs " .. need, call("ai_step", example))
         end
     end
-    if args.note then pcall(AI.Notes.Add, args.note) end
+    if AI.Think.required and (type(args.think) ~= "string" or args.think:match("^%s*$")) then
+        local again = {}
+        for k, v in pairs(args) do again[k] = v end
+        again.think = "<why, in a few words>"
+        return refuse("every step needs think: the reason for this act, in a few words (kept in the record, never shown)",
+            call("ai_step", again))
+    end
+    -- a note of the place, or with `about` (a handle or a name) of that creature or thing
+    if args.note then
+        local about = args.about ~= nil and args.about ~= "" and AI.Resolve(args.about) or nil
+        pcall(AI.Notes.Add, args.note, type(about) == "string" and about or nil)
+    end
+    -- the agent's goals, set or replaced with any step (Server/Goals.lua)
+    if type(args.goals) == "string" then pcall(AI.SetGoals, args.goals, AI.Turn().mine or U.controlled()) end
 
     local waits = AI.Waiting()
     if waits.actionable and not act.answers then
         return refuse("something waits for an answer first: " .. tostring(waits.list[#waits.list]), "answer it as that line says, then repeat " .. call("ai_step", args))
+    end
+    -- a window that waits lies over the others: a press behind it is what a player cannot make
+    if name == "ui" and args.control and waits.actionable and waits.widgets and not waits.widgets[args.window] then
+        return refuse("a window waits over " .. tostring(args.window) .. ": " .. tostring(waits.list[#waits.list]),
+            "answer it as that line says, then repeat " .. call("ai_step", args))
     end
 
     if act.guard then
@@ -270,7 +462,9 @@ function AI.Step(args)
     end
 
     local turn = AI.Turn()
-    local c = { n = tonumber(args.n) }
+    local function text(v) return v ~= nil and v ~= "" and tostring(v) or nil end
+    local c = { n = tonumber(args.n), window = text(args.window), control = text(args.control), value = text(args.value),
+                provoke = args.provoke == true or args.provoke == "true" or nil }
     if args.who ~= nil and args.who ~= "" then
         local who = AI.Resolve(args.who)
         local member
@@ -283,6 +477,19 @@ function AI.Step(args)
         c.actor = turn.mine or U.controlled()
     end
     state.actor = c.actor
+    -- a downed member's turn is the game's death saving throw: an act of it is refused before it
+    -- goes anywhere, naming the members whose turn is open and can act
+    if turn.on and act.turn and try(Osi.HasActiveStatus, c.actor, "DOWNED") == 1 then
+        local others = {}
+        for _, row in ipairs(turn.turn or {}) do
+            if row.mine and row.id ~= (uuidOf(c.actor) or c.actor) and try(Osi.HasActiveStatus, row.id, "DOWNED") ~= 1 then
+                others[#others + 1] = tostring(nameOf(row.id))
+            end
+        end
+        return refuse(tostring(nameOf(c.actor)) .. " is downed: its turn is the game's death saving throw, which the game ends by itself",
+            #others > 0 and name ~= "end" and call("ai_step", { ["do"] = name, target = args.target, spell = args.spell, who = others[1] })
+                or call("ai_step", { ["do"] = "wait" }))
+    end
     if turn.on and act.turn then
         local open
         for _, row in ipairs(turn.turn) do
@@ -303,7 +510,7 @@ function AI.Step(args)
             return refuse(name .. " needs a thing, not a point", call("ai_step", { ["do"] = name, target = "<a handle from now.near>" }))
         end
         c.target = target
-        state.targetLabel = label(target)
+        state.target, state.targetLabel = target, label(target)
     end
     if args.spell ~= nil and args.spell ~= "" then
         local spell, ready = spellOf(c.actor, args.spell)
@@ -314,7 +521,10 @@ function AI.Step(args)
         c.spell, state.spell = spell, spell
     end
 
-    if args.say and args.say ~= "" then
+    -- the line over the head is shown once the act has begun, never for an act that is refused
+    local function sayIt()
+        if state.said or not (args.say and args.say ~= "") then return end
+        state.said = true
         local far = name == "go" or name == "use" or name == "talk" or name == "loot"
         pcall(function()
             GK.Unobserved(AI.Say({ say = args.say, think = args.think, ["do"] = name, at = c.target, who = c.actor,
@@ -322,13 +532,16 @@ function AI.Step(args)
         end)
     end
 
-    -- the member who acts is the one the player controls, where the act is the player's own click
+    -- the member who acts is the one the player controls (GateKit's acts, scripted ones too, are
+    -- given to the selected character only); the game's own flag decides - after a death or a
+    -- fight's end it may hold nobody
     local selecting
-    if act.select and (uuidOf(c.actor) or c.actor) ~= (uuidOf(U.controlled()) or U.controlled()) then
+    if not act.answers and name ~= "select" and try(Osi.IsControlled, c.actor) ~= 1 then
         selecting = follow(GK.Act.Select(c.actor))
     end
     local poll
     local function start()
+        state.startPos = U.posOf(c.actor)
         local ok, a, b = pcall(act.run, c)
         if not ok then
             state.result = { ok = false, error = "the bridge failed: " .. tostring(a) }
@@ -337,11 +550,16 @@ function AI.Step(args)
         poll, state.did = a, b
         if poll == nil then state.result = { ok = true } end
     end
+    if not state.behind then
+        state.mark = { ["do"] = name, since = Ext.Utils.MonotonicTime() }
+        AI.StepRunning = state.mark
+    end
     if not selecting then start() end
 
     return GK.Observe({ ok = true, waiting = "the step" }, function(ticks, final)
         state.ticks = ticks
         local capped = final or ticks >= AI.Cap
+        if state.behind and AI.StepRunning and not capped then return nil end
         if selecting then
             local s = selecting()
             if s == nil and not capped then return nil end
@@ -357,11 +575,13 @@ function AI.Step(args)
         end
         if state.result == nil then
             local r = poll()
+            if r == nil and poll("begun") == true then sayIt() end
             if r == nil and not capped then return nil end
             state.result = r or { ok = false, error = "the act did not end in " .. ticks .. " ticks" }
-            state.actedAt = ticks
+            state.actedAt, state.acted = ticks, true
             if state.result.ok == false and state.result.detail and state.result.detail.hint then state.hint = tostring(state.result.detail.hint) end
         end
+        if state.result.ok then sayIt() end
         state.actedAt = state.actedAt or ticks
         if ticks - state.actedAt < MIN and not capped then return nil end
         local why = busy(state)
@@ -379,7 +599,7 @@ end
 -- ---------------------------------------------------------------------------------------
 -- Look, scene, plan
 
-local PARTS = { all = true, things = true, actions = true, notes = true, plan = true, prompt = true }
+local PARTS = { all = true, things = true, actions = true, notes = true, plan = true, prompt = true, thoughts = true }
 for _, key in ipairs(AI.NowKeys) do PARTS[key] = true end
 
 --- The whole picture (`part` left out or "all"), or one part: a key of `now` (where, fight, can,
@@ -391,7 +611,8 @@ for _, key in ipairs(AI.NowKeys) do PARTS[key] = true end
 function AI.Look(args)
     args = type(args) == "table" and args or {}
     local part = tostring(args.part or "all"):lower()
-    local detail = args.detail == "full" and "full" or "brief"
+    -- a look at one part is asked for because the brief list left some of it out: it reads it whole
+    local detail = (args.detail == "full" or (part ~= "all" and args.detail ~= "brief")) and "full" or "brief"
     local limits = AI.Detail[detail]
     local out
     if not PARTS[part] then
@@ -408,6 +629,12 @@ function AI.Look(args)
         return out
     end
     out = answer(true, "looked: " .. part)
+    -- the reasons given with the steps: for a listener as much as for the agent, so the session's
+    -- cursor stays and no row is written
+    if part == "thoughts" then
+        out.now = { thoughts = AI.Thoughts(limits.list) }
+        return out
+    end
     local prompt = AI.Session.prompt
     if part == "prompt" then
         out.prompt = prompt or ""
@@ -436,9 +663,19 @@ function AI.Look(args)
             end
         end
         now = { actions = list }
+    elseif part == "can" then
+        -- whole, never shaped to the block's cap
+        local mine = AI.Turn().mine
+        now = { can = mine and AI.Can(mine, limits) or {} }
     elseif part == "notes" then
         local list = {}
-        for _, note in ipairs(AI.Notes.Near(true)) do list[#list + 1] = note.text end
+        local about = args.about ~= nil and args.about ~= "" and AI.Resolve(args.about) or nil
+        if type(about) == "string" then
+            -- the notes of one creature or thing, every one, the oldest first
+            list = (AI.Notes.About(about) or { texts = {} }).texts
+        else
+            for _, note in ipairs(AI.Notes.Near(true)) do list[#list + 1] = note.text end
+        end
         now = { notes = list }
     elseif part == "plan" then
         local list = {}
@@ -450,6 +687,11 @@ function AI.Look(args)
     elseif part ~= "all" then
         now = { [part] = now[part] }
         if now[part] == nil then now[part] = {} end
+        -- the ways that are no thing: open ground the party sees, by bearing (AI.Ways.Open)
+        if part == "ways" then
+            local open = try(AI.Ways.Open, U.controlled())
+            if open then table.insert(now.ways, "open ground you see: " .. open) end
+        end
     end
     if part ~= "all" then chars = #AI.Encode(now, AI.NowKeys) end
     out.now = now
@@ -458,22 +700,93 @@ function AI.Look(args)
 end
 
 local function sceneOf(name)
-    local scenes = try(function() return Mods.GateKit.GKScene end)
+    local scenes = try(AI.SceneTable)
     return type(scenes) == "table" and type(scenes[name]) == "table" and scenes[name] or nil
 end
 
+-- `arm` and `off` of a scene of the stand's manifest (Shared/Stand.lua): the code the host read
+-- from `file` (args.code), else the code kept at the last arming.
+local function standCall(name, fn, args)
+    local St = AI.Stand
+    local entry = St.Entry(name)
+    if not entry then
+        local stand = St.Current()
+        local out = answer(false, "", stand and ("the stand's manifest has no scene " .. tostring(name)) or "no stand's manifest is given",
+            stand and call("ai_scene", {}) .. " lists its scenes" or 'ai_session {"scenes_file":"<the manifest>"} gives it')
+        out.now = {}
+        return out
+    end
+    local code = type(args.code) == "string" and args.code ~= "" and args.code or St.Code(name, fn)
+    if not code then
+        local out = answer(false, "", "the code of " .. name .. "'s " .. fn .. " is not kept yet: name its file once", St.Hint(name, fn))
+        out.now = {}
+        return out
+    end
+    if args.code then St.Keep(name, fn, code) end
+    local step = GK.Follow(AI.StandCall(name, fn, code))
+    return GK.Observe({ ok = true, waiting = "the scene" }, function()
+        local r = step()
+        if r == nil then return nil end
+        local out = r.ok and answer(true, r.did) or answer(false, "", r.error, "tell the owner")
+        out.now = AI.Now()
+        return out
+    end, 8000)
+end
+
+-- A call of a scene under the client's GKScene: run there, in the UI's context (AI.SceneCall).
+local function clientCall(name, fn)
+    local got
+    AI.Ask({ act = "call", scene = name, call = fn }, function(a) got = a end)
+    return GK.Observe({ ok = true, waiting = "the scene" }, function(_, final)
+        if got == nil and not final then return nil end
+        got = got or { ok = false, error = "the client did not answer" }
+        local out = got.ok == false and answer(false, "", cut(tostring(got.error or "refused"), 400), "read the scene's state: " .. call("ai_scene", { name = name }))
+            or answer(true, name .. "." .. fn .. "()" .. (type(got.answered) == "string" and (" answered " .. got.answered) or ""))
+        AI.Row("ai_scene", { name = name, call = fn, ok = out.ok, error = out.why_not ~= "" and out.why_not or nil })
+        out.now = AI.Now()
+        return out
+    end, 30000)
+end
+
+-- The manifest's scenes that are not under GKScene now: each with how it is armed.
+local function standLines(lines, clientLines)
+    local out = {}
+    local stand = AI.Stand.Current()
+    if not stand then return out end
+    local armed = AI.Stand.Armed()
+    for name, entry in pairs(stand.scenes) do
+        if not lines[name] and not clientLines[name] then
+            local how = AI.Stand.Code(name, "arm") and call("ai_scene", { name = name, call = "arm" }) or AI.Stand.Hint(name, "arm")
+            local on = armed[name] and (armed[name].level == "" and "the menu" or tostring(armed[name].level))
+            out[#out + 1] = name .. " (" .. tostring(entry.side) .. "): " .. (on and ("armed on " .. on .. ", no table under GKScene") or "not armed") .. " | arm: " .. how
+        end
+    end
+    if AI.Checkpoint then
+        out[#out + 1] = string.format("checkpoint: %s when %s%s", AI.Checkpoint.scene, AI.Checkpoint.flag, AI.Checkpoint.ok and "" or " (the game made no save)")
+    end
+    return out
+end
+
 --- A scene: any table under the global GKScene of GateKit's Lua environment. Without `name`:
---- every scene with its state. With `name`: its state and the calls it offers. With `call`: that
---- function of the scene is run, with no arguments, and what it answered is said. A scene of the
---- client's is listed with its state; its calls are not reachable from here. One row `ai_scene`.
---- { ok, did, why_not, hint, now } with `now.scenes`.
+--- every scene with its state, and the stand's scenes not armed with the call that arms each.
+--- With `name`: its state and the calls it offers. With `call`: that function of the scene is
+--- run, with no arguments, and what it answered is said (AI.SceneSaid); `arm` and `off` arm and
+--- disarm a scene of the stand's manifest, from `file` (args.code: the host read it) or from the
+--- code kept. A scene of the client's is listed with its state, and its call is run on the client,
+--- in the UI's context. One row `ai_scene`. { ok, did, why_not, hint, now } with `now.scenes`.
 function AI.Scene(args)
     args = type(args) == "table" and args or {}
     local name, fn = args.name, args.call
     if type(name) == "string" and name:find(".", 1, true) and not fn then name, fn = name:match("^([^%.]+)%.(.+)$") end
     if type(fn) == "string" then fn = fn:gsub("%(%)$", "") end
+    if (fn == "arm" or fn == "off") and type(name) == "string" and name ~= "" then
+        return standCall(name, fn, args)
+    end
     local lines = AI.SceneLines(Mods.GateKit)
     local clientLines = AI.Client.scenes or {}
+    if type(fn) == "string" and fn ~= "" and type(name) == "string" and not sceneOf(name) and clientLines[name] then
+        return clientCall(name, fn)
+    end
     local out
     -- blind: a scene's state is the director's. A call the owner names is still run; nothing of
     -- the scene is read back
@@ -485,7 +798,15 @@ function AI.Scene(args)
             return out
         end
         local ok, result = pcall(scene[fn])
-        out = ok and answer(true, name .. "." .. fn .. "()") or answer(false, "", name .. "." .. fn .. "() failed: " .. cut(tostring(result), 160), "tell the owner")
+        if not ok then
+            out = answer(false, "", name .. "." .. fn .. "() failed: " .. cut(tostring(result), 160), "tell the owner")
+        elseif type(result) == "table" and result.ok == false then
+            -- the scene refused: not now, and why; nothing was done
+            out = answer(false, "", name .. "." .. fn .. "(): " .. cut(tostring(result.error or "refused"), 160),
+                result.hint and cut(tostring(result.hint), 160) or "read the scene's state in now.scenes")
+        else
+            out = answer(true, name .. "." .. fn .. "()")
+        end
         AI.Row("ai_scene", { name = name, call = fn, ok = out.ok, error = out.why_not ~= "" and out.why_not or nil })
         out.now = AI.Now()
         return out
@@ -494,6 +815,7 @@ function AI.Scene(args)
         local list = {}
         for scene, line in pairs(lines) do list[#list + 1] = scene .. ": " .. line .. " | calls: " .. table.concat(AI.SceneCalls(sceneOf(scene)), ", ") end
         for scene, line in pairs(clientLines) do if not lines[scene] then list[#list + 1] = scene .. " (client): " .. line end end
+        for _, line in ipairs(standLines(lines, clientLines)) do list[#list + 1] = line end
         table.sort(list)
         out = answer(true, "listed the scenes")
         out.now = { scenes = list }
@@ -522,9 +844,9 @@ function AI.Scene(args)
     end
     local ok, result = pcall(scene[fn])
     if ok then
-        local said = type(result) == "table" and (result.error or result.why or (result.ok == false and "refused")) or nil
-        out = answer(not said, name .. "." .. fn .. "()" .. ((type(result) == "string" or type(result) == "number" or type(result) == "boolean") and (" answered " .. tostring(result)) or ""),
-            said and tostring(said) or nil, said and "read the scene's state in now.scenes" or nil)
+        local fine, said, why = AI.SceneSaid(result)
+        out = answer(fine, fine and (name .. "." .. fn .. "()" .. (said and (" answered " .. said) or "")) or "",
+            why, why and (type(result) == "table" and result.hint and tostring(result.hint) or "read the scene's state in now.scenes") or nil)
     else
         out = answer(false, "", name .. "." .. fn .. "() failed: " .. cut(tostring(result), 160), "tell the owner")
     end
@@ -541,7 +863,7 @@ end
 function AI.SessionCall(args)
     args = type(args) == "table" and args or {}
     local begins = false
-    for _, k in ipairs({ "mode", "prompt", "plan", "step" }) do if args[k] ~= nil then begins = true end end
+    for _, k in ipairs({ "mode", "prompt", "scenes", "plan", "step" }) do if args[k] ~= nil then begins = true end end
     local result = begins and AI.Session.Start(args) or { ok = true }
     local out = result.ok and answer(true, begins and ("the session began in mode " .. AI.Mode.name) or "read the session")
         or answer(false, "", result.error, result.hint)

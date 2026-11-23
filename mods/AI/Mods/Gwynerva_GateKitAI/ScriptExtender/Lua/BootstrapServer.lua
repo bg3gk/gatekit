@@ -9,10 +9,16 @@ if not AI.GK then
     return
 end
 
+Ext.Require("Shared/Encode.lua")
 Ext.Require("Shared/Scenes.lua")
+Ext.Require("Shared/Stand.lua")
 Ext.Require("Server/Bridge.lua")
 Ext.Require("Server/Mode.lua")
 Ext.Require("Server/Say.lua")
 Ext.Require("Server/Plan.lua")
+Ext.Require("Server/Ways.lua")
+Ext.Require("Server/Turn.lua")
+Ext.Require("Server/Goals.lua")
 Ext.Require("Server/Now.lua")
 Ext.Require("Server/Step.lua")
+Ext.Require("Server/Stand.lua")
