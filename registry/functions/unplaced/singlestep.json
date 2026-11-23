@@ -1,0 +1,14 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::singlestep",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The game's embedded Lua 5.3: one step of the collector's state machine (global_State+0x55 gcstate: propagate, atomic, the sweeps, call finalizers).",
+  "fingerprint": {"calls": ["fp:a25a55d3932268d1", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its body is Lua 5.3's singlestep: a switch on g->gcstate at +0x55, propagatemark while g->gray (+0x70), atomic, sweeplist on allgc (+0x58) into sweepgc (+0x60)"
+    }
+  ]
+}

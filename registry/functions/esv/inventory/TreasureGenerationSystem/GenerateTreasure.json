@@ -1,0 +1,47 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::inventory::TreasureGenerationSystem::GenerateTreasure",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Makes a container's or a character's treasure: the finder's level, the ruleset's loot balancing, a ls::Random from a provider (a virtual call keyed by the request), then CRPGStats_Treasure_Table_Manager::GenerateObjects; the level's containers' loot at a first visit (TemplateAddedTo ... Treasure) comes from here.",
+  "fingerprint": {
+    "calls": [
+      "CRPGStats_Treasure_Table_Manager::GenerateObjects",
+      "fp:123b79ba6c390bab",
+      "fp:175ac60533e9dfb9",
+      "fp:1cfe15017ce91cc4",
+      "fp:2852fa765ac8622d",
+      "fp:2b5cd5ae99a32fc1",
+      "fp:36ea95f2ce33bd6a",
+      "fp:4fcdb2e1dc88eca1",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:d649436bbbe7d47a",
+      "fp:e4d053ad9455ea7c",
+      "fp:e58bb2b583acc35e",
+      "fp:e7fb5766f00e25ab"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll+0xF16DF0 exports it; its body calls GenerateObjects with the Random from the provider."
+    },
+    {
+      "kind": "read",
+      "says": "dx11 FUN_1434c1630 reads the treasure handle through the stats manager +0x180 vtable +0x20, takes its ls::Random from the helper at +0x10 (vtable +8: GetSavedRandom), and calls CRPGStats_Treasure_Table_Manager::GenerateObjects (bg3_dx11.exe@25605617+0x1037540) - the Toolkit's GenerateTreasure (EoCServer.dll+0xF16DF0) line for line"
+    },
+    {
+      "kind": "watch",
+      "says": "a hardware watch on the saved random (esv::EocServer +0xBC) during Basic_Level_A -> WLD_Main_A hit only under bg3_dx11.exe@25605617+0x34C1630's call of bg3_dx11.exe@25605617+0x1037540; a probe on it: 300 calls in a first WLD visit, argument 3 the entity, spread over the level's setup"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Which object the provider is (the roll stream manager, the saved random of esv::EocServer, or a per-level seed) and how it is seeded: the loot differs between two native runs.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

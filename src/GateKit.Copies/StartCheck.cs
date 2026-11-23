@@ -24,7 +24,7 @@ public sealed record StartReading(StartVerdict Verdict, string Text)
     public bool Restart => Verdict == StartVerdict.ModsOff;
 }
 
-/// <summary>Reads a start the bridge has not answered (docs/contracts/cli.md, "up", step 17).</summary>
+/// <summary>Reads a start the bridge has not answered (docs/contracts/cli.md, "up", step 16).</summary>
 public static class StartCheck
 {
     /// <summary>The line Script Extender's client writes once the game has loaded its module (after

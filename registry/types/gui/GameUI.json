@@ -1,0 +1,57 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::GameUI",
+  "kind": "struct",
+  "state": "described",
+  "about": "The game's interface object (ls::ResourceManager::UI); its update gui::GameUI::UpdateFromUI runs the mods' merge block.",
+  "fields": [
+    {
+      "offset": 1152,
+      "name": "ModManager",
+      "type": "ui::ModManager",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the merge block of gui::GameUI::UpdateFromUI (code:gui::GameUI::UpdateFromUI) takes this+0x480 as RegisterMods' this, this+0x2B90 as the texture provider, tests and clears this+0x2D9A around the block and holds this+0x3038 with EnterCriticalSection; the fork's early merge uses the same and runs"
+        }
+      ]
+    },
+    {
+      "offset": 11152,
+      "name": "TextureProvider",
+      "type": "ui::TextureProvider*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the merge block of gui::GameUI::UpdateFromUI (code:gui::GameUI::UpdateFromUI) takes this+0x480 as RegisterMods' this, this+0x2B90 as the texture provider, tests and clears this+0x2D9A around the block and holds this+0x3038 with EnterCriticalSection; the fork's early merge uses the same and runs"
+        }
+      ]
+    },
+    {
+      "offset": 11674,
+      "name": "ModsPending",
+      "type": "uint8",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the merge block of gui::GameUI::UpdateFromUI (code:gui::GameUI::UpdateFromUI) takes this+0x480 as RegisterMods' this, this+0x2B90 as the texture provider, tests and clears this+0x2D9A around the block and holds this+0x3038 with EnterCriticalSection; the fork's early merge uses the same and runs"
+        }
+      ]
+    },
+    {
+      "offset": 12344,
+      "name": "Lock",
+      "type": "CRITICAL_SECTION",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the merge block of gui::GameUI::UpdateFromUI (code:gui::GameUI::UpdateFromUI) takes this+0x480 as RegisterMods' this, this+0x2B90 as the texture provider, tests and clears this+0x2D9A around the block and holds this+0x3038 with EnterCriticalSection; the fork's early merge uses the same and runs"
+        }
+      ]
+    }
+  ]
+}

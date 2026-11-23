@@ -1,0 +1,44 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::ModuleSettings::ResolveAddonsOrder",
+  "state": "described",
+  "rung": "game",
+  "does": "Orders the settings' addons before they are written to modsettings.lsx.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:d5c52a8ca1da6bb7",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "first call of ecl::ModManagerClient::SaveSettingsAndReload in the dx11 and macOS builds"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code of code:ecl::ModManagerClient::SaveSettingsAndReload: called on the settings at +0x1C0 before they are written to modsettings.lsx"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy coord (c2, build v34-start-extmod-3): two calls from bg3_dx11.exe@25605617+0x181B4EA, one in a toggle off and one in a toggle on through Ext.Mod.SetEnabled, each with the settings (manager+0x1C0), answering 1"
+    }
+  ]
+}

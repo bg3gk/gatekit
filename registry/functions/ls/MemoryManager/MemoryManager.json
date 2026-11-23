@@ -1,0 +1,24 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::MemoryManager::MemoryManager",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Makes the engine's memory manager: a critical section, a pool size of 0x68000000 bytes (1,664 MB) at +0xD0 (another for GameObjectFileMerger.exe), the system allocator's usage counters; the 1,664 MB arena is committed at the process start, drawn or not.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "CoreLib.dll+0x8F040 (unnamed) writes 0x68000000 at +0xD0 and checks the module name against GameObjectFileMerger.exe; the macOS ls::MemoryManager::GetInstance initialiser writes the same 0x68000000"
+    },
+    {
+      "kind": "watch",
+      "says": "Ext.Debug.MemoryMap at the first Lua (client LoadModule): one committed private region of 0x68030000 bytes, headless and drawn alike, beside one of 0x82610000 (2,086 MB)"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Who commits the 2,086 MB region (0x82610000), and is the arena size a setting that a headless game could lower with the logic unchanged?",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

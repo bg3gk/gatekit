@@ -1,0 +1,19 @@
+{
+  "schema": "registry/function/1",
+  "id": "Eoc::GetClientPort",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The host's own client's port when DisableLocalMessagePassing is set (the client peer, ecl::EocClient +0x98 in dx11), else 0.",
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoC.dll+0x16DB50 exports it; read: dx11's body matches, the flag at ls__GlobalSwitches + 0x111"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

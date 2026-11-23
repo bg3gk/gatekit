@@ -113,7 +113,7 @@ public sealed class McpTests : IAsyncLifetime
         // The core tools, the deck's, and the coverage loop's - an agent mapping the
         // engine must reach all of it through this server alone.
         foreach (var wanted in new[] { "bg3_up", "bg3_down", "bg3_status", "bg3_state", "bg3_events", "bg3_lua", "bg3_wait",
-            "bg3_dialog", "bg3_fast_scenes", "bg3_logs", "bg3_reload", "bg3_key", "bg3_screenshot", "bg3_checkpoint",
+            "bg3_dialog", "bg3_fast_scenes", "bg3_logs", "bg3_timeline", "bg3_reload", "bg3_key", "bg3_screenshot", "bg3_checkpoint",
             "bg3_reset", "bg3_sound", "bg3_call", "bg3_api", "bg3_windows", "bg3_window",
             "bg3_pause", "bg3_seen_start", "bg3_seen_mark", "bg3_seen_new", "bg3_seen_drain", "bg3_seen_status",
             "bg3_coverage_todo", "bg3_probe", "bg3_probe_fields", "bg3_probe_watch", "bg3_verify", "bg3_recipe", "bg3_run_report",
@@ -135,6 +135,8 @@ public sealed class McpTests : IAsyncLifetime
         // The gaps docs/contracts/mcp.md lists are filled.
         var up = tools.First(t => (string)t!["name"]! == "bg3_up")!;
         Assert.NotNull(up["inputSchema"]!["properties"]!["save"]);
+        Assert.NotNull(up["inputSchema"]!["properties"]!["until_lua"]);
+        Assert.NotNull(up["inputSchema"]!["properties"]!["first_launch"]);
         var wait = tools.First(t => (string)t!["name"]! == "bg3_wait")!;
         Assert.Contains("ui", wait["inputSchema"]!["properties"]!["side"]!["enum"]!.AsArray().Select(v => (string)v!));
     }

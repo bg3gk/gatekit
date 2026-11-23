@@ -1,0 +1,50 @@
+{
+  "schema": "registry/function/1",
+  "id": "App::LoadAndResaveGraphicsSettings",
+  "state": "described",
+  "rung": "game",
+  "does": "Reads graphicSettings.lsx from the profile (path root 4) into the graphic settings and writes them back; called by BaseApp::Start through App's vtable +0xA8 after the engine's API is up. Script Extender hooks it as App__LoadGraphicSettings and adds its game-state listeners in the post-hook.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:207b4513318dc35b",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:7ec6bc773f10ca24",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:ee65e503da85fc44",
+      "import:37b5ff602440c248"
+    ],
+    "strings": ["bb05dc2b2b7e592b"],
+    "vtables": [{"slot": 21}]
+  },
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "live, copy attacks: slot +0xA8 of App's dx11 vtable (+0x5499F58) holds code:App::LoadGraphicSettings, which is Script Extender's App__LoadGraphicSettings (Ext.Debug.GetSymbolAddress); the Toolkit's App vtable has App::LoadAndResaveGraphicsSettings at +0xA8 and App::InitApp / App::InitGame at +0x98 / +0xB0, as the dx11 one"
+    },
+    {
+      "kind": "read",
+      "says": "Script Extender's pattern: the function's prologue loads path root 4 and the text graphicSettings.lsx"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoC.dll",
+      "tie": "name",
+      "says": "EoC.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "reach",
+      "says": "Timeline Step row (Script Extender's post-hook, two starts): ends 5890.1 / 5009.5 ms, 1.4 / 1.1 s after SDL_CreateWindow; graphicSettings.lsx itself is opened at 4420 ms, by BaseApp::Start's earlier config step (vtable +0x180), so this function's own read is not the file's first"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

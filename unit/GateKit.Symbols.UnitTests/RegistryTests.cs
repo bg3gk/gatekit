@@ -188,6 +188,18 @@ public sealed class RegistryTests : IDisposable
     }
 
     [Fact]
+    public void A_folder_test_resolves_by_its_folder_and_its_data_files_are_not_tests()
+    {
+        var folder = Path.Combine(store.Repository, "tests", "startup", "videos");
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "test.lua"), "function run(game) end");
+        File.WriteAllText(Path.Combine(folder, "ONE.bk2"), "data");
+        Assert.Equal((true, null), RegistryRefs.ResolveTest(store.Repository, "startup/videos"));
+        Assert.Equal((true, "the logo/a step"), RegistryRefs.ResolveTest(store.Repository, "startup/videos/the logo/a step"));
+        Assert.Equal((true, "ONE"), RegistryRefs.ResolveTest(store.Repository, "startup/videos/ONE"));   // below the test: unchecked
+    }
+
+    [Fact]
     public void A_rename_moves_the_file_and_rewrites_every_citation_and_leaves_the_old_id_nowhere()
     {
         store.Write(EntryKind.Function, Function("unplaced::Old"), create: false);

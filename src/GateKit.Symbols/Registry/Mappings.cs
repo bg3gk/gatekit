@@ -186,6 +186,92 @@ public static class Mappings
     public static string? Emit(string id, FingerprintReader reader, RegistryStore store, int limit, out string why) =>
         Emit(id, reader, store, limit, named: false, out why);
 
+    // A mapping the registry writes inside a Script Extender's table: its comment, then the mapping.
+    static readonly System.Text.RegularExpressions.Regex Marked = new(
+        @"(?<comment>[ \t]*<!-- code:(?<id>[^;\s]+)[^\r\n]*-->)(?<nl>\r?\n)(?<mapping>[ \t]*<Mapping\b[\s\S]*?</Mapping>)",
+        System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// The mappings of a Script Extender's own table that the registry writes - each one after a
+    /// comment <c>&lt;!-- code:&lt;id&gt;; ... --&gt;</c> - given their pattern again from the registry
+    /// (<see cref="Emit"/>): the mapping's own element and its targets stay as the table has them, its
+    /// pattern and the comment's places are the registry's. <paramref name="add"/> names functions whose
+    /// mapping (its Name the id) gets the comment first. With <paramref name="checkOnly"/> nothing is
+    /// written. Answers the ids written again (or that differ), the ones already as the registry has
+    /// them, and the ones the registry cannot write.
+    /// </summary>
+    public static (IReadOnlyList<string> Changed, IReadOnlyList<string> Same, IReadOnlyList<(string Id, string Why)> Failed) Sync(
+        string path, IReadOnlyList<string> add, FingerprintReader reader, RegistryStore store, int limit, bool checkOnly)
+    {
+        var text = File.ReadAllText(path);
+        var before = text;
+        var nl = text.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
+        var failed = new List<(string, string)>();
+        foreach (var id in add)
+        {
+            var name = $"<Mapping Name=\"{id}\"";
+            var at = text.IndexOf(name, StringComparison.Ordinal);
+            if (at < 0) { failed.Add((id, "the table has no mapping of that name")); continue; }
+            var lineStart = text.LastIndexOf('\n', at) + 1;
+            // already marked: the line before the mapping is its comment
+            var prevStart = lineStart >= 2 ? text.LastIndexOf('\n', lineStart - 2) + 1 : 0;
+            if (text[prevStart..lineStart].Contains($"<!-- code:{id}", StringComparison.Ordinal)) continue;
+            var indent = text[lineStart..at];
+            text = text[..lineStart] + indent + $"<!-- code:{id} -->" + nl + text[lineStart..];
+        }
+        var changed = new List<string>();
+        var same = new List<string>();
+        text = Marked.Replace(text, m =>
+        {
+            var id = m.Groups["id"].Value;
+            // the registry writes a pattern of the function's start: a mapping whose pattern is not at
+            // the start, or whose targets lie elsewhere (a global an instruction refers to), stays the
+            // table's own
+            var own = m.Groups["mapping"].Value;
+            var targets = System.Text.RegularExpressions.Regex.Matches(own, @"Offset=""([^""]*)""").Select(t => t.Groups[1].Value).ToList();
+            // a global's mapping names the function its pattern stands in: "; read in <id>"
+            var via = System.Text.RegularExpressions.Regex.Match(m.Groups["comment"].Value, @"; read in (\S+)");
+            var global = via.Success && own.Contains("@ref1", StringComparison.Ordinal) && targets.All(t => t == "@ref1");
+            if (!global && (!own.Contains("@start", StringComparison.Ordinal) || targets.Any(t => t != "@start")))
+            {
+                failed.Add((id, "its pattern is not the function's start or a target lies elsewhere: it stays written by hand"));
+                return m.Value;
+            }
+            string? emitted;
+            string why;
+            emitted = global ? EmitGlobal(id, via.Groups[1].Value, reader, store, limit, out why) : Emit(id, reader, store, limit, out why);
+            if (emitted is null) { failed.Add((id, why)); return m.Value; }
+            var fresh = emitted.ReplaceLineEndings("\n").Split('\n');
+            var comment = fresh.First(l => l.TrimStart().StartsWith("<!--", StringComparison.Ordinal));
+            var pattern = PatternLines(fresh);
+            var old = m.Groups["mapping"].Value.ReplaceLineEndings("\n").Split('\n');
+            var head = old.TakeWhile(l => !l.Contains("<Mapping", StringComparison.Ordinal)).Concat(old.SkipWhile(l => !l.Contains("<Mapping", StringComparison.Ordinal)).Take(1)).ToList();
+            var tail = old.Skip(head.Count).SkipWhile(l => !l.TrimStart().StartsWith('<')).ToList();
+            var mapping = string.Join(nl, head.Concat(pattern).Concat(tail));
+            var replaced = comment + m.Groups["nl"].Value + mapping;
+            // the same bytes: the table's mapping stays word for word (its comments are a reader's), the
+            // comment before it takes the registry's places
+            if (string.Equals(PatternKey(old), PatternKey(fresh), StringComparison.Ordinal))
+            {
+                same.Add(id);
+                var indent = comment[..(comment.Length - comment.TrimStart().Length)];
+                return indent + comment.Trim() + m.Groups["nl"].Value + m.Groups["mapping"].Value;
+            }
+            changed.Add(id);
+            return replaced;
+        });
+        if (!checkOnly && !string.Equals(before, text, StringComparison.Ordinal)) File.WriteAllText(path, text);
+        return (changed, same, failed);
+    }
+
+    // The pattern of a mapping: its lines after the <Mapping> line up to the first element.
+    static List<string> PatternLines(IEnumerable<string> lines) =>
+        [.. lines.SkipWhile(l => !l.Contains("<Mapping", StringComparison.Ordinal)).Skip(1).TakeWhile(l => !l.TrimStart().StartsWith('<'))];
+
+    // The bytes of a mapping's pattern, its comments left out, for comparing two mappings.
+    static string PatternKey(IEnumerable<string> lines) =>
+        string.Join(' ', PatternLines(lines).Select(l => (l.Contains("//", StringComparison.Ordinal) ? l[..l.IndexOf("//", StringComparison.Ordinal)] : l).Trim()).Where(l => l.Length > 0));
+
     /// <summary>The same; with <paramref name="named"/> the mapping is of the registry's own table: its
     /// name is <c>registry:&lt;id&gt;</c> and its target binds to the id itself (<c>Name</c>), not to a
     /// symbol a Script Extender declares in its code.</summary>
@@ -240,6 +326,91 @@ public static class Mappings
                 return b.ToString();
             }
             if (take >= limit) { why = $"no run of instructions from its start is found once in every binary within {limit} bytes"; return null; }
+        }
+    }
+
+    /// <summary>
+    /// A mapping that finds a global the registry places: the global has no start of its own, so the
+    /// pattern stands at an instruction of a function the registry also places (<paramref name="via"/>)
+    /// that refers to it RIP-relatively - the first such instruction of the function in each binary -
+    /// and its target reads the address the instruction refers to (<c>Indirect</c> at <c>@ref1</c>).
+    /// The pattern is the shortest run of whole instructions from there found once in every binary.
+    /// </summary>
+    public static string? EmitGlobal(string id, string via, FingerprintReader reader, RegistryStore store, int limit, out string why)
+    {
+        why = "";
+        var globals = store.Places(id).Select(p => (p.Binary, p.Row.Rva)).Distinct().OrderBy(p => p.Binary, StringComparer.Ordinal).ToList();
+        if (globals.Count == 0) { why = "the registry places the global in no binary"; return null; }
+        var functions = store.Places(via).Select(p => (p.Binary, p.Row.Rva)).Distinct().ToDictionary(p => p.Binary, p => p.Rva, StringComparer.Ordinal);
+        var anchors = new List<(string Binary, long Rva)>();
+        // where the registry places the global: the first instruction of the function that refers to
+        // it, and its number among the function's RIP-relative instructions
+        var index = -1;
+        int count = 0;
+        foreach (var (binary, rva) in globals)
+        {
+            if (!functions.TryGetValue(binary, out var function)) { why = $"the registry does not place {via} in {binary}"; return null; }
+            var all = reader.IpRelative(binary, function);
+            if (all is null) { why = $"the file of {binary} cannot be read"; return null; }
+            var at = all.ToList().FindIndex(r => r.Target == rva);
+            if (at < 0) { why = $"{via} does not refer to the global in {binary}"; return null; }
+            if (index < 0) { index = at; count = all.Count; }
+            anchors.Add((binary, all[at].At));
+        }
+        // a binary the registry places the function in but not the global: the instruction of the same
+        // number, when the function there has as many - the pattern's check in every binary decides
+        foreach (var (binary, function) in functions.Where(f => globals.All(g => g.Binary != f.Key)).OrderBy(f => f.Key, StringComparer.Ordinal))
+        {
+            var all = reader.IpRelative(binary, function);
+            if (all is null || all.Count != count) continue;
+            anchors.Add((binary, all[index].At));
+        }
+        var (first, start) = anchors[0];
+        for (var take = 0; ; take = take == 0 ? Math.Min(12, limit) : Math.Min(limit, take * 2))
+        {
+            var lines = reader.Signature(first, start, limit, out _, take);
+            if (lines is null) { why = $"the file of {first} cannot be read"; return null; }
+            var tokens = lines.Select(l => l.Bytes.Split(' ')).ToList();
+            var length = tokens.Sum(t => t.Length);
+            var bytes = new byte[length];
+            var wild = new bool[length];
+            var k = 0;
+            foreach (var token in tokens.SelectMany(t => t))
+            {
+                if (token == "??") wild[k] = true;
+                else bytes[k] = byte.Parse(token, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                k++;
+            }
+            foreach (var (binary, rva) in anchors.Skip(1))
+            {
+                if (reader.BytesAt(binary, rva, length) is not { } other) { why = $"the bytes of {binary} are not in its file"; return null; }
+                for (var i = 0; i < length; i++) if (!wild[i] && other[i] != bytes[i]) wild[i] = true;
+            }
+            var unique = true;
+            foreach (var (binary, rva) in anchors)
+            {
+                var found = reader.Scan(binary, bytes, wild, 2);
+                if (found is null) { why = $"the file of {binary} cannot be read"; return null; }
+                if (found.Count != 1 || found[0] != rva) { unique = false; break; }
+            }
+            if (unique)
+            {
+                var b = new StringBuilder();
+                b.Append("    <!-- code:").Append(id).Append("; ").AppendJoin(", ", globals.Select(p => string.Create(CultureInfo.InvariantCulture, $"{p.Binary}+0x{p.Rva:X}")))
+                    .Append("; read in ").Append(via).Append(" (checked in ").AppendJoin(", ", anchors.Select(a => a.Binary).Order(StringComparer.Ordinal)).AppendLine(") -->");
+                b.Append("    <Mapping Name=\"").Append(RegistryId.Unplace(id)).AppendLine("\" AllowFail=\"true\">");
+                k = 0;
+                for (var line = 0; line < lines.Count; line++)
+                {
+                    var written = string.Join(' ', Enumerable.Range(k, tokens[line].Length).Select(i => wild[i] ? "??" : bytes[i].ToString("x2", CultureInfo.InvariantCulture)));
+                    b.Append("      ").Append(line == 0 ? "@ref1 " : "").Append(written).Append(" // ").AppendLine(lines[line].Text);
+                    k += tokens[line].Length;
+                }
+                b.Append("      <Target Type=\"Indirect\" Offset=\"@ref1\" Symbol=\"").Append(SymbolOf(id)).AppendLine("\" />");
+                b.Append("    </Mapping>");
+                return b.ToString();
+            }
+            if (take >= limit) { why = $"no run of instructions from the reference is found once in every binary within {limit} bytes"; return null; }
         }
     }
 }

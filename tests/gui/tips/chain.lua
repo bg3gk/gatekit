@@ -12,7 +12,8 @@
 -- Run: gatekit --instance <copy> test tests -k gui/tips/chain
 
 test { level = "GustavX:Basic_Level_A",
-       about = "A pinned tooltip's link opens a second tooltip whose parent is the first; clearing leaves none." }
+       about = "A pinned tooltip's link opens a second tooltip whose parent is the first; clearing leaves none.",
+       drawn = "the link inside a pinned tooltip opens no tooltip of its own in a game that draws nothing (the first tooltip does open): the inline link most likely needs its text laid out by a drawn frame" }
 
 local function ui(game, code) return game.ui(code, 30) end
 

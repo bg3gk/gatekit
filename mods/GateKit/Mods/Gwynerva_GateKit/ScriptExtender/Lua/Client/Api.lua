@@ -210,8 +210,37 @@ end
 --- picture is already on its way. `overlay = true` asks for the frame after the extender's own
 --- layer is drawn - its windows, GateKit's console, a picture of GK.Show - and is false on a
 --- Script Extender build that cannot take that frame (GK.Features.imageFiles tells it).
+--- In a game that draws nothing (a headless one, Ext.StartupVideos.RenderCut's mode not 0) the
+--- last frame drawn would be a stale picture: drawing is turned on until the picture is written,
+--- then off again, so the picture is the game now (textures a never-drawn game has not streamed
+--- yet may be coarse); the answer is the reason as text when that cannot be done (the night's W3,
+--- round 6).
 function GK.Shot(path, overlay)
     if not Ext.ClientRender then return false end
+    if GK.Headless and GK.Headless.Drawing and not GK.Headless.Drawing() then
+        if overlay and not GK.Features.imageFiles then return false end
+        -- the first frames drawn after a stretch of none are blank (a never-drawn game's first one is
+        -- white): the picture is asked for once 30 frames have been drawn, and drawing goes off again
+        -- when it is written (the caller waits for the file)
+        local cut = Ext.StartupVideos.RenderCut
+        local start = cut(0)
+        local was, drawnBefore = start.Mode, start.Frames - start.Skipped
+        local asked, sub = false, nil
+        sub = Ext.Events.Tick:Subscribe(function()
+            local now = cut()
+            if not asked then
+                if now.Frames - now.Skipped - drawnBefore < 30 then return end
+                asked = true
+                local ok = overlay and Ext.ClientRender.Screenshot(path, true) or (not overlay and Ext.ClientRender.Screenshot(path))
+                if ok then return end
+            elseif Ext.ClientRender.ScreenshotPending() then
+                return
+            end
+            cut(was)
+            Ext.Events.Tick:Unsubscribe(sub)
+        end)
+        return true
+    end
     if overlay then
         if not GK.Features.imageFiles then return false end
         return Ext.ClientRender.Screenshot(path, true)

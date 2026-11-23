@@ -28,10 +28,19 @@ it waits for arrives in the event log. A sleep of a fixed length and a timeout c
 seconds are defects: they make a test slow at speed 1, wrong at speed 8, and blind to what
 really happened.
 
+**A wait is a smell.** Every wait, pause, poll or retry - "wait N ticks, check, wait again", "no
+change for N ticks", "try again in a moment" - is treated as a defect to be removed, in the API, in
+tests, in tools and in an agent's own work, unless the wait itself is what is being tested. The
+model is always: the game acts, an event says so, the caller reacts. Before a wait is written, the
+event is searched for with every instrument at hand (the event log's kinds, attention, the game's
+own events and states, the start's timeline, watches, probes, coverage); a wait that is kept after
+that search is written down as a gap with what was tried, and replaced when the event is found.
+
 - Whatever a caller may need to wait for has a row of its own in the log - a state that begins
   and ends, a window that opens and closes, an action that is carried out or refused, a roll
-  that is made. Where the game gives no event, one is found or made (a state read each tick and
-  turned into rows), and the gap is recorded.
+  that is made. Report success once the requested action is observed. Report a refusal or a dropped
+  request with the game's condition when it is known. Where the game gives no event, look for one
+  or report the state change as a row, and record the gap.
 - What by the game's own rules and logic comes to an end, ends with an event: the game has to
   tell its own systems, its interface and its story that the thing is over. Not having found
   that event is not the same as there being none. Before a read on the tick is written, the
@@ -49,6 +58,7 @@ really happened.
   timer or a tick hook of its own.
 - A limit stays as a guard against a hang, counted in game time or ticks, generous, and
   reported as "the event never came" - never as the ordinary way a step ends.
+  Check whether the game failed, declined the request or emitted a different event.
 - A test that fails only when fast is first a suspicion that something waits on the clock.
 
 ## Fair, cheat, observation

@@ -18,7 +18,7 @@ explained, code named - never by the number of tests.
 
 | Word | Meaning |
 |---|---|
-| **test** | a Lua file under `tests/` that runs against a real game; not a **unit test** ([AGENTS.md](../AGENTS.md), "Where things live") |
+| **test** | a Lua file under `tests/`, or a folder there that holds `test.lua`, that runs against a real game; not a **unit test** ([AGENTS.md](../AGENTS.md), "Where things live") |
 | **suite** | a folder of tests; its `_suite.json` (schema `tests/suite`) says in `about` what the folder answers for |
 | **case** | a variation of a test's one rule, inside the file (`case`, below) |
 | **step** | a named part of a test or a case, of class `fair`, `cheat` or `observation` ([api-rules.md](api-rules.md#fair-cheat-observation)) |
@@ -39,7 +39,9 @@ class of verb in [api-rules.md](api-rules.md#fair-cheat-observation).
 A test's address is its path under `tests/` without the extension; a case follows it, then a
 step, joined by `/`: `combat/melee/attack_by_die`, then `combat/melee/attack_by_die/die 20`, then
 `combat/melee/attack_by_die/die 20/attack the goblin`. The folders nest by the game's own notions
-(`rolls/`, `combat/weapon/`); a file is one test; its cases live inside it. The toolkit's own checks
+(`rolls/`, `combat/weapon/`); a file is one test; its cases live inside it. A test that keeps files
+beside it is a folder (Files beside a test, below), and its address is the folder's path:
+`startup/videos/own_clips` for `tests/startup/videos/own_clips/test.lua`. The toolkit's own checks
 that need a game stand apart under `tests/_selftest/`. A folder and a test of the same name do not
 stand side by side, and a case is not named like a step of its test, so that an address reads one
 way only.
@@ -117,8 +119,9 @@ not a finding.
 ## Time
 
 A step moves on when the row it waits for arrives in the event log, never after a pause of a fixed
-length; a limit is only a guard against a hang. The rule, and where an event comes from when the
-game seems to give none: [api-rules.md](api-rules.md#events-not-waits).
+length; a limit is only a guard against a hang. A step that waits for time, polls or retries is a
+defect unless the wait is what the test is about ("a wait is a smell"). The rule, and where an
+event comes from when the game seems to give none: [api-rules.md](api-rules.md#events-not-waits).
 
 - **Limits count the game's ticks.** Every limit of a wait of `game` (`wait`, `wait_row`,
   `wait_attention`, `answer`) is seconds of a running game, converted to the server's ticks at the
@@ -199,6 +202,22 @@ begins with `_` is never run as a test.
 | `before` | in a test of cases: the name of the file's function that stages what every case shares |
 | `surprises` | the surprises of the event log the test allows (Surprises, below) |
 | `speed_ceiling`, `ceiling_finding` | the highest speed and the finding behind it (Speed, above) |
+| `files` | files put into the copy's game folder before the test's game starts: `{ ["<place in the game folder>"] = "<file name>" }` (Files beside a test, below) |
+| `startup_videos = true` | the game starts with its startup videos played, the game's and the mods' (`up --startup-videos`) |
+| `until_lua = true` | the test runs as soon as the bridge first answers, in the client's `LoadModule` state, right after the startup videos (`up --until-lua`); with no level, save or menu |
+| `drawn = "why"` | the test needs drawn frames (it counts them, or reads what only a drawn frame lays out); in a headless run (`test --headless`) it is not run and counts as UNMET with this reason. A picture alone needs no `drawn`: `game.shot` draws for it |
+| `drawn_start = "why"` | the test needs what only a drawn start sets up (a reaction prompt's window); in a headless run its game's start is drawn until the client's first `Running`, nothing after - a group of its own |
+| `logic_diff = { ... }` | [`gatekit logic-check`](contracts/cli.md#cover-cover-fold-cover-diff) compares the test's rendered and headless event records using these rules |
+| `first_launch = true` | the game starts as a first launch and the test runs on its first page, `Eula`, the pages left to it (`up --first-launch`); with no level, save, menu or `until_lua`; such a start is never shared with tests that do not declare it |
+
+Every start hides the startup videos, the game's and the mods' (`up`, `--startup-videos` in
+[contracts/cli.md](contracts/cli.md#up)): a test that is not about them does nothing for it. A
+test about them declares `startup_videos = true`; such a start is its own and is never shared with
+tests that do not declare it, nor taken as met by a copy already running. A test of what the
+start itself did declares `until_lua = true` too and ends where the start's record is complete:
+there is no menu, no session and no server then, the game goes on loading its menu meanwhile, and
+the test reads only what the start left (`Ext.StartupVideos`). Such a start is shared only with
+tests that declare it the same way.
 
 Any other field is refused when the file is read, naming the field and the fields above
 (`the header test { ... } does not know 'clean'; it knows about, level, ...`): a field nobody reads
@@ -231,7 +250,10 @@ case, and surprises are listed per case.
 1 when one failed or was not run, 2 when none failed and one was unmet. Each test's output folder
 holds `verdict.txt`, and after a failure `failure.jpg`, `console.txt` and, when the game died,
 `crash.txt`; the run's folder holds `results.json` (schema `record/test-run`). The lines printed and
-the folders: [contracts/cli.md](contracts/cli.md), `test`.
+the folders: [contracts/cli.md](contracts/cli.md), `test`. What a test makes itself - a picture, a
+saved text - goes into its output folder too (`game.out`, where a relative path of `game.save`
+and the other file functions lands); a test writes nothing under `tests/`, and a write there is
+refused.
 
 **What `game` offers**:
 
@@ -247,6 +269,7 @@ the folders: [contracts/cli.md](contracts/cli.md), `test`.
 | `game.key(name [, hold])` | a key pressed through the bridge into the game's input (the window only when the bridge is not there) | fair |
 | `game.checkpoint()`, `game.reset()`, `game.reload()`, `game.skip_scenes()`, `game.fast_scenes(speed)`, `game.burst(senders, each)` | a checkpoint and its reload, a bridge reload, scenes skipped or played fast, a load on the channel | cheat |
 | `game.shot(path [, width [, overlay]])`, `game.logs{ story, lines, grep }`, `game.windows()`, `game.process()` | a picture (the game's frame; `overlay = true`: with the extender's own layer), what Script Extender printed, the copies in a deck, the game's memory use | observation |
+| `game.cover(name)` | the coverage counts since the last segment saved as `cover/<name>.txt` in the test's output folder and started again; compared with `gatekit cover-diff` (docs/contracts/cli.md) | observation |
 | `game.now()`, `game.sleep(seconds)` | the host's clock | observation |
 | `game.out`, `game.path`, `game.save`, `game.read`, `game.exists`, `game.mkdir`, `game.remove`, `game.glob`, `game.testimage`, `game.pixel(path, x, y)` | files; a relative path is in the test's output folder. `testimage(path, w, h)` writes a png whose red grows to the right and green downwards; `pixel` reads a picture's colour at a point in parts of its size: `{ r, g, b, width, height }` | observation |
 | `game.channel`, `game.extender`, `game.weave`, `game.folder`, `game.profile` | the folders of the copy the run uses | |
@@ -262,6 +285,39 @@ string helpers; `watch(side, component)` with `alive(side, component)` for a com
 one frame; and `expect.appears`, `gone`, `equals`, `changes` - claims about a component watched in
 the game every tick between `expect.begin(list)` and `expect.finish(list)`.
 
+## Files beside a test
+
+A test that needs files - a video, a picture, a data file the game is to read - keeps them beside
+it, the same way in the whole tree:
+
+- **The test is a folder.** A folder that holds `test.lua` is one test, addressed by the folder's
+  path. Every other `.lua` in it begins with `_` (shared, required as above, never run); any other
+  file is data; nothing below it is a test.
+- **Shared files** live in a folder `_files/` at any level of the tree. A name the test gives is
+  looked up first in its own folder, then in `_files/` of its folder and of each folder above it up
+  to `tests/`, as `require` finds shared Lua.
+- **`files` in the header** puts them into the copy:
+  `test { files = { ["Data/Video/GK_ONE.bk2"] = "ONE.bk2" } }`. The key is a place relative to the
+  copy's game folder, the value a file name found as above; both are checked when the file is read.
+  The runner writes them before the game the test runs in starts, so the game finds them from its
+  first frame: a file it reads only at its start (a startup video, a mod's `StartupVideos.json`)
+  needs nothing more. Tests share a game only when they have the same files; the files stay through
+  a restart inside it and are taken out after its last test, whatever the verdicts. A test with
+  files is not run in a game already up (`--attach`).
+- **A resource is kept as text and written as the game reads it**: a `.lsx` file placed at a key
+  ending `.lsf` is written there in LSF, converted by the built-in LSLib (the one `build` packs
+  with), so a level's objects or a timeline the game reads only in binary are kept beside the test
+  as text: `files = { ["Data/Mods/GK_Menu/Levels/SYS_Menuscreen_Act3_B/Triggers/_merged.lsf"] = "trigger.lsx" }`. What the runner refuses and how it keeps
+  count: [contracts/cli.md](contracts/cli.md), `test`.
+
+What is committed beside a test is held to rule 3 of [AGENTS.md](../AGENTS.md): only files of our
+own making, never a file of Larian's or one derived from the game's data - a test that needs a game
+file names it and reads it from the copy. Each file stays under 1 MiB: git keeps every version of a
+binary file in every clone for good, and a test's file is the smallest that shows its rule (a
+short, small video, not a clip). `dotnet test` fails on a larger one
+(`TestFilesTests.Every_file_beside_a_test_in_the_repository_is_under_the_cap`). Binary kinds are
+marked in `.gitattributes`; a new kind is added there with its first file.
+
 ## The reset ladder
 
 Before every test the world is made clean by the cheapest reset rung that is provably enough:
@@ -272,6 +328,13 @@ Before every test the world is made clean by the cheapest reset rung that is pro
 | `fixture` | our own clean-up in the scene: `GK.Stage.Clean`, the client's half, then `GK.Stage.Verify` until clean |
 | `venue` | the level's checkpoint loaded in the same process; what lives outside the level put back |
 | `game` | the game restarted - the last resort |
+
+Between groups of tests that need different starts the run keeps its game: the next group's save,
+or the save made right after its level's first start, is loaded in it by the game's own load. A new
+process is started only for what a load cannot give - a test of the start itself (`tests/startup`),
+files that go in before a start, startup videos, the main menu, another mod list, a new Script
+Extender build, a level never started in the copy - and when the game died
+([contracts/cli.md](contracts/cli.md), `test`).
 
 A test declares the reset rung it needs (`reset = "venue"`); undeclared, it is `fixture` in a simple test
 level and `venue` elsewhere. The ladder starts there, verifies, and climbs one rung only when a rung
@@ -328,6 +391,21 @@ Each is for finding a cause or a mechanism, not for an ordinary run whose times 
   reads it (`Watch`, then `Hits`), what depends on a value held fixed (`Freeze`). Reach for it when
   the question is which function changes a value; `gatekit decomp at <module+0xRVA>` names the
   instruction's function. [contracts/lua-api.md](contracts/lua-api.md#gkmemory-the-memory-instrument-sharedmemorylua).
+- **Function probes** - `Ext.Debug.AddProbe(address, { Args, Return, Chain, Snapshots })` and
+  `GetProbeHits()`: what a function is given and gives back (down), the chain of its callers up to
+  32 frames (up), and the memory behind a pointer argument on entry and on return. Reach for it
+  when the question is who calls a function and with what. The fork's `GATEKIT.md`, "Function probes".
+- **Coverage** - which of every function of the executable ran, and from where: `gatekit cover
+  start` / `cover save FILE --reset` (a segment; `game.cover(name)` in a test), `cover-fold` (named
+  against the registry), and above all `cover-diff A1 A2 --all --against B1 B2 --names`: an action
+  recorded twice against the same scene left idle recorded twice gives the functions only the action
+  runs. `gatekit up --cover-start` covers the start itself, before any Lua, one record per state.
+  Reach for it when nothing is known of where a mechanic's code is; a probe or a watch then finds
+  the branch. [contracts/cli.md](contracts/cli.md), `cover`.
+- **The start's timeline** - `Ext.StartupVideos.Timeline([since])` and `gatekit timeline`: what
+  happened while no Lua existed or while it was reset (states, the engine's init steps, files
+  opened, the loading screen's rows, fades, interface states, timelines' playback). Reach for it for
+  anything of the start or of a load. The fork's `Docs/API.md`, "Startup Videos".
 - **`gatekit crashes`** - the crash dumps a copy left, newest first, each with its faulting address
   and the function there. Reach for it when the game closed under a test; a test that fails after a
   death also gets `crash.txt`. [contracts/cli.md](contracts/cli.md), `crashes`.

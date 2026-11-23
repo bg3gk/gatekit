@@ -1,0 +1,30 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateStartLoading::GameStateStartLoading",
+  "state": "described",
+  "rung": "game",
+  "does": "Constructs the StartLoading state: its virtual table, state id 22 at +0x10, the progress total at +0x38, and a copy of the given playlist queue at +0x18.",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "writes the virtual table bg3_dx11.exe@25605617+0x55F7460, 0x16 at +0x10, param 2 at +0x38 and resets the queue at +0x18 from param 3, as the inlined constructor in macOS MakeSimple does"
+    },
+    {
+      "kind": "reach",
+      "says": "new game from the main menu: a client probe saw it called twice, from bg3_dx11.exe@25605617+0x181D0C3 (inside code:ecl::GameStateStartLoading::MakeSimple) and from bg3_dx11.exe@25605617+0x5CE5F8"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

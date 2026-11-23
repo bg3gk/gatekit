@@ -1,0 +1,85 @@
+{
+  "schema": "registry/function/1",
+  "id": "App::InitGame",
+  "state": "described",
+  "rung": "game",
+  "does": "The game's half of the engine's start, once per process (slot +0xB0 of App's vtable): the data managers (vtable +0x2E0 with 2, RegisterDataManagers), the condition manager, App::InitServer (bg3_dx11.exe@25605617+0x5DAE80 in dx11: esv::EocServer and its state machine), the genome managers and animation blueprints of client and server, the client's ECS, config.lsf, the global templates, the input listeners, a ServerWorker, then App::InitializeResourceManager and last ecl::EocClient::Load, which queues the client's first states (InitMenu, then StartLoading with the startup video); -toggleCrowds after it.",
+  "fingerprint": {
+    "calls": [
+      "App::InitializeResourceManager",
+      "ecl::EocClient::Load",
+      "fp:123b79ba6c390bab",
+      "fp:164057161f4f15ac",
+      "fp:340d81790b1b0f08",
+      "fp:482916027a6ce3fa",
+      "fp:5227b96c8688ff31",
+      "fp:68ef881235f1d5b4",
+      "fp:6fd8f81dc2434f7f",
+      "fp:793be2ea95b2efaa",
+      "fp:79c374d15dea44b6",
+      "fp:7a6c4ccb7f2a3e88",
+      "fp:7ec6bc773f10ca24",
+      "fp:8d9e276dc973ae7b",
+      "fp:8f724b862927d60f",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:9c38767aa40ddd97",
+      "fp:9d7d3f4078ca50dd",
+      "fp:a4b0881bb0cdbe1e",
+      "fp:a51a49a38490b221",
+      "fp:c2c2f5256bee1bc7",
+      "fp:d1045bdeed38dbc1",
+      "fp:d44e7c9976e19bc0",
+      "fp:dab155fbc1d26705",
+      "fp:e4d053ad9455ea7c",
+      "fp:e71d242cb52bab99",
+      "fp:f2c416d4cbedb829",
+      "fp:f3f6bb298df1911b",
+      "fp:fa4ec00b933dd9b2",
+      "import:196f87dd222b4c83",
+      "import:b8f0174a5f95843b",
+      "ls::ArgumentString::GetValue"
+    ],
+    "strings": ["4fd3ce9d04f20e1b", "90a7a623d5ab21ad", "edc6881d7e1d56d0"],
+    "components": ["gr::GrannySystem", "ls::CameraComponent", "ls::CameraSystem"],
+    "vtables": [{"slot": 22}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code of code:App::InitGame (Toolkit match by strings) read whole, against the macOS App::InitGame (bg3_macos_x64+0xD736D0), where InitServer, RegisterDataManagers, ConfigureECS, GlobalTemplateManager::Initialize, the WwiseManager, the two BinkManagers, Hints/Hints.lsx and ecl::EocClient::Load are inline in the same order"
+    },
+    {
+      "kind": "watch",
+      "says": "live, copy attacks: the dx11 vtable of BaseApp::s_AppInstance (+0x5499F58) holds code:App::InitGame at slot +0xB0"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "pair",
+      "says": "The macOS build's symbols hold this name; a stored pair of the two builds joins that function to this one (a seed)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoC.dll",
+      "tie": "match",
+      "says": "EoC.dll exports this name; the symbol database matches the export to this function by strings"
+    },
+    {
+      "kind": "reach",
+      "says": "Timeline Step rows of the fork's hook (build v34-startup-videos-4, copy attacks, two starts): Begin 5890.7 / 5009.9 ms, End 6862.8 / 5777.8 ms after the process's creation, 0.4 ms after App::LoadAndResaveGraphicsSettings ends; reads 241 MB (all in App::InitializeResourceManager) and opens 733 files through ls::FileReader; the client's Unknown -> InitMenu follows 87-97 ms after its end"
+    },
+    {
+      "kind": "read",
+      "says": "its one caller is code:ls::GameThread::DoWork, through the application's virtual slot +0xB0, on the game thread before its frame loop; the thread's starter bg3_dx11.exe@25605617+0x3DF9F20 waits on the thread's event until InitGame has returned"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ],
+  "questions": [
+    {
+      "ask": "Who calls it (slot +0xB0): it begins 0.4 ms after BaseApp::Start's App::LoadAndResaveGraphicsSettings, but Start's body does not call it; the game thread's first step is supposed, not read",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

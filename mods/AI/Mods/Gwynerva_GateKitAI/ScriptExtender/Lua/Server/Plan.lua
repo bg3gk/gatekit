@@ -77,7 +77,7 @@ function P.Step()
 end
 
 local function sceneTrue(path)
-    local at = try(function() return Mods.GateKit.GKScene end)
+    local at = try(AI.SceneTable)
     for part in tostring(path):gmatch("[^%.]+") do
         if type(at) ~= "table" then return false end
         at = at[part]
@@ -205,14 +205,17 @@ end
 --- Keeps a note of the agent's own - what it learnt of a place or a fight, a mistake not to
 --- repeat - with the level and the point the controlled character stands at. The notes are a
 --- file of the game copy: they outlive a load, a reset and the game's restart. { ok, n }.
-function N.Add(text)
+--- With `about` (a creature's or a thing's uuid) the note is of that one instead of the place: it
+--- goes wherever that one goes, and the lines that name it say how many notes it has and the last.
+function N.Add(text, about)
     text = U.cut(text, 200)
     if text == "" then return { ok = false, error = "an empty note" } end
     local list = loadNotes()
     local me = U.controlled()
     local p = U.posOf(me)
     local level = try(function() return Ext.Entity.Get(me).Level.LevelName end)
-    list[#list + 1] = { text = text, level = level, at = p and { U.round1(p[1]), U.round1(p[2]), U.round1(p[3]) } or nil }
+    list[#list + 1] = { text = text, level = level, at = p and { U.round1(p[1]), U.round1(p[2]), U.round1(p[3]) } or nil,
+                        about = about and (U.uuidOf(about) or about) or nil, aboutName = about and U.nameOf(about) or nil }
     while #list > N.Max do table.remove(list, 1) end
     pcall(Ext.IO.SaveFile, DIR .. "notes.json", Ext.Json.Stringify(list))
     AI.Row("ai_note", { text = text, level = level, at = list[#list].at })
@@ -232,11 +235,29 @@ function N.Near(all)
     local p = U.posOf(me)
     local level = try(function() return Ext.Entity.Get(me).Level.LevelName end)
     for n, note in ipairs(loadNotes()) do
-        if note.level == level and (all or (p and note.at and U.dist(p, note.at) <= N.Reach)) then
+        if not note.about and note.level == level and (all or (p and note.at and U.dist(p, note.at) <= N.Reach)) then
             out[#out + 1] = { n = n, text = note.text }
         end
     end
     return out
+end
+
+--- The notes of one creature or thing (`about` of N.Add): { count, last, texts }, or nil.
+function N.About(id)
+    local uuid = U.uuidOf(id) or id
+    local texts = {}
+    for _, note in ipairs(loadNotes()) do
+        if note.about == uuid then texts[#texts + 1] = note.text end
+    end
+    if #texts == 0 then return nil end
+    return { count = #texts, last = texts[#texts], texts = texts }
+end
+
+--- The short mark a line naming `id` carries: ' [2 notes: "the last, cut"]', or "".
+function N.Mark(id)
+    local a = N.About(id)
+    if not a then return "" end
+    return string.format(' [%d note%s: "%s"]', a.count, a.count > 1 and "s" or "", U.cut(a.last, 40))
 end
 
 --- Forgets every note. { ok, forgot }.

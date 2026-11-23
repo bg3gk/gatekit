@@ -67,6 +67,35 @@ Ext.Net.CreateChannel(ModuleUUID, "GK_Reset", function()
     Ext.Debug.Reset()
 end)
 
+--   GK_Headless { what = "party" }: a client that draws nothing asks for the party's PartyMember and
+--   Player again, so its interface's view models learn who is playable (Client/Headless.lua; the
+--   night's W3, round 6). The same values sent again: a replication, not a change.
+GK.HeadlessReplicated = GK.HeadlessReplicated or 0
+Ext.Net.CreateChannel(ModuleUUID, "GK_Headless", function(msg)
+    if not (msg and msg.what == "party") then return end
+    -- Round 7: PartyMember and Player alone left the local player's view model without its characters
+    -- (ls.LocalPlayer.AssignedCharacters and PartyGroups empty, the hotbar with no slots) in a game
+    -- never drawn; the user's components on each member and the party's own view and composition,
+    -- sent again too, mend it (AssignedCharacters 1, PartyGroups 1, 18 hotbar slots).
+    local parties = {}
+    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("PartyMember") or {}) do
+        pcall(function() e:Replicate("PartyMember") end)
+        if e.Player then pcall(function() e:Replicate("Player") end) end
+        for _, c in ipairs({ "UserAvatar", "UserReservedFor", "HotbarContainer", "HotbarDecks" }) do
+            pcall(function() if e[c] then e:Replicate(c) end end)
+        end
+        local party = nil
+        pcall(function() party = e.PartyMember.Party end)
+        if party then parties[#parties + 1] = party end
+        GK.HeadlessReplicated = GK.HeadlessReplicated + 1
+    end
+    for _, party in ipairs(parties) do
+        for _, c in ipairs({ "PartyView", "PartyComposition" }) do
+            pcall(function() if party[c] then party:Replicate(c) end end)
+        end
+    end
+end)
+
 --   GK_Ask { ticket, code }  ->  GK_Answer { ticket, ok, value | error }: a client function asking
 --   the server for something only it knows (GK.Gui.Aiming: how a character stands to the party)
 local asked = Ext.Net.CreateChannel(ModuleUUID, "GK_Answer")

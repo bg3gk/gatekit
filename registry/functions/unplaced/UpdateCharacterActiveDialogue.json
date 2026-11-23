@@ -1,0 +1,27 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::UpdateCharacterActiveDialogue",
+  "owner": "gui::ViewModelProvider",
+  "state": "described",
+  "rung": "inferred",
+  "does": "For one character view model: finds the character's last active interactive dialogue instance (LSDialogs::DialogManager::GetLastActiveInteractiveInstanceFor), and when the provider has its game data (+8) and the view model has its player properties (+0x420) sets that dialogue as the active one (gui::VMPlayerCharacterProperties::SetActiveDialogue).",
+  "fingerprint": {
+    "calls": [
+      "fp:2ecd242562bf96ea",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:b87a62c9a9a87876",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The decompiled body: the instance lookup, the two null checks, GetDialogueFromInstanceId and SetActiveDialogue."
+    },
+    {
+      "kind": "watch",
+      "says": "Probed during a dialogue's start: natively called for the talker (+0x420 null) and the host (+0x420 set) and SetActiveDialogue runs; with nothing drawn from the process start both have +0x420 null and the dialogue window stays empty."
+    }
+  ]
+}

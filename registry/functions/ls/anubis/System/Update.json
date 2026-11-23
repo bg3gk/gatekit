@@ -1,0 +1,59 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::anubis::System::Update",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The anubis (AI behaviour scripts) system's update on the server: run by ecs::_private::SystemRegistrationHelper::SystemUpdate<ls::anubis::System>; during a session load it loads the anubis config/module scripts (2,800 .anc/.ann files) into the game's Lua.",
+  "fingerprint": {
+    "calls": [
+      "fp:00b9b96de11b9066",
+      "fp:123b79ba6c390bab",
+      "fp:15b736ddeed2dbcf",
+      "fp:21284467fb5e3f6a",
+      "fp:25b81223426da40a",
+      "fp:3dfefa028c573c5b",
+      "fp:5227b96c8688ff31",
+      "fp:52a4efce0dba9bd1",
+      "fp:6fbd2e0b3c98849a",
+      "fp:71d152ea181a8fd2",
+      "fp:83992a76043749cd",
+      "fp:91c3d48dff57ab4c",
+      "fp:9aac7046d93ac063",
+      "fp:9e556960b26eb5e4",
+      "fp:a1fdc14b909c47de",
+      "fp:a211a401017a0308",
+      "fp:a408e8f52bcc8ebb",
+      "fp:a47616a79655c495",
+      "fp:aba156b22744c13e",
+      "fp:bce5a0213d4ff97d",
+      "fp:c1033dc043965364",
+      "fp:cbc59eff2b0dd418",
+      "fp:cded6299a9a17e0d",
+      "fp:d9cafe6c70a2a419",
+      "fp:da3f155556db699b",
+      "fp:e4d053ad9455ea7c",
+      "fp:ec885844e067230f",
+      "fp:fb502fd9f61d1b52",
+      "fp:fb8418348ff405d0",
+      "fp:ff5ecc1b54e835bb"
+    ],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<ls::anubis::FrameworkUnloadRequestOneFrameComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<ls::anubis::FrameworkUnloadRequestOneFrameComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<ls::anubis::RuntimeComponent,ls::anubis::TreeComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<ls::anubis::RuntimeComponent,ls::anubis::TreeComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<ls::anubis::TaskPausedOneFrameComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<ls::anubis::TaskFinishedOneFrameComponent,ls::anubis::RuntimeComponent,ls::anubis::TreeComponent,ls::anubis::ActiveComponent>,ls::TypeList<ls::anubis::PausedComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<ls::anubis::TaskFinishedOneFrameComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its parameter is the WorldView of ls::anubis::AnubisTreeComponent, RuntimeComponent, savegame::LoadingComponent ... (decompiler's type), and SystemUpdate<ls::anubis::System> (bg3_dx11.exe@25605617+0x5DF420) is its only caller on the sampled stacks (W3 round 3)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "AnubisFramework.dll",
+      "tie": "name",
+      "says": "AnubisFramework.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::DCLoadingScreen::OnGameStateChanged",
+  "state": "described",
+  "rung": "game",
+  "does": "The loading screen's listener of client game-state changes: on StartLoading (id 0x16) it takes the level being loaded (ls::LoadingScreenManager+0x68 LoadingLevelUniqueKey, else the current level of ecl::LevelManager) into LevelName and sets LoadingState: SYS_CC_H / SYS_CC_I -> CharacterCreation (1), SYS_Menuscreen_Camp_A / SYS_Menuscreen_Act3_B -> MultiplayerLobby (2), TUT_Avernus_C -> Tutorial (3), any other -> Level (4); on an event whose first field is 2 it sets Initial (0); on StopLoading (0x17) it resets both hint slots, VisibileHintIndex = -1 and LoadingStateInfo empty. The XAML picks the wallpaper from LevelName and LoadingState.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:58b4b875fbff37c4",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:9e24d4c02110e384",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "strings": [
+      "0ae22ca312d4a516",
+      "2f8ec45e43f139e2",
+      "8018de9952dc2ab1",
+      "dab990376c260c4f",
+      "dc1185e9aac1deb9"
+    ],
+    "vtables": [{"slot": 1}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: memcmp with SYS_CC_H, SYS_CC_I, SYS_Menuscreen_Camp_A, SYS_Menuscreen_Act3_B, TUT_Avernus_C; reads the manager global +0x68; the macOS function gui::DCLoadingScreen::OnGameStateChanged(ecl::GameStateChangedEvent const&) at bg3_macos_x64+0x2810700 has the same tests (manager +0x60 there)"
+    },
+    {
+      "kind": "pairing",
+      "says": "same string constants and branch shape as macOS bg3_dx11.exe@25605617+0x2810700"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "reach",
+      "says": "the view model read from Lua (the LoadingScreen widget's DataContext) in loads of copy attacks: the first start Initial with LevelName empty; SYS_CC_I CharacterCreation; TUT_Avernus_C Tutorial; WLD_Main_A, SCL_Main_A, BGO_Main_A, CTY_Main_A, CRE_Main_A, Basic_Level_A Level; a return to the main menu kept the level being left (Tutorial/TUT_Avernus_C, Level/SCL_Main_A), never MultiplayerLobby"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "When does a load carry a SYS_Menuscreen level so that LoadingState is MultiplayerLobby? A return to the menu from a session did not.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

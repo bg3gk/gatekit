@@ -1,0 +1,30 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::GameUI::ProcessLoadingModsFromUI",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Applies the enabled mods' interface: merges each mod's GUI/Resources/Resources.xaml into the application's resources and its state machine (ModType Extend/Override) into the interface's; seen live as the whole interface state tree left and entered again about 3 s into LoadMenu of the first start, after which the Loading state is entered again with a new LoadingScreen widget that uses the mods' resources.",
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "timeline UIState rows of copy attacks: Root and every state Left then Entered at LoadMenu +3.2 s, Loading Entered again; a mod's BusyElement and its Extend widget of Loading were on screen from then on in the same first start (game screenshot)"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "no dx11 function of its own: the macOS body (code:ui::ModManager::RegisterMods, the texture metadata loop, code:gui::GameUI::ResetModdedLibs on code:Noesis::ResourceDictionary::GetMergedDictionaries of code:Noesis::GUI::GetApplicationResources, code:ui::StateMachine::ApplyMods) is inline in dx11 code:gui::GameUI::UpdateFromUI under the byte GameUI+0x2D9A; probes in copy coord (c2) saw each callee called once from there in the load after a mod toggle"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Inline in dx11 (and bg3.exe?): should the entry stay unplaced, or be folded into code:gui::GameUI::UpdateFromUI's does?",
+      "about": "other",
+      "state": "open"
+    }
+  ]
+}

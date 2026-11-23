@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ProcessDialogMessage",
+  "owner": "esv::DialogProtocol",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The server's handler of the dialogue's network messages (ids 0x8A, 0x8B, 0x8F, 0x90, 0x91, 0xC3, 0x136, 0x137 at message +8): an answer chosen, the question nodes' actor asked (LSDialogs::DialogManager::GetActorForCurrentQuestionNodes on 0x8B), and others; reached from net::AbstractPeer::ProcessMsg.",
+  "fingerprint": {
+    "calls": [
+      "fp:175ac60533e9dfb9",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:e4d053ad9455ea7c",
+      "fp:f6bfc3a87a40d4ca"
+    ],
+    "components": ["esv::dialog::ListenRequestSystem", "esv::dialog::PrivacySystem"],
+    "vtables": [{"slot": 1}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The decompiled switch over the message id, esv::Character lookups and the dialog manager calls."
+    },
+    {
+      "kind": "watch",
+      "says": "A probe on the server while a dialogue went from a choice through three voiced lines: one call (the answer), none for the lines' ends."
+    }
+  ]
+}

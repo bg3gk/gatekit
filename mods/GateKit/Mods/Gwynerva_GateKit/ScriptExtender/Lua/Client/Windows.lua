@@ -38,6 +38,8 @@
 --   GK.Cheat.Set(name, path, value)    sets any property of the widget's data and reads it back
 --   GK.Cheat.Step / Auto / Resolve     a window's choices made by its step function
 --   GK.Cheat.Quiet / Recover / AimBest
+--   GK.Cheat.Mark(name, control, opts) tints a control's text with a brush of the game's theme for
+--                                     a time of the game: what an agent is about to press, shown
 --
 -- Waiting is the caller's job (a widget appears a frame or more after the event): poll
 -- GK.Gui.IsOpen.
@@ -998,6 +1000,9 @@ function UI.Click(name, what, which)
     -- the control's own command, asked first: a command the game turns down is not pressed
     local own = guard(function() return row.element.Command end)
     if own then
+        -- XAML name lookup may describe another element with the same x:Name. The live
+        -- command carries this element's binding. A chain with triggers still needs its XAML.
+        if entry and entry.source == "xaml" and not entry.click then entry = nil end
         local parameter = guard(function() return row.element.CommandParameter end)
         if type(parameter) ~= "userdata" and parameter ~= nil then parameter = guard(function() return Ext.UI.Box(parameter) end) end
         local known, can = pcall(function() return own:CanExecute(parameter) end)
@@ -1140,6 +1145,9 @@ local function dataText(data)
         local value = readable(guard(function() return data[property] end))
         if type(value) == "string" and value ~= "" then return value end
     end
+    -- a spell's view model names it under Spell.Name (a translated string)
+    local spellName = readable(guard(function() return data.Spell.Name end))
+    if type(spellName) == "string" and spellName ~= "" then return spellName end
     -- a view model that has no name of its own is called by the property named as it is
     -- (ls.VMAbility.Ability, ls.VMSkill.Skill)
     local own = typeOf(data):match("VM(%w+)$")
@@ -1184,7 +1192,8 @@ local function survey(widget, options)
         seen[base] = (seen[base] or 0) + 1
         return seen[base] == 1 and base or (base .. "[" .. seen[base] .. "]")
     end
-    local function walk(element, anchor, list, inItem, under, hidden)
+    -- `holder`: the list item the element lies in ({ list = row, n }), kept below nested lists
+    local function walk(element, anchor, list, inItem, under, hidden, holder)
         if budget <= 0 then return end
         budget = budget - 1
         if not hidden then
@@ -1214,13 +1223,17 @@ local function survey(widget, options)
             if list then
                 list.containers[#list.containers + 1] = element
                 anchor, inItem = list.handle .. "#" .. #list.containers, true
+                holder = { list = list, n = #list.containers }
             else
                 kind = "button"  -- an item outside any list is pressed like a button
             end
         end
+        -- the parts of a combo box's own template (the toggle that opens its drop-down) are the
+        -- combo box itself: one control, the list with its items and the one chosen
+        if (kind == "toggle" or kind == "button") and list and not inItem and list.type:find("ComboBox", 1, true) then kind = nil end
         local made
         if kind and kind ~= "item" then
-            made = { kind = kind, type = typeName, name = name, element = element, hidden = hidden or nil,
+            made = { kind = kind, type = typeName, name = name, element = element, hidden = hidden or nil, holder = holder,
                      handle = handleFor(name and ((hidden and "~" or "") .. name) or (anchor .. "/" .. shortType(typeName))) }
             if options.under and (name == options.under or made.handle == options.under) then under = true end
             made.under = under
@@ -1237,10 +1250,10 @@ local function survey(widget, options)
         local count = guard(function() return element.VisualChildrenCount end) or 0
         for i = 1, count do
             local child = guard(function() return element:VisualChild(i) end)
-            if child then walk(child, anchor, list, inItem, under, hidden) end
+            if child then walk(child, anchor, list, inItem, under, hidden, holder) end
         end
     end
-    walk(widget, widgetName(guard(function() return widget.Name end) or "widget"), nil, false, not options.under)
+    walk(widget, widgetName(guard(function() return widget.Name end) or "widget"), nil, false, not options.under, nil, nil)
     return rows, widgetData
 end
 
@@ -1330,6 +1343,40 @@ local function toggleState(element, widgetData)
     return nil
 end
 
+-- The address a Noesis object prints with: the same object reached two ways compares by it (the
+-- userdata themselves do not compare).
+local function addressOf(object)
+    if type(object) ~= "userdata" and type(object) ~= "table" then return nil end
+    return tostring(object):match("%((%x+)%)")
+end
+
+-- The name of the command a control is bound to: the property of its data (else of the widget's
+-- data) that holds the same command. The control's stored value is read, not its Command
+-- property, which hands out the command's interface at another address. `names` caches each
+-- data's properties for one look.
+local function commandName(element, widget, names)
+    local values = guard(function() return element:DependencyProperties() end)
+    local address = type(values) == "table" and addressOf(values.Command) or nil
+    if not address then return nil end
+    for _, data in ipairs({ guard(function() return element.DataContext end), guard(function() return widget.DataContext end) }) do
+        local key = addressOf(data)
+        if key then
+            local byAddress = names[key]
+            if not byAddress then
+                byAddress = {}
+                local ok, properties = pcall(function() return data:GetAllProperties() end)
+                for name, value in pairs(ok and type(properties) == "table" and properties or {}) do
+                    local at = addressOf(value)
+                    if at then byAddress[at] = tostring(name) end
+                end
+                names[key] = byAddress
+            end
+            if byAddress[address] then return byAddress[address] end
+        end
+    end
+    return nil
+end
+
 local function describeRow(row, widgetData, options)
     local element = row.element
     local out = { handle = row.handle, kind = row.kind, type = row.type, hidden = row.hidden }
@@ -1340,6 +1387,10 @@ local function describeRow(row, widgetData, options)
     if contextType and contextType ~= widgetData and contextType ~= "ui::DCWidget" then
         out.data = contextType
         out.of = dataText(context)
+        -- a number its view model holds as its value (an ability's score: ls.VMAbility.Value)
+        local held = guard(function() return context.Value end)
+        -- (a negative one is a placeholder: a background bonus button's row reads -1)
+        if type(held) == "number" and held >= 0 then out.ofValue = held end
         if options.detail then out.dataValues = dataScalars(context) end
     end
     if row.kind == "list" then
@@ -1396,18 +1447,56 @@ local function describeRow(row, widgetData, options)
             local known, can = pcall(function() return command:CanExecute(boxed) end)
             if known and can == false then out.enabled = false end
         end
-        out.command = command ~= nil or nil
+        out.command = command ~= nil and (options.widget and commandName(element, options.widget, options.names) or true) or nil
+    end
+    if row.holder then out["in"] = row.holder.list.handle .. "#" .. row.holder.n end
+    return out
+end
+
+-- The lists whose items each stand for a choice inside them (a list of settings, each item a
+-- combo box, a tick box, a slider bound to the item's own data): the controls are the choices, and
+-- the list is only where they stand. Items that hold only buttons (or nothing: a heading) do not
+-- count. Returns the set of such lists' rows.
+local CHOICE = { list = true, toggle = true, slider = true, text = true }
+local function containerLists(rows)
+    local holds, bound = {}, {}
+    for _, row in ipairs(rows) do
+        local h = row.holder
+        if h and h.list ~= row and CHOICE[row.kind] then
+            holds[h.list] = holds[h.list] or {}
+            holds[h.list][h.n] = true
+            local container = h.list.containers[h.n]
+            local own = addressOf(guard(function() return container.DataContext end))
+            if own and own == addressOf(guard(function() return row.element.DataContext end)) then
+                bound[h.list] = bound[h.list] or {}
+                bound[h.list][h.n] = true
+            end
+        end
+    end
+    local out = {}
+    for list, items in pairs(holds) do
+        local all = next(items) ~= nil
+        for n in pairs(items) do
+            if not (bound[list] and bound[list][n]) then all = false break end
+        end
+        if all then out[list] = true end
     end
     return out
 end
 
 --- Everything a player could act on in an open widget: { ok, widget, controls = { { handle, kind
 --- ("button", "toggle", "list", "slider", "text"), type, text, value, enabled (false only), data and
---- of (the view model the control stands for, when it is not the widget's own), and for a list:
---- count, selected, items = { { n, text, id, name, enabled } } } } }. options: under (a handle or
+--- of (the view model the control stands for, when it is not the widget's own), command (the name
+--- of the data's command it is bound to, e.g. "CustomEvent", or true when no data names it),
+--- parameter, in (the list item it lies in, "Options#2"), and for a list: count, selected, value,
+--- items = { { n, text, id, name, enabled } } } } }. A combo box is one list (its opener is not a
+--- control of its own); a list whose items each hold a choice bound to the item's own data (a
+--- list of settings) is left out for those choices, each naming its item in `in`. options: under (a handle or
 --- an element's x:Name: only what lies inside it), kind, find (part of a handle or a text), items
 --- (how many items of a list are written out, default 12), detail (the plain values of each
---- control's and item's data), all (hidden controls too; their handles are numbered apart).
+--- control's and item's data), all (hidden controls too; their handles are numbered apart), layout
+--- (also `laidOut`: true once Noesis's layout has arranged the widget and every control shown -
+--- its ActualWidth is stored - so no control is still to be made).
 function UI.Look(name, options)
     local widget = UI.Widget(name)
     if not widget then return { ok = false, error = "not open: " .. tostring(name) } end
@@ -1416,16 +1505,33 @@ function UI.Look(name, options)
     local rows, widgetData = survey(widget, options)
     local out = {}
     local wanted = options.find and GK.Fold(options.find)
+    local folded = containerLists(rows)
+    local describe = setmetatable({ widget = widget, names = {} }, { __index = options })
     for _, row in ipairs(rows) do
-        if row.under and (not options.kind or options.kind == row.kind) then
-            local described = describeRow(row, widgetData, options)
+        if row.under and not folded[row] and (not options.kind or options.kind == row.kind) then
+            local described = describeRow(row, widgetData, describe)
             local fits = not wanted or GK.Fold(described.handle):find(wanted, 1, true)
                 or (described.text and GK.Fold(tostring(described.text)):find(wanted, 1, true))
                 or (described.of and GK.Fold(tostring(described.of)):find(wanted, 1, true))
             if fits then out[#out + 1] = described end
         end
     end
-    return { ok = true, widget = widgetName(name), data = widgetData, controls = out }
+    local answer = { ok = true, widget = widgetName(name), data = widgetData, controls = out }
+    if options.layout then
+        -- Noesis stores an element's ActualWidth when its layout pass has arranged it; a page's
+        -- inner elements (a list's items, a combo box inside an item) are made and arranged in
+        -- later passes than the page itself
+        local function arranged(element)
+            local values = guard(function() return element:DependencyProperties() end)
+            return type(values) == "table" and values.ActualWidth ~= nil
+        end
+        answer.laidOut = arranged(widget)
+        for _, row in ipairs(rows) do
+            if not answer.laidOut then break end
+            if not row.hidden and not arranged(row.element) then answer.laidOut = false end
+        end
+    end
+    return answer
 end
 
 --- The row of a handle of GK.Gui.Look: { kind, type, name, handle, element, containers }, and for an
@@ -1442,6 +1548,92 @@ function UI.Handle(name, handle)
     return nil, "no control " .. tostring(handle) .. " in " .. tostring(name) .. " (GK.Gui.Look lists the handles)"
 end
 
+--- The text an open widget shows, as a player reads it: every visible TextBlock in the tree's
+--- order - its Text, or the Runs of its Inlines joined (a number written in a Run of a sentence) -
+--- with nothing a hidden element holds. { ok, widget, texts = { ... } }.
+function UI.Text(name)
+    local widget = UI.Widget(name)
+    if not widget then return { ok = false, error = "not open: " .. tostring(name) } end
+    local out, budget = {}, 20000
+    local function walk(element)
+        budget = budget - 1
+        if budget <= 0 then return end
+        if guard(function() return element.IsVisible end) == false then return end
+        local text = guard(function() return element.Text end)
+        if type(text) == "string" then
+            if text ~= "" then out[#out + 1] = text end
+        else
+            local inlines = guard(function() return element.Inlines end)
+            if inlines then
+                local parts = {}
+                local n = guard(function() return #inlines end) or 0
+                for i = 1, n do
+                    local t = guard(function() return inlines[i].Text end)
+                    if type(t) == "string" then parts[#parts + 1] = t end
+                end
+                local joined = table.concat(parts)
+                if joined ~= "" then out[#out + 1] = joined end
+            end
+        end
+        local n = guard(function() return element.VisualChildrenCount end) or 0
+        for i = 1, n do
+            local child = guard(function() return element:VisualChild(i) end)
+            if child then walk(child) end
+        end
+    end
+    walk(widget)
+    return { ok = true, widget = widgetName(name), texts = out }
+end
+
+-- The brush of the game's theme a mark tints with (Public/Game/GUI/Theme/DefaultTheme.Colours.xaml:
+-- ProgressionBarColor, #6600FF). The theme's brushes are frozen: a mark replaces a text's brush,
+-- it never changes a brush's colour, which other controls share.
+Cheat.MarkBrush = "ProgressionBarColor"
+
+--- Shows what is about to be pressed: every element of the control `handle` (GK.Gui.Look's
+--- handles) that has a Foreground takes the theme's brush `options.brush` (Cheat.MarkBrush) for
+--- `options.seconds` (1) of the game's time - the client's ticks, so a faster game shortens it.
+--- The control keeps that brush until the window rebuilds it (a pressed answer's list does); an
+--- element of one UI call is not valid in a later one, so it is not put back.
+--- { ok, marked = n, seconds, done = function: true once the time has passed }.
+function Cheat.Mark(name, handle, options)
+    options = options or {}
+    local row, problem = UI.Handle(name, handle)
+    if not row then return { ok = false, error = problem } end
+    local key = options.brush or Cheat.MarkBrush
+    local brush = guard(function() return row.element:Resource(key, true) end)
+    if not brush or guard(function() return brush.Color end) == nil then
+        return { ok = false, error = "the theme has no brush " .. tostring(key) }
+    end
+    local marked = 0
+    local function walk(element, depth)
+        if depth > 16 then return end
+        if guard(function() return element.Foreground end) ~= nil then
+            local _, failed = guard(function() element:SetProperty("Foreground", brush) end)
+            if not failed then marked = marked + 1 end
+        end
+        local n = guard(function() return element.VisualChildrenCount end) or 0
+        for i = 1, n do
+            local child = guard(function() return element:VisualChild(i) end)
+            if child then walk(child, depth + 1) end
+        end
+    end
+    walk(row.element, 0)
+    if marked == 0 then return { ok = false, error = "nothing in " .. tostring(handle) .. " has a text to tint" } end
+    local seconds = tonumber(options.seconds) or 1
+    local state = { left = seconds }
+    local subscription
+    subscription = Ext.Events.Tick:Subscribe(function(e)
+        local dt = guard(function() return e.Time.DeltaTime end) or 1 / 30
+        state.left = state.left - dt
+        if state.left <= 0 then
+            state.done = true
+            Ext.Events.Tick:Unsubscribe(subscription)
+        end
+    end)
+    return { ok = true, marked = marked, seconds = seconds, done = function() return state.done == true end }
+end
+
 -- A control found again after an act that may have hidden or shown it: by its handle, else by the
 -- same handle with or without the "~" of what is not shown.
 local function controlAgain(name, handle)
@@ -1454,7 +1646,8 @@ end
 --- Sets a control of an open widget to a value, as the player's hand on it would: a slider to a
 --- number inside its range, a toggle to true or false (through its own command when it has one), a
 --- text field to a text, a list to an item (as GK.Gui.Select). Answers what the control reads
---- afterwards: { ok, before, after }.
+--- afterwards: { ok, before, after }; a slider answers once its data holds the value, naming the
+--- number that took it (`held = { Gamma = 1.2 }`), or at the limit with what its data holds (`holds`).
 function UI.Set(name, handle, value)
     local row, problem = UI.Handle(name, handle)
     if not row then return { ok = false, error = problem } end
@@ -1469,10 +1662,47 @@ function UI.Set(name, handle, value)
         if (low and value < low) or (high and value > high) then
             return { ok = false, error = "outside the slider's range", min = low, max = high }
         end
+        -- The view model takes a slider's value through its binding a frame later: the answer waits
+        -- until a number of the slider's data (else the widget's) reads the value, and names it
+        -- (`held`); a slider bound to nothing answers at the limit with the numbers its data holds.
+        -- (an element is valid only in the UI call that found it: each look finds the slider again)
+        local function numbers()
+            local out = {}
+            local now = UI.Handle(name, handle)
+            local own = now and guard(function() return now.element.DataContext end)
+            local sources = { own or false, UI.Data(name) or false }
+            for i = 1, 2 do
+                local data = sources[i]
+                local ok, properties = pcall(function() return data:GetAllProperties() end)
+                for key, v in pairs(ok and type(properties) == "table" and properties or {}) do
+                    if type(v) == "number" and out[tostring(key)] == nil then out[tostring(key)] = v end
+                end
+                if next(out) then break end
+            end
+            return out
+        end
+        local held = numbers()
         local before = guard(function() return element.Value end)
         local _, failed = guard(function() element.Value = value end)
         local after = guard(function() return element.Value end)
-        return { ok = failed == nil and type(after) == "number" and math.abs(after - value) < 1e-4, before = before, after = after, error = failed }
+        local result = { ok = failed == nil and type(after) == "number" and math.abs(after - value) < 1e-4, before = before, after = after, error = failed }
+        if not result.ok then return result end
+        return GK.Observe(result, function(_, final)
+            local now = numbers()
+            for key, v in pairs(now) do
+                -- a number that moved to the value; one that already held it when the slider did too
+                if math.abs(v - value) < 1e-4 and (held[key] == nil or math.abs(held[key] - value) >= 1e-4
+                        or (type(before) == "number" and math.abs(before - value) < 1e-4)) then
+                    result.held = { [key] = v }
+                    return result
+                end
+            end
+            if final then
+                result.holds = now
+                result.note = "no number of the slider's data took the value"
+                return result
+            end
+        end, 1500)
     elseif row.kind == "toggle" then
         local state, from, context = toggleState(element, typeOf(UI.Data(name)))
         if from == "data.Value" then
@@ -1527,11 +1757,14 @@ end
 function UI.Select(name, list, item)
     local widget = UI.Widget(name)
     if not widget then return { ok = false, error = "not open: " .. tostring(name) } end
-    local box = findElement(widget, list)
-    local row
-    if not box or kindOf(typeOf(box)) ~= "list" then
-        row = UI.Handle(name, list)
-        box = row and row.kind == "list" and row.element or box
+    -- the list a handle names first: an x:Name may also name a hidden copy of it (creation's
+    -- subTabsSpellsList), whose selection changes nothing shown
+    local row = UI.Handle(name, list)
+    local box = row and row.kind == "list" and row.element or nil
+    if not box then
+        row = nil
+        box = findElement(widget, list)
+        if box and kindOf(typeOf(box)) ~= "list" then box = nil end
     end
     if not box then return { ok = false, error = "no list " .. tostring(list) .. " in " .. tostring(name) } end
     if type(item) ~= "userdata" then

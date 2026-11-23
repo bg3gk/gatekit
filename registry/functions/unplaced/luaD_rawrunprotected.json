@@ -1,0 +1,14 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::luaD_rawrunprotected",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Lua's protected call of the game's own embedded Lua VM: saves L->nCcalls (+0xC6) and L->errorJmp (+0x58), setjmp, calls f(L, ud), restores both, returns the status - the Lua 5.x function of that name, line for line",
+  "fingerprint": {"calls": ["fp:5227b96c8688ff31"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "decompiled body matches Lua 5.x ldo.c luaD_rawrunprotected (nCcalls at +0xC6, errorJmp at +0x58, setjmp); sampled 50% of the server thread's LoadLevel samples under it while a save loads (W3 LoadTrace)"
+    }
+  ]
+}

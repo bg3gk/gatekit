@@ -36,7 +36,6 @@ public sealed class InstanceTests : IDisposable
         Assert.False(FileTree.IsLink(Path.Combine(data, "Video")));
         Assert.True(FileTree.IsLink(Path.Combine(data, "Mods", "Loose")));
         Assert.True(File.Exists(Path.Combine(data, "Video", "Intro.bk2")));
-        Assert.False(File.Exists(Path.Combine(data, "Video", "Splash_Logo_Larian.bk2"))); // the installed game's empty stub
     }
 
     [Fact]

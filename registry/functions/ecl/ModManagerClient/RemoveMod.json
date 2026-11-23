@@ -1,0 +1,31 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::ModManagerClient::RemoveMod",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Removes a mod from the client's mod settings by its UUID (ls::ModuleSettings::RemoveMod), saves modsettings.lsx and re-resolves the load-ordered modules (ecl::ModManagerClient::SaveSettingsAndReload), then calls the manager's enabled-state listeners; the game's mod manager calls it when the player disables a mod",
+  "fingerprint": {
+    "calls": ["ecl::ModManagerClient::SaveSettingsAndReload", "ls::ModuleSettings::RemoveMod"]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "same shape as EoCClient.dll's ecl::ModManagerClient::RemoveMod - the settings' RemoveMod on the manager's settings, SaveSettingsAndReload, then the listeners; gui::DCModBrowser::ToggleModEnabled (bg3_dx11.exe@25605617+0x15F2290) calls it to disable a mod, as NoesisGameUI.dll's does"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: calls code:ls::ModuleSettings::RemoveMod on this+0x1C0 with the mod, then code:ecl::ModManagerClient::SaveSettingsAndReload on this, then each listener of the array at this+0x1F8 (count +0x204, stride 0x48) with the mod"
+    },
+    {
+      "kind": "watch",
+      "says": "probes in copy coord (c2, build v34-start-extmod-3), Ext.Mod.SetEnabled(AI, false) in the main menu, three times: each call enters code:ls::ModuleSettings::RemoveMod from bg3_dx11.exe@25605617+0x181B1B1 with this+0x1C0 and the same second argument, then code:ecl::ModManagerClient::SaveSettingsAndReload from bg3_dx11.exe@25605617+0x181B1B9; client thread"
+    },
+    {"kind": "test", "test": "startup/mods/ext_mod"}
+  ]
+}

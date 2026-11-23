@@ -4,7 +4,7 @@
 --   AI.GK                  GateKit's API (Mods.GateKit.GK): the bridge is built from its verbs only
 --   AI.Util                small helpers: try, uuidOf, pointOf, nameOf, controlled, members, handle, cut
 --   AI.Row(kind, payload)  a row of the mod's own family `ai` in GateKit's event log
---   AI.Client              what the client last told: { open, blocking, scenes, seq }
+--   AI.Client              what the client last told: { open, blocking, scenes, stuck, alive, seq }
 --   AI.Ask(act, done)      an act carried out on the client, in the UI's context; `done(answer)`
 --   AI.Class               each verb's class (Shared/VerbClasses.json)
 
@@ -51,8 +51,12 @@ function U.controlled()
 end
 
 --- The short handle of an entity in the bridge's answers: "#" and the first six characters of its uuid.
+--- Every handle the bridge writes in blind mode is of a thing the mode let it tell (AI.Told): what
+--- the agent was shown is what it may act on. A change of mode forgets them.
+AI.Told = AI.Told or {}
 function U.handle(id)
     local uuid = U.uuidOf(id) or tostring(id)
+    if AI.Mode and AI.Mode.Blind and AI.Mode.Blind() then AI.Told[uuid] = true end
     return "#" .. uuid:sub(1, 6)
 end
 
@@ -121,6 +125,10 @@ AI.Channel = AI.Channel or Ext.Net.CreateChannel(ModuleUUID, "GKAI", function(ms
         client.seq = (client.seq or 0) + 1
     end
     if type(msg.scenes) == "table" then client.scenes = msg.scenes end
+    if msg.stuck ~= nil then client.stuck = msg.stuck or nil end
+    if type(msg.windows) == "table" then client.windows = msg.windows end
+    if msg.hello then client.alive = GK.Ticks() end
+    if msg.tool and msg.forward and AI.Forwarded then AI.Forwarded(msg) end
     if msg.id and AI.Asked[msg.id] then
         local done = AI.Asked[msg.id]
         AI.Asked[msg.id] = nil

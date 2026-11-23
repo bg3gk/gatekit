@@ -94,7 +94,7 @@ local function resolve(at)
         if n:find(wanted, 1, true) and (not partD or (d or 0) < partD) then part, partD = rowId, d or 0 end
     end
     for _, m in ipairs(U.members()) do consider(m, nameOf(m), 0) end
-    local around = try(GK.See.Around, { radius = 60, scope = AI.Mode.Scope(true), limit = 80 }) or {}
+    local around = try(GK.See.Around, AI.Ways.SeeOptions(60, true)) or {}
     -- what the party sees now first; what it remembers or does not perceive only when nothing seen has the name
     for _, seen in ipairs({ true, false }) do
         for _, list in ipairs({ around.characters or {}, around.objects or {} }) do

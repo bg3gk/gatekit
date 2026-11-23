@@ -1,0 +1,18 @@
+{
+  "schema": "registry/global/1",
+  "id": "EoCFS::strSplashLogoLarian",
+  "kind": "variable",
+  "state": "described",
+  "rung": "confirmed",
+  "about": "The FixedString Splash_Logo_Larian: the name of the startup video and of its one-entry playlist, given by code:ecl::EocClient::Load to code:ecl::GameStateStartLoading::MakeSimple.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the second argument of the MakeSimple call in code:ecl::EocClient::Load, where macOS passes EoCFS::strSplashLogoLarian"
+    },
+    {
+      "kind": "watch",
+      "says": "read live in the main menu after the startup clip played (up --main-menu --startup-videos): the 4 bytes here (458227776) equal the client player's playlist name (+0x10) and current video name (+0x30) of ecl::VideoManager at GameControl+0x190, GameControl read from bg3_dx11.exe@25605617+0x60089B0"
+    }
+  ]
+}

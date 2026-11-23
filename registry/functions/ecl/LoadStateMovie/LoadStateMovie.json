@@ -1,0 +1,23 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::LoadStateMovie::LoadStateMovie",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Constructs a movie load state: type 2 at +0x8, the playlist name at +0x10, the names to play in order at +0x18 (count +0x24), skippable flags at +0x2c and +0x2d.",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "writes the virtual table bg3_dx11.exe@25605617+0x564C9E0 (whose slot 2 is code:ecl::LoadStateMovie::Start) and copies a span of FixedStrings one by one into +0x18, as the inlined constructor in macOS GameStateStartLoading::Enter does; called from code:ecl::GameStateStartLoading::Enter"
+    },
+    {
+      "kind": "reach",
+      "says": "new game from the main menu: a client probe saw 0 calls while StartLoading was entered twice with empty playlists"
+    },
+    {
+      "kind": "watch",
+      "says": "the fork's per-tick read of code:ls::LoadingScreenManager.ActiveLoadState, copy attacks, first starts with the clip: from the tick after StartLoading is entered until the clip stops the active load state is an object with the virtual table this constructor writes, bg3_dx11.exe@25605617+0x564C9E0, and its video is the one the player starts (VideoStarted Splash_Logo_Larian)"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

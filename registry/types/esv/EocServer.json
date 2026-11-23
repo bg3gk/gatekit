@@ -1,0 +1,32 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::EocServer",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The server's root object (the extender's esv__EoCServer global points at it).",
+  "fields": [
+    {
+      "offset": 184,
+      "name": "SavedRandom",
+      "type": "ls::Random",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "esv::inventory::TreasureGenerationUnitTestHelper::GetSavedRandom (EoCServer.dll+0xF18210) returns the server +0xB8"
+        },
+        {
+          "kind": "watch",
+          "says": "a hardware watch on +0xBC hit only under the treasure tables' rolls in a level's first visit; written live, the loot followed the written seed"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoCServer.dll exports esv::EocServer's members (GetSavedRandom bg3_dx11.exe@25605617+0x247A90, StartUp)"
+    }
+  ]
+}

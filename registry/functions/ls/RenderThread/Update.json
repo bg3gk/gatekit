@@ -1,0 +1,47 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::RenderThread::Update",
+  "state": "described",
+  "rung": "inferred",
+  "does": "One frame of the render thread (the main thread, WinMain's loop through BaseApp::OnIdle): updates the global resource manager, starts the render frame system's worker batches, records and submits each render frame and presents it; the game's logic threads (client, server) run apart from it.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:17a57ef669c9f485",
+      "fp:2e11dab32a025d84",
+      "fp:3008e0a960fec863",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:8442ce21ef2f59f4",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:a98ed6c300f7f1ff",
+      "fp:b3f1d258b924641c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:eddd7daf5203e52b",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::RenderFrameBeginViews"
+    ],
+    "components": ["ls::RenderFrameSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "macOS BaseApp::OnIdle is one call, ls::RenderThread::Update(*(*(this+0x138)+0x40)); dx11's bg3_dx11.exe@25605617+0x3AC3510 has the same one-call shape (*(*(this+0x140)+0x20)) and is the only caller of this function"
+    },
+    {
+      "kind": "read",
+      "says": "the sampler's stacks of the main thread in Running (W3 round 1) run under it 100%, through WinMain bg3_dx11.exe@25605617+0x5777D0"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

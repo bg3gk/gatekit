@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::LoadingScreenManager::Update",
+  "state": "described",
+  "rung": "game",
+  "does": "Runs the queue of load states: while the active state (+0x28) is not done (its virtual +0x28) it waits; when done and another is queued (count +0x1C) it ends it (virtual +0x20), destroys it (virtual +0x8) and starts the next (virtual +0x10, then +0x18 while the screen is visible, +0x8)",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "macOS decomp; the queue is a ring at +0x10 with capacity +0x18, count +0x1C, head +0x20"
+    },
+    {"kind": "game-name", "says": "the macOS build's symbols hold this name"},
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

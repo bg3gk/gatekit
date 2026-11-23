@@ -140,10 +140,10 @@ public static class DecompCommands
         }
         // at - name only, for an address from any external tool (a debugger, the memory watchpoint)
         {
-            var name = new Argument<string>("address") { Description = "module+0xRVA, an absolute address, or a function name" };
-            var asJson = new Option<bool>("--json") { Description = "the names as JSON" };
+            var name = new Argument<string[]>("address") { Description = "module+0xRVA, an absolute address, or a function name; several in one call (a stack, a profiler's list), each answered in turn", Arity = ArgumentArity.OneOrMore };
+            var asJson = new Option<bool>("--json") { Description = "the names as JSON (an array when several were asked)" };
             var c = new Command("at", "the function at an address and its name, from the decompiler and symbol databases (no pseudo-code)") { name, asJson };
-            c.SetAction(p => Invoke(p, s => NameAtCommand.Run(s, p.GetValue(name)!, p.GetValue(asJson))));
+            c.SetAction(p => Invoke(p, s => NameAtCommand.RunMany(s, p.GetValue(name)!, p.GetValue(asJson))));
             root.Subcommands.Add(c);
         }
         // name, names: the functions named by evidence

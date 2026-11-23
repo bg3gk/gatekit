@@ -1,0 +1,63 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateInit::Do",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The client's Init state: file cache, cloud, analytics, the save manager's Init; then reads -loadSaveGame (matched by ecl::SavegameManager::GetSavegameIndex) or -continueGame (ecl::SavegameManager::GetLastSaveGame) and calls ecl::SavegameManager::TryLoad; the load itself starts from Menu, after LoadMenu.",
+  "fingerprint": {
+    "calls": [
+      "ecl::GameStateLoad::TickLoad",
+      "fp:123b79ba6c390bab",
+      "fp:2cd9313891b300c3",
+      "fp:2e11dab32a025d84",
+      "fp:505745ed94c5130f",
+      "fp:5227b96c8688ff31",
+      "fp:57c2f487567ad7a5",
+      "fp:697a2eb774a4e3c4",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:92f9cfb3cc2ec79c",
+      "fp:9e24d4c02110e384",
+      "fp:bba73822a4a63a4f",
+      "fp:ca7b537d1598f51f",
+      "fp:e4d053ad9455ea7c",
+      "fp:ffed5ee30b44d4a9",
+      "import:154e46e01831fb06",
+      "import:196f87dd222b4c83",
+      "import:7b0df8977227db96",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:b8f0174a5f95843b",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "ls::ArgumentString::GetValue"
+    ],
+    "strings": [
+      "189fde78024f70ec",
+      "46ab1d2050bab421",
+      "6bade9cda90487c7",
+      "7e50f8810df871ba",
+      "7f62f54f4eab3f67",
+      "9327f3b071df6464",
+      "d72f717f6fd3e17f",
+      "d8931e63be721bba"
+    ],
+    "vtables": [{"slot": 17}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "decomp of bg3_dx11.exe@25605617+0x18479A0 holds the strings -loadSaveGame, -continueGame and 'GameStateInit: These commands should be mutually exclusive'; the Toolkit's EoCClient.dll+0xBD23D0 names its Optick event ecl::GameStateInit::Do"
+    },
+    {
+      "kind": "reach",
+      "says": "the timeline of up --save with an ASCII folder name: the client went Init, LoadModule, LoadMenu, Menu, then StartLoading of the save 1.4 s after the MainMenu page"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

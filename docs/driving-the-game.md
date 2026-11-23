@@ -22,6 +22,10 @@ gatekit mcp tools                                    # list the tools, nothing s
 An agent's first call is `bg3_status`: its `instance` names the copy this server drives. Two
 agents on two copies cannot disturb each other or the installed game.
 
+For game-logic automation, start the copy with `gatekit --instance world up --headless --save NAME`
+and connect MCP to the same `world` copy. Use a drawn run for actions that depend on rendered
+frames. The startup modes and their requirements are in [the CLI contract](contracts/cli.md#up).
+
 **A fair client.** Started with `GATEKIT_FAIR=1` in its environment, the server gives the client
 only the rows of the event log a player could know (`knows = player`), in `bg3_events` and in
 attention alike. The filter is the host's, set by whoever starts the server, never by the client.
@@ -66,8 +70,14 @@ an `attention` note of what the caller has not yet been told. The rows and their
   for one, or to see something that reads wrong.
 - **Wait for a row, not for a time.** A fixed sleep is the usual reason a run is slow and flaky.
 - **Reset instead of restarting.** A `bg3_checkpoint` once the game is playable, a `bg3_reset`
-  between attempts.
+  between attempts. Another level or save is a load in the running game (`gatekit reset --save
+  NAME`), not a new process; `up` again only for a new Script Extender build, another mod list or
+  a game that died.
 - **Add what is missing to the toolkit.** The same Lua written twice is a tool; what the game-side
   API lacks is a `GK.*` verb with a comment above it, held to [api-rules.md](api-rules.md).
 - **Close what you open.** `bg3_down` closes the copy; a game left running holds it.
 - **Know the game's rules.** Where Baldur's Gate 3 differs from D&D 5e: [game-rules.md](game-rules.md).
+- **Ask the game's memory and code, not guesses.** Who writes a field (a watch), who calls a
+  function and with what (a probe, up and down), which functions run for an action (coverage, an
+  action against the same scene idle), what happened before any Lua (the start's timeline): the
+  instruments and when each answers: [writing-tests.md](writing-tests.md#the-instruments-at-hand).

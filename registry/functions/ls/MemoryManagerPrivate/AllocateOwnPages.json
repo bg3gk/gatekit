@@ -1,0 +1,13 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::MemoryManagerPrivate::AllocateOwnPages",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Takes a new block of pages from the system for the memory manager (ls::AllocatorSystemMemory::Alloc), at most 16 blocks; the constructor's first block is the size at +0xD0 (0x68000000 = 1,664 MB, 0x6400000 for GameObjectFileMerger.exe).",
+  "evidence": [
+    {
+      "kind": "text",
+      "says": "its assertion names it (MemoryManagerPrivate.cpp, ls::MemoryManagerPrivate::AllocateOwnPages, 'MMP tries to allocate more memory than supposed'); read: called by ls::MemoryManager::MemoryManager with +0xD0 and 0x20000"
+    }
+  ]
+}

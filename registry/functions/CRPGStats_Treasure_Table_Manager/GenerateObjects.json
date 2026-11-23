@@ -1,0 +1,24 @@
+{
+  "schema": "registry/function/1",
+  "id": "CRPGStats_Treasure_Table_Manager::GenerateObjects",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Rolls a treasure table into objects with the ls::Random it is given.",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll+0x1131030 exports it (ls::Random&, DivinityStatsSystem*, the object set, levels, flags)."
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "called by esv::inventory::TreasureGenerationSystem::GenerateTreasure (bg3_dx11.exe@25605617+0x34C1630) with the stats manager +0x180 and the saved random, as the Toolkit's; every draw of the saved random in a level's setup comes from under it (watch)"
+    }
+  ]
+}

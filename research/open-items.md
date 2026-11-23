@@ -63,6 +63,16 @@ attack.
 
 ### High priority
 
+- **The empty menu as the tests' home** (first in line; measured only with no other copy running,
+  so the numbers are clean): a copy started to a main menu as light as the game allows - a module's
+  `MenuLevelName` naming an empty level, no camera, nothing drawn - and kept there: tests load from it
+  into their level or save by the game's own path, and return to it by the game's own "return to the
+  main menu" (and, after a change of the mod list, through the game's own module reload), never by a
+  new process. Measure: the copy's memory in that menu (and after a while), the times menu -> test
+  level, menu -> save, session -> menu, against a new process. Then `up` and the test runner use it for
+  every test but the start's own (`tests/startup`). A warm second copy for dangerous experiments
+  follows from the same. Not possible: a reset below the menu (`App::InitGame` runs once per process).
+
 - **The registry of our reading of the machine code.** The aim is the complete description of
   the game's machine code, and it lives in one registry in the repository from which every other
   store is derived; the decision and its rules are in [registry/README.md](../registry/README.md).
@@ -193,6 +203,20 @@ attack.
   `Answer` in `src/GateKit.Testing/GameApi.cs`; the sleeps in `tests/_selftest/`. Each becomes a read
   from one place on the tick, alive only while something waits for it.
 
+### Open ideas (the owner's, not yet planned)
+
+- **The game's files unpacked whole, with full-text search** (next after the headless night): every
+  .pak unpacked to one read-only place on any machine that has the game, by one command, and a
+  context search for any id, stats name, UUID, template or flag - every file and line that names it -
+  as a `gatekit` command and an MCP tool, for people too. Never game data in the repo.
+- **Coverage from the files inward**: once the files are unpacked and indexed, go the other way than
+  "the game's machine code -> the files it reads": from a file or a resource, find where the game
+  meets it (which level, scene, dialog, stat uses it), start the game there, and mark the machine
+  code that handles it (the tracer, coverage, probes) in the registry.
+- **Viewers of the game's parts outside the game**: quick, convenient tools to look at models,
+  XAML pages, dialog trees, timelines and the rest without starting the game; later perhaps a
+  Toolkit of our own that views and edits levels.
+
 ### Acting as a player
 
 - For later: the reading of the scene (`GK.Situation`) knows where the actors - characters and
@@ -305,6 +329,11 @@ Found on the way, about tests and tools:
   screen (closed only by a reset; `GK.Stage.Clean` gives the hit points back and leaves it).
 
 ### Tests and the event log
+
+- `GK.Gui.QuickLoad()` answers ok when the game drops the quick load (issued soon after a quick
+  save ends: no `StartLoading` follows), so `test:startup/loads/save_load` fails now and then. The
+  game's condition for a quick load to be taken is not known; the verb should say whether the load
+  began (an event), not only that the command was sent.
 
 - Not checked for the guide: whether the limits of `game.server`/`ui`/`lua` count ticks or real
   time; that the guide's example runs as written (it is cut from a passing test).
@@ -421,6 +450,13 @@ Found on the way, about tests and tools:
 
 ### The toolkit
 
+- `gatekit` cannot print a start's timeline (`Ext.StartupVideos.Timeline()`); it is read through
+  `exec` or a test. The MCP tool `bg3_up` has no `--until-lua`.
+- Before the bridge answers, `up` still follows a start by the process and the extender's log with
+  a no-progress limit: no Lua exists before `LoadModule`.
+- A copy's links to the installed game (`Data/Public`, ...) are shown by no command; a hand-written
+  file there lands in the player's game.
+- `registry note --snap` only warns when the address already carries another name.
 - `bridge-reload` in the main menu waits for a server side that does not exist there.
 - The bridge still serves its former channel, `cmd_<side>.json`; the host does not use it.
 - A helper for Osiris calls that names the overloads that exist when the arity is wrong.
@@ -501,6 +537,30 @@ Found on the way, about tests and tools:
   a player can reach them is to be found in the templates and treasure tables.
 
 ### The Script Extender fork
+
+The startup videos and the start's timeline ([studies/startup-videos.md](studies/startup-videos.md)):
+
+- The fork's worktree does not build as its projects stand: `stb_image.h` and the absl libraries
+  libprotobuf-lite needs are supplied from outside (CL and LINK in the environment).
+- The mappings the startup code and the timeline add were run on the Vulkan `bg3.exe` by the start's
+  tests (`startup/videos`, `startup/hints`, `startup/confirm`, `startup/loads/start` pass there);
+  the other loads' tests (`startup/loads`) were run on `bg3_dx11.exe` only.
+- Script Extender's own initialization costs about 2.5 s of CPU inside the loader on every start;
+  cached mapping results per game build would shorten every player's start.
+- Before any Lua a mod can change engine-start files (the loading screen's XAML and
+  images, input configs) only by shadowing whole files; a native path-override table read from a
+  mod's declaration and an early mount of mods' paks would let several mods
+  compose there. Ideas, not built.
+- The start: `BaseApp::BaseApp` on dx11 stores the application at another global than
+  `BaseApp::s_AppInstance`'s place (an open question on the entry); the renderer's initialization after the window (about 1.1-1.4 s, the application's
+  unnamed virtual slots) is not named; the writers of `eoc::TimelineDataComponent.PlaybackState`
+  inside `ecl::TimelineSystem` are not paired, and the values of `ETimelinePlaybackState` (0 and
+  2 seen) are not named; how many segments a level's or a save's load counts is not read (the
+  client's Lua is reset during them).
+- The interface's pages are read by a walk of its state machine on the interface's update; that it
+  is never changed on another thread at that moment is not proven.
+- `Black` of the client machine's fade phase is never seen by the timeline: the game passes it
+  inside one update.
 
 Waiting for the owner's decision:
 

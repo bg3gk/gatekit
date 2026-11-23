@@ -43,6 +43,28 @@ public sealed class EventLogTests : IDisposable
     }
 
     [Fact]
+    public void A_segment_caught_while_the_game_rewrites_it_does_not_lose_rows()
+    {
+        // the game rewrites the head's segment in place, whole, every tick it has rows: a read in
+        // that moment finds it empty or cut at a line's end, while the head says how far it goes
+        WriteLog(_folder.Path, "client", 432, 128, Row(1, "game_state", 10), Row(2, "game_state", 20), Row(3, "note", 30, ""","payload":{"note":"a"}"""));
+        var reader = new EventLogReader(_folder.Path);
+        Assert.Equal(3, reader.Read(Side.Client)!.Seq);
+        var segment = reader.SegmentPath(Side.Client, 432, 1);
+        File.WriteAllText(segment, "");
+        Assert.Equal([1L, 2, 3], reader.Read(Side.Client)!.Rows.Select(r => (long)r["seq"]!));
+        File.WriteAllText(segment, Row(1, "game_state", 10) + "\n" + Row(2, "game_state", 20) + "\n");
+        Assert.Equal(3, reader.Read(Side.Client)!.Seq);
+        // written whole again, with a row more: read
+        File.WriteAllText(segment, string.Join("\n", Row(1, "game_state", 10), Row(2, "game_state", 20),
+            Row(3, "note", 30, ""","payload":{"note":"a"}"""), Row(4, "game_state", 40)) + "\n");
+        Assert.Equal(4, reader.Read(Side.Client)!.Seq);
+        // a reader that never read it whole takes what is there, after a few reads
+        File.WriteAllText(segment, "");
+        Assert.Equal(0, new EventLogReader(_folder.Path).Read(Side.Client)!.Seq);
+    }
+
+    [Fact]
     public void A_row_outside_the_vocabulary_is_left_out_and_said()
     {
         WriteLog(_folder.Path, "client", 1, 8, Row(1, "trade", 10, ""","key":"window:trade","attention":"begin" """), Row(2, "DialogStarted", 20),

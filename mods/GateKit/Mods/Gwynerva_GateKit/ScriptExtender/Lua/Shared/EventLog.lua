@@ -261,7 +261,7 @@ function L.Append(kind, payload, options)
     local c = counts(spec.family)
     c.rows, c.bytes = c.rows + 1, c.bytes + #text
     -- the bound: whole segments go, never the one being written
-    while segmentOf(L.First) < segment and (segment - segmentOf(L.First) + 1 > KEEP_SEGMENTS or L.Bytes > KEEP_BYTES) do
+    while segmentOf(L.First) < segment and (segment - segmentOf(L.First) + 1 > (L.KeepSegments or KEEP_SEGMENTS) or L.Bytes > (L.KeepBytes or KEEP_BYTES)) do
         retireOldest()
     end
     L.Dirty = true
@@ -387,6 +387,17 @@ function L.On(families, options)
 end
 
 --- Switches families off (nil: every family that is not on by default). Answers the families on now.
+--- How much of the log this Lua state keeps (memory and the channel's files): `segments` of 128
+--- rows (default 32, at most 256) and `bytes` (default 4 MB, at most 32 MB); nil puts a bound back
+--- to its default. A scenario that writes more rows than the default keeps (a story change of
+--- level with the osiris family on: ~5,000) raises it so its first rows are not retired before it
+--- is read. Answers the bounds now. W3 round 4 of the start-zone night.
+function L.Keep(segments, bytes)
+    L.KeepSegments = segments and math.max(2, math.min(256, math.floor(segments))) or nil
+    L.KeepBytes = bytes and math.max(65536, math.min(32 * 1024 * 1024, math.floor(bytes))) or nil
+    return { segments = L.KeepSegments or KEEP_SEGMENTS, bytes = L.KeepBytes or KEEP_BYTES }
+end
+
 function L.Off(families, why)
     local list = families and names(families) or nil
     if not list then

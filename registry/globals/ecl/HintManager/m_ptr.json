@@ -1,0 +1,23 @@
+{
+  "schema": "registry/global/1",
+  "id": "ecl::HintManager::m_ptr",
+  "kind": "variable",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The one ecl::HintManager of the process.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "App::InitializeResourceManager (dx11 code:App::InitializeResourceManager) zeroes +0x14 through it before loading Hints/Hints.lsx"
+    },
+    {
+      "kind": "watch",
+      "says": "live dx11 copy attacks: count 49, HintDuration 5.0 at the pointed object"
+    },
+    {"kind": "game-name", "says": "macOS symbol ecl::HintManager::m_ptr"},
+    {
+      "kind": "read",
+      "says": "App::InitializeResourceManager loads it at bg3_dx11.exe@25605617+0x58735E (mov rcx, [rip+..]), zeroes its +0x14 and calls ls::FileFormatIO::LoadFile with it; the fork F5 maps it by those bytes"
+    }
+  ]
+}

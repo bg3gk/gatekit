@@ -1,0 +1,69 @@
+{
+  "schema": "registry/type/1",
+  "id": "rf::RenderFrame",
+  "kind": "struct",
+  "state": "described",
+  "rung": "inferred",
+  "about": "A render frame of ls::RenderFrameSystem (the game window's, and the frames of portraits and icons): begun, recorded, submitted and presented by ls::RenderThread::Update each frame while enabled.",
+  "fields": [
+    {
+      "offset": 64,
+      "name": "State",
+      "type": "int32",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the loops of ls::RenderThread::Update; W3 round 3 wrote 0 to +0x42F0 (RenderCut) to leave a frame undrawn"
+        }
+      ]
+    },
+    {
+      "offset": 17120,
+      "name": "Views",
+      "type": "rf::RenderView**",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the loops of ls::RenderThread::Update; W3 round 3 wrote 0 to +0x42F0 (RenderCut) to leave a frame undrawn"
+        }
+      ]
+    },
+    {
+      "offset": 17132,
+      "name": "ViewCount",
+      "type": "uint32",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the loops of ls::RenderThread::Update; W3 round 3 wrote 0 to +0x42F0 (RenderCut) to leave a frame undrawn"
+        }
+      ]
+    },
+    {
+      "offset": 17136,
+      "name": "Enabled",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the loops of ls::RenderThread::Update; W3 round 3 wrote 0 to +0x42F0 (RenderCut) to leave a frame undrawn"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "ls::RenderThread::Update and the function at bg3_dx11.exe@25605617+0x3DF97C0 test +0x40 (2: gone) and +0x42F0 before every use of a frame"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "RenderFramework.dll",
+      "says": "RenderFramework.dll exports this name"
+    }
+  ]
+}

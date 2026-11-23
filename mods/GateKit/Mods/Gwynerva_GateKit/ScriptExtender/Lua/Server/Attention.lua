@@ -66,13 +66,19 @@ A.On = {
     TutorialBoxShown = function(...)
         A.Push("tutorial_shown")
     end,
+    -- the story's call (TUT_CharacterCreation, five seconds into creation, when the user's
+    -- tutorials are marked completed): the client then asks the player to resume them, if the
+    -- profile has tips already shown
+    ResetTutorialsRequest = function(user, ask)
+        A.Push("tutorial_reset_request", { user = user, ask = ask == 1 })
+    end,
     RequestTrade = function(character, trader)
         A.Push("trade_requested", { who = bare(character), trader = bare(trader), name = name(bare(trader)) })
     end,
 }
 
 local ARITY = { CombatStarted = 1, CombatEnded = 1, Died = 1, DownedChanged = 2, DialogStarted = 2, DialogEnded = 2,
-                LevelGameplayStarted = 2, LevelUnloading = 1, RequestTrade = 4 }
+                LevelGameplayStarted = 2, LevelUnloading = 1, RequestTrade = 4, ResetTutorialsRequest = 2 }
 A.Registered = A.Registered or {}
 for event, arity in pairs(ARITY) do
     if not A.Registered[event] then

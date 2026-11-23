@@ -1,0 +1,49 @@
+{
+  "schema": "registry/type/1",
+  "id": "ui::UIStateMachine",
+  "kind": "struct",
+  "state": "described",
+  "rung": "inferred",
+  "about": "The interface's state machine (Noesis component): the tree of state instances from its Root, the pages such as SplashScreen and MainMenu hanging under GameRoot.",
+  "fields": [
+    {
+      "offset": 16,
+      "name": "StateActivatedCallbacks",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "0x10 a signal whose connections (0x48 bytes each) bind bg3_dx11.exe@25605617+0x13C32E0 (reads the state name as a Noesis string: +0 length, +7 inline flag, +8 chars or pointer); 0x98 the Root instance; 0x270 a Noesis string reading Root"
+        }
+      ]
+    },
+    {
+      "offset": 152,
+      "name": "State",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "0x10 a signal whose connections (0x48 bytes each) bind bg3_dx11.exe@25605617+0x13C32E0 (reads the state name as a Noesis string: +0 length, +7 inline flag, +8 chars or pointer); 0x98 the Root instance; 0x270 a Noesis string reading Root"
+        }
+      ]
+    },
+    {
+      "offset": 624,
+      "name": "RootState",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "0x10 a signal whose connections (0x48 bytes each) bind bg3_dx11.exe@25605617+0x13C32E0 (reads the state name as a Noesis string: +0 length, +7 inline flag, +8 chars or pointer); 0x98 the Root instance; 0x270 a Noesis string reading Root"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "read live in dx11 25605617 through Ext.Debug.ReadMemory: GameUI+0x7C0+0x50 -> this; its +0x98 walked gives Root/{EditorRoot, GameRoot/SplashScreen, SystemUIs, SystemRoot, SystemOverlayRoot/VoiceChat} on the splash page; the fork's Timeline UIState rows (v34-startup-videos-3) follow it through a whole start: GameRoot/Loading -> Eula -> SplashScreen -> MainMenu"
+    }
+  ]
+}

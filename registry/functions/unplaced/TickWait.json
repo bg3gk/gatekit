@@ -1,0 +1,34 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::TickWait",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The wait at the end of a game thread's tick: restarts the ls::PreciseClock at +0 of its object, then waits the period at +0x18 less the carry at +0x28 and its second argument (microseconds): while more than 1 ms is left it runs queued ls::WorkerThreadJob items of the worker scheduler's three queues and calls SwitchToThread, the last millisecond a tight QueryPerformanceCounter spin with Sleep(0) every 400 reads; it writes the time measured to +0x20 and how far it overran to +0x28 (the carry the next wait subtracts).",
+  "fingerprint": {
+    "calls": [
+      "fp:4c543382a1adebef",
+      "fp:dcc56716f02a3224",
+      "fp:e4d053ad9455ea7c",
+      "import:3c67524f6489a260",
+      "import:617d676a826bc1b3",
+      "import:8fd3372adbea4411"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its body: PreciseClock::restart, QueryPerformanceCounter, the 0x3E9 us threshold, the MPMC queue Emplace of WorkerThreadJob, SwitchToThread / Sleep(1) / Sleep(0), and the writes to +0x20 and +0x28"
+    },
+    {
+      "kind": "read",
+      "says": "its only caller unplaced::TickLimit calls it when the time since the last tick is within the period; the server's DoWork passes its worker +0x78, whose +0x18 (worker +0x90) is the 33333 us period read live in round 1"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "the second argument at the one call site (RDX after the floor in unplaced::TickLimit): a probe would show its value",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

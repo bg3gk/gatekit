@@ -1,0 +1,30 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::ModManager::GetMenuLevel",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "The main menu's level: walks the loaded modules in load order and returns the MenuLevelName of the last module whose meta.lsx ModuleInfo gives one (empty when none does).",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Toolkit GameEngine.dll+0x9943C0 pseudo-code: a loop over the modules (+0x158, count +0x164) keeping the last index with a non-empty ModuleInfo::GetMenuLevel"
+    },
+    {
+      "kind": "reach",
+      "says": "copy attacks: base game Gustav=SYS_Menuscreen_Act1_A, GustavDev=SYS_Menuscreen_Act3_B (the menu shown); a loose Mods/Gwynerva_Weave/meta.lsx with MenuLevelName SYS_Menuscreen_Act1_A (Weave loads after GustavDev) gave the old beach-cave menu, with no MainMenu timeline at all, and the splash page, the main menu and Continue all worked"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Where does the dx11 build hold it (inlined into the menu's load?)",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

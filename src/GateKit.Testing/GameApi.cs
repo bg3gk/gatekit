@@ -115,6 +115,22 @@ public sealed class GameApi
     public string Resolve(string path) =>
         Path.IsPathRooted(path) ? Path.GetFullPath(path) : Path.GetFullPath(Path.Combine(OutFolder, path));
 
+    /// <summary>The tree of tests the test is in (<see cref="GameTest.Tree"/>): it writes nothing there.</summary>
+    public string? TestsTree { get; init; }
+
+    /// <summary>A path a test writes to: never inside <see cref="TestsTree"/>, which holds what is committed.</summary>
+    public string Writable(string path)
+    {
+        var full = Resolve(path);
+        if (TestsTree is { Length: > 0 } tree)
+        {
+            var top = Path.TrimEndingDirectorySeparator(Path.GetFullPath(tree)) + Path.DirectorySeparatorChar;
+            if ((full + Path.DirectorySeparatorChar).StartsWith(top, StringComparison.OrdinalIgnoreCase))
+                throw new ScriptRuntimeException($"{path}: a test writes nothing under {tree}; what it makes goes into its output folder ({OutFolder})");
+        }
+        return full;
+    }
+
     void Register(Table table, string name, Func<ScriptExecutionContext, CallbackArguments, DynValue> function)
     {
         if (CarriesClass.Contains(name)) { table.Set(name, DynValue.NewCallback(function, name)); return; }
@@ -202,12 +218,23 @@ public sealed class GameApi
         });
         Register(game, "shot", (_, a) =>
         {
-            var path = Resolve(Text(a[0], "path"));
+            var path = Writable(Text(a[0], "path"));
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            var width = a[1].Type == DataType.Number ? (int)a[1].Number : 1150;
+            var width =a[1].Type == DataType.Number ? (int)a[1].Number : 1150;
             // game.shot(path [, width [, overlay]]): overlay = true takes the frame with the extender's layer
             var overlay = a[2].Type == DataType.Boolean && a[2].Boolean;
             return DynValue.NewString(Guard(() => _copy.Shot(path, width, overlay)));
+        });
+        // game.cover(name): the coverage counts since the last segment (or the start of the counting)
+        // saved as cover/<name>.txt in the test's output folder, and started again - one segment a
+        // step, compared with `gatekit cover-diff` (a baseline and two repeats of each action).
+        Register(game, "cover", (_, a) =>
+        {
+            var name = Text(a[0], "name");
+            if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) throw new ScriptRuntimeException($"game.cover: {name} is no file name");
+            var path = Writable(Path.Combine(OutFolder, "cover", name + ".txt"));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            return Lua("client", $"return Ext.Debug.SaveCoverage(\"{_copy.Platform.ToGamePath(path).Replace('\\', '/')}\", true)", null);
         });
         // The copies running and their tiles in a deck, if one is running (docs/design/deck.md).
         // A test uses it to prove that reading the game never depends on a window being seen.
@@ -266,10 +293,10 @@ public sealed class GameApi
             return File.Exists(path) ? DynValue.NewString(File.ReadAllText(path, Encoding.UTF8)) : DynValue.Nil;
         });
         Register(game, "exists", (_, a) => DynValue.NewBoolean(File.Exists(Resolve(Text(a[0], "path"))) || Directory.Exists(Resolve(Text(a[0], "path")))));
-        Register(game, "mkdir", (_, a) => { Directory.CreateDirectory(Resolve(Text(a[0], "path"))); return DynValue.Nil; });
+        Register(game, "mkdir", (_, a) => { Directory.CreateDirectory(Writable(Text(a[0], "path"))); return DynValue.Nil; });
         Register(game, "remove", (_, a) =>
         {
-            var path = Resolve(Text(a[0], "path"));
+            var path = Writable(Text(a[0], "path"));
             if (Directory.Exists(path)) Platform.FileTree.TryRemoveTree(path);
             else if (File.Exists(path)) FileRetry.TryDelete(path);
             return DynValue.Nil;
@@ -288,7 +315,7 @@ public sealed class GameApi
         });
         Register(game, "testimage", (_, a) =>
         {
-            var path = Resolve(Text(a[0], "path"));
+            var path = Writable(Text(a[0], "path"));
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllBytes(path, TestPng((int)a[1].Number, (int)a[2].Number));
             return DynValue.NewString(path);
@@ -377,7 +404,7 @@ public sealed class GameApi
         : new HashSet<string>(StringComparer.Ordinal) { Text(value, "kinds") };
 
     /// <summary>A limit of a wait in the game's ticks, read from the heads and heartbeats of this copy.</summary>
-    TickGuard Limit(TimeSpan limit) => new(_session.Bridge, limit, () => _session.Running, Attention.Log);
+    TickGuard Limit(TimeSpan limit) => new(_session.Bridge, limit, () => _session.Running, Attention.Log, gone: _session.Gone);
 
     /// <summary>The time the test spent inside a wait of `game`, by the wait's name (seconds): `wait`,
     /// `wait_row`, `wait_attention`, `answer`, `sleep`.</summary>
@@ -440,7 +467,17 @@ public sealed class GameApi
         {
             while (true)
             {
-                var value = Lua(side, "return (" + expression + ")", null);
+                DynValue value;
+                // A wait is a question asked again until it holds: one dropped because the side's Lua
+                // state started again (a reload the test itself asked for) is asked again, inside the
+                // same limit (the night's W3, round 6: console's reload step in a headless game).
+                try { value = Lua(side, "return (" + expression + ")", null); }
+                catch (ScriptRuntimeException e) when (e.Message.Contains("Lua state started again", StringComparison.Ordinal))
+                {
+                    if (guard.Over() is { } over) throw new ScriptRuntimeException($"timed out waiting on {side} for: {expression} ({over})");
+                    Thread.Sleep(every);
+                    continue;
+                }
                 if (value.CastToBool()) return value;
                 if (guard.Over() is { } why) throw new ScriptRuntimeException($"timed out waiting on {side} for: {expression} ({why})");
                 Thread.Sleep(every);
@@ -472,7 +509,7 @@ public sealed class GameApi
     /// <summary>Writes a file in one step, as an editor does: the game never reads half of it.</summary>
     void Save(string path, string text)
     {
-        var full = Resolve(path);
+        var full = Writable(path);
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
         var temp = full + ".tmp";
         File.WriteAllText(temp, text, new UTF8Encoding(false));

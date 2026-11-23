@@ -25,7 +25,8 @@ function run(game)
         game.server([[
             GKScene = GKScene or {}
             GKScene.ai_probe = { armed = true, ready = false, stage = "one", who = { guest = { seen = true } },
-                go = function() GKScene.ai_probe.stage = "two"; GKScene.ai_probe.done = true; return true end }
+                go = function() GKScene.ai_probe.stage = "two"; GKScene.ai_probe.done = true; return true end,
+                early = function() return { ok = false, error = "not before the end", hint = "wait for done" } end }
             return true ]])
     end)
     local armed = step("the step after", "cheat", function() return call(game, "['do'] = 'wait'") end)
@@ -43,11 +44,34 @@ function run(game)
         check(line and contains(line, "stage=two") and contains(line, "done"), "the new state in scenes", went.now)
         local no = game.server("return Mods.GateKitAI.AI.Scene({ name = 'ai_probe', call = 'fly' })", 30)
         check(no.ok == false and contains(no.why_not, "no call fly") and contains(no.hint, "go"), "a call it has not is refused with those it has", no)
+        local early = game.server("return Mods.GateKitAI.AI.Scene({ name = 'ai_probe', call = 'early' })", 30)
+        check(early.ok == false and contains(early.why_not, "not before the end") and contains(early.hint, "wait for done"), "a call the scene refuses is refused with its reason and hint", early)
     end)
     step("the scene is taken away", "cheat", function()
         game.server("GKScene.ai_probe = nil return true")
         local gone = call(game, "['do'] = 'wait'")
         check(has(gone.now.scenes, "ai_probe: gone"), "its going is said once", gone.now)
+    end)
+
+    -- a stand arms most scenes through the mod, in GateKit's environment, and a few with
+    -- `gatekit exec`, in the global one: both are one table of scenes
+    local both = step("a scene armed in GateKit's environment, then one by exec", "cheat", function()
+        -- no table of scenes anywhere, so that the first is made in GateKit's environment
+        game.server([[
+            GKScene = nil
+            rawset(Mods.GateKit, "GKScene", nil)
+            -- Script Extender's load takes the environment second, as the AI mod runs a scene
+            load("GKScene = GKScene or {} GKScene.ai_own = { armed = true, stage = 'own' } return true", Mods.GateKit)()
+            return true ]])
+        game.server("GKScene = GKScene or {} GKScene.ai_exec = { armed = true, stage = 'exec' } return true")
+        return call(game, "['do'] = 'wait'")
+    end)
+    step("both are scenes", "cheat", function()
+        check(has(both.now.scenes, "ai_own:") and has(both.now.scenes, "stage=own"), "the scene of GateKit's environment", both.now)
+        check(has(both.now.scenes, "ai_exec:") and has(both.now.scenes, "stage=exec"), "the scene armed by exec", both.now)
+        local again = game.server("return Mods.GateKitAI.AI.Scene({ name = 'ai_exec' })", 30)
+        check(again.ok, "the scene armed by exec is read by name", again)
+        game.server("GKScene.ai_own = nil GKScene.ai_exec = nil return true")
     end)
 
     local from = game.server("local x, y, z = Osi.GetPosition(Osi.GetHostCharacter()); return { x, y, z }")

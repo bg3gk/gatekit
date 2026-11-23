@@ -1,0 +1,34 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::GameStateMachine",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The client's game state machine (EoCClient+0x90).",
+  "fields": [
+    {
+      "offset": 40,
+      "name": "FadePhase",
+      "type": "uint32",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "ecl::GameStateMachine::Update code:ecl::GameStateMachine::Update reads it as uint32 (this+0x28), sets 2 when the fade-out request is found done; values 0 none, 1 fading out, 2 black, 3 fading in (R5); Black is never seen between two Updates: 1>2>3 happen in one call"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's per-tick read of the client machine's +0x28 (Fade rows), copy attacks, first starts: 0 until StopLoading, 1 (fading out) about 33 ms after the client enters StopLoading, 3 (fading in) in the tick it enters Menu, 0 about 1 s later, as code:ecl::GameStateMachine::Update's SetTargetStateAfterFade(Menu) path reads"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "the fork's Timeline Fade rows (v34-startup-videos-3, read after every client Update): start to menu None>FadingOut at LoadMenu>StopLoading, FadingOut>FadingIn in the tick of StopLoading>Menu, FadingIn>None 1.0 s later; a level start and a save load (checkpoint+reset) the same around Running>StartLoading and PrepareRunning>Running; four far camera focuses (GK.Camera.Focus past 50 m, faded=true from the HUD's ScreenFade widget) moved it not at all, so the camera's fade is another mechanism"
+    },
+    {"kind": "toolkit-name", "store": "EoCClient.dll", "says": "EoCClient.dll exports this name"},
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

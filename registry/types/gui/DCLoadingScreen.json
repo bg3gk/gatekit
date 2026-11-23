@@ -1,0 +1,125 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::DCLoadingScreen",
+  "kind": "struct",
+  "state": "described",
+  "rung": "confirmed",
+  "about": "The loading screen's view model (XAML Public/Game/GUI/Widgets/LoadingScreen.xaml, context LoadingScreen, shown by the UI state Loading with BlockedLoading). Properties: Progress (float 0..1) and LoadingStateInfo from its base ui::DCLoadingScreen; LoadingState (enum gui::DCLoadingScreen::ELoadingState: Initial 0, CharacterCreation 1, MultiplayerLobby 2, Tutorial 3, Level 4), LevelName, LoadingHints (two VMLoadingHint slots), VisibileHintIndex, Data, CurrentPlayer, AdvanceHintCommand. On macOS LoadingState +0x270, LevelName +0x278, hints collection +0x2c8, VisibileHintIndex +0x2e8, seed +0x2fc, HintManager +0x308; dx11 offsets not read.",
+  "fields": [
+    {
+      "offset": 728,
+      "name": "LoadingState",
+      "type": "int32",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 constructor code:gui::DCLoadingScreen::DCLoadingScreen (property symbols LoadingState +0x2dc, LevelName +0x310, VisibileHintIndex +0x354 beside their values) and code:gui::DCLoadingScreen::OnAdvanceHintCommand (reads +0x370, +0x364, +0x350); HintSeed, HintRandomState are our names; the macOS build holds the same fields 0x68 lower (+0x308 manager, +0x2fc state, +0x2e8 index)"
+        }
+      ]
+    },
+    {
+      "offset": 736,
+      "name": "LevelName",
+      "type": "ui::deferred::String",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 constructor code:gui::DCLoadingScreen::DCLoadingScreen (property symbols LoadingState +0x2dc, LevelName +0x310, VisibileHintIndex +0x354 beside their values) and code:gui::DCLoadingScreen::OnAdvanceHintCommand (reads +0x370, +0x364, +0x350); HintSeed, HintRandomState are our names; the macOS build holds the same fields 0x68 lower (+0x308 manager, +0x2fc state, +0x2e8 index)"
+        }
+      ]
+    },
+    {
+      "offset": 792,
+      "name": "Hints",
+      "type": "ui::deferred::BaseCollectionWrapper",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 constructor code:gui::DCLoadingScreen::DCLoadingScreen (property symbols LoadingState +0x2dc, LevelName +0x310, VisibileHintIndex +0x354 beside their values) and code:gui::DCLoadingScreen::OnAdvanceHintCommand (reads +0x370, +0x364, +0x350); HintSeed, HintRandomState are our names; the macOS build holds the same fields 0x68 lower (+0x308 manager, +0x2fc state, +0x2e8 index)"
+        }
+      ]
+    },
+    {
+      "offset": 848,
+      "name": "VisibileHintIndex",
+      "type": "int32",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 constructor code:gui::DCLoadingScreen::DCLoadingScreen (property symbols LoadingState +0x2dc, LevelName +0x310, VisibileHintIndex +0x354 beside their values) and code:gui::DCLoadingScreen::OnAdvanceHintCommand (reads +0x370, +0x364, +0x350); HintSeed, HintRandomState are our names; the macOS build holds the same fields 0x68 lower (+0x308 manager, +0x2fc state, +0x2e8 index)"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork reads the live view model around each code:gui::DCLoadingScreen::OnAdvanceHintCommand (HintShown rows), copy attacks, first starts: +0x350 changes at every draw (one row about every 10 s, the first during the clip), +0x370 points at the manager whose count is the list's (49, or 51 with the two test mods), and the index the LCG state at +0x364 gives is within the count and names an entry's HintKey (HINT_MOVE_OBJECTS_KBM #42, HINT_DETECT_THOUGHTS #17); test:startup/confirm/stages checks index and count"
+        }
+      ]
+    },
+    {
+      "offset": 856,
+      "name": "AdvanceHintCommand",
+      "type": "ui::DeferredCommand*",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 constructor code:gui::DCLoadingScreen::DCLoadingScreen (property symbols LoadingState +0x2dc, LevelName +0x310, VisibileHintIndex +0x354 beside their values) and code:gui::DCLoadingScreen::OnAdvanceHintCommand (reads +0x370, +0x364, +0x350); HintSeed, HintRandomState are our names; the macOS build holds the same fields 0x68 lower (+0x308 manager, +0x2fc state, +0x2e8 index)"
+        }
+      ]
+    },
+    {
+      "offset": 864,
+      "name": "HintSeed",
+      "type": "uint32",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 constructor code:gui::DCLoadingScreen::DCLoadingScreen (property symbols LoadingState +0x2dc, LevelName +0x310, VisibileHintIndex +0x354 beside their values) and code:gui::DCLoadingScreen::OnAdvanceHintCommand (reads +0x370, +0x364, +0x350); HintSeed, HintRandomState are our names; the macOS build holds the same fields 0x68 lower (+0x308 manager, +0x2fc state, +0x2e8 index)"
+        }
+      ]
+    },
+    {
+      "offset": 868,
+      "name": "HintRandomState",
+      "type": "uint32",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 constructor code:gui::DCLoadingScreen::DCLoadingScreen (property symbols LoadingState +0x2dc, LevelName +0x310, VisibileHintIndex +0x354 beside their values) and code:gui::DCLoadingScreen::OnAdvanceHintCommand (reads +0x370, +0x364, +0x350); HintSeed, HintRandomState are our names; the macOS build holds the same fields 0x68 lower (+0x308 manager, +0x2fc state, +0x2e8 index)"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork reads the live view model around each code:gui::DCLoadingScreen::OnAdvanceHintCommand (HintShown rows), copy attacks, first starts: +0x350 changes at every draw (one row about every 10 s, the first during the clip), +0x370 points at the manager whose count is the list's (49, or 51 with the two test mods), and the index the LCG state at +0x364 gives is within the count and names an entry's HintKey (HINT_MOVE_OBJECTS_KBM #42, HINT_DETECT_THOUGHTS #17); test:startup/confirm/stages checks index and count"
+        }
+      ]
+    },
+    {
+      "offset": 880,
+      "name": "HintManager",
+      "type": "ecl::HintManager*",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 constructor code:gui::DCLoadingScreen::DCLoadingScreen (property symbols LoadingState +0x2dc, LevelName +0x310, VisibileHintIndex +0x354 beside their values) and code:gui::DCLoadingScreen::OnAdvanceHintCommand (reads +0x370, +0x364, +0x350); HintSeed, HintRandomState are our names; the macOS build holds the same fields 0x68 lower (+0x308 manager, +0x2fc state, +0x2e8 index)"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork reads the live view model around each code:gui::DCLoadingScreen::OnAdvanceHintCommand (HintShown rows), copy attacks, first starts: +0x350 changes at every draw (one row about every 10 s, the first during the clip), +0x370 points at the manager whose count is the list's (49, or 51 with the two test mods), and the index the LCG state at +0x364 gives is within the count and names an entry's HintKey (HINT_MOVE_OBJECTS_KBM #42, HINT_DETECT_THOUGHTS #17); test:startup/confirm/stages checks index and count"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 gui::DCLoadingScreen::StaticFillClassType (bg3_dx11.exe@25605617+0x1608F40) registers LoadingState, LevelName, LoadingHints, VisibileHintIndex, Data, CurrentPlayer, AdvanceHintCommand; macOS ui::DCLoadingScreen::StaticFillClassType registers Progress and LoadingStateInfo; the XAML binds exactly these"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

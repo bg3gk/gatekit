@@ -15,10 +15,35 @@ internal static class NameAtCommand
     internal sealed record Named(string Binary, long Rva, long Start, string? DecompName, string? Signature,
         string? SymbolName, IReadOnlyList<string> Notes);
 
+    /// <summary>Several addresses in one call (a profiler's or a stack's list): each resolved and printed
+    /// in turn, as one would be; with --json one array of them. Returns 1 when any address resolved to
+    /// nothing, else 0.</summary>
+    public static int RunMany(DecompSession s, IReadOnlyList<string> queries, bool json)
+    {
+        if (queries.Count == 1) return Run(s, queries[0], json);
+        if (!json)
+        {
+            int code = 0;
+            foreach (var query in queries) code |= Run(s, query, false);
+            return code;
+        }
+        var all = new JsonArray();
+        int status = 0;
+        foreach (var query in queries)
+        {
+            var text = new StringWriter();
+            if (Run(s, query, true, text) != 0) { status = 1; all.Add(new JsonObject { ["query"] = query, ["found"] = false }); continue; }
+            all.Add(GateKit.Json.JsonText.Parse(text.ToString(), query).Root);
+        }
+        s.Out.WriteLine(GateKit.Json.JsonText.Format(all));
+        return status;
+    }
+
     /// <summary>Resolve `query` (module+0xRVA, an absolute address, or a function name) and print.
     /// Returns 0 when a function was named, 1 when nothing could be resolved.</summary>
-    public static int Run(DecompSession s, string query, bool json)
+    public static int Run(DecompSession s, string query, bool json, TextWriter? output = null)
     {
+        var w = output ?? s.Out;
         var named = Resolve(s, query);
         if (named == null)
         {
@@ -49,34 +74,34 @@ internal static class NameAtCommand
                 ["standing"] = Standings.Word(standing),
                 ["notes"] = new JsonArray(named.Notes.Select(n => (JsonNode)n).ToArray()),
             };
-            s.Out.WriteLine(o.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            w.WriteLine(GateKit.Json.JsonText.Format(o));
             return 0;
         }
 
-        s.Out.WriteLine($"{named.Binary}+0x{named.Rva:X}");
+        w.WriteLine($"{named.Binary}+0x{named.Rva:X}");
         string at = named.Start == named.Rva ? "" : string.Create(CultureInfo.InvariantCulture, $" (function at +0x{named.Start:X})");
-        s.Out.WriteLine($"  decompiler: {named.DecompName ?? "(unnamed)"}{at}");
+        w.WriteLine($"  decompiler: {named.DecompName ?? "(unnamed)"}{at}");
         if (named.Signature != null)
-            s.Out.WriteLine($"  signature:  {named.Signature}");
-        s.Out.WriteLine($"  symbols:    {named.SymbolName ?? "(none)"}");
+            w.WriteLine($"  signature:  {named.Signature}");
+        w.WriteLine($"  symbols:    {named.SymbolName ?? "(none)"}");
         if (given is not null)
         {
-            s.Out.WriteLine($"  named:      {given.Name} [{given.Source}]{(given.Live ? " (live)" : "")}");
-            if (given.Does is { Length: > 0 }) s.Out.WriteLine($"  does:       {given.Does}");
-            if (given.Evidence.Length > 0) s.Out.WriteLine($"  evidence:   {given.Evidence}");
-            if (given.Guess is not null) s.Out.WriteLine($"  guess:      {given.Guess}");
+            w.WriteLine($"  named:      {given.Name} [{given.Source}]{(given.Live ? " (live)" : "")}");
+            if (given.Does is { Length: > 0 }) w.WriteLine($"  does:       {given.Does}");
+            if (given.Evidence.Length > 0) w.WriteLine($"  evidence:   {given.Evidence}");
+            if (given.Guess is not null) w.WriteLine($"  guess:      {given.Guess}");
             // the lower rungs as well, each with its own: a guess beside an id is a claim to see
             foreach (var other in there.Skip(1))
             {
-                s.Out.WriteLine($"  also:       {other.Name} [{other.Source}]{(other.Live ? " (live)" : "")}");
-                if (other.Does is { Length: > 0 }) s.Out.WriteLine($"    does:     {other.Does}");
-                if (other.Guess is not null) s.Out.WriteLine($"    guess:    {other.Guess}");
+                w.WriteLine($"  also:       {other.Name} [{other.Source}]{(other.Live ? " (live)" : "")}");
+                if (other.Does is { Length: > 0 }) w.WriteLine($"    does:     {other.Does}");
+                if (other.Guess is not null) w.WriteLine($"    guess:    {other.Guess}");
             }
             if (Standings.Line(standing, keep, there.Select(r => r.Name).Distinct(StringComparer.Ordinal).Count(), named.Binary, named.Start) is { } line)
-                s.Out.WriteLine($"  {(standing == IdStanding.Clash ? "clash:" : "together:"),-11} {line}");
+                w.WriteLine($"  {(standing == IdStanding.Clash ? "clash:" : "together:"),-11} {line}");
         }
         foreach (var note in named.Notes)
-            s.Out.WriteLine($"  note: {note.TrimStart('/', ' ')}");
+            w.WriteLine($"  note: {note.TrimStart('/', ' ')}");
         return 0;
     }
 

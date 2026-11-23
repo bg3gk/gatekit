@@ -37,6 +37,27 @@ public sealed class AttentionTests : IDisposable
     }
 
     [Fact]
+    public void A_page_of_the_first_launch_is_told_with_its_controls_and_the_switch()
+    {
+        Log("client", 1,
+            Row(1, "setup", 1000, """
+                ,"key":"window:Eula","attention":"begin","payload":{"window":"Eula","widget":"Eula","firstLaunch":true,"controls":[{"handle":"AcceptBtn","kind":"button","command":"CustomEvent","parameter":"OpenSensitiveSettings"}]}
+                """.Trim()),
+            Row(2, "splash", 2000, """
+                ,"key":"window:SplashScreen","attention":"begin","payload":{"window":"SplashScreen","controls":[],"keys":"any key"}
+                """.Trim()));
+        var items = new AttentionReader(_folder.Path).Report(new AttentionCursor());
+        var eula = items.Single(i => (string)i!["what"]! == "setup")!;
+        Assert.True((bool)eula["firstLaunch"]!);
+        var accept = eula["controls"]!.AsArray().Single()!;
+        Assert.Equal("AcceptBtn", (string)accept["handle"]!);
+        Assert.Equal("CustomEvent", (string)accept["command"]!);
+        var splash = items.Single(i => (string)i!["what"]! == "splash")!;
+        Assert.Equal("any key", (string)splash["keys"]!);
+        Assert.Empty(splash["controls"]!.AsArray());
+    }
+
+    [Fact]
     public void Later_looks_tell_the_rows_since_the_last_and_a_new_boot_from_its_start()
     {
         var reader = new AttentionReader(_folder.Path);
@@ -203,6 +224,74 @@ public sealed class AttentionTests : IDisposable
         var log = new EventLogReader(_folder.Path);
         Assert.Equal(3, log.Read(Side.Client)!.Rows.Count);
         Assert.DoesNotContain(log.Problems, p => p.Contains("not declared", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_load_through_a_reset_of_the_clients_Lua_is_told_once_begun_and_once_ended()
+    {
+        // the client's Lua is reset inside a save's load: the old boot told `loading`; the new boot
+        // opens it again with `continues` naming that row, and ends it
+        static string Loading(long seq, double t, string continues = "") => Row(seq, "loading", t,
+            $$""","key":"state","attention":"begin","payload":{"state":"StartLoading","from":"Running"{{continues}}}""");
+        var reader = new AttentionReader(_folder.Path);
+        var told = new AttentionCursor();        // looked before the load and during it
+        var late = new AttentionCursor();        // looked before the load only
+        Log("client", 404, Row(1, "game_state", 100));
+        reader.Report(told);
+        reader.Report(late);
+        Log("client", 404, Row(1, "game_state", 100), Loading(2, 200));
+        Assert.Equal(["loading"], reader.Report(told).Where(i => i!["waiting"] is null).Select(i => (string)i!["what"]!));
+
+        // the new boot's head is written before its first row: a look then moves into the new boot
+        Log("client", 405);
+        Assert.Empty(reader.Report(told));
+        Log("client", 405, Loading(1, 900, ""","continues":{"boot":404,"seq":2}"""),
+            Row(2, "loading_ended", 950, ""","key":"state","attention":"end","payload":{"opened":1,"to":"PrepareRunning"}"""));
+        var items = reader.Report(told);
+        var ended = Assert.Single(items);
+        Assert.Equal("loading_ended", (string)ended!["what"]!);
+        Assert.Equal("PrepareRunning", (string)ended["to"]!);
+        Assert.Empty(GateKit.Json.SchemaSet.Embedded.Validate(items, "common/attention"));
+        // a caller that never saw the old boot's row is told the load by the new boot
+        Assert.Equal(["loading", "loading_ended"], reader.Report(late).Select(i => (string)i!["what"]!));
+        var log = new EventLogReader(_folder.Path);
+        Assert.DoesNotContain(log.Problems, p => p.Contains("not declared", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_segment_read_while_the_game_rewrites_it_tells_nothing_twice()
+    {
+        // the run that failed (new_game): the cursor at client:432.11; one look found the boot's
+        // segment empty (the game was rewriting it) and moved the cursor to 432.0, and the next
+        // look told the whole boot again, the start's own `loading` first
+        static string Loading(long seq, double t, string from) => Row(seq, "loading", t,
+            $$""","key":"state","attention":"begin","payload":{"state":"StartLoading","from":"{{from}}"}""");
+        var rows = new[] { Loading(1, 100, "InitMenu"), Row(2, "loading_ended", 200, ""","key":"state","attention":"end","payload":{"to":"Menu"}"""),
+            Loading(3, 300, "Menu"), Row(4, "game_state", 400) };
+        Log("client", 432, rows);
+        var reader = new AttentionReader(_folder.Path);
+        var cursor = new AttentionCursor();
+        cursor.Move(Side.Client, 432, 3);
+        Assert.DoesNotContain(reader.Report(cursor), i => i!["waiting"] is null);
+        File.WriteAllText(reader.Log.SegmentPath(Side.Client, 432, 1), "");
+        Assert.DoesNotContain(reader.Report(cursor), i => i!["waiting"] is null);
+        Log("client", 432, [.. rows, Row(5, "game_state", 500)]);
+        Assert.DoesNotContain(reader.Report(cursor), i => i!["waiting"] is null);
+        Assert.Equal((432L, 5L), cursor.Get(Side.Client));
+    }
+
+    [Fact]
+    public void A_cursor_never_goes_back_within_a_boot()
+    {
+        var cursor = new AttentionCursor();
+        cursor.Move(Side.Client, 432, 11);
+        cursor.Move(Side.Client, 432, 0);
+        Assert.Equal((432L, 11L), cursor.Get(Side.Client));
+        Assert.Equal(11, cursor.Seen(Side.Client, 432));
+        // a new boot is news from its start, and the boot left is remembered
+        cursor.Move(Side.Client, 433, 0);
+        Assert.Equal(0, cursor.Seen(Side.Client, 432 + 1));
+        Assert.True(cursor.Told(Side.Client, 432, 11));
     }
 
     [Fact]

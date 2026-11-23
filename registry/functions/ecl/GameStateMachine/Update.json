@@ -1,7 +1,9 @@
 {
   "schema": "registry/function/1",
   "id": "ecl::GameStateMachine::Update",
-  "rung": "extender",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Also advances the loading screen's segments: when it leaves a state whose virtual +0x40 answers true, it calls ls::LoadingScreenManager::IncProgress (+0x48 += 1) and zeroes LocalProgress and LocalProgressTotal.",
   "fingerprint": {
     "calls": [
       "fp:1c165509f9af111b",
@@ -26,7 +28,28 @@
       "store": "EoCClient.dll",
       "tie": "match",
       "says": "EoCClient.dll exports this name; the symbol database matches the export to this function by strings"
-    }
+    },
+    {
+      "kind": "read",
+      "says": "the only user of the text 'CLIENT STATE SWAP - from: %s, to: %s' in bg3_dx11.exe; the listener loop over ecl__gGameStateEventManager+0x8 (count +0x14) comes before the call through the new state's virtual table +0x18, as in the Toolkit's ecl::GameStateMachine::Update"
+    },
+    {
+      "kind": "reach",
+      "says": "new game from the main menu: the probe on code:ecl::GameStateStartLoading::Enter was called from bg3_dx11.exe@25605617+0x17EF11A and the one on code:ecl::GameStateStartLoading::CanExit from bg3_dx11.exe@25605617+0x17EED71, both inside this function; the listener list read live holds BG3ScriptExtender.dll's at index 0"
+    },
+    {
+      "kind": "read",
+      "says": "Toolkit EoCClient.dll ecl::GameStateMachine::Update calls IncProgress, SetLocalProgress(0), SetLocalProgressTotal(0) after the state's Exit (slot +0x30) when slot +0x40 is true (two places)"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 virtual +0x40 of the client states: Init (vtable bg3_dx11.exe@25605617+0x55F8ED0), LoadModule (+0x55F91D8) and LoadMenu (+0x55F9808) point to a return-true stub code:esv::OsirisGameFunctions::NotifyCharacterCreationFinished; InitMenu (+0x55F8E58), StopLoading (+0x55F9890) and Menu (+0x55F9918) to a return-false stub bg3_dx11.exe@25605617+0x579DA0; the Toolkit's tables agree in kind: ecl::GameStateLoad and ecl::GameStateThreaded true, ecl::GameState, StartLoading, Idle and StartServer false"
+    },
+    {
+      "kind": "watch",
+      "says": "copy attacks, first start: ls::LoadingScreenManager Progress 1 in LoadModule, 2 in LoadMenu, 3 in StopLoading against ProgressTotal 2, so three segments are counted on the first start against a total of two and the bar stands at 100% for the whole of LoadMenu"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
   ],
   "questions": [
     {

@@ -11,16 +11,30 @@ run in that copy with `gatekit --instance <copy> exec <client|server> '<code>'`.
   `gatekit --instance <copy> up` starts the game this way.
 - `-testLoadLevel <module>:<level>` starts a fresh test game straight in that level: no menu, no
   save. The player is Astarion alone, at the level's start point, with the story not advanced; the
-  game autosaves once on arrival. `gatekit --instance <copy> up --level GustavX:Basic_Level_A`.
+  game autosaves once on arrival. The client goes `Init`, `StartServer` and on to the level, with no
+  `LoadMenu` and no `Menu` (`code:ecl::EocClient::Load` queues them only without `-testLoadLevel`,
+  `-testAIStart` or `-load`). `gatekit --instance <copy> up --level GustavX:Basic_Level_A`, then
+  `gatekit --instance <copy> timeline --kind State`.
 - `-loadSaveGame <folder>` (a folder under `Savegames/Story`) loads that save with no input; it
-  still passes through the menu module. `gatekit --instance <copy> up --save <folder>`.
+  still passes through the menu module and the menu's level: the save's load starts from `Menu`.
+  The name is read in the system's ANSI code page: a folder name that is not ASCII is not found, and
+  the game then sits in its main menu; the name after the save's unique id (`<id>__<name>`) is
+  matched too. `gatekit --instance <copy> up --save <folder>`.
+- The main menu's level is the last loaded module's `MenuLevelName` (`meta.lsx`); a module that
+  names a small level makes `LoadMenu` short. `test:startup/menu/scene` shows the rule.
 - Without `-continueGame` the game stays in its main menu, and mods' Lua - the bridge's too -
   already runs there. `gatekit --instance <copy> up --main-menu`, then `gatekit --instance <copy> status`.
 - A game that was killed instead of quitting leaves `ModCrashSanityCheck` in its profile folder;
   on the next start that folder switches every mod off for the session, stops at "press any key"
   and makes the game ignore `-continueGame`. `up` deletes it before every start.
-- The studio logo is `Video/Splash_Logo_Larian.bk2` in `Gustav_Video.pak`; an empty loose file
-  at `Data/Video/Splash_Logo_Larian.bk2` removes it. `up` writes that file into a copy.
+- The studio logo is `Video/Splash_Logo_Larian.bk2` in `Gustav_Video.pak`, the game's only
+  startup video (Larian's logo, then NVIDIA GameWorks'). GateKit's Script Extender build hides it,
+  and the mods' startup videos, with `"StartupVideos": false` in `ScriptExtenderSettings.json`;
+  `up` writes that unless `--startup-videos` is given.
+- The game's switch `SkipSplashScreen`, set from Lua before the main menu
+  (`Ext.Utils.GetGlobalSwitches().SkipSplashScreen = true` at the client's `LoadModule`), closes the
+  "press any key" page as it opens. `gatekit --instance <copy> up --main-menu` sets it, then
+  `gatekit --instance <copy> timeline --kind UIState`.
 
 ## Levels a test can start in
 

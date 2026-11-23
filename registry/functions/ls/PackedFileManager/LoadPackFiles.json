@@ -1,0 +1,62 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::PackedFileManager::LoadPackFiles",
+  "state": "described",
+  "rung": "game",
+  "does": "Mounts the game's own .pak files: Data/*.pak, Localization/*.pak, the language's and English's, Soundbanks, Animation, MinData; for each it opens the file, reads its PackedFileHeader and adds the pak to the manager's list sorted by priority. The mods' paks are not among them. Called once by BaseApp::Start, before any localization or App::InitApp.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:163fa41a74c7f92d",
+      "fp:2e11dab32a025d84",
+      "fp:31b0217756196cd0",
+      "fp:482916027a6ce3fa",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:8a6127a4df202be2",
+      "fp:91c3d48dff57ab4c",
+      "fp:91f7a722ce21d708",
+      "fp:9cd5e4f98279a2c4",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:ee3db7965b2bff2e",
+      "fp:f5505c7f9c445eea",
+      "import:154e46e01831fb06",
+      "import:7e103604c940e9b3",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:b6d1ebec4caefb8e",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "strings": ["43aced4754c22050", "607bb80d1da30159", "79d1427d62e5edfb"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: the only user of the text MinData, called by BaseApp::Start (code:BaseApp::Start) after ls::PackedFileManager::ClearInbox; the macOS function of this name (bg3_macos_x64+0x74B3A20) builds the same folders (Localization, English, Soundbanks, Animation, MinData) and loads each pak's header"
+    },
+    {
+      "kind": "pairing",
+      "says": "the macOS build's LoadPackFiles is the only user of MinData there too; the symbols database's guess for this address (ls::PackedFileManager::GetInstance, a function it contains) is wrong"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "CoreLib.dll",
+      "tie": "name",
+      "says": "CoreLib.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "reach",
+      "says": "Timeline Step rows of the fork's hook (two starts): 3914.0 -> 4117.4 and 3489.8 -> 3668.6 ms, 53.3 MB read in 525 operations (the paks' headers and file tables); FileOpened rows show Data/Localization/language.lsx before it and Patch8_HotFix9.pak, Patch8_HotFix10.pak opened through ls::FileReader inside it. It runs again from ecl::GameStateStartLoading::Enter (InitMenu -> StartLoading), in 0.7-1.2 ms"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

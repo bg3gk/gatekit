@@ -1,0 +1,41 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::ModManagerClient::LoadModSettingsFile",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Reads the profile's modsettings.lsx: joins the profile folder (from the object at +0x208, slot +0x68) with modsettings.lsx and loads it into the ls::ModuleSettings at +0x1C0; called by code:ecl::EocClient::Load with the client's mod manager (EocClient +0x140) right after Load queues its first states.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:48bc26be3b19b838",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:7ec6bc773f10ca24",
+      "fp:91c3d48dff57ab4c",
+      "fp:93cee5e9e6b64645",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:37b5ff602440c248",
+      "ls::FileFormatIO::LoadFile",
+      "ls::ModuleSettings::ResolveAddonsOrder"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 body builds the path from the text modsettings.lsx and the profile folder, as the Toolkit's EoCClient.dll ecl::ModManagerClient::LoadModSettingsFile (path + ls::ModuleSettings::LoadSettings at +0x1C0); code:ecl::EocClient::Load calls it right after its first GameStateMachine::SetTargetState (InitMenu) and a call of bg3_dx11.exe@25605617+0x1C3FCF0, only when neither +0x40 nor +0x41 of the global at bg3_dx11.exe@25605617+0x5F9DEA0 is set, as the Toolkit's Load calls LoadModSettingsFile"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

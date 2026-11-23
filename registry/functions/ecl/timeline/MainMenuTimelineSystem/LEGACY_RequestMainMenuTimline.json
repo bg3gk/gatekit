@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::timeline::MainMenuTimelineSystem::LEGACY_RequestMainMenuTimline",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Asks for the main menu's timelines of an eoc::timeline::EMainMenuEventType; the level's CinematicArenaTrigger objects bind each type to timelines in data (MainMenuStartEventType, MainMenuActivateCameraEventType, MainMenuResetEventType, Timeline list): in SYS_Menuscreen_Act3_B MM_Open_ArenaTrigger start 1 (MM_Open, MM_Open_Boats), MM_Accept_ArenaTrigger start 2 camera 4 (MM_Accept, MM_Accept_Temple), MM_New_ArenaTrigger start 3 reset 4 (MM_New). The Toolkit's interface code requests 2 from a main-menu view model before SetMainMenuUI(true), 3 and 4 from two others; none waits for a timeline's end.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Toolkit EoCClient.dll+0xD033B0 callers NoesisGameUI.dll+0x6D5F80 (2, then ecl::EocClient::SetMainMenuUI), bg3_dx11.exe@25605617+0x6D8EA0 (3), bg3_dx11.exe@25605617+0x67ED40 (4); gatekit data find MM_*_ArenaTrigger"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

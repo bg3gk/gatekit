@@ -1,0 +1,29 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::VMPlayerCharacterProperties",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "the interface's view model of a playable character's player-side state (hotbars, turn, selection)",
+  "fields": [
+    {
+      "offset": 1888,
+      "name": "IsSelectedCharacter",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the Toolkit's accessor names +0x760 IsSelectedCharacter; in dx11 the byte at +0x760 read 1 in a drawn start and 0 in a game drawn from no frame, and the reaction prompt interface update (bg3_dx11.exe@25605617+0x16D06D0) adds an interruptor's player id to the prompted players only when it is set; written 1, the prompt window opened"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGameUI.dll",
+      "says": "NoesisGameUI.dll exports this name"
+    }
+  ]
+}

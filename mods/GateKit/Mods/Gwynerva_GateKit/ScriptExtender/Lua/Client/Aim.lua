@@ -690,13 +690,16 @@ function UI.Confirm(options)
     if not pressed then return { ok = false, did = "nothing", error = "the click could not be given: " .. tostring(problem) } end
     local looks, held = 0, true
     local closedAt
+    -- a spell of several projectiles (Magic Missile, Scorching Ray) takes one click a projectile and
+    -- keeps its targeting open between them: the same aim is clicked again, up to options.clicks
+    local clicks, maxClicks, lastClick = 1, options.clicks or 6, 0
     local result = { ok = true, did = "clicked", spell = spell, aim = before.aim, affected = before.affected }
     return GK.Observe(result, function(ticks, final)
         -- the release at the second look (the observation is looked at once a tick): a press and
         -- a release in one frame are not a click to the game
         looks = looks + 1
         if held then
-            if looks < 2 and not final then return nil end
+            if looks - lastClick < 2 and not final then return nil end
             pcall(Ext.Input.InjectMouseButton, 1, false)
             held = false
         end
@@ -732,8 +735,16 @@ function UI.Confirm(options)
                 .. ": the targeting waits for the second (GK.Gui.Aim where it goes, then GK.Gui.Confirm)"
             return result
         end
+        if not final and clicks < maxClicks and looks - lastClick >= 8 then
+            local again = pcall(Ext.Input.InjectMouseButton, 1, true)
+            if again then
+                clicks, lastClick, held = clicks + 1, looks, true
+                result.clicks = clicks
+            end
+            return nil
+        end
         if not final then return nil end
-        return { ok = false, did = "clicked", saw = "the targeting of " .. tostring(spell) .. " is still open: the game did not take the click",
+        return { ok = false, did = "clicked", saw = "the targeting of " .. tostring(spell) .. " is still open after " .. clicks .. " clicks: the game did not take them",
                  hint = "read GK.Gui.Aiming() (valid, reason); the aim is still held: GK.Gui.Aim again, or GK.Gui.CancelAim",
                  aiming = UI.Aiming() }
     end, options.within or 2500)

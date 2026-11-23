@@ -1,0 +1,28 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::GameStatePrepareRunning",
+  "kind": "struct",
+  "state": "described",
+  "rung": "inferred",
+  "about": "The client's PrepareRunning state object (the client machine's CurrentState at +0 while in PrepareRunning); its update polls its ls::StreamingPoller at +0x20.",
+  "fields": [
+    {
+      "offset": 32,
+      "name": "Poller",
+      "type": "ls::StreamingPoller",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "the fork reads it as *(ecl::GameStateMachine+0) +0x20 in PrepareRunning and the values are a poller's (0.5, 20, the time waited)"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "ecl::GameStatePrepareRunning::Update (EoCClient.dll+0xBC7680) passes this+0x20 to ls::StreamingPoller::Poll"
+    }
+  ]
+}

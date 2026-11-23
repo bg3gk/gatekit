@@ -9,7 +9,7 @@ namespace GateKit.Bridge;
 /// counted by their time, docs/contracts/bridge-protocol.md) - never the client's frames themselves,
 /// which run at the renderer's rate. A side whose Lua state started again counts from zero
 /// on, so a reload neither eats nor resets the limit. A game that stands still eats nothing of it;
-/// a game that shows no progress for <see cref="BridgeClient.StallGuard"/> (or the limit, if
+/// a game whose counting side shows no progress for <see cref="BridgeClient.StallGuard"/> (or the limit, if
 /// longer) is given up as hung - the one real-time guard. Where no side counts ticks (a bridge that
 /// does not say them, no game) the limit is the host's clock.
 /// </summary>
@@ -20,21 +20,30 @@ public sealed class TickGuard
     readonly BridgeClient _bridge;
     readonly EventLogReader? _log;
     readonly Func<bool>? _alive;
+    readonly Func<string>? _gone;
     readonly Stopwatch _since = Stopwatch.StartNew();
     readonly Stopwatch _still = Stopwatch.StartNew();
     readonly Stopwatch _asked = Stopwatch.StartNew();
+    readonly Stopwatch _looked = Stopwatch.StartNew();
+    readonly bool _capToClock;
     readonly Dictionary<Side, double> _last = [];
-    readonly Dictionary<Side, long> _ran = [];
 
-    public TickGuard(BridgeClient bridge, TimeSpan limit, Func<bool>? alive = null, EventLogReader? log = null)
+    /// <param name="capToClock">progress counts at most the ticks the nominal rate gives the real time
+    /// between two looks (a game whose tick period is lifted cannot eat the limit early); false counts
+    /// every tick, however fast they came.</param>
+    /// <param name="gone">why the game process is gone, said instead of the bare fact when it is.</param>
+    public TickGuard(BridgeClient bridge, TimeSpan limit, Func<bool>? alive = null, EventLogReader? log = null,
+        bool capToClock = true, Func<string>? gone = null)
     {
+        _gone = gone;
+        _capToClock = capToClock;
         _bridge = bridge;
         _log = log;
         _alive = alive;
         Limit = limit;
         LimitTicks = BridgeClient.LimitTicks(limit);
         foreach (var side in Sides)
-            if (TickOf(side) is { } tick) { _last[side] = tick; _ran[side] = 0; }
+            if (TickOf(side) is { } tick) _last[side] = tick;
     }
 
     /// <summary>The limit as given, in seconds of a running game.</summary>
@@ -44,7 +53,7 @@ public sealed class TickGuard
     public long LimitTicks { get; }
 
     /// <summary>Ticks the game ran since the guard began: the server's, else the client's clock.</summary>
-    public long Ticks => _ran.TryGetValue(Side.Server, out var server) ? server : _ran.GetValueOrDefault(Side.Client);
+    public long Ticks { get; private set; }
 
     /// <summary>The side's newest tick count: the server's head or heartbeat, whichever is later; the
     /// client's heartbeat (its head counts frames).</summary>
@@ -63,23 +72,34 @@ public sealed class TickGuard
         if (_alive is not null && _asked.Elapsed >= TimeSpan.FromSeconds(1))
         {
             _asked.Restart();
-            if (!_alive()) return "the game process is gone";
+            if (!_alive()) return _gone?.Invoke() ?? "the game process is gone";
         }
-        var moved = false;
-        foreach (var side in Sides)
-        {
-            if (TickOf(side) is not { } tick) continue;
-            if (!_last.TryGetValue(side, out var last)) { _last[side] = tick; _ran[side] = 0; continue; }
-            if (tick == last) continue;
-            // a new Lua state counts from zero: what it ran since is progress too
-            _ran[side] = _ran.GetValueOrDefault(side) + (long)(tick > last ? tick - last : tick);
-            _last[side] = tick;
-            moved = true;
-        }
-        if (moved) _still.Restart();
+        // A game whose ticks run faster than its nominal rate (the fast load lifts the server's tick
+        // period to 0 while it loads: thousands of ticks a second, each a sliver of game time) would
+        // eat the limit in a fraction of its time: progress counts at most the ticks the nominal
+        // rate gives the real time since the last look (the night's W3, round 6: a 120 s wait over
+        // a headless level change ran out in ~10 s).
+        var seen = _looked.Elapsed;
+        _looked.Restart();
+        var most = _capToClock ? (long)Math.Ceiling(seen / BridgeClient.NominalTick) + 1 : long.MaxValue;
+        var server = Progress(Side.Server, most);
+        var client = Progress(Side.Client, most);
+        var counted = server ?? client ?? 0;
+        Ticks += counted;
+        if (counted > 0) _still.Restart();
         if (_last.Count == 0) return _since.Elapsed >= Limit ? $"nothing came in {Limit.TotalSeconds:0.#} s (no side counts its ticks)" : null;
         if (Ticks >= LimitTicks) return $"nothing came in {Ticks} ticks of the game ({Limit.TotalSeconds:0.#} s of a running game)";
         var guard = Limit > BridgeClient.StallGuard ? Limit : BridgeClient.StallGuard;
         return _still.Elapsed >= guard ? $"the game made no progress for {_still.Elapsed.TotalSeconds:0} s (a hang guard)" : null;
+    }
+
+    long? Progress(Side side, long most)
+    {
+        if (TickOf(side) is not { } tick) return null;
+        var hadTick = _last.TryGetValue(side, out var last);
+        _last[side] = tick;
+        if (!hadTick) return 0;
+        // A new Lua state counts from zero, including what it ran before this read.
+        return Math.Min(most, (long)(tick >= last ? tick - last : tick));
     }
 }

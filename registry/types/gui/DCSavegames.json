@@ -1,0 +1,15 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::DCSavegames",
+  "kind": "struct",
+  "state": "described",
+  "rung": "confirmed",
+  "about": "The data of the load window (widget LoadGame): ExistingSaves (ls.VMSavegame), ExistingPlaythroughs (ls.VMPlaythroughHolder: ProtagonistName, PlaythroughString, LatestSave, Saves), SelectedPlaythrough (the playthrough of the newest save when the window opens), HasSaveGames. Of a save it holds Title, TimeString, LevelName, MainModName, Difficulty and the screenshot, and of the avatar only its name.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "GetAllProperties of GK.Gui.Data('LoadGame') in the main menu lists these properties; SelectedPlaythrough.LatestSave.TimeString equals the newest TimeString of ExistingSaves and the newest folder of gatekit save list"
+    },
+    {"kind": "test", "test": "startup/menu/avatar/latest"}
+  ]
+}

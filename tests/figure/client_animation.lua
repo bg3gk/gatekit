@@ -23,7 +23,8 @@
 -- Run: gatekit --instance <copy> test tests/figure -k client_animation
 
 test { level = "GustavX:Basic_Level_A",
-       about = "A client-only timeline dummy plays an animation resource when its blueprint is sent the ASAnimation event: text keys, root motion, an end; a loop ends when stopped." }
+       about = "A client-only timeline dummy plays an animation resource when its blueprint is sent the ASAnimation event: text keys, root motion, an end; a loop ends when stopped.",
+       drawn = "a client-only figure's animation advances only in frames the game draws: in a headless game it stands still" }
 
 local CIVILIAN = "19dc6cab-aa38-4f09-b9cf-546e1c0ecb8a" -- Humans_Female_Civilian
 local WALK = "f427f411-ec56-4a0a-a921-68b591b080e8"      -- HUM_F_Rig_SCENE_LOW_BalTmpl_InWrldAbduction_Nested_OrinVanish: a turn and some steps, nine seconds

@@ -1,0 +1,24 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::GlobalSwitches",
+  "kind": "struct",
+  "state": "described",
+  "about": "The engine's global switches (the Toolkit's Global object): graphics/network/config keys of BaseApp.cpp.",
+  "fields": [
+    {
+      "offset": 273,
+      "name": "DisableLocalMessagePassing",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the name is the game's config key (StaticFixedStringRegistry entry \"DisableLocalMessagePassing\" in BaseApp.cpp's initializer); dx11 Eoc::OnServerStarted, Eoc::GetClientPort, esv::GameServer::CanAcceptNewClient and ecl::LobbyManager::HandleLobbyJoined read +0x111; the extender's layout puts DisableLocalMessagePassing at 0x111 (GetPropertyAddress, W3 round 7); not loaded from graphicSettings.lsx (an entry there was dropped at the resave)"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {"kind": "toolkit-name", "store": "CoreLib.dll", "says": "CoreLib.dll exports this name"}
+  ]
+}

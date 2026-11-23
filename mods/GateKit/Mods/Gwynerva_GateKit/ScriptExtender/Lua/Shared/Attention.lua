@@ -149,21 +149,9 @@ function A.Costs()
              perUiLookMs = c.uiLooks and c.uiLooks > 0 and c.uiMs / c.uiLooks or nil, log = L.Costs() }
 end
 
--- Loads, saves and the menus, on both sides: the game's own state machine.
-local function onState(to)
-    to = tostring(to)
-    if to == "Running" or to == "Paused" then
-        A.Set("state", nil)
-    elseif to == "Menu" or to == "InitMenu" or to == "LoadMenu" then
-        A.Set("state", { what = "menu", state = to })
-    else
-        A.Set("state", { what = to:find("Save", 1, true) and "saving" or "loading", state = to })
-    end
-end
-
-if not A.StateSubscribed then
-    A.StateSubscribed = true
-    Ext.Events.GameStateChanged:Subscribe(function(e) pcall(onState, e.ToState) end)
-end
+-- Loads, saves and the main menu (key `state`) are the client's: its state machine passes every
+-- load, the server's does not exist at the start and stays Uninitialized in the menu. They are
+-- written in Client/Attention.lua; the server writes no `state` rows (its states are still
+-- `game_state` rows of the log).
 
 return A

@@ -1717,6 +1717,136 @@ function UI.LoadLatest()
     return result
 end
 
+--- Loads one save from the load window (the main menu's or the game's): the save whose title is
+--- `title` (a save folder's name after its "__": AutoSave_0, QuickSave_0, a name given) and, when
+--- several have it, whose time the window shows (TimeString "dd/mm/yyyy hh:mm") is the first of `times`
+--- (the likeliest first) that only one of them has.
+--- Opens the window first ({ waiting = true }), then selects the save and presses Load.
+function UI.LoadSave(title, times)
+    local data = UI.Data("LoadGame")
+    local function filled()
+        local d = UI.Data("LoadGame")
+        local n = d and guard(function() return #d.ExistingPlaythroughs end) or 0
+        return n > 0
+    end
+    if not filled() then
+        -- the window opens, and fills its list of saves a moment later: answered when it has
+        local attempt = data and { ok = true, did = "the load window is open" } or UI.Event("LoadGameOpen")
+        return observed(attempt, 5000, function()
+            if filled() then return { ok = true, waiting = true, did = "the load window lists its saves", next = "call LoadSave again" } end
+        end, "the load window did not list any save")
+    end
+    data = UI.Data("LoadGame")
+    local wanted = {}
+    for _, t in ipairs(times or {}) do wanted[t] = true end
+    -- the window lists the saves of one playthrough at a time (ExistingSaves); every playthrough's
+    -- are read, and the one holding the save is selected before the save
+    local titled, timed, owner = {}, {}, {}
+    local _, problem = guard(function()
+        local playthroughs = data.ExistingPlaythroughs
+        for i = 1, #playthroughs do
+            local playthrough = playthroughs[i]
+            local saves = playthrough.Saves
+            for j = 1, #saves do
+                local save = saves[j]
+                if tostring(save.Title) == tostring(title) then
+                    titled[#titled + 1] = save
+                    owner[save] = playthrough
+                    if wanted[tostring(save.TimeString)] then timed[#timed + 1] = save end
+                end
+            end
+        end
+    end)
+    if problem then return { ok = false, error = "the load window's saves could not be read: " .. problem } end
+    -- one titled save, or the first of the times (in the order given: the likeliest first) that
+    -- names exactly one of them
+    local pick = #titled == 1 and titled[1] or nil
+    for _, t in ipairs(times or {}) do
+        if pick then break end
+        local at = {}
+        for _, s in ipairs(timed) do if tostring(s.TimeString) == t then at[#at + 1] = s end end
+        if #at == 1 then pick = at[1] end
+    end
+    if pick and owner[pick] then guard(function() data.SelectedPlaythrough = owner[pick] end) end
+    if not pick then
+        local seen = {}
+        for _, s in ipairs(titled) do seen[#seen + 1] = text(get(s, "TimeString")) end
+        return { ok = false, error = (#titled == 0 and "no save titled " or "no single save titled ") .. tostring(title)
+            .. (#titled > 0 and (" at the times asked; its times: " .. table.concat(seen, ", ")) or "") }
+    end
+    local _, problem = guard(function() data.SelectedSave = pick end)
+    if problem then return { ok = false, error = "could not select the save: " .. problem } end
+    local result = pressLive("LoadGame", "LoadSaveBtn")
+    result.save = saveSummary(pick)
+    return result
+end
+
+-- The first launch and the "press any key" page ------------------------------------------------
+
+-- The pages the game shows on a first launch (research/studies/startup-videos.md, "The first
+-- launch"), registered under the pages' own names: key window:<page>. Each waits for the player;
+-- its controls go into the attention row (`look`), and nothing here presses them: a step names
+-- the player's way (GK.Gui.Look, Click, Select, Set) and GK.Cheat.Recover() goes through them.
+-- What a player can act on in a page, short: GK.Gui.Look's controls with their handles, and
+-- whether the page's layout has made and arranged all of them.
+local function controlsOf(widget, ui)
+    local look = ui.Look(widget, { layout = true })
+    local out = {}
+    for _, c in ipairs(look.controls or {}) do
+        local items
+        if c.items then
+            items = {}
+            for i, it in ipairs(c.items) do items[i] = it.text end
+        end
+        out[#out + 1] = { handle = c.handle, kind = c.kind, text = c.text or c.of, command = c.command, parameter = c.parameter,
+                          value = c.value, min = c.min, max = c.max, items = items, selected = c.selected,
+                          enabled = c.enabled }
+    end
+    return out, look.laidOut == true
+end
+
+local SETUP = {
+    Eula = "the licence agreement",
+    ModBrowserSplashScreen = "Larian's mod policy (terms and privacy)",
+    SensitiveSettings = "the explicit-content choice",
+    HDRCalibration = "the HDR calibration",
+    GammaCalibration = "the gamma calibration (also over the main menu)",
+}
+for page, about in pairs(SETUP) do
+    local window = W[page] or {}
+    W[page] = window
+    window.widget, window.blocking, window.look, window.policy, window.about = page, true, true, "setup", about
+    window.read = reader(function(_, ui)
+        local switches = guard(function() return Ext.Utils.GetGlobalSwitches() end)
+        local controls, laidOut = controlsOf(page, ui)
+        return { controls = controls, laidOut = laidOut, firstLaunch = switches and guard(function() return switches.ShowFirstTimeSetup end) }
+    end)
+    window.step = stepper(function()
+        return { ok = false, stuck = true, did = "left for the player",
+                 error = page .. " is answered by its controls (GK.Gui.Look, Click, Select, Set), or GK.Cheat.Recover() goes through it" }
+    end)
+end
+-- Eula waits for the player only while the game's switch is on: its XAML binds its content to
+-- ShowFirstTimeSetup and, with it off, raises OpenSplashScreen itself on Loaded.
+W.Eula.active = function(data)
+    local on = data and guard(function() return data.ShowFirstTimeSetup end)
+    return on ~= false
+end
+
+-- The "press any key" page: no control; any key or mouse button raises OpenMainMenu (its XAML).
+W.SplashScreen = W.SplashScreen or {}
+W.SplashScreen.widget, W.SplashScreen.blocking, W.SplashScreen.policy = "SplashScreen", true, "splash"
+W.SplashScreen.about = "the page before the main menu"
+W.SplashScreen.keys = "any key or mouse button: the page raises OpenMainMenu"
+W.SplashScreen.look = true
+W.SplashScreen.read = reader(function() return { controls = {}, keys = W.SplashScreen.keys } end)
+W.SplashScreen.step = stepper(function(ui)
+    if not ui.IsOpen("SplashScreen") then return { done = true, did = "closed" } end
+    local result = ui.Event("OpenMainMenu", "SplashScreen")
+    result.did = "OpenMainMenu, as its key does"
+    return result
+end)
+
 -- Blocking and Resolve ------------------------------------------------------------------------
 
 -- Registry order is not z-order: the open widgets are walked (top-most last) and the last one
@@ -1764,6 +1894,9 @@ local CHOICES = {
     book = "close",
     gamemenu = "resume",
     save = "close", load = "close", savename = "name = '...' or cancel",
+    Eula = "its controls: GK.Gui.Click", ModBrowserSplashScreen = "its controls: GK.Gui.Set, Click",
+    SensitiveSettings = "its controls: GK.Gui.Select, Click", HDRCalibration = "its controls: GK.Gui.Set, Click",
+    GammaCalibration = "its controls: GK.Gui.Set, Click", SplashScreen = "any key (gatekit key space); choice = 'pass'",
 }
 
 UI.BlockingWindows = blockingWindows
@@ -1788,7 +1921,7 @@ end
 UI.DefaultPolicy = UI.DefaultPolicy or {
     dialogue = "last", roll = "throw", reaction = "decline", box = "affirmative", tutorial = "close",
     loot = "takeall", trade = "close", pickpocket = "close", rest = "rest", reward = "accept", learn = "close",
-    split = "confirm", book = "close", gamemenu = "resume", save = "close", load = "close",
+    split = "confirm", book = "close", gamemenu = "resume", save = "close", load = "close", splash = "pass",
 }
 
 --- ONE step through whatever blocks, by `policy` (fields missing from it come from

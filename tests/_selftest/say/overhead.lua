@@ -7,10 +7,10 @@
 -- change the other), and a creature's second line while its first still floats takes a third
 -- (the same status applied again within those ~3 s shows nothing: measured); the caller's < > & survive as text (escaped to &lt; &gt; &amp;, which the
 -- game shows as written); a row `said_overhead` says who and what. What a person sees (no
--- assertion can read it: the screenshot `lines.jpg` in the test's folder): over the first human
--- "• Look <here> & now •" in bold violet with paler dots, the human tinted violet for a moment
--- (style `magic`, the effect `orb`); over the second "~ a whisper ~" in italic lilac; both for about
--- three seconds.
+-- assertion can read it: the screenshot `lines.jpg` in the test's folder, taken after the third
+-- line): over the first human "• Look <here> & now •" in bold violet with paler dots and "and again"
+-- (the human tinted violet for a moment: style `magic`, the effect `orb`); over the second
+-- "~ a whisper ~" in italic lilac; each for about three seconds.
 -- Staging (cheat): two neutral humans beside the host; the lines (GK.Say is a cheat: a text the
 -- game did not say). The camera's focus on them is fair. Reading: observation.
 -- Run: gatekit --instance <copy> test tests -k _selftest/say/overhead --speed working
@@ -42,7 +42,6 @@ function run(game)
         check(a.ok and b.ok, "both statuses came on their creatures", a, b)
         return { a, b }
     end)
-    step("a picture of the lines", "observation", function() game.shot("lines.jpg", 0) end)
     step("each its own line, the markup characters kept", "observation", function()
         local a, b = said[1], said[2]
         check(a.status ~= b.status and a.handle ~= b.handle, "two statuses, two strings", a.status, b.status)
@@ -59,13 +58,20 @@ function run(game)
             eq(r.payload.text, i == 1 and TEXT1 or TEXT2, "the row's text")
         end
     end)
+    -- "while its first shows" is a condition of time: a slot is free again 3 s (Say.ShowMs) after its
+    -- line. The picture used to be taken before this step; a headless game draws 30 frames for a
+    -- picture (~1.8 s), which put this step past the 3 s and the first slot was taken again
+    -- (W3 round 7). So the third line comes first and the picture after it.
     local again = step("a second line on the first creature while its first shows", "cheat", function()
+        local shown = game.server(string.format("return GK.Say.Shown(%q)", pair[1]))
+        check(shown and shown.text == TEXT1, "the first line still shows before the second", shown)
         return game.server(string.format("return GK.Say.Line(%q, 'and again')", pair[1]))
     end)
     step("it took another status: the same one again would show nothing", "observation", function()
         check(again.ok and again.status ~= said[1].status and again.status ~= said[2].status,
             "a third status for the third line", again.status)
     end)
+    step("a picture of the lines", "observation", function() game.shot("lines.jpg", 0) end)
     said[3] = again
     pair[3] = pair[1]
     step("the statuses gone after", "observation", function()

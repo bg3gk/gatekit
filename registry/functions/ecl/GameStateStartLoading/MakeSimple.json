@@ -1,0 +1,49 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateStartLoading::MakeSimple",
+  "state": "described",
+  "rung": "game",
+  "does": "Makes a StartLoading state from a progress total and one video name: an invalid name gives an empty playlist; a valid one gives a playlist of one entry named after the video and holding that one name (eoc::GameOverPlaylistQueue).",
+  "fingerprint": {
+    "calls": [
+      "ecl::GameStateStartLoading::GameStateStartLoading",
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "same shape as macOS ecl::GameStateStartLoading::MakeSimple (bg3_macos_x64+0x358C0C0): allocates 0x40 bytes and calls code:ecl::GameStateStartLoading::GameStateStartLoading with an empty queue, or builds a queue of {name, 1} and [name] first; called by code:ecl::EocClient::Load with (2, EoCFS::strSplashLogoLarian)"
+    },
+    {
+      "kind": "reach",
+      "says": "new game from the main menu (GK.Gui.NewGame twice) on build v34-gatekit: a client probe saw it called once, from bg3_dx11.exe@25605617+0x1FEE570; the state it made had progress total 4 and 0 playlist entries"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    },
+    {"kind": "test", "test": "startup/videos/game_clip"},
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

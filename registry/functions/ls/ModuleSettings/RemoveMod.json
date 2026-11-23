@@ -1,0 +1,34 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::ModuleSettings::RemoveMod",
+  "state": "described",
+  "rung": "game",
+  "does": "Removes the entry with the given UUID from the mod settings' list, keeping the others in order",
+  "fingerprint": {"calls": ["fp:36ea95f2ce33bd6a", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "called first by ecl::ModManagerClient::RemoveMod on the manager's settings, as in EoCClient.dll; it compacts the 0x78-byte entries whose first FixedString differs from the argument"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code of code:ecl::ModManagerClient::RemoveMod: its first call, on the client manager's settings at +0x1C0 with the mod"
+    },
+    {
+      "kind": "watch",
+      "says": "probes in copy coord (c2, build v34-start-extmod-3): three calls in the main menu, each from bg3_dx11.exe@25605617+0x181B1B1 when Ext.Mod.SetEnabled(AI, false) ran, before code:ecl::ModManagerClient::SaveSettingsAndReload"
+    }
+  ]
+}

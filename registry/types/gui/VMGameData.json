@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::VMGameData",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The UI's view model of game-wide data, the Data of the main menu's pages (Data.SkipSplashScreen in Pages/SplashScreen.xaml).",
+  "fields": [
+    {
+      "offset": 2296,
+      "name": "SkipSplashScreen",
+      "type": "bool",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the Noesis property SkipSplashScreen of the view model (macOS gui::VMGameData::GetSkipSplashScreen); Pages/SplashScreen.xaml binds Data.SkipSplashScreen in a DataTrigger that runs its CloseSplashAnim storyboard"
+        },
+        {
+          "kind": "watch",
+          "says": "at the press-any-key page (up --splash) setting the SplashScreen widget's DataContext.Data.SkipSplashScreen = true from client Lua closed the prompt at once and the main menu opened (GK.Gui.Stuck went from splash to mainmenu, game state Menu)"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "code:gui::VMGameData::VMGameData registers its Noesis properties by name"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGameUI.dll",
+      "says": "NoesisGameUI.dll exports this name"
+    }
+  ]
+}

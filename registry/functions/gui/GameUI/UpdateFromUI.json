@@ -1,0 +1,59 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::GameUI::UpdateFromUI",
+  "state": "described",
+  "rung": "game",
+  "does": "The interface's per-frame update: under the GameUI lock, when the mods' interface is pending (GameUI+0x2D9A, raised by gui::GameUI::OnModuleLoaded) it calls ui::ModManager::RegisterMods with the client module manager's LoadOrderedModules (EoCClient+0x140, +0x158), loads texture metadata, merges the mods' resource dictionaries into the application resources (ResetModdedLibs) and applies the mods' state machines; then updates the state machine.",
+  "fingerprint": {
+    "calls": [
+      "Noesis::ResourceDictionary::GetMergedDictionaries",
+      "fp:123b79ba6c390bab",
+      "fp:227ef8acdbdc209b",
+      "fp:3a1919ec5e4b0a9a",
+      "fp:3f7cfb175a86df64",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:bbae33bdd2861d1a",
+      "fp:bc761ee468d6ebc8",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "gui::GameUI::ResetModdedLibs",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "ui::ModManager::RegisterMods",
+      "ui::StateMachine::ApplyMods",
+      "ui::TextureProvider::LoadTextureMetadataInternal"
+    ],
+    "strings": ["9b7cc6338aaf9a45"]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "matches macOS gui::GameUI::UpdateFromUI calling ProcessLoadingModsFromUI (the same block: flag, RegisterMods, ResetModdedLibs on GetApplicationResources().MergedDictionaries, StateMachine::ApplyMods)"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy attacks (t3): called every frame from LoadModule on, first argument the GameUI"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "reach",
+      "says": "a pre-hook of the fork (copy attacks, f7) runs on its calls from the first StartLoading on, before the interface's state tree first exists (Root entered 17 ms after the hook's first merge-ready call)"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy coord (c2, build v34-start-extmod-3): 1746 calls in the main menu, 1743 from bg3_dx11.exe@25605617+0x417669F (once a frame) and 3 from bg3_dx11.exe@25605617+0x41084E4; in the load after a mod toggle 47 more from bg3_dx11.exe@25605617+0x4122B55; the mods' merge block's six callees each probed once from inside it at bg3_dx11.exe@25605617+0x1210301 (code:ui::ModManager::RegisterMods), bg3_dx11.exe@25605617+0x1210344 (code:ui::TextureProvider::LoadTextureMetadataInternal, 11 calls), bg3_dx11.exe@25605617+0x121036A, bg3_dx11.exe@25605617+0x1210372, bg3_dx11.exe@25605617+0x121037D, bg3_dx11.exe@25605617+0x121038F, in the order of the read"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: under the critical section at this+0x3038, after the first-frame set-up, the block runs only when the byte this+0x2D9A is set: code:ui::ModManager::RegisterMods on this+0x480 with the client's load-ordered modules; when it answers true, the texture metadata of every mod data with flag 0x60, then code:gui::GameUI::ResetModdedLibs on this with the merged dictionaries that code:Noesis::ResourceDictionary::GetMergedDictionaries gives of the dictionary code:Noesis::GUI::GetApplicationResources answers through a one-jump thunk, and code:ui::StateMachine::ApplyMods on this+0x7C0 with this+0x2D88; the byte is cleared after"
+    },
+    {"kind": "test", "test": "startup/loading/d20_first_start"}
+  ]
+}

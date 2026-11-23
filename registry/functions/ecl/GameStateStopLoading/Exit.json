@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateStopLoading::Exit",
+  "state": "described",
+  "rung": "game",
+  "does": "Leaves StopLoading, the state before Menu: empties ls::LoadingScreenManager's queue of load states (macOS body); the loading screen is seen hidden in the same tick as StopLoading->Menu.",
+  "fingerprint": {"calls": ["fp:e4d053ad9455ea7c"], "vtables": [{"slot": 6}]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "slot 6 (+0x30) of the StopLoading virtual table bg3_dx11.exe@25605617+0x55F9890 (id 0x17); macOS ecl::GameStateStopLoading::Exit bg3_macos_x64+0x358CB80 drains LoadingScreenManager+0x10..+0x24"
+    },
+    {
+      "kind": "reach",
+      "says": "Ext.StartupVideos.Timeline() records LoadState none and LoadingScreenHidden within 2 ms of StopLoading->Menu in 8 starts and returns"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

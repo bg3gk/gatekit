@@ -1,0 +1,40 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::VMCharacter",
+  "kind": "struct",
+  "state": "described",
+  "about": "The interface's view model of one character (Noesis), made and updated by gui::ViewModelProvider on the client's UI update.",
+  "fields": [
+    {
+      "offset": 1056,
+      "name": "PlayerCharacterProperties",
+      "type": "ptr",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "+0x420 is read as gui::VMPlayerCharacterProperties by unplaced::UpdateCharacterActiveDialogue and made by unplaced::GetOrCreatePlayerCharacterProperties; +0x528 is written by unplaced::UpdateCharactersPlayable, the dx11 place of the Toolkit's +0x540 (UpdateIsPlayableCharacter), and the snapshot read IsPlayableCharacter false while it was 0."
+        }
+      ]
+    },
+    {
+      "offset": 1320,
+      "name": "IsPlayableCharacter",
+      "type": "bool",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "+0x420 is read as gui::VMPlayerCharacterProperties by unplaced::UpdateCharacterActiveDialogue and made by unplaced::GetOrCreatePlayerCharacterProperties; +0x528 is written by unplaced::UpdateCharactersPlayable, the dx11 place of the Toolkit's +0x540 (UpdateIsPlayableCharacter), and the snapshot read IsPlayableCharacter false while it was 0."
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGameUI.dll",
+      "says": "NoesisGameUI.dll exports this name"
+    }
+  ]
+}

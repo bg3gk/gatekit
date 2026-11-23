@@ -1,0 +1,40 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::Random",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The engine's small generator: InitialSeed and CurrentSeed (u32 each); GenerateRand steps CurrentSeed by MSVC's LCG (x*214013+2531011) and gives bits 16-30.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "InitialSeed",
+      "type": "uint32",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "CoreLib.dll+0x8A3B0 and bg3_dx11.exe@25605617+0x126A0/bg3_dx11.exe@25605617+0x12660 read them"
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "CurrentSeed",
+      "type": "uint32",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "CoreLib.dll+0x8A3B0 and bg3_dx11.exe@25605617+0x126A0/bg3_dx11.exe@25605617+0x12660 read them"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "CoreLib.dll exports ls::Random::GenerateRand (bg3_dx11.exe@25605617+0x8A3B0), Seed, SeedRandom (rand()), GetInitialSeed (+0), GetCurrentSeed (+4)"
+    }
+  ]
+}

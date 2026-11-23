@@ -1,0 +1,40 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateMachine::SetTargetState",
+  "state": "described",
+  "rung": "game",
+  "does": "Queues a client game state: gives the state its machine (+0x8), calls its Initialize (virtual table +0x8) and appends {fade 0, state} to the machine's queue at +0x10 (capacity +0x18, count +0x1c, head +0x20, tail +0x24); code:ecl::GameStateMachine::Update takes the head only when the current state's CanExit is true. There is no timer or watchdog: a state with nothing queued after it stays current.",
+  "fingerprint": {
+    "calls": [
+      "fp:1c165509f9af111b",
+      "fp:7ec6bc773f10ca24",
+      "fp:92dd4fee11aeea92",
+      "fp:e4d053ad9455ea7c",
+      "fp:ffed5ee30b44d4a9",
+      "import:154e46e01831fb06",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "strings": ["0d4398bc3883ead9", "0f5a9b9ade2cb86d", "c6c6f311e727600b"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "decomp of code:ecl::GameStateMachine::SetTargetState (the text ecl::GameStateMachine::SetTargetState in its log call) and of the client GameStateMachine::Update at code:ecl::GameStateMachine::Update (queue head taken after CanExit, virtual table +0x28)"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "pair",
+      "says": "The macOS build's symbols hold this name; a stored pair of the two builds joins that function to this one (a seed)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "match",
+      "says": "EoCClient.dll exports this name; the symbol database matches the export to this function by strings"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

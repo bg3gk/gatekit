@@ -1,6 +1,6 @@
 # Working with agents
 
-How a long run of work on GateKit is organised when AI agents do it with no person watching: one
+How a long run of work on GateKit is organised when AI agents coordinate it: one
 **coordinator** and a few **executors**. The rules of the repository still hold for every one of
 them ([AGENTS.md](../AGENTS.md)); this page is how the work is divided, handed out, checked and
 kept. It is for an agent that will coordinate, and for a person who starts one.
@@ -42,12 +42,16 @@ The prompt of an executor, in this order:
    the rule on blocking windows (below). One file in the notes folder, kept current through the run.
 2. The blocking windows known so far, each with the call that closes it, and the traps found so far.
 3. Its own game copy (`--instance <name>`), its name for the live layer (`GATEKIT_WHO`), and the
-   exact start line with the Script Extender build folder.
+   exact start line with the Script Extender build selected for that process (`GATEKIT_SE`).
 4. Its fence: what it may edit (nothing, one tree, a named file), "no commit", the commands it must
    not run (`bridge-reload`, `decomp refresh`, `registry commit`), "Edit and Write only, no
-   scripts" ([AGENTS.md](../AGENTS.md), rule 10), and "close the game at the end".
+   scripts" ([AGENTS.md](../AGENTS.md), rule 10), "no waits: react to the game's events"
+   ([api-rules.md](api-rules.md#events-not-waits), "a wait is a smell"), and "close the game at the end".
 5. The question in one paragraph, with everything already known: ids, addresses, the files and
-   reports of earlier packages to read first, so that nothing is found twice.
+   reports of earlier packages to read first, so that nothing is found twice; and the instruments
+   that answer it - watches, probes up and down, coverage and its comparison of an action with an
+   idle scene, the start's timeline ([writing-tests.md](writing-tests.md#the-instruments-at-hand)) -
+   named, since a package not told of them reaches for none.
 6. Sub-questions in order of worth, each with how to prove it (a probe, a pinned die, both speeds)
    and a time box.
 7. The report's shape and length: the answer first, then the evidence and the commands that
@@ -83,10 +87,13 @@ later handle it by themselves.
 
 ## Game copies and windows
 
-- One copy per executor, named in its prompt; never the coordinator's, never the installed game.
-- Every copy's window takes a free cell of a grid on the screen, never on top of another's, so that
-  a person watching sees each copy and the real pointer rests outside every frame (the pointer
-  drags the game's aiming and hover). No more copies are started than the grid has cells.
+- Assign a separate copy to each executor and to the coordinator. Name the assigned copy in the
+  package. Use game copies for all executor work.
+- Place visible windows in separate cells with [`gatekit window place`](contracts/cli.md#window-place) on Windows.
+  Keep the real pointer outside the windows because it affects aiming and hover.
+- A copy is started once for a package and kept: another level or save is loaded in it
+  (`reset --save`, `test` between groups), and it is started again only for a new Script Extender
+  build, a test of the start itself (`tests/startup`), another mod list, or a game that died.
 - A copy is closed at the end of its package (`gatekit --instance <name> down`).
 
 ## The accept loop
@@ -98,7 +105,10 @@ A report is a claim. Each one goes through the same loop before the next package
    merged.
 2. **The registry**: `gatekit registry clashes`, `registry commit`, `registry reanchor --target
    bg3.exe`, `registry places <file>` for a data file whose places moved, `registry check` with no
-   refusal, `registry digest` to read what the run wrote.
+   refusal, `registry digest` to read what the run wrote. A pattern a package added to the Script
+   Extender fork's `BinaryMappings.xml` is the registry's (`registry mappings emit`, a global with
+   `--via`), never written by hand: after the reanchor, `registry mappings sync <BinaryMappings.xml>`
+   writes it again checked in every executable, and `sync --check` is clean before a build.
 3. **The study**: the finding written into its study under `research/studies/`, and what is still
    open into [research/open-items.md](../research/open-items.md).
 4. **Commit**, by path, with the trailer of [.github/thrall.md](../.github/thrall.md).
@@ -112,6 +122,8 @@ in silence.
 - A new build of the Script Extender fork goes into a new folder of the home's `se-builds`
   (`v34-<name>`); the executors are told the folder; the old ones stay.
 - A build is tried before it is handed out.
+- Set `GATEKIT_SE` for the process running a package. Reserve `se install` for setting the shared
+  default in the GateKit home.
 - A worktree an executor is running from is not rebuilt under it. With two lines of work at once,
   each has its own worktree and its own build of the toolkit; changes are ported between them by
   hand and verified.
@@ -149,5 +161,7 @@ copy is closed), and the free memory. A package past its time box is asked for w
 - An executor's unfinished tests cite ids it has not noted yet, so `registry check` refuses them:
   commit the registry alone and leave the tests to their package.
 - `Ext.Events.<name> ~= nil` is always true: ask whether an event exists by `GK.Verbs.Has`.
+- A bridge log segment can be read during an in-place write. Follow the segment and cursor rules in
+  [the bridge contract](contracts/bridge-protocol.md#the-event-log).
 - A wrapper of every verb must not call a wrapped verb.
 - A tool that is not aware of the screen's scaling reads the wrong size for a window.

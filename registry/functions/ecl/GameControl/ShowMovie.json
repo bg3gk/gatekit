@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameControl::ShowMovie",
+  "state": "described",
+  "rung": "game",
+  "does": "Plays a playlist of videos: for the Credits name it hands the call to the credits listeners; otherwise it stores the playlist name and the skip flags in the movie player (ecl::GameControl+0x190), pushes every video name of the list into the player's queue and starts the first with code:ecl::VideoManager::NextVideo.",
+  "fingerprint": {
+    "calls": ["ecl::VideoManager::NextVideo", "fp:36ea95f2ce33bd6a", "fp:e4d053ad9455ea7c"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "same shape as the macOS build's ecl::GameControl::ShowMovie(ObjectSet<FixedString>, FixedString, bool, bool, short): compares the name with the Credits FixedString, writes player+0x40 and +0x41 (skip flags) and +0x10 (playlist name), pushes each name through bg3_dx11.exe@25605617+0x1BBC3B0 into player+0x18, then calls code:ecl::VideoManager::NextVideo; callers are ecl::GameProtocol::ProcessMsg (a server's movie), the startup's load state bg3_dx11.exe@25605617+0x1BA28A0 and bg3_dx11.exe@25605617+0x424E7B0"
+    },
+    {
+      "kind": "watch",
+      "says": "Osi.MoviePlay(host,'Splash_Logo_Larian',1) in a test level: a write watch on the player's queue count (+0x24) caught 0->1 at bg3_dx11.exe@25605617+0x1BBC49D, the queue push this function calls, then 1->0 in code:ecl::VideoManager::NextVideo, which it calls next; +0x10 held the played name afterwards"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

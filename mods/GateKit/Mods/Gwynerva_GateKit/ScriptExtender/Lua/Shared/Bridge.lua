@@ -370,6 +370,9 @@ function GK.Start(side)
     local state = { side = side, boot = Ext.Utils.MonotonicTime(), gameState = gameState(), queue = 1, done = done }
     Ext.Events.GameStateChanged:Subscribe(function(e)
         state.gameState = tostring(e.ToState)
+        -- written at once: a host waiting for a load's end reads it here, not at the next heartbeat
+        state.time = Ext.Utils.MonotonicTime()
+        pcall(Ext.IO.SaveFile, stateFile, toJson(state) or "{}")
     end)
 
     local function write(answer, file)

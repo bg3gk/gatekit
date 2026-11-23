@@ -1,0 +1,39 @@
+{
+  "schema": "registry/type/1",
+  "id": "ui::GameUI",
+  "kind": "struct",
+  "state": "described",
+  "rung": "inferred",
+  "about": "The game's interface object (ls::ResourceManager::UI).",
+  "fields": [
+    {
+      "offset": 288,
+      "name": "MainCanvas",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "0x7C0 the target of UIWidget+0x2F0 (StateMachine*), its +0x50 (StateMachineComponent) the UIStateMachine; 0x120 the canvas Ext.UI.GetRoot() returns"
+        }
+      ]
+    },
+    {
+      "offset": 1984,
+      "name": "StateMachine",
+      "type": "ui::StateMachine",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "0x7C0 the target of UIWidget+0x2F0 (StateMachine*), its +0x50 (StateMachineComponent) the UIStateMachine; 0x120 the canvas Ext.UI.GetRoot() returns"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "read live (dx11 25605617): ResourceManager+0x130 -> this; every ui::UIWidget+0x2F0 points at this+0x7C0, whose +0x50 is the ui::UIStateMachine; Script Extender's GameUI layout puts StateMachine elsewhere, so Ext.UI.GetStateMachine() returns nil"
+    }
+  ]
+}

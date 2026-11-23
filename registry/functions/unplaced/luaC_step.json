@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::luaC_step",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The game's embedded Lua 5.3: one incremental step of the garbage collector, run when the state's debt (global_State+0x18) is above zero: unless the collector is stopped (global_State+0x57) it runs single steps (unplaced::singlestep) until gcstepmul (+0xB8) times the debt is paid or a cycle ends.",
+  "fingerprint": {"calls": ["fp:5227b96c8688ff31", "unplaced::singlestep"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its body is Lua 5.3's luaC_step line for line: the debt divided by STEPMULADJ, multiplied by g->gcstepmul at +0xB8, the gcrunning test at +0x57 with luaE_setdebt(g, -GCSTEPSIZE*10 = -24000), the loop of singlestep until GCSpause (7)"
+    },
+    {
+      "kind": "read",
+      "says": "the sampler's stacks (W3 round 3): under ls::anubis::System on the server thread during a load, 30% of that thread's samples are in it and its callees"
+    }
+  ]
+}

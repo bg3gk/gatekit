@@ -2,6 +2,7 @@
   "schema": "registry/type/1",
   "id": "eoc::TimelineDataComponent",
   "kind": "struct",
+  "rung": "toolkit",
   "size": 168,
   "fields": [
     {
@@ -115,12 +116,24 @@
     {
       "offset": 121,
       "name": "PlaybackState",
-      "type": "uint8_t",
-      "rung": "extender",
+      "type": "uint8",
+      "rung": "confirmed",
       "evidence": [
         {
           "kind": "extender-name",
           "says": "Script Extender declares eoc::TimelineDataComponent::PlaybackState at +0x79 (BG3Extender/GameDefinitions/Components/Timeline.h:213): its author's name and type; the offset is computed from the declared types. Not checked against the game's code."
+        },
+        {
+          "kind": "watch",
+          "says": "copy attacks, main menu, a GK.Memory watch on +0x79 of the MainMenu/MM_Accept timeline's eoc::TimelineDataComponent: 0 -> 2 when the key on the 'press any key' page was pressed (writer bg3_dx11.exe@25605617+0x1D55BD7, from ecl::TimelineSystem's update) and 2 -> 0 9.6 s later (writer bg3_dx11.exe@25605617+0x1D522A3, called from bg3_dx11.exe@25605617+0x1D408B1 under SystemUpdate<ecl::TimelineSystem>); the camera of that timeline stopped moving in the same 0.27 s; the menu's looping timeline MM_Open_Boats holds 2 while playing"
+        },
+        {
+          "kind": "reach",
+          "says": "the fork F5 reads it per client tick for every TimelineData entity (TimelinePlayback rows): the five main-menu timelines (TimelineType 10) appear 0 at LoadMenu+0.8 s, MM_Open and MM_Open_Boats go 0->2 0.1 s later, MM_Accept and MM_Accept_Temple 0->2 155 ms after the splash key and MM_Accept 2->0 9.57 s after (three times: two starts and a return to the menu, which replays MM_Open too)"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 pseudo-code of the two writers the watch hit, both under ecl::TimelineSystem's update: bg3_dx11.exe@25605617+0x1D55400 stores 2 into the component's PlaybackState as it starts a timeline, and bg3_dx11.exe@25605617+0x1D51B40 stores 0 into the byte +0x79 of the component in its ending branch"
         }
       ]
     },
@@ -270,6 +283,13 @@
     }
   ],
   "concept": {"kind": "component", "ext_name": "TimelineData", "one_frame": false},
+  "evidence": [
+    {
+      "kind": "game-name",
+      "store": "type-names",
+      "says": "The executable keeps this type's name as text"
+    }
+  ],
   "survey": {
     "batch": "extender",
     "from": "Script Extender's declarations (BG3Extender/GameDefinitions/Components/Timeline.h:213, kind component), by gatekit symbols se-layouts on 2026-11-14",

@@ -623,6 +623,90 @@ function Rolls.SetStreams(list)
     return { ok = #missing == 0, written = written, missing = #missing > 0 and missing or nil }
 end
 
+-- The server's saved random (esv::EocServer::GetSavedRandom: an ls::Random, { InitialSeed u32,
+-- CurrentSeed u32 }, the MSVC generator, at esv::EocServer +0xB8): the treasure tables draw from
+-- it (esv::inventory::TreasureGenerationUnitTestHelper::GetSavedRandom), a level's containers' loot
+-- at its first visit. Its address, or nil and why. W3 round 6 of the start-zone night.
+local SAVED_RANDOM = 0xB8
+local function savedRandomAt()
+    local Debug = Ext.Debug
+    if not (Debug and Debug.ReadValue and Debug.GetSymbolAddress) then
+        return nil, "this Script Extender build has no Ext.Debug.ReadValue and GetSymbolAddress (GateKit's build, developer mode)"
+    end
+    local at, why = Debug.GetSymbolAddress("esv__EoCServer")
+    if not at then return nil, "the server's place is not known: " .. tostring(why) end
+    local server = Debug.ReadValue(at, "uint64")
+    if not server or server == 0 then return nil, "no server yet" end
+    return server + SAVED_RANDOM
+end
+
+--- The server's saved random (the treasure tables' generator): { initial, current } or nil and why.
+function Rolls.SavedRandom()
+    local at, why = savedRandomAt()
+    if not at then return nil, why end
+    return { initial = Ext.Debug.ReadValue(at, "uint32"), current = Ext.Debug.ReadValue(at + 4, "uint32") }
+end
+
+--- Writes the server's saved random and nothing else: PinSources' undo.
+function Rolls.WriteSavedRandom(initial, current)
+    local at, why = savedRandomAt()
+    if not at then error("the saved random cannot be written: " .. tostring(why)) end
+    if initial ~= nil then Ext.Debug.WriteValue(at, "uint32", initial) end
+    if current ~= nil then Ext.Debug.WriteValue(at + 4, "uint32", current) end
+end
+
+--- Pins every source of the server's dice for the length of the stage scope, so that a scenario
+--- run twice draws the same dice (a differential check, `gatekit logic-diff`): the roll streams
+--- component's base seed (a load sets it to the clock in seconds; a stream the game makes later is
+--- seeded from it) is written `seed`, and every stream there is now gets the seed `seed + its
+--- place + 1` and the count 0. The server's saved random (the treasure tables' generator, a
+--- level's loot) gets `seed` as its initial and current seed. Clean writes the old base and saved
+--- random back (the streams' old seeds and counts too, while they exist).
+--- { ok, base, was, streams = { { type, player, combat, seed } }, saved = { initial, current, was } }.
+--- W3 round 4 of the start-zone night; the saved random round 6.
+function Rolls.PinSources(seed)
+    seed = integer(seed)
+    if not (seed and seed >= 0) then error("GK.Rolls.PinSources(seed): a whole number from 0, got " .. tostring(seed), 2) end
+    needScope("PinSources")
+    local c = streamsComponent()
+    if not c then return { ok = false, error = "no roll streams component (ServerRollStreams)" } end
+    local was = try(function() return c.BaseSeed end)
+    trackUndo("base", { op = "base", seed = was }, "the roll streams' base seed set back to " .. tostring(was))
+    c.BaseSeed = seed
+    local list = {}
+    for i, s in ipairs(try(function() return c.Streams end) or {}) do
+        local mine = streamsOf({ Streams = { s } })[1]
+        list[#list + 1] = { type = mine.type, player = mine.player, combat = mine.combat, seed = seed + i, rolls = 0 }
+    end
+    local set = Rolls.SetStreams(list)
+    local saved, savedWhy = Rolls.SavedRandom()
+    if saved then
+        -- under `seed`, as the base's undo: the run's own clock, which a differential check leaves out
+        trackUndo("saved", { op = "saved", seed = { initial = saved.initial, current = saved.current } },
+            ("the server's saved random set back to %s/%s"):format(tostring(saved.initial), tostring(saved.current)))
+        Rolls.WriteSavedRandom(seed, seed)
+        local now = Rolls.SavedRandom()
+        saved = { initial = now.initial, current = now.current, was = saved }
+    end
+    -- The saved random alone gives the same loot only when the treasure requests come in the same
+    -- order, and a level's setup spreads them over its ticks as time allows: GateKit's build seeds
+    -- it per entity (the seed and the entity's UUID) before each table is rolled (TreasurePin).
+    local treasure = Ext.Debug.PinTreasure and Ext.Debug.PinTreasure(seed)
+    if treasure and treasure.Pinned then
+        trackUndo("treasure", { op = "treasure" }, "the treasure tables' per-entity seed taken off")
+    end
+    if saved then saved.perEntity = treasure and treasure.Pinned or false end
+    -- ok is the dice's; the saved random is pinned where the build lets it be read (`saved`, or why not)
+    return { ok = set.ok, base = try(function() return c.BaseSeed end), was = was, streams = list,
+        saved = saved, savedError = not saved and savedWhy or nil }
+end
+
+--- Writes the base seed of the roll streams component and nothing else: the undo of PinSources.
+function Rolls.WriteBase(seed)
+    local c = streamsComponent()
+    if c and seed ~= nil then c.BaseSeed = seed end
+end
+
 --- Writes the seed and count of the streams named (the shape SetStreams takes) and nothing else:
 --- the undo of SetStreams. A stream that is gone (a load makes them anew) is an error.
 function Rolls.WriteStreams(list)
@@ -753,6 +837,16 @@ local function onRigRoll(e)
                 local was = { natural = e.Natural, total = e.Total }
                 if r.natural then e.Natural = r.natural end
                 if r.total then e.Total = r.total end
+                -- a damage die has no critical threshold, so the extender leaves its critical as the
+                -- throw before the rig made it (a die of 1 Fail, the die's top Success, seen in the
+                -- dice_thrown rows of W3 round 4's differential fights): the rigged die gets the
+                -- critical the same rule gives it, so nothing of the throw before the rig is left
+                if r.natural and tostring(e.RollType):find("Damage$") then
+                    local faces = tonumber(tostring(e.DiceType or ""):match("(%d+)$") or "")
+                    if faces then
+                        pcall(function() e.Critical = (r.natural == 1 and "Fail") or (r.natural >= faces and "Success") or "None" end)
+                    end
+                end
                 r.decided = r.decided + 1
                 GK.EventLog.Append("roll_rigged", { id = id, who = r.who, kind = tostring(e.RollType), stream = e.HasStream and tostring(e.Stream) or nil,
                     natural = r.natural, total = r.total, was = was })

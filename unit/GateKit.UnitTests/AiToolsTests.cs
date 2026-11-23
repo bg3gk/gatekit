@@ -58,6 +58,26 @@ public sealed partial class AiToolsTests
     }
 
     [Fact]
+    public void Every_file_the_host_reads_is_an_argument_the_schema_describes()
+    {
+        foreach (var tool in Tools())
+        {
+            if (tool!["files"] is not JsonObject files) continue;
+            var properties = tool["inputSchema"]!["properties"]!.AsObject();
+            foreach (var (from, _) in files)
+                Assert.True(properties.ContainsKey(from), $"{tool["name"]}: files reads `{from}`, which the schema does not describe");
+        }
+    }
+
+    // The game has no server before a level is loaded (the splash screen, the main menu, a film):
+    // the tools enter on the client, which passes a call on to the server while one runs.
+    [Fact]
+    public void The_tools_enter_on_the_client()
+    {
+        Assert.All(Tools(), tool => Assert.Equal("client", (string)tool!["side"]!));
+    }
+
+    [Fact]
     public void Nothing_names_a_vendor()
     {
         var text = File.ReadAllText(File_).ToLowerInvariant();

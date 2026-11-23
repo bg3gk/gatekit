@@ -166,6 +166,23 @@ public sealed unsafe class WindowsPlatform : IGamePlatform
         catch (InvalidOperationException) { }  // exited meanwhile
     }
 
+    public ExitWatch WatchExit(int pid) => new(pid, ExitMeaning);
+
+    /// <summary>What a game's exit code says on Windows: the NTSTATUS a process ends with when Windows
+    /// ends it, or the code the game gave itself.</summary>
+    internal static string? ExitMeaning(int code) => unchecked((uint)code) switch
+    {
+        0 => "the process ended itself cleanly (ExitProcess 0: a quit the game decided, no crash)",
+        0xFFFFFFFF => "ended from outside (TerminateProcess -1: `down`, a kill)",
+        0xC0000005 => "an access violation the crash handler did not catch",
+        0xC00000FD => "a stack overflow",
+        0xC0000409 => "a fail-fast (__fastfail or a security check): the process ended at once, no crash handler ran",
+        0xC0000374 => "a corrupted heap",
+        0xC000013A => "ended by Ctrl+C / Ctrl+Break",
+        0x40010004 => "ended by a debugger or the session's end",
+        _ => null,
+    };
+
     // --- links ---
 
     public void HardLink(string existingFile, string newLink)

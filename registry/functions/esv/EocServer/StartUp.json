@@ -1,0 +1,23 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::EocServer::StartUp",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Starts the server inside the game's process: makes esv::GameServer (arguments 8, 0x1A, 10000) and initialises it, sets the HUB's player info, makes the item combination and cast requirement managers from ls::ImmutableDataHeadmaster and eoc::SpellPrototypeManager (data the process's module load made), and the mod settings from eoc::ServerInit.",
+  "evidence": [
+    {"kind": "toolkit-name", "says": "EoCServer.dll+0x2A1BC0 exports it; its body read."},
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Whether StartUp can run with no local client (a dedicated mode): its managers read the process's shared module data, which the client's LoadModule loads.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

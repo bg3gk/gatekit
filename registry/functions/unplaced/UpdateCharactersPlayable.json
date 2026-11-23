@@ -1,0 +1,38 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::UpdateCharactersPlayable",
+  "owner": "gui::ViewModelProvider",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Walks three entity queries of modified components and, per character view model, writes IsPlayableCharacter (+0x528) from the component's byte +0x30, and makes the player properties (unplaced::GetOrCreatePlayerCharacterProperties) when it turns true; runs only for a modified component, so a view model made after the change never learns it.",
+  "fingerprint": {
+    "calls": [
+      "fp:227ef8acdbdc209b",
+      "fp:3a1919ec5e4b0a9a",
+      "fp:5227b96c8688ff31",
+      "fp:92dd4fee11aeea92",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::GetOrCreatePlayerCharacterProperties"
+    ],
+    "strings": ["9b7cc6338aaf9a45"],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::party::MemberComponent>,ls::TypeList<>,ls::TypeList<eoc::party::MemberComponent>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::party::MemberComponent>,ls::TypeList<>,ls::TypeList<eoc::party::MemberComponent>,ecs::QueryTypeRemovedTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::party::MemberComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::party::MemberComponent>,ls::TypeList<>,ecs::QueryTypeModifiedTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "The decompiled body: QueryIterator over Modified/Alive, +0x528 compared and written with DeferPropertyChanged, then the +0x420 creation."
+    },
+    {
+      "kind": "pairing",
+      "says": "The Toolkit's gui::ViewModelProvider::UpdateIsPlayableCharacter writes the same flag (+0x540 there) from eoc::party::MemberComponent and eoc::PlayerComponent."
+    },
+    {
+      "kind": "watch",
+      "says": "Headless from the process start the host's VMCharacter has IsPlayableCharacter false and OwnerPlayerId 0; replicating the host's PartyMember and Player from the server (a modification) set it true and the dialogue window filled."
+    }
+  ]
+}

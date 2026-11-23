@@ -54,6 +54,9 @@ public static class CopyCommands
         yield return Cover();
         yield return CoverFold();
         yield return CoverDiff();
+        yield return TraceStacksCommand.Create();
+        yield return LogicDiffCommand.Create();
+        yield return LogicCheckCommand.Create();
         yield return Shot();
         yield return Key();
         yield return Sound();
@@ -63,6 +66,7 @@ public static class CopyCommands
         yield return BridgeReload("bridge-reload");
         yield return Bridge();
         yield return Logs();
+        yield return Timeline();
         yield return Watch();
         yield return Simple("checkpoint", "save the world as it is now, to return to with `reset`", async s =>
             s.Out.WriteLine("checkpoint: " + await s.Session().CheckpointAsync()));
@@ -184,13 +188,37 @@ public static class CopyCommands
         var mainMenu = new Option<bool>("--main-menu") { Description = "stop in the main menu instead of loading the last save (first-launch screens gone through in a cloned copy, never in the installed game)" };
         var splash = new Option<bool>("--splash") { Description = "stop on the splash screen before the main menu (\"press any key\") and leave it standing; first-launch screens are gone through as with --main-menu" };
         var startupVideos = new Option<bool>("--startup-videos") { Description = "play the game's own startup videos (the studio's logo) instead of skipping them as every start does by default" };
+        var untilLua = new Option<bool>("--until-lua") { Description = "return as soon as the bridge first answers (the client's first heartbeat, right after the startup videos): no menu, no session" };
+        var firstLaunch = new Option<bool>("--first-launch") { Description = "start as the game's first launch (its switch ShowFirstTimeSetup set at the first Lua) and stop on the first first-launch page, Eula, leaving the pages to you; an instance only" };
+        var coverStart = new Option<bool>("--cover-start") { Description = "cover the start before any Lua: coverage counters on every function of the executable from the extender's start, a record saved at each state the client enters up to the main menu (cover/start/ in the copy's state folder; developer mode)" };
+        var fastLoad = new Option<bool>("--fast-load") { Description = "loads without the game's waits (GateKit's Script Extender build): frame caps and the server's tick lifted while loading, no streaming wait, no screen fades - for automated runs, never for pictures of a load (also GATEKIT_FAST_LOAD=1)" };
+        var headless = new Option<bool>("--headless") { Description = "a game for logic only (GateKit's Script Extender build): fast loads, the Lua collector held while loading, nothing drawn from the process start (a start through the main menu: from the first Running), the tick waits slept instead of spun, the window off the screen; `shot` draws for its picture (also GATEKIT_HEADLESS=1)" };
+        var drawnStart = new Option<bool>("--drawn-start") { Description = "with --headless: the start drawn until the client's first Running, nothing drawn after it (also GATEKIT_HEADLESS_DRAWN_START=1)" };
+        var headlessExcept = new Option<string?>("--headless-except") { Description = "with --headless or --fast-load: these of its switches left off, comma-separated (KeepWindowOffScreen, IdleSleep, FastLoadFades, ...): which cut a difference of the logic comes from (also GATEKIT_HEADLESS_EXCEPT)" };
         var gameArgs = new Argument<string[]>("game-args") { Description = "extra game arguments, after `--`", Arity = ArgumentArity.ZeroOrMore };
-        var command = new Command("up", "back up, configure, start the game, wait until it is playable") { level, save, mods, storyLog, mainMenu, splash, startupVideos, gameArgs };
+        var command = new Command("up", "back up, configure, start the game, wait until it is playable") { level, save, mods, storyLog, mainMenu, splash, startupVideos, untilLua, firstLaunch, coverStart, fastLoad, headless, drawnStart, headlessExcept, gameArgs };
         command.SetAction((parse, cancel) => Run(parse, async s =>
         {
+            // the start reads them where it writes the switches (GameCopy.ConfigureExtender), as `test` sets them for its starts
+            if (parse.GetValue(drawnStart)) Environment.SetEnvironmentVariable("GATEKIT_HEADLESS_DRAWN_START", "1");
+            if (parse.GetValue(headlessExcept) is { Length: > 0 } except) Environment.SetEnvironmentVariable("GATEKIT_HEADLESS_EXCEPT", except);
             var modList = parse.GetValue(mods) is { } text ? text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) : null;
+            string? coverFile = null;
+            if (parse.GetValue(coverStart))
+            {
+                // the list of the executable the copy runs, read from the decompiler's database; the
+                // records of an earlier start are removed with it
+                var folder = Path.Combine(s.Layout.State, "cover", "start");
+                FileTree.TryRemoveTree(folder);
+                Directory.CreateDirectory(folder);
+                var starts = GateKit.Symbols.Registry.LiveCommands.FunctionStarts(s.Settings.ExeName, 64, Console.Error);
+                coverFile = Path.Combine(folder, "functions.txt");
+                File.WriteAllLines(coverFile, starts.Select(r => r.ToString("X", CultureInfo.InvariantCulture)));
+                s.Out.WriteLine($"cover the start: {starts.Count} functions of {s.Settings.ExeName}; records at {folder}");
+            }
             await s.UpAsync(new UpOptions(parse.GetValue(level), parse.GetValue(save), modList, parse.GetValue(storyLog), parse.GetValue(gameArgs),
-                parse.GetValue(mainMenu), parse.GetValue(splash), parse.GetValue(startupVideos)), cancel);
+                parse.GetValue(mainMenu), parse.GetValue(splash), parse.GetValue(startupVideos), parse.GetValue(untilLua), parse.GetValue(firstLaunch),
+                coverFile, parse.GetValue(fastLoad), parse.GetValue(headless)), cancel);
         }));
         return command;
     }
@@ -485,7 +513,7 @@ public static class CopyCommands
         var start = new Command("start", "put a counter on the functions of the running executable") { minimum, limit, hot };
         start.SetAction((parse, _) => Run(parse, async s =>
         {
-            var module = (await s.ExecAsync("server", Module, TimeSpan.FromSeconds(20)))?.GetValue<string>()
+            var module = (await s.ExecAsync("client", Module, TimeSpan.FromSeconds(20)))?.GetValue<string>()
                 ?? throw new InvalidOperationException("this Script Extender build has no coverage counters: start the copy with the build that has them");
             var starts = GateKit.Symbols.Registry.LiveCommands.FunctionStarts(module, parse.GetValue(minimum), TextWriter.Null);
             if (parse.GetValue(limit) is > 0 and var most && starts.Count > most)
@@ -498,7 +526,7 @@ public static class CopyCommands
             for (var from = 0; from < starts.Count; from += Batch)
             {
                 var list = string.Join(",", starts.Skip(from).Take(Batch).Select(r => string.Create(CultureInfo.InvariantCulture, $"{r}")));
-                var answer = await s.ExecAsync("server", $$"""
+                var answer = await s.ExecAsync("client", $$"""
                     local base = Ext.Debug.AddressFromModule("{{module}}", 0)
                     local list = { {{list}} }
                     for i = 1, #list do list[i] = base + list[i] end
@@ -513,7 +541,7 @@ public static class CopyCommands
 
         var status = new Command("status", "how many functions are counted, were called, were taken off as called too often");
         status.SetAction((parse, _) => Run(parse, async s =>
-            s.Out.WriteLine(GateKit.Json.JsonText.Inline(await s.ExecAsync("server", "return (Ext.Debug.GetCoverageStatus or Ext.Debug.CoverStatus)()", TimeSpan.FromSeconds(30)), compact: false))));
+            s.Out.WriteLine(GateKit.Json.JsonText.Inline(await s.ExecAsync("client", "return (Ext.Debug.GetCoverageStatus or Ext.Debug.CoverStatus)()", TimeSpan.FromSeconds(30)), compact: false))));
         command.Subcommands.Add(status);
 
         var file = new Argument<string>("file") { Description = "the file the counts are written to" };
@@ -523,14 +551,14 @@ public static class CopyCommands
         {
             var path = Path.GetFullPath(parse.GetValue(file)!).Replace('\\', '/');
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            var answer = await s.ExecAsync("server", $"return (Ext.Debug.SaveCoverage or Ext.Debug.CoverSave)(\"{path}\", {(parse.GetValue(reset) ? "true" : "false")})", TimeSpan.FromSeconds(120));
+            var answer = await s.ExecAsync("client", $"return (Ext.Debug.SaveCoverage or Ext.Debug.CoverSave)(\"{path}\", {(parse.GetValue(reset) ? "true" : "false")})", TimeSpan.FromSeconds(120));
             s.Out.WriteLine($"{path}: {answer?["Functions"]} functions called, {answer?["Pairs"]} pairs");
         }));
         command.Subcommands.Add(save);
 
         var stop = new Command("stop", "take every counter off; the counts stay for a last `cover save`");
         stop.SetAction((parse, _) => Run(parse, async s =>
-            s.Out.WriteLine($"{(await s.ExecAsync("server", "return (Ext.Debug.StopCoverage or Ext.Debug.CoverStop)()", TimeSpan.FromSeconds(300)))} counters taken off")));
+            s.Out.WriteLine($"{(await s.ExecAsync("client", "return (Ext.Debug.StopCoverage or Ext.Debug.CoverStop)()", TimeSpan.FromSeconds(300)))} counters taken off")));
         command.Subcommands.Add(stop);
         return command;
     }
@@ -652,14 +680,23 @@ public static class CopyCommands
         var against = new Option<string[]>("--against") { Description = "files of the scene without it", Arity = ArgumentArity.OneOrMore, Required = true, AllowMultipleArgumentsPerToken = true };
         var top = new Option<int>("--top") { Description = "how many functions to print", DefaultValueFactory = _ => 60 };
         var names = new Option<bool>("--names") { Description = "beside an unnamed function, the name the databases give it (slower)" };
-        var command = new Command("cover-diff", "the functions that ran in the first records and in none of the --against ones, the registry's ids where it names them") { files, against, top, names };
+        var all = new Option<bool>("--all") { Description = "a function counts only when it ran in every one of the first records (repeats of one action), not in any of them: what an action's first run does once is left out" };
+        var command = new Command("cover-diff", "the functions that ran in the first records and in none of the --against ones, the registry's ids where it names them") { files, against, top, names, all };
         command.SetAction(parse =>
         {
-            var with = CoverSet.Read(parse.GetValue(files)!, null);
+            var paths = parse.GetValue(files)!;
+            var with = CoverSet.Read(paths, null);
             var without = CoverSet.Read(parse.GetValue(against)!, null);
-            var only = with.Calls.Keys.Where(f => !without.Calls.ContainsKey(f)).ToList();
+            IEnumerable<string> candidates = with.Calls.Keys;
+            if (parse.GetValue(all))
+                foreach (var path in paths)
+                {
+                    var one = CoverSet.Read([path], null);
+                    candidates = candidates.Where(f => one.Calls.ContainsKey(f)).ToList();
+                }
+            var only = candidates.Where(f => !without.Calls.ContainsKey(f)).ToList();
             var named = NamedStarts(only);
-            Console.Out.WriteLine($"{with.Calls.Count} functions ran in the first, {without.Calls.Count} in the other; {only.Count} only in the first, {named.Count} of them named by the registry");
+            Console.Out.WriteLine($"{with.Calls.Count} functions ran in the first{(parse.GetValue(all) ? $" ({candidates.Count()} in every one of them)" : "")}, {without.Calls.Count} in the other; {only.Count} only in the first, {named.Count} of them named by the registry");
             PrintFunctions(with, only, named, parse.GetValue(top), parse.GetValue(names));
             return 0;
         });
@@ -795,6 +832,21 @@ public static class CopyCommands
         return command;
     }
 
+    static Command Timeline()
+    {
+        var kind = new Option<string?>("--kind") { Description = "only rows of these kinds, comma-separated (State,UIState,HintShown,...)" };
+        var counters = new Option<bool>("--counters") { Description = "also what the process had read and spent by each row (IoReadBytes, IoReadOps, CpuMs, FileOpens)" };
+        var json = new Option<bool>("--json") { Description = "the rows as JSON: { rows, total, dropped }" };
+        var command = new Command("timeline", "the start's timeline of the running game as Script Extender's fork recorded it (Ext.StartupVideos.Timeline): one line a row") { kind, counters, json };
+        command.SetAction((parse, _) => Run(parse, async s =>
+        {
+            var read = await StartTimeline.ReadAsync(s.Session(), StartTimeline.Kinds(parse.GetValue(kind)));
+            if (parse.GetValue(json)) s.Out.Write(GateKit.Json.JsonText.Format(read));
+            else foreach (var line in StartTimeline.Lines(read, parse.GetValue(counters))) s.Out.WriteLine(line);
+        }));
+        return command;
+    }
+
     static Command Watch()
     {
         var command = new Command("watch", "reload whenever a linked Lua file changes (Ctrl+C to stop)");
@@ -805,10 +857,22 @@ public static class CopyCommands
     static Command Reset()
     {
         var noIntro = new Option<bool>("--keep-scenes") { Description = "do not fast-forward the level's opening scene" };
-        var command = new Command("reset", "bring back the world of the last checkpoint without restarting the game") { noIntro };
+        var save = new Option<string?>("--save") { Description = "load this save of the copy (its folder name) in the running game instead, by the game's own load, and make it the checkpoint" };
+        var command = new Command("reset", "bring back the world of the last checkpoint without restarting the game") { noIntro, save };
         command.SetAction((parse, _) => Run(parse, async s =>
         {
-            var took = await s.Session().ResetAsync(skipIntro: !parse.GetValue(noIntro));
+            var session = s.Session();
+            if (parse.GetValue(save) is { } name)
+            {
+                var loaded = await session.LoadSaveAsync(name, skipIntro: !parse.GetValue(noIntro));
+                string? level = null;
+                try { level = await session.ServerAsync("return GK.Stage.CurrentLevel()", TimeSpan.FromSeconds(10)) is System.Text.Json.Nodes.JsonValue v && v.TryGetValue<string>(out var n) ? n : null; }
+                catch (CopyException) { }
+                session.AdoptCheckpoint(name, level);
+                s.Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{name} loaded in {loaded.TotalSeconds:0.0} s{(level is null ? "" : " (" + level + ")")}; it is the checkpoint now"));
+                return;
+            }
+            var took = await session.ResetAsync(skipIntro: !parse.GetValue(noIntro));
             s.Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"world reset in {took.TotalSeconds:0.0} s"));
         }));
         return command;

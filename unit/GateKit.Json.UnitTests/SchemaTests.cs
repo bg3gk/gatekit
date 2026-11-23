@@ -177,5 +177,11 @@ public class SchemaTests
         var items = JsonNode.Parse("""[{"seq": 4, "what": "dialogue", "side": "server", "since_ms": 120, "speaker": {"name": "Lae'zel"}}, {"waiting": true, "side": "client", "what": "roll"}]""");
         Assert.Empty(Set.Validate(items, "common/attention"));
         Assert.Contains(Set.Validate(JsonNode.Parse("""[{"side": "client", "waiting": false}]"""), "common/attention"), m => m.Rule == "const");
+        var pages = JsonNode.Parse("""
+            [{"waiting": true, "side": "client", "what": "setup", "window": "Eula", "firstLaunch": true,
+              "controls": [{"handle": "AcceptBtn", "kind": "button", "command": "CustomEvent", "parameter": "OpenSensitiveSettings"}]},
+             {"waiting": true, "side": "client", "what": "splash", "window": "SplashScreen", "controls": [], "keys": "any key"}]
+            """);
+        Assert.Empty(Set.Validate(pages, "common/attention"));
     }
 }

@@ -13,7 +13,8 @@
 --
 --     gatekit --instance <yours> test -k framecap
 
-test { level = "GustavX:TUT_Avernus_C", mods = {} }
+test { level = "GustavX:TUT_Avernus_C", mods = {},
+       drawn = "it counts the frames the game draws under a cap; a headless game draws none" }
 
 local SAMPLE = 6          -- seconds to count frames over
 local SETTLE = 1.5        -- seconds to let a new cap take effect before counting

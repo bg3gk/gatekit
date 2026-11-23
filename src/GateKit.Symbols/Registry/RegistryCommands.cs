@@ -82,7 +82,7 @@ public static class RegistryCommands
         }
         {
             var c = new Command("mappings", "the binding layer of a Script Extender (its BinaryMappings.xml) against the registry: what a table written by hand leads to, and a mapping written from the registry alone");
-            var limit = new Option<int>("--limit") { Description = "the most bytes a pattern may take (default 64)", DefaultValueFactory = _ => 64 };
+            var limit = new Option<int>("--limit") { Description = "the most bytes a pattern may take (default 160: the shortest unique run is taken, and some prologues are shared for long)", DefaultValueFactory = _ => 160 };
             var coverage = new Option<string?>("--coverage") { Description = "the coverage record beside the registry" };
             {
                 var file = new Argument<string>("file") { Description = "a BinaryMappings.xml" };
@@ -134,7 +134,8 @@ public static class RegistryCommands
                 var ids = new Argument<string[]>("function") { Description = "registry ids of functions", Arity = ArgumentArity.ZeroOrMore };
                 var all = new Option<bool>("--all") { Description = "every function the registry places in a binary" };
                 var count = new Option<bool>("--count") { Description = "print only how many got a mapping and which did not" };
-                var emit = new Command("emit", "a <Mapping> for each function, from the registry alone: one pattern of its start that is found once in every binary the registry places it in") { ids, all, count, limit, coverage };
+                var via = new Option<string?>("--via") { Description = "the ids are globals: the pattern stands at the first instruction of this function (a registry id) that refers to each, in every binary" };
+                var emit = new Command("emit", "a <Mapping> for each function, from the registry alone: one pattern of its start that is found once in every binary the registry places it in; with --via, for each global: a pattern at an instruction that refers to it") { ids, all, count, limit, coverage, via };
                 emit.SetAction(p => Invoke(p, s =>
                 {
                     var store = RegistryStore.Find(p.GetValue(coverage)) ?? throw new SymbolsException("no registry found");
@@ -159,7 +160,15 @@ public static class RegistryCommands
                     {
                         var entries = store.Lookup(given);
                         if (entries.Count != 1) { s.Out.WriteLine($"    <!-- {given}: {(entries.Count == 0 ? "the registry has no such function" : "more than one entry answers to the name")} -->"); bad++; continue; }
-                        var written = Mappings.Emit(entries[0].Id, reader, store, p.GetValue(limit), out var why);
+                        string? written;
+                        string why;
+                        if (p.GetValue(via) is { } function)
+                        {
+                            var through = store.Lookup(function);
+                            if (through.Count != 1) { s.Out.WriteLine($"    <!-- {function}: the registry has no single function of that name -->"); bad++; continue; }
+                            written = Mappings.EmitGlobal(entries[0].Id, through[0].Id, reader, store, p.GetValue(limit), out why);
+                        }
+                        else written = Mappings.Emit(entries[0].Id, reader, store, p.GetValue(limit), out why);
                         if (written is null) { s.Out.WriteLine($"    <!-- {entries[0].Id}: no mapping: {why} -->"); bad++; }
                         else s.Out.WriteLine(written);
                         s.Out.WriteLine();
@@ -180,6 +189,24 @@ public static class RegistryCommands
                     return 0;
                 }));
                 c.Subcommands.Add(write);
+            }
+            {
+                var file = new Argument<string>("file") { Description = "a Script Extender's BinaryMappings.xml" };
+                var add = new Option<string[]>("--add") { Description = "registry ids of functions whose mapping in the table (Name = the id) becomes the registry's from now on", AllowMultipleArgumentsPerToken = true };
+                var checkOnly = new Option<bool>("--check") { Description = "write nothing: say which mappings differ from the registry's and exit 1 when one does" };
+                var sync = new Command("sync", "the mappings of a Script Extender's table that the registry writes - each after a comment `<!-- code:<id>; ... -->` - written again from the registry, so that the table holds them as the registry has them") { file, add, checkOnly, limit, coverage };
+                sync.SetAction(p => Invoke(p, s =>
+                {
+                    var store = RegistryStore.Find(p.GetValue(coverage)) ?? throw new SymbolsException("no registry found");
+                    var (changed, same, failed) = Mappings.Sync(p.GetValue(file)!, p.GetValue(add) ?? [], Reader(s, null), store,
+                        p.GetValue(limit), p.GetValue(checkOnly));
+                    s.Out.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                        $"{p.GetValue(file)}: {same.Count} mappings as the registry has them, {changed.Count} {(p.GetValue(checkOnly) ? "differ" : "written again")}, {failed.Count} the registry cannot write"));
+                    foreach (var id in changed) s.Out.WriteLine($"  {(p.GetValue(checkOnly) ? "differs" : "written")}: {id}");
+                    foreach (var (id, why) in failed) s.Out.WriteLine($"  cannot write {id}: {why}");
+                    return failed.Count > 0 || (p.GetValue(checkOnly) && changed.Count > 0) ? 1 : 0;
+                }));
+                c.Subcommands.Add(sync);
             }
             root.Subcommands.Add(c);
         }

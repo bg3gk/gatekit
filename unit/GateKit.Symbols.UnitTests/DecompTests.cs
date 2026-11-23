@@ -310,6 +310,17 @@ public sealed class DecompTests : IDisposable
         var (missExit, _, missErr) = Run("at", "Nope.dll+0x10");
         Assert.Equal(1, missExit);
         Assert.Contains("no function found", missErr);
+
+        // Several in one call (a profiler's stack): each answered in turn; one unknown makes it 1.
+        var many = Run("at", "Toy.dll+0x1000", "Toy.dll+0x2000", "Nope.dll+0x10");
+        Assert.Equal(1, many.Exit);
+        Assert.Contains("decompiler: toy::Widget::Update", many.Out);
+        Assert.Contains("decompiler: toy::Ground::Find", many.Out);
+        // as JSON: one array, the unknown one marked not found
+        var arr = System.Text.Json.Nodes.JsonNode.Parse(Run("at", "Toy.dll+0x1000", "Nope.dll+0x10", "--json").Out)!.AsArray();
+        Assert.Equal(2, arr.Count);
+        Assert.Equal("toy::Widget::Update", (string?)arr[0]!["decomp_name"]);
+        Assert.Equal(false, (bool?)arr[1]!["found"]);
     }
 
     [Fact]

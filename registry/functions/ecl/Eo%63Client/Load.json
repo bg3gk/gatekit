@@ -1,0 +1,81 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::EocClient::Load",
+  "state": "described",
+  "rung": "game",
+  "does": "Called once per process, as the last step of App::InitGame (right after App::InitializeResourceManager): the mod list is read here (the profile's modsettings.lsx, then meta.lsx of every module folder under Data/Mods), the cursors and the client's other start data are loaded, and the client's first states are queued (InitMenu, then StartLoading with the startup video, Init, LoadModule, LoadMenu, StopLoading, Menu after a fade).",
+  "fingerprint": {
+    "calls": [
+      "ecl::GameStateMachine::SetTargetState",
+      "ecl::GameStateStartLoading::GameStateStartLoading",
+      "ecl::GameStateStartLoading::MakeSimple",
+      "ecl::ModManagerClient::LoadModSettingsFile",
+      "fp:07055d374dd1fb25",
+      "fp:123b79ba6c390bab",
+      "fp:3349a6e75af5a395",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:5e2f518f322a5bdf",
+      "fp:6276a158afa76886",
+      "fp:72d7d2f8b3c979fa",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:d0db08e2deb67c85",
+      "fp:d1045bdeed38dbc1",
+      "fp:e0c8c061cbc6393c",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83",
+      "ls::ArgumentString::GetValue"
+    ],
+    "strings": ["054afa8def8127c2", "060aa3c2de36fe57", "923a375fa2b4a675", "ca90404532b7888a"],
+    "components": [
+      "ecl::ChatProtocol",
+      "ls::AnimationBlueprintSystem",
+      "ls::AnimationSetSystem",
+      "ls::LevelComponent",
+      "ls::LightSystem",
+      "ls::PublishingSystem",
+      "ls::VisualSystem",
+      "ls::level::LevelInstanceAttachSystem",
+      "ls::ugc::ModDependencyCachedRequestSystem",
+      "ls::ugc::ModInfoCachedRequestSystem",
+      "ls::ugc::ModListCachedRequestSystem"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the only function using the text -testAIStart in bg3_dx11.exe, as in macOS ecl::EocClient::Load; its call MakeSimple(2, &code:EoCFS::strSplashLogoLarian) and the GameStateMachine::SetTargetState sequence match the macOS body; the modsettings read comes before the MakeSimple call in the macOS body"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "pair",
+      "says": "The macOS build's symbols hold this name; a stored pair of the two builds joins that function to this one (a seed)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "match",
+      "says": "EoCClient.dll exports this name; the symbol database matches the export to this function by strings"
+    },
+    {
+      "kind": "read",
+      "says": "decomp of code:ecl::EocClient::Load: SetTargetState calls with the state objects InitMenu (vtable +0x55F8E58, id 2), MakeSimple(2,code:EoCFS::strSplashLogoLarian), Init (bg3_dx11.exe@25605617+0x18478F0), LoadModule (bg3_dx11.exe@25605617+0x1848700), LoadMenu (bg3_dx11.exe@25605617+0x1849950), StopLoading (vtable +0x55F9890, id 0x17), SetTargetStateAfterFade(Menu vtable +0x55F9918, id 7, 3)"
+    },
+    {
+      "kind": "reach",
+      "says": "Ext.StartupVideos.Timeline() of 7 starts of the copy attacks records the client states Unknown->InitMenu->StartLoading->Init->LoadModule->LoadMenu->StopLoading->Menu in that order"
+    },
+    {
+      "kind": "reach",
+      "says": "Timeline FileOpened rows (fork build v34-startup-videos-4, copy attacks): App::InitializeResourceManager ends at 6470.4 ms after opening Hints/Hints.lsx (6469); then, before App::InitGame ends (6862.8), the profile's modsettings.lsx (6472), meta.lsx of GustavX, Shared, SharedDev, GustavDev, Gustav, DiceSet_01..07, MainUI, ModBrowser, PhotoMode, CrossplayUI, the GateKit mods, Engine, Honour, HonourX (6479-6485), Data/Cursors/*.cur (6487-6570) and many Groups/<uuid>.lsx; dx11 App::InitGame calls nothing else between the two"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 App::InitGame (code:App::InitGame) calls App::InitializeResourceManager and then this function, once, near its end; App::InitGame runs once per process"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"},
+    {"kind": "test", "test": "startup/videos/game_clip"}
+  ]
+}

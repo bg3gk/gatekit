@@ -33,6 +33,11 @@ public abstract class FakeGameRuns : IAsyncLifetime
         var copy = _game.GameCopy(instance);
         _game.Platform.OnStart = _ =>
         {
+            // Each fake launch owns the channel. A retired bridge must stop answering
+            // before the new client and server start writing to it.
+            foreach (var bridge in _bridges)
+                bridge.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            _bridges.Clear();
             foreach (var side in new[] { "client", "server" })
                 _bridges.Add(new FakeBridge(copy.Layout.Channel, side, code =>
                 {
@@ -121,8 +126,8 @@ public sealed class GameTestTests : FakeGameRuns
         Assert.Equal(["M"], start.Mods!);
         Assert.Equal(ResetRung.Venue, start.Needs);
         Assert.Null(start.Save);
-        Assert.Equal(("A:B", "M", false, null), start.Key);
-        Assert.Equal((null, "", true, null), found[1].Start.Key);
+        Assert.Equal(("A:B", "M", false, null, false, false), start.Key);
+        Assert.Equal((null, "", true, null, false, false), found[1].Start.Key);
         Assert.Equal("only", GameTest.Discover(Tests(("only", "function run(game) end"), ("other", "function run(game) end")), "onl").Single().Name);
         Assert.Throws<CopyException>(() => GameTest.Discover(folder, "nothing"));
         Assert.ThrowsAny<CopyException>(() => GameTest.Load(Tests(("bad", "-- no run function")) + "/bad.lua"));
@@ -708,6 +713,59 @@ public sealed class AttachedRunTests : FakeGameRuns
         var start = GameTest.Discover(folder).Single().Start;
         Assert.True(start.MainMenu);
         Assert.Equal("<main menu>", start.Key.Item1);
+    }
+
+    [Fact]
+    public void A_test_can_start_with_the_startup_videos_and_never_shares_that_start()
+    {
+        var found = GameTest.Discover(Tests(
+            ("plays", "test { menu = true, startup_videos = true }\nfunction run(game) end"),
+            ("hides", "test { menu = true }\nfunction run(game) end")));
+        var plays = found.Single(t => t.Name == "plays").Start;
+        var hides = found.Single(t => t.Name == "hides").Start;
+        Assert.True(plays.StartupVideos);
+        Assert.False(hides.StartupVideos);
+        Assert.NotEqual(plays.Key, hides.Key);                        // two games: the start reads the videos once
+        Assert.True(TestRunner.StartOf(plays).StartupVideos);         // up --startup-videos
+        Assert.False(TestRunner.StartOf(hides).StartupVideos);
+        Assert.True(TestRunner.StartOf(plays).MainMenu);
+    }
+
+    [Fact]
+    public void A_test_can_run_when_the_bridge_first_answers_and_never_shares_that_start()
+    {
+        var found = GameTest.Discover(Tests(
+            ("early", "test { until_lua = true, startup_videos = true }\nfunction run(game) end"),
+            ("menu", "test { menu = true, startup_videos = true }\nfunction run(game) end")));
+        var early = found.Single(t => t.Name == "early").Start;
+        var menu = found.Single(t => t.Name == "menu").Start;
+        Assert.True(early.UntilLua && early.NoLevel && menu.NoLevel);
+        Assert.Equal("<until lua>", early.Key.Item1);
+        Assert.NotEqual(early.Key, menu.Key);                         // two games: one ends at the first answer
+        var up = TestRunner.StartOf(early);
+        Assert.True(up.UntilLua && up.StartupVideos && !up.MainMenu); // up --until-lua --startup-videos
+        var both = Assert.Throws<CopyException>(() => GameTest.Discover(Tests(("both", "test { until_lua = true, menu = true }\nfunction run(game) end"))));
+        Assert.Contains("until_lua", both.Message);
+    }
+
+    [Fact]
+    public void A_test_can_start_on_the_first_launch_pages_and_never_shares_that_start()
+    {
+        var found = GameTest.Discover(Tests(
+            ("first", "test { first_launch = true }\nfunction run(game) end"),
+            ("menu", "test { menu = true }\nfunction run(game) end")));
+        var first = found.Single(t => t.Name == "first").Start;
+        var menu = found.Single(t => t.Name == "menu").Start;
+        Assert.True(first.FirstLaunch && first.NoLevel);
+        Assert.Equal("<first launch>", first.Key.Item1);
+        Assert.NotEqual(first.Key, menu.Key);                             // the pages are walked once per game
+        var up = TestRunner.StartOf(first);
+        Assert.True(up.FirstLaunch && !up.MainMenu && !up.UntilLua);       // up --first-launch
+        foreach (var other in new[] { "menu = true", "until_lua = true", "level = \"GustavX:TUT_Avernus_C\"" })
+        {
+            var both = Assert.Throws<CopyException>(() => GameTest.Discover(Tests(("both", $"test {{ first_launch = true, {other} }}\nfunction run(game) end"))));
+            Assert.Contains("first_launch", both.Message);
+        }
     }
 
     [Fact]

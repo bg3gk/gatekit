@@ -15,60 +15,20 @@ local GK = AI.GK
 local U = AI.Util
 local try, uuidOf, nameOf, handle, cut, round1 = U.try, U.uuidOf, U.nameOf, U.handle, U.cut, U.round1
 
--- chars: the hard cap of a `now` block as JSON text; list: the longest list; text: the longest text.
+-- chars: the hard cap of a `now` block as JSON text; list: the longest list; text: the longest text;
+-- line: the longest line of actions in `can` (Server/Turn.lua); ways: the radius of `ways` (a way out
+-- is worth knowing farther off than a creature); can: the characters a fight adds to the cap for
+-- `can`, so that a turn's set is not cut for the rest of the block.
 AI.Detail = AI.Detail or {
-    brief = { chars = 1200, list = 6, text = 120, radius = 25 },
-    full = { chars = 6000, list = 30, text = 300, radius = 40 },
+    brief = { chars = 1200, list = 6, text = 120, radius = 25, ways = 40, line = 480, can = 2500 },
+    full = { chars = 6000, list = 30, text = 300, radius = 40, ways = 60, line = 6000, can = 2500 },
 }
 AI.Limit = AI.Limit or AI.Detail.brief
 AI.Sessions = AI.Sessions or {}
 
-local KEYS = { "where", "fight", "can", "party", "waiting", "near", "heard", "events", "rolls", "scenes", "route", "notes", "prompt", "more" }
-AI.NowKeys = KEYS
-
--- ---------------------------------------------------------------------------------------
--- JSON with the keys in order
-
-local ESCAPES = { ['"'] = '\\"', ["\\"] = "\\\\", ["\n"] = "\\n", ["\r"] = "\\r", ["\t"] = "\\t" }
-
-local function quote(s)
-    return '"' .. s:gsub('[%c"\\]', function(c) return ESCAPES[c] or string.format("\\u%04x", c:byte()) end) .. '"'
-end
-
-local function encode(value, order, object)
-    local kind = type(value)
-    if kind == "string" then return quote(value) end
-    if kind == "number" then
-        if value == math.floor(value) and math.abs(value) < 1e15 then return string.format("%d", value) end
-        return tostring(round1(value))
-    end
-    if kind == "boolean" then return value and "true" or "false" end
-    if kind ~= "table" then return "null" end
-    if #value > 0 or next(value) == nil then
-        if object then return "{}" end
-        local parts = {}
-        for i, v in ipairs(value) do parts[i] = encode(v) end
-        return "[" .. table.concat(parts, ",") .. "]"
-    end
-    local keys, seen = {}, {}
-    for _, k in ipairs(order or {}) do
-        if value[k] ~= nil then keys[#keys + 1] = k; seen[k] = true end
-    end
-    local rest = {}
-    for k in pairs(value) do
-        if type(k) == "string" and not seen[k] then rest[#rest + 1] = k end
-    end
-    table.sort(rest)
-    for _, k in ipairs(rest) do keys[#keys + 1] = k end
-    local parts = {}
-    for _, k in ipairs(keys) do parts[#parts + 1] = quote(k) .. ":" .. encode(value[k], k == "now" and KEYS or nil, k == "now" or k == "more") end
-    return "{" .. table.concat(parts, ",") .. "}"
-end
-
---- JSON text of `value` on one line: an object's keys in `order` first and the rest sorted, a
---- `now` field in the order of AI.NowKeys, text as UTF-8 (only quotes, backslashes and control
---- characters escaped).
-function AI.Encode(value, order) return encode(value, type(order) == "table" and order or KEYS, true) end
+-- the order of `now` and the JSON text: Shared/Encode.lua
+local KEYS = AI.NowKeys
+local encode = AI.EncodeWith
 
 -- ---------------------------------------------------------------------------------------
 -- The parts, each as it is now
@@ -85,7 +45,11 @@ local function where()
     local place = try(GK.See.Place, me) or {}
     local at = p and string.format("%s,%s,%s", round1(p[1]), round1(p[2]), round1(p[3])) or "?"
     local by = place.near and (", by " .. tostring(place.near):gsub(" %(.-%)$", "")) or ""
-    return { text = string.format("%s%s; %s at %s", tostring(place.level or "?"), by, nameOf(me) or "?", at), level = place.level, p = p }
+    -- who is controlled: told again when it changes (a death, a fight's end); nobody, when the
+    -- game controls no member
+    local who = try(Osi.IsControlled, me) == 1 and string.format("%s (controlled)", tostring(nameOf(me) or "?"))
+        or string.format("nobody controlled (do=select who=<name>), %s", tostring(nameOf(me) or "?"))
+    return { text = string.format("%s%s; %s at %s", tostring(place.level or "?"), by, who, at), level = place.level, p = p, who = who }
 end
 
 --- Whose turn it is: { on, round, turn = { { id, name, mine } }, mine = the first party member whose turn is open }.
@@ -112,34 +76,27 @@ local function fight()
         ids[#ids + 1] = row.id
     end
     local text = string.format("round %s, turn: %s", tostring(t.round), #names > 0 and table.concat(names, ", ") or "nobody's yet")
-    for _, timer in ipairs(try(GK.See.Timers) or {}) do
-        text = text .. string.format("; countdown %s: %s turns left", cut(timer.text or timer.name or "?", 30), tostring(timer.turnsLeft))
-    end
+    -- the member the acts go to, said outright: the controlled one may be another (a downed one)
+    if t.mine then text = text .. string.format("; acts without who are %s's", tostring(nameOf(t.mine))) end
     return { text = text, sig = text, turn = t, turnSig = tostring(t.round) .. "|" .. table.concat(ids, ",") }
 end
 
--- What the member whose turn is open can do to each enemy the party perceives, the best first.
-local function can(actor, limits)
-    local out = {}
-    local targets = try(GK.See.Targets, actor) or {}
-    for i, target in ipairs(targets) do
-        if i > limits.list then break end
-        local options = {}
-        for j = 1, math.min(2, #(target.options or {})) do
-            local o = target.options[j]
-            options[#options + 1] = string.format("%s%s%s", tostring(o.id),
-                o.chance and string.format(" %d%%", math.floor(o.chance * 100 + 0.5)) or "",
-                (o.move or 0) > 0 and string.format(" after %s m", round1(o.move)) or "")
-        end
-        if #options > 0 then
-            out[#out + 1] = string.format("%s %s %s hp: %s", tostring(target.name), handle(target.id), tostring(target.hp), table.concat(options, " | "))
-        end
-    end
-    return out
+-- "4 m NE" from `from` to `to` (north = +z, east = +x), whole metres
+local function bearing(from, to)
+    local dx, dz = to[1] - from[1], to[3] - from[3]
+    local d = math.sqrt(dx * dx + dz * dz)
+    local names = { "E", "NE", "N", "NW", "W", "SW", "S", "SE" }
+    local k = math.floor((math.atan(dz, dx) / (math.pi / 4)) + 0.5) % 8
+    return string.format("%d m %s", math.floor(d + 0.5), d < 0.5 and "here" or names[k + 1])
 end
 
 local function party()
     local out = {}
+    -- in a fight each other member's place from the one whose turn is open (or the controlled one):
+    -- an area spell is aimed knowing where the party stands
+    local t = AI.Turn()
+    local centre = t.on and U.posOf(t.mine or U.controlled()) or nil
+    local centreId = t.on and (t.mine or U.controlled()) or nil
     for _, m in ipairs((try(GK.See.Status) or {}).party or {}) do
         local hands = {}
         for _, slot in ipairs({ "Melee Main Weapon", "Ranged Main Weapon" }) do
@@ -151,7 +108,15 @@ local function party()
             if i > 3 then break end
             conditions[#conditions + 1] = s.name or s.id
         end
-        out[#out + 1] = string.format("%s %s/%s hp%s%s%s", tostring(m.name), tostring(m.hp), tostring(m.maxHp), m.dead and ", dead" or "",
+        -- downed is the game's status; a member made immortal (a staged scene) stands at 0
+        local state = m.dead and ", dead" or (try(Osi.HasActiveStatus, m.id, "DOWNED") == 1 and ", downed")
+            or (m.hp == 0 and try(Osi.IsImmortal, m.id) == 1 and ", stands at 0 (immortal)") or ""
+        local place = ""
+        if centre and (uuidOf(m.id) or m.id) ~= (uuidOf(centreId) or centreId) then
+            local p = U.posOf(m.id)
+            if p then place = ", " .. bearing(centre, p) end
+        end
+        out[#out + 1] = string.format("%s %s/%s hp%s%s%s%s", tostring(m.name), tostring(m.hp), tostring(m.maxHp), state, place,
             #hands > 0 and (", holds " .. table.concat(hands, " + ")) or "",
             #conditions > 0 and (", " .. table.concat(conditions, ", ")) or "")
     end
@@ -162,34 +127,44 @@ end
 
 local NOTABLE = { door = true, ladder = true, portal = true, usable = true, container = true }
 
--- Who and what of note the party perceives: id -> { sig, text, d }.
-local function near(limits, inFight, wide)
+-- Who and what of note the party perceives: id -> { sig, text, d }. What `ways` lists (`skip`)
+-- is not said twice. Blind: what a member's sight holds (AI.Ways.SeeOptions); distances and
+-- bearings from the controlled character.
+local function near(limits, inFight, wide, skip)
     local out = {}
     -- a step's block lists what the party perceives; a look in open mode, everything within the radius
-    local around = try(GK.See.Around, { radius = limits.radius, limit = 40, scope = wide and AI.Mode.Scope(false) or "seen" }) or {}
+    local options = AI.Ways.SeeOptions(limits.radius, false, false)
+    options.scope = wide and AI.Mode.Scope(false) or "seen"
+    local around = try(GK.See.Around, options) or {}
+    local from = U.posOf(U.controlled())
     for _, c in ipairs(around.characters or {}) do
         if c.rel ~= "party" and not c.remembered then
             local id = uuidOf(c.id) or c.id
             local state = c.dead and "dead" or c.downed and "down" or c.perceived == false and "unseen" or nil
-            local hp = (c.rel == "hostile" and inFight and c.hp) and (tostring(c.hp) .. " hp") or nil
+            -- hit points as the health bar shows them: none when the game hides an NPC's (AI.HideNpcHp)
+            local hp = (c.rel == "hostile" and inFight and c.hp and not AI.HideNpcHp()) and (tostring(c.hp) .. " hp") or nil
             local does = c.dead and c.loot and "loot" or c.talk and not c.dead and c.rel ~= "hostile" and "talk" or nil
             local words = { tostring(c.rel or "?") }
+            -- the boss frame a player sees on its health bar (TargetHealthBarTemplate: CharacterType Boss)
+            if try(Osi.IsBoss, id) == 1 then words[#words + 1] = "boss" end
             if state then words[#words + 1] = state end
             if hp then words[#words + 1] = hp end
             if does then words[#words + 1] = "can " .. does end
-            local head = string.format("%s %s %s", tostring(c.name or "someone"), handle(id), table.concat(words, ", "))
-            out[id] = { sig = head, text = string.format("%s, %s m %s", head, tostring(c.d), tostring(c.dir or "")), d = c.d or 0 }
+            -- the agent's own notes of this one (AI.Notes with `about`): their count and the last
+            local head = string.format("%s %s %s%s", tostring(c.name or "someone"), handle(id), table.concat(words, ", "), AI.Notes.Mark(id))
+            local dy = (from and c.pos) and (c.pos[2] - from[2]) or nil
+            out[id] = { sig = head, text = string.format("%s, %s m %s%s", head, tostring(c.d), tostring(c.dir or ""), AI.Ways.Height(dy)), d = c.d or 0 }
         end
     end
     for _, o in ipairs(around.objects or {}) do
-        if NOTABLE[o.kind] and not o.remembered then
+        if NOTABLE[o.kind] and not o.remembered and not (skip and skip[uuidOf(o.id) or o.id]) then
             local id = uuidOf(o.id) or o.id
             local words = { tostring(o.kind) }
             if o.locked then words[#words + 1] = "locked" end
             if o.open then words[#words + 1] = "open" end
             if o.trap then words[#words + 1] = "trapped" end
             local head = string.format("%s %s (%s)", tostring(o.name or "something"), handle(id), table.concat(words, ", "))
-            out[id] = { sig = head, text = string.format("%s, %s m %s", head, tostring(o.d), tostring(o.dir or "")), d = o.d or 0 }
+            out[id] = { sig = head, text = string.format("%s, %s m %s%s", head, tostring(o.d), tostring(o.dir or ""), AI.Ways.Height(o.dy)), d = o.d or 0 }
         end
     end
     return out
@@ -216,12 +191,19 @@ local HOW = {
 }
 
 --- What waits for the player: { list = texts, actionable = one of them can be answered now,
---- busy = why the game goes on by itself (a line being spoken, a film, a load), kinds }.
+--- busy = why the game goes on by itself (a line being spoken, a film, a load), kinds, widgets =
+--- the names of the widgets that wait }.
 function AI.Waiting(limits)
     limits = limits or AI.Limit
     local items = {}
     for _, w in pairs(GK.Attention.Waiting) do items[#items + 1] = w end
     for _, w in ipairs(AI.Client.open or {}) do items[#items + 1] = w end
+    -- a film the client sees playing (GK.Gui.Stuck), when the log holds none open
+    if AI.Client.stuck == "film" then
+        local told = false
+        for _, w in ipairs(items) do if (w.what or w.kind) == "film" then told = true end end
+        if not told then items[#items + 1] = { kind = "film", seq = math.huge } end
+    end
     table.sort(items, function(a, b) return (a.seq or 0) < (b.seq or 0) end)
     local out = { list = {}, kinds = {} }
     local phase
@@ -229,6 +211,8 @@ function AI.Waiting(limits)
         local kind = w.what or w.kind
         if PHASES[kind] then phase = w end
         out.kinds[kind or "?"] = true
+        -- the widgets of what waits: a press is taken there only, while it waits
+        if type(w.widget) == "string" then out.widgets = out.widgets or {}; out.widgets[w.widget] = true end
     end
     local blocking = AI.Client.blocking
     for _, w in ipairs(items) do
@@ -252,12 +236,15 @@ function AI.Waiting(limits)
         elseif kind == "gameover" then
             text = "the game is over: the party is dead. Do nothing; tell the owner"
             out.actionable = true
-        elseif kind == "film" or kind == "loading" or kind == "saving" then
-            out.busy = kind == "film" and "a film plays" or "the game is " .. kind
+        elseif kind == "film" then
+            text = "a film plays -> do=close skips it, do=wait watches it"
+            out.actionable = true
+        elseif kind == "loading" or kind == "saving" then
+            out.busy = "the game is " .. kind
         elseif kind and not QUIET[kind] then
             local detail = ""
-            if type(blocking) == "table" and blocking.window == (w.window or kind) and blocking.text then
-                detail = ": " .. cut(blocking.text, limits.text)
+            if type(blocking) == "table" and blocking.window == (w.window or kind) and (blocking.text or blocking.answers) then
+                detail = blocking.text and (": " .. cut(blocking.text, limits.text)) or ":"
                 if blocking.answers then detail = detail .. " " .. table.concat(answersOf(blocking.answers, limits), " ") end
             end
             text = string.format("a %s window%s -> %s", tostring(w.window or kind), detail, HOW[kind] or "do=close")
@@ -266,6 +253,11 @@ function AI.Waiting(limits)
         if text then out.list[#out.list + 1] = text end
     end
     if not out.actionable and not out.busy and U.inDialogue() then out.busy = "a dialogue is on" end
+    -- the windows that are not the HUD's: used with do=ui; they do not hold the other acts back
+    local windows = AI.Client.windows or {}
+    if #windows > 0 then
+        table.insert(out.list, 1, "open windows: " .. table.concat(windows, ", ") .. " -> do=ui window=<one of them> lists its controls")
+    end
     return out
 end
 
@@ -361,17 +353,21 @@ end
 --- is there only when its part changed, so a call after which nothing happened answers an empty
 --- block - and the session's cursor moves. The first call of a session, and any call with
 --- options.full, answers every part as it is now.
----   where    the level, the nearest named thing, the controlled character and its position;
----            again after two metres or more
----   fight    "off", or the round, whose turn is open (`(mine)`: a party member's) and the story's
----            countdowns
----   can      when a party member's turn opens: for each enemy the party perceives, the best
----            actions with the game's own chance
+---   where    the level, the nearest named thing, the controlled character (or that nobody is) and
+---            its position; again after two metres or more, or when control changes
+---   fight    "off", or the round and whose turn is open (`(mine)`: a party member's)
+---   countdown  the story's timers: their text, the rounds left, the thing the text names (AI.Countdown)
+---   can      in a party member's open turn: what is left and every action available now
+---            (AI.Can); again whenever any of it changed
 ---   party    each member: hit points, what is in hand, conditions; when any of it changed
 ---   waiting  what the game waits for from the player, each with the step that answers it; an
 ---            empty list when what waited is gone
----   near     creatures and usable things of note the party perceives: `+` new, `~` changed; each
----            with its handle, how it stands to the party, distance and bearing
+---   ways     the passages out of here the agent may know of (AI.Ways): ladders, doors, portals
+---            with where they lead, then the mechanisms worked in place; `+` new, `~` changed
+---   near     creatures and usable things of note the party perceives (blind: in a member's
+---            sight), but for what `ways` lists: `+` new, `~` changed; each with its handle, how
+---            it stands to the party, distance and bearing from the controlled character, and
+---            the height when it is above or below
 ---   heard    lines spoken since
 ---   events   hits, deaths, quest news since, one line each
 ---   rolls    open mode: every roll thrown since
@@ -391,18 +387,33 @@ function AI.Now(options)
     local raw, commit = {}, {}
 
     local w = where()
-    if full or w.level ~= s.level or not (w.p and s.p) or U.dist(w.p, s.p) >= 2 then
+    if full or w.level ~= s.level or w.who ~= s.who or not (w.p and s.p) or U.dist(w.p, s.p) >= 2 then
         raw.where = w.text
-        commit.level, commit.p = w.level, w.p
+        commit.level, commit.p, commit.who = w.level, w.p, w.who
     end
 
     local f = fight()
     if full or f.sig ~= s.fight then raw.fight = f.text; commit.fight = f.sig end
-    if f.turn.mine and (full or f.turnSig ~= s.turnSig) then
-        local list = can(f.turn.mine, limits)
-        if #list > 0 then raw.can = list end
-    end
+    -- the agent's own goals (Server/Goals.lua): told when they change, and again when a party
+    -- member's turn opens - then shown over that member's head as well
+    local goals = AI.GoalLines and AI.GoalLines() or {}
+    local goalsSig = table.concat(goals, "|")
+    local turnOpened = f.turn.mine and (f.turnSig or "") ~= (s.goalsTurn or "")
+    if #goals > 0 and (full or goalsSig ~= s.goals or turnOpened) then raw.goals = goals end
+    commit.goals, commit.goalsTurn = goalsSig, f.turnSig
+    if turnOpened and #goals > 0 and not options.peek and goalsSig == s.goals then pcall(AI.ShowGoals, f.turn.mine) end
+    -- the open turn's resources and actions (Server/Turn.lua): told again whenever any of it changed
+    local canNow = f.turn.mine and AI.Can(f.turn.mine, limits) or {}
+    local canSig = table.concat(canNow, "\n")
+    if #canNow > 0 and (full or canSig ~= s.can) then raw.can = canNow end
+    commit.can = canSig
     commit.turnSig = f.turnSig
+
+    local countdown = AI.Countdown()
+    local countdownSig = table.concat(countdown, "\n")
+    if #countdown > 0 and (full or countdownSig ~= s.countdown) then raw.countdown = countdown end
+    if #countdown == 0 and (s.countdown or "") ~= "" then raw.countdown = { "over" } end
+    commit.countdown = countdownSig
 
     local p = party()
     if full or not sameList(p, s.party or {}) then raw.party = p; commit.party = p end
@@ -410,21 +421,27 @@ function AI.Now(options)
     local waits = AI.Waiting(limits)
     if full or not sameList(waits.list, s.waiting or {}) then raw.waiting = waits.list; commit.waiting = waits.list end
 
-    local around = near(limits, f.turn.on, options.wide)
-    local fresh = {}
-    for id, row in pairs(around) do
-        local was = s.near[id]
-        if full then fresh[#fresh + 1] = { d = row.d, text = row.text }
-        elseif not was then fresh[#fresh + 1] = { d = row.d, text = "+ " .. row.text }
-        elseif was ~= row.sig then fresh[#fresh + 1] = { d = row.d, text = "~ " .. row.text } end
+    -- a list told as a delta: `+` new, `~` changed; what is in sight now before what was seen
+    -- before, the nearest first, a mechanism as if 15 m farther than a passage at its distance
+    local function delta(key, rows)
+        local was, fresh = s[key] or {}, {}
+        for id, row in pairs(rows) do
+            local rank = (row.remembered and 1e6 or 0) + (row.class == "mechanism" and 15 or 0) + (row.d or 0)
+            if full then fresh[#fresh + 1] = { d = rank, text = row.text }
+            elseif not was[id] then fresh[#fresh + 1] = { d = rank, text = "+ " .. row.text }
+            elseif was[id] ~= row.sig then fresh[#fresh + 1] = { d = rank, text = "~ " .. row.text } end
+        end
+        table.sort(fresh, function(a, b) return a.d < b.d end)
+        if #fresh > 0 then
+            raw[key] = {}
+            for _, row in ipairs(fresh) do raw[key][#raw[key] + 1] = row.text end
+        end
+        commit[key] = {}
+        for id, row in pairs(rows) do commit[key][id] = row.sig end
     end
-    table.sort(fresh, function(a, b) return a.d < b.d end)
-    if #fresh > 0 then
-        raw.near = {}
-        for _, row in ipairs(fresh) do raw.near[#raw.near + 1] = row.text end
-    end
-    commit.near = {}
-    for id, row in pairs(around) do commit.near[id] = row.sig end
+    local ways = AI.Ways.Rows(limits, options.wide)
+    delta("ways", ways)
+    delta("near", near(limits, f.turn.on, options.wide, ways))
 
     local lines, heardLast = heard(s.heard, waits.spoken)
     if #lines > 0 then raw.heard = lines end
@@ -474,19 +491,25 @@ function AI.Now(options)
         { rolls = 0, soft = 0, hard = half, text = 0.5 },
     }
     local HARD = { can = true, party = true, waiting = true }
+    -- a turn's set has its own room on top of the cap
+    local cap = limits.chars + (raw.can and (limits.can or 0) or 0)
     for _, stage in ipairs(STAGES) do
         local textLimit = math.max(40, math.floor(limits.text * stage.text))
-        now = { where = raw.where, fight = raw.fight, route = raw.route and cut(raw.route, textLimit * 2) or nil }
+        now = { where = raw.where, fight = raw.fight, countdown = raw.countdown, goals = raw.goals, route = raw.route and cut(raw.route, textLimit * 2) or nil }
         local more = {}
-        for _, key in ipairs({ "can", "party", "waiting", "near", "heard", "events", "rolls", "scenes", "notes" }) do
+        for _, key in ipairs({ "can", "party", "waiting", "ways", "near", "heard", "events", "rolls", "scenes", "notes" }) do
             if raw[key] then
                 local n = key == "rolls" and stage.rolls or HARD[key] and stage.hard or stage.soft
                 local left
-                if key == "near" then
+                if key == "near" or key == "ways" then
                     -- the nearest are kept
-                    now.near = {}
-                    for i = 1, math.min(n, #raw.near) do now.near[i] = cut(raw.near[i], textLimit) end
-                    left = #raw.near - #now.near
+                    now[key] = {}
+                    for i = 1, math.min(n, #raw[key]) do now[key][i] = cut(raw[key][i], textLimit) end
+                    left = #raw[key] - #now[key]
+                elseif key == "can" then
+                    -- the turn's whole set is what the agent decides on: never shortened here
+                    -- (AI.Can keeps each line within its own length)
+                    now.can, left = raw.can, 0
                 elseif key == "waiting" then
                     -- what waits is the thing to act on: its texts keep their own length
                     now.waiting, left = lastOf(raw.waiting, math.max(n, 3), limits.text * 6)
@@ -501,7 +524,23 @@ function AI.Now(options)
         end
         if next(more) ~= nil then now.more = more end
         text = encode(now, KEYS)
-        if #text <= limits.chars then break end
+        if #text <= cap then break end
+    end
+    -- the last resort: can's long lines cut, their count in `more` (ai_look part=can reads them whole)
+    local whole = now.can
+    for _, width in ipairs({ limits.text * 2, limits.text }) do
+        if #text <= cap or not whole then break end
+        local cutLines, shortened = 0, {}
+        for i, line in ipairs(whole) do
+            shortened[i] = cut(line, width)
+            if shortened[i] ~= line then cutLines = cutLines + 1 end
+        end
+        if cutLines > 0 then
+            now.can = shortened
+            now.more = now.more or {}
+            now.more.can = cutLines
+            text = encode(now, KEYS)
+        end
     end
 
     if options.part then

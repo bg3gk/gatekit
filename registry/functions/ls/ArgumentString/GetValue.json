@@ -1,0 +1,47 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::ArgumentString::GetValue",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The value after a command-line key in the game's argument list (ls::ArgumentString, the WinMain command line split on spaces outside double quotes, quotes removed, kept in the narrow ANSI code page): copies it into the STDString given and answers whether the key is there.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:5227b96c8688ff31",
+      "fp:72ed93c666d52a2d",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:e4d053ad9455ea7c",
+      "import:0dd2dfa7ecc77710",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "import:c6255c27eaeaf174"
+    ],
+    "strings": ["d995716d6c7c4e78"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 ecl::GameStateInit::Do calls this with the engine's argument list (gEngine+0x30), the text -loadSaveGame and a STDString, where the Toolkit's ecl::GameStateInit::Do (EoCClient.dll+0xBD23D0) calls ls::ArgumentString::GetValue(this, \"-loadSaveGame\", value); ecl::EocClient::Load reads -testLoadLevel through it the same way"
+    },
+    {
+      "kind": "reach",
+      "says": "copy f10, a start with -loadSaveGame and a Cyrillic folder name: the list's value bytes were C0 F1 F2 E0 F0 E8 EE ED (code page 1251), not the UTF-8 of the folder"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "CoreLib.dll",
+      "tie": "name",
+      "says": "CoreLib.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

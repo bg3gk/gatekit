@@ -2,7 +2,7 @@
   "schema": "registry/function/1",
   "id": "unplaced::FindVideoFile",
   "state": "described",
-  "rung": "inferred",
+  "rung": "confirmed",
   "does": "Finds the file of a video name: walks the loaded mods from the last to the first, builds the path of the name with each extension the video manager accepts (code:ls::VideoManager::GetVideoPath) and answers the first that exists packed or loose.",
   "fingerprint": {
     "calls": [
@@ -32,7 +32,12 @@
     {
       "kind": "read",
       "says": "loops over the mod manager's modules downwards, compares a path prefix with the text Video, calls code:ls::VideoManager::GetVideoPath and tests each candidate with the packed-file and file-exists checks"
-    }
+    },
+    {
+      "kind": "reach",
+      "says": "Osi.MoviePlay(host,'Splash_Logo_Larian',1) in a test level: a count-only probe saw it called once, from bg3_dx11.exe@25605617+0x1BBBE6E inside code:ecl::VideoManager::NextVideo, and code:ls::VideoManager::GetVideoPath 16 times from inside it (the loaded mods walked); code:ls::VideoManager::LoadVideo itself 0 times: the movie player inlines it"
+    },
+    {"kind": "test", "test": "startup/videos/two_mods"}
   ],
   "questions": [
     {

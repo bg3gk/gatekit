@@ -1,0 +1,17 @@
+{
+  "schema": "registry/function/1",
+  "id": "eoc::TurnOrderCompare",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Compares two combat participants by where they stand in the turn order now: walks the TurnOrderComponent's groups in order and returns -1 for the one met first; an entity that is not alive (or the null handle) sorts last.",
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoCShared.dll exports eoc::TurnOrderCompare; read in the Toolkit's EoCShared.dll+0x12551D0"
+    },
+    {
+      "kind": "read",
+      "says": "esv::TurnOrderSystem::ReorderGroups (Toolkit EoCServer.dll+0x12FAD60) calls it to keep the earlier of two participants"
+    }
+  ]
+}

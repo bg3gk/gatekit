@@ -6,7 +6,12 @@
 
 test { level = "GustavX:Basic_Level_A",
            -- each fixture opens its own blocking state, and the test reads them through GK.Attention in the game
-           surprises = { "box", "combat_started", "dialogue", "loot", "reaction", "roll", "trade" } }
+           surprises = { "box", "combat_started", "dialogue", "loot", "reaction", "roll", "trade" },
+           -- the interface opens a reaction prompt's window only for an interruptor whose player
+           -- properties say it is the selected character (gui::VMPlayerCharacterProperties
+           -- IsSelectedCharacter); in a game drawn from no frame those properties are made after the
+           -- character was selected and never learn it, so the prompt freezes the fight unanswerable
+           drawn_start = "a reaction prompt's window opens only for the selected character, which a game drawn from no frame never tells its interface" }
 
 local function seq(side) return game.lua(side, "return GK.Attention.Seq") end
 

@@ -1,0 +1,61 @@
+<ls:UIWidget x:Name="GK_OWN_Loading"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ls="clr-namespace:ls;assembly=Code"
+             ls:UIWidget.ContextName="LoadingScreen">
+    <!-- A mod's own loading screen for one destination. The state machine beside it adds this page
+         to the interface's Loading state (ModType="Extend"); it gets the loading screen's own view
+         model (ContextName LoadingScreen), so it knows where the load goes (LevelName, LoadingState)
+         and how far it is (Progress). Only a load into Act 1 (LevelName WLD_Main_A) shows it: there
+         it covers the game's wallpaper with ours - a vector picture, no image file - and carries
+         the load's percentage; any other load leaves the game's screen as it is. -->
+    <Grid x:Name="GK_OWN_Act1">
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Setter Property="Visibility" Value="Collapsed"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding LevelName}" Value="WLD_Main_A">
+                        <Setter Property="Visibility" Value="Visible"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+
+        <!-- the sky: night to dawn -->
+        <Rectangle>
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Offset="0" Color="#0B1026"/>
+                    <GradientStop Offset="0.55" Color="#2B2350"/>
+                    <GradientStop Offset="0.8" Color="#8A4B3A"/>
+                    <GradientStop Offset="1" Color="#D99A00"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <!-- a rising sun and the hills, drawn on a 1600 x 900 canvas stretched over the screen -->
+        <Viewbox Stretch="UniformToFill">
+            <Grid Width="1600" Height="900">
+                <Path Data="M640,700 A160,160 0 0 1 960,700 Z">
+                    <Path.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Offset="0" Color="#FFE27A"/>
+                            <GradientStop Offset="1" Color="#D99A00"/>
+                        </LinearGradientBrush>
+                    </Path.Fill>
+                </Path>
+                <Path Data="M0,720 C200,600 380,640 560,700 C720,750 860,620 1040,640 C1220,660 1380,560 1600,640 L1600,900 L0,900 Z" Fill="#1A1430"/>
+                <Path Data="M0,800 C260,730 520,820 800,780 C1080,740 1300,820 1600,760 L1600,900 L0,900 Z" Fill="#0B0818"/>
+                <TextBlock x:Name="GK_OWN_Title" Text="Act One - a mod's own loading screen" Foreground="#FFE27A"
+                           FontSize="44" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,120,0,0"/>
+                <TextBlock Text="{Binding LevelName}" Foreground="#C8B88A" FontSize="24"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,184,0,0"/>
+            </Grid>
+        </Viewbox>
+        <!-- the load's percentage, on the mod's indicator where a mod defines one -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,140,120">
+            <TextBlock x:Name="GK_OWN_Percent" VerticalAlignment="Center" FontSize="40" FontWeight="Bold" Foreground="#FFE27A" Margin="0,0,16,0"
+                       Text="{Binding Progress, Converter={StaticResource FloatToPercentStringConverter}, StringFormat={}{0}%}"/>
+            <Control Template="{StaticResource BusyElement}" VerticalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</ls:UIWidget>

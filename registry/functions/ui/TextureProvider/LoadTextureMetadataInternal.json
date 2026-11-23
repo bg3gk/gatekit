@@ -1,0 +1,42 @@
+{
+  "schema": "registry/function/1",
+  "id": "ui::TextureProvider::LoadTextureMetadataInternal",
+  "rung": "toolkit",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:227aadb92d3cd447",
+      "fp:2641cfbc369e307d",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:660f2e46ceffb7dc",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:b70839e52859db22",
+      "fp:e4d053ad9455ea7c",
+      "ls::FileFormatIO::LoadFile"
+    ],
+    "strings": ["43e21478c2df37f9", "7804fdb26127eabe"]
+  },
+  "evidence": [
+    {
+      "kind": "reach",
+      "says": "called from the mods' merge block of gui::GameUI::UpdateFromUI for each ui::ModData (0xAA8 bytes, at ui::TextureProvider+0xF0 ->+0x08, count +0x14) whose +0x50 has a bit of 0x60; the fork's early merge calls it the same way"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGUIBinding.dll",
+      "tie": "match",
+      "says": "NoesisGUIBinding.dll exports this name; the symbol database matches the export to this function by strings"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy coord (c2, build v34-start-extmod-3): 0 calls in the main menu; 11 calls in the load after a mod toggle, all from bg3_dx11.exe@25605617+0x1210344 inside code:gui::GameUI::UpdateFromUI's mods' merge block"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code of code:gui::GameUI::UpdateFromUI: called once for each mod data of the provider at GameUI+0x2B90 (array at *(provider+0xF0)+0x8, count +0x14, stride 0xAA8) whose byte +0x50 has 0x60, after code:ui::ModManager::RegisterMods answered true"
+    },
+    {"kind": "test", "test": "startup/loading/d20_first_start"}
+  ]
+}

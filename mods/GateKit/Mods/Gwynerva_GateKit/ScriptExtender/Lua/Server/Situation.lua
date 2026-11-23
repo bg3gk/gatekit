@@ -239,6 +239,20 @@ function See.Perceives(viewer, target)
     return te ~= nil and sightHolders(te)[viewer] == true, "sight"
 end
 
+--- The members whose sight holds `target` (a character or an item) now, by the sight system's
+--- own set: within the member's sight range, a clear line (walls, closed doors and floors block
+--- it), not in magical darkness, not invisible, in every direction. `members`: whose sight counts
+--- (default the party). An empty list: out of every member's sight.
+function See.InSight(target, members)
+    local te = entityOf(target)
+    if not te then return {} end
+    local holders, out = sightHolders(te), {}
+    for _, m in ipairs(members or See.Members()) do
+        if holders[m] then out[#out + 1] = m end
+    end
+    return out
+end
+
 --- Whether the party is shown `target` (a uuid of a character or an item): See.Perception's rule.
 --- `isCharacter` and `members` are taken for the callers that pass them and change nothing.
 local function partyPerceives(target, _, members)
@@ -547,9 +561,14 @@ end
 ---   "all"    everything on the level within the radius, perceived or not (`perceived = false`
 ---            on what the party would not know): omniscient, for tests and debugging only.
 --- `all = true` is the same as scope "all".
+--- `sight = true` narrows "seen" and "known" to what a member's sight holds (See.InSight) instead
+--- of what the party is shown: nothing behind a wall, on another floor, in magical darkness or
+--- beyond the sight range. It keeps a memory of its own: "known" with `sight` remembers only what
+--- was once in sight.
 See.Scopes = { seen = "what the party perceives now", known = "seen now or remembered from earlier",
                all = "omniscient: everything, for tests and debugging" }
-See.Memory = See.Memory or {}   -- [level] = { [uuid] = { row, t, character } }
+See.Memory = See.Memory or {}            -- [level] = { [uuid] = { row, t, character } }
+See.SightMemory = See.SightMemory or {}  -- the same, for what was in a member's sight
 
 function See.Scope(options)
     options = options or {}
@@ -562,17 +581,22 @@ function See.Scope(options)
     return options
 end
 
---- Whether the party saw an object earlier (it is in the memory of the current level).
-function See.Remembers(id)
-    for _, memory in pairs(See.Memory) do
+--- Whether the party saw an object earlier (it is in the memory of the current level); with
+--- `sight`, whether it was once in a member's sight (scope options with `sight = true`).
+function See.Remembers(id, sight)
+    for _, memory in pairs(sight and See.SightMemory or See.Memory) do
         if memory[id] then return true end
     end
     return false
 end
 
---- Forgets what the party saw (all levels, or one).
+--- Forgets what the party saw (all levels, or one), both memories.
 function See.Forget(level)
-    if level then See.Memory[level] = nil else See.Memory = {} end
+    if level then
+        See.Memory[level], See.SightMemory[level] = nil, nil
+    else
+        See.Memory, See.SightMemory = {}, {}
+    end
     return true
 end
 
@@ -593,7 +617,12 @@ end
 --- Characters and objects near the party.
 ---   options: radius (25), who, all, limit (40 per list), kinds = { "door", "container", ... }
 ---            (object kinds to keep), characters = false / objects = false (skip a list),
----            scenery = true (also items that do nothing)
+---            scenery = true (also items that do nothing), sight = true (only what a member's
+---            sight holds: See.Scope), view = metres (with sight: an object, never a character,
+---            within that distance of a member with a clear line from its eyes counts as seen -
+---            the sight system's range is the creatures' perception, shorter than a player's
+---            view of a door or a ladder), from = a uuid or {x,y,z} that `d`, `dir` and `dy` are
+---            measured from (default the viewpoint)
 --- Returns { at = {x,y,z}, level, characters = {...}, objects = {...} }, nearest first.
 ---   character rows: { id, name, rel, d, dir, pos, hp, maxHp, statuses, dead, downed, inCombat,
 ---                     talk, trade, loot }
@@ -602,6 +631,30 @@ function See.Around(options)
     options = See.Scope(options)
     local radius = options.radius or 25
     local members, at = viewpoint(options)
+    if options.from then at = type(options.from) == "table" and options.from or posOf(options.from) or at end
+    local memberSet = {}
+    for _, m in ipairs(members) do memberSet[m] = true end
+    -- with `sight`: held by a member's sight now, by the sight system's own set; with `view` (metres)
+    -- also an object - not a character - within that distance of a member with a clear line from
+    -- the member's eyes: the sight system's range (about 18 m) is the creatures' perception, while a
+    -- player at the screen sees a door or a ladder farther off
+    local function inSight(entity, isCharacter)
+        if not options.sight then return true end
+        for id in pairs(sightHolders(entity)) do
+            if memberSet[id] then return true end
+        end
+        if options.view and not isCharacter then
+            local p = posOf(entity)
+            if p then
+                local mid = { p[1], p[2] + 1.0, p[3] }
+                for _, m in ipairs(members) do
+                    local eye = eyeOf(m)
+                    if eye and dist(eye, mid) <= options.view and See.Clear(eye, mid, 0.8, entity) then return true end
+                end
+            end
+        end
+        return false
+    end
     local level = try(function() return Ext.Entity.Get(host()).Level.LevelName end)
     local wanted
     if options.kinds then
@@ -620,7 +673,7 @@ function See.Around(options)
             if p and flat(p, at) <= radius and onLevel(entity, level) and id ~= (options.who or host()) then
                 local onStage = bool(try(Osi.IsOnStage, id))
                 local hidden = not onStage or bool(try(Osi.IsInvisibleByScript, id))
-                local perceived = not hidden and partyPerceives(id, true, members)
+                local perceived = not hidden and partyPerceives(id, true, members) and inSight(entity, true)
                 if perceived or isMember(id) or options.all then
                     local row = characterRow(entity, id, at, options)
                     if options.all and not perceived and not isMember(id) then row.perceived = false end
@@ -642,7 +695,7 @@ function See.Around(options)
                     local onStage = bool(try(Osi.IsOnStage, id))
                     local hidden = not onStage or bool(try(Osi.IsInvisible, id))
                         or (bool(try(Osi.IsTrap, id)) and not bool(try(Osi.IsTrapDiscovered, id)))
-                    local perceived = not hidden and partyPerceives(id, false, members)
+                    local perceived = not hidden and partyPerceives(id, false, members) and inSight(entity)
                     if perceived or options.all then
                         local row = itemRow(entity, id, kind, at)
                         if options.all and not perceived then row.perceived = false end
@@ -656,8 +709,9 @@ function See.Around(options)
     -- Memory: what the party perceives now is remembered; with scope "known" what it saw before
     -- (and does not perceive now) comes back with its last known place and how long ago.
     local now = Ext.Utils.MonotonicTime() / 1000
-    local memory = See.Memory[level or "?"] or {}
-    See.Memory[level or "?"] = memory
+    local store = options.sight and See.SightMemory or See.Memory
+    local memory = store[level or "?"] or {}
+    store[level or "?"] = memory
     local listed = {}
     for _, list in ipairs({ out.characters, out.objects }) do
         for _, row in ipairs(list) do
@@ -871,8 +925,8 @@ local function flagsOf(stat, field)
 end
 
 --- What a character can do now: { id, name, level, type, costs, range, area, concentration,
---- ready, why, target = { inRange, inSight, d } }. Spells come from its spell book (the hotbar
---- shows the same ones). `target` (uuid or {x,y,z}) adds per-row whether it can be reached.
+--- ready, why, target = { inRange, inSight, d } }. Spells come from its spell book; one that needs
+--- preparing and is not prepared is not ready ("not prepared"), as the hotbar does not hold it. `target` (uuid or {x,y,z}) adds per-row whether it can be reached.
 --- options: all (also spells that are not ready), filter (part of the id or name).
 function See.Actions(who, target, options)
     options = options or {}
@@ -889,9 +943,19 @@ function See.Actions(who, target, options)
     local inCombat = bool(try(Osi.IsInCombat, who))
     local tpos = type(target) == "table" and target or (target and posOf(target))
     local mypos = posOf(who)
+    -- a spell that needs preparing (SpellBook's PrepareType "RequiresPreparation", a cleric's or a
+    -- wizard's) is cast only once prepared (SpellBookPrepares.PreparedSpells); the hotbar holds
+    -- the prepared ones
+    local prepared = {}
+    for _, p in ipairs(try(function() return Ext.Types.Serialize(entity.SpellBookPrepares).PreparedSpells end) or {}) do
+        if p.OriginatorPrototype then prepared[p.OriginatorPrototype] = true end
+        if p.Prototype then prepared[p.Prototype] = true end
+    end
     local out, seen = {}, {}
     for _, spell in ipairs(book) do
         local sid = spell.Id and spell.Id.Prototype
+        local unprepared = spell.PrepareType == "RequiresPreparation" and not prepared[sid]
+            and not prepared[spell.Id and spell.Id.OriginatorPrototype or ""]
         if sid and not seen[sid] then
             seen[sid] = true
             local stat = try(Ext.Stats.Get, sid)
@@ -914,7 +978,8 @@ function See.Actions(who, target, options)
                 local why
                 local c = row.costs
                 local function short(kind, pair) return c[kind] and pair and pair[1] < c[kind] end
-                if inCombat then
+                if unprepared then why = "not prepared (spells are prepared outside a fight)" end
+                if not why and inCombat then
                     if short("action", res.action) then why = "no action left"
                     elseif short("bonus", res.bonus) then why = "no bonus action left"
                     elseif short("reaction", res.reaction) then why = "no reaction left" end
@@ -1418,6 +1483,79 @@ function See.Ways(options)
             if misses >= 2 then break end
         end
         out.ways[name] = best or { reach = 0 }
+    end
+    return out
+end
+
+-- ---------------------------------------------------------------------------------------
+-- Passages: the things that take one elsewhere
+
+local function useActionOf(entity, kind)
+    for _, a in ipairs(try(function() return entity.UseAction.UseActions end) or {}) do
+        local name = tostring(Ext.Types.GetObjectType(a) or ""):gsub("^.*::", ""):gsub("ActionData$", "")
+        if name == kind then return a end
+    end
+    return nil
+end
+
+-- A ladder's two ends, as heights: its foot is where it stands, its top the height of its box
+-- (Bound.AIBounds.Move) above that.
+local function ladderEnds(entity)
+    local t = try(function() return entity.Transform.Transform end)
+    local h = try(function() return entity.Bound.Bound.AIBounds.Move.Height end)
+    if not (t and h) then return nil end
+    local foot = t.Translate[2]
+    return foot, foot + h * (t.Scale[2] or 1)
+end
+
+-- Where a teleport's use sends one: its target (an object or a trigger) by position and level.
+local function teleportTarget(entity)
+    local a = useActionOf(entity, "Teleport")
+    local target = a and try(function() return a.Target end)
+    if target == nil or target == "" then return nil end
+    local id = type(target) == "string" and target or uuidOf(try(Ext.Entity.Get, target))
+    local te = id and (try(Ext.Entity.Get, id) or try(Ext.Entity.Get, target))
+    local p = te and posOf(te)
+    if not p then return nil end
+    return { pos = rpos(p), level = try(function() return te.Level.LevelName end), name = nameOf(te) }
+end
+
+--- The ways from here to elsewhere that the party knows of, from GK.See.Around's rows (the same
+--- options: scope, sight, radius, from, who, all):
+---   ordinary    ladders, doors, portals (an item whose use is a teleport)
+---   mechanism   a fixture worked in place by the story's own use (StoryUse): a button, a lever,
+---               an organ, a pod - what moves a lift or opens a way is one of these
+--- Each row is Around's object row with `class` and, where the game knows it, where it leads:
+---   ladder: `foot` and `top` (heights) and `way` "up" or "down" from where `from` stands;
+---   portal: `to` = { pos, level, name } of its target. A door leads through itself.
+--- Returns { at, passages = { rows } }, nearest first.
+function See.Passages(options)
+    options = options or {}
+    local copy = {}
+    for k, v in pairs(options) do copy[k] = v end
+    copy.kinds, copy.characters = { "door", "ladder", "portal", "usable" }, false
+    local around = See.Around(copy)
+    local at = around.at
+    local out = { at = at, passages = {} }
+    for _, row in ipairs(around.objects or {}) do
+        local entity = entityOf(row.id)
+        local keep = true
+        if row.kind == "usable" then
+            keep = entity ~= nil and useActionOf(entity, "StoryUse") ~= nil and not bool(try(Osi.GetCanPickUp, row.id))
+            row.class = "mechanism"
+        else
+            row.class = "ordinary"
+        end
+        if keep and row.kind == "ladder" and entity then
+            local foot, top = ladderEnds(entity)
+            if foot then
+                row.foot, row.top = round(foot), round(top)
+                if at then row.way = math.abs(at[2] - top) < math.abs(at[2] - foot) and "down" or "up" end
+            end
+        elseif keep and row.kind == "portal" and entity then
+            row.to = teleportTarget(entity)
+        end
+        if keep then out.passages[#out.passages + 1] = row end
     end
     return out
 end

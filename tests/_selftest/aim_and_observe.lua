@@ -45,13 +45,17 @@ function run(game)
     -- clicks are taken whether it starts or not
     local first = game.server("return GK.Rolls.Pin{ who = Osi.GetHostCharacter(), kind = 'Initiative', n = 100 }")
     check(first.ok and first.inForce, "the host's initiative is pinned", first)
+
+    -- a verb that changes nothing says so - asked before the staging: the spells the staging teaches
+    -- reach the hotbar a tick or more later and add controls to it (its `contentContainer`s), which
+    -- the observer rightly saw as a change when this came after the staging (W3 round 7: headless,
+    -- "the controls shown changed" one tick after the staging; nothing changed once it had settled)
+    local nothing = game.ui([[return GK.Cheat.Run("HotBar", "ClearResourceHighlightsCommand")]])
+    check(nothing.ok == false, "a command that changes nothing is not ok", nothing)
+    eq(nothing.saw, "nothing changed")
+
     local s = stage()
     game.wait("server", string.format("Ext.Entity.Get(%q) ~= nil", s.ally), 10)
-
-    -- a verb that changes nothing says so
-    local nothing = game.ui([[return GK.Cheat.Run("HotBar", "ClearResourceHighlightsCommand")]])
-    eq(nothing.ok, false, "a command that changes nothing is not ok")
-    eq(nothing.saw, "nothing changed")
 
     -- with no hotbar action the only targeting is the game's walk cursor: an aim is the walk's
     local idle = game.ui([[return GK.Gui.Aim({ 0, 0, 0 })]])

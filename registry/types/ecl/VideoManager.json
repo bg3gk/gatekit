@@ -1,0 +1,50 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::VideoManager",
+  "kind": "struct",
+  "state": "described",
+  "rung": "confirmed",
+  "about": "The client's movie player, held by ecl::GameControl at +0x190: a playlist name, a queue of video names played one after another, the current name, the engine's video player (ls::VideoManager) at +0x38 and the skip flags. code:ecl::GameControl::ShowMovie fills it, code:ecl::VideoManager::NextVideo plays from it.",
+  "fields": [
+    {
+      "offset": 36,
+      "name": "QueueCount",
+      "type": "int32",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "Osi.MoviePlay in a test level: +0x24 written 0->1 by the queue push in code:ecl::GameControl::ShowMovie and 1->0 by code:ecl::VideoManager::NextVideo; +0x30 written to the played name by code:ecl::VideoManager::NextVideo and back to none when the clip ended"
+        },
+        {
+          "kind": "read",
+          "says": "code:ecl::VideoManager::NextVideo decrements +0x24 as it pops the queue at +0x18 and copies the popped name into +0x30 before looking its file up"
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "CurrentVideo",
+      "type": "FixedString",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "Osi.MoviePlay in a test level: +0x24 written 0->1 by the queue push in code:ecl::GameControl::ShowMovie and 1->0 by code:ecl::VideoManager::NextVideo; +0x30 written to the played name by code:ecl::VideoManager::NextVideo and back to none when the clip ended"
+        },
+        {
+          "kind": "read",
+          "says": "code:ecl::VideoManager::NextVideo decrements +0x24 as it pops the queue at +0x18 and copies the popped name into +0x30 before looking its file up"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the macOS build's ecl::VideoManager methods (NextVideo, Skip, OnInputEvent, OnVideoStarted) and bg3_dx11.exe's code:ecl::VideoManager::NextVideo use these offsets"
+    },
+    {"kind": "test", "test": "startup/videos/game_clip"},
+    {"kind": "test", "test": "startup/videos/two_mods"}
+  ]
+}

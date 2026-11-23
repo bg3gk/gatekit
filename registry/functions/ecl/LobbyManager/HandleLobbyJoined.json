@@ -1,0 +1,32 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::LobbyManager::HandleLobbyJoined",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The client's handling of a joined lobby; reads DisableLocalMessagePassing (GlobalSwitches +0x111) for the connection kind (3, or 2 when set).",
+  "fingerprint": {
+    "calls": [
+      "ecl::GameStateMachine::SetTargetState",
+      "fp:123b79ba6c390bab",
+      "fp:398dd8ce5ff5baec",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83"
+    ],
+    "strings": ["07777be5f804f97e"],
+    "vtables": [{"slot": 4}]
+  },
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoCClient.dll+0x786EA0 exports it; read: the same test of Global +0x149 in the Toolkit, +0x111 in dx11"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}
