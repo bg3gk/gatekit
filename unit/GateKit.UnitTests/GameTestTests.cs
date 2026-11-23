@@ -33,6 +33,11 @@ public abstract class FakeGameRuns : IAsyncLifetime
         var copy = _game.GameCopy(instance);
         _game.Platform.OnStart = _ =>
         {
+            // Each fake launch owns the channel. A retired bridge must stop answering
+            // before the new client and server start writing to it.
+            foreach (var bridge in _bridges)
+                bridge.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            _bridges.Clear();
             foreach (var side in new[] { "client", "server" })
                 _bridges.Add(new FakeBridge(copy.Layout.Channel, side, code =>
                 {
