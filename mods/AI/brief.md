@@ -114,7 +114,7 @@ left and what still fits.
 Before a level is loaded - the splash screen, the main menu, a film - `where` says what holds the
 game and only `ui`, `continue`, `close` and `wait` work there. Character creation is a window
 too (`ui` with `window` = `CharacterCreation`). Its list `gameplayTabs` is the steps of creation
-(background, race, subrace, class, abilities ...): "Продолжить" moves on without opening them, and
+(background, race, subrace, class, abilities ...): "Continue" moves on without opening them, and
 a step not opened keeps the game's default. A press that opens a window or turns a page answers
 with that window's controls in `now.window`; otherwise list them again.
 

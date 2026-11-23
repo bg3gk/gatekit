@@ -318,20 +318,22 @@ public sealed class GameCopyTests : IAsyncLifetime
     {
         // The game reads its command line in the ANSI code page: a Cyrillic folder name never
         // matches, the name after the unique id does when no other save has it.
-        const string cyrillic = "Астарион-717126141013__QuickSave_0";
+        const string cyrillic = "\u0410\u0441\u0442\u0430\u0440\u0438\u043e\u043d-717126141013__QuickSave_0";
         Assert.Equal("Tav-1__QuickSave_0", GameCopy.LoadSaveArgument("Tav-1__QuickSave_0", ["Tav-1__QuickSave_0", "Tav-2__QuickSave_0"]));
         Assert.Equal("QuickSave_0", GameCopy.LoadSaveArgument(cyrillic, [cyrillic, "Tav-2__AutoSave_0"]));
         Assert.Throws<CopyException>(() => GameCopy.LoadSaveArgument(cyrillic, [cyrillic, "Tav-2__QuickSave_0"]));
-        Assert.Throws<CopyException>(() => GameCopy.LoadSaveArgument("Сейв", ["Сейв"]));
+        const string save = "\u0421\u0435\u0439\u0432";
+        Assert.Throws<CopyException>(() => GameCopy.LoadSaveArgument(save, [save]));
     }
 
     [Fact]
     public void A_save_folder_in_any_alphabet_is_passed_as_it_is_to_a_build_that_reads_the_wide_command_line()
     {
         // GateKit's Script Extender build gives the game -loadSaveGame in UTF-8 (WideCommandLine).
-        const string cyrillic = "Астарион-717126141013__QuickSave_0";
+        const string cyrillic = "\u0410\u0441\u0442\u0430\u0440\u0438\u043e\u043d-717126141013__QuickSave_0";
         Assert.Equal(cyrillic, GameCopy.LoadSaveArgument(cyrillic, [cyrillic, "Tav-2__QuickSave_0"], wideCommandLine: true));
-        Assert.Equal("Сейв", GameCopy.LoadSaveArgument("Сейв", ["Сейв"], wideCommandLine: true));
+        const string save = "\u0421\u0435\u0439\u0432";
+        Assert.Equal(save, GameCopy.LoadSaveArgument(save, [save], wideCommandLine: true));
         Assert.Equal("Tav-1__QuickSave_0", GameCopy.LoadSaveArgument("Tav-1__QuickSave_0", ["Tav-1__QuickSave_0"], wideCommandLine: true));
     }
 
