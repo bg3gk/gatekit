@@ -1,0 +1,118 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::HintManager",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The loading screen's hint list. Filled once per process; no level, save load or return to the menu reloads it. Its count at +0x14 is read at each draw: lowered from Lua in the menu, the next loads drew only from the first entries.",
+  "fields": [
+    {
+      "offset": 8,
+      "name": "Hints",
+      "type": "Hint*",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11 copy attacks: capacity 49, count 49, HintDuration 5.0; entry 0x30 bytes: HintKey +0, Description +4, Controller +0x14, Keyboard +0x15"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 code:ecl::HintManager::Visit passes this+0x8 to the array visitor bg3_dx11.exe@25605617+0x17F1360, which treats it as the array (pointer at +0, capacity at +8, count at +0xC of it): the count set to 0, the buffer reallocated to the file's count of 0x38-byte entries, then the count written"
+        }
+      ]
+    },
+    {
+      "offset": 16,
+      "name": "HintsCapacity",
+      "type": "uint32",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11 copy attacks: capacity 49, count 49, HintDuration 5.0; entry 0x30 bytes: HintKey +0, Description +4, Controller +0x14, Keyboard +0x15"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 code:ecl::HintManager::Visit passes this+0x8 to the array visitor bg3_dx11.exe@25605617+0x17F1360, which treats it as the array (pointer at +0, capacity at +8, count at +0xC of it): the count set to 0, the buffer reallocated to the file's count of 0x38-byte entries, then the count written"
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "HintsCount",
+      "type": "uint32",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11 copy attacks: capacity 49, count 49, HintDuration 5.0; entry 0x30 bytes: HintKey +0, Description +4, Controller +0x14, Keyboard +0x15"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 code:ecl::HintManager::Visit passes this+0x8 to the array visitor bg3_dx11.exe@25605617+0x17F1360, which treats it as the array (pointer at +0, capacity at +8, count at +0xC of it): the count set to 0, the buffer reallocated to the file's count of 0x38-byte entries, then the count written"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "unnamed_18",
+      "type": "ls::ScratchString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "Toolkit EoCClient.dll ecl::HintManager::HintManager constructs ls::ScratchString at +0x18 and +0x38 after ls::FileFormatIO's constructor; their use is not read"
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "unnamed_38",
+      "type": "ls::ScratchString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "Toolkit EoCClient.dll ecl::HintManager::HintManager constructs ls::ScratchString at +0x18 and +0x38 after ls::FileFormatIO's constructor; their use is not read"
+        }
+      ]
+    },
+    {
+      "offset": 88,
+      "name": "HintDuration",
+      "type": "float",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11 copy attacks: capacity 49, count 49, HintDuration 5.0; entry 0x30 bytes: HintKey +0, Description +4, Controller +0x14, Keyboard +0x15"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 code:ecl::HintManager::Visit reads the root attribute HintDuration into this+0x58 with the default 5.0 (0x40A00000) before it visits the Hint nodes"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Toolkit EoCClient.dll ecl::HintManager::Init(ls::Path const&) zeroes +0x14 and loads one file; macOS ecl::HintManager::Visit fills the fields"
+    },
+    {"kind": "toolkit-name", "store": "EoCClient.dll", "says": "EoCClient.dll exports this name"},
+    {
+      "kind": "read",
+      "says": "dx11 constructor inlined in bg3_dx11.exe@25605617+0x1818E40 (vtable, +0x08/+0x10 zeroed, two ls::ScratchString(0,-1) at +0x18/+0x38, +0x58 = 5.0f); destructor bg3_dx11.exe@25605617+0x17F10C0 destroys *(array-8) elements of 0x38 with bg3_dx11.exe@25605617+0x17F1840 and frees from array-8; the array maker bg3_dx11.exe@25605617+0x17F18C0 writes the count before the elements"
+    },
+    {
+      "kind": "reach",
+      "says": "the fork F5 (v34-start-hints-1) made two more managers this way, loaded a mod's Hints.lsx into each through ls::FileFormatIO::LoadFile (2 entries each), moved the entries into a 51-element array it built in the same form (header 51, capacity 51, count 51) and destroyed the rest through slot 1; the main menu and two loads ran on it with the loading screen drawing from the 51"
+    },
+    {
+      "kind": "reach",
+      "says": "count written 49->3 with GK.Memory.Write in the main menu; a save load (HintShown HINT_CAM_ZOOM 1/3) and a return to the menu (HINT_CAM_ZOOM 1/3) drew within 3 and the count stayed 3 after both loads; restored to 49"
+    },
+    {"kind": "test", "test": "startup/hints/two_mods"}
+  ]
+}

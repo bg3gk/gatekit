@@ -173,7 +173,8 @@ public sealed class GameCopyTests : IAsyncLifetime
         Assert.Equal(["GustavX", "SomeMod", "Gwynerva_Weave", "Gwynerva_GateKit"], mods);
         Assert.Equal(mods, ModSettings.Folders(File.ReadAllText(Path.Combine(copy.Layout.Profile, "PlayerProfiles", "Debug_Client_Profile_3", "modsettings.lsx"))));
         Assert.False(Directory.Exists(copy.Layout.Saves)); // --level: no saves copied
-        Assert.Equal(0, new FileInfo(copy.Layout.Splash).Length);
+        Assert.False(File.Exists(Path.Combine(copy.Layout.Game, "Data", "Video", "Splash_Logo_Larian.bk2"))); // the switch hides the videos, no file shadows them
+        Assert.False(_game.Output.ToString().Contains("SkipSplashScreen", StringComparison.Ordinal)); // a level's start has no menu
         var se = JsonFiles.ReadObject(copy.Layout.SeSettings);
         Assert.False(se["CreateConsole"]!.GetValue<bool>());   // no console window per game
         Assert.False(se["ShiftOpensConsole"]!.GetValue<bool>()); // not even with Shift held as it starts (D2)
@@ -196,7 +197,6 @@ public sealed class GameCopyTests : IAsyncLifetime
 
         Assert.Equal("instance one: game closed", copy.Down());
         Assert.Empty(copy.GamePids());
-        Assert.False(File.Exists(copy.Layout.Splash));
         Assert.Contains("one", string.Join("\n", copy.InstanceList()));
 
         // The loader's own Shift switch (D2) is off in the copy's loader config, which is written as
@@ -281,6 +281,58 @@ public sealed class GameCopyTests : IAsyncLifetime
         Assert.Equal(["--skip-launcher"], _game.Platform.Started.Single().Arguments);   // no -continueGame: the menu stays
         Assert.Contains("in the main menu after", _game.Output.ToString());
         copy.Down();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task A_start_through_the_menu_sets_the_games_page_switches_at_the_first_Lua(bool splash)
+    {
+        // The game's own switches skip its pages before the main menu: the splash page unless the
+        // start is to stop on it, the first-launch pages in an instance. The fake plays Lua's part.
+        var copy = _game.GameCopy(splash ? "switch-splash" : "switch-menu");
+        string? sent = null;
+        _game.Platform.OnStart = _ =>
+        {
+            _bridges.Add(new FakeBridge(copy.Layout.Channel, "client", code =>
+            {
+                if (code.Contains("SkipSplashScreen", StringComparison.Ordinal))
+                {
+                    sent = code;
+                    return JsonNode.Parse($$"""{"skipSplash": {{(splash ? "false" : "true")}}, "firstTimeSetup": false, "state": "LoadModule"}""");
+                }
+                return code.Contains("GK.Gui.Stuck()", StringComparison.Ordinal)
+                    ? JsonNode.Parse(splash ? """{"stuck": "splash", "widget": "SplashScreen"}""" : """{"stuck": "mainmenu"}""") : null;
+            }) { GameState = "Menu" });
+        };
+        using var limit = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await copy.UpAsync(new UpOptions(MainMenu: !splash, Splash: splash), limit.Token);
+        Assert.NotNull(sent);
+        Assert.Contains($"local FIRST, SKIP = true, {(splash ? "false" : "true")}", sent);
+        Assert.Contains($"SkipSplashScreen {(splash ? "off" : "on")}, ShowFirstTimeSetup off at the first Lua (client in LoadModule)", _game.Output.ToString());
+        copy.Down();
+    }
+
+    [Fact]
+    public void A_save_folder_that_is_not_ASCII_is_named_to_the_game_by_its_name_after_the_unique_id()
+    {
+        // The game reads its command line in the ANSI code page: a Cyrillic folder name never
+        // matches, the name after the unique id does when no other save has it.
+        const string cyrillic = "Астарион-717126141013__QuickSave_0";
+        Assert.Equal("Tav-1__QuickSave_0", GameCopy.LoadSaveArgument("Tav-1__QuickSave_0", ["Tav-1__QuickSave_0", "Tav-2__QuickSave_0"]));
+        Assert.Equal("QuickSave_0", GameCopy.LoadSaveArgument(cyrillic, [cyrillic, "Tav-2__AutoSave_0"]));
+        Assert.Throws<CopyException>(() => GameCopy.LoadSaveArgument(cyrillic, [cyrillic, "Tav-2__QuickSave_0"]));
+        Assert.Throws<CopyException>(() => GameCopy.LoadSaveArgument("Сейв", ["Сейв"]));
+    }
+
+    [Fact]
+    public void A_save_folder_in_any_alphabet_is_passed_as_it_is_to_a_build_that_reads_the_wide_command_line()
+    {
+        // GateKit's Script Extender build gives the game -loadSaveGame in UTF-8 (WideCommandLine).
+        const string cyrillic = "Астарион-717126141013__QuickSave_0";
+        Assert.Equal(cyrillic, GameCopy.LoadSaveArgument(cyrillic, [cyrillic, "Tav-2__QuickSave_0"], wideCommandLine: true));
+        Assert.Equal("Сейв", GameCopy.LoadSaveArgument("Сейв", ["Сейв"], wideCommandLine: true));
+        Assert.Equal("Tav-1__QuickSave_0", GameCopy.LoadSaveArgument("Tav-1__QuickSave_0", ["Tav-1__QuickSave_0"], wideCommandLine: true));
     }
 
     [Fact]
@@ -477,6 +529,11 @@ public sealed class GameCopyTests : IAsyncLifetime
         };
         await copy.UpAsync(new UpOptions(Save: "Save1"));
         Assert.Equal(["--skip-launcher", "-loadSaveGame", "Save1"], _game.Platform.Started.Single().Arguments);
+        // a save asked for is loaded without the main menu by GateKit's build
+        Assert.Equal(true, (bool?)JsonFiles.ReadObject(copy.Layout.SeSettings)["DirectSaveLoad"]);
+        // every start says the fast-load switches: off unless asked
+        foreach (var name in GameCopy.FastLoadSwitches)
+            Assert.Equal(false, (bool?)JsonFiles.ReadObject(copy.Layout.SeSettings)[name]);
         // no --level, no --mods: the player's own list, plus the bridge
         Assert.Equal(["GustavX", "SomeMod", "OtherMod", "Gwynerva_Weave", "Gwynerva_GateKit"], ModSettings.Folders(File.ReadAllText(copy.Layout.ModSettingsFile)));
         Assert.True(Directory.Exists(copy.Layout.Backup));
@@ -484,8 +541,22 @@ public sealed class GameCopyTests : IAsyncLifetime
         Assert.Equal("game closed, saves and mod list restored", copy.Down());
         Assert.Equal(original, File.ReadAllText(copy.Layout.ModSettingsFile));
         Assert.Equal("{\"Keep\": 1}", File.ReadAllText(copy.Layout.SeSettings));
-        Assert.False(File.Exists(_game.Temp["game/Data/Video/Splash_Logo_Larian.bk2"])); // an empty stub is the copy's
         Assert.True(File.Exists(_game.Temp["game/Data/Video/Intro.bk2"]));
+    }
+
+    [Fact]
+    public async Task Fast_load_switches_are_written_on_asked_and_off_otherwise()
+    {
+        var copy = _game.GameCopy();
+        _game.Platform.OnStart = _ =>
+        {
+            _bridges.Add(new FakeBridge(copy.Layout.Channel, "client", _ => null));
+            _bridges.Add(new FakeBridge(copy.Layout.Channel, "server", _ => null));
+        };
+        await copy.UpAsync(new UpOptions(Save: "Save1", FastLoad: true));
+        var settings = JsonFiles.ReadObject(copy.Layout.SeSettings);
+        foreach (var name in GameCopy.FastLoadSwitches) Assert.Equal(true, (bool?)settings[name]);
+        copy.Down();
     }
 
     [Fact]

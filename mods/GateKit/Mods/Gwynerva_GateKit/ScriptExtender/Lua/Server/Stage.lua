@@ -532,6 +532,50 @@ function Stage.EndTurn(who)
     return id
 end
 
+--- A digest of the logic's state of some creatures at one moment, for a differential check
+--- (`gatekit logic-diff`: the same scenario run twice must leave the same digests): for each id,
+--- in the order given, { who, at = position rounded to 0.1 m, hp, maxHp, dead, statuses = sorted
+--- status ids, equipped = sorted templates of what it wears, combat = { initiative, acted } }.
+--- With `moment` (a name of the scenario's own), the digest is also written to the event log as
+--- a logic_digest row. W3 round 4 of the start-zone night.
+function Stage.Digest(ids, moment)
+    if type(ids) == "string" then ids = { ids } end
+    local out = {}
+    for _, id in ipairs(ids or {}) do
+        local entity = Ext.Entity.Get(id)
+        local row = { who = id }
+        if entity then
+            local x, y, z = try(Osi.GetPosition, id)
+            local function r(v) return v and math.floor(v * 10 + 0.5) / 10 or nil end
+            row.at = x and { r(x), r(y), r(z) } or nil
+            row.hp = try(function() return entity.Health.Hp end)
+            row.maxHp = try(function() return entity.Health.MaxHp end)
+            row.dead = try(Osi.IsDead, id) == 1
+            local statuses = {}
+            for _, statusId in pairs(try(function() return entity.StatusContainer.Statuses end) or {}) do
+                statuses[#statuses + 1] = tostring(statusId)
+            end
+            table.sort(statuses)
+            row.statuses = statuses
+            local equipped = {}
+            for _, slot in ipairs({ "Helmet", "Breast", "Cloak", "Gloves", "Boots", "Amulet", "Ring", "Ring2",
+                "Melee Main Weapon", "Melee Offhand Weapon", "Ranged Main Weapon", "Ranged Offhand Weapon" }) do
+                local item = try(Osi.GetEquippedItem, id, slot)
+                if item then equipped[#equipped + 1] = slot .. "=" .. tostring(try(Osi.GetTemplate, item)) end
+            end
+            table.sort(equipped)
+            row.equipped = equipped
+            local turn = try(function() return entity.TurnBased end)
+            if turn then row.combat = { acted = try(function() return turn.HadTurnInCombat end) or false } end
+        else
+            row.gone = true
+        end
+        out[#out + 1] = row
+    end
+    if moment then GK.EventLog.Append("logic_digest", { moment = moment, who = out }) end
+    return out
+end
+
 --- Ends the fight a character is in (default: the host's) without anybody dying.
 --- Asks the game to end the fight `who` (default the host) is in. N54 of the third run: it answered
 --- true and the fight went on - Osi.EndCombat is a request the game may not carry out (enemies

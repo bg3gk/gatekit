@@ -1,0 +1,21 @@
+{
+  "schema": "registry/global/1",
+  "id": "BaseApp::s_AppInstance",
+  "kind": "variable",
+  "state": "described",
+  "rung": "inferred",
+  "about": "The application object (App, built on BaseApp): its first field is App's vtable (dx11 +0x5499F58: +0x98 App::InitApp, +0xA8 App::LoadAndResaveGraphicsSettings, +0xB0 App::InitGame). Script Extender calls it AppInstance.",
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "live, copy attacks: Ext.Debug.GetSymbolAddress('AppInstance') - module base = code:BaseApp::s_AppInstance; ReadValue of it, then of its first field, gave the vtable whose slots are named in about"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Who writes it: dx11 code:BaseApp::BaseApp stores this at bg3_dx11.exe@25605617+0x6046F98, not here; a read of the store at code:BaseApp::s_AppInstance (Script Extender's AppInstance mapping) would confirm the name",
+      "about": "meaning",
+      "state": "open"
+    }
+  ]
+}

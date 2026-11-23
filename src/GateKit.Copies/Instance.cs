@@ -146,7 +146,6 @@ public sealed partial class Instance
             {
                 var name = Path.GetFileName(source);
                 if (own == "Mods" && skipMods.Contains(name)) continue;            // the installed game's hot reload
-                if (File.Exists(source) && new FileInfo(source).Length == 0) continue; // the installed game's logo stub
                 LinkEntry(source, Path.Combine(targetData, own, name));
             }
         }
@@ -203,6 +202,70 @@ public sealed partial class Instance
             if (FileTree.IsLink(current)) Directory.Delete(current);
             Directory.CreateDirectory(current);
         }
+    }
+
+    /// <summary>Before a file goes under <paramref name="folder"/> (inside the clone): every folder link
+    /// on the way becomes a real folder whose entries stand for what the link held - hard links for
+    /// files, folder links for folders, as Data/Mods and Data/Video are made - so the game sees the
+    /// same files and nothing is written into the real game. Returns each folder made real with the
+    /// folder it stood for, outermost first; <see cref="LinkAgain"/> undoes one.</summary>
+    public IReadOnlyList<(string Folder, string Source)> OwnFolderLinked(string folder)
+    {
+        var relative = Path.GetRelativePath(Game, Path.GetFullPath(folder));
+        if (relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relative))
+            throw new CopyException($"{folder} is not inside {Game}");
+        var made = new List<(string, string)>();
+        var current = Game;
+        foreach (var part in relative.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (part == ".") continue;
+            current = Path.Combine(current, part);
+            if (!FileTree.IsLink(current))
+            {
+                if (Directory.Exists(current)) continue;
+                break;
+            }
+            var source = FileTree.ResolvePath(current);
+            if (!Directory.Exists(source)) throw new CopyException($"{current} is a link to {source}, which is no folder");
+            Directory.Delete(current);
+            Directory.CreateDirectory(current);
+            try
+            {
+                foreach (var entry in Directory.EnumerateFileSystemEntries(source)) LinkEntry(entry, Path.Combine(current, Path.GetFileName(entry)));
+            }
+            catch
+            {
+                LinkAgain(current, source);
+                throw;
+            }
+            made.Add((current, source));
+        }
+        return made;
+    }
+
+    /// <summary>Undoes <see cref="OwnFolderLinked"/> for one folder: when it holds nothing but the
+    /// entries of <paramref name="source"/>, it becomes the folder link it was. False, and the folder
+    /// left real, when anything else is in it.</summary>
+    public bool LinkAgain(string folder, string source)
+    {
+        if (FileTree.IsLink(folder) || !Directory.Exists(folder) || !Directory.Exists(source)) return false;
+        var entries = Directory.EnumerateFileSystemEntries(folder).ToList();
+        foreach (var entry in entries)
+        {
+            var from = Path.Combine(source, Path.GetFileName(entry));
+            var same = FileTree.IsLink(entry)
+                ? Directory.Exists(from) && SamePlace(FileTree.ResolvePath(entry), FileTree.ResolvePath(from))
+                : File.Exists(entry) && FileTree.SameFileContent(entry, from);
+            if (!same) return false;
+        }
+        foreach (var entry in entries)
+        {
+            if (FileTree.IsLink(entry)) Directory.Delete(entry);
+            else File.Delete(entry);   // a hard link's name; the game's file stays
+        }
+        Directory.Delete(folder);
+        _platform.LinkFolder(source, folder);
+        return true;
     }
 
     /// <summary>True if <paramref name="path"/>, links resolved, lies in this instance (not in the real game).</summary>

@@ -93,7 +93,7 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
             test.Declare(script);
             events = new Bridge.EventStream(new Bridge.EventLogReader(GameCopy.Layout.Channel));
             mark = events.Mark();
-            game = new GameApi(script, GameCopy, session, outFolder, steps);
+            game = new GameApi(script, GameCopy, session, outFolder, steps) { TestsTree = test.Tree };
             var timed = game;
             steps.Spent = () => timed.Spent;
             mark = game.Mark();
@@ -213,7 +213,9 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
             var log = events.Since(null).Rows;
             try
             {
-                if (game?.Session.LuaAsync("server", "return GK.Stage.Party(true)", TimeSpan.FromSeconds(5), "observation").GetAwaiter().GetResult() is JsonArray party)
+                // only a server that heartbeats is asked: in the main menu there is none to answer
+                if (game?.Session.State(Side.Server, GameSession.Fresh) is not null
+                    && game.Session.LuaAsync("server","return GK.Stage.Party(true)", TimeSpan.FromSeconds(5), "observation").GetAwaiter().GetResult() is JsonArray party)
                     log.Add(new JsonObject { ["kind"] = "scope_begin", ["payload"] = new JsonObject { ["party"] = party.DeepClone() } });
             }
             catch (Exception e) when (e is CopyException or BridgeLuaException or BridgeTimeoutException) { }
@@ -250,10 +252,28 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
         {
             Directory.CreateDirectory(outFolder);
             File.WriteAllText(Path.Combine(outFolder, "verdict.txt"), Report(result) + "\n", new UTF8Encoding(false));
+            if (KeepEvents) CopyEvents(outFolder, DateTime.UtcNow - result.Took - TimeSpan.FromSeconds(1));
         }
         catch (IOException) { }
         if (say) Out.WriteLine(Report(result));
         return result;
+    }
+
+    /// <summary>`test --keep-events`: each test's output folder gets events/ - the event log's files
+    /// written while it ran (events_&lt;side&gt;_&lt;boot&gt;_&lt;n&gt;.jsonl, both sides) and the registry of
+    /// kinds - which `gatekit logic-diff` compares as they are.</summary>
+    public bool KeepEvents { get; set; }
+
+    void CopyEvents(string outFolder, DateTime since)
+    {
+        var channel = GameCopy.Layout.Channel;
+        if (!Directory.Exists(channel)) return;
+        var target = Path.Combine(outFolder, "events");
+        Directory.CreateDirectory(target);
+        foreach (var file in Directory.EnumerateFiles(channel, "events_*.jsonl"))
+            if (File.GetLastWriteTimeUtc(file) >= since) File.Copy(file, Path.Combine(target, Path.GetFileName(file)), overwrite: true);
+        foreach (var file in Directory.EnumerateFiles(channel, "events_*_kinds.json"))
+            File.Copy(file, Path.Combine(target, Path.GetFileName(file)), overwrite: true);
     }
 
     static string Line(TestResult result) => string.Create(CultureInfo.InvariantCulture,
@@ -326,70 +346,127 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
             && !(double.TryParse(asked, NumberStyles.Float, CultureInfo.InvariantCulture, out var scale) && scale > 0))
             throw new CopyException($"--speed is a positive number or `working`, not '{asked}'");
         var found = GameTest.Discover(folder, only, Out);
+        GameCopy.CleanStaleTestFiles();
         // --repeat N: the selection N times in a row, in the same session (name#2, name#3 ...)
         var tests = Enumerable.Range(1, Math.Max(1, repeat))
             .SelectMany(n => found.Select(s => n == 1 ? s : s.Again(n))).ToList();
         var running = GameCopy.GamePids().Count > 0;
         if (attach && !running) throw new CopyException("--attach needs a running game (start one with `up`)");
         if (attach) return await RunAttachedAsync(tests, cleanAll, force);
-        var groups = new Dictionary<(string?, string, bool, string?), List<GameTest>>();
+        var groups = new Dictionary<((string?, string, bool, string?, bool), string), List<GameTest>>();
         foreach (var test in tests)
         {
-            if (!groups.TryGetValue(test.Start.Key, out var list)) groups[test.Start.Key] = list = [];
+            if (!groups.TryGetValue(test.Group, out var list)) groups[test.Group] = list = [];
             list.Add(test);
         }
         if (running)
         {
             // Only a copy already in the level of a group is used; anything else is refused before a thing is done.
             var here = await LevelHereAsync(GameCopy.Session());
-            var fits = groups.Values.FirstOrDefault(g => Fits(g[0].Start, here));
+            var fits = groups.Values.FirstOrDefault(g => Fits(g[0], here));
             if (fits is null)
                 throw new CopyException($"the game is already running{(here is null ? "" : " in " + here)}, and no test asked for is "
                     + "declared for that level; pass --attach to run them in it as it is, or `down` first. Nothing was stopped");
             // the running copy's group first: the others start a game of their own after it is left
-            groups = new[] { fits }.Concat(groups.Values.Where(g => g != fits)).ToDictionary(g => g[0].Start.Key);
+            groups = new[] { fits }.Concat(groups.Values.Where(g => g != fits)).ToDictionary(g => g[0].Group);
         }
 
         var runFolder = RunFolder("suite");
         var results = new List<TestResult>();
         var suite = Stopwatch.StartNew();
+        // The game this run started and keeps up between groups: the start it was given and the
+        // extender build it runs. A later group goes into its level or save by the game's own load
+        // in that session (MoveAsync); a restart only when that cannot be.
+        UpOptions? kept = null;
+        string? keptBuild = null;
+        try
+        {
         foreach (var (_, group) in groups)
         {
             var start = group[0].Start;
+            var files = group[0].Files;
             GameSession session;
-            var ours = GameCopy.GamePids().Count == 0;
-            if (ours)
-            {
-                try
-                {
-                    session = await GameCopy.UpAsync(StartOf(start), cancel);
-                }
-                catch (CopyException problem)
-                {
-                    GameCopy.Down();
-                    results.AddRange(group.Select(s => new TestResult(s.Name, false, $"FAIL (game did not start: {Flatten(problem.Message)})", TimeSpan.Zero)));
-                    continue;
-                }
-            }
-            else
-            {
-                session = GameCopy.Session();
-                if (!Fits(start, await LevelHereAsync(session)))
-                {
-                    results.AddRange(group.Select(s => new TestResult(s.Name, false, "NOT RUN: a copy runs in another level", TimeSpan.Zero, NotRun: true)));
-                    continue;
-                }
-                Out.WriteLine($"in the copy already running ({await LevelHereAsync(session) ?? "its level"}): not started, not closed");
-            }
+            var ours = GameCopy.GamePids().Count == 0 || kept is not null;
+            var placed = false;
+            var moved = false;
             try
             {
-                var run = await RunGroupAsync(group, session, ours ? StartOf(start) : null, untouched: ours, cleanAll, force, runFolder);
-                results.AddRange(run);
+                if (ours && kept is not null && GameCopy.GamePids().Count > 0)
+                {
+                    var into = await MoveAsync(group, kept, keptBuild);
+                    if (into is not null) moved = true;
+                    else
+                    {
+                        GameCopy.Down();
+                        kept = null;
+                    }
+                }
+                if (moved) session = GameCopy.Session();
+                else if (ours)
+                {
+                    kept = null;
+                    // the group's files go in before its start, so the game reads them from its first frame
+                    if (files.Count > 0)
+                    {
+                        if (PlaceFiles(string.Join(", ", group.Select(s => s.Name)), files) is { } refused)
+                        {
+                            results.AddRange(group.Select(s => Verdict(new TestResult(s.Name, false, $"FAIL ({Flatten(refused)})", TimeSpan.Zero),
+                                Path.Combine(runFolder, s.Name))));
+                            continue;
+                        }
+                        placed = true;
+                    }
+                    try
+                    {
+                        session = await GameCopy.UpAsync(StartOf(start), cancel);
+                        kept = StartOf(start);
+                        keptBuild = GameCopy.SeStatus().Sha256;
+                    }
+                    catch (CopyException problem)
+                    {
+                        GameCopy.Down();
+                        results.AddRange(group.Select(s => new TestResult(s.Name, false, $"FAIL (game did not start: {Flatten(problem.Message)})", TimeSpan.Zero)));
+                        continue;
+                    }
+                }
+                else
+                {
+                    session = GameCopy.Session();
+                    if (!Fits(group[0], await LevelHereAsync(session)))
+                    {
+                        var why = files.Count > 0 ? "a copy is running, and the test's files go in before its game starts" : "a copy runs in another level";
+                        results.AddRange(group.Select(s => new TestResult(s.Name, false, "NOT RUN: " + why, TimeSpan.Zero, NotRun: true)));
+                        continue;
+                    }
+                    Out.WriteLine($"in the copy already running ({await LevelHereAsync(session) ?? "its level"}): not started, not closed");
+                }
+                var keep = false;
+                try
+                {
+                    var run = await RunGroupAsync(group, session, ours ? StartOf(start) : null, untouched: ours, cleanAll, force, runFolder, adopted: moved);
+                    results.AddRange(run);
+                    // a game with no files of a group, in a level or a save, stays up for the next group
+                    keep = ours && !RestartGroups && !placed && Keepable(group) && GameCopy.GamePids().Count > 0;
+                }
+                finally
+                {
+                    if (ours && !keep)
+                    {
+                        GameCopy.Down();
+                        kept = null;
+                    }
+                }
             }
             finally
             {
-                if (ours) GameCopy.Down();
+                // after the group, and after a start that failed: a restart inside the group kept them
+                if (placed) RemoveFiles();
             }
+        }
+        }
+        finally
+        {
+            if (kept is not null) GameCopy.Down();
         }
         var done = results.Select(r => r.Name).ToHashSet(StringComparer.Ordinal);
         foreach (var group in groups.Values)
@@ -399,13 +476,74 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
         return Summarize(results, suite, runFolder);
     }
 
-    static UpOptions StartOf(TestStart start) => new(start.Level, start.Save, start.Mods, MainMenu: start.MainMenu);
+    /// <summary>Whether a group's game may stay up for the next group, and a running game may be
+    /// taken into the group's start: a level or a save, no startup videos, no files, and no test of
+    /// the start itself (a test under `startup/` of its tree always gets a process of its own).</summary>
+    public static bool Keepable(IReadOnlyList<GameTest> group)
+    {
+        var start = group[0].Start;
+        return (start.Level is not null || start.Save is not null) && !start.NoLevel && !start.StartupVideos
+            && group[0].Files.Count == 0 && !group.Any(IsStartTest);
+    }
+
+    /// <summary>A test of the game's start: under `startup/` of its tree.</summary>
+    public static bool IsStartTest(GameTest test) =>
+        Path.GetRelativePath(test.Tree, test.Path).Replace('\\', '/').StartsWith("startup/", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Takes the game this run keeps up (started as <paramref name="kept"/>) into the start of
+    /// <paramref name="group"/> by the game's own load in the session: the save it declares, or for a
+    /// level the save made right after that level's start (<see cref="StartSaves"/>). Null, with
+    /// the reason said, when it cannot be: another mod list, another extender build, a level never
+    /// started in this copy, a load that failed; the caller then restarts.</summary>
+    async Task<GameSession?> MoveAsync(IReadOnlyList<GameTest> group, UpOptions kept, string? keptBuild)
+    {
+        var start = group[0].Start;
+        string? why = null;
+        IReadOnlyList<string>? Effective(IReadOnlyList<string>? mods) => GameCopy.Instance is not null ? mods ?? [] : mods;
+        var save = start.Save ?? (start.Level is { } level ? new StartSaves(GameCopy.Layout).Find(level, Effective(start.Mods)) : null);
+        if (!Keepable(group)) why = "its start is not a level or a save of its own (files, startup videos, the main menu, a test of the start)";
+        else if (StartSaves.ModsKey(Effective(start.Mods)) != StartSaves.ModsKey(Effective(kept.Mods))) why = "another mod list";
+        else if (GameCopy.SeStatus().Sha256 != keptBuild) why = "another Script Extender build is installed";
+        else if (save is null) why = $"no save of {start.Level}'s start in this copy yet";
+        if (why is not null)
+        {
+            Out.WriteLine($"restart for {group[0].Name}: {why}");
+            return null;
+        }
+        var session = GameCopy.Session();
+        try
+        {
+            var took = await session.LoadSaveAsync(save!);
+            // what the groups before and the load's own posted chunk left unread, as a new
+            // process's start would have cleared it: nobody waits for an answer now
+            session.DropUnclaimedAnswers(DateTime.UtcNow);
+            var here = await LevelHereAsync(session);
+            if (start.Level is { } wanted && !string.Equals(StartSaves.LevelKey(wanted), here, StringComparison.OrdinalIgnoreCase))
+                throw new CopyException($"the save {save} loaded into {here ?? "an unknown level"}, not {wanted}");
+            session.AdoptCheckpoint(save!, here);
+            Out.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"into {start.Level ?? start.Save} in the running game: {(start.Save is null ? "the save of its start" : "the save")} {save} loaded in {took.TotalSeconds:0.0} s, no restart"));
+            return session;
+        }
+        catch (CopyException e)
+        {
+            Out.WriteLine($"restart for {group[0].Name}: the load in the running game failed: {Flatten(e.Message)}");
+            return null;
+        }
+    }
+
+    /// <summary>The start <c>up</c> is given for a test's group.</summary>
+    public static UpOptions StartOf(TestStart start) =>
+        new(start.Level, start.Save, start.Mods, MainMenu: start.MainMenu, StartupVideos: start.StartupVideos, UntilLua: start.UntilLua,
+            FirstLaunch: start.FirstLaunch);
 
     /// <summary>Whether a game in <paramref name="here"/> is where a test's start puts it: the
-    /// level it declares (a save or the main menu is never taken as met by a running copy).</summary>
-    static bool Fits(TestStart start, string? here)
+    /// level it declares (a save, the main menu, a start with the startup videos and a test with
+    /// files, which go in before the start, are never taken as met by a running copy).</summary>
+    static bool Fits(GameTest test, string? here)
     {
-        if (start.MainMenu || start.Save is not null || here is null) return false;
+        var start = test.Start;
+        if (start.NoLevel || start.Save is not null || start.StartupVideos || test.Files.Count > 0 || here is null) return false;
         if (start.Level is not { } declared) return true;
         return string.Equals(declared[(declared.IndexOf(':', StringComparison.Ordinal) + 1)..], here, StringComparison.OrdinalIgnoreCase);
     }
@@ -423,7 +561,7 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
     /// <summary>A group of tests in one session, each after the ladder made its world clean.
     /// <paramref name="restart"/>: how to start the game again (null: never restarted here).</summary>
     async Task<List<TestResult>> RunGroupAsync(List<GameTest> group, GameSession session, UpOptions? restart, bool untouched,
-        bool cleanAll, ResetRung? force, string runFolder, Func<GameTest, GameSession, Task<string?>>? skip = null)
+        bool cleanAll, ResetRung? force, string runFolder, Func<GameTest, GameSession, Task<string?>>? skip = null, bool adopted = false)
     {
         var results = new List<TestResult>();
         string? speedBefore = null;
@@ -431,7 +569,9 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
         var ladder = new ResetLadder(actions, Out);
         // A copy found running: a baseline it keeps from earlier tests means they may have left
         // something, so the first test is prepared too. A fresh start opens the scope anew.
-        var kept = await ladder.OpenAsync();
+        // The main menu has no server to open a stage scope: a fresh start there is not asked
+        // (GK.Stage.Begin would wait its whole timeout for an answer that never comes).
+        var kept = untouched && group.All(t => t.Start.NoLevel) ? null : await ladder.OpenAsync();
         if (!untouched)
         {
             untouched = kept == false && !cleanAll;
@@ -442,38 +582,58 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
                 null => "stage scope: this bridge has no stage ledger (GK.Stage.Begin); tests run as the world is",
             });
         }
-        var simple = await SimpleLevel.IsSimpleAsync(session, GameCopy.Settings);
+        // a group with no level has no level to judge, and no server to ask
+        var simple = group.All(t => t.Start.NoLevel) ? null : await SimpleLevel.IsSimpleAsync(session, GameCopy.Settings);
         // Without the ledger nothing can be cleaned: only what a test declares is done (as before the ladder).
         // The rungs are a level's (fixture: clean the scene; venue: reload the level; game: restart). A test that runs
         // elsewhere - the main menu - has no scene to clean and no level to reload: it runs as the
         // place is, and only a restart (declared) applies to it.
-        var needs = group.Select(s => s.Start.MainMenu ? (s.Start.Needs == ResetRung.Game ? ResetRung.Game : ResetRung.None)
+        var needs = group.Select(s => s.Start.NoLevel ? (s.Start.Needs == ResetRung.Game ? ResetRung.Game : ResetRung.None)
             : kept is null ? Max(force, s.Start.Needs ?? ResetRung.None)
             : Max(force, ResetLadder.Needed(s.Start.Needs, simple))).ToList();
         // A checkpoint of this level, before anything is staged, for the `venue` rung: a fixture that
         // does not hold then climbs to a reload of a few tens of seconds, not to a restart of a
         // minute and more . Made once, a few
         // seconds, whenever the copy is fresh (a found copy's world is not known clean) and in a level.
-        var inLevel = !group[0].Start.MainMenu && (kept is not null || needs.Any(n => n >= ResetRung.Venue));
+        var inLevel = !group[0].Start.NoLevel &&(kept is not null || needs.Any(n => n >= ResetRung.Venue));
         actions.CheckpointAfterRestart = inLevel;
-        if (restart is not null && untouched && restart.Save is null && inLevel)
+        // A game taken into this start by a save's load has that save as its checkpoint already.
+        if (restart is not null && untouched && restart.Save is null && inLevel && !adopted)
         {
-            try { await session.CheckpointAsync(); }
+            try
+            {
+                var made = await session.CheckpointAsync();
+                // the save of this level's start: a later group of the same level and mods loads it
+                // in a running game instead of starting one
+                if (restart.Level is { } level) new StartSaves(GameCopy.Layout).Record(level, GameCopy.Instance is not null ? restart.Mods ?? [] : restart.Mods, made);
+            }
             catch (CopyException e) { Out.WriteLine("no checkpoint for the venue rung:" + Flatten(e.Message)); }
         }
         Out.WriteLine($"reset ladder: the level is {(simple switch { true => "a simple test level", false => "not a simple test level", _ => "of unknown size" })}"
             + $"; tests need {string.Join(", ", needs.Distinct().Select(n => n.Name()))}");
         if (new Bridge.EventLogReader(GameCopy.Layout.Channel).KindsMismatch() is { } kinds) Out.WriteLine(kinds);
         for (var i = 0; i < group.Count; i++)
+            if (await RunPreparedAsync(i) is false) break;
+        async Task<bool> RunPreparedAsync(int i)
         {
             var test = group[i];
-            var outcome = await ladder.PrepareAsync(needs[i], untouched);
+            // a test that needs drawn frames (its header's `drawn`) in a headless run: a precondition
+            // unmet, said with the test's own reason, and nothing prepared for it
+            if (test.Drawn is { } drawnWhy && GameCopy.HeadlessAsked())
+            {
+                results.Add(Verdict(new TestResult(test.Name, false, "UNMET: needs drawn frames (headless run): " + drawnWhy, TimeSpan.Zero)
+                    { Unmet = true }, Path.Combine(runFolder, test.Name)));
+                return true;
+            }
+            // a main-menu test that declares no restart runs as the place is: nothing to prepare
+            var asItIs = test.Start.NoLevel && needs[i] == ResetRung.None;
+            var outcome = asItIs ? new ResetOutcome(ResetRung.None, ResetRung.None, [], []) : await ladder.PrepareAsync(needs[i], untouched);
             untouched = false;
             session = actions.Session;
             var line = outcome.Line();
             Out.WriteLine($"reset before {test.Name}: {line}");
             // the run's speed, or without one the speed the copy had; never above the test's own ceiling
-            if (outcome.Ok && !test.Start.MainMenu && (Speed ?? speedBefore) is var wanted && (wanted is not null || test.SpeedCeiling is not null))
+            if (outcome.Ok && !test.Start.NoLevel && (Speed ?? speedBefore) is var wanted && (wanted is not null || test.SpeedCeiling is not null))
             {
                 // every test, not only the first: `??=` alone would never look again once a speed was held
                 var had = await HoldSpeedAsync(session, actions, wanted, test.SpeedCeiling);
@@ -491,14 +651,13 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
                     + (remedy is null ? "" : "; to let the ladder climb: " + remedy);
                 results.Add(Verdict(new TestResult(test.Name, false, verdict, outcome.Took) { Reset = line },
                     Path.Combine(runFolder, test.Name)));
-                if (GameCopy.GamePids().Count == 0) break;
-                continue;
+                return GameCopy.GamePids().Count > 0;
             }
             if (skip is not null && await skip(test, session) is { } elsewhere)
             {
                 results.Add(Verdict(new TestResult(test.Name, false, "NOT RUN: " + elsewhere, TimeSpan.Zero, NotRun: true) { Reset = line },
                     Path.Combine(runFolder, test.Name)));
-                continue;
+                return true;
             }
             var need = needs[i];
             // between two cases of a test: the same rung as between tests, from the cheapest up
@@ -507,8 +666,8 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
                 var again = await ladder.PrepareAsync(need, false);
                 return (again.Ok, again.Line());
             }
-            results.Add(RunOne(test, session, Path.Combine(runFolder, test.Name), between: Between) with { Reset = line, ResetSteps = outcome.Steps });
-            if (GameCopy.GamePids().Count == 0 && restart is null) break; // the game died and may not be started here
+            results.Add(RunOne(test, session, Path.Combine(runFolder, test.Name), between: asItIs ? null : Between) with { Reset = line, ResetSteps = outcome.Steps });
+            return !(GameCopy.GamePids().Count == 0 && restart is null); // the game died and may not be started here
         }
         // A copy that stays up gets back the speed it had before `--speed`, as its baseline.
         if (speedBefore is { } before && restart is null && GameCopy.GamePids().Count > 0)
@@ -536,11 +695,33 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
 
     static ResetRung Max(ResetRung? a, ResetRung b) => a is { } x && x > b ? x : b;
 
+    /// <summary>The files of a test, or of a group of tests that share them (their header's `files`),
+    /// put into the copy (<see cref="TestFiles"/>); null when they are in place, else why not.</summary>
+    string? PlaceFiles(string tests, IReadOnlyList<(string Destination, string Source)> files)
+    {
+        try
+        {
+            GameCopy.PlaceTestFiles(tests, files);
+            Out.WriteLine($"files of {tests}: {string.Join(", ", files.Select(f => f.Destination))}");
+            return null;
+        }
+        catch (CopyException e) { return e.Message; }
+    }
+
+    /// <summary>The files taken out of the copy, whatever the verdicts; what stays is said.</summary>
+    void RemoveFiles()
+    {
+        foreach (var left in new TestFiles(GameCopy.Layout).Remove()) Out.WriteLine("  files: left " + left);
+    }
+
     /// <summary>`test --speed`: the game speed every test of the run starts at - a positive number,
     /// or `working` (GK.Speed.Working). The reset ladder puts the speed back to the baseline's, so
     /// the speed is set and the baseline taken again at it; a level reload or a restart that lost it
     /// is caught before the next test.</summary>
     public string? Speed { get; set; }
+
+    /// <summary>`test --restart-groups`: every group in a new process, the game closed after each.</summary>
+    public bool RestartGroups { get; set; }
 
     /// <summary>`test --trace`: one trace of the entity system a step on both sides (<see cref="StepTraces"/>).</summary>
     public bool Trace { get; set; }
@@ -581,12 +762,16 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
         return Summarize(results, suite, runFolder);
     }
 
-    /// <summary>Why an attached test cannot be a fair replay here (null = it can): it declares a
+    /// <summary>Why a test with files is not run in a game that is already up.</summary>
+    const string FilesNeedAStart = "its files go into the copy before its game starts, and this game is already up; run it without --attach";
+
+    /// <summary>Why an attached test cannot be a fair replay here (null = it can): it has files, or it declares a
     /// level and the running game is in another. A recipe that starts in character creation proves
     /// nothing in Act 1, and its failure there used to be counted as the recipe's. When the game
     /// does not say where it is, the test runs.</summary>
     async Task<string?> ElsewhereAsync(GameTest test, GameSession session)
     {
+        if (test.Files.Count > 0) return FilesNeedAStart;
         if (test.Start.MainMenu)
         {
             string? level = null;
@@ -765,20 +950,30 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
         var test = GameTest.Load(path);
         var outFolder = RunFolder(test.Name);
         Directory.CreateDirectory(outFolder);
+        GameCopy.CleanStaleTestFiles();
+        keep |= attach;   // a game found running is never closed
+        var placed = false;
         try
         {
+            if (attach && test.Files.Count > 0) throw new CopyException(FilesNeedAStart);
+            // the files go in before the start, so the game reads them from its first frame
+            if (test.Files.Count > 0)
+            {
+                if (PlaceFiles(test.Name, test.Files) is { } refused) throw new CopyException(refused);
+                placed = true;
+            }
             GameSession session;
             if (attach)
             {
                 if (GameCopy.GamePids().Count == 0) throw new CopyException("--attach needs a running game (start one with `up`)");
                 session = GameCopy.Session();
-                keep = true;
             }
             else
             {
                 var start = test.Start;
                 session = await GameCopy.UpAsync(new UpOptions(overrides?.Level ?? start.Level, overrides?.Save ?? start.Save,
-                    overrides?.Mods ?? start.Mods, overrides?.StoryLog ?? false, overrides?.GameArgs), cancel);
+                    overrides?.Mods ?? start.Mods, overrides?.StoryLog ?? false, overrides?.GameArgs,
+                    MainMenu: start.MainMenu, StartupVideos: start.StartupVideos, UntilLua: start.UntilLua, FirstLaunch: start.FirstLaunch), cancel);
             }
             var result = RunOne(test, session, outFolder, say: false);
             Out.WriteLine(result.Passed
@@ -796,6 +991,7 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
         finally
         {
             if (!keep) GameCopy.Down();
+            if (placed) RemoveFiles();
         }
     }
 }

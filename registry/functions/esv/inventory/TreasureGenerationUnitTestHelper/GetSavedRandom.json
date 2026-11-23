@@ -1,0 +1,30 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::inventory::TreasureGenerationUnitTestHelper::GetSavedRandom",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Gives the treasure tables their ls::Random: the server's saved random, esv::EocServer +0xB8 (InitialSeed, CurrentSeed; MSVC's generator); it is seeded at the server's start from a millisecond clock.",
+  "fingerprint": {"vtables": [{"slot": 1}]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the Toolkit's (EoCServer.dll+0xF18210) returns server+0xB8; esv::inventory::TreasureGenerationSystem::GenerateTreasure calls it through the helper's vtable +8"
+    },
+    {
+      "kind": "watch",
+      "says": "live InitialSeed 66.7M, 66.8M, 67.3M in starts a minute apart - a millisecond clock"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "pair",
+      "says": "The macOS build's symbols hold this name; a stored pair of the two builds joins that function to this one (a seed)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCServer.dll",
+      "tie": "match",
+      "says": "EoCServer.dll exports this name; the symbol database matches the export to this function by vtable"
+    }
+  ]
+}

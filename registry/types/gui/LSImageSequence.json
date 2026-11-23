@@ -1,0 +1,120 @@
+{
+  "schema": "registry/type/1",
+  "id": "gui::LSImageSequence",
+  "kind": "struct",
+  "state": "described",
+  "rung": "game",
+  "about": "The loading screen's wallpaper slideshow, a Noesis::Image subclass (TypeClassCreator::Fill<gui::LSImageSequence,Noesis::Image>); properties ImageFadeInDuration, ImageHoldDuration, ImageFadeOutDuration, Shuffle; the current wallpaper is its own Image.Source; the template LoadingImagesAct1/2/3 of LoadingScreen.xaml holds one with its images in its own Resources.",
+  "fields": [
+    {
+      "offset": 628,
+      "name": "RandomState",
+      "type": "uint32",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 gui::LSImageSequence::OnLoaded (code:gui::LSImageSequence::OnLoaded) uses them as macOS does at -8"
+        }
+      ]
+    },
+    {
+      "offset": 632,
+      "name": "Images",
+      "type": "Noesis::BaseComponent**",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 gui::LSImageSequence::OnLoaded (code:gui::LSImageSequence::OnLoaded) uses them as macOS does at -8"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's WallpaperSet rows read these offsets live after each code:gui::LSImageSequence::OnLoaded (copy coord, c2, build v34-start-extmod-3, a Continue: Count=13, one row per image of the array in the shuffled order, FadeIn=800 ms, Slot=20000 ms, FadeOut=800 ms, the values of the XAML's sequence style); the following WallpaperShown row's image is the array's first; test:startup/loading/wallpaper checks the slot and each set's members"
+        }
+      ]
+    },
+    {
+      "offset": 644,
+      "name": "ImagesCount",
+      "type": "uint32",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 gui::LSImageSequence::OnLoaded (code:gui::LSImageSequence::OnLoaded) uses them as macOS does at -8"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's WallpaperSet rows read these offsets live after each code:gui::LSImageSequence::OnLoaded (copy coord, c2, build v34-start-extmod-3, a Continue: Count=13, one row per image of the array in the shuffled order, FadeIn=800 ms, Slot=20000 ms, FadeOut=800 ms, the values of the XAML's sequence style); the following WallpaperShown row's image is the array's first; test:startup/loading/wallpaper checks the slot and each set's members"
+        }
+      ]
+    },
+    {
+      "offset": 648,
+      "name": "ImageFadeIn",
+      "type": "TimeSpan",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "After OnLoaded these read 800/20000/800 ms on every live slideshow, the XAML's SequenceStyle fades 0:0:0.8 and hold 0:0:20; OnLoaded uses them as the opacity key frames and slot x count as the storyboard's length"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's WallpaperSet rows read these offsets live after each code:gui::LSImageSequence::OnLoaded (copy coord, c2, build v34-start-extmod-3, a Continue: Count=13, one row per image of the array in the shuffled order, FadeIn=800 ms, Slot=20000 ms, FadeOut=800 ms, the values of the XAML's sequence style); the following WallpaperShown row's image is the array's first; test:startup/loading/wallpaper checks the slot and each set's members"
+        }
+      ]
+    },
+    {
+      "offset": 656,
+      "name": "SlotDuration",
+      "type": "int64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "dx11 gui::LSImageSequence::OnLoaded (code:gui::LSImageSequence::OnLoaded) uses them as macOS does at -8"
+        }
+      ]
+    },
+    {
+      "offset": 656,
+      "name": "ImageSlot",
+      "type": "TimeSpan",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "After OnLoaded these read 800/20000/800 ms on every live slideshow, the XAML's SequenceStyle fades 0:0:0.8 and hold 0:0:20; OnLoaded uses them as the opacity key frames and slot x count as the storyboard's length"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's WallpaperSet rows read these offsets live after each code:gui::LSImageSequence::OnLoaded (copy coord, c2, build v34-start-extmod-3, a Continue: Count=13, one row per image of the array in the shuffled order, FadeIn=800 ms, Slot=20000 ms, FadeOut=800 ms, the values of the XAML's sequence style); the following WallpaperShown row's image is the array's first; test:startup/loading/wallpaper checks the slot and each set's members"
+        }
+      ]
+    },
+    {
+      "offset": 664,
+      "name": "ImageFadeOut",
+      "type": "TimeSpan",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "After OnLoaded these read 800/20000/800 ms on every live slideshow, the XAML's SequenceStyle fades 0:0:0.8 and hold 0:0:20; OnLoaded uses them as the opacity key frames and slot x count as the storyboard's length"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's WallpaperSet rows read these offsets live after each code:gui::LSImageSequence::OnLoaded (copy coord, c2, build v34-start-extmod-3, a Continue: Count=13, one row per image of the array in the shuffled order, FadeIn=800 ms, Slot=20000 ms, FadeOut=800 ms, the values of the XAML's sequence style); the following WallpaperShown row's image is the array's first; test:startup/loading/wallpaper checks the slot and each set's members"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "macOS symbols Noesis::TypeClassCreator::Fill<gui::LSImageSequence,Noesis::Image>"
+    }
+  ]
+}

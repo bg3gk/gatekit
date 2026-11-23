@@ -1,0 +1,19 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::DCMainMenu::OnTryOpenGammaCalibrationCommand",
+  "state": "described",
+  "rung": "game",
+  "does": "The main menu page's command run when the page is Loaded: when the graphic settings ask for a calibration (ShowGammaCalibration) and the display is not HDR, raises the UI event OpenGammaCalibration, which opens GammaCalibration under MainMenu.",
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "with ShowGammaCalibration 1 in the copy's graphicSettings.lsx and ShowFirstTimeSetup false, the UI state GammaCalibration (parent MainMenu) was entered 73 ms after MainMenu; accepting it wrote ShowGammaCalibration 0"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

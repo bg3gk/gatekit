@@ -23,11 +23,18 @@ public sealed class TickGuard
     readonly Stopwatch _since = Stopwatch.StartNew();
     readonly Stopwatch _still = Stopwatch.StartNew();
     readonly Stopwatch _asked = Stopwatch.StartNew();
+    readonly Stopwatch _looked = Stopwatch.StartNew();
+    readonly bool _capToClock;
     readonly Dictionary<Side, double> _last = [];
     readonly Dictionary<Side, long> _ran = [];
 
-    public TickGuard(BridgeClient bridge, TimeSpan limit, Func<bool>? alive = null, EventLogReader? log = null)
+    /// <param name="capToClock">progress counts at most the ticks the nominal rate gives the real time
+    /// between two looks (a game whose tick period is lifted cannot eat the limit early); false counts
+    /// every tick, however fast they came.</param>
+    public TickGuard(BridgeClient bridge, TimeSpan limit, Func<bool>? alive = null, EventLogReader? log = null,
+        bool capToClock = true)
     {
+        _capToClock = capToClock;
         _bridge = bridge;
         _log = log;
         _alive = alive;
@@ -66,13 +73,21 @@ public sealed class TickGuard
             if (!_alive()) return "the game process is gone";
         }
         var moved = false;
+        // A game whose ticks run faster than its nominal rate (the fast load lifts the server's tick
+        // period to 0 while it loads: thousands of ticks a second, each a sliver of game time) would
+        // eat the limit in a fraction of its time: progress counts at most the ticks the nominal
+        // rate gives the real time since the last look (the night's W3, round 6: a 120 s wait over
+        // a headless level change ran out in ~10 s).
+        var seen = _looked.Elapsed;
+        _looked.Restart();
+        var most = _capToClock ? (long)Math.Ceiling(seen / BridgeClient.NominalTick) + 1 : long.MaxValue;
         foreach (var side in Sides)
         {
             if (TickOf(side) is not { } tick) continue;
             if (!_last.TryGetValue(side, out var last)) { _last[side] = tick; _ran[side] = 0; continue; }
             if (tick == last) continue;
             // a new Lua state counts from zero: what it ran since is progress too
-            _ran[side] = _ran.GetValueOrDefault(side) + (long)(tick > last ? tick - last : tick);
+            _ran[side] = _ran.GetValueOrDefault(side) + Math.Min(most, (long)(tick > last ? tick - last : tick));
             _last[side] = tick;
             moved = true;
         }

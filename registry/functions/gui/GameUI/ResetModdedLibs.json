@@ -1,0 +1,40 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::GameUI::ResetModdedLibs",
+  "state": "described",
+  "rung": "game",
+  "does": "Puts the mods' resource dictionaries (each registered mod's GUI resources) into the given collection, the application resources' merged dictionaries; called by the interface's update in its mods' merge block, after the texture metadata and before ui::StateMachine::ApplyMods.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "the call between Noesis::ResourceDictionary::GetMergedDictionaries and ui::StateMachine::ApplyMods in gui::GameUI::UpdateFromUI matches macOS gui::GameUI::ProcessLoadingModsFromUI calling ResetModdedLibs(this, GetMergedDictionaries(GetApplicationResources()))"
+    },
+    {
+      "kind": "reach",
+      "says": "called by the fork's early merge at the first StartLoading (copy attacks, f7): a mod's BusyElement from Resources.xaml drawn on the loading screen from LoadModule's first reading, where it was the game's spinner before"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: copies the registered mods' data (GameUI+0x488, count +0x494, stride 0xAA8) and for each one whose flag bit 10 is set makes a Noesis::ResourceDictionary (0x2A8 bytes) to add to the collection it is given"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy coord (c2, build v34-start-extmod-3): 0 calls in the main menu; in the load after a mod toggle one call from bg3_dx11.exe@25605617+0x121037D (the merge block of code:gui::GameUI::UpdateFromUI, after code:Noesis::ResourceDictionary::GetMergedDictionaries) and one from bg3_dx11.exe@25605617+0x1213017 in bg3_dx11.exe@25605617+0x12126D0, which also calls code:Noesis::GUI::GetApplicationResources and code:Noesis::ResourceDictionary::GetMergedDictionaries"
+    },
+    {"kind": "test", "test": "startup/loading/d20_first_start"}
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "registry/function/1",
+  "id": "Eoc::StartGame",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Starts a game through Eoc::StartGameInternal: EStartAction 1 a level by its name (what ecl::EocClient::Load calls for -testLoadLevel, -testAIStart and -load), 3 a save by its name (the save manager's GetSavegame).",
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoC.dll exports ?StartGame@Eoc@@UEAA_N_NW4EStartAction@eoc@@V?$_StringView@D@ls@@2V45@@Z"
+    },
+    {
+      "kind": "read",
+      "says": "bg3_macos_x64+0xE55720 Eoc::StartGameInternal compares the action with 3 and then calls ecl::SavegameManager::GetSavegame with the name"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

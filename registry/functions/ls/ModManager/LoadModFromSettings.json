@@ -1,0 +1,50 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::ModManager::LoadModFromSettings",
+  "state": "described",
+  "rung": "game",
+  "does": "Resolves the mod settings into the active module and, when it differs from the current one, replaces it, rebuilds the load-ordered modules and clears the manager's byte at +0x128 (1 once the client's LoadModule has loaded the modules); a session started while that byte is 0 goes through the client's UnloadModule and LoadModule again.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "called last by ecl::ModManagerClient::SaveSettingsAndReload, as in the macOS build"
+    },
+    {
+      "kind": "reach",
+      "says": "a count probe in copy coord: 2 calls for 2 toggles in the mod manager; Ext.Mod.GetLoadOrder lost the disabled mod at once, the byte read 0 after the toggle and 1 after the next client LoadModule; a save loaded with the byte at 1 went Idle -> LoadSession with no client LoadModule"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "reach",
+      "says": "the fork called it once at the client's first StartLoading on the client's manager (copy attacks, build v34-start-mods-1): LoadOrderedModules went 0 -> 16, the client's own LoadModule then ended on the same 16 modules in the same order, the menu and the game's own interface merge ran as always, three starts"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code of code:ecl::ModManagerClient::SaveSettingsAndReload: its last call, with the client's mod manager, after the settings are ordered and written"
+    },
+    {
+      "kind": "watch",
+      "says": "probes in copy coord (c2, build v34-start-extmod-3): six calls in the main menu, all from bg3_dx11.exe@25605617+0x181B503 in code:ecl::ModManagerClient::SaveSettingsAndReload, each answering 1; F9's write watch on the manager's byte +0x150 (1 -> 0) hit inside it at bg3_dx11.exe@25605617+0x3BC89AD on the same path"
+    }
+  ]
+}

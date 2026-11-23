@@ -169,6 +169,9 @@ local UNDO = {
     -- Karmic Dice and the roll streams back to what they were (GK.Rolls.SetKarmic, SetStreams)
     karmic = function(u) GK.Rolls.WriteKarmic(u.on) end,
     streams = function(u) GK.Rolls.WriteStreams(u.list) end,
+    base = function(u) GK.Rolls.WriteBase(u.seed) end,
+    saved = function(u) GK.Rolls.WriteSavedRandom(u.seed.initial, u.seed.current) end,
+    treasure = function() if Ext.Debug.PinTreasure then Ext.Debug.PinTreasure() end end,
     rig = function(u) GK.Rolls.WriteRig(u.id) end,
     tradegen = function(u) GK.Fixture.OnTradeGenerated[u.id] = nil end,
 }

@@ -1,0 +1,38 @@
+{
+  "schema": "registry/function/1",
+  "id": "bik::BinkManager::Update",
+  "state": "described",
+  "rung": "game",
+  "does": "Per render frame: returns while BinkWait says wait, else drops frames while BinkShouldSkip, shows one frame (BinkNextFrame), stops at the last frame; at frame Frames/2 seeks the Wwise sound to FrameNum*FrameRateDiv*1000/FrameRate ms",
+  "fingerprint": {
+    "calls": [
+      "fp:5bb42eda17369f84",
+      "fp:e4d053ad9455ea7c",
+      "unplaced::BinkShouldSkip",
+      "unplaced::BinkWait"
+    ],
+    "vtables": [{"slot": 10}]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "same calls and order as macOS bik::BinkManager::Update (bg3_macos_x64@25605617+0x40849A0), read in both"
+    },
+    {
+      "kind": "watch",
+      "says": "live: HBINK at BinkManager+0x38 advanced exactly one frame per client tick whenever the render rate was below the clip's rate"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "BinkBinding.dll",
+      "tie": "name",
+      "says": "BinkBinding.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

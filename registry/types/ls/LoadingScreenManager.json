@@ -1,0 +1,157 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::LoadingScreenManager",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The loading screen's engine side: the queue of load states and the numbers the percentage is made of. Percentage = (Progress*100 + min(100, LocalProgress*100/LocalProgressTotal)) / (ProgressTotal*100): ProgressTotal is the segment count StartLoading's state carries, Progress the segments done, LocalProgress/LocalProgressTotal the ticks of the current loading state.",
+  "fields": [
+    {
+      "offset": 8,
+      "name": "Visible",
+      "type": "bool",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "named after the Toolkit's accessor of each offset (GameEngine.dll exports); live dx11 copy attacks in play after a level start: ProgressTotal 6, Progress 0, LocalProgress 0, Visible 0, ActiveLoadState null"
+        },
+        {
+          "kind": "watch",
+          "says": "copy attacks, a first start read every client tick from LoadModule with GK.Memory.Read on ls::LoadingScreenManager::m_ptr: LoadModule Visible 1, LocalProgressTotal 100, LocalProgress 85 then 100, ProgressTotal 2, Progress 1 (Init already counted); LoadMenu Progress 2, the local pair 0/0; StopLoading Progress 3, the local pair 101/101; Menu Visible 0, Progress 0, ProgressTotal still 2"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's per-tick read of +0x08 (Ext.StartupVideos.Timeline() rows LoadingScreenShown/LoadingScreenHidden) turns on in the tick the client enters StartLoading and off in the tick it enters Menu, on every start; test:startup/loads/start checks the hidden row against the Menu state row"
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "ActiveLoadState",
+      "type": "ls::LoadState*",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "named after the Toolkit's accessor of each offset (GameEngine.dll exports); live dx11 copy attacks in play after a level start: ProgressTotal 6, Progress 0, LocalProgress 0, Visible 0, ActiveLoadState null"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's per-tick read of +0x28 (LoadState rows), copy attacks, first starts with the clip: from StartLoading's entry while the clip plays it holds an object with the ecl::LoadStateMovie virtual table bg3_dx11.exe@25605617+0x564C9E0, after the clip one with bg3_dx11.exe@25605617+0x564CA30, and null from the tick the client enters Menu; test:startup/confirm/stages checks the three"
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "LocalProgressTotal",
+      "type": "uint64",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "named after the Toolkit's accessor of each offset (GameEngine.dll exports); live dx11 copy attacks in play after a level start: ProgressTotal 6, Progress 0, LocalProgress 0, Visible 0, ActiveLoadState null"
+        },
+        {
+          "kind": "watch",
+          "says": "copy attacks, a first start read every client tick from LoadModule with GK.Memory.Read on ls::LoadingScreenManager::m_ptr: LoadModule Visible 1, LocalProgressTotal 100, LocalProgress 85 then 100, ProgressTotal 2, Progress 1 (Init already counted); LoadMenu Progress 2, the local pair 0/0; StopLoading Progress 3, the local pair 101/101; Menu Visible 0, Progress 0, ProgressTotal still 2"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's per-tick read of +0x30/+0x38/+0x40/+0x48 (Ext.StartupVideos.Timeline() LoadingProgress rows), copy attacks, first starts: ProgressTotal 2 from StartLoading on; Progress 0 in StartLoading and Init, 1 in LoadModule, 2 in LoadMenu, 3 in StopLoading, 0 again at Menu; the local pair 0/6 -> 4/6 in Init, 0/100 -> 100/100 in LoadModule, 101/101 in StopLoading; test:startup/confirm/stages checks the segments"
+        }
+      ]
+    },
+    {
+      "offset": 56,
+      "name": "LocalProgress",
+      "type": "uint64",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "named after the Toolkit's accessor of each offset (GameEngine.dll exports); live dx11 copy attacks in play after a level start: ProgressTotal 6, Progress 0, LocalProgress 0, Visible 0, ActiveLoadState null"
+        },
+        {
+          "kind": "watch",
+          "says": "copy attacks, a first start read every client tick from LoadModule with GK.Memory.Read on ls::LoadingScreenManager::m_ptr: LoadModule Visible 1, LocalProgressTotal 100, LocalProgress 85 then 100, ProgressTotal 2, Progress 1 (Init already counted); LoadMenu Progress 2, the local pair 0/0; StopLoading Progress 3, the local pair 101/101; Menu Visible 0, Progress 0, ProgressTotal still 2"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's per-tick read of +0x30/+0x38/+0x40/+0x48 (Ext.StartupVideos.Timeline() LoadingProgress rows), copy attacks, first starts: ProgressTotal 2 from StartLoading on; Progress 0 in StartLoading and Init, 1 in LoadModule, 2 in LoadMenu, 3 in StopLoading, 0 again at Menu; the local pair 0/6 -> 4/6 in Init, 0/100 -> 100/100 in LoadModule, 101/101 in StopLoading; test:startup/confirm/stages checks the segments"
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "ProgressTotal",
+      "type": "uint64",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "named after the Toolkit's accessor of each offset (GameEngine.dll exports); live dx11 copy attacks in play after a level start: ProgressTotal 6, Progress 0, LocalProgress 0, Visible 0, ActiveLoadState null"
+        },
+        {
+          "kind": "watch",
+          "says": "copy attacks, a first start read every client tick from LoadModule with GK.Memory.Read on ls::LoadingScreenManager::m_ptr: LoadModule Visible 1, LocalProgressTotal 100, LocalProgress 85 then 100, ProgressTotal 2, Progress 1 (Init already counted); LoadMenu Progress 2, the local pair 0/0; StopLoading Progress 3, the local pair 101/101; Menu Visible 0, Progress 0, ProgressTotal still 2"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's per-tick read of +0x30/+0x38/+0x40/+0x48 (Ext.StartupVideos.Timeline() LoadingProgress rows), copy attacks, first starts: ProgressTotal 2 from StartLoading on; Progress 0 in StartLoading and Init, 1 in LoadModule, 2 in LoadMenu, 3 in StopLoading, 0 again at Menu; the local pair 0/6 -> 4/6 in Init, 0/100 -> 100/100 in LoadModule, 101/101 in StopLoading; test:startup/confirm/stages checks the segments"
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "Progress",
+      "type": "uint64",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "named after the Toolkit's accessor of each offset (GameEngine.dll exports); live dx11 copy attacks in play after a level start: ProgressTotal 6, Progress 0, LocalProgress 0, Visible 0, ActiveLoadState null"
+        },
+        {
+          "kind": "watch",
+          "says": "copy attacks, a first start read every client tick from LoadModule with GK.Memory.Read on ls::LoadingScreenManager::m_ptr: LoadModule Visible 1, LocalProgressTotal 100, LocalProgress 85 then 100, ProgressTotal 2, Progress 1 (Init already counted); LoadMenu Progress 2, the local pair 0/0; StopLoading Progress 3, the local pair 101/101; Menu Visible 0, Progress 0, ProgressTotal still 2"
+        },
+        {
+          "kind": "watch",
+          "says": "the fork's per-tick read of +0x30/+0x38/+0x40/+0x48 (Ext.StartupVideos.Timeline() LoadingProgress rows), copy attacks, first starts: ProgressTotal 2 from StartLoading on; Progress 0 in StartLoading and Init, 1 in LoadModule, 2 in LoadMenu, 3 in StopLoading, 0 again at Menu; the local pair 0/6 -> 4/6 in Init, 0/100 -> 100/100 in LoadModule, 101/101 in StopLoading; test:startup/confirm/stages checks the segments"
+        }
+      ]
+    },
+    {
+      "offset": 80,
+      "name": "LongHint",
+      "type": "ls::STDString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "named after the Toolkit's accessor of each offset (GameEngine.dll exports); live dx11 copy attacks in play after a level start: ProgressTotal 6, Progress 0, LocalProgress 0, Visible 0, ActiveLoadState null"
+        }
+      ]
+    },
+    {
+      "offset": 104,
+      "name": "LoadingLevelUniqueKey",
+      "type": "ls::STDString",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "named after the Toolkit's accessor of each offset (GameEngine.dll exports); live dx11 copy attacks in play after a level start: ProgressTotal 6, Progress 0, LocalProgress 0, Visible 0, ActiveLoadState null"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Toolkit GameEngine.dll accessors SetLocalProgressTotal (+0x30), GetLocalProgress (+0x38), IncProgress (+0x48), SetLongHint (+0x50), SetLoadingLevelUniqueKey (+0x68), GetActiveLoadState (+0x28); macOS ui::DCLoadingScreen::Update reads the same offsets"
+    },
+    {"kind": "toolkit-name", "store": "GameEngine.dll", "says": "GameEngine.dll exports this name"}
+  ]
+}

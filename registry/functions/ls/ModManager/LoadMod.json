@@ -1,0 +1,38 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::ModManager::LoadMod",
+  "state": "described",
+  "rung": "game",
+  "does": "Makes the given settings the manager's active module, copies them as its settings, rebuilds the load-ordered modules, clears the byte +0x150 and calls the load callbacks; the client's ecl::ModuleLoadSystem calls it first in a LoadModule",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: builds the active module from the given settings (bg3_dx11.exe@25605617+0x3BC5AB0 into this+0x38), copies the settings' list into this+0x1C8, rebuilds (bg3_dx11.exe@25605617+0x3BC9AC0), stores 0 into the byte this+0x150 and answers whether this+0x68 is non-zero"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy coord (c2, build v34-start-extmod-3), a Continue after a mod toggle: two calls in the load, one on the client thread from bg3_dx11.exe@25605617+0x18B5181 in ecl::ModuleLoadSystem::Update (the decompiler database's name for bg3_dx11.exe@25605617+0x18B4E10) with the client's mod manager (the this of code:ecl::ModManagerClient::AddMod), answering true; one on another thread from bg3_dx11.exe@25605617+0x2B06CA7 with a second manager (the server's, by its thread); none in the return to the main menu"
+    }
+  ]
+}

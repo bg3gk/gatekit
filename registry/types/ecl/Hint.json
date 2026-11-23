@@ -1,0 +1,122 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::Hint",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "One loading-screen hint of ecl::HintManager's array, 0x38 bytes: what a Hint node of Hints.lsx holds.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "HintKey",
+      "type": "FixedString",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11, copy attacks, main menu: the 49 entries' bytes +0x14/+0x15/+0x30 read with GK.Memory.Read equal, in order, the Controller/Keyboard/Internal values of the 49 Hint nodes of Public/Game/Hints/Hints.lsx read with Ext.IO.LoadFile; +0x8 (the Description's version) is 1 as the file's version=\"1\"; +0x28 (WikiPage's length) is 0 and +0x2C its capacity 15 for the empty WikiPage"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 array visitor bg3_dx11.exe@25605617+0x17F1360 of code:ecl::HintManager::Visit and its entry copy bg3_dx11.exe@25605617+0x17F1940: an entry of 0x38 bytes is built empty as a FixedString at +0 (-1), a TranslatedString at +4, single bytes at +0x14 and +0x15, an STDString at +0x18 (inline capacity 15) and a byte at +0x30, and moved field by field in that layout"
+        },
+        {
+          "kind": "watch",
+          "says": "live dx11 copy attacks in LoadModule (GK.Hints.List, Ext.Debug.ReadValue FixedString): the 49 entries' +0x0 equal, in order, the HintKey values of the 49 Hint nodes of Public/Game/Hints/Hints.lsx, their +0x4 the Description handles of the same nodes, and the game translates all 49 handles"
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "Description",
+      "type": "TranslatedString",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11, copy attacks, main menu: the 49 entries' bytes +0x14/+0x15/+0x30 read with GK.Memory.Read equal, in order, the Controller/Keyboard/Internal values of the 49 Hint nodes of Public/Game/Hints/Hints.lsx read with Ext.IO.LoadFile; +0x8 (the Description's version) is 1 as the file's version=\"1\"; +0x28 (WikiPage's length) is 0 and +0x2C its capacity 15 for the empty WikiPage"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 array visitor bg3_dx11.exe@25605617+0x17F1360 of code:ecl::HintManager::Visit and its entry copy bg3_dx11.exe@25605617+0x17F1940: an entry of 0x38 bytes is built empty as a FixedString at +0 (-1), a TranslatedString at +4, single bytes at +0x14 and +0x15, an STDString at +0x18 (inline capacity 15) and a byte at +0x30, and moved field by field in that layout"
+        },
+        {
+          "kind": "watch",
+          "says": "live dx11 copy attacks in LoadModule (GK.Hints.List, Ext.Debug.ReadValue FixedString): the 49 entries' +0x0 equal, in order, the HintKey values of the 49 Hint nodes of Public/Game/Hints/Hints.lsx, their +0x4 the Description handles of the same nodes, and the game translates all 49 handles"
+        }
+      ]
+    },
+    {
+      "offset": 20,
+      "name": "Controller",
+      "type": "bool",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11, copy attacks, main menu: the 49 entries' bytes +0x14/+0x15/+0x30 read with GK.Memory.Read equal, in order, the Controller/Keyboard/Internal values of the 49 Hint nodes of Public/Game/Hints/Hints.lsx read with Ext.IO.LoadFile; +0x8 (the Description's version) is 1 as the file's version=\"1\"; +0x28 (WikiPage's length) is 0 and +0x2C its capacity 15 for the empty WikiPage"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 array visitor bg3_dx11.exe@25605617+0x17F1360 of code:ecl::HintManager::Visit and its entry copy bg3_dx11.exe@25605617+0x17F1940: an entry of 0x38 bytes is built empty as a FixedString at +0 (-1), a TranslatedString at +4, single bytes at +0x14 and +0x15, an STDString at +0x18 (inline capacity 15) and a byte at +0x30, and moved field by field in that layout"
+        }
+      ]
+    },
+    {
+      "offset": 21,
+      "name": "Keyboard",
+      "type": "bool",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11, copy attacks, main menu: the 49 entries' bytes +0x14/+0x15/+0x30 read with GK.Memory.Read equal, in order, the Controller/Keyboard/Internal values of the 49 Hint nodes of Public/Game/Hints/Hints.lsx read with Ext.IO.LoadFile; +0x8 (the Description's version) is 1 as the file's version=\"1\"; +0x28 (WikiPage's length) is 0 and +0x2C its capacity 15 for the empty WikiPage"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 array visitor bg3_dx11.exe@25605617+0x17F1360 of code:ecl::HintManager::Visit and its entry copy bg3_dx11.exe@25605617+0x17F1940: an entry of 0x38 bytes is built empty as a FixedString at +0 (-1), a TranslatedString at +4, single bytes at +0x14 and +0x15, an STDString at +0x18 (inline capacity 15) and a byte at +0x30, and moved field by field in that layout"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "WikiPage",
+      "type": "STDString",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11, copy attacks, main menu: the 49 entries' bytes +0x14/+0x15/+0x30 read with GK.Memory.Read equal, in order, the Controller/Keyboard/Internal values of the 49 Hint nodes of Public/Game/Hints/Hints.lsx read with Ext.IO.LoadFile; +0x8 (the Description's version) is 1 as the file's version=\"1\"; +0x28 (WikiPage's length) is 0 and +0x2C its capacity 15 for the empty WikiPage"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 array visitor bg3_dx11.exe@25605617+0x17F1360 of code:ecl::HintManager::Visit and its entry copy bg3_dx11.exe@25605617+0x17F1940: an entry of 0x38 bytes is built empty as a FixedString at +0 (-1), a TranslatedString at +4, single bytes at +0x14 and +0x15, an STDString at +0x18 (inline capacity 15) and a byte at +0x30, and moved field by field in that layout"
+        }
+      ]
+    },
+    {
+      "offset": 48,
+      "name": "Internal",
+      "type": "bool",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "live dx11, copy attacks, main menu: the 49 entries' bytes +0x14/+0x15/+0x30 read with GK.Memory.Read equal, in order, the Controller/Keyboard/Internal values of the 49 Hint nodes of Public/Game/Hints/Hints.lsx read with Ext.IO.LoadFile; +0x8 (the Description's version) is 1 as the file's version=\"1\"; +0x28 (WikiPage's length) is 0 and +0x2C its capacity 15 for the empty WikiPage"
+        },
+        {
+          "kind": "read",
+          "says": "dx11 array visitor bg3_dx11.exe@25605617+0x17F1360 of code:ecl::HintManager::Visit and its entry copy bg3_dx11.exe@25605617+0x17F1940: an entry of 0x38 bytes is built empty as a FixedString at +0 (-1), a TranslatedString at +4, single bytes at +0x14 and +0x15, an STDString at +0x18 (inline capacity 15) and a byte at +0x30, and moved field by field in that layout"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code of the array visitor bg3_dx11.exe@25605617+0x17F1360 called by code:ecl::HintManager::Visit steps 0x38 bytes per element and destroys the array with a 0x38-byte vector destructor; the Toolkit's ecl::HintManager::GetHints returns ls::ObjectSet<ecl::Hint>"
+    },
+    {"kind": "toolkit-name", "store": "EoCClient.dll", "says": "EoCClient.dll exports this name"},
+    {"kind": "test", "test": "startup/hints/two_mods"}
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::DCLoadingScreen::DCLoadingScreen",
+  "state": "described",
+  "rung": "confirmed",
+  "does": "Builds the loading screen's view model: registers it as a client game-state listener, the properties LoadingState, LevelName and VisibileHintIndex (-1 at first), the hint collection, the AdvanceHintCommand bound to code:gui::DCLoadingScreen::OnAdvanceHintCommand, a rand() seed and the ecl::HintManager pointer.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:3a1919ec5e4b0a9a",
+      "fp:5227b96c8688ff31",
+      "fp:8dcabb93a9f3bd3d",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:b3b7793ecf930d6a",
+      "fp:c799e874a70c2347",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83",
+      "import:9c9aac12eb379696"
+    ],
+    "strings": ["243809e4f0602e80", "85a86fc6afc6be6f", "87fcd008a41b7a20", "c9752f3aa7debd20"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: the only user of the text VisibileHintIndex; it adds itself to ecl__gGameStateEventManager+8, stores ecl::HintManager::m_ptr at +0x370 and rand() at +0x360 and +0x364"
+    },
+    {
+      "kind": "watch",
+      "says": "the fork reads the live view model at every hint drawn (HintShown rows, copy attacks, first starts): its +0x370 is the ecl::HintManager this constructor stores (the count read through it is the list's, 49), and the index drawn from the rand() state it seeds at +0x364 is within the list"
+    }
+  ]
+}

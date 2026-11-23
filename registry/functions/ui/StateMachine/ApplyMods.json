@@ -1,0 +1,39 @@
+{
+  "schema": "registry/function/1",
+  "id": "ui::StateMachine::ApplyMods",
+  "state": "described",
+  "rung": "game",
+  "does": "Applies the registered mods' state machines (their ModType Extend/Override states) to the interface's state machine; the interface's update calls it last in its mods' merge block with the state machine embedded at GameUI+0x7C0 and the value at GameUI+0x2D88.",
+  "fingerprint": {"calls": ["fp:139044872a2c773c", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "the last call of the mods' merge block of gui::GameUI::UpdateFromUI, matching macOS gui::GameUI::ProcessLoadingModsFromUI calling ui::StateMachine::ApplyMods(this+0x6C0, this[0x2C18])"
+    },
+    {
+      "kind": "reach",
+      "says": "called by the fork's early merge at the first StartLoading (copy attacks, f7); about 1.15 s later the interface's whole state tree is left and entered again, which a start without it does not do until LoadMenu"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGUIBinding.dll",
+      "tie": "name",
+      "says": "NoesisGUIBinding.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code of code:gui::GameUI::UpdateFromUI: the merge block's last call, on GameUI+0x7C0 with the 32-bit value at GameUI+0x2D88, after code:gui::GameUI::ResetModdedLibs"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy coord (c2, build v34-start-extmod-3): 0 calls in the main menu; in the load after a mod toggle one call from bg3_dx11.exe@25605617+0x121038F (the merge block of code:gui::GameUI::UpdateFromUI) and one from bg3_dx11.exe@25605617+0x20CC19E in ui::StateMachine::Init (the macOS name the symbols give bg3_dx11.exe@25605617+0x20CBCB0)"
+    },
+    {"kind": "test", "test": "startup/loading/d20_first_start"}
+  ]
+}

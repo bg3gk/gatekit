@@ -29,6 +29,8 @@ public static partial class CoreTools
                   "mods": {"type": "array", "items": {"type": "string"}, "description": "Mod folder names to load besides the base game. Omitted: none in an instance or with `level` (a bare start); the installed game without `level` keeps the player's own mod list."},
                   "story_log": {"type": "boolean", "description": "Also record the Osiris trace for bg3_logs story=true."},
                   "main_menu": {"type": "boolean", "description": "Stop in the main menu instead of loading a save (no level, no save); the splash screen is passed, first-launch screens are gone through in an instance; answers once GK.Gui.Stuck() names the main menu."},
+                  "until_lua": {"type": "boolean", "description": "Answer as soon as the bridge first answers: the client's LoadModule state, the first moment any Lua runs. No menu, session or server yet; the game goes on loading its main menu. For reading what the start did (bg3_timeline). Refused with level, save or main_menu."},
+                  "first_launch": {"type": "boolean", "description": "Start as the game's first launch (its switch ShowFirstTimeSetup set at the first Lua) and answer on the first first-launch page, Eula; nothing is pressed: each page waits in attention (window:<page>) for GK.Gui.Look / Click / Select / Set and the splash screen for a key. An instance only. Refused with level, save, main_menu or until_lua."},
                   "game_args": {"type": "array", "items": {"type": "string"}, "description": "Extra game arguments."}
                  }
                 }
@@ -37,7 +39,7 @@ public static partial class CoreTools
             {
                 var (copy, log) = host.Begin();
                 await copy.UpAsync(new UpOptions(args.Str("level"), args.Str("save"), args.Strings("mods"),
-                    args.Flag("story_log"), args.Strings("game_args"), args.Flag("main_menu")), cancel);
+                    args.Flag("story_log"), args.Strings("game_args"), args.Flag("main_menu"), UntilLua: args.Flag("until_lua"), FirstLaunch: args.Flag("first_launch")), cancel);
                 return Results.Text(log.ToString().Trim() is { Length: > 0 } printed ? printed : "playable");
             }),
 
@@ -224,6 +226,29 @@ public static partial class CoreTools
                 var (copy, _) = host.Begin();
                 var lines = copy.Logs(args.Flag("story"), args.Int("lines") ?? 60, args.Str("grep"));
                 return Task.FromResult(Results.Text(lines.Count > 0 ? string.Join("\n", lines) : "(nothing)"));
+            }),
+
+        new(Define("bg3_timeline",
+                "The start's timeline of the running game as GateKit's Script Extender recorded it (Ext.StartupVideos.Timeline): every "
+                + "stage of the start from the process's first moment, then loads, the loading screen, hints drawn, the interface's pages "
+                + "and timelines, read after the fact - also what happened before any Lua existed. One line a row: its place, ms since "
+                + "the process was created, side, kind, fields.",
+                """
+                {
+                 "type": "object",
+                 "properties": {
+                  "kinds": {"type": "array", "items": {"type": "string"}, "description": "Only rows of these kinds (State, UIState, HintShown, LoadingProgress, TimelinePlayback, Step, ...)."},
+                  "counters": {"type": "boolean", "description": "Also what the process had read and spent by each row."},
+                  "json": {"type": "boolean", "description": "The rows as JSON {rows, total, dropped} instead of lines."}
+                 }
+                }
+                """),
+            async (args, cancel) =>
+            {
+                var (copy, _) = host.Begin();
+                var kinds = args.Strings("kinds") is { Count: > 0 } named ? StartTimeline.Kinds(string.Join(",", named)) : null;
+                var read = await StartTimeline.ReadAsync(copy.Session(), kinds, cancel);
+                return Results.Text(args.Flag("json") ? Results.Json(read) : string.Join("\n", StartTimeline.Lines(read, args.Flag("counters"))));
             }),
 
         new(Define("bg3_reload",

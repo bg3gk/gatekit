@@ -1,0 +1,23 @@
+{
+  "schema": "registry/function/1",
+  "id": "BaseApp::BaseApp",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "The engine application object's base constructor, run when App is built at the process's start. Script Extender calls this symbol App__Ctor and runs its PostStartup (Lua libraries, its engine hooks, the hook on ls::FileReader's constructor) in a pre-hook here.",
+  "fingerprint": {
+    "calls": ["fp:d1045bdeed38dbc1", "fp:e4d053ad9455ea7c", "import:3c67524f6489a260"],
+    "strings": ["636f30e0b40f89b2"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Script Extender's mapping App::Instance calls the target after storing the new App in BaseApp::s_AppInstance; the decompiler and symbol databases name code:App::Ctor BaseApp::BaseApp"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "match",
+      "says": "GameEngine.dll exports this name; the symbol database matches the export to this function by strings"
+    }
+  ]
+}

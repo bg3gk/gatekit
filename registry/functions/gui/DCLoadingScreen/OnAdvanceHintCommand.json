@@ -1,0 +1,36 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::DCLoadingScreen::OnAdvanceHintCommand",
+  "state": "described",
+  "rung": "game",
+  "does": "The AdvanceHintCommand (the XAML fires it 100 ms after Loaded, then every 10 s): when hints exist and translations are loaded, flips VisibileHintIndex between the two hint slots and draws a hint at random from ecl::HintManager (MSVC-style LCG rand seeded once with rand() when the view model is made, up to 100 tries), keeping only hints whose Keyboard (+0x15) or Controller (+0x14) flag fits the input method, and skipping a hint with a [binding] placeholder when no local player view model can resolve it.",
+  "fingerprint": {
+    "calls": [
+      "fp:25775885d1a67594",
+      "fp:58b4b875fbff37c4",
+      "fp:92dd4fee11aeea92",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "macOS pseudo-code: seed at this+0x2fc, multiplier 0x343fd, increment 0x269ec3, modulo the HintManager count (+0x14), entry stride 0x30, tests +0x14/+0x15, scans for [ and ]"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11: the function the constructor code:gui::DCLoadingScreen::DCLoadingScreen binds into the AdvanceHintCommand (+0x358); it reads ecl::HintManager through +0x370 (count +0x14), steps the LCG 0x343fd/0x269ec3 in +0x364, indexes 0x38-byte ecl::Hint entries testing +0x15 (keyboard) or +0x14 (controller), hands the entry's Description (+4) to the slot object and writes VisibileHintIndex +0x350, as the macOS function does with its own offsets"
+    },
+    {
+      "kind": "reach",
+      "says": "wrapped by the fork F5 (pre/post): it runs 100 ms after the loading screen appears and every 10 s after (HintShown rows at LoadModule +7 ms, then about 9.3-10 s apart, on the first start, a level load, a return to the menu and a save's load); when it draws a hint VisibileHintIndex (+0x350) flips and the drawn index is ((LCG state +0x364 >> 16) & 0x7fff) % count of the last step"
+    }
+  ],
+  "questions": [{"ask": "the dx11 address", "about": "reach", "state": "open"}]
+}

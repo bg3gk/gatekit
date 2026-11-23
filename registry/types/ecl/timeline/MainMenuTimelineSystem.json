@@ -1,0 +1,24 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::timeline::MainMenuTimelineSystem",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The client system that plays the main menu's timelines (the MainMenu/MM_* dialogs of the level SYS_Menuscreen_Act3_B) from the menu's events: its Update runs ProcessCinematicArenaTriggers, ProcessMainMenuActiveEvents, ProcessLeaveMainMenu and ProcessOnLevelLoadedTimelines; the 'press any key' page's accept creates ecl::timeline::MainMenuActorComponent, ActivateEventCameraRequestComponent and MainMenuActiveEventComponent on two actor entities and PlayedMainMenuTriggerComponent on a cinematic trigger in one frame, and MM_Accept and MM_Accept_Temple start playing.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Toolkit EoCClient.dll ecl::timeline::MainMenuTimelineSystem::Update calls the four Process functions in that order; gatekit decomp systems: dx11 factory bg3_dx11.exe@25605617+0x7461F0, vtable bg3_dx11.exe@25605617+0x54C6780, updates bg3_dx11.exe@25605617+0x1EFEFE0 and bg3_dx11.exe@25605617+0x1EFF630"
+    },
+    {
+      "kind": "watch",
+      "says": "GK.Trace on the copy attacks from LoadMenu to the main menu: eoc::gamestate::MainMenuComponent created at Menu's entry; at the key on the 'press any key' page the three components on two new entities and PlayedMainMenuTriggerComponent on the trigger e1a6229d-1bc9-487c-af47-b5baa90e9d5e, all in one frame; nothing of them removed when the camera came to rest"
+    },
+    {
+      "kind": "game-name",
+      "store": "type-names",
+      "says": "The executable keeps this type's name as text"
+    },
+    {"kind": "toolkit-name", "store": "EoCClient.dll", "says": "EoCClient.dll exports this name"}
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "registry/function/1",
+  "id": "BaseApp::Start",
+  "state": "described",
+  "rung": "game",
+  "does": "The engine's start on the main thread, once per process: global switches, -newexposure, the media path, App::LoadConfig (vtable +0x140), the LocaUpdater check, the thread name Main, ls::PackedFileManager::ClearInbox, ls::PackedFileManager::LoadPackFiles (the game's own paks), ls::TranslatedStringRepository::LoadFromContextFolder (English first when the language is another, then the language), the analytics and graphic configs (vtable +0x170, +0x180), App::InitApp (vtable +0x98), the main thread's dispatcher, the API/engine/community inits (vtable +0x2D0, +0x258, +0x240, +0x248, +0x230), the frame cap, App::LoadAndResaveGraphicsSettings (vtable +0xA8), the GameThread, the views (vtable +0x2C0 twice), -focus and -saveStoryState. App::InitGame is not called here.",
+  "fingerprint": {
+    "calls": [
+      "App::UpdatePaths",
+      "fp:0447c984b485073b",
+      "fp:123b79ba6c390bab",
+      "fp:22b82e6c24948615",
+      "fp:2e11dab32a025d84",
+      "fp:482916027a6ce3fa",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:797f15ff2c949628",
+      "fp:7ec6bc773f10ca24",
+      "fp:8fe8845cfe87f950",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:9e24d4c02110e384",
+      "fp:bfddee1d090cef08",
+      "fp:d1045bdeed38dbc1",
+      "fp:d8fe8dd3c83604f1",
+      "fp:e2f23ba65b8e22c3",
+      "fp:e4d053ad9455ea7c",
+      "fp:ee86d9b4e802b99a",
+      "fp:fe1f56c488f531cc",
+      "import:196f87dd222b4c83",
+      "import:367c1224dc0ba50a",
+      "import:37b5ff602440c248",
+      "import:526a5d01233c5f6c",
+      "import:546837f85bb99631",
+      "import:555568d56fb2e82a",
+      "import:7e27f81550607e74",
+      "import:801fbbee5f08a621",
+      "import:90f37ce9f6d89ffa",
+      "import:99ab1cf76558073e",
+      "import:ad6cb8528ecfbaab",
+      "import:b33789c665322f52",
+      "import:b8f0174a5f95843b",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "import:ed71b901c8d7a357",
+      "ls::ArgumentString::GetValue",
+      "ls::PackedFileManager::LoadPackFiles",
+      "ls::TranslatedStringRepository::LoadFromContextFolder"
+    ],
+    "strings": [
+      "083bfc17d05e6836",
+      "0f2c2875462823bf",
+      "2bd1c42f95853471",
+      "31d2e0dad1745910",
+      "8379cecdde8a8a60",
+      "900ff44078406a45",
+      "ab5d3c38be47a85c",
+      "b6d7ee61afc2012f",
+      "ea60d3d751dfa37b",
+      "f3ed1d8db6e80192"
+    ],
+    "vtables": [{"slot": 14}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code of code:BaseApp::Start (decomp code) read whole against the macOS BaseApp::Start (bg3_macos_x64+0x6B3EDF0): the same order of calls and strings (-newexposure, LocaUpdater.exe, Main, Localization, GameThread, -focus, -saveStoryState); its virtual calls named by reading App's live vtable (copy attacks, Ext.Debug.ReadValue of BaseApp::s_AppInstance's vtable +0x5499F58: +0x98 = App::InitApp bg3_dx11.exe@25605617+0x586350, +0xA8 = code:App::LoadGraphicSettings, +0xB0 = App::InitGame code:App::InitGame)"
+    },
+    {
+      "kind": "pairing",
+      "says": "the only user of -locaCloseOnErrors in bg3_dx11.exe, as BaseApp::Start is in the macOS build"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

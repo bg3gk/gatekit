@@ -1,0 +1,22 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::LoadStateMovie::Exit",
+  "rung": "game",
+  "fingerprint": {
+    "calls": ["fp:8f76cb47727e5e6e", "fp:e4d053ad9455ea7c"],
+    "components": ["ecl::splitscreen::RequestSystem"],
+    "vtables": [{"slot": 3}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "slot 3 (+0x18) of the LoadStateMovie virtual table bg3_dx11.exe@25605617+0x564C9E0; clears the started flag at +0x2e and, when the client player (GameControl+0x190, its engine player +0x38) is playing, stops it and sets +0x2f; macOS has ecl::LoadStateMovie::Exit"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

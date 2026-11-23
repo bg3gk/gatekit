@@ -1,0 +1,46 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateStartLoading::Enter",
+  "state": "described",
+  "rung": "game",
+  "does": "Sets the loading screen's ProgressTotal (ls::LoadingScreenManager+0x40) from the state's +0x38, the segment count its maker passed (MakeSimple's first argument: 2 at the first start), before queueing load states and showing the screen.",
+  "fingerprint": {
+    "calls": [
+      "ecl::LoadStateMovie::LoadStateMovie",
+      "fp:0b67d8a75def50b2",
+      "fp:123b79ba6c390bab",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83",
+      "ls::PackedFileManager::LoadPackFiles"
+    ],
+    "components": ["ecl::LEDSystem"],
+    "vtables": [{"slot": 3}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "macOS decomp of the whole body (bg3_macos_x64+0x358BA70); the runs of names follow one another from the first flat name"
+    },
+    {
+      "kind": "reach",
+      "says": "new game from the main menu: a client probe saw it called twice, from bg3_dx11.exe@25605617+0x17EF11A in code:ecl::GameStateMachine::Update; at Script Extender's GameStateChanged callback with ToState StartLoading the probe still read 0 hits while the machine's current state was already the new StartLoading object"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "Toolkit EoCClient.dll Enter passes the state's +0x38 to SetProgressTotal; macOS MakeSimple(uint, FixedString const&, char const*, int) stores its first argument at +0x38"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "registry/function/1",
+  "id": "Noesis::GUI::GetApplicationResources",
+  "state": "described",
+  "rung": "game",
+  "does": "Answers the application's ResourceDictionary, making it at the first call (a global).",
+  "fingerprint": {"calls": ["fp:5227b96c8688ff31", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "the mods' merge block of gui::GameUI::UpdateFromUI reaches it through a one-jump thunk at bg3_dx11.exe@25605617+0x45C3600 where macOS gui::GameUI::ProcessLoadingModsFromUI calls Noesis::GUI::GetApplicationResources"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGUIShared.dll",
+      "tie": "name",
+      "says": "NoesisGUIShared.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: makes one Noesis::ResourceDictionary (0x2A8 bytes) at the first call and keeps it in the global bg3_dx11.exe@25605617+0x5F7B770; code:gui::GameUI::UpdateFromUI's merge block reaches it through the one-jump thunk bg3_dx11.exe@25605617+0x45C3600"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy coord (c2, build v34-start-extmod-3): 29324 calls from the main menu through a load (most from bg3_dx11.exe@25605617+0x4834AC9, bg3_dx11.exe@25605617+0x45B0487, bg3_dx11.exe@25605617+0x472901D), every one answering the same dictionary; one from bg3_dx11.exe@25605617+0x121036A, the merge block of code:gui::GameUI::UpdateFromUI, in the load after a mod toggle"
+    },
+    {"kind": "test", "test": "startup/loading/d20_first_start"}
+  ]
+}

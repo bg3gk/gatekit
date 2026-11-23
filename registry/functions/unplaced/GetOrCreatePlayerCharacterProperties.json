@@ -1,0 +1,15 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::GetOrCreatePlayerCharacterProperties",
+  "owner": "gui::VMCharacter",
+  "state": "described",
+  "rung": "inferred",
+  "does": "Returns the character view model's gui::VMPlayerCharacterProperties (+0x420), making it (0xA38 bytes) and its spell book comparer when there is none, and defers the property's change notice.",
+  "fingerprint": {"calls": ["fp:421e0e95d33186e9", "fp:92dd4fee11aeea92", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "The Toolkit's NoesisGameUI.dll+0x480F10 has the same body (allocation 0xA38, the same constructor, +0x420 written, DeferPropertyChanged); its callers include gui::ViewModelProvider::UpdateIsMultiplayerCharacter."
+    }
+  ]
+}

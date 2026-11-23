@@ -2,6 +2,8 @@
   "schema": "registry/type/1",
   "id": "ecl::ClientRootLevelStartDialogReadyComponent",
   "kind": "struct",
+  "state": "described",
+  "about": "A client tag on the root level's start dialogue: ecl::GameStatePrepareRunning::Update queries eoc::ServerRootLevelStartDialogComponent without and with it (and eoc::ServerRootLevelLoadedComponent without it) - the client's PrepareRunning says when the level's start dialogue may begin.",
   "size": 1,
   "fields": [],
   "concept": {
@@ -9,6 +11,24 @@
     "ext_name": "ClientClientRootLevelStartDialogReady",
     "one_frame": false
   },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "macOS ecl::GameStatePrepareRunning::Update holds the query spec <ServerRootLevelStartDialogComponent> without <ClientRootLevelStartDialogReadyComponent>; RegisterQueryDescription entries name the other two."
+    },
+    {
+      "kind": "game-name",
+      "store": "type-names",
+      "says": "The executable keeps this type's name as text"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Whether FastLoadStreamingWait (PrepareRunning ended at its first update) adds this tag later than the game would - the arrival cinematic and the courier's death land after LevelGameplayStarted with it - and whether a headless WLD arrival's stall after its cinematic comes from it.",
+      "about": "reach",
+      "state": "open"
+    }
+  ],
   "survey": {
     "batch": "tags",
     "one_byte": "not alive",

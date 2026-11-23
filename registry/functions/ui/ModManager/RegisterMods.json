@@ -1,0 +1,71 @@
+{
+  "schema": "registry/function/1",
+  "id": "ui::ModManager::RegisterMods",
+  "state": "described",
+  "rung": "game",
+  "does": "Registers the interface parts of a set of modules (each module's GUI folder: metadata, assets, state machines, resources) as ModData of the interface's mod manager; answers whether it registered anything. On the first start it runs once, at the end of LoadModule, with the module manager's load-ordered modules (16 in copy attacks), returning true.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:227aadb92d3cd447",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:482916027a6ce3fa",
+      "fp:5227b96c8688ff31",
+      "fp:660f2e46ceffb7dc",
+      "fp:708891383f8b9be0",
+      "fp:72b4801e8e903ffc",
+      "fp:7ec6bc773f10ca24",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "import:37b5ff602440c248",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ],
+    "strings": ["923b77b8bb111aa1", "f3af4a808574304a"]
+  },
+  "evidence": [
+    {
+      "kind": "game-name",
+      "says": "the dx11 binary's own name for it, with its signature (ObjectSet<ls::Module> const&)"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy attacks (t3): one call per first start, row before LoadModule->LoadMenu, set size 16, answer 1"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGUIBinding.dll",
+      "tie": "match",
+      "says": "NoesisGUIBinding.dll exports this name; the symbol database matches the export to this function by strings"
+    },
+    {
+      "kind": "reach",
+      "says": "called by the fork's early merge on the interface's first update after the first StartLoading with 4 modules taken from Settings.Mods and AvailableMods (copy attacks, f7): answered true, 9 ms after StartLoading and 17 ms before the Loading state was entered; the game's own call followed at the end of LoadModule with 16"
+    },
+    {
+      "kind": "reach",
+      "says": "a count probe in copy coord: 0 calls in a save's load from the menu and in a return to the menu; 1 call in a save's load after a mod was toggled in the mod manager (the client's LoadModule ran again)"
+    },
+    {
+      "kind": "reach",
+      "says": "a probe with a snapshot of its second argument at the first start's own merge (end of LoadModule): the array is the client's LoadOrderedModules, 16 modules, the same UUIDs in the same order as the set the fork merged early at StartLoading"
+    },
+    {
+      "kind": "watch",
+      "says": "a probe in copy coord (c2, build v34-start-extmod-3): 0 calls in the main menu through six Ext.Mod.SetEnabled toggles; one call in the next load, from bg3_dx11.exe@25605617+0x1210301, the head of code:gui::GameUI::UpdateFromUI's mods' merge block, followed there by 11 calls of code:ui::TextureProvider::LoadTextureMetadataInternal (so it answered true)"
+    },
+    {"kind": "test", "test": "startup/loading/d20_first_start"}
+  ],
+  "questions": [
+    {
+      "ask": "Can it be called at the first StartLoading with the enabled mods of ModManager.Settings (LoadOrderedModules is empty then) so the first loading screen is made with the mods' resources?",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

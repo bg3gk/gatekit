@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::FileFormatIO::LoadFiles",
+  "state": "described",
+  "rung": "game",
+  "does": "Loads several files into one FileFormatIO object in turn: for each path an LSF or LSX visitor is made and the object's own visit runs on it, so whether entries merge or replace is the subclass's visit; the game's own multi-file load (eoc::SpeakerManager::Load calls it with every module's file).",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Windows pseudo-code: a loop over a Span of Path, EndsWith('.lsf') picks LSFObjectVisitor else DefaultObjectVisitor, then the visitor's load"
+    },
+    {"kind": "game-name", "says": "the export's decorated name in CoreLib.dll"},
+    {
+      "kind": "toolkit-name",
+      "store": "CoreLib.dll",
+      "tie": "name",
+      "says": "CoreLib.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

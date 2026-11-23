@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateLoad::SetLoadTicks",
+  "state": "described",
+  "rung": "game",
+  "does": "Sets the loading screen's local progress (ls::LoadingScreenManager+0x38) to a count outright.",
+  "fingerprint": {"vtables": [{"slot": 16}]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Toolkit body calls ls::LoadingScreenManager::SetLocalProgress; macOS bg3_macos_x64+0x356DB80 stores to manager+0x38"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "pair",
+      "says": "The macOS build's symbols hold this name; a stored pair of the two builds joins that function to this one (a seed)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "match",
+      "says": "EoCClient.dll exports this name; the symbol database matches the export to this function by vtable"
+    }
+  ]
+}

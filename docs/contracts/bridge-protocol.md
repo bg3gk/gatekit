@@ -234,8 +234,12 @@ writes it to the channel folder.
   game copy (read from the head at start), so it is unique across resets, loads and restarts.
 - **Segments**: rows `(n-1)*rows+1 .. n*rows` of a boot are `events_<side>_<boot>_<n>.jsonl`, one
   row per line. The game rewrites the last segment whole in the tick a row is added; a full
-  segment is written once more and never again. A reader that finds a torn last line reads it
-  again a moment later.
+  segment is written once more and never again. The write is in place (truncated, then written),
+  so a reader may find the file torn, empty or cut at a line's end. A segment of a boot never
+  loses rows, and the head is written after its segment: a read that is torn, or ends before the
+  head's `seq` (a full segment: before its last row), is read again a moment later, and a read
+  with fewer rows than the reader's last read of that file is a write in progress - the last read
+  stands.
 - **The head** `events_<side>.json` (`schemas/events/head.schema.json`): `{side, boot, segment,
   first, seq, rows, started, tick, process, open, counts, on}`, written when a boot starts and in
   every tick the log changed: the segments kept (`first` .. `segment`), the side's tick count then,
@@ -304,10 +308,23 @@ What waits for the player, and what changed, is a view of the event log
   key replaces it, an `end` or `release` row closes it. The states: the blocking windows of GK.Gui
   (key `window:<name>`; kinds `dialogue`, `roll`, `reaction`, `box`, `reward`, `trade`, `loot`,
   `rest`, `tutorial`, `learn`, `split`, `book`, `menu`, `save`, `load`, `gameover` for the
-  game-over box, `window` for a blocking window the vocabulary does not name), where an open
+  game-over box, `setup` for a page of the first launch - `Eula`, `ModBrowserSplashScreen`,
+  `SensitiveSettings`, `HDRCalibration`, `GammaCalibration`, the gamma page over the main menu too,
+  each under its own name (`window:Eula`) with `controls` (what a player can act on, as
+  `GK.Gui.Look` names it: handle, kind, text, command, parameter, value, items) and
+  `firstLaunch` (the switch `ShowFirstTimeSetup`) in the row (`bg3_events`, `game.wait_row`; the
+  host's compact attention item keeps `window` and `choices` of them) - `splash` for the "press any key" page
+  (`window:SplashScreen`, no control, `keys`), `window` for a blocking window the vocabulary does
+  not name). A page's controls are made and arranged by Noesis's layout over several frames (the
+  page, then a list's items, then what an item holds): its row is written in the tick the layout has
+  arranged the page and every control it shows (`GK.Gui.Look`'s `laidOut`; at most 4 s); a page gone
+  before that was never drawn and has no row. `Eula` waits only while the switch
+  `ShowFirstTimeSetup` is on (the registry entry's `active`: with it off, Eula's XAML raises
+  `OpenSplashScreen` itself on Loaded), so an ordinary start has no `setup` row. Where an open
   dialogue stands (key `dialogue:phase`: `dialogue_choice`, `dialogue_continue`, and
-  `dialogue_line` as a quiet `hold`), `film`, the game state (key `state`: `loading`, `saving`,
-  `menu`), and `combat_started` (server, key `combat`, while the party fights).
+  `dialogue_line` as a quiet `hold`), `film`, the client's game state (key `state`: `loading`,
+  `saving`, `menu`; Loads, below), the main menu's camera descent (key `menu:descent`:
+  `menu_descent`), and `combat_started` (server, key `combat`, while the party fights).
 - **Told**: every `begin` (its kind), every `end` (`<kind>_ended`, or the end the kind names:
   `combat_ended`), and the `news` kinds: `death`, `downed`, `combat_elsewhere`,
   `dialogue_started`, `dialogue_ended_server`, `level_started`, `level_unloading`,
@@ -320,9 +337,83 @@ What waits for the player, and what changed, is a view of the event log
   the host's time since the last segment was written; `since_ticks` is the side's ticks from the
   row to the last row.
 
-Hooks: Osiris listeners and `Ext.Events.GameStateChanged` on the server; on the client one look
+**Loads.** The key `state` is the client's alone (`Client/Attention.lua`): its state machine passes
+every load, while the server's does not exist at the start and sits `Uninitialized` in the menu;
+the server writes no `state` rows (its states stay `game_state` rows). Each condition is a state
+of the client's machine, never a wait:
+
+- **A load begins** when the client enters `StartLoading` (or, with nothing open, any state that
+  is not `Menu`, `PrepareRunning`, `Running`, `Paused` or `Save`): `loading` with `state`, and
+  `from`, the state it left (`Menu`, `Running`). Every kind of load passes `StartLoading`: the
+  start (`InitMenu`, `StartLoading`, `Init`, `LoadModule`, `LoadMenu`, `StopLoading`, `Menu`); a
+  save's load or a new game from the menu (`Menu`, `StartLoading`, `StartServer`, `Idle`,
+  `InitNetwork`, `InitConnection`, `StartLoading` again, `Idle`, `UnloadLevel`, `UnloadSession`,
+  `Idle`, `LoadSession`, `LoadLevel`, `SwapLevel`, `StopLoading`, `PrepareRunning`); a save's load
+  in a session (`Running`, `StartLoading`, `Idle`, `UnloadLevel`, `UnloadSession`, `Idle`,
+  `LoadSession`, ..., `PrepareRunning`); a return to the menu (`Running`, `StartLoading`,
+  `Disconnect`, `UnloadLevel`, `UnloadSession`, `LoadMenu`, `StopLoading`, `Menu`). Every state
+  between is inside the same load: no row of its own here.
+- **A load ends** when the loading screen is hidden: the client enters `Menu` or `PrepareRunning`
+  (the timeline's `LoadingScreenHidden` is in that tick), or `Running` with a load still open:
+  `loading_ended` with `to`. `PrepareRunning` lasts about a second, or as long as a new game's
+  opening film (`film` waits meanwhile); `Running` follows it.
+- `Menu` opens `menu` (`menu_ended` with `to` when it is left); `Save` opens `saving`
+  (`saving_ended` with `to`).
+- **Through a reset of the client's Lua.** A save's load, a new game and a return to the menu
+  start a new Lua state of the client inside the load (at `Idle` after `UnloadSession`, or in
+  `LoadMenu`); the start's first Lua runs in `LoadModule`, after `StartLoading`. A new boot opens
+  again what its machine is in. When the previous boot of the same game process left that same
+  state open, the new row carries `continues` = `{ boot, seq }` of the row that told it, and the
+  host does not tell it again to a caller whose cursor stood at that boot at or past that seq
+  (`AttentionReader.ToldBefore`); a caller that never saw that row is told this one. When it left
+  open a state that is over now, the new boot opens it (with `continues`) and ends it at once, so
+  that the end is told. With no previous row - the start: no Lua exists at `StartLoading` -
+  `loading` carries `startedMs`, the time the client entered `StartLoading` in the clock of
+  `Ext.StartupVideos.Timeline()` (ms since the process was created, GateKit's Script Extender
+  build), and `from` read there. A caller is so told exactly one `loading` and one
+  `loading_ended` per load.
+- **The main menu ready.** On the "press any key" page's key, on the start and after every return
+  to the menu, the menu's accept event plays the timelines the menu level's cinematic arena
+  trigger binds to it - the game's `MainMenu/MM_Accept` (`d0fbd7c8-89e5-b1cf-5528-55fb12deb971`)
+  and `MM_Accept_Temple`, or a mod's own. That trigger is the first one the menu's timeline
+  system marks played (`ClientTimelinePlayedMainMenuTrigger`, its events'
+  `ClientTimelineMainMenuActiveEvent.Event`) after the client enters `Menu`; the open event's is
+  played while the menu loads. When one of its timelines goes `PlaybackState` 0 -> 2:
+  `menu_descent` (key `menu:descent`, `timeline` = that one, `playback`); when the first one that
+  played is back at rest, the camera is: `menu_descent_ended` (`timeline`, `playback`; `to`
+  instead when the menu was left before). A menu level whose trigger binds no timeline to the
+  accept event, or one that never comes to rest (a looping timeline), leaves `menu:descent`
+  unopened or open; the menu works either way, nothing of the game waits for it.
+  `TimelineData` has no replication event, so the accept's timelines are read every tick, only
+  while the client is in `Menu`.
+
+Hooks: Osiris listeners on the server; `Ext.Events.GameStateChanged` on the client; on the client one look
 per tick at the names of ContentRoot's widgets and the registry's full check of the blocking
-windows when that list changes, else every 200 ms; the film flag every 500 ms. A state that
+windows when that list changes, else every 200 ms; the film flag every 500 ms.
+
+**The pages of the interface** are rows of the event log, not attention: each widget under
+ContentRoot that appears is `ui_page`, each that goes `ui_page_ended` (family `state`), payload
+`{ page, widget, viewModel }` - `page` its x:Name or, without one, its view model's name
+(`gui::DCHDRCalibration` -> `HDRCalibration`), as `GK.Gui` names it. They come from the same look
+at ContentRoot's names: a state read each tick, told when it changes; every page, the HUD's and the
+main menu's too. A boot tells the pages open at its start; a page shown twice is two rows.
+
+**The loading screen's look** is rows of the event log too, not attention, read after the fact
+from the start's timeline of GateKit's Script Extender build (`Ext.StartupVideos.Timeline(since)`):
+the loading screen runs while the client's Lua is reset, or before it exists. At each boot of the
+client's Lua and every 15 ticks after, the timeline's rows since the last ones imported (kept in
+`timeline_imported.json` of the channel with the game process's name) become `loading_wallpaper`
+- `{ what = "set", images, slot, fadeIn, fadeOut }` when the slideshow (`gui::LSImageSequence`) is
+made ready, its images in the order it will show them; `{ what = "shown", image, index, count,
+look }` when the wallpaper on screen changes (`look` `sequence` or `single`); `{ what = "gone",
+image, index, count, look }` when its element leaves the interface (the widget went; it outlives
+`LoadingScreenHidden` by seconds) - and `hint_shown`
+`{ key, index, count }` (family `state`). Every wallpaper element is followed, the game's and a mod's:
+each `loading_wallpaper` row names its `owner` (the x:Name of its nearest widget: `root` for the
+game's own loading screen), `ownerData` and `visible`. Each carries `ms`, the timeline's time (milliseconds
+since the game process was created), and `row`, the timeline's row; the row's own `t` is when it
+was imported. The loading bar's progress is not imported: it moves tens of times a load and the
+game's totals run past 100%; `gatekit timeline` shows it. A state that
 begins and ends with an engine component is recorded from the component's own creation and
 destruction (`Ext.Entity.OnCreate` / `OnDestroy`, in the tick it happens) and is marked
 `hooked`: the reaction prompt, `code:ecl::interrupt::PlayerDecisionComponent` (it exists only while
@@ -336,7 +427,7 @@ into one view: one waiting state per key whichever side reports it - a `begin` o
 open with the same kind from the other side, and an `end` of a key already closed, are the same
 state told twice and are left out. A caller is told, after each game call, everything waiting and
 every told row it was not told before (a new boot counts from its start; a first look tells only
-what waits). `AttentionWait` ends a wait on
+what waits). A caller's cursor never goes back within a boot: what it was told stays told. `AttentionWait` ends a wait on
 the first told row the caller has not been told (with `from`, the caller's cursor: what happened
 between its previous call and the wait counts; without it, what appears after the wait began), on
 a condition, or on its timeout.

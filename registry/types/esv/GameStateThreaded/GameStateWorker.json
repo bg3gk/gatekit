@@ -1,0 +1,44 @@
+{
+  "schema": "registry/type/1",
+  "id": "esv::GameStateThreaded::GameStateWorker",
+  "kind": "struct",
+  "state": "described",
+  "rung": "inferred",
+  "about": "The server's game-state worker: the object esv::GameStateThreaded::GameStateWorker::DoWork (code:esv::GameStateThreaded::GameStateWorker::DoWork) runs on the server's own thread; DoWork ticks the server's state machine once its tick period has passed and waits out the rest with its precise clock. The GateKit fork finds it as DoWork's argument (the extender wraps DoWork; FastLoad.inl OnServerWorker).",
+  "fields": [
+    {
+      "offset": 120,
+      "name": "Clock",
+      "type": "ls::PreciseClock",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "+0x90 read 33333 (30 ticks a second) live and written 0 (no wait between ticks) by the fork's FastLoadServerTick; +0x78 is where DoWork's wait reads its clock (decomp of DoWork)"
+        }
+      ]
+    },
+    {
+      "offset": 144,
+      "name": "TickPeriodUs",
+      "type": "int64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "+0x90 read 33333 (30 ticks a second) live and written 0 (no wait between ticks) by the fork's FastLoadServerTick; +0x78 is where DoWork's wait reads its clock (decomp of DoWork)"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "W3 round 1 read 33333 at +0x90 live in every state, in front and behind; the sampler shows the server thread waiting in ls::PreciseClock (bg3_dx11.exe@25605617+0x4122890/bg3_dx11.exe@25605617+0x4122940) under DoWork"
+    },
+    {
+      "kind": "watch",
+      "says": "W3 round 1-2 wrote 0 at +0x90 during loads: the server ticked without waiting (UnloadLevel 1403 -> 260 ms) and the game wrote 33333 back by itself after the load"
+    }
+  ]
+}

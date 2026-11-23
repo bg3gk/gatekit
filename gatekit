@@ -39,7 +39,9 @@ for configuration in Debug Release; do
     done
 done
 
-# The publish, and whether a build in bin is newer than it: any of its assemblies.
+# The publish, and whether a build in bin is newer than it: any of its assemblies - the libraries'
+# GateKit.*.dll and the program's own gatekit.dll (GateKit.Cli's assembly is named `gatekit`, so a
+# change made only there is caught by that name, not by the GateKit.* pattern).
 published=""
 if [ "${GATEKIT_PUBLISH:-1}" != 0 ] && [ -f "$tool/current" ]; then
     read -r name < "$tool/current" || name=""
@@ -49,7 +51,8 @@ if [ "${GATEKIT_PUBLISH:-1}" != 0 ] && [ -f "$tool/current" ]; then
 fi
 stale=""
 if [ -n "$published" ] && [ -n "$built" ]; then
-    for assembly in "${built%/*}"/GateKit.*.dll; do
+    for assembly in "${built%/*}"/gatekit.dll "${built%/*}"/GateKit.*.dll; do
+        [ -f "$assembly" ] || continue
         if [ "$assembly" -nt "$tool/stamp" ]; then stale=1; break; fi
     done
 fi

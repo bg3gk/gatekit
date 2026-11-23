@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "Noesis::ResourceDictionary::EnumKeyValues",
+  "state": "described",
+  "rung": "game",
+  "does": "Calls the delegate for every key and value of this dictionary's own table only; merged dictionaries are not walked, so gui::LSImageSequence::OnLoaded sees only the images written inside its own Resources.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "macOS pseudo-code: one loop over the hash table at +0x270 (count +0x27c, 0x30 per slot), skipping empty slots; no reference to the merged list"
+    },
+    {"kind": "game-name", "says": "the macOS build's symbols hold this name"},
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGUIShared.dll",
+      "tie": "name",
+      "says": "NoesisGUIShared.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

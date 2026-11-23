@@ -1,0 +1,22 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::BinkGoto",
+  "state": "described",
+  "rung": "game",
+  "does": "Moves the handle to a frame (0 means 1, clamped to Frames): decodes from the key frame up to it; flag 1 goes to the key frame only, flag 2 leaves the sound; clears the start time HBINK+0x644 so the clock starts again",
+  "fingerprint": {
+    "calls": [
+      "fp:450062806ea30872",
+      "fp:5227b96c8688ff31",
+      "fp:67d0c73cbf84efcd",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {"kind": "game-name", "says": "Bink's own export name"},
+    {
+      "kind": "read",
+      "says": "decompiled bink2w64.dll; called by code:bik::BinkManager::LoadVideo (BinkGoto(h,2) after BinkOpen) and bg3_dx11.exe@25605617+0x21B7400 (BinkGoto(h,0,0))"
+    }
+  ]
+}

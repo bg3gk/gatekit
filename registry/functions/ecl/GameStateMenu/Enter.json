@@ -1,0 +1,42 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateMenu::Enter",
+  "state": "described",
+  "rung": "game",
+  "does": "Enters the client's Menu state: creates an entity with eoc::gamestate::MainMenuComponent, sets EocClient+0xf1 and calls the app's virtual +0x148 (macOS BaseApp +0x150). The UI then gets the game event GE.OnStateMainMenu: Keyboard.xaml's GameRoot sets the substate Eula, whose page raises OpenSplashScreen on Loaded when ShowFirstTimeSetup is false, and the UI state SplashScreen (the press-any-key page) is pushed.",
+  "fingerprint": {
+    "calls": [
+      "fp:0b67d8a75def50b2",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:78384f202a76b16c",
+      "fp:e4d053ad9455ea7c",
+      "fp:ed300bbe7ea5e8cb",
+      "fp:f74dd2255a61ce9b"
+    ],
+    "vtables": [{"slot": 3}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "slot 3 (+0x18) of the Menu virtual table bg3_dx11.exe@25605617+0x55F9918 (state id 7, the object code:ecl::EocClient::Load queues last); same body as macOS ecl::GameStateMenu::Enter bg3_macos_x64+0x357F2E0 (EoCClient.dll exports ecl::GameStateMenu::Enter at slot 3); Mods/MainUI/GUI/StateMachines/Keyboard.xaml and Pages/Eula.xaml read from the game's data"
+    },
+    {
+      "kind": "reach",
+      "says": "after the client state Menu in every start and after a return from a session to the main menu, GK.Gui.Stuck() names the SplashScreen widget"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

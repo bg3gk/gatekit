@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "Eoc::OnServerStarted",
+  "state": "described",
+  "rung": "game",
+  "does": "When the in-process server has started, joins the host's own client to it in-process (net::AbstractPeer::SetLoopbackPeer) unless ls::GlobalSwitches DisableLocalMessagePassing (dx11 +0x111) is set; then the host's own client connects over a real loopback socket like a remote one.",
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "EoC.dll+0x16DD80 exports it; read: the branch on Global+0x149 around SetLoopbackPeer"
+    },
+    {"kind": "game-name", "says": "bg3_macos_x64+0xE54540, the same with Global+0x101"},
+    {
+      "kind": "read",
+      "says": "dx11's body is the Toolkit's line for line, the flag at ls__GlobalSwitches + 0x111"
+    },
+    {
+      "kind": "reach",
+      "says": "a probe hit once per process at the server's start (args: the Eoc object, the server's port 23253), with the flag set at the client's first Lua; the game reached Running and a LAN guest joined (W3 round 7)"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Which switch sets the Global flag that turns the loopback off (a command-line option, a debug setting)? With it a host's own client would take the remote clients' path - the shape a dedicated host with a separate, reduced client needs.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

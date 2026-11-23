@@ -1,0 +1,40 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::LSImageSequence::OnLoaded",
+  "state": "described",
+  "rung": "game",
+  "does": "The loading screen's slideshow control on Loaded: collects the images of its own Resources, shuffles them when Shuffle is true (LCG 0x343fd/0x269ec3), builds one Storyboard: a discrete ObjectAnimationUsingKeyFrames on Image.Source (one key frame per image, repeat forever) and an opacity animation; each image change is the animation clock setting Image.Source.",
+  "fingerprint": {
+    "calls": [
+      "fp:5227b96c8688ff31",
+      "fp:58a50e94f3a60561",
+      "fp:e4d053ad9455ea7c",
+      "fp:f069de186f7c7b96"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "macOS pseudo-code: ResourceDictionary::EnumKeyValues with EnumResource, ShuffleProperty read, swap loop with 0x343fd/0x269ec3, Storyboard built and begun"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code reads ShuffleProperty (+0x5F9C478), steps the LCG in this+0x274, swaps 8-byte entries of the array at this+0x278 (count +0x284), and multiplies the slot TimeSpan at +0x290 by the count, as macOS gui::LSImageSequence::OnLoaded does at its offsets minus 8"
+    },
+    {
+      "kind": "watch",
+      "says": "read from Lua each tick in loads to CTY_Main_A (copy attacks): the control's own Source changed loadScreen_BGartwork_3 -> 9 about 21 s after Loaded and its own Opacity faded 1 -> 0 -> 1 around the change; a new control and a new widget at every load"
+    },
+    {
+      "kind": "reach",
+      "says": "Wrapped by the fork (post-hook): runs once per new loading widget's slideshow, 15-30 ms after StartLoading and again about 3 s after a new client Lua state's interface is set up (LoadMenu, LoadSession); after it the image array holds the shuffled order (WallpaperSet rows of build v34-start-wall-3)"
+    },
+    {"kind": "test", "test": "startup/loading/wallpaper"}
+  ]
+}

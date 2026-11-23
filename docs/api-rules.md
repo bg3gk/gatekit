@@ -28,6 +28,14 @@ it waits for arrives in the event log. A sleep of a fixed length and a timeout c
 seconds are defects: they make a test slow at speed 1, wrong at speed 8, and blind to what
 really happened.
 
+**A wait is a smell.** Every wait, pause, poll or retry - "wait N ticks, check, wait again", "no
+change for N ticks", "try again in a moment" - is treated as a defect to be removed, in the API, in
+tests, in tools and in an agent's own work, unless the wait itself is what is being tested. The
+model is always: the game acts, an event says so, the caller reacts. Before a wait is written, the
+event is searched for with every instrument at hand (the event log's kinds, attention, the game's
+own events and states, the start's timeline, watches, probes, coverage); a wait that is kept after
+that search is written down as a gap with what was tried, and replaced when the event is found.
+
 - Whatever a caller may need to wait for has a row of its own in the log - a state that begins
   and ends, a window that opens and closes, an action that is carried out or refused, a roll
   that is made. Where the game gives no event, one is found or made (a state read each tick and

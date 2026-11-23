@@ -1,0 +1,18 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::BinkShouldSkip",
+  "state": "described",
+  "rung": "game",
+  "does": "Answers whether the caller should drop a frame to catch up; always 0 unless the handle has Bink sound tracks (HBINK+0x12C != 0) and sound on (HBINK+0x40 != 0), then 1 when more than HBINK+0x64C ms late, at most 4 times in a row",
+  "evidence": [
+    {"kind": "game-name", "says": "Bink's own export name"},
+    {
+      "kind": "watch",
+      "says": "live: the game's clips open with HBINK+0x12C = 0 and +0x40 = 0 (BinkOpen flag 0x4000 BINKSNDTRACK and no BinkSetSoundTrack call in bg3_dx11.exe); 0 frames skipped in 7 replays of a 5 s clip"
+    },
+    {
+      "kind": "watch",
+      "says": "live (a 5 s clip, menu replay): writing HBINK+0x40=1 then +0x12C=1 after Play turns it on for a game clip; with the 16.16 scale at *(HBINK+0x1B8)+0x4C small, bik::BinkManager::Update's loop advanced 5 frames per call (4 skips + 1), 108-112 of 150 frames skipped, the clip took 1.5-1.9 s instead of 6.7 s"
+    }
+  ]
+}

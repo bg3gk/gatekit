@@ -1,0 +1,88 @@
+{
+  "schema": "registry/type/1",
+  "id": "unplaced::TickClock",
+  "kind": "struct",
+  "state": "described",
+  "rung": "inferred",
+  "about": "The clock object a game thread ends its tick with (unplaced::TickLimit, unplaced::TickWait): the server's worker holds it at +0x78, the client's app (BaseApp) at +0xD0.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "Clock",
+      "type": "ls::PreciseClock",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the bodies of unplaced::TickLimit and unplaced::TickWait; the server's period at worker +0x90 read live as 33333 (round 1), the client's at app +0xE8 is Ext.ClientRender.FrameCap's MicrosecondsPerFrame"
+        }
+      ]
+    },
+    {
+      "offset": 24,
+      "name": "PeriodUs",
+      "type": "int64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the bodies of unplaced::TickLimit and unplaced::TickWait; the server's period at worker +0x90 read live as 33333 (round 1), the client's at app +0xE8 is Ext.ClientRender.FrameCap's MicrosecondsPerFrame"
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "MeasuredUs",
+      "type": "int64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the bodies of unplaced::TickLimit and unplaced::TickWait; the server's period at worker +0x90 read live as 33333 (round 1), the client's at app +0xE8 is Ext.ClientRender.FrameCap's MicrosecondsPerFrame"
+        }
+      ]
+    },
+    {
+      "offset": 40,
+      "name": "CarryUs",
+      "type": "int64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the bodies of unplaced::TickLimit and unplaced::TickWait; the server's period at worker +0x90 read live as 33333 (round 1), the client's at app +0xE8 is Ext.ClientRender.FrameCap's MicrosecondsPerFrame"
+        }
+      ]
+    },
+    {
+      "offset": 64,
+      "name": "TickStart",
+      "type": "int64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the bodies of unplaced::TickLimit and unplaced::TickWait; the server's period at worker +0x90 read live as 33333 (round 1), the client's at app +0xE8 is Ext.ClientRender.FrameCap's MicrosecondsPerFrame"
+        }
+      ]
+    },
+    {
+      "offset": 72,
+      "name": "LastTickStart",
+      "type": "int64",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "the bodies of unplaced::TickLimit and unplaced::TickWait; the server's period at worker +0x90 read live as 33333 (round 1), the client's at app +0xE8 is Ext.ClientRender.FrameCap's MicrosecondsPerFrame"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "unplaced::TickLimit and unplaced::TickWait take it as their first argument; DoWork(worker + 0x78), ls::GameThread::DoWork(app + 0xD0)"
+    }
+  ]
+}

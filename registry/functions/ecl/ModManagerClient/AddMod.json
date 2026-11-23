@@ -1,0 +1,38 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::ModManagerClient::AddMod",
+  "state": "described",
+  "rung": "game",
+  "does": "Appends a mod to the client's mod settings, saves modsettings.lsx and re-resolves the load-ordered modules (ecl::ModManagerClient::SaveSettingsAndReload), then calls the manager's enabled-state listeners with the mod; the game's mod manager calls it when the player enables a mod",
+  "fingerprint": {
+    "calls": ["ecl::ModManagerClient::SaveSettingsAndReload", "fp:e4d053ad9455ea7c"],
+    "vtables": [{"slot": 3}]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "same shape as the macOS build's ecl::ModManagerClient::AddMod - the settings' AddMod on the manager's settings, SaveSettingsAndReload, then the listeners with the added mod; it is the manager's virtual slot 0x18 that gui::DCModBrowser::ToggleModEnabled (bg3_dx11.exe@25605617+0x15F2290, named by its own assert text) calls to enable a mod and each of its mod.io dependencies not enabled"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: adds the mod to the settings at this+0x1C8 (bg3_dx11.exe@25605617+0x11B3530), then calls code:ecl::ModManagerClient::SaveSettingsAndReload on this, then each listener of the array at this+0x1F8 (count +0x204, stride 0x48) with the mod"
+    },
+    {
+      "kind": "watch",
+      "says": "probes in copy coord (c2, build v34-start-extmod-3), Ext.Mod.SetEnabled(AI, true) in the main menu, three times: each call enters code:ecl::ModManagerClient::SaveSettingsAndReload from bg3_dx11.exe@25605617+0x181B049 with the same this, which enters code:ls::ModuleSettings::ResolveAddonsOrder (bg3_dx11.exe@25605617+0x181B4EA) and code:ls::ModManager::LoadModFromSettings (bg3_dx11.exe@25605617+0x181B503) in that order; client thread"
+    },
+    {"kind": "test", "test": "startup/mods/ext_mod"}
+  ]
+}

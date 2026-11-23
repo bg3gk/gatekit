@@ -1,0 +1,42 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::GameThread::DoWork",
+  "state": "described",
+  "rung": "game",
+  "does": "The game thread's body: registers its thread, calls the application's virtual +0xB0 (code:App::InitGame) once, signals the starter's event and waits for the go, then runs the frame loop (the application's slots +0x2E0 and +0x2D8) until its stop flag (+0xC).",
+  "fingerprint": {
+    "calls": [
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:b03298282d1a73bb",
+      "fp:b3f1d258b924641c",
+      "fp:bfddee1d090cef08",
+      "fp:c531f5b4972e15d9",
+      "fp:cddbf417d820f882",
+      "fp:d1045bdeed38dbc1",
+      "import:19360286d0fa965d",
+      "import:3c67524f6489a260",
+      "import:43ede779a10bf433",
+      "import:7e27f81550607e74",
+      "import:ad6cb8528ecfbaab"
+    ],
+    "components": ["ls::EffectsManager"],
+    "vtables": [{"slot": 1}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11: slot 1 of the virtual table bg3_dx11.exe@25605617+0x58DC2E0 that bg3_dx11.exe@25605617+0x3DF9F20 gives the thread it starts under the name GameThread (it then blocks on the thread's event); the body calls through the application's table at +0xB0, which the application's table bg3_dx11.exe@25605617+0x5499F58 fills with App::InitGame, before SetEvent; the macOS ls::GameThread::DoWork has the same order (dispatcher registered, app slot +0xB8 in the Itanium layout, OpenDoor, wait, loop)"
+    },
+    {
+      "kind": "pairing",
+      "says": "by the shape against bg3_macos_x64 ls::GameThread::DoWork; no stored pair"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

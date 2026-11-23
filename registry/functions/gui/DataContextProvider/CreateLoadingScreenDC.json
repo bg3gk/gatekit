@@ -1,0 +1,19 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::DataContextProvider::CreateLoadingScreenDC",
+  "state": "described",
+  "rung": "game",
+  "does": "Makes the loading screen's view model (gui::DCLoadingScreen, 0x340 bytes on macOS): registers it as a listener of ecl::GameStateEventManager, makes the two hint slots (VMLoadingHint), the AdvanceHintCommand, seeds the hint random with rand() and keeps ecl::HintManager::m_ptr.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "macOS pseudo-code: RegisterListener(ecl::GameStateEventManager::m_ptr), _rand() into +0x2f8/+0x2fc, ecl::HintManager::m_ptr into +0x308, two VMLoadingHint inserted"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

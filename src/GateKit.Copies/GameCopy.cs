@@ -19,9 +19,29 @@ namespace GateKit.Copies;
 /// instead of loading the last save: what a recipe of the menus starts from.</param>
 /// <param name="Splash">Stop on the splash screen before the main menu ("press any key"), which is
 /// left standing for the caller to pass; first-launch screens are gone through as for the main menu.</param>
+/// <param name="UntilLua">Return as soon as the bridge first answers (the client's first heartbeat,
+/// in its LoadModule state, right after the startup videos): no menu, no session; the game goes on
+/// loading its menu meanwhile.</param>
+/// <param name="FirstLaunch">Start as a first launch: the game's own switch `ShowFirstTimeSetup` is
+/// set at the first Lua, and the start ends on the first first-launch page (`Eula`), which is left
+/// standing with the pages after it for the caller. An instance only: the pages write the copy's
+/// own profile.</param>
+/// <param name="CoverStart">A file of the executable's function starts (one hexadecimal offset a
+/// line): the extender puts coverage counters on them as it starts, before the engine, and saves a
+/// record beside the file at every state the client enters up to the main menu (`cover start
+/// --at-start` writes the file). Null: no coverage of the start.</param>
+/// <param name="FastLoad">Loads without the game's waits (GateKit's build: the client's frame caps
+/// and the server's tick lifted during a load, PrepareRunning's streaming wait and the screen fades
+/// cut); for automated runs, never for pictures of a load. Also on when `GATEKIT_FAST_LOAD=1`.</param>
+/// <param name="Headless">A game for logic only (GateKit's build; the night's W3 checked each switch
+/// against the logic, `gatekit logic-diff`): fast loads, the game's Lua collector held while
+/// loading, nothing drawn or presented from the start, the tick waits slept instead of spun, the
+/// window kept off the screen. No pictures (`shot`) and no window to look at. Also on when
+/// `GATEKIT_HEADLESS=1`.</param>
 public sealed record UpOptions(string? Level = null, string? Save = null, IReadOnlyList<string>? Mods = null,
     bool StoryLog = false, IReadOnlyList<string>? GameArgs = null, bool MainMenu = false, bool Splash = false,
-    bool StartupVideos = false);
+    bool StartupVideos = false, bool UntilLua = false, bool FirstLaunch = false, string? CoverStart = null,
+    bool FastLoad = false, bool Headless = false);
 
 /// <summary>
 /// A game copy: the installed game or an instance. Starts the game directly (no launcher), talks
@@ -291,6 +311,23 @@ public sealed class GameCopy
             + "; the game is left running for a look - `down` before trying again");
     }
 
+    /// <summary>A start waiting for a level or a save while its client is in the menu, followed by
+    /// its stages: each page the interface enters is looked at (the splash screen passed, a
+    /// first-launch screen gone through in an instance); true when the game moved on (a page passed,
+    /// the client gone from Menu). No stage within MenuLimit fails the start as
+    /// <see cref="MenuStepAsync"/> does, naming what holds it.</summary>
+    async Task<bool> MenuStageAsync(GameSession session, StartStages stages, UpOptions options, TimeSpan menuTime, CancellationToken cancel)
+    {
+        StartStages.Stage stage;
+        try { stage = await stages.NextAsync(session, MenuLimit, cancel); }
+        catch (CopyException) { return await MenuStepAsync(session, options, menuTime, cancel); }   // the client's Lua went with a load: a look
+        if (stage.Left is not null) return true;
+        if (stage.Full) return await MenuStepAsync(session, options, menuTime, cancel);
+        if (stage.None) return await MenuStepAsync(session, options, MenuLimit, cancel);
+        var (_, moved, _) = await LookInMenuAsync(session, cancel);
+        return moved;
+    }
+
     /// <summary>Why <paramref name="level"/> is not something -testLoadLevel can take (null = it is):
     /// the game wants MODULE:LEVEL, and given a bare level it sits in the main menu.</summary>
     public static string? LevelProblem(string level)
@@ -302,17 +339,44 @@ public sealed class GameCopy
             + "given a bare level the game only sits in the main menu";
     }
 
+    /// <summary>What `-loadSaveGame` is given for the save folder <paramref name="save"/>. The game
+    /// reads its command line in the system's ANSI code page, so a folder name that is not ASCII
+    /// never matches as itself; it also matches a save by the name after its unique id
+    /// (`<id>__<name>`, code:ecl::SavegameManager::GetSavegameIndex), which is taken when it is
+    /// ASCII and no other save of the copy's profiles (<paramref name="folders"/>) has it. GateKit's
+    /// Script Extender build gives the game the value in UTF-8 from the wide command line (its
+    /// switch WideCommandLine): with it (<paramref name="wideCommandLine"/>) the folder is passed
+    /// as it is.</summary>
+    public static string LoadSaveArgument(string save, IReadOnlyCollection<string> folders, bool wideCommandLine = false)
+    {
+        if (save.All(char.IsAscii) || wideCommandLine) return save;
+        static string? NamePart(string folder) => folder.IndexOf("__", StringComparison.Ordinal) is var cut and >= 0 ? folder[(cut + 2)..] : null;
+        if (NamePart(save) is { Length: > 0 } name && name.All(char.IsAscii)
+            && folders.Count(f => string.Equals(NamePart(f), name, StringComparison.OrdinalIgnoreCase)) == 1)
+            return name;
+        throw new CopyException($"save folder '{save}' is not ASCII, and the game reads its command line in the system's code page; "
+            + "the name after its unique id is not one the game can tell apart either (another save has it, or it is not ASCII) - "
+            + "load it from the main menu (`up --main-menu`, then GK.Gui) or give the folder an ASCII name");
+    }
+
     /// <summary>Starts the game and waits until it is playable (the client reaches Running).</summary>
     public async Task<GameSession> UpAsync(UpOptions options, CancellationToken cancel = default)
     {
         RequireNamed("up");
         using var start = TakeStart("up");
         if (GamePids().Count > 0) throw new CopyException($"the game is already running ({OwnerText()}); run `down` first");
+        CleanStaleTestFiles();
         if (options.Level is { } asked && LevelProblem(asked) is { } problem) throw new CopyException(problem);
         if ((options.MainMenu || options.Splash) && (options.Level is not null || options.Save is not null))
             throw new CopyException("a start in the main menu takes no level and no save");
         if (options.MainMenu && options.Splash)
             throw new CopyException("--splash stops before the main menu and --main-menu in it: give one of them");
+        if (options.UntilLua && (options.Level is not null || options.Save is not null || options.MainMenu || options.Splash))
+            throw new CopyException("--until-lua returns when the bridge first answers, before any menu or level: it takes no --level, --save, --main-menu or --splash");
+        if (options.FirstLaunch && (options.Level is not null || options.Save is not null || options.MainMenu || options.Splash || options.UntilLua))
+            throw new CopyException("--first-launch ends on the game's first first-launch page: it takes no --level, --save, --main-menu, --splash or --until-lua");
+        if (options.FirstLaunch && Instance is null)
+            throw new CopyException("--first-launch is for an instance (--instance NAME): the first-launch pages write the profile's own settings, never the installed game's");
         if (Instance is not null) PrepareInstance(options.Save, allSaves: options.Level is null, withMods: options.Mods is { Count: > 0 });
         RecordOwner();
         RetireFormerBridge();
@@ -326,7 +390,8 @@ public sealed class GameCopy
         if (Instance is null) backup.Save();
 
         List<string>? extra = options.GameArgs is { Count: > 0 } given ? [.. given] : null;
-        if (options.MainMenu || options.Splash) extra ??= [];   // without -continueGame the game stays in its main menu
+        if (options.MainMenu || options.Splash || options.UntilLua || options.FirstLaunch) extra ??= [];   // without -continueGame the game stays in its main menu
+        List<string> everySave = [];
         if (options.Save is { } save)
         {
             if (!Directory.Exists(Path.Combine(Layout.Saves, save)))
@@ -334,7 +399,12 @@ public sealed class GameCopy
                 var there = Directory.Exists(Layout.Saves) ? string.Join(", ", Directory.EnumerateDirectories(Layout.Saves).Select(Path.GetFileName)) : "";
                 throw new CopyException($"no save folder '{save}' in {Layout.Saves}; there are: [{there}]");
             }
-            extra = ["-loadSaveGame", save, .. extra ?? []];
+            everySave = Directory.Exists(Path.Combine(Layout.Profile, "PlayerProfiles"))
+                ? Directory.EnumerateDirectories(Path.Combine(Layout.Profile, "PlayerProfiles"))
+                    .Select(p => Path.Combine(p, "Savegames", "Story")).Where(Directory.Exists)
+                    .SelectMany(Directory.EnumerateDirectories).Select(f => Path.GetFileName(f)!).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
+                : [];
+            extra ??= [];   // -loadSaveGame itself once the run's Script Extender build is known (below)
         }
         if (options.Level is { } level) extra = ["-testLoadLevel", level, .. extra ?? []];
         // A copy starts bare - the base game and the bridge - unless mods are named; only the
@@ -344,13 +414,21 @@ public sealed class GameCopy
         EditModSettings(text => ModSettings.EnableBridge(text, BridgeMods));
         if (Instance is not null) Instance.Spread();
         else backup.LendDebugProfiles(withSaves: options.Level is null);
-        // The studio's startup video is shadowed by an empty loose file so a start does not wait on
-        // it; a start that asks for the game's own startup videos gets them (and loses the shadow).
-        SkipSplash(!options.StartupVideos);
-        ConfigureExtender(options.StoryLog);
+        // A start does not wait on startup videos: GateKit's extender build hides every one, the
+        // game's and the mods' (its StartupVideos switch), unless the start asks for them.
+        ConfigureExtender(options.StoryLog, options.StartupVideos, options.CoverStart, directSaveLoad: options.Save is not null,
+            fastLoad: options.FastLoad || FastLoadAsked(), headless: options.Headless || HeadlessAsked());
         var se = SeSwitch.ApplyForRun(Settings.ScriptExtender, Layout.SeSettings,
             keepInstalled: Instance is not null && !Settings.ScriptExtenderStock);
+        ConfigureLoader();
         if (se is not null) Out.WriteLine($"Script Extender for this run: {se}");
+        if (options.Save is { } saveFolder)
+        {
+            // GateKit's build (a local build: SeSwitch's fork) reads the value in UTF-8 from the
+            // wide command line; the stock extender leaves the game's narrow reading.
+            var argument = LoadSaveArgument(saveFolder, everySave, wideCommandLine: SeSwitch.Current().Fork);
+            extra!.InsertRange(options.Level is null ? 0 : 2, ["-loadSaveGame", argument]);
+        }
         if (LooseSources().Count > 0) SyncLoose();
         if (Directory.Exists(Layout.Channel))
         {
@@ -398,31 +476,50 @@ public sealed class GameCopy
                 if (appeared.Elapsed > TimeSpan.FromSeconds(60)) throw new CopyException("the game process did not appear");
                 await Task.Delay(500, cancel);
             }
-            var reading = await AwaitBridgeAsync(session, cancel);
+            var reading = await AwaitBridgeAsync(session, cancel, options.CoverStart is null ? 1 : 4);
             if (reading is null) break;
             KillGame();
             if (!reading.Restart || attempt == 2)
                 throw new CopyException($"the bridge did not report{(attempt == 2 ? " in the second start either" : "")}: {reading.Text}; the game was closed");
             Out.WriteLine($"{reading.Text}; restarting");
         }
-        // Never a silent wait in the menu: what holds the client is asked (GK.Gui.Stuck). The
-        // game's own first-launch and licence screens are gone through in an instance (the
-        // owner's standing consent covers GateKit's copies, never the installed game); anything else
-        // that keeps the game in the menu for MenuLimit fails the start, naming it.
+        if (options.UntilLua)
+        {
+            Out.WriteLine($"the bridge answers after {started.Elapsed.TotalSeconds:0} s (client in {session.State(Side.Client)?.GameState ?? "an unknown state"})");
+            return session;
+        }
+        if (options.FirstLaunch)
+        {
+            await SwitchFirstLaunchAsync(session, cancel);
+            await ReachFirstLaunchAsync(session, await StartStages.OpenAsync(session, cancel), started, cancel);
+            Out.WriteLine($"on the first-launch page Eula after {started.Elapsed.TotalSeconds:0} s (the pages are the caller's: GK.Gui.Look, Click, Select, Set)");
+            return session;
+        }
+        // A start through the main menu has the game skip its own pages by its own switches, set
+        // while the client still loads its module; a level's start has no menu.
+        if (options.Level is null) await SwitchMenuPagesAsync(session, skipSplash: !options.Splash, cancel);
+        // Never a silent wait in the menu: the start's stages are followed by the rows of the
+        // extender's timeline (StartStages) where the build records the interface's pages, else
+        // what holds the client is asked (GK.Gui.Stuck). The game's own first-launch and licence
+        // screens are gone through in an instance (the owner's standing consent covers GateKit's
+        // copies, never the installed game); anything else that keeps the game in the menu for
+        // MenuLimit fails the start, naming it.
+        var stages = await StartStages.OpenAsync(session, cancel);
         if (options.Splash)
         {
-            await ReachMainMenuAsync(session, started, cancel, stopOnSplash: true);
+            await ReachMainMenuAsync(session, stages, started, cancel, stopOnSplash: true);
             Out.WriteLine($"on the splash screen after {started.Elapsed.TotalSeconds:0} s (GK.Cheat.Recover() on the UI context passes it)");
             return session;
         }
         if (options.MainMenu)
         {
-            await ReachMainMenuAsync(session, started, cancel);
+            await ReachMainMenuAsync(session, stages, started, cancel);
             Out.WriteLine($"in the main menu after {started.Elapsed.TotalSeconds:0} s");
             return session;
         }
         await session.WaitStateAsync("Running", Side.Client, TimeSpan.FromSeconds(300), started, cancel,
-            menuTime => MenuStepAsync(session, options, menuTime, cancel));
+            menuTime => stages is null ? MenuStepAsync(session, options, menuTime, cancel) : MenuStageAsync(session, stages, options, menuTime, cancel),
+            lookEvery: stages is null ? null : TimeSpan.Zero);
         Out.WriteLine($"playable after {started.Elapsed.TotalSeconds:0} s");
         return session;
     }
@@ -431,8 +528,9 @@ public sealed class GameCopy
     /// it will not come: the game process ends, or Script Extender's log shows the module loaded
     /// with no Lua of the bridge. The limit counts the time the start shows no progress - its
     /// runtime log not growing - and is <see cref="CopySettings.StartTimeout"/>; a busy machine
-    /// that is slow but moving is waited for, up to four limits in all.</summary>
-    async Task<StartReading?> AwaitBridgeAsync(GameSession session, CancellationToken cancel)
+    /// that is slow but moving is waited for, up to four limits in all. A start that puts coverage
+    /// counters on first (`slower`) writes nothing for tens of seconds: its limits are that many times longer.</summary>
+    async Task<StartReading?> AwaitBridgeAsync(GameSession session, CancellationToken cancel, int slower = 1)
     {
         var since = Stopwatch.StartNew();
         var still = Stopwatch.StartNew();
@@ -448,7 +546,7 @@ public sealed class GameCopy
                 length = log?.Length ?? -1;
                 still.Restart();
             }
-            if (still.Elapsed >= Settings.StartTimeout || since.Elapsed >= 4 * Settings.StartTimeout) return reading;
+            if (still.Elapsed >= slower * Settings.StartTimeout || since.Elapsed >= 4 * slower * Settings.StartTimeout) return reading;
             await Task.Delay(500, cancel);
         }
     }
@@ -463,11 +561,49 @@ public sealed class GameCopy
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; }
     }
 
-    /// <summary>A start that is to stop in the main menu: the client reaches Menu, the splash screen
-    /// and (in an instance) the first-launch screens are gone through, and GK.Gui.Stuck() names the
-    /// main menu. With <paramref name="stopOnSplash"/> the splash screen is not passed and the
-    /// start ends when GK.Gui.Stuck() names it.</summary>
-    async Task ReachMainMenuAsync(GameSession session, Stopwatch started, CancellationToken cancel, bool stopOnSplash = false)
+    /// <summary>How long a start to the main menu may go from the bridge's first answer with no new page.</summary>
+    static readonly TimeSpan PageLimit = TimeSpan.FromSeconds(300);
+
+    /// <summary>A start that is to stop in the main menu: the splash screen and (in an instance) the
+    /// first-launch screens are gone through, and the main menu is shown. With
+    /// <paramref name="stopOnSplash"/> the splash screen is not passed and the start ends on it. With
+    /// <paramref name="stages"/> each page is the timeline's row of it, looked at once when it comes;
+    /// without, what holds the client is looked at until it is the page wanted.</summary>
+    async Task ReachMainMenuAsync(GameSession session, StartStages? stages, Stopwatch started, CancellationToken cancel, bool stopOnSplash = false)
+    {
+        if (stages is null)
+        {
+            await ReachMainMenuByLooksAsync(session, started, cancel, stopOnSplash);
+            return;
+        }
+        Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"  {started.Elapsed.TotalSeconds,5:0.0} s  {session.State(Side.Client)?.GameState ?? "?"} (the bridge answers)"));
+        var wanted = stopOnSplash ? "splash screen" : "main menu";
+        while (true)
+        {
+            var stage = await stages.NextAsync(session, PageLimit, cancel);
+            if (stage.Full)
+            {
+                Out.WriteLine("  the extender's timeline is full: the rest of the start is followed by GK.Gui.Stuck");
+                await ReachMainMenuByLooksAsync(session, started, cancel, stopOnSplash);
+                return;
+            }
+            if (stage.Page is { } page) Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"  {started.Elapsed.TotalSeconds,5:0.0} s  page {page}"));
+            if (stage.Page == "MainMenu" && stopOnSplash)
+                throw new CopyException("the game shows its main menu and never showed its splash screen; the game is left running - `down` before trying again");
+            if (stage.Page == "MainMenu" || (stage.Page == "SplashScreen" && stopOnSplash)) return;
+            if (stage.Page is null && !stage.None) continue;   // the client left Menu: not a page
+            // a page on the way (or none in the limit): looked at once - the splash screen passed, a first-launch screen gone through
+            var (stuck, moved, _) = await LookInMenuAsync(session, cancel, passSplash: !stopOnSplash);
+            if (stuck == "splash" && stopOnSplash) return;
+            if (stage.None && !moved)
+                throw new CopyException($"the game showed no new page in {PageLimit.TotalSeconds:0} s on its way to the {wanted} (GK.Gui.Stuck(): {stuck ?? "nothing"}); "
+                    + "the game is left running for a look - `down` before trying again");
+        }
+    }
+
+    /// <summary>As <see cref="ReachMainMenuAsync"/>, by looking: the client reaches Menu, then what
+    /// holds it is asked (GK.Gui.Stuck) until it names the page wanted.</summary>
+    async Task ReachMainMenuByLooksAsync(GameSession session, Stopwatch started, CancellationToken cancel, bool stopOnSplash)
     {
         await session.WaitStateAsync("Menu", Side.Client, TimeSpan.FromSeconds(300), started, cancel);
         var until = Stopwatch.StartNew();
@@ -482,6 +618,100 @@ public sealed class GameCopy
         }
         throw new CopyException($"the game did not show its {(stopOnSplash ? "splash screen" : "main menu")} in 180 s of the menu state (GK.Gui.Stuck(): {stuck ?? "nothing"}); "
             + "the game is left running for a look - `down` before trying again");
+    }
+
+    // The game shows its first-launch pages while this switch is on; it is read when the Eula page
+    // loads in Menu and turned off when the main menu's page loads (research/studies/startup-videos.md,
+    // "The first launch").
+    const string FirstLaunchSwitch = """
+        local switches = Ext.Utils.GetGlobalSwitches()
+        switches.ShowFirstTimeSetup = true
+        return { on = switches.ShowFirstTimeSetup == true, state = tostring(Ext.Utils.GetGameState()) }
+        """;
+
+    // What holds the menu, once something does: answered when GK.Gui.Stuck() names a screen.
+    const string FirstLaunchProbe = """
+        return GK.Observe({}, function(_, final)
+            local stuck, screen = GK.Gui.Stuck()
+            if stuck or final then return { stuck = stuck, widget = screen and screen.widget } end
+        end, WITHIN)
+        """;
+
+    // The game's switches for the pages before the main menu: `SkipSplashScreen` closes the "press
+    // any key" page as it opens, `ShowFirstTimeSetup` off makes Eula go straight on
+    // (research/studies/startup-videos.md, "The \"press any key\" page" and "The first launch").
+    const string MenuPagesSwitch = """
+        local switches = Ext.Utils.GetGlobalSwitches()
+        if FIRST then switches.ShowFirstTimeSetup = false end
+        switches.SkipSplashScreen = SKIP
+        return { firstTimeSetup = switches.ShowFirstTimeSetup == true, skipSplash = switches.SkipSplashScreen == true,
+            state = tostring(Ext.Utils.GetGameState()) }
+        """;
+
+    /// <summary>Sets the game's switches for the pages before the main menu at the bridge's first
+    /// answer: the splash page skipped unless <paramref name="skipSplash"/> is false, the
+    /// first-launch pages off in an instance (the installed game's are the player's). A switch the
+    /// game does not take is said; the start's stages still pass any page that comes.</summary>
+    async Task SwitchMenuPagesAsync(GameSession session, bool skipSplash, CancellationToken cancel)
+    {
+        // Research hook: client Lua run at the bridge's first answer, before anything else of the
+        // start (GATEKIT_FIRST_LUA), its answer printed - a switch the game reads early is set here.
+        if (Environment.GetEnvironmentVariable("GATEKIT_FIRST_LUA") is { Length: > 0 } early)
+        {
+            try { Out.WriteLine($"  GATEKIT_FIRST_LUA: {(await session.LuaAsync("client", early, TimeSpan.FromSeconds(20), cancel))?.ToJsonString()}"); }
+            catch (CopyException e) { Out.WriteLine($"  GATEKIT_FIRST_LUA failed: {e.Message}"); }
+        }
+        var first = Instance is not null;
+        var code = $"local FIRST, SKIP = {(first ? "true" : "false")}, {(skipSplash ? "true" : "false")}\n" + MenuPagesSwitch;
+        JsonNode? answer;
+        try { answer = await session.LuaAsync("client", code, TimeSpan.FromSeconds(20), cancel); }
+        catch (CopyException e)
+        {
+            Out.WriteLine($"  the game's page switches were not set ({e.Message}); the pages are passed as they come");
+            return;
+        }
+        var skipped = answer.Field("skipSplash")?.GetValue<bool>();
+        var setup = answer.Field("firstTimeSetup")?.GetValue<bool>();
+        if (skipped != skipSplash || (first && setup != false))
+        {
+            Out.WriteLine($"  the game's page switches read SkipSplashScreen {skipped?.ToString() ?? "nothing"}, ShowFirstTimeSetup {setup?.ToString() ?? "nothing"} after they were set; the pages are passed as they come");
+            return;
+        }
+        Out.WriteLine($"  SkipSplashScreen {(skipSplash ? "on" : "off")}{(first ? ", ShowFirstTimeSetup off" : "")} at the first Lua (client in {answer.Field("state")})");
+    }
+
+    async Task SwitchFirstLaunchAsync(GameSession session, CancellationToken cancel)
+    {
+        var answer = await session.LuaAsync("client", FirstLaunchSwitch, TimeSpan.FromSeconds(20), cancel);
+        if (answer.Field("on")?.GetValue<bool>() != true)
+            throw new CopyException($"the game's switch ShowFirstTimeSetup did not read true after it was set (it reads {answer.Field("on")?.ToString() ?? "nothing"}, client in {answer.Field("state")})");
+        Out.WriteLine($"  ShowFirstTimeSetup set at the first Lua (client in {answer.Field("state")})");
+    }
+
+    /// <summary>A first-launch start followed to its first page: with <paramref name="stages"/> the
+    /// timeline's rows until the page `Eula` is entered (another page first fails the start), else
+    /// the client's Menu state; then the page is confirmed standing (`GK.Gui.Stuck()` names it).
+    /// Nothing is pressed.</summary>
+    async Task ReachFirstLaunchAsync(GameSession session, StartStages? stages, Stopwatch started, CancellationToken cancel)
+    {
+        if (stages is null) await session.WaitStateAsync("Menu", Side.Client, TimeSpan.FromSeconds(300), started, cancel);
+        while (stages is not null)
+        {
+            var stage = await stages.NextAsync(session, PageLimit, cancel);
+            if (stage.Full) break;
+            if (stage.Page is { } page) Out.WriteLine(string.Create(CultureInfo.InvariantCulture, $"  {started.Elapsed.TotalSeconds,5:0.0} s  page {page}"));
+            if (stage.Page == "Eula") break;
+            if (stage.Page is not null || stage.None)
+                throw new CopyException($"the game {(stage.None ? $"showed no page in {PageLimit.TotalSeconds:0} s" : $"showed {stage.Page}")} instead of its first-launch page Eula; "
+                    + "the game is left running for a look - `down` before trying again");
+        }
+        var code = string.Create(CultureInfo.InvariantCulture, $"local WITHIN = {PageLimit.TotalMilliseconds:0}\n") + FirstLaunchProbe;
+        var seen = await session.LuaAsync("ui", code, PageLimit + TimeSpan.FromSeconds(30), cancel);
+        var stuck = seen.Field("stuck")?.GetValue<string>();
+        var widget = seen.Field("widget")?.GetValue<string>();
+        if (stuck != "firstlaunch" || widget != "Eula")
+            throw new CopyException($"the game stands on {widget ?? stuck ?? "nothing GK.Gui.Stuck() names"}, not on its first-launch page Eula; "
+                + "the game is left running for a look - `down` before trying again");
     }
 
     /// <summary>
@@ -601,25 +831,6 @@ public sealed class GameCopy
         if (Instance is null || !FileTree.Exists(stale) || Instance.Inside(stale)) FileTree.TryRemoveTree(stale);
     }
 
-    /// <summary>An empty loose file takes the place of the studio logo video. Removed on `down`;
-    /// a file that is not empty is somebody else's and is left alone.</summary>
-    void SkipSplash(bool on)
-    {
-        var splash = Layout.Splash;
-        var folder = Path.GetDirectoryName(splash)!;
-        if (on && !File.Exists(splash))
-        {
-            OwnInInstance(folder);
-            Directory.CreateDirectory(folder);
-            File.WriteAllBytes(splash, []);
-        }
-        else if (!on && File.Exists(splash) && new FileInfo(splash).Length == 0)
-        {
-            File.Delete(splash);
-            if (!Directory.EnumerateFileSystemEntries(folder).Any()) Directory.Delete(folder);
-        }
-    }
-
     /// <summary>The log file Script Extender writes its console output to (LogRuntime).</summary>
     public const string RuntimeLogPrefix = "Extender Runtime";
 
@@ -628,9 +839,51 @@ public sealed class GameCopy
 
     /// <summary>Script Extender settings for a run: no console window of its own - its output goes
     /// to a log file in the copy's folder, which `logs` reads - developer mode, and on request the
-    /// Osiris trace beside it.</summary>
-    void ConfigureExtender(bool storyLog)
+    /// Osiris trace beside it; startup videos only when asked for.</summary>
+    /// <summary>`GATEKIT_FAST_LOAD=1`: every start of this process asks for fast loads (`test --fast-load`
+    /// sets it, so a run's every start and the loads in it have them).</summary>
+    public static bool FastLoadAsked() => Environment.GetEnvironmentVariable("GATEKIT_FAST_LOAD") == "1";
+
+    /// <summary>The switches of GateKit's build that make a load fast (Extender/Shared/FastLoad.h in the
+    /// fork), all written by every start, on or off together.</summary>
+    public static readonly string[] FastLoadSwitches =
+        ["FastLoadClientFrames", "FastLoadServerTick", "FastLoadStreamingWait", "FastLoadFades"];
+
+    /// <summary>`GATEKIT_HEADLESS=1`: every start of this process is headless (`test --headless` sets it).</summary>
+    public static bool HeadlessAsked() => Environment.GetEnvironmentVariable("GATEKIT_HEADLESS") == "1";
+
+    /// <summary>A headless game's pace of skipped frames in microseconds (RenderCutSkipPaceUs):
+    /// `GATEKIT_HEADLESS_SKIP_PACE_US`, else the default; 0 is off.</summary>
+    public static int HeadlessSkipPaceUs() =>
+        int.TryParse(Environment.GetEnvironmentVariable("GATEKIT_HEADLESS_SKIP_PACE_US"), out var us) && us >= 0 ? us : DefaultSkipPaceUs;
+
+    /// <summary>Off (round 7). A blind start of Basic_Level_A at 4 ms: CPU by Running 71.2 -> 36.7 s,
+    /// Running 18.7 -> 17.3 s (16.7 ms: 34.4 s, Running 18.9 s). But the pace also slows an in-session
+    /// load (the client, uncapped there, waits on the main thread each tick): tests/headless/arrival
+    /// recorded 27 ambient rock throws at 4 ms against 13 with the pace off and 13-15 natively - the
+    /// new level's server runs longer before the client is ready. Kept for a blind start by hand.</summary>
+    public const int DefaultSkipPaceUs = 0;
+
+    /// <summary>The switches of GateKit's build a headless game turns on beyond the fast loads, each
+    /// checked against the logic by the night's W3 (`logic-diff` of tests/headless): the Lua
+    /// collector held while loading, nothing drawn from the client's first Running on (the start
+    /// drawn: `RenderCutFromRunning`, written beside these - see ConfigureExtender), the tick waits slept,
+    /// PrepareRunning's most wait kept (its gate on the level's start dialogue: round 5).</summary>
+    public static readonly string[] HeadlessSwitches =
+        ["FastLoadLuaGC", "RenderCut", "RenderCutSkip", "IdleSleep", "FastLoadStreamingGate"];
+
+    /// <summary>`GATEKIT_HEADLESS_EXCEPT=IdleSleep,KeepWindowOffScreen`: a headless (or fast-load) start
+    /// with these of its switches left off - for finding which cut a difference of the logic comes from, one at a time
+    /// (the night's W3, round 5: a dialogue that never showed headless).</summary>
+    public static bool HeadlessExcepted(string name) =>
+        (Environment.GetEnvironmentVariable("GATEKIT_HEADLESS_EXCEPT") ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Contains(name, StringComparer.OrdinalIgnoreCase);
+
+    void ConfigureExtender(bool storyLog, bool startupVideos, string? coverStart, bool directSaveLoad = false, bool fastLoad = false,
+        bool headless = false)
     {
+        fastLoad |= headless;
         WriteLayoutData();
         FileTree.TryRemoveTree(Layout.SeLogs);
         Directory.CreateDirectory(Layout.SeLogs);
@@ -657,35 +910,90 @@ public sealed class GameCopy
             // cannot run until the copy has shared a frame, by which time it has been on screen
             // for seconds. Without a deck the window appears as it always has; it simply takes no
             // keyboard.
-            s["KeepWindowOffScreen"] = new DeckRecord(Settings.StateRoot).Running() is not null;
+            // A headless game has no window to look at either: off the screen from its creation.
+            s["KeepWindowOffScreen"] = (headless && !HeadlessExcepted("KeepWindowOffScreen"))
+                || new DeckRecord(Settings.StateRoot).Running() is not null;
             // Script Extender opens its console whatever CreateConsole says when Shift is down as
             // the game starts - a capital letter typed elsewhere is enough, and consoles appeared
             // on the owner's desktop (D2 of the day run). GateKit's own build reads this switch;
             // a build without it ignores the key. A console that opens anyway is hidden by the
             // start's guard (KeepForeground), never closed.
             s["ShiftOpensConsole"] = false;
+            // GateKit's build composes the startup videos of the game and the mods; off, it hides
+            // them all. A build without the switch ignores it.
+            s["StartupVideos"] = startupVideos;
+            // Coverage of the start, before any Lua (developer mode): every run says it, so a
+            // later run without it starts without counters.
+            s["CoverageAtStart"] = coverStart is null ? "" : Platform.ToGamePath(Path.GetFullPath(coverStart));
+            // A save asked for is loaded without the main menu (GateKit's build: the menu's states
+            // taken out of the client's queue once the game's Init has queued the save's load).
+            // Every run says it, so a later start without --save goes through the menu again. A
+            // build without the switch ignores it.
+            s["DirectSaveLoad"] = directSaveLoad;
+            // Loads without the game's waits (GateKit's build; the night's W3 measured an
+            // in-session load bound by the ticks, not by its work): every run says it, so a later
+            // start without the option loads at the game's pace. A build without them ignores them.
+            foreach (var name in FastLoadSwitches) s[name] = fastLoad && !HeadlessExcepted(name);
+            // A headless game (GateKit's build): every run says it, so a later start draws again.
+            foreach (var name in HeadlessSwitches) s[name] = headless && !HeadlessExcepted(name);
+            // The start of a headless game is drawn (round 5's RenderCutFromRunning): the interface's
+            // controls are laid out only by a drawn frame, and verbs that walk them (a hotbar slot by
+            // its action) find nothing in a game never drawn (round 6: aim/not_taken,
+            // clean/attack_in_fight). GATEKIT_HEADLESS_BLIND_START=1 draws nothing from the process
+            // start: dialogues, fights and loads stay 1:1 there (the bridge has the party replicated
+            // so the view models learn who is playable), ~790 MB less. Round 7: the hotbar verbs failed
+            // because the local player had no characters (not a layout); with the user's, hotbar and
+            // party components replicated too they pass, and the 1:1 suite holds - one selftest
+            // (fixtures_and_attention, a reaction's attention) still fails blind, so not the default yet.
+            s["RenderCutFromRunning"] = headless && Environment.GetEnvironmentVariable("GATEKIT_HEADLESS_BLIND_START") != "1";
+            // A skipped frame returns at once: with nothing drawn the main thread looped ~1,600 updates
+            // a second through the start and loads (round 6: 88 vs 68 CPU-s by Running). The pace
+            // sleeps a skipped update out to this many microseconds (GateKit's build, round 7;
+            // GATEKIT_HEADLESS_SKIP_PACE_US overrides, 0 turns it off). Every run says it.
+            s["RenderCutSkipPaceUs"] = headless ? HeadlessSkipPaceUs() : 0;
+            // Measuring (GateKit's build, round 7): VirtualAlloc calls of at least N MB written into the
+            // start's timeline with their callers - GATEKIT_LARGE_ALLOC_MB, else off. Every run says it.
+            s["LargeAllocTraceMB"] = int.TryParse(Environment.GetEnvironmentVariable("GATEKIT_LARGE_ALLOC_MB"), out var largeMb) && largeMb > 0 ? largeMb : 0;
             // A copy that dies leaves a dump in its own folder and no reporter window
             // (GateKit's build; `crashes` reads them). The installed game's settings stay the player's.
             if (Instance is not null)
             {
+                // A copy studies the game as it is: Script Extender's patch of the game's code for
+                // achievements with mods (ls::ModuleSettings::IsModded, esv::SavegameManager::ThrowError)
+                // stays off there. The installed game's setting is the player's.
+                s["EnableAchievements"] = false;
+                // The treasure generation's wrapper (GateKit's build), inert until a test pins a seed
+                // (GK.Rolls.PinSources): a copy's differential checks get the same loot whatever the
+                // order of a level's treasure requests (the night's W3, round 6).
+                s["TreasurePin"] = true;
                 Directory.CreateDirectory(CrashDumps.Folder(Layout));
                 s["CrashDumpDirectory"] = Platform.ToGamePath(CrashDumps.Folder(Layout));
                 s["LaunchCrashReporter"] = false;
             }
         });
-        // The loader (DWrite.dll) turns its own debug console on with Shift too; it reads the same
-        // switch from its config. Only in an instance: the installed game's file is the player's.
-        // Written as a new file, never in place - a file of the clone may be a hard link to the
-        // installed game's.
+    }
+
+    /// <summary>The loader (DWrite.dll) turns its own debug console on with Shift too; it reads the same
+    /// switch from its config. And it asks Script Extender's update server at every start (a window
+    /// "looking for updates", or "update failed" offline) although a copy loads the build GateKit
+    /// installed (DebugLoadSE): DisableUpdates leaves that out. Called after the run's build is put in
+    /// place - installing a build writes the loader's config anew and would drop these. Only in an
+    /// instance: the installed game's file is the player's. Written as a new file, never in place - a
+    /// file of the clone may be a hard link to the installed game's.</summary>
+    void ConfigureLoader()
+    {
         if (Instance is not null)
         {
             var loader = Path.Combine(Layout.Bin, "ScriptExtenderUpdaterConfig.json");
             if (File.Exists(loader))
             {
                 var config = JsonFiles.ReadObject(loader);
-                if (config["ShiftOpensConsole"] is not JsonValue off || !off.TryGetValue<bool>(out var on) || on)
+                static bool IsTrue(System.Text.Json.Nodes.JsonNode? node, bool value) =>
+                    node is JsonValue v && v.TryGetValue<bool>(out var b) && b == value;
+                if (!IsTrue(config["ShiftOpensConsole"], false) || !IsTrue(config["DisableUpdates"], true))
                 {
                     config["ShiftOpensConsole"] = false;
+                    config["DisableUpdates"] = true;
                     File.Delete(loader);
                     JsonFiles.WriteObject(loader, config);
                 }
@@ -717,8 +1025,8 @@ public sealed class GameCopy
             try { SeSwitch.Remove(TimeSpan.FromSeconds(60)); }
             catch (CopyException e) { note = e.Message; }
         }
-        SkipSplash(false);
         UnlinkAll();
+        CleanStaleTestFiles();
         var line = Instance is not null
             ? $"instance {Instance.Name}: game closed" + (stock ? ", stock Script Extender back" : SeSwitch.Current().Fork ? ", its Script Extender build kept" : "")
             : "game closed, saves and mod list restored";
@@ -877,6 +1185,9 @@ public sealed class GameCopy
         {
             var asked = session.LuaAsync("client", $"return GK.Shot(\"{ModSettings.BridgeFolder}/{name}\"{(overlay ? ", true" : "")})",
                 TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
+            // the game says why it takes none (a headless game draws nothing: its last frame would be
+            // a stale picture, and the window's photo the same) - never a picture then
+            if (asked is JsonValue said && said.TryGetValue<string>(out var why)) throw new CopyException("no picture: " + why);
             if (asked is not JsonValue value || !value.TryGetValue<bool>(out var ok) || !ok) return null;
             var waited = Stopwatch.StartNew();
             while (!File.Exists(file))
@@ -938,6 +1249,24 @@ public sealed class GameCopy
     }
 
     public IReadOnlyDictionary<string, string> LooseSources() => ReadLoose(Layout.LooseRecord);
+
+    /// <summary>Files a test run that was killed left in the copy (<see cref="TestFiles"/>) are taken out.</summary>
+    public void CleanStaleTestFiles()
+    {
+        if (new TestFiles(Layout).CleanStale() is { } line) Out.WriteLine(line);
+    }
+
+    /// <summary>The files of a test, or of tests that share them, written into the copy before its
+    /// start (<see cref="TestFiles.Place"/>); a copy whose clone is not made yet is made first.</summary>
+    public void PlaceTestFiles(string tests, IReadOnlyList<(string Destination, string Source)> files)
+    {
+        if (Instance is not null && !Directory.Exists(Path.Combine(Layout.Game, "bin")))
+        {
+            if (GamePids().Count > 0) throw new CopyException($"files: instance {Instance.Name} has no game folder and its game is running");
+            PrepareInstance(null, allSaves: false, withMods: false);
+        }
+        new TestFiles(Layout).Place(tests, files);
+    }
 
     /// <summary>In an instance most of Data is links to the real game: before loose files go into
     /// <paramref name="folder"/> the links on the way become real folders, and the place is checked

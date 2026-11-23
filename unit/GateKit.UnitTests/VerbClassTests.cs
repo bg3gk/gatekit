@@ -45,6 +45,7 @@ public sealed class VerbClassTests
             ["Conditions"] = ["observation"],
             ["GameLog"] = ["observation"],
             ["Heard"] = ["observation"],
+            ["Hints"] = ["observation"],
         };
         var wrong = VerbClasses.Embedded.Verbs
             .Where(v => v.Key.Contains('.') && allowed.TryGetValue(v.Key[..v.Key.IndexOf('.')], out var may) && !may.Contains(v.Value.Class))

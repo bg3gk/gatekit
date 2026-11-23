@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "BaseApp::OnIdle",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The app's idle step, WinMain's loop body on the main thread (App vtable +0xC0): one call, ls::RenderThread::Update of the app's render thread object (*(*(this+0x140)+0x20)).",
+  "fingerprint": {"vtables": [{"slot": 24}]},
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "macOS BaseApp::OnIdle is the same one call (ls::RenderThread::Update(*(*(this+0x138)+0x40))); the Toolkit's BaseApp vtable has OnIdle at +0xC0, the slot WinMain (bg3_dx11.exe@25605617+0x5777D0) calls in its loop"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

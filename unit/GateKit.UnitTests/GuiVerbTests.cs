@@ -167,4 +167,99 @@ public sealed class GuiVerbTests
         Assert.False(closed.Get("ok").Boolean);
         Assert.Equal("the name box did not open", closed.Get("error").String);
     }
+
+    // A Noesis object as the game hands it out: it prints its type and address.
+    const string Objects = """
+        function World.object(kind, address, fields)
+            return setmetatable(fields or {}, { __tostring = function() return kind .. " (" .. address .. ")" end })
+        end
+        function World.children(element, list)
+            element.VisualChildrenCount = #list
+            function element:VisualChild(i) return list[i] end
+            return element
+        end
+        """;
+
+    [Fact]
+    public void Set_on_a_slider_answers_once_its_view_model_holds_the_value()
+    {
+        var game = Game();
+        game.DoString(Objects);
+        var set = Run(game, """
+            local data = World.object("gui::DCGammaCalibration", "00A0", { Gamma = 1.0 })
+            function data:GetAllProperties() return { Gamma = self.Gamma, PlayerId = 1 } end
+            local slider = setmetatable({}, {
+                __index = { Type = "Slider", Name = "Slider", Minimum = 0.5, Maximum = 1.5, DataContext = data, VisualChildrenCount = 0, Value = 1.0 },
+                __newindex = function(t, k, v)
+                    getmetatable(t).__index[k] = v
+                    if k == "Value" then World.after(function() data.Gamma = v end) end   -- the binding, a frame later
+                end })
+            World.children(World.widget("GammaCalibration", data), { slider })
+            return Settle(GK.Gui.Set("GammaCalibration", "Slider", 1.2))
+            """);
+        Assert.True(set.Get("ok").Boolean);
+        Assert.Equal(1.2, set.Get("held").Table.Get("Gamma").Number, 6);
+
+        var unbound = Run(Game(), """
+            local data = { GetAllProperties = function() return { Gamma = 1.0 } end }
+            local slider = { Type = "Slider", Name = "Slider", Minimum = 0.5, Maximum = 1.5, DataContext = data, VisualChildrenCount = 0, Value = 1.0 }
+            local w = World.widget("GammaCalibration", data)
+            w.VisualChildrenCount = 1
+            function w:VisualChild() return slider end
+            return Settle(GK.Gui.Set("GammaCalibration", "Slider", 1.2))
+            """);
+        Assert.True(unbound.Get("ok").Boolean);                       // the slider reads the value
+        Assert.Equal(DataType.Nil, unbound.Get("held").Type);         // and no number of its data took it
+        Assert.Equal(1.0, unbound.Get("holds").Table.Get("Gamma").Number);
+    }
+
+    [Fact]
+    public void Look_says_a_page_is_laid_out_only_once_every_control_shown_is_arranged()
+    {
+        const string Page = """
+            local function arranged(e, width) function e:DependencyProperties() return { ActualWidth = width } end return e end
+            local list = arranged({ Type = "ListBox", Name = "Options", ItemsSource = { "a" }, VisualChildrenCount = 0 }, LIST)
+            local next = arranged({ Type = "ls.LSButton", Name = "NextButton", VisualChildrenCount = 0, Content = "Next" }, 428.0)
+            World.children(arranged(World.widget("SensitiveSettings", {}), 3950.0), { list, next })
+            return GK.Gui.Look("SensitiveSettings", { layout = true })
+            """;
+        static Script WithObjects() { var game = Game(); game.DoString(Objects); return game; }
+        var before = Run(WithObjects(), "local LIST = nil\n" + Page);      // the page arranged, its list not yet
+        Assert.False(before.Get("laidOut").Boolean);
+        var after = Run(WithObjects(), "local LIST = 1600.0\n" + Page);
+        Assert.True(after.Get("laidOut").Boolean);
+        Assert.Equal(DataType.Nil, Run(WithObjects(), "local LIST = 1600.0\n" + Page.Replace("{ layout = true }", "nil")).Get("laidOut").Type);
+    }
+
+    [Fact]
+    public void Look_gives_a_combo_box_in_a_settings_list_as_one_choice_and_names_a_button_command()
+    {
+        var game = Game();
+        game.DoString(Objects);
+        var look = Run(game, """
+            local custom = World.object("Noesis::BaseCommand", "0400", {})
+            local data = World.object("gui::DCFirstTimeSetup", "0100", {})
+            function data:GetAllProperties() return { CustomEvent = custom, OpenURLInBrowserCommand = World.object("Noesis::BaseCommand", "0500") } end
+            local setting = World.object("ls.VMComboBoxSetting", "0200", { Text = "Show explicit content" })
+            local answers = { "No", "Yes" }
+            local opener = { Type = "ToggleButton", Name = "ComboBoxButton", DataContext = setting, VisualChildrenCount = 0, IsChecked = false }
+            local combo = World.children({ Type = "ls.LSComboBox", Name = "comboBox", DataContext = setting, ItemsSource = answers, SelectedIndex = 1 }, { opener })
+            local item = World.children({ Type = "ListBoxItem", DataContext = setting }, { combo })
+            local list = World.children({ Type = "ListBox", Name = "Options", DataContext = data, ItemsSource = { setting } }, { item })
+            local next = { Type = "ls.LSButton", Name = "NextButton", DataContext = data, VisualChildrenCount = 0, Content = "Next",
+                           Command = World.object("Noesis::ICommand", "0410"), CommandParameter = "OpenGammaCalibration" }
+            function next:DependencyProperties() return { Command = custom } end
+            World.children(World.widget("SensitiveSettings", data), { list, next })
+            return GK.Gui.Look("SensitiveSettings")
+            """);
+        var controls = look.Get("controls").Table.Values.Select(v => v.Table).ToList();
+        Assert.Equal(new[] { "comboBox", "NextButton" }, controls.Select(c => c.Get("handle").String).ToArray());
+        var combo = controls[0];
+        Assert.Equal("list", combo.Get("kind").String);
+        Assert.Equal("Yes", combo.Get("value").String);
+        Assert.Equal(2, combo.Get("items").Table.Length);
+        Assert.Equal("Options#1", combo.Get("in").String);
+        Assert.Equal("CustomEvent", controls[1].Get("command").String);
+        Assert.Equal("OpenGammaCalibration", controls[1].Get("parameter").String);
+    }
 }

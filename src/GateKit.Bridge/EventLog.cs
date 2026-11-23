@@ -189,10 +189,22 @@ public sealed class EventLogReader(string channel, EventKinds? built = null)
                 if (!_segments.TryGetValue(path, out var cached) || cached.Length != info.Length || cached.Written != info.LastWriteTimeUtc
                     || cached.Kinds != kinds)
                 {
-                    cached = (info.Length, info.LastWriteTimeUtc, kinds, ReadSegment(path, kinds));
-                    _segments[path] = cached;
+                    // the rows the segment holds at least: a full one all of its rows, the head's
+                    // own up to the head's seq (the game writes the segment before the head)
+                    var expected = n < head.Segment ? (long)n * head.Rows : n == head.Segment ? head.Seq : 0;
+                    var read = ReadSegment(path, kinds, expected);
+                    // the game rewrites a segment in place, whole: a read of it while it is being
+                    // written may find it empty or cut at a line's end. A segment of a boot never
+                    // loses rows, so a read with fewer than the last one is such a write, and the
+                    // last read stands until the file is read whole
+                    var shorter = cached.Rows is { } last && cached.Kinds == kinds && LastSeq(read) < LastSeq(last);
+                    if (!shorter)
+                    {
+                        cached = (info.Length, info.LastWriteTimeUtc, kinds, read);
+                        _segments[path] = cached;
+                    }
                 }
-                rows.AddRange(cached.Rows);
+                rows.AddRange(cached.Rows!);
                 if (cached.Written > written) written = cached.Written;
             }
             // the oldest segments that went: their files are empty and are deleted here
@@ -205,7 +217,11 @@ public sealed class EventLogReader(string channel, EventKinds? built = null)
         }
     }
 
-    List<JsonObject> ReadSegment(string path, EventKinds kinds)
+    static long LastSeq(List<JsonObject> rows) => rows.Count > 0 && rows[^1]["seq"] is { } seq ? (long)seq : 0;
+
+    /// <param name="expected">The last seq the segment holds at least; a read that ends before it
+    /// caught the game rewriting the file and is read again a moment later (a few times).</param>
+    List<JsonObject> ReadSegment(string path, EventKinds kinds, long expected = 0)
     {
         for (var attempt = 0; ; attempt++)
         {
@@ -228,6 +244,8 @@ public sealed class EventLogReader(string channel, EventKinds? built = null)
             }
             // a torn last line: the game is writing the file; read it again
             if (torn && attempt < 3) { Thread.Sleep(10); continue; }
+            // empty or cut at a line's end: the game is writing the file too
+            if (LastSeq(rows) < expected && attempt < 3) { Thread.Sleep(10); continue; }
             foreach (var p in problems) Problem(p.ToString());
             foreach (var row in rows) Place(row, kinds, path);
             return rows;

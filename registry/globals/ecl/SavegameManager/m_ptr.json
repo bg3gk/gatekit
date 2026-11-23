@@ -1,0 +1,18 @@
+{
+  "schema": "registry/global/1",
+  "id": "ecl::SavegameManager::m_ptr",
+  "kind": "variable",
+  "state": "described",
+  "rung": "confirmed",
+  "about": "The client's savegame manager (ecl::SavegameManager). Its byte +0xf8 is IsLoading and +0xf9 IsSaving (macOS +0xc8/+0xc9, Toolkit +0x100/+0x101): code:ecl::GameStateStartLoading::CanExit holds StartLoading while +0xf9 is set, so a save in progress is the only thing besides the load state that can hold the startup stage; nothing in the state machine ends it on a timer.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 StartLoading::CanExit (code:ecl::GameStateStartLoading::CanExit) reads *(code:ecl::SavegameManager::m_ptr)+0xf9 where macOS ecl::GameStateStartLoading::CanExit reads SavegameManager::m_ptr+0xc9; Toolkit ecl::SavegameManager::IsSaving returns this[0x101], IsLoading this[0x100]; dx11 bg3_dx11.exe@25605617+0x42530C0 sets +0xf9=1 before sending the save message 0x9f; dx11 bg3_dx11.exe@25605617+0x5889E0 and bg3_dx11.exe@25605617+0x139A160 test +0xf8 and +0xf9 together"
+    },
+    {
+      "kind": "watch",
+      "says": "live dx11 copy attacks, main menu: the pointer at code:ecl::SavegameManager::m_ptr leads to an object whose first field is the virtual table bg3_dx11.exe@25605617+0x55F30F8, which the database names ecl::SavegameManager's (slots ecl::SavegameManager::GetInputListenerName and OnInputEvent); its +0xF8 and +0xF9 read 0 and 0 there (nothing loading or saving)"
+    }
+  ]
+}

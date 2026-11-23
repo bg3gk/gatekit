@@ -1,0 +1,61 @@
+{
+  "schema": "registry/function/1",
+  "id": "App::InitializeResourceManager",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Called by App::InitGame just before ecl::EocClient::Load: besides the loading hints (Hints/Hints.lsx into ecl::HintManager) it builds the Razer Chroma effects, creates the sound manager and runs App::InitialiseSound (the Wwise engine and its init bank), and creates the two bik::BinkManager objects (the video players' managers).",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:1613a1d748e711ef",
+      "fp:2d69f39571b6426f",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:7ec6bc773f10ca24",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:d3a4a46200e83c50",
+      "fp:e4d053ad9455ea7c",
+      "fp:ea4d5f83c34ceb82",
+      "fp:f2c416d4cbedb829",
+      "fp:f54939271cb5e763",
+      "import:196f87dd222b4c83",
+      "import:37b5ff602440c248",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "ls::FileFormatIO::LoadFile"
+    ],
+    "strings": ["057f1725e76dceaa", "41825b1bd3a78f90"],
+    "components": ["ecl::LEDSystem", "ls::RenderFrameSystem"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code builds Path(0xb, Hints/Hints.lsx), then writes 0 to the HintManager global +0x14 and loads; Toolkit EoC.dll App::InitializeResourceManager calls ecl::HintManager::Init with the same strings"
+    },
+    {
+      "kind": "pairing",
+      "says": "Toolkit EoC.dll+0x158610 App::InitializeResourceManager, same strings Hints/Hints.lsx and Editor/Hints/HintsEditor.lsx"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoC.dll",
+      "tie": "name",
+      "says": "EoC.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "watch",
+      "says": "copy attacks: a loose Data/Public/Game/Hints/Hints.lsx with 2 Hint nodes and HintDuration 7 gave ecl::HintManager count 2 and duration 7.0 after a restart (49 and 5.0 without it): the one file is found through the normal file lookup, so whoever shadows Public/Game/Hints/Hints.lsx last replaces the whole list"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: the user of _ChromaLink.chroma, a 0x6E0-byte SoundManager handed to App::InitialiseSound, two 0x130-byte objects built by bg3_dx11.exe@25605617+0x21B5200 (bik::BinkManager's constructor by size and order, as the macOS App::InitGame inlines them: _malloc(0x128) + bik::BinkManager::BinkManager twice), then Path(0xB, Hints/Hints.lsx)"
+    },
+    {
+      "kind": "reach",
+      "says": "Timeline Step rows of the fork's hook (two starts): 5937.2 -> 6470.4 ms and 5044.3 -> 5496.9 ms; the process's reads grow by 240.8 MB in 4112 operations while only 21 files are opened through ls::FileReader (GameplaySoundBanks.lsf, SoundPreloadConfig.lsf, Bink.bshd, the Granite translation-table shaders, Hints/Hints.lsx last): the bulk of the start's read before InitMenu is the sound engine's own reading"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

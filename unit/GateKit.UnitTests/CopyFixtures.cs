@@ -193,7 +193,6 @@ public sealed class FakeGame : IDisposable
         Temp.Write("game/Data/Localization/English.pak", "loca");
         Temp.Write("game/Data/Mods/Loose/meta.lsx", "loose");
         Temp.Write("game/Data/Video/Intro.bk2", "video");
-        Temp.Write("game/Data/Video/Splash_Logo_Larian.bk2", "");
         Temp.Write("profile/PlayerProfiles/Public/modsettings.lsx", ModList.Replace("\r\n", "\n"));
         Temp.Write("profile/PlayerProfiles/Public/Savegames/Story/Save1/Save1.lsv", "save");
         Temp.Write("profile/PlayerProfiles/Public/UILayout.lsx", "layout");

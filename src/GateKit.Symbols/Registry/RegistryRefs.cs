@@ -171,14 +171,18 @@ public static class RegistryRefs
     public static bool NamesTest(string cited, string path) => cited == path || cited.StartsWith(path + "/", StringComparison.Ordinal);
 
     /// <summary>
-    /// The test a path cites, as far as it can be resolved: the longest leading part that is a test's
-    /// file under <c>tests/</c> (any extension) or a folder of tests. What lies below a test's file
-    /// (its case and step) is not checked.
+    /// The test a path cites, as far as it can be resolved: the shortest leading part that is a
+    /// folder test (a folder holding <c>test.lua</c>), else the longest that is a test's file under
+    /// <c>tests/</c> (any extension) or a folder of tests. What lies below a test (its case and
+    /// step) is not checked.
     /// </summary>
     public static (bool Found, string? Unchecked) ResolveTest(string repository, string path)
     {
         var tests = Path.Combine(repository, "tests");
         var parts = path.Split('/');
+        for (var n = 1; n <= parts.Length; n++)
+            if (File.Exists(Path.Combine([tests, .. parts[..n], "test.lua"])))
+                return (true, n == parts.Length ? null : string.Join("/", parts[n..]));
         for (var n = parts.Length; n >= 1; n--)
         {
             var head = Path.Combine([tests, .. parts[..n]]);

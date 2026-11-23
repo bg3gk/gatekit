@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateInitMenu::CanExit",
+  "state": "described",
+  "rung": "game",
+  "does": "Lets InitMenu end when its done flag (+0x18; macOS +0x14) is set by its Update.",
+  "fingerprint": {"vtables": [{"slot": 5}, {"slot": 11}]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "slot 5 (+0x28) of the InitMenu virtual table bg3_dx11.exe@25605617+0x55F8E58 returns this[0x18]; macOS ecl::GameStateInitMenu::CanExit bg3_macos_x64+0x3574560 returns this[0x14]"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

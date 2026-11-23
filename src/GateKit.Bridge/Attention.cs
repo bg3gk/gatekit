@@ -117,12 +117,28 @@ public sealed class AttentionReader
             var boot = boots.First(b => b.Side == side);
             var seen = cursor.Seen(side, boot.Boot);
             // a caller's first look is told what waits, not the history before it
-            if (seen >= 0 && (long)row["seq"]! > seen) items.Add(Compact(row, boot, last, at, waiting: false));
+            if (seen < 0 || (long)row["seq"]! <= seen) continue;
+            // a state a new boot opened again, which the caller was told in the previous boot
+            if (ToldBefore(row, cursor, side)) continue;
+            items.Add(Compact(row, boot, last, at, waiting: false));
         }
         foreach (var row in open.Values.OrderBy(r => r, Comparer<JsonObject>.Create(EventStream.Compare)))
             items.Add(Compact(row, boots.First(b => b.Side.Name() == (string)row["side"]!), last, at, waiting: true));
         foreach (var boot in boots) cursor.Move(boot.Side, boot.Boot, boot.Seq);
         return items;
+    }
+
+    /// <summary>Whether a row is a state the caller was already told by an earlier boot of its side:
+    /// a new boot (a load resets the client's Lua) opens again what the previous one left open, with
+    /// `continues` = { boot, seq } of the row that told it; a caller whose cursor stands at that boot,
+    /// at or past that seq - or that left that boot from there - has been told it. A caller that never
+    /// saw that row is told this one.</summary>
+    public static bool ToldBefore(JsonObject row, AttentionCursor cursor, Side side)
+    {
+        if (row["payload"]?["continues"] is not JsonObject continues) return false;
+        if (continues["boot"] is not JsonValue b || !b.TryGetValue<double>(out var boot)) return false;
+        if (continues["seq"] is not JsonValue s || !s.TryGetValue<double>(out var seq)) return false;
+        return cursor.Told(side, (long)boot, (long)seq);
     }
 
     /// <summary>The last seq of each side right now, without moving any cursor.</summary>
@@ -139,7 +155,8 @@ public sealed class AttentionReader
     /// <summary>The payload fields an item carries (common/attention).</summary>
     static readonly HashSet<string> Kept = ["window", "choices", "who", "name", "job", "kind", "status", "error", "level",
         "trader", "state", "gameOver", "combat", "answers", "speaker", "text", "ready", "canTrade",
-        "check", "skill", "dc", "advantage", "modifiers", "bonus", "natural", "total", "success", "critical"];
+        "check", "skill", "dc", "advantage", "modifiers", "bonus", "natural", "total", "success", "critical",
+        "from", "to", "startedMs", "timeline", "playback", "controls", "keys", "firstLaunch"];
 
     static JsonObject Compact(JsonObject row, EventBoot boot, EventBoot last, DateTime now, bool waiting)
     {
@@ -169,6 +186,10 @@ public sealed class AttentionReader
 public sealed class AttentionCursor
 {
     readonly Dictionary<Side, (long Boot, long Seq)> _seen = [];
+    // where the cursor stood in the boot it left last, per side: a new boot's head is read before
+    // its first row (the boot opens again what the previous one left open), so the cursor may have
+    // moved into the new boot before that row is told
+    readonly Dictionary<Side, (long Boot, long Seq)> _left = [];
     readonly HashSet<string> _unplaced = new(StringComparer.Ordinal);
     readonly Lock _lock = new();
 
@@ -190,9 +211,27 @@ public sealed class AttentionCursor
         }
     }
 
+    /// <summary>Moves the cursor to <paramref name="seq"/> of <paramref name="boot"/>; never back
+    /// within a boot (what was told stays told, whatever a later read of the files found).</summary>
     public void Move(Side side, long boot, long seq)
     {
-        lock (_lock) _seen[side] = (boot, seq);
+        lock (_lock)
+        {
+            if (_seen.TryGetValue(side, out var was) && was.Boot == boot && was.Seq > seq) return;
+            if (was.Boot != boot && _seen.ContainsKey(side)) _left[side] = was;
+            _seen[side] = (boot, seq);
+        }
+    }
+
+    /// <summary>Whether the row <paramref name="seq"/> of <paramref name="boot"/> of the side was told
+    /// through this cursor: it stands in that boot at or past it, or left that boot from there.</summary>
+    public bool Told(Side side, long boot, long seq)
+    {
+        lock (_lock)
+        {
+            if (_seen.TryGetValue(side, out var s) && s.Boot == boot && s.Seq >= seq) return true;
+            return _left.TryGetValue(side, out var l) && l.Boot == boot && l.Seq >= seq;
+        }
     }
 
     /// <summary>Where this cursor stands on a side, or null when it never looked at it.</summary>

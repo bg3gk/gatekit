@@ -1,0 +1,39 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::HintManager::Visit",
+  "state": "described",
+  "rung": "game",
+  "does": "Reads the loading-screen hints file through the visitor ls::FileFormatIO::LoadFile gives it: region Hints, root attribute HintDuration (5.0 when absent, at +0x58) and one 0x38-byte ecl::Hint per Hint node; the array (+0x8, count +0x14) is emptied and resized to the file's count first, so a second call replaces the list and resets HintDuration.",
+  "fingerprint": {
+    "calls": ["fp:36ea95f2ce33bd6a", "fp:72b4801e8e903ffc"],
+    "vtables": [{"slot": 0}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "macOS bg3_macos_x64+0x359B420 reads strHints, strHintDuration, strController, strDescription, strHintKey, strInternal, strKeyboard, strWikiPage; count reset before the fill"
+    },
+    {
+      "kind": "watch",
+      "says": "live dx11 copy attacks: HintManager count 49 = the 49 Hint nodes of Public/Game/Hints/Hints.lsx, HintDuration 5.0, first entry Controller 0 / Keyboard 1 as HINT_CAM_HOME"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "pair",
+      "says": "The macOS build's symbols hold this name; a stored pair of the two builds joins that function to this one (a seed)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "match",
+      "says": "EoCClient.dll exports this name; the symbol database matches the export to this function by pseudo-code"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 array visitor bg3_dx11.exe@25605617+0x17F1360 sets the count to 0, reallocates to the visitor's count with a 0x38-byte element destructor, then fills each element; HintManager's vtable bg3_dx11.exe@25605617+0x55F40D0 slot 0 is this function, the slot ls::FileFormatIO::LoadFile calls"
+    },
+    {"kind": "test", "test": "startup/hints/two_mods"},
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

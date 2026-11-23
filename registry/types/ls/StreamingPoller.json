@@ -1,0 +1,68 @@
+{
+  "schema": "registry/type/1",
+  "id": "ls::StreamingPoller",
+  "kind": "struct",
+  "state": "described",
+  "rung": "inferred",
+  "about": "The poller the client's PrepareRunning waits on before Running (ls::StreamingPoller::Poll, called by ecl::GameStatePrepareRunning::Update with the state's +0x20): done when the time waited passes the least wait and BaseApp::IsStreaming said no on 7 polls in a row, or when the time waited passes the most wait.",
+  "fields": [
+    {
+      "offset": 0,
+      "name": "MinWait",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "read live each client update in PrepareRunning (LoadTrace.inl OnClientUpdate); writing 0 to both waits ended the state at its first update (FastLoadStreamingWait)"
+        }
+      ]
+    },
+    {
+      "offset": 4,
+      "name": "MaxWait",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "read live each client update in PrepareRunning (LoadTrace.inl OnClientUpdate); writing 0 to both waits ended the state at its first update (FastLoadStreamingWait)"
+        }
+      ]
+    },
+    {
+      "offset": 8,
+      "name": "Waited",
+      "type": "float",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "read live each client update in PrepareRunning (LoadTrace.inl OnClientUpdate); writing 0 to both waits ended the state at its first update (FastLoadStreamingWait)"
+        }
+      ]
+    },
+    {
+      "offset": 12,
+      "name": "QuietPolls",
+      "type": "int32",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "read live each client update in PrepareRunning (LoadTrace.inl OnClientUpdate); writing 0 to both waits ended the state at its first update (FastLoadStreamingWait)"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "toolkit-name",
+      "says": "ls::StreamingPoller::Poll is exported by the Toolkit's GameEngine.dll and called by ecl::GameStatePrepareRunning::Update (EoCClient.dll+0xBC7680) with the state+0x20"
+    },
+    {
+      "kind": "read",
+      "says": "W3 round 1 read 0.5 / 20.0 at +0/+4 live in every PrepareRunning, +8 growing with the game time, +0xC counting the quiet polls"
+    }
+  ]
+}

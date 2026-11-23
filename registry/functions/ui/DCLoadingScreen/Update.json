@@ -1,0 +1,28 @@
+{
+  "schema": "registry/function/1",
+  "id": "ui::DCLoadingScreen::Update",
+  "state": "described",
+  "rung": "game",
+  "does": "Fills the loading screen's view model each UI update while the screen is visible (manager +0x8): Progress = min(Progress*100 + min(100, LocalProgress*100/LocalProgressTotal), ProgressTotal*100) / max(ProgressTotal*100, 1) - a 0..1 float the XAML shows through FloatToPercentStringConverter - and LoadingStateInfo = the manager's LongHint string (+0x50).",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "macOS pseudo-code reads ls::LoadingScreenManager::m_ptr +0x8, +0x30, +0x38, +0x40, +0x48, +0x50 and writes the Progress property (+0x218) and LoadingStateInfo"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGUIBinding.dll",
+      "tie": "name",
+      "says": "NoesisGUIBinding.dll exports this name; nothing but the name ties it to this function"
+    }
+  ],
+  "questions": [
+    {"ask": "the dx11 address of this function (no pair found)", "about": "reach", "state": "open"}
+  ]
+}

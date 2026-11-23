@@ -1,0 +1,38 @@
+{
+  "schema": "registry/type/1",
+  "id": "ui::UIStateInstance",
+  "kind": "struct",
+  "state": "described",
+  "rung": "inferred",
+  "about": "One state of the interface's state machine as it is open: its layers of child instances and its ui::UIState (whose Name is the page's name).",
+  "fields": [
+    {
+      "offset": 16,
+      "name": "States",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "0x10 an array of layer pointers (count at 0x1C); a layer is { array of instances (count at +0x0C), Guid at +0x10 }, its instances the stack bottom to top; 0x20 the ui::UIState, Name a Noesis string at its +0x10"
+        }
+      ]
+    },
+    {
+      "offset": 32,
+      "name": "State",
+      "rung": "inferred",
+      "evidence": [
+        {
+          "kind": "watch",
+          "says": "0x10 an array of layer pointers (count at 0x1C); a layer is { array of instances (count at +0x0C), Guid at +0x10 }, its instances the stack bottom to top; 0x20 the ui::UIState, Name a Noesis string at its +0x10"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "walked live (dx11 25605617) from UIStateMachine+0x98: names read at +0x20 -> UIState+0x10 match the states of Mods/MainUI/GUI/StateMachines/Keyboard.xaml (GameRoot, SplashScreen, MainMenu, Loading, Running); Script Extender's UI.h layout (States at 0x20, State at 0x30) does not hold in this build"
+    }
+  ]
+}

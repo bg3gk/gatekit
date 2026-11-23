@@ -1,0 +1,14 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::RenderFrameBeginViews",
+  "owner": "rf::RenderFrame",
+  "state": "described",
+  "rung": "inferred",
+  "does": "For one render frame: begins each of its render views (+0x42E0, count +0x42EC) that is enabled and whose frame's enabled byte (+0x42F0) is set (the view's vtable +0x10). Called by ls::RenderThread::Update for every enabled frame.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "decomp; ls::RenderThread::Update calls it for each frame of ls::RenderFrameSystem whose +0x40 is not 2 and whose +0x42F0 is set"
+    }
+  ]
+}

@@ -358,6 +358,33 @@ public sealed class FingerprintReader(SqliteConnection symbols, SqliteConnection
         return lines;
     }
 
+    /// <summary>The RVAs of the instructions of a function (by its start, as the binary's own table of
+    /// functions gives its end) that refer to <paramref name="target"/> RIP-relatively, in order:
+    /// where a pattern can stand that finds a global. Null when the binary's file cannot be read.</summary>
+    public IReadOnlyList<long>? ReferencesTo(string binary, long function, long target) =>
+        IpRelative(binary, function)?.Where(r => r.Target == target).Select(r => r.At).ToList();
+
+    /// <summary>Every RIP-relative instruction of a function, in order: (its RVA, the RVA it refers
+    /// to). Null when the binary's file cannot be read.</summary>
+    public IReadOnlyList<(long At, long Target)>? IpRelative(string binary, long function)
+    {
+        if (ImageOf(binary) is not { } at) return null;
+        var image = at.Image;
+        var range = GateKit.Symbols.Build.Disassembly.ListedRanges(image).FirstOrDefault(r => r.Begin == (uint)function);
+        var found = new List<(long, long)>();
+        var o = image.Offset(function);
+        if (range.End <= range.Begin || o < 0) return found;
+        var length = (int)Math.Min(range.End - range.Begin, (uint)(image.Data.Length - o));
+        var decoder = Iced.Intel.Decoder.Create(64, new ByteArrayCodeReader(image.Data, o, length), (ulong)function);
+        while (decoder.IP < (ulong)function + (ulong)length)
+        {
+            decoder.Decode(out var insn);
+            if (insn.IsInvalid) break;
+            if (insn.IsIPRelativeMemoryOperand && !insn.IsCallNearIndirect && !insn.IsJmpNearIndirect) found.Add(((long)insn.IP, (long)insn.IPRelativeMemoryAddress));
+        }
+        return found;
+    }
+
     /// <summary>The RVAs in the executable sections of a binary's file where a byte pattern is found
     /// (<paramref name="wild"/> marks the bytes that may be anything), at most <paramref name="cap"/>
     /// of them. Null when the binary's file cannot be read.</summary>

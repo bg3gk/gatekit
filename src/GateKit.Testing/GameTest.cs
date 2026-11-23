@@ -11,14 +11,25 @@ namespace GateKit.Testing;
 /// <param name="Save">A save to load instead of a fresh level.</param>
 /// <param name="Reset">What the test needs before it runs (test{reset = "none"|"fixture"|"venue"|"game"});
 /// null: the reset ladder's default for its level.</param>
+/// <param name="StartupVideos">The game plays its startup videos, the game's and the mods', as `up --startup-videos`
+/// (test{startup_videos = true}); every other start hides them.</param>
+/// <param name="UntilLua">The test runs as soon as the bridge first answers, as `up --until-lua`
+/// (test{until_lua = true}): no menu, no level, no server.</param>
+/// <param name="FirstLaunch">The test runs on the game's first first-launch page, as `up --first-launch`
+/// (test{first_launch = true}): the pages are the test's to go through.</param>
 public sealed record TestStart(string? Level = null, IReadOnlyList<string>? Mods = null, string? Save = null,
-    bool MainMenu = false, ResetRung? Reset = null)
+    bool MainMenu = false, ResetRung? Reset = null, bool StartupVideos = false, bool UntilLua = false, bool FirstLaunch = false)
 {
     /// <summary>The rung declared.</summary>
     public ResetRung? Needs => Reset;
 
-    /// <summary>What two tests must agree on to share one game.</summary>
-    public (string?, string, bool, string?) Key => (MainMenu ? "<main menu>" : Level, string.Join(",", Mods ?? []), Mods is null, Save);
+    /// <summary>A start with no level and no server: the main menu, the moment the bridge first answers,
+    /// or the first-launch pages. Such a test has no scene to clean and runs as the place is.</summary>
+    public bool NoLevel => MainMenu || UntilLua || FirstLaunch;
+
+    /// <summary>What two tests must agree on in their start to share one game (their files too: <see cref="GameTest.Group"/>).</summary>
+    public (string?, string, bool, string?, bool) Key =>
+        (FirstLaunch ? "<first launch>" : UntilLua ? "<until lua>" : MainMenu ? "<main menu>" : Level, string.Join(",", Mods ?? []), Mods is null, Save, StartupVideos);
 }
 
 /// <summary>
@@ -41,7 +52,87 @@ public sealed class GameTest
     {
         Path = path;
         Code = code;
-        Name = System.IO.Path.GetFileNameWithoutExtension(path);
+        Name = IsFolderTest(path) ? System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path))! : System.IO.Path.GetFileNameWithoutExtension(path);
+    }
+
+    /// <summary>The file that makes a folder one test: the folder's other `.lua` are shared, the rest data.</summary>
+    public const string FolderTestFile = "test.lua";
+
+    /// <summary>The folder of shared data files, at any level of the tree (<see cref="FindFile"/>).</summary>
+    public const string SharedFilesFolder = "_files";
+
+    /// <summary>Whether <paramref name="path"/> is the <c>test.lua</c> of a folder test.</summary>
+    public static bool IsFolderTest(string path) => string.Equals(System.IO.Path.GetFileName(path), FolderTestFile, StringComparison.Ordinal);
+
+    /// <summary>The files the header's `files` puts into the copy before its game starts: each destination
+    /// (relative to the game folder) with the file found for it (<see cref="FindFile"/>).</summary>
+    public IReadOnlyList<(string Destination, string Source)> Files { get; private set; } = [];
+
+    /// <summary>What two tests must agree on to share one game: their start (<see cref="TestStart.Key"/>)
+    /// and their files, each destination with its source, which go into the copy before that start.</summary>
+    public ((string?, string, bool, string?, bool) Start, string Files) Group =>
+        (Start.Key, string.Join("\n", Files.Select(f => f.Destination + "=" + f.Source)));
+
+    /// <summary>The root of the tree of tests the test is in: the nearest folder above it named
+    /// `tests`, else the folder it was found under, else its own folder. A test writes nothing
+    /// inside it, and its files are looked up no higher.</summary>
+    public string Tree
+    {
+        get
+        {
+            var own = System.IO.Path.GetDirectoryName(Path)!;
+            for (var folder = new DirectoryInfo(own); folder is not null; folder = folder.Parent)
+                if (string.Equals(folder.Name, "tests", StringComparison.OrdinalIgnoreCase)) return folder.FullName;
+            return Root.Length > 0 ? Root : own;
+        }
+    }
+
+    /// <summary>The file a test names in `files`: first in the test's own folder, then in `_files/` of
+    /// its folder and of each folder above it up to <paramref name="tree"/>, as `require` finds
+    /// shared Lua. Null when none has it.</summary>
+    public static string? FindFile(string testFolder, string tree, string name)
+    {
+        var parts = name.Split('/');
+        var own = System.IO.Path.Combine([testFolder, .. parts]);
+        if (File.Exists(own)) return System.IO.Path.GetFullPath(own);
+        var top = System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(tree));
+        for (var folder = new DirectoryInfo(testFolder); folder is not null; folder = folder.Parent)
+        {
+            var shared = System.IO.Path.Combine([folder.FullName, SharedFilesFolder, .. parts]);
+            if (File.Exists(shared)) return System.IO.Path.GetFullPath(shared);
+            if (string.Equals(System.IO.Path.TrimEndingDirectorySeparator(folder.FullName), top, StringComparison.OrdinalIgnoreCase)
+                || !folder.FullName.StartsWith(top, StringComparison.OrdinalIgnoreCase)) break;
+        }
+        return null;
+    }
+
+    /// <summary>Why a file name in `files` is not one (null = it is): relative, parts joined by `/`, no `.` or `..`.</summary>
+    static string? FileNameProblem(string name) =>
+        name.Length > 0 && !name.Contains('\\') && !name.Contains(':') && !System.IO.Path.IsPathRooted(name)
+            && name.Split('/').All(p => p.Length > 0 && p != "." && p != "..")
+            ? null
+            : $"\"{name}\" is not a file beside the test: a name, or a relative path joined by `/`, with no `.` or `..`";
+
+    /// <summary>The header's `files = { ["Data/Video/GK_ONE.bk2"] = "ONE.bk2" }`, checked and found.</summary>
+    IReadOnlyList<(string Destination, string Source)> ReadFiles(Table? header)
+    {
+        if (header?.Get("files") is not { } value || value.IsNil()) return [];
+        if (value.Type != DataType.Table) throw new ScriptRuntimeException($"{Name}: files = {{ [\"<place in the game folder>\"] = \"<file name>\" }}");
+        var list = new List<(string Destination, string Source)>();
+        var folder = System.IO.Path.GetDirectoryName(Path)!;
+        foreach (var pair in value.Table.Pairs)
+        {
+            if (pair.Key.Type != DataType.String || pair.Value.Type != DataType.String)
+                throw new ScriptRuntimeException($"{Name}: files = {{ [\"<place in the game folder>\"] = \"<file name>\" }}: every key and value is a string");
+            var destination = pair.Key.String;
+            var name = pair.Value.String;
+            if (TestFiles.DestinationProblem(destination) is { } bad) throw new ScriptRuntimeException($"{Name}: files: {bad}");
+            if (FileNameProblem(name) is { } wrong) throw new ScriptRuntimeException($"{Name}: files: {wrong}");
+            var found = FindFile(folder, Tree, name)
+                ?? throw new ScriptRuntimeException($"{Name}: files: no {name} beside the test nor in a {SharedFilesFolder}/ of its folder or above it up to {Tree}");
+            list.Add((destination, found));
+        }
+        return [.. list.OrderBy(f => f.Destination, StringComparer.Ordinal)];
     }
 
     public string Path { get; }
@@ -52,7 +143,7 @@ public sealed class GameTest
     public GameTest Again(int n)
     {
         var again = new GameTest(Path, Code) { Name = Name + "#" + n, Start = Start, Declared = Declared, _about = _about, Root = Root,
-            _surprises = _surprises, SpeedCeiling = SpeedCeiling, CeilingFinding = CeilingFinding, Before = Before, OnlyCase = OnlyCase };
+            _surprises = _surprises, SpeedCeiling = SpeedCeiling, CeilingFinding = CeilingFinding, Before = Before, OnlyCase = OnlyCase, Files = Files };
         again._cases.AddRange(_cases);
         return again;
     }
@@ -78,6 +169,10 @@ public sealed class GameTest
     /// <summary>The global function the header names in `before`: the staging every case shares,
     /// run again before each case.</summary>
     public string? Before { get; private set; }
+
+    /// <summary>The header's `drawn`: why the test needs drawn frames (a picture, a window's look),
+    /// or null. In a headless run (`--headless`) such a test is not run: UNMET with this reason.</summary>
+    public string? Drawn { get; private set; }
 
     /// <summary>The one case `-k &lt;test id&gt;/&lt;case&gt;` selects; null: every case.</summary>
     public string? OnlyCase { get; set; }
@@ -190,10 +285,12 @@ public sealed class GameTest
         }, "require");
     }
 
-    /// <summary>Reads a test file and runs its declaration (not its body).</summary>
-    public static GameTest Load(string path)
+    /// <summary>Reads a test file and runs its declaration (not its body); <paramref name="root"/> is
+    /// the folder it was found under (<see cref="Root"/>).</summary>
+    public static GameTest Load(string path, string? root = null)
     {
         var test = new GameTest(System.IO.Path.GetFullPath(path), File.ReadAllText(path, Encoding.UTF8));
+        if (root is not null) test.Root = System.IO.Path.GetFullPath(root);
         var script = NewScript(TextWriter.Null, System.IO.Path.GetDirectoryName(test.Path));
         test.Declare(script);
         if (script.Globals.Get("run").Type != DataType.Function && test.Cases.Count == 0)
@@ -210,7 +307,7 @@ public sealed class GameTest
 
     /// <summary>The fields a test's header <c>test { ... }</c> may hold (docs/writing-tests.md, "The file").</summary>
     public static readonly IReadOnlyList<string> HeaderFields =
-        ["about", "level", "mods", "save", "menu", "reset", "surprises", "speed_ceiling", "ceiling_finding", "before"];
+        ["about", "level", "mods", "save", "menu", "reset", "surprises", "speed_ceiling", "ceiling_finding", "before", "files", "startup_videos", "until_lua", "first_launch", "drawn"];
 
     /// <summary>Why a header holds a field it does not know (null when every field is known): a field
     /// nobody reads would otherwise be ignored without a word.</summary>
@@ -259,12 +356,19 @@ public sealed class GameTest
             SpeedCeiling = options?.Get("speed_ceiling") is { Type: DataType.Number } ceiling && ceiling.Number > 0 ? ceiling.Number : null;
             CeilingFinding = LuaValues.OptionalString(options, "ceiling_finding");
             Before = LuaValues.OptionalString(options, "before");
+            Drawn = LuaValues.OptionalString(options, "drawn");
+            Files = ReadFiles(options);
             if (SpeedCeiling is not null && string.IsNullOrWhiteSpace(CeilingFinding))
                 throw new ScriptRuntimeException($"{Name}: a speed_ceiling names its finding (ceiling_finding = \"where it is written\"): "
                     + "a test that fails only when fast is first a suspicion against our own API (docs/writing-tests.md, Speed)");
             Start = new TestStart(LuaValues.OptionalString(options, "level"), LuaValues.OptionalList(options, "mods"),
                 LuaValues.OptionalString(options, "save"), LuaValues.Flag(options, "menu"),
-                LuaValues.OptionalString(options, "reset") is { } reset ? ParseReset(reset) : null);
+                LuaValues.OptionalString(options, "reset") is { } reset ? ParseReset(reset) : null,
+                LuaValues.Flag(options, "startup_videos"), LuaValues.Flag(options, "until_lua"), LuaValues.Flag(options, "first_launch"));
+            if (Start.UntilLua && (Start.Level is not null || Start.Save is not null || Start.MainMenu))
+                throw new ScriptRuntimeException($"{Name}: until_lua runs the test when the bridge first answers, before any menu or level: it takes no level, save or menu");
+            if (Start.FirstLaunch && (Start.Level is not null || Start.Save is not null || Start.MainMenu || Start.UntilLua))
+                throw new ScriptRuntimeException($"{Name}: first_launch runs the test on the game's first first-launch page: it takes no level, save, menu or until_lua");
             return DynValue.Nil;
         }, "test");
         try { script.DoString(Code, null, Name); }
@@ -288,21 +392,32 @@ public sealed class GameTest
     public static DynValue CaseBody(Script script, string name) => script.Globals.Get("__gk_cases").Table.Get(name);
 
     /// <summary>The id of a test under a folder: its path relative to the folder, with `/` between the
-    /// parts and without .lua (<c>combat/attack/melee_miss</c>; a file of the folder itself: its name).</summary>
-    public static string IdOf(string folder, string path) =>
-        System.IO.Path.ChangeExtension(System.IO.Path.GetRelativePath(folder, path), null)!.Replace('\\', '/');
+    /// parts and without .lua (<c>combat/attack/melee_miss</c>; a file of the folder itself: its name);
+    /// a folder test's (<c>startup/videos/test.lua</c>) is its folder's path (<c>startup/videos</c>).</summary>
+    public static string IdOf(string folder, string path)
+    {
+        if (!IsFolderTest(path)) return System.IO.Path.ChangeExtension(System.IO.Path.GetRelativePath(folder, path), null)!.Replace('\\', '/');
+        var own = System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path))!;
+        var relative = System.IO.Path.GetRelativePath(folder, own);
+        return (relative == "." ? System.IO.Path.GetFileName(own) : relative).Replace('\\', '/');
+    }
 
-    /// <summary>Every <c>*.lua</c> of a folder and its subfolders, at any depth, whose id
+    /// <summary>Every test of a folder and its subfolders, at any depth, whose id
     /// (<see cref="IdOf"/>) <see cref="Selects"/> <paramref name="only"/>, in id order; the test is named by its id.
-    /// A file whose name starts with `_` is shared code, not a test; a subfolder whose _suite.json
+    /// A test is a <c>*.lua</c>, or a folder that holds <c>test.lua</c>. A file whose name starts with
+    /// `_` is shared code, not a test; a `_files` folder holds data; a subfolder whose _suite.json
     /// says `"read": "named"` is read only when it is the folder given. A file that declares no
-    /// test is left out, and said so on <paramref name="skipped"/>.</summary>
+    /// test is left out, and said so on <paramref name="skipped"/>. Two tests of one address - a
+    /// folder test beside a file of its name - are refused.</summary>
     public static IReadOnlyList<GameTest> Discover(string folder, string? only = null, TextWriter? skipped = null)
     {
         if (!Directory.Exists(folder)) throw new CopyException($"no test folder {folder}");
         var found = new List<GameTest>();
         var passed = 0;
-        var files = Files(folder).Select(p => (Path: p, Id: IdOf(folder, p))).OrderBy(f => f.Id, StringComparer.Ordinal).ToList();
+        var files = LuaFiles(folder).Select(p => (Path: p, Id: IdOf(folder, p))).OrderBy(f => f.Id, StringComparer.Ordinal).ToList();
+        foreach (var twice in files.GroupBy(f => f.Id, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
+            throw new CopyException($"two tests have the address {twice.Key}: {string.Join(" and ", twice.Select(f => f.Path))}; "
+                + "a folder and a test of the same name do not stand side by side");
         var ids = files.Where(f => !System.IO.Path.GetFileName(f.Path).StartsWith('_')).Select(f => f.Id).ToList();
         // `-k <test id>/<case>`: that test, that case of it alone
         string? onlyCase = null;
@@ -320,9 +435,8 @@ public sealed class GameTest
             if (name.StartsWith('_')) continue; // a shared file, not a test
             try
             {
-                var test = Load(path);
+                var test = Load(path, folder);
                 test.Name = id;
-                test.Root = System.IO.Path.GetFullPath(folder);
                 if (onlyCase is not null)
                 {
                     if (!test.Cases.Contains(onlyCase))
@@ -361,13 +475,25 @@ public sealed class GameTest
         catch (Exception e) when (e is GateKit.Json.JsonProblemException or IOException) { throw new CopyException($"{suite}: {e.Message}", e); }
     }
 
-    static IEnumerable<string> Files(string folder)
+    /// <summary>The tests' files of a folder: a folder test's <c>test.lua</c> alone (its other `.lua`
+    /// must be shared, and nothing below it is a test), else every <c>*.lua</c> and those of its
+    /// subfolders but `_files`.</summary>
+    static IEnumerable<string> LuaFiles(string folder)
     {
+        var folderTest = System.IO.Path.Combine(folder, FolderTestFile);
+        if (File.Exists(folderTest))
+        {
+            foreach (var other in Directory.EnumerateFiles(folder, "*.lua"))
+                if (!IsFolderTest(other) && !System.IO.Path.GetFileName(other).StartsWith('_'))
+                    throw new CopyException($"{other}: beside {FolderTestFile} every other .lua is shared and its name begins with `_` (a folder that holds {FolderTestFile} is one test)");
+            yield return folderTest;
+            yield break;
+        }
         foreach (var file in Directory.EnumerateFiles(folder, "*.lua")) yield return file;
         foreach (var sub in Directory.EnumerateDirectories(folder))
         {
-            if (ReadOnlyWhenNamed(sub)) continue;
-            foreach (var file in Files(sub)) yield return file;
+            if (string.Equals(System.IO.Path.GetFileName(sub), SharedFilesFolder, StringComparison.Ordinal) || ReadOnlyWhenNamed(sub)) continue;
+            foreach (var file in LuaFiles(sub)) yield return file;
         }
     }
 }

@@ -1,0 +1,49 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::ModManagerClient::SaveSettingsAndReload",
+  "state": "described",
+  "rung": "game",
+  "does": "Writes the client's mod settings to the profile's modsettings.lsx (the addons' order resolved first) and rebuilds the module manager's active module and load-ordered modules from them, without loading any module; runs on every enable or disable in the main menu's mod manager.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:48bc26be3b19b838",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "ls::ModManager::LoadModFromSettings",
+      "ls::ModuleSettings::ResolveAddonsOrder"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "same shape as the macOS function of this name: the profile path joined with the modsettings.lsx name, ls::ModuleSettings::ResolveAddonsOrder, ls::FileFormatIO::SaveFile, ls::ModManager::LoadModFromSettings"
+    },
+    {
+      "kind": "reach",
+      "says": "a count probe in copy coord: 2 calls for 2 toggles of a mod on the mod manager's Installed page; modsettings.lsx rewritten at the toggle"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code: builds the path modsettings.lsx under the profile (slot +0x68 of the object at this+0x208), calls code:ls::ModuleSettings::ResolveAddonsOrder on this+0x1C0, writes the settings to that path (bg3_dx11.exe@25605617+0x411A620), then calls code:ls::ModManager::LoadModFromSettings on this"
+    },
+    {
+      "kind": "watch",
+      "says": "probes in copy coord (c2, build v34-start-extmod-3): six calls in the main menu, three from bg3_dx11.exe@25605617+0x181B049 (code:ecl::ModManagerClient::AddMod) and three from bg3_dx11.exe@25605617+0x181B1B9 (code:ecl::ModManagerClient::RemoveMod); inside each, code:ls::ModuleSettings::ResolveAddonsOrder from bg3_dx11.exe@25605617+0x181B4EA then code:ls::ModManager::LoadModFromSettings from bg3_dx11.exe@25605617+0x181B503; answers 0"
+    },
+    {"kind": "test", "test": "startup/mods/ext_mod"}
+  ]
+}

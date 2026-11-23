@@ -1,0 +1,19 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::DCMainMenu::OnCheckFirstTimeSetupValueCommand",
+  "state": "described",
+  "rung": "game",
+  "does": "The main menu page's command run when the page is Loaded (MainMenu.xaml): when ShowFirstTimeSetup is set, clears it and the graphic settings' calibration flag (ShowGammaCalibration, or ShowHDRCalibration on an HDR display), then saves the graphic settings and the profile's config.",
+  "evidence": [
+    {
+      "kind": "watch",
+      "says": "with ShowFirstTimeSetup set in memory, the copy's flag stayed true through Eula, SensitiveSettings, GammaCalibration and SplashScreen and read false right after the MainMenu state was entered; config.lsf was rewritten in the same second"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

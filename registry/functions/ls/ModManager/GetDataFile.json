@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::ModManager::GetDataFile",
+  "state": "described",
+  "rung": "game",
+  "does": "Finds one data file for a path relative to a module's data folder: walks the load-ordered modules from the last to the first and returns the first <module data path>/<name> that exists, so the latest module that ships the file wins whole; used for single-file data such as the animation attitude and emotion files and the server's relation defaults.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "Windows pseudo-code: a loop from count-1 down over the module array at +0x158 (0x118 each), Module::GetDataPath + the name, Path::Normalize, FileSystem::DoesFileExist, first hit returned"
+    },
+    {"kind": "game-name", "says": "the export's decorated name in GameEngine.dll"},
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

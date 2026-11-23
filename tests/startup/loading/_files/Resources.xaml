@@ -1,0 +1,115 @@
+<!-- A mod's own waiting indicator: a gold d20 in place of the game's spinner.
+     The game merges every enabled mod's GUI/Resources/Resources.xaml into the interface's resources
+     when the mods' interface is applied (early in LoadMenu); a key defined here replaces the game's
+     key of the same name. BusyElement is the template every waiting widget draws its spinner from
+     (the loading screen, the saving notice, the save list...), so the d20 shows wherever the game
+     waits. The die is drawn with Paths (Noesis here draws no Polygon): a hexagon body in a gold
+     gradient, a lit facet, two shaded ones, the top face and darker edges, after GateKit's site's
+     d20. It breathes (scale and brightness, 1.6 s) and rolls a full turn every 4 s.
+     The face carries the load's percentage where the widget's data has a Progress (the loading
+     screen's view model), through the game's own converter class, as the loading screen's own
+     percentage does; where the data has none (any other waiting widget) the binding fails and the
+     face shows its fallback, a 20 - the die's own face, never a number that means nothing there.
+     Names begin with GK_D20 so a reader of the interface's tree finds them. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+                    xmlns:ls="clr-namespace:ls;assembly=Code">
+
+    <ls:FloatToPercentStringConverter x:Key="GK_D20_Percent"/>
+
+    <LinearGradientBrush x:Key="GK_D20_Gold" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FFE27A"/>
+        <GradientStop Offset="1" Color="#D99A00"/>
+    </LinearGradientBrush>
+
+    <ControlTemplate x:Key="BusyElement" TargetType="Control">
+        <Grid x:Name="GK_D20" Width="128" Height="128" HorizontalAlignment="Left" VerticalAlignment="Top"
+              RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform>
+                <RotateTransform Angle="0"/>
+            </Grid.RenderTransform>
+            <Grid.Resources>
+                <!-- the roll: still for 2.8 s, then one full turn in 1.2 s, eased in and out -->
+                <Storyboard x:Key="GK_D20_Roll">
+                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                   Duration="0:0:4" RepeatBehavior="Forever">
+                        <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0"/>
+                        <DiscreteDoubleKeyFrame KeyTime="0:0:2.8" Value="0"/>
+                        <EasingDoubleKeyFrame KeyTime="0:0:4" Value="360">
+                            <EasingDoubleKeyFrame.EasingFunction>
+                                <CubicEase EasingMode="EaseInOut"/>
+                            </EasingDoubleKeyFrame.EasingFunction>
+                        </EasingDoubleKeyFrame>
+                    </DoubleAnimationUsingKeyFrames>
+                </Storyboard>
+            </Grid.Resources>
+            <b:Interaction.Triggers>
+                <b:EventTrigger EventName="Loaded">
+                    <b:ControlStoryboardAction Storyboard="{StaticResource GK_D20_Roll}"/>
+                </b:EventTrigger>
+            </b:Interaction.Triggers>
+
+            <Viewbox x:Name="GK_D20_Pulse" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+                <Viewbox.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Viewbox.RenderTransform>
+                <Viewbox.Resources>
+                    <!-- the breath: a little larger and back, 1.6 s a cycle -->
+                    <Storyboard x:Key="GK_D20_Breathe">
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                         From="0.94" To="1.04" Duration="0:0:0.8" AutoReverse="True" RepeatBehavior="Forever">
+                            <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                         From="0.94" To="1.04" Duration="0:0:0.8" AutoReverse="True" RepeatBehavior="Forever">
+                            <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </Viewbox.Resources>
+                <b:Interaction.Triggers>
+                    <b:EventTrigger EventName="Loaded">
+                        <b:ControlStoryboardAction Storyboard="{StaticResource GK_D20_Breathe}"/>
+                    </b:EventTrigger>
+                </b:Interaction.Triggers>
+
+                <Grid Width="100" Height="100">
+                    <!-- body -->
+                    <Path Data="M50,4 L90,27 L90,73 L50,96 L10,73 L10,27 Z" Fill="{StaticResource GK_D20_Gold}"
+                          Stroke="#7A5A00" StrokeThickness="2.5" StrokeLineJoin="Round"/>
+                    <!-- the lit facet and the two shaded ones -->
+                    <Path Data="M50,4 L90,27 L50,28 Z" Fill="#FFEB9C" Opacity="0.55"/>
+                    <Path Data="M10,73 L23,72 L50,96 Z" Fill="#7A5A00" Opacity="0.22"/>
+                    <Path Data="M90,73 L77,72 L50,96 Z" Fill="#7A5A00" Opacity="0.32"/>
+                    <!-- the top face -->
+                    <Path x:Name="GK_D20_FaceShape" Data="M50,28 L77,72 L23,72 Z" Fill="#FFD54A"
+                          Stroke="#7A5A00" StrokeThickness="2" StrokeLineJoin="Round"/>
+                    <!-- the edges -->
+                    <Path Data="M50,28 L50,4 M50,28 L10,27 M50,28 L90,27 M77,72 L90,27 M77,72 L90,73 M77,72 L50,96 M23,72 L50,96 M23,72 L10,73 M23,72 L10,27"
+                          Stroke="#7A5A00" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                    <!-- the brightness: a light over the body that comes and goes with the breath -->
+                    <Path x:Name="GK_D20_Glow" Data="M50,4 L90,27 L90,73 L50,96 L10,73 L10,27 Z" Fill="#FFF6D0" Opacity="0">
+                        <Path.Resources>
+                            <Storyboard x:Key="GK_D20_Shine">
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="0.3"
+                                                 Duration="0:0:0.8" AutoReverse="True" RepeatBehavior="Forever">
+                                    <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </Path.Resources>
+                        <b:Interaction.Triggers>
+                            <b:EventTrigger EventName="Loaded">
+                                <b:ControlStoryboardAction Storyboard="{StaticResource GK_D20_Shine}"/>
+                            </b:EventTrigger>
+                        </b:Interaction.Triggers>
+                    </Path>
+                    <!-- the number on the face: the load's percentage, else 20 -->
+                    <Viewbox Width="30" Height="15" Margin="35,48,35,37" StretchDirection="DownOnly">
+                        <TextBlock x:Name="GK_D20_Face" FontWeight="Bold" FontSize="15" Foreground="#3B2F00"
+                                   Text="{Binding Progress, Converter={StaticResource GK_D20_Percent}, StringFormat={}{0}%, FallbackValue=20}"/>
+                    </Viewbox>
+                </Grid>
+            </Viewbox>
+        </Grid>
+    </ControlTemplate>
+</ResourceDictionary>

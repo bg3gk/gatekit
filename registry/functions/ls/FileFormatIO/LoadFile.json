@@ -1,0 +1,42 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::FileFormatIO::LoadFile",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Loads one data file into an ls::FileFormatIO object: makes an LSF visitor (0x198 bytes) for a name ending in .lsf, an LSX visitor (0xD0 bytes) otherwise, opens the path (visitor slot +0x58) and, when it opened, calls the object's virtual slot 0 (its Visit) with the visitor, then destroys the visitor.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83",
+      "import:ff1221ec46901464"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 pseudo-code against the Toolkit's CoreLib.dll ls::FileFormatIO::LoadFile (the same .lsf test and the two visitor kinds); code:App::InitializeResourceManager calls it with ecl::HintManager::m_ptr and the path Hints/Hints.lsx, as the Toolkit's ecl::HintManager::Init (count +0x14 zeroed, then LoadFile) inlined"
+    },
+    {
+      "kind": "reach",
+      "says": "live dx11 copy attacks: ecl::HintManager holds the 49 Hint nodes of Hints.lsx in the main menu, the file this call loads"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "CoreLib.dll",
+      "tie": "name",
+      "says": "CoreLib.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "reach",
+      "says": "the fork F5 calls it (found through the call in App::InitializeResourceManager at bg3_dx11.exe@25605617+0x587373) with a second ecl::HintManager and the absolute path of a mod's Public/<Folder>/Hints/Hints.lsx inside its pak at the client's first StartLoading: it returned true and the manager held the file's 2 Hint nodes with their keys, handles and flags"
+    },
+    {"kind": "test", "test": "startup/hints/two_mods"}
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "registry/function/1",
+  "id": "Eoc::StartGameInternal",
+  "state": "described",
+  "rung": "game",
+  "does": "Starts a game or loads a save from inside the game: queues, after a screen fade-out (SetTargetStateAfterFade kind 3), a StartLoading built by the constructor with progress total 0 and the EMPTY GameOverPlaylistQueue (+0x5FC03D8), then StartServer (id 0x18) or Idle (id 5); the load states follow (UnloadLevel, UnloadSession, LoadSession, LoadLevel, SwapLevel, StopLoading, PrepareRunning, Running).",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "decomp of bg3_dx11.exe@25605617+0x5CDF50: ctor code:ecl::GameStateStartLoading::GameStateStartLoading with (state, 0, +0x5FC03D8), SetTargetStateAfterFade(..., 3), then states 0x18 / 5; the same sequence as macOS Eoc::StartGameInternal bg3_macos_x64+0xE55720 (GameStateStartLoading after fade 3, GameStateStartServer, GameStateIdle)"
+    },
+    {
+      "kind": "reach",
+      "says": "not probed; Ext.StartupVideos.Timeline() of an in-game save load (gatekit reset) on copy attacks: Running->StartLoading (no LoadStateMovie, LoadStateDefault only)->Idle->UnloadLevel->UnloadSession->Idle->LoadSession->LoadLevel->SwapLevel->StopLoading->PrepareRunning->Running"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoC.dll",
+      "tie": "name",
+      "says": "EoC.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

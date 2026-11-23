@@ -68,6 +68,8 @@
 ---@field Rolls GK.Rolls @ server: rolls decided in advance (cheats), Karmic Dice, the rolls the game finishes
 ---@field Memory GK.Memory @ server: the memory instrument (read, watch, freeze a field)
 ---@field Sound GK.Sound @ client: how loud this copy of the game is
+---@field Hints GK.Hints @ client: the loading screen's hint list as the game holds it
+---@field LoadingScreenImport { row: integer?, ticks: integer?, subscribed: boolean? } @ client: where the import of the start timeline's loading-screen rows into the event log stopped (data)
 ---@field Camera GK.Camera @ client: camera control
 ---@field Wake GK.Wake @ server: a creature or a place kept awake and drawn far from the party (cheats)
 ---@field Places GK.Places @ client/ui: zone name and map markers
@@ -514,6 +516,63 @@ function GK.FrameCap() end
 --- @param fps integer
 --- @return boolean
 function GK.SetFrameCap(fps) end
+
+-- =========================================================================================
+-- Client/Hints.lua  (client side)
+
+---One hint of the loading screen's list.
+---@class GK.Hint
+---@field index integer @ its place in the list, from 1
+---@field key string @ the game's HintKey
+---@field handle string? @ the Description's text handle
+---@field text string? @ that handle translated by the game; nil when the game has no text for it
+---@field keyboard boolean @ shown for the keyboard
+---@field controller boolean @ shown for a controller
+---@field internal boolean @ the file's Internal flag
+---@field wiki string? @ the WikiPage text
+---@field source string? @ "game" or the UUID of the mod that gave it; nil without the fork's record of the composition
+---@field mod string? @ that mod's name
+---@field replaced { source: string, name: string? }? @ whose entry of the same key this one replaced
+
+---The loading screen's hints (`code:ecl::HintManager`), read from memory in the registry's layout.
+---Needs GateKit's Script Extender build in developer mode. Client side.
+---@class GK.Hints
+GK.Hints = {}
+
+---The hint list as the game holds it now, in its order, each entry with who gave it. Observation.
+---@return GK.Hint[]? list
+---@return string? why @ when the list cannot be read
+function GK.Hints.List() end
+
+-- =========================================================================================
+-- Client/LoadingScreen.lua  (client side; no functions: it writes rows of the event log)
+
+---The payload of a `loading_wallpaper` row: the loading screen's slideshow made ready (`set`) or
+---the wallpaper on screen changed (`shown`), imported from the fork's start timeline.
+---@class GK.LoadingWallpaperRow
+---@field what "set"|"shown"|"gone" @ gone: the element left the interface; image, index, count, look as last shown
+---@field ms number @ the timeline's time: milliseconds since the game process was created
+---@field row integer @ the timeline's row
+---@field images string[]? @ set: the images in the order the slideshow will show them
+---@field slot integer? @ set: each image's time, milliseconds
+---@field fadeIn integer? @ set: its fade in, milliseconds
+---@field fadeOut integer? @ set: its fade out, milliseconds
+---@field image string? @ shown: the image on screen (file name without the extension)
+---@field index integer? @ shown: its position in the set, 0 for a single image
+---@field count integer? @ shown: the set's size, 1 for a single image
+---@field look "sequence"|"single"|nil @ shown: the slideshow or one image
+
+---The payload of a `hint_shown` row: the loading screen drew a hint.
+---@class GK.HintShownRow
+---@field ms number @ the timeline's time: milliseconds since the game process was created
+---@field row integer @ the timeline's row
+---@field key string @ the hint's HintKey
+---@field index integer @ its index in the game's hint list
+---@field count integer @ the list's size
+
+---What the client's import of the timeline keeps (data only): the last timeline row imported.
+---@type { row: integer?, ticks: integer?, subscribed: boolean? }
+GK.LoadingScreenImport = {}
 
 -- =========================================================================================
 -- Client/Sound.lua  (client side)
@@ -2584,6 +2643,8 @@ function GK.Act.Stop() end
 ---@field active (fun(data: any): boolean)?
 ---@field read (fun(data: any, ui: GK.Gui): table)? @ plain summary of what the player sees
 ---@field step (fun(ui: GK.Gui, options: table): table)? @ one step through the window
+---@field look boolean? @ its attention row carries `read`'s `controls` (and `keys`): what a player can act on
+---@field keys string? @ what passes a window that has no control (the splash screen: any key)
 
 ---Every window of the game, operated from code - opened, read, clicked through, closed - without
 ---the mouse and window focus. UI side (inside Ext.UI.Defer). Results are { ok, ... } or
@@ -2697,12 +2758,15 @@ function GK.Gui.Click(name, what, which) end
 ---@field items { n: integer, text: string?, id: string|number|nil, name: string?, enabled: boolean?, hidden: boolean? }[]?
 ---@field min number?
 ---@field max number?
+---@field command string|boolean|nil @ the name of the data's command the control is bound to ("CustomEvent"), or true when no data names it
+---@field parameter string|number|boolean|nil @ the control's CommandParameter
+---@field in string? @ the list item the control lies in ("Options#2")
 
 ---Everything a player could act on in an open widget, found by walking it (docs/contracts/lua-api.md,
 ---"Look"). UI.
 ---@param name string
----@param options string|{ under: string?, kind: string?, find: string?, items: integer?, detail: boolean?, all: boolean? }|nil
----@return { ok: boolean, widget: string, data: string, controls: GK.GuiLookControl[] }|GK.Failure
+---@param options string|{ under: string?, kind: string?, find: string?, items: integer?, detail: boolean?, all: boolean?, layout: boolean? }|nil
+---@return { ok: boolean, widget: string, data: string, controls: GK.GuiLookControl[], laidOut: boolean? }|GK.Failure
 function GK.Gui.Look(name, options) end
 
 ---The row of a handle of GK.Gui.Look (it holds the live element), and for an item's handle
@@ -2766,11 +2830,12 @@ function GK.Cheat.Pointer(options) end
 ---Sets a control to a value as the player's hand would: a slider inside its range, a toggle, a
 ---text field, a list (as GK.Gui.Select). Answers what the control reads afterwards; `handle` is
 ---the control's handle after the act when the act changed it (a toggle that hides itself by what
----it switches answers to "~<handle>"). UI.
+---it switches answers to "~<handle>"). A slider answers once a number of its data reads the value
+---(`held`, e.g. { Gamma = 1.2 }), or at the limit with the numbers its data holds (`holds`). UI.
 ---@param name string
 ---@param handle string
 ---@param value number|boolean|string
----@return { ok: boolean, before: any, after: any, handle: string?, error: string? }
+---@return { ok: boolean, before: any, after: any, handle: string?, held: table<string, number>?, holds: table<string, number>?, error: string? }
 function GK.Gui.Set(name, handle, value) end
 
 ---Selects an item of a list (ListBox, tab strip...) of an open widget. UI. The items are counted

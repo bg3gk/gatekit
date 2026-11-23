@@ -1,0 +1,60 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::EocClient::ReturnToMainMenu",
+  "state": "described",
+  "rung": "game",
+  "does": "Sends the client back to the main menu: clears the state queue; when the current state is already Menu it queues only LoadMenu and Menu (no StartLoading, no video); otherwise, unless a save is in progress (SavegameManager+0xf9), it queues a StartLoading built by the constructor with the GameOverPlaylistQueue it is given (callers pass an empty queue, ecl::GameProtocol::ProcessMsg passes one from a server message), then the unload states, LoadModule when the base module changes, LoadMenu, StopLoading and Menu.",
+  "fingerprint": {
+    "calls": [
+      "ecl::GameStateMachine::SetTargetState",
+      "ecl::GameStateStartLoading::GameStateStartLoading",
+      "fp:07055d374dd1fb25",
+      "fp:123b79ba6c390bab",
+      "fp:418dc38591643448",
+      "fp:5227b96c8688ff31",
+      "fp:92dd4fee11aeea92",
+      "fp:accaecdcc52bd421",
+      "fp:b5782aa94e4f0915",
+      "fp:bb914e607e1f95e2",
+      "fp:cef2a8b8169a833b",
+      "fp:d6deca8fac164468",
+      "fp:e0c8c061cbc6393c",
+      "fp:e4d053ad9455ea7c",
+      "fp:ffed5ee30b44d4a9",
+      "import:154e46e01831fb06",
+      "import:196f87dd222b4c83",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "decomp of code:ecl::EocClient::ReturnToMainMenu: ClearQueue, the Menu (id 7) branch, ctor code:ecl::GameStateStartLoading::GameStateStartLoading with (state, 3 or 4, queue), SetTargetState sequence; signature and body as macOS ecl::EocClient::ReturnToMainMenu(bool, eoc::GameOverPlaylistQueue const&) bg3_macos_x64+0x130A8E0; 12 callers, all with the empty queue +0x5FC03D8 except GameProtocol::ProcessMsg"
+    },
+    {
+      "kind": "reach",
+      "says": "not probed; what was seen: the game menu's MainMenuCommand confirmed in a session gave Running->StartLoading->Disconnect->UnloadLevel->UnloadSession->LoadMenu->StopLoading->Menu in Ext.StartupVideos.Timeline(), no LoadStateMovie and no video, then the SplashScreen page again (copy attacks); whether that went through this function is open"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "Does the game menu's MainMenuCommand reach this function, and where is the Disconnect state queued? A client probe on code:ecl::EocClient::ReturnToMainMenu during the return would say.",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

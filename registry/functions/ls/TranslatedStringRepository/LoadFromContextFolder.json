@@ -1,0 +1,48 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::TranslatedStringRepository::LoadFromContextFolder",
+  "state": "described",
+  "rung": "game",
+  "does": "Loads the translated texts of one language folder under Localization; BaseApp::Start calls it once for English (second argument true) when the language is another, then for the language, right after ls::PackedFileManager::LoadPackFiles and before App::InitApp.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:163fa41a74c7f92d",
+      "fp:31b0217756196cd0",
+      "fp:36ea95f2ce33bd6a",
+      "fp:482916027a6ce3fa",
+      "fp:5227b96c8688ff31",
+      "fp:72b4801e8e903ffc",
+      "fp:91c3d48dff57ab4c",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:e725a9f99849fcee",
+      "fp:ffed5ee30b44d4a9",
+      "import:154e46e01831fb06"
+    ],
+    "strings": ["27a9245404df7d11", "4e58d040c65a51b1", "b902d3d15e377cf8"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "dx11 BaseApp::Start (code:BaseApp::Start) calls it twice on ls__gTranslatedStringRepository, the first guarded by a language comparison with English, as the macOS BaseApp::Start does"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "pair",
+      "says": "The macOS build's symbols hold this name; a stored pair of the two builds joins that function to this one (a seed)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "CoreLib.dll",
+      "tie": "match",
+      "says": "CoreLib.dll exports this name; the symbol database matches the export to this function by strings"
+    },
+    {
+      "kind": "reach",
+      "says": "Timeline Step rows (two starts, Russian language): English 4117.7 -> 4254.6 and 3668.8 -> 3755.1 ms, then Russian 4254.7 -> 4418.5 and 3755.2 -> 3868.9 ms; each opens its 9 .loca files (base, _to_F, _M_to_X and the Gender/Female, Gender/Neutral ones) and the process's read counter does not move (the files are read from the mounted paks' mapping)"
+    },
+    {"kind": "test", "test": "startup/confirm/stages"}
+  ]
+}

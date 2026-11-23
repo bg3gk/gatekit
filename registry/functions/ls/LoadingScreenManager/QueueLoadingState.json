@@ -1,0 +1,17 @@
+{
+  "schema": "registry/function/1",
+  "id": "ls::LoadingScreenManager::QueueLoadingState",
+  "state": "described",
+  "rung": "game",
+  "does": "Appends a load state to the loading screen manager's ring of states; the queue's head is started by ls::LoadingScreenManager::Update",
+  "evidence": [
+    {"kind": "read", "says": "macOS decomp; grows the ring at +0x10 and raises the count +0x1C"},
+    {"kind": "game-name", "says": "the macOS build's symbols hold this name"},
+    {
+      "kind": "toolkit-name",
+      "store": "GameEngine.dll",
+      "tie": "name",
+      "says": "GameEngine.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

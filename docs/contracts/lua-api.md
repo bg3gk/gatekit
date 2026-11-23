@@ -57,7 +57,7 @@ Load order (`BootstrapServer.lua`, `BootstrapClient.lua`):
   `GK.Start("server")` and the net channels of the console.
 - Client: `Shared/` Bridge, Verbs, EventLog, Attention, ConsoleLog, Complete, Probe, Memory, Trace;
   `Client/` Api, Sound, UI, Stage; the [UI catalogue](#the-ui-catalogue) when present; `Client/` Windows,
-  XamlChains, Pointer, WindowReaders, Popups, Camera, Places, Focus, Aim, Act, Attention, Show; then
+  XamlChains, Pointer, WindowReaders, Popups, Camera, Places, Focus, Aim, Act, Attention, Show, Hints; then
   `GK.Verbs.Guard()` and `GK.Start("client")`; then, only when Weave is loaded, `Client/` Overlay,
   Console, Panels.
 
@@ -124,14 +124,15 @@ The tables and functions each file adds to `GK`; the signatures are in `lua-type
 | `Client/XamlChains.lua` (UI) | `GK.Gui.XamlChain`: a control's click chain read from the game's XAML ([look](#look-any-window-by-walking-it)) |
 | `Client/Pointer.lua` (UI) | `GK.Cheat.Pointer`: a pointer inside the game, a [research instrument](#the-pointer-a-research-instrument) |
 | `Client/WindowReaders.lua` (UI) | no new functions; adds `read` to the entries of `GK.Gui.Windows` |
-| `Client/Popups.lua` (UI) | `GK.Gui.Blocking`, `Resolve`, `DialoguePhase`, `RollBonuses`, `AddRollBonus`, `Trade`, `Combine`, `LongRest`, `QuickSave`, `QuickLoad`, `SaveAs`, `LoadLatest`; the entries of the windows that wait for the player (dialogue, roll, reaction, box, tutorial, loot, trade, pickpocket, rest, learn ...) |
+| `Client/Popups.lua` (UI) | `GK.Gui.Blocking`, `Resolve`, `DialoguePhase`, `RollBonuses`, `AddRollBonus`, `Trade`, `Combine`, `LongRest`, `QuickSave`, `QuickLoad`, `SaveAs`, `LoadLatest`; the entries of the windows that wait for the player (dialogue, roll, reaction, box, tutorial, loot, trade, pickpocket, rest, learn ...), and of the first launch's pages under their own names (`Eula`, `ModBrowserSplashScreen`, `SensitiveSettings`, `HDRCalibration`, `GammaCalibration`: policy `setup`, their step answers that their controls are the way) and `SplashScreen` (policy `splash`, `pass` raises `OpenMainMenu` as its key does); an entry with `look` gives its attention row its controls |
 | `Client/Camera.lua` (C) | the client's `GK.Camera` (`State`, `Look`, `Face`, `OnScreen`, `Focus`, `Return`) |
 | `Client/Places.lua` (UI) | `GK.Places` (`Zone`, `Markers`) |
 | `Client/Focus.lua` (C) | the client's `GK.Focus` (`SetCalm`, `State`, `Outline`, `ClearOutlines`, `Aim`, `Confirm`, `ClearAim`); listens on `GK_Focus` |
 | `Client/Aim.lua` (UI) | `GK.Gui.Aiming`, `Aim`, `FirstClickPicked`, `Confirm`, `CancelAim`; `GK.Cheat.AimBest` ([aiming](#aiming-clientaimlua-ui-side)) |
 | `Client/Act.lua` (UI) | the client's `GK.Act`: `Cast`, `Attack`, `Press`, `Draw`, `Sheathe` ([the class of a verb](#the-class-of-a-verb-and-steps-sharedverbslua-sharedverbclassesjson)) |
 | `Client/Show.lua` (C) | [`GK.Show`](#gkshow-a-picture-over-the-game-straight-from-a-file-clientshowlua) (`Picture`, `Video`, `Hide`, `Shown`) |
-| `Client/Attention.lua` (C) | the client's pollers of `GK.Attention` (`Pollers.windows`, `Pollers.film`, `OnHook`) |
+| `Client/Hints.lua` (C) | [`GK.Hints`](#gkhints-the-loading-screens-hints-clienthintslua) (`List`) |
+| `Client/Attention.lua` (C) | the client's pollers of `GK.Attention` (`Pollers.windows`, `Pollers.film` - which also reads the main menu's camera descent every tick - `OnHook`) and, with no public names, the client's state machine as the key `state` |
 | `Client/Overlay.lua` (C) | `GK.Overlay` (`Get`, `OnChange`, `Register`), `GK.OverlaySet`, `OverlayState`, `OverlayRescue`, `OverlaySettings`; the console key, the HUD button, the settings window; console commands `gkui`, `gkrescue` |
 | `Client/Console.lua` (C) | the GateKit console: `GK.ConsoleAsk`, `ConsoleRun`, `ConsoleWatch`, `ConsoleUnwatch`, `ConsoleWatches`, `ConsoleAction`, `ConsoleReload`, `ConsoleEvents`, `ConsoleLog`, `ConsoleOutput`, `ConsoleState`, `ConsoleSet`, `ConsoleSubmit`, `ConsoleTab`, `ConsoleCopy`, `ConsoleHistory`, `ConsoleClear`, `ToggleConsole`, `ConsoleHooks`; console command `gk` |
 | `Client/Panels.lua` (C) | `GK.UI` (`Panel`, `Remove`, `Open`, `Panels`, `Press`, `Read`): another mod's own tab in the GateKit console; the builder's methods `SameLine`, `Text`, `Separator`, `Button`, `Toggle`, `Input`, `Select`, `Values`, `Watch` (`GK.PanelBuilder`) |
@@ -478,7 +479,10 @@ Extender hands out as a plain DependencyObject.
 `GK.Gui.Look(widget [, options])` answers what a player could act on in an open widget, found by
 walking its visual tree and by what each element is - no table of names, no code per window:
 `{ ok, widget, data, controls = { ... } }`, each control `{ handle, kind, type, text, value,
-enabled (false only), hidden, data, of, command, parameter }`.
+enabled (false only), hidden, data, of, command, parameter, in }`: `command` is the name of the
+command the control is bound to - the property of its data, else of the widget's data, that holds
+the control's stored `Command` (`CustomEvent`, `OpenURLInBrowserCommand`) - or `true` when none
+names it; `in` is the list item the control lies in.
 
 | `kind` | Elements | `value` | Acted on by |
 |---|---|---|---|
@@ -505,9 +509,16 @@ enabled (false only), hidden, data, of, command, parameter }`.
   data context, where it reads as a collection; a source that still cannot be indexed (a filtered
   view) is read by the item elements the list shows (`notShown` counts the rest). An item written
   in the XAML carries its `name`; a generated one its data's text and `id` (`Guid`, `UUID`, `Id`).
+- **One choice, one control.** The parts of a combo box's own template (the toggle that opens
+  its drop-down) are not controls: the combo box is one `list` with its items and the chosen one.
+  A list whose items each hold a choice (a list, toggle, slider or text field) bound to the item's
+  own data - a list of settings - is left out: its choices stand for it, each with `in`. Items
+  that hold only buttons, or nothing (a heading), do not count.
 - **Options:** `under` (a handle or x:Name: only what lies inside it), `kind`, `find` (part of a
   handle or text), `items` (how many items are written out, default 12), `detail` (the plain values
-  of each control's and item's data), `all` (controls not shown too).
+  of each control's and item's data), `all` (controls not shown too), `layout` (the answer also
+  carries `laidOut`: true once Noesis's layout has arranged the widget and every control shown -
+  each one's `ActualWidth` is stored - so none is still to be made).
 
 `GK.Gui.Click`, `GK.Gui.Select` and `GK.Gui.Set` take a handle. `GK.Gui.Select(widget, list, item)`
 takes the item's number, its `id`, its `name` or its text (the whole text first, then a part),
@@ -515,7 +526,10 @@ refuses an item that is not shown or a disabled list, and answers `{ ok, selecte
 text }`: `reads` is the list's selection read again by its handle; a list that does not keep a
 selection is judged by what the window shows. `GK.Gui.Set(widget, handle, value)` sets a slider
 inside its range (outside it: refused with `min`, `max`), a text field, a toggle (pressed when it
-differs) or a list, and answers `{ ok, before, after }`. A picture of a window (`GK.Gui.Picture`)
+differs) or a list, and answers `{ ok, before, after }`. A slider's view model takes the value
+through its binding a frame later: `Set` answers once a number of the slider's data (else the
+widget's) reads it, naming it (`held = { Gamma = 1.2 }`), or at its limit with the numbers the data
+holds (`holds`). A picture of a window (`GK.Gui.Picture`)
 holds the handles of the controls it shows, so a page turned inside one widget is seen as a change
 (`saw = "the controls shown changed"`).
 
@@ -634,7 +648,9 @@ view of the [event log](#the-event-log-gkeventlog-sharedeventloglua-both-sides):
 ended)` a row that opens, changes or closes the waiting state `key` (`item.what` is its kind),
 `Waiting` reads the open states as items `{ what, at, seq, tick, key, ...payload }` (a view of
 `GK.EventLog.Open`, not writable), `State()`, `Since(seq)` and `Mark()` read the rows a caller is
-told, `Costs()` says what the hooks and the log cost. What the host does with it:
+told, `Costs()` says what the hooks and the log cost. Loads, saves, the main menu and its camera
+descent are the client's (Client/Attention.lua: `GameStateChanged`, and the state found at each
+boot of its Lua; the conditions: [bridge-protocol.md](bridge-protocol.md#attention), "Loads"). What the host does with it:
 [bridge-protocol.md](bridge-protocol.md#attention); [mcp.md](mcp.md#attention-and-event-ended-waits). Observation.
 
 ## `GK.Fixture`: scenes staged in the empty test level
@@ -849,6 +865,8 @@ row of any kind, the record every observation reads).
 | `GK.EventLog.Append(kind, payload, options)` | the new row, or nil when its family is off; `kind` must be in the registry (an error otherwise); `options.key` names the waiting state of an attention row, `options.knows = "omniscient"` marks a row of a `knowsPerRow` kind the party did not perceive, `options.class` is the class of the verb that made a row of a `classPerRow` kind (`job_done`: its job's verb) |
 | `GK.EventLog.Since(seq, filter)` | `{ boot, seq, first, rows, dropped? }`: the rows after `seq` that are kept; `dropped` counts the asked-for rows that went; `filter = { kinds = { name = true }, family, scope, attention = true, knows, limit }` |
 | `GK.EventLog.On(families, options)` / `Off(families)` | switch families on (`options.seconds`, default 60, at most 600; `options.components` for `component`) or off; the families on now |
+| `GK.EventLog.Keep(segments, bytes)` | how much of the log this Lua state keeps (memory and the channel's files): `segments` of 128 rows (default 32, at most 256), `bytes` (default 4 MB, at most 32 MB); nil puts a bound back. A story change of level with `osiris` on writes ~5,000 rows: raised, its first rows are not retired before they are read; `{ segments, bytes }` |
+| `GK.Stage.Digest(ids, moment)` | a digest of the logic's state of creatures at one moment for a differential check: per id, in the order given, `{ who, at (0.1 m), hp, maxHp, dead, statuses (sorted), equipped (sorted slot=template), combat = { acted }, gone }`; with `moment` also a `logic_digest` row (family `scope`) |
 | `GK.EventLog.SwitchedOn()` | the families on now |
 | `GK.EventLog.Row(seq)` | one row while it is kept |
 | `GK.EventLog.Previous()` | the rows of this side's previous Lua state, read back from its files |
@@ -991,6 +1009,9 @@ registry of verbs ([the class of a verb](#the-class-of-a-verb-and-steps-sharedve
 | `GK.RollLog.Origins()` | observation | the askers known for each executable: `{ [module] = { { id, what, rva, size } } }`; the ids and words are in `Server/RollOrigins.json`, the places are written into it from the registry's build tables by `gatekit registry places`, for every executable the registry places them in |
 | `GK.RollLog.Causes()` | observation | the causes of a roll known for each executable, from the same file and the same command: `{ [module] = { { id, cause, rva, size } } }` - `cause` is the word a row's `cause` carries, `id` its `causeId` |
 | `GK.Rolls.Next(spec)` | observation | the dice the stream `spec` names (`type`, and `player`, `combat` when several share the type) gives to its next roll, computed from its seed and count with the game's generator and not drawn: `{ ok, type, player, combat, seed, rolls, dice }`. `dice` (default 2: the pair the game draws for every d20 roll, the first kept unless advantage or disadvantage chooses) and `faces` (default 20) describe the roll; `rolls` computes from another count. A roll that Karmic Dice forces, a die a reroll boost throws again and a die replaced by a guaranteed-outcome boost are not these |
+| `GK.Rolls.PinSources(seed)` | cheat | every source of the server's dice pinned for a scenario run twice (a differential check): the roll streams component's base seed (a load sets it to the clock in seconds) written `seed`, and every stream there is now given the seed `seed + its place + 1` and the count 0 (through `SetStreams`). A stream the game makes later is seeded by the game itself (a fight's NPC streams: they still differ between runs; a rig decides their throws). The server's saved random (the treasure tables' generator, `esv::EocServer` +0xB8, seeded from a millisecond clock at the server's start) gets `seed` too, and with GateKit's build (`TreasurePin`) every treasure table is seeded from `seed` and its entity's UUID (`Ext.Debug.PinTreasure`): a level's loot no longer depends on the order its setup makes the requests in. Clean writes the old base and saved random back and takes the per-entity seed off (`op = "base"`, `"saved"`, `"treasure"`). Refused outside a scope. `{ ok, base, was, streams, saved = { initial, current, was, perEntity } }` |
+| `GK.Headless.Drawing()` (client) | observation | whether the client draws its frames (`Ext.StartupVideos.RenderCut`'s mode 0, or no render cut in this build). `GK.Headless.AskParty([always])` (cheat): asks the server (channel `GK_Headless`) to replicate the party's unchanged `PartyMember` and `Player`, so the interface's view models learn who is playable in a game that drew nothing; done by itself at each client Running while nothing is drawn. `GK.Shot` in such a game draws until its picture is taken (W3 round 6) |
+| `GK.Rolls.SavedRandom()` | observation | the server's saved random, `{ initial, current }` (the treasure tables' `ls::Random`), or nil and why. `GK.Rolls.WriteSavedRandom(initial, current)` writes it (cheat, PinSources' undo) |
 | `GK.Rolls.SetNext(spec)` | cheat | chooses the natural die of the next roll drawn from the stream `spec` names: moves its count forward to the nearest one at which the first die is `die` and, with `both`, every die of the roll (so that advantage and disadvantage keep it too); written through `SetStreams`, so Clean puts the count back. One roll is chosen - the roll after it draws what the stream gives where it is left; other streams and the bounds a boost puts on a die are untouched. `{ ok, type, player, combat, seed, rolls, was, dice }`, or `{ ok = false, error }` when the stream does not exist yet or no count near gives the die. Refused outside a scope |
 | `GK.Rolls.Rig(spec)` | cheat | decides one throw at the moment it is made, through the extender's roll event, for the length of the scope. `spec` names the roll by what the game says of it - `who` (the roller), `kind` (the roll's type as the game names it, or `Attack` / `Damage` for every type that ends so), `stream` (the roll stream's type), and by what the roll is for - `spell`, `status`, `source`, `target` (the spell and the status the roll belongs to, the two parties; on a build of the extender whose roll event says them); a field left out matches any roll - and which of the rolls that fit: `nth` (default 1, the next) and `times` (how many from there, default 1; 0: every one until `Unrig` or Clean). The throw gets `natural` (the die that counts: the total follows, and the critical by the game's rule) or `total`. Every other roll is as the game throws it: of four checks asked in one tick with the third rigged, three are the stream's own. One rig decides a roll; the earliest set wins. A `roll_rigged` row (scope, cheat, omniscient) says what the game had thrown. `{ ok, id }`, or `{ ok = false, error }` on a build without the roll event. Refused outside a scope |
 | `GK.Rolls.Chance{ who, spell, target, set }` | observation | the chance, from 0 to 1, that the roll of `spell` cast by `who` (default the host) at `target` succeeds, as the game itself works it out - the number its combat AI weighs and its cursor shows, advantage and disadvantage folded in. Nothing is rolled. The game counts the weapons of the caster's active weapon set and switches the set only when an attack is really made, so for a weapon attack the set the attack would be made with (`set`: `"Melee"` or `"Ranged"`; default: read from the spell's roll) is put on for the length of the question and put back. `{ ok, chance, set, was }`, or `{ ok = false, error }`. Needs the Script Extender's `Ext.Stats.GetSpellRollChance` (GateKit's build): without it `{ ok = false, error, needs }` |
@@ -1523,3 +1544,26 @@ pictures only.
 
 What is not covered: a picture is not taken off by `GK.Stage.Clean` or a test's reset (hide it);
 several pictures are drawn each in its own window, in no promised order; Vulkan draws no files.
+
+## `GK.Hints`: the loading screen's hints (Client/Hints.lua)
+
+| Verb | Class | Answers |
+|---|---|---|
+| `GK.Hints.List()` | observation | the hint list as the game holds it now, in its order: `{ index, key, handle, text, keyboard, controller, internal, wiki, source, mod?, replaced? }` each; nil and why when it cannot be read |
+
+The loading screen draws its hints from one list, `code:ecl::HintManager`, filled once per process
+at the start from the game's `Public/Game/Hints/Hints.lsx` and, with GateKit's Script Extender
+build, composed with each enabled mod's `Public/<Folder>/Hints/Hints.lsx` (the fork's
+`Docs/API.md`, "Loading Hints"). Script Extender maps no type for it, so `List` reads it from memory
+with `Ext.Debug.ReadValue` in the registry's layout: the manager through
+`code:ecl::HintManager::m_ptr` (`Ext.Debug.GetSymbolAddress("ecl__HintManager")`), its array and
+count, and each `code:ecl::Hint`. `text` is the description's handle translated by the game
+(`Ext.Loca.GetTranslatedString`), nil when the game has none; `wiki` is the `WikiPage` text.
+`source` is `"game"` or the UUID of the mod that gave the entry, `mod` that mod's name and
+`replaced` (`{ source, name? }`) whose entry of the same key it replaced, joined by place and key
+from the fork's record of the composition (`Ext.Hints.GetComposition`); without that record
+`source` is nil. The list is the same from the client's first `LoadModule` on: it is composed
+before any Lua and rebuilt by nothing (`test:startup/hints/two_mods`).
+
+Needs GateKit's build in developer mode (`needs`: `Hints.GetComposition`); on another build the
+verb answers `{ ok = false, error, needs }`.

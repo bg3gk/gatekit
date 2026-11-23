@@ -1,0 +1,37 @@
+{
+  "schema": "registry/type/1",
+  "id": "ecl::GameStateStartLoading",
+  "kind": "struct",
+  "state": "described",
+  "rung": "toolkit",
+  "about": "The client's StartLoading game state (id 22): 0x40 bytes, virtual table bg3_dx11.exe@25605617+0x55F7460; carries the videos to show while it loads as an eoc::GameOverPlaylistQueue at +0x18 and the loading screen's progress total at +0x38.",
+  "fields": [
+    {
+      "offset": 24,
+      "name": "Playlists",
+      "type": "eoc::GameOverPlaylistQueue",
+      "rung": "confirmed",
+      "evidence": [
+        {
+          "kind": "read",
+          "says": "Enter walks entries {FixedString name; int32 count} from the buffer at +0x18 (count at +0x24) and their names from the buffer at +0x28 (count at +0x34); MakeSimple fills them"
+        },
+        {
+          "kind": "watch",
+          "says": "Script Extender's fork reads +0x18 at its StartLoading callback (Ext.StartupVideos.GetPlaylist().Game): the first start's state holds one entry Splash_Logo_Larian of count 1 and one name, the names the fork writes there play in turn, and a new game's StartLoading holds none; test:startup/videos/game_clip and test:startup/confirm/stages check the game's entry"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "code:ecl::GameStateStartLoading::GameStateStartLoading and code:ecl::GameStateStartLoading::Enter, the same layout as macOS MakeSimple and Enter"
+    },
+    {
+      "kind": "watch",
+      "says": "read live at Script Extender's GameStateChanged callback (ToState StartLoading, new game from the menu): the client machine's current state had virtual table bg3_dx11.exe@25605617+0x55F7460, 22 at +0x10, 0 playlist entries at +0x24, 0 names at +0x34 and progress total 0 then 4 at +0x38"
+    },
+    {"kind": "toolkit-name", "store": "EoCClient.dll", "says": "EoCClient.dll exports this name"}
+  ]
+}

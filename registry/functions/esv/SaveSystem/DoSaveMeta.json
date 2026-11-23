@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::SaveSystem::DoSaveMeta",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Writes SaveInfo.json into a save: Save Name, Game Version, Difficulty, Current Level, Subregion, Position, Platform, and Active Party: per character its Origin, Level, Classes and experience. No appearance of a character is written there.",
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "the strings the Toolkit's EoCServer.dll function uses (gatekit decomp code EoCServer.dll+0xC6DD90)"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCServer.dll",
+      "tie": "name",
+      "says": "EoCServer.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

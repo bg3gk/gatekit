@@ -36,9 +36,12 @@ public sealed class CopyLayout
     public string Channel => Path.Combine(ScriptExtenderFolder, ModSettings.BridgeFolder);
     public string SeSettings => Path.Combine(Bin, "ScriptExtenderSettings.json");
     public string SeLogs => Path.Combine(State, "se-logs");
-    public string Splash => Path.Combine(Game, "Data", "Video", "Splash_Logo_Larian.bk2");
     public string LooseRecord => Path.Combine(State, "loose.json");
+    /// <summary>The files a test put into the game folder for its own time (<see cref="TestFiles"/>).</summary>
+    public string TestFilesRecord => Path.Combine(State, "test-files.json");
     public string CheckpointRecord => Path.Combine(State, "checkpoint.txt");
+    /// <summary>The saves made right after a level's start, one line a level and mod list (<see cref="StartSaves"/>).</summary>
+    public string StartSavesRecord => Path.Combine(State, "start-saves.txt");
     public string Backup => Path.Combine(State, "backup");
     public string CrashMarker => Path.Combine(Profile, "ModCrashSanityCheck");
 

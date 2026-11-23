@@ -1,0 +1,24 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateStartLoading::Abort",
+  "rung": "game",
+  "fingerprint": {"vtables": [{"slot": 7}]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "slot 7 (+0x38) of the StartLoading virtual table bg3_dx11.exe@25605617+0x55F7460, the slot the Toolkit's table gives ecl::GameStateStartLoading::Abort"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

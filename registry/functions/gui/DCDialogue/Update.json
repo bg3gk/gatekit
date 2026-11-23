@@ -1,0 +1,49 @@
+{
+  "schema": "registry/function/1",
+  "id": "gui::DCDialogue::Update",
+  "state": "described",
+  "rung": "inferred",
+  "does": "The dialogue window's data context update (from ui::DataContextProvider::Update): reads its dirty bits (+0x938) and, with bit 2, asks the question nodes' actor (through bg3_dx11.exe@25605617+0x1743A10 / bg3_dx11.exe@25605617+0x1F3EA50 to LSDialogs::DialogManager::GetActorForCurrentQuestionNodes).",
+  "fingerprint": {
+    "calls": [
+      "fp:07c716222e4c9092",
+      "fp:2ecd242562bf96ea",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3a1919ec5e4b0a9a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:b0e61ac31bc379a8",
+      "fp:b8eb2179f5922a8f",
+      "fp:d6f99e34b466cfac",
+      "fp:e4d053ad9455ea7c"
+    ],
+    "strings": ["d797ce0d77fc29ea"],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::TimelineActorDataComponent>,ls::TypeList<>,ecs::QueryTypeRemovedTag,ecs::QueryTypeAllTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::TimelineActorDataComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeDeadTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::TimelineActorDataComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::TimelineActorDataComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::TimelineActorDataComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::TimelineActorDataComponent>,ls::TypeList<>,ecs::QueryTypeModifiedTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::character_creation::SessionCommonComponent,eoc::character_creation::definition::CreationComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::dialog::NoPrivateDialogsSingletonComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::dialog::NoPrivateDialogsSingletonComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::dialog::NoPrivateDialogsSingletonComponent>,ls::TypeList<>,ecs::QueryTypeModifiedTag,ecs::QueryTypeAliveTag>"
+    ],
+    "vtables": [{"slot": 11}]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "macOS names gui::DCDialogue::Update; the dx11 function is called from ui::DataContextProvider::Update (bg3_dx11.exe@25605617+0x20F0510) in the coverage records."
+    },
+    {
+      "kind": "reach",
+      "says": "Runs every UI update headless and drawn; its question-node branch ran only when the dialogue window had an active dialogue."
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

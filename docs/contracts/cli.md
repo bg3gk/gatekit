@@ -93,11 +93,12 @@ The settings and folders of the toolkit are in [settings](#settings) and [docs/d
 | 13 | `sound` | the copy's [volumes](#sound) |
 | 14 | `link`, `reload`, `bridge-reload` (`bridge reload`), `watch` | hot reload of mods' Lua |
 | 15 | `logs` | Script Extender's output, or the Osiris trace |
-| 16 | `checkpoint`, `reset` | a restore point of the live world, and the way back to it |
-| 17 | `se status\|install\|remove` | which Script Extender build the copy loads ([the switch](#script-extender-switch-se)) |
-| 18 | `firewall` | which copies the firewall lets listen ([the deck](#the-deck)) |
-| 19 | `test`, `run` | [tests in the game](#tests-in-the-game-test-and-run) |
-| 20 | `systems tally\|check` | the claims of the systems' descriptions [the game checks](#claims-the-game-checks-systems-tally-systems-check-the-preludes-expect) |
+| 16 | `timeline [--kind K,...] [--counters] [--json]` | the [start's timeline](#timeline) of the running game, one line a row |
+| 17 | `checkpoint`, `reset` | a restore point of the live world, and the way back to it |
+| 18 | `se status\|install\|remove` | which Script Extender build the copy loads ([the switch](#script-extender-switch-se)) |
+| 19 | `firewall` | which copies the firewall lets listen ([the deck](#the-deck)) |
+| 20 | `test`, `run` | [tests in the game](#tests-in-the-game-test-and-run) |
+| 21 | `systems tally\|check` | the claims of the systems' descriptions [the game checks](#claims-the-game-checks-systems-tally-systems-check-the-preludes-expect) |
 
 ### `build`
 
@@ -124,37 +125,58 @@ one ends, `status` says whether the game is up.` (exit 1).
 
 Synopsis:
 ```
-gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,...] [--story-log] [--main-menu | --splash] [-- GAME_ARGS...]
+gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,...] [--story-log] [--main-menu | --splash | --until-lua | --first-launch] [--startup-videos] [-- GAME_ARGS...]
 ```
-- `--level`: start a fresh test game, no menu, no save. It must be `MODULE:LEVEL` (one colon, both parts non-empty, no spaces): anything else is refused before the game starts (`level 'X' is not MODULE:LEVEL ...`), since the game given a bare level only sits in the main menu. While the client sits in `Menu` waiting for `Running` (any start), `gatekit` asks every 2 s what holds it (`GK.Gui.Stuck()` on the UI context): the splash screen before the main menu (`splash`) is passed with `GK.Cheat.Recover()` on every start (the event its own page raises on a key, `OpenMainMenu`); the game's own first-launch and licence screens (`firstlaunch`: Eula, Larian's mod policy, SensitiveSettings, HDR/Gamma calibration) are gone through with `GK.Cheat.Recover()` in an instance only (a copy GateKit made for itself), and in the installed game fail the start at once naming the screen. Each screen passed is printed (`  splash screen: SplashScreen raised OpenMainMenu, as its key does`). Anything else that keeps the client in `Menu` for 60 s with nothing moving it on fails the start (`the game stayed in the menu for 60 s (<what holds it>) instead of loading level 'X' ...` / `... loading a save`); the game is left running for a look and `down`.
-- `--save`: a save folder name under `Savegames/Story` to load instead of the last.
+- `--level`: start a fresh test game, no menu, no save. It must be `MODULE:LEVEL` (one colon, both parts non-empty, no spaces): anything else is refused before the game starts (`level 'X' is not MODULE:LEVEL ...`), since the game given a bare level only sits in the main menu. While the client sits in `Menu` waiting for `Running` (any start), `gatekit` follows the start's stages ([the stages of a start](#the-stages-of-a-start)): each page the interface enters is looked at once (`GK.Gui.Stuck()` on the UI context), and the client leaving `Menu` ends the look; on a build without the stages it asks every 2 s. A start through the main menu first has the game skip its pages by its own switches ([the game's page switches](#the-games-page-switches)); a page that comes all the same is passed as follows. The splash screen before the main menu (`splash`) is passed with `GK.Cheat.Recover()` on every start (the event its own page raises on a key, `OpenMainMenu`); the game's own first-launch and licence screens (`firstlaunch`: Eula, Larian's mod policy, SensitiveSettings, HDR/Gamma calibration) are gone through with `GK.Cheat.Recover()` in an instance only (a copy GateKit made for itself), and in the installed game fail the start at once naming the screen. Each screen passed is printed (`  splash screen: SplashScreen raised OpenMainMenu, as its key does`). Anything else that keeps the client in `Menu` for 60 s with nothing moving it on (no new page and no look that passed one) fails the start (`the game stayed in the menu for 60 s (<what holds it>) instead of loading level 'X' ...` / `... loading a save`); the game is left running for a look and `down`.
+- `--save`: a save folder name under `Savegames/Story` to load instead of the last. The game matches `-loadSaveGame` against each save's folder name and against the name after its unique id (`<id>__<name>`), and reads its command line in the system's ANSI code page. With GateKit's Script Extender build (a local build, `se status` `fork`) the folder name is passed as it is, whatever its alphabet: the build gives the game the value in UTF-8 from the wide command line (its switch `WideCommandLine`). With the stock extender a folder name that is not ASCII is given as the name after its unique id when that is ASCII and no other save of the copy's player profiles has it, else refused before the game starts (`save folder 'S' is not ASCII, ...`). The start writes `DirectSaveLoad=true` ([Script Extender configured](#script-extender-configured)): GateKit's build loads the save without the main menu - the client goes `Init`, `LoadModule`, then the save's `StartLoading`, `StartServer` ... `Running`, no `LoadMenu` and no `Menu` (about 17 s less); a build without the switch loads it from the menu as before.
 - `--mods`: comma-separated folder names, empty entries dropped. `--mods ""` gives an empty list (still a bare start); not passing it gives none.
 - `--story-log`: also record the Osiris trace (`logs --story`).
 - `--main-menu`: see [a start in the main menu](#a-start-in-the-main-menu).
-- `--splash`: as `--main-menu`, and the splash screen before the main menu is not passed: the start returns when `GK.Gui.Stuck()` names it (`on the splash screen after N s ...`), and `GK.Cheat.Recover()` on the UI context passes it (the event `OpenMainMenu`). Refused together with `--main-menu`; a main menu met with no splash screen before it fails the start.
-- `--startup-videos`: the game plays its own startup video (the studio's logo, `Video/Splash_Logo_Larian.bk2`). By default every start shadows it with an empty loose file of that name so that a start does not wait on it; with this option the shadow is not written, and one left by an earlier start is removed. A start takes the length of the video longer; the bridge answers only after it.
+- `--splash`: as `--main-menu`, and the splash screen before the main menu is not passed: the start returns when the page is entered, or `GK.Gui.Stuck()` names it (`on the splash screen after N s ...`), and `GK.Cheat.Recover()` on the UI context passes it (the event `OpenMainMenu`). Refused together with `--main-menu`; a main menu met with no splash screen before it fails the start.
+- `--startup-videos`: the game plays its startup videos - its own (the studio's logo, `Video/Splash_Logo_Larian.bk2`) and those the enabled mods declare ([research/studies/startup-videos.md](../../research/studies/startup-videos.md)). By default every start hides them: `StartupVideos` is written `false` into Script Extender's settings ([Script Extender configured](#script-extender-configured)); a build without that switch plays them. With this option the switch is written `true`. A start takes the length of the videos longer; the bridge answers only after them.
+- `--until-lua`: return as soon as the bridge first answers - the client's first heartbeat, in its `LoadModule` state, the first moment any Lua runs, right after the startup videos - with `the bridge answers after N s (client in <state>)`. There is no menu and no session then, and no server answers; the game goes on loading its main menu (it is started without `-continueGame`). Refused with `--level`, `--save`, `--main-menu` or `--splash`.
+- `--first-launch`: start as the game's first launch and stop on its first page. At the bridge's first answer (the client in `LoadModule`) the game's own switch is set, `Ext.Utils.GetGlobalSwitches().ShowFirstTimeSetup = true` (`  ShowFirstTimeSetup set at the first Lua (client in <state>)`; a switch that does not read true afterwards fails the start). The start's stages are then followed ([below](#the-stages-of-a-start)) to the page `Eula`; another page first, or none in 300 s, fails the start naming it, and the game is left running. `GK.Gui.Stuck()` must then name `Eula` (`firstlaunch`), and the start ends `on the first-launch page Eula after N s ...`. Nothing is pressed: the pages and the splash screen after them are the caller's (each an attention state, [bridge-protocol.md](bridge-protocol.md#attention)); `GK.Cheat.Recover()` goes through them when asked. The pages write the copy's own profile (`config.lsf`, `graphicSettings.lsx`), and the main menu's page turns the switch off; a copy that quits before the main menu shows them again at its next start. An instance only (`--first-launch is for an instance ...`); refused with `--level`, `--save`, `--main-menu`, `--splash` or `--until-lua`. Without it, a start passes the pages as above.
+- `--fast-load` (or `GATEKIT_FAST_LOAD=1` in the environment): every load of this game runs without the game's waits. The start writes `FastLoadClientFrames`, `FastLoadServerTick`, `FastLoadStreamingWait` and `FastLoadFades` `true` ([Script Extender configured](#script-extender-configured); every start writes them, `false` without the option), and GateKit's build then, at the load's own moments: lifts the client's frame caps from `StartLoading` until `Running`/`Menu` and puts them back; sets the server's tick period (30 a second) to none while the server is in a loading state and puts it back at `Running`; ends `PrepareRunning` at its first update (its streaming wait of 0.5-20 s; textures go on streaming in `Running`); and makes the screen fades instant (`FadeSpeed` 0; also the game's other fades). An in-session load of Basic_Level_A takes about 5.3 s instead of 8.4 s. Each application is a timeline row (`timeline --kind Step`, `FastLoad ...`). For automated runs only: never for pictures of a load or of a level's first seconds. A build without the switches ignores them.
+- `--headless` (or `GATEKIT_HEADLESS=1`): a game for logic only. Everything `--fast-load` does, and the start writes `FastLoadLuaGC`, `RenderCut`, `RenderCutSkip`, `IdleSleep` and `FastLoadStreamingGate` `true` (the last keeps `PrepareRunning`'s most wait, so the state still waits for the level's start dialogue as the game does) and `KeepWindowOffScreen` `true` (every start writes them, `false` without the option): the game's Lua collector held while the server loads, nothing drawn or presented from the client's first Running on (`RenderCutFromRunning`: the start is drawn, because the interface's controls are laid out only by a drawn frame and verbs that walk them - a hotbar slot by its action - find nothing in a game never drawn; `GATEKIT_HEADLESS_BLIND_START=1` draws nothing from the process start, ~790 MB less: the bridge's client, drawing nothing, asks the server at each client Running to replicate the party's `PartyMember` and `Player` again, so the interface's view model of the host learns it is a playable character - which the dialogue window, and so the server's dialogue, needs; dialogues, fights and loads are 1:1 there: the night's W3 rounds 5-6), the game threads' tick waits slept on a timer instead of spun, the window off the screen. An idle headless game in Running costs about 0.45 of a core (the same game drawn: 2.4-2.7 cores). No pictures: `shot` refuses with the reason (the last frame drawn would be a stale picture). The order of a server timer and the client's readiness is the client's wall time: at WLD_Main_A's arrival the courier's scripted death lands before `LevelGameplayStarted` drawn and after it headless (tests/headless/level_change.lua). Every start also writes `TreasurePin` `true` in a copy (inert until `GK.Rolls.PinSources`). `GATEKIT_HEADLESS_EXCEPT=Name,...` leaves the named switches off in a headless start (finding which cut a difference comes from). A build without the switches ignores them.
 - `GAME_ARGS`: extra raw game arguments after `--`.
 
 In order (`GameCopy.UpAsync`):
-1. Without an instance, `up` is refused unless `--installed-game` names the installed game ([command line shape](#command-line-shape)). The copy's start lock is taken ([`build`](#build)). A game process of **this** copy's `bin` -> `the game is already running (<who started it>); run `down` first`. A level that is not `MODULE:LEVEL` is refused; `--main-menu` with `--level` or `--save` -> `a start in the main menu takes no level and no save`.
+1. Without an instance, `up` is refused unless `--installed-game` names the installed game ([command line shape](#command-line-shape)). The copy's start lock is taken ([`build`](#build)). A game process of **this** copy's `bin` -> `the game is already running (<who started it>); run `down` first`. A level that is not `MODULE:LEVEL` is refused; `--main-menu` with `--level` or `--save` -> `a start in the main menu takes no level and no save`. A test's files a killed run left are taken out ([`test`](#test), **Files.**).
 2. Instance only: the clone and profile are made ready ([below](#an-instance-made-ready-instance-only)).
 3. `<state>/owner.json` records who starts the copy: GateKit's build, the checkout, the bridge source, the process and the time.
 4. A profile that carries the bridge under the folder name `Gwynerva_DevKit` is brought over: its pak deleted, its channel folder merged into `Gwynerva_GateKit`, `<game>/Data/Mods/Gwynerva_DevKit/` removed.
 5. The bridge paks are rebuilt when stale ([`build`](#build)).
 6. Installed game only: [the backup](#the-backup-installed-game-only-profilebackup).
-7. With `--save`: the folder must exist under the copy's `Savegames/Story`, else `no save folder 'S' in <saves>; there are: [...]`; the game gets `-loadSaveGame S`. With `--level`: `-testLoadLevel L` (with both: `-testLoadLevel L -loadSaveGame S ...`).
+7. With `--save`: the folder must exist under the copy's `Savegames/Story`, else `no save folder 'S' in <saves>; there are: [...]`; the game gets `-loadSaveGame S` (a name that is not ASCII as `--save` says; decided after the run's Script Extender build is set, step 12). With `--level`: `-testLoadLevel L` (with both: `-testLoadLevel L -loadSaveGame S ...`).
 8. In an instance always, and in the installed game when `--level` or `--mods` is given: the [mod list is cut down](#the-mod-list-cut-down-modsettingsisolate). A copy therefore starts bare - the base game and the bridge mods - unless `--mods` names more; only the installed game keeps the player's own list when nothing is asked.
 9. [The bridge mods are enabled](#the-bridge-enabled-modsettingsenablebridge).
 10. Instance: every player profile gets Public's mod list, and Public's saves are merged into the `Debug_Client_Profile_n` folders ([`save`](#save-a-copys-saves-and-one-copys-save-in-another): nothing is wiped). Installed game: [the debug profiles are lent](#debug-profiles-lent-installed-game-only).
-11. [The splash video is skipped](#the-splash-video-skipped).
-12. [Script Extender is configured](#script-extender-configured), and the components' layouts are written for named reads ([claims the game checks](#claims-the-game-checks-systems-tally-systems-check-the-preludes-expect)).
-13. The Script Extender build for the run ([the switch](#script-extender-switch-se)): the one `GATEKIT_SE` or `se install` names is installed and `"SendCrashReports": false` written into `ScriptExtenderSettings.json` (`Script Extender for this run: <folder>`); with none named an instance keeps the build it has; otherwise stock.
-14. Linked mods (`<state>/loose.json`, [hot reload](#link-reload-bridge-reload-watch-hot-reload)) are copied in.
-15. Stale channel files of the last start are deleted from `<profile>/Script Extender/Gwynerva_GateKit/`: `state_*.json`, `res_*.json`, `queue_*.jsonl`, `cmd_*.tmp`, `seen_armed_*.json`, `seen_spill_*.json`; `process.txt` gets a new name for the event log.
-16. Launch: `<bin>/<exe> --skip-launcher` and the arguments above, or `-continueGame` when there are none (`--level`, `--save`, `--main-menu` and game arguments each drop it); working folder `<bin>`; the environment gets `SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN=1` unless already set ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 9).
-17. Up to **2 attempts**: the crash marker `<profile>/ModCrashSanityCheck` is deleted; the game is started; within **60 s** a process must appear in this copy's `bin`, else `the game process did not appear`; then `gatekit` waits for the client's heartbeat. While it waits it reads the game process and Script Extender's runtime log of this start (`StartCheck`): the process gone (`the game process ended N s after it started, before the bridge reported ...`) or the log showing the module loaded (`OnGameStateChanged(): Loaded module`) with no bootstrap script of the bridge's folder (`the game loaded its module with the bridge's mod off ...`) ends the wait at once; otherwise the limit is `GATEKIT_START_TIMEOUT` (75 s default) of no progress - the log not growing - and four limits in all, read then as no log at all (`Script Extender wrote no log in <folder>: the extender did not load ...`), the bridge's Lua loaded and silent (with the log's last line), or the module not loaded yet (with the log's last line; a busy machine slows a start). The game is closed; only the mods-off reading starts it once more (`<reading>; restarting`, the second start with a log of its own); any other reading, or the second start's, fails with `the bridge did not report[ in the second start either]: <reading>; the game was closed`.
-18. The client is awaited until `Running` (300 s), printing `  <secs> s  <state>` on each new game state; `the game process is gone` if it dies, `client did not reach state Running in 300 s; last: {...}` on timeout.
-19. Prints `playable after N s`.
+11. [Script Extender is configured](#script-extender-configured), and the components' layouts are written for named reads ([claims the game checks](#claims-the-game-checks-systems-tally-systems-check-the-preludes-expect)).
+12. The Script Extender build for the run ([the switch](#script-extender-switch-se)): the one `GATEKIT_SE` or `se install` names is installed and `"SendCrashReports": false` written into `ScriptExtenderSettings.json` (`Script Extender for this run: <folder>`); with none named an instance keeps the build it has; otherwise stock.
+13. Linked mods (`<state>/loose.json`, [hot reload](#link-reload-bridge-reload-watch-hot-reload)) are copied in.
+14. Stale channel files of the last start are deleted from `<profile>/Script Extender/Gwynerva_GateKit/`: `state_*.json`, `res_*.json`, `queue_*.jsonl`, `cmd_*.tmp`, `seen_armed_*.json`, `seen_spill_*.json`; `process.txt` gets a new name for the event log.
+15. Launch: `<bin>/<exe> --skip-launcher` and the arguments above, or `-continueGame` when there are none (`--level`, `--save`, `--main-menu` and game arguments each drop it); working folder `<bin>`; the environment gets `SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN=1` unless already set ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 9).
+16. Up to **2 attempts**: the crash marker `<profile>/ModCrashSanityCheck` is deleted; the game is started; within **60 s** a process must appear in this copy's `bin`, else `the game process did not appear`; then `gatekit` waits for the client's heartbeat. While it waits it reads the game process and Script Extender's runtime log of this start (`StartCheck`): the process gone (`the game process ended N s after it started, before the bridge reported ...`) or the log showing the module loaded (`OnGameStateChanged(): Loaded module`) with no bootstrap script of the bridge's folder (`the game loaded its module with the bridge's mod off ...`) ends the wait at once; otherwise the limit is `GATEKIT_START_TIMEOUT` (75 s default) of no progress - the log not growing - and four limits in all, read then as no log at all (`Script Extender wrote no log in <folder>: the extender did not load ...`), the bridge's Lua loaded and silent (with the log's last line), or the module not loaded yet (with the log's last line; a busy machine slows a start). The game is closed; only the mods-off reading starts it once more (`<reading>; restarting`, the second start with a log of its own); any other reading, or the second start's, fails with `the bridge did not report[ in the second start either]: <reading>; the game was closed`.
+17. With `--until-lua` the start ends here; with `--first-launch` the switch is set and the start follows its stages to `Eula` (above). Without `--level` [the game's page switches](#the-games-page-switches) are set. Then the client is asked once whether this build records the start's stages ([below](#the-stages-of-a-start)); with `--main-menu` or `--splash` the start follows them to its page ([a start in the main menu](#a-start-in-the-main-menu)), and otherwise the client is awaited until `Running` (300 s), printing `  <secs> s  <state>` on each new game state; `the game process is gone` if it dies, `client did not reach state Running in 300 s; last: {...}` on timeout.
+18. Prints `playable after N s`.
+
+#### The stages of a start
+
+Before the bridge answers, only the process and Script Extender's log can be read (step 16): no
+Lua exists before the client's `LoadModule`, so that wait counts a limit of no progress. After it,
+the start is followed by the rows of the fork's `Ext.StartupVideos.Timeline()`
+([research/studies/startup-videos.md](../../research/studies/startup-videos.md), "The start, step by
+step"), when the build has it (`GK.Verbs.Has("StartupVideos.Timeline")`) and its timeline records the
+interface's states (a `UIState` row is there by the first answer). Each stage is one observed chunk
+on the client ([bridge-protocol.md](bridge-protocol.md#observed-answers)) that answers when the next
+row of a stage is recorded: a page entered under `GameRoot` (`Eula`, `SplashScreen`, `MainMenu`, a
+first-launch screen; `Loading` is not a page), or the client leaving `Menu`. Its limit is a guard
+only: 300 s of a running game on the way to the main menu, 60 s in the menu of a start that waits
+for `Running`. A page that comes is looked at once (`GK.Gui.Stuck()`; the splash screen passed, a
+first-launch screen gone through in an instance), each printed (`  <secs> s  page <name>`). A timeline
+that is full (its `Dropped` above zero) and a build without the stages are followed as before: what holds
+the client is asked every second in the main menu (180 s) and every 2 s in the menu of a start that
+waits for `Running`.
 
 Only the **client** reaching `Running` is awaited, not the server. The game never takes the
 foreground ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 9).
@@ -214,20 +236,30 @@ then a fresh folder gets a copy of the mod list and, for a start without `--leve
 `down` puts them back, and deletes the cloud mirrors `_SAVE_<name>`/`_PROFILE_<name>` of a profile
 marked `.nocloud`.
 
-#### The splash video skipped
+#### The game's page switches
 
-`<game>/Data/Video/Splash_Logo_Larian.bk2`: at `up`, when there is none, an empty file is written
-(in an instance the links on the way become real folders first, and the place is checked to be
-inside the instance). At `down` it is deleted only while it is still empty, and `Data/Video` with
-it when that is left empty. A file that is not empty is never touched.
+A start without `--level`, `--until-lua` or `--first-launch` sets the game's own switches for the
+pages before the main menu at the bridge's first answer (the client in `LoadModule`), one chunk on
+the client: `SkipSplashScreen` on (off with `--splash`), so the "press any key" page closes as it
+opens, and, in an instance, `ShowFirstTimeSetup` off, so `Eula` goes straight on
+([research/studies/startup-videos.md](../../research/studies/startup-videos.md), "The \"press any
+key\" page", "The first launch"); the installed game's first-launch pages stay the player's. It
+prints `  SkipSplashScreen on, ShowFirstTimeSetup off at the first Lua (client in <state>)`. A chunk
+that fails, or switches that do not read back as set, are said (`  the game's page switches ...;
+the pages are passed as they come`) and the start goes on: any page that comes is passed as
+`--level` says. A level's start has no menu and sets nothing.
 
 #### Script Extender configured
 
 `<state>/se-logs/` is emptied, and `<bin>/ScriptExtenderSettings.json` gets `CreateConsole=false`,
 `DeveloperMode=true`, `LogRuntime=true`, `EnableLogging=<--story-log>`, `LogDirectory=<state>/se-logs`,
 `KeepWindowInBackground=true`, `KeepWindowOffScreen` (true while a deck runs), `ShiftOpensConsole=false`,
-and in an instance `CrashDumpDirectory=<state>/crash-dumps` and `LaunchCrashReporter=false`. In an
-instance the loader's `ScriptExtenderUpdaterConfig.json` gets `ShiftOpensConsole=false` too,
+`StartupVideos=<--startup-videos>`, `CoverageAtStart=<--cover-start's list, else empty>`,
+`DirectSaveLoad=<--save given>` (GateKit's build loads the save without the main menu; every start
+writes it, so a start without `--save` goes through the menu), and in an instance `CrashDumpDirectory=<state>/crash-dumps`, `LaunchCrashReporter=false` and
+`EnableAchievements=false` (the extender's patch of the game's code for achievements with mods stays
+off: a copy studies the game as it is). In an
+instance the loader's `ScriptExtenderUpdaterConfig.json` gets `ShiftOpensConsole=false` and `DisableUpdates=true` (no update check, no "looking for updates" window: the copy loads the installed build),
 written as a new file. The installed game's original settings come back from the backup on `down`.
 
 ### `down`
@@ -242,8 +274,8 @@ written as a new file. The installed game's original settings come back from the
    installed game always gets stock back: it is the player's, and the updater, crash reports and
    other mods expect the signed build. A dll still locked after 60 s is a `note:` line after the
    usual one, not an error - the loader's switch is already off, so the next start loads stock anyway.
-4. The [splash stub](#the-splash-video-skipped) is removed.
-5. Linked Lua is removed from the game folder and `<state>/loose.json` deleted ([hot reload](#link-reload-bridge-reload-watch-hot-reload)).
+4. Linked Lua is removed from the game folder and `<state>/loose.json` deleted ([hot reload](#link-reload-bridge-reload-watch-hot-reload)).
+5. A test's files a killed run left are taken out ([`test`](#test), **Files.**).
 
 Prints `instance NAME: game closed` (`, stock Script Extender back` / `, its Script Extender build
 kept`) or `game closed, saves and mod list restored`; a copy another checkout started ends with
@@ -338,6 +370,8 @@ game is played. Needs the Script Extender build with coverage counters
   function and the address that called it, `L <calls lost>`; rvas in hex. `--reset` starts the
   counts again, so that each file holds one stretch of play.
 - `gatekit cover stop` takes every counter off; the counts stay for a last `save`.
+- `gatekit trace-stacks FILE.stacks.tsv [--stage N...] [--thread ID...] [--within ADDR...] [--group name=addr,addr...] [--top N] [--names]` needs no game: the sampled stacks of a load trace (the fork's `LoadTrace`, `Ext.StartupVideos.LoadTraceDump`) summed: total samples, each named group's samples (a sample counts once when any of its functions is on the stack; leaf too), each function's inclusive and leaf samples, with `--names` the registry's id or the databases' name. An address is `module+0xRVA`, or `0xRVA` of any module.
+- `gatekit logic-diff A B [--side server|client] [--boot N] [--family F...] [--kind K...] [--ignore FIELD...] [--rigged] [--anchor KIND...] [--keep-order] [--digits N] [--show N]` needs no game: a differential check of the logic. A and B are folders holding a run's event-log segments (`events_<side>_<boot>_<n>.jsonl`, copied out of the channel after each run; the latest boot is read) or one such file. Each row is made comparable: its seq, tick, clock and scope dropped, the run's own fields (ticks, sequence numbers, return addresses; with `--rigged` also the dice drawn before a rig decided) left out, numbers rounded, every GUID numbered by first appearance (the ids `--anchor` rows name first, in their order), rows of one kind written in one tick sorted (a container's iteration). Prints the rows per kind in each (`*` where they differ), how many rows are the same in the same order, and the first differing rows; `THE SAME` and exit 0 when the records match, exit 1 otherwise. `--window FROM:TO` compares only the scenario's stretch of each record: from its last row of kind FROM through the first row of kind TO after it (`family_on:family_off` for a test that switches its families on and off; the tests run before it in the same Lua state are left out). `--mask-ids` writes every GUID as `#` instead of numbering it (a record whose bursts of equal rows name different new ids, a level's setup). `--unordered` compares the records as bags of rows (a stretch whose work the game spreads over its ticks as time allows).
 - `gatekit cover-fold FILE... [--top N] [--where inCombat|inDialog|neither] [--names]` needs no
   game: it adds the files up and reads them against the registry - how many functions ran, how
   many of them an id names, the named ones and the unnamed ones that ran the most (default 30 of
@@ -345,9 +379,23 @@ game is played. Needs the Script Extender build with coverage counters
   hot counts once, with the most it reached in any file. `--where` takes only the files whose
   state file beside them (the same name, `.json`) says the game was in that situation; `--names`
   puts beside an unnamed function the name the databases give it (slower).
-- `gatekit cover-diff FILE... --against FILE... [--top N] [--names]` needs no game: the functions
-  that ran in the first set of files and in none of the second - a scene with a mechanic against
-  the same scene without it names the mechanic's functions.
+- `gatekit cover-diff FILE... --against FILE... [--top N] [--names] [--all]` needs no game: the
+  functions that ran in the first set of files and in none of the second - a scene with a mechanic
+  against the same scene without it names the mechanic's functions. With `--all` a function counts
+  only when it ran in every one of the first files. The method: a baseline of the same kind (the
+  same scene, nothing done) recorded twice, the action recorded twice (its first run also does what
+  it does once), `--all` over the two repeats against both baselines. A function taken off as hot
+  is in every record and never stands out, and a function is the finest grain: a probe or a watch
+  finds the branch.
+- `gatekit up --cover-start` covers the start itself, before any Lua: it writes the executable's
+  function starts (as `cover start` takes them) to `cover/start/functions.txt` in the copy's state
+  folder, the extender puts the counters on as it starts, and a record is saved beside the list at
+  every state the client enters up to the main menu (`functions.txt.<NN>-<state>.txt`, from
+  `01-InitMenu`, the engine's start, to `Menu`). Putting the counters on delays the start by tens of
+  seconds; the start's limits for the extender's log are four times longer.
+- The commands talk to the client's Lua, which exists from the first Lua on; the counters belong to
+  the process. In a test, `game.cover(name)` saves the counts since the last one as
+  `cover/<name>.txt` in the test's output folder and starts them again.
 
 ### `shot`, `key`
 
@@ -383,10 +431,30 @@ Target: `<game>/Data/Mods/<ModFolder>/ScriptExtender/Lua` (loose Lua wins over t
 and is read from its Script Extender console window ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 5); where neither is there the
 error says so.
 
+### `timeline`
+
+`timeline [--kind K,...] [--counters] [--json]` (`StartTimeline`): the rows of the fork's
+`Ext.StartupVideos.Timeline()` in the running game - every stage of the start from the process's
+first moment, then the loads, the loading screen, the hints drawn, the interface's pages and the
+client's timelines, until its record is full (the fork's `Docs/API.md`, "The timeline's rows";
+[the stages of a start](#the-stages-of-a-start)). One chunk on the client reads them; nothing waits.
+- One line a row: its place in the whole timeline (from 1), `Ms` (milliseconds since the process
+  was created), `Side`, `What`, then its fields as `Field=value` (`Name`, `Phase`, `From`, `To`,
+  `Change`, `Parent`, `Depth`, `Type`, `Index`, `Count`, `GameCount`, `Progress`,
+  `ProgressTotal`, then any other by name; a text with a space, a quote or `=` in quotes). Last
+  `<shown> rows of <all>`, and `; the record was full and dropped <n> later rows` when it was.
+- `--kind`: only the rows of these kinds (`State,UIState,HintShown`; case-free). A kind that is
+  not a word of letters -> `--kind: 'X' is not a kind of row ...`.
+- `--counters`: also `IoReadBytes`, `IoReadOps`, `CpuMs`, `FileOpens` where a row has them.
+- `--json`: `{ rows, total, dropped }`, each row its fields as the fork gives them and `n`.
+- A build without the timeline -> `this Script Extender build records no start's timeline ...`;
+  no game -> the error of [`exec`](#exec).
+
 ### `checkpoint`, `reset` (a clean world without a restart)
 
 - `checkpoint` (`GameSession.CheckpointAsync`): waits for the server's `Running` (60 s); notes the level (`GK.Stage.CurrentLevel()`); remembers every `PlayerProfiles/*/Savegames/Story/*` folder; turns autosaves on with `GK.AutoSave(true)` on both sides; server `Osi.AutoSave()`; polls every 0.5 s up to 40 s for a **new** save folder holding a `.lsv` (`the game made no save for the checkpoint`); autosaves off again on both sides whatever happened; waits 1 s; writes the folder name to `<state>/checkpoint.txt` and the level to `<state>/checkpoint.level.txt`; prints `checkpoint: <name>`.
 - `reset [--keep-scenes]` (`GameSession.ResetAsync`, 120 s): the name from this session or `checkpoint.txt` (`no checkpoint to return to; run `checkpoint` first`); notes both `boot`s; sends `Osi.LoadGame("<name>")` to the server without waiting; for client then server waits (poll 0.3 s) until `boot` changed **and** `gameState == "Running"` (`the game closed during the reset`, `<side> did not come back from the reset in 120 s; last: ...`), then a `return true` round trip; then, unless `--keep-scenes`, plays the level's opening scene through (client `GK.FastScenes(20)`; polls `GK.Scenes()` every 0.4 s up to 60 s until a scene that is not `gameplay` has appeared and ended, or none appeared within 3 s; finally `GK.FastScenes(1)`). Prints `world reset in X.X s`.
+- `reset --save NAME [--keep-scenes]` (`GameSession.LoadSaveAsync`): the same load of the copy's save folder `NAME` instead of the checkpoint - another level or save in the running game, no new process (the save's mods are the running game's; a save of another mod list goes through the game's own mod check). The save becomes the checkpoint (`checkpoint.txt`, and the level the server then names in `checkpoint.level.txt`). Prints `<NAME> loaded in X.X s (<level>); it is the checkpoint now`. From the main menu (the client in `Menu`, no server) the save is loaded through the game's own load window instead (`GK.Gui.LoadSave(title, times)`: the save titled as the folder's name after `__` and, among several, shown at the minute its `.lsv` was written, one either side; its playthrough selected, its Load pressed), and the client's Lua may live on through it. After a load the level's opening scene is given 3 s to appear only at a save's first load in the copy: whether one came is kept per save (`<state>/opening-scenes.json`) and a save known to come without one is looked at once. The bridge writes its state file at every game-state change, so the end of the load is read when it happens, not at the next heartbeat.
 
 Loading a save made right after the start gives the world back as it was with no module load,
 which a fresh process cannot skip. Depends on the bridge's `GK.AutoSave`,
@@ -420,17 +488,20 @@ are merged in only where the copy has none newer of the same name.
 
 `test [FOLDER] [-k TEXT] [--clean] [--attach] [--reset RUNG] [--repeat N] [--speed S] [--trace] [--json]` runs the tests of a folder (default: `tests` of the checkout); `run FILE` runs one ([`run`](#run)). How a test is written - its header `test { ... }`, its steps, its cases and the `game` object - is [docs/writing-tests.md](../writing-tests.md); the runner is `src/GateKit.Testing`. A header field the runner does not know is refused when the file is read, naming the field and the fields it knows (`GameTest.HeaderFields`).
 
-Tests that declare the same start (level, mods, save, main menu) share one game. A start that fails fails every test of its group (`FAIL (game did not start: ...)`); a game that dies inside a group leaves the rest `FAIL (not run: the game closed)`. A `*.lua` that declares no test (neither `test { }` nor `function run(game)`) is not loaded: `test` prints `SKIP  <name>: not replayable: a free-form recipe ... (it declares no `test { }` and no `function run(game)`)` and goes on (with `-k` matching only such files: `ERROR: no tests in <folder> (N file(s) skipped: they declare no test)`), and `run` refuses it with that line. **A running game** (one this copy already has up, e.g. from `bg3_up`) is never started over nor closed: without `--attach` a copy in the level a group declares runs that group ([the reset ladder](#the-reset-ladder)), and in any other level `test` refuses at once (`ERROR: the game is already running in <level>, and no test asked for is declared for that level; pass --attach ... Nothing was stopped`). `test --attach` runs every selected test in that game and leaves it running; a test that declares a level other than the one the game is in (`GK.Stage.CurrentLevel()` on the server, compared with the part after `MODULE:`) is not run: `SKIP  <name> ... NOT RUN: it declares <MODULE:LEVEL> and the running game is in <LEVEL>; ...`, counted apart (`N passed, M failed, K not run`), and a test not run makes the exit code 1 as a failure does - a replay in the wrong level proves nothing either way. When the game does not say its level the test runs. `--attach` with no game: `ERROR: --attach needs a running game (start one with `up`)`. Each test's verdict line (`PASS|FAIL|SKIP  <name>  <seconds> s  <why>`) is printed the moment it is known and written to `<run folder>/<name>/verdict.txt`, beside `failure.jpg` and `console.txt` of a failure; the summary repeats them after a `--` line. A test under `tests/_coverage` of a checkout that has `research/coverage` (a coverage recipe) also leaves a row in `research/coverage/record/replays.jsonl`, passed or failed, and a passed one a `repeated` row in `record/sightings.jsonl` ([`record`](#record-the-ledgers-of-the-coverage-record)); a record that cannot be written is said (`note: the replay of <file> was not written into the record: ...`) and the verdict stands.
+Tests that declare the same start (level, mods, save, main menu, `until_lua`, `first_launch`, `startup_videos`) and the same `files` share one game; a header's `until_lua = true` starts it as `up --until-lua` does and runs it as a main-menu test runs (no stage scope, no rung but a declared `game`); a header's `first_launch = true` the same, as `up --first-launch`; a header's `startup_videos = true` starts it as `up --startup-videos` does, in `test`, in the `game` rung and in `run`, and a copy already running is never taken for such a start. **One game for the run**: a game `test` started is kept up after a group whose start is a level or a save with no `files`, no `startup_videos` and no test under `startup/` of its tree, and the next group goes into its start in that game by the game's own load in the session (`Osi.LoadGame`, as `reset` does): the save it declares, or for a level **the save of that level's start** - the checkpoint made right after a new process started the level, recorded per level and mod list in `<state>/start-saves.txt` (`level TAB mods TAB save folder`; mods `*` for the copy's own list) - and that save is then the group's checkpoint, and the channel's answers nobody waits for (`res_*.json` written up to the load's end) are removed as a new start removes them (`into <level> in the running game: the save of its start <save> loaded in <s> s, no restart`). The game is closed and the group started in a new process when that cannot be, saying why (`restart for <test>: <why>`): another mod list, another Script Extender build installed (its SHA-256), no save of the level's start in the copy yet (or its folder gone), the start or the group not one to keep (above), or the load failed or put the game in another level. `--restart-groups` closes the game after every group and starts each in a new process. The kept game is closed after the last group. A start that fails fails every test of its group (`FAIL (game did not start: ...)`); a game that dies inside a group leaves the rest `FAIL (not run: the game closed)`. A `*.lua` that declares no test (neither `test { }` nor `function run(game)`) is not loaded: `test` prints `SKIP  <name>: not replayable: a free-form recipe ... (it declares no `test { }` and no `function run(game)`)` and goes on (with `-k` matching only such files: `ERROR: no tests in <folder> (N file(s) skipped: they declare no test)`), and `run` refuses it with that line. **A running game** (one this copy already has up, e.g. from `bg3_up`) is never started over nor closed: without `--attach` a copy in the level a group declares runs that group ([the reset ladder](#the-reset-ladder)), and in any other level `test` refuses at once (`ERROR: the game is already running in <level>, and no test asked for is declared for that level; pass --attach ... Nothing was stopped`). `test --attach` runs every selected test in that game and leaves it running; a test that declares a level other than the one the game is in (`GK.Stage.CurrentLevel()` on the server, compared with the part after `MODULE:`) is not run: `SKIP  <name> ... NOT RUN: it declares <MODULE:LEVEL> and the running game is in <LEVEL>; ...`, counted apart (`N passed, M failed, K not run`), and a test not run makes the exit code 1 as a failure does - a replay in the wrong level proves nothing either way. When the game does not say its level the test runs. `--attach` with no game: `ERROR: --attach needs a running game (start one with `up`)`. Each test's verdict line (`PASS|FAIL|SKIP  <name>  <seconds> s  <why>`) is printed the moment it is known and written to `<run folder>/<name>/verdict.txt`, beside `failure.jpg` and `console.txt` of a failure; the summary repeats them after a `--` line. A test under `tests/_coverage` of a checkout that has `research/coverage` (a coverage recipe) also leaves a row in `research/coverage/record/replays.jsonl`, passed or failed, and a passed one a `repeated` row in `record/sightings.jsonl` ([`record`](#record-the-ledgers-of-the-coverage-record)); a record that cannot be written is said (`note: the replay of <file> was not written into the record: ...`) and the verdict stands.
 
 ### The tree of tests, steps and the three outcomes
 
-`test [FOLDER] [-k SUBSTR] [--json] ...` reads every `*.lua` of `FOLDER` and of its subfolders at
+`test [FOLDER] [-k SUBSTR] [--json] ...` reads every test of `FOLDER` and of its subfolders at
 any depth (`tests/<domain>/<mechanic>/<test>.lua`). A test's id is its path under `FOLDER` without
 `.lua`, with `/` between the parts (`combat/attack/melee_miss`; a file of `FOLDER` itself: its
 name); `-k TEXT` picks the test whose id is `TEXT` (any case) when there is one - `-k event_log`
 is `event_log` alone, not `event_log_load` - and otherwise every test whose id contains it; the verdict lines and the run's output folder (`<run folder>/<id>/`)
 use it, and `--repeat` names `<id>#2`. Two tests of one file name in different folders stay
-apart. A file whose name starts with `_` is shared code. A subfolder whose `_suite.json`
+apart. A folder that holds `test.lua` is one test whose id is the folder's path; another `.lua`
+there whose name does not start with `_` is refused, nothing below it is read, and a folder test
+beside a file of the same id is refused (`two tests have the address <id>: ...`). A file whose name
+starts with `_` is shared code; a folder `_files` is data, never read for tests. A subfolder whose `_suite.json`
 (schema `tests/suite`: `about`, `read`) says `"read": "named"` is read only when it is the folder
 given (`tests/_coverage`: `test tests/_coverage`).
 
@@ -496,6 +567,31 @@ a run of the test. The host's Lua has no `load`, `loadfile` or `dofile`. A test'
 read from the `_suite.json` files of its folder up to the folder given, never above it (a file run
 alone: its own folder's).
 
+**Files.** A test's header `files` ([docs/writing-tests.md](../writing-tests.md), "Files beside a
+test") is checked when the file is read: each place is relative to the copy's game folder (parts
+joined by `/`, no `.`, `..` or drive), each file is found beside the test or in a `_files/` up to
+the tree of tests (the nearest folder above named `tests`). The files go into the copy before the
+game starts: in a suite before the start of the group's game, made first when the copy has no game
+folder yet, and they stay through a restart inside the group (the `game` rung); `run` writes them
+before its start. A `.lsx` file whose place ends `.lsf` is written there in LSF by the built-in
+LSLib; an LSX it cannot read is refused with the rest (`files: <file> is not a resource in LSX the
+LSF writer takes: <why>`). The line `files of <ids>: <places>` says so. A copy already running is never
+taken for a group with files: `test --attach` leaves such a test `NOT RUN: its files go into the
+copy before its game starts, and this game is already up; run it without --attach`, and `run
+--attach` fails with that reason. Refused, every test of the group failing with the reason and nothing written: the installed game (`files: a test's files go into a
+copy of the game (--instance NAME), never into the installed game`), a place that exists already,
+through a link too (`... already exists in the copy and no test wrote it; it is never
+overwritten`), and a place that resolves outside the copy. A folder link on the way is made a real
+folder whose entries are links to what it held, as `Data/Video` is in a copy, and is linked again
+afterwards when nothing else is in it. Every file, every folder made for it and every link made
+real is recorded in `<state>/test-files.json` (with the writing process and its start time) before
+it is written. After the group's last test, or after its start failed, whatever the verdicts, the files are taken out - a file only while it
+holds what was written - then the folders made for them when empty, then the links; what stays is
+said (`  files: left <path>: <why>`). A record whose writing process is gone (a run killed) is
+cleaned at the next `test`, `run`, `up` and `down` (`test files: N left in the copy by a run of <id>
+that ended before taking them out, taken out`). A test writes nothing under the tree of tests:
+`game.save`, `game.mkdir`, `game.remove`, `game.shot` and `game.testimage` refuse a path there.
+
 **Surprises.** After a test the runner lists what the event log holds that the test did not ask
 for, one line each under its steps - `surprise: <sort> <what> (<n> rows): <detail>` - and as
 `surprises = [{ sort, what, rows, detail }]` of the test in `results.json`. Blocking and
@@ -517,7 +613,12 @@ allowed.
 
 ### The reset ladder
 
-`test [FOLDER] [-k TEXT] [--clean] [--attach] [--reset none|fixture|venue|game] [--repeat N]`.
+`test [FOLDER] [-k TEXT] [--clean] [--attach] [--reset none|fixture|venue|game] [--repeat N] [--restart-groups] [--fast-load] [--headless] [--keep-events]`.
+`--fast-load` sets `GATEKIT_FAST_LOAD=1` for the run: every game it starts is started as `up --fast-load`, so the
+runner's loads in it (a group's move, `venue` resets) are fast; a game found running keeps what it was
+started with (`down` first to have them). `--headless` sets `GATEKIT_HEADLESS=1` the same way (`up --headless`).
+`--keep-events` gives each test's output folder `events/`: the event log's files written while it ran (both
+sides) and the registries of kinds, which `logic-diff` compares as they are.
 `--repeat N` runs the selection N times in a row in the same game (`name#2`, `name#3` ...). Every
 suite ends with a **timing line**: `timing: <runs> runs, <s> s a run in all (run <s> s); fixture held
 <n> (<mean> s, <min>-<max>), venue held <n> (...), fixture failed <n> (...)` - the ladder measured by
@@ -574,6 +675,8 @@ it must, and says which rung held and why.
   rung that does not hold climbs to a level reload and not to a restart.
 - The rungs are those of a test in a level. A test in the main menu (`menu = true`) has no scene
   to clean and no level to reload: it runs as the place is, and only a declared `game` applies.
+  Without it, no stage scope is asked for before it or between its cases (`reset before <name>:
+  none (the world is as it was left)`): the main menu has no server to answer `GK.Stage.Begin`.
 - **A running copy in the declared level is used**: without `--attach`, a copy already
   in the level a group declares runs that group (`in the copy already running (<level>): not
   started, not closed`); a baseline it kept from earlier tests (`GK.Stage.Begin` answered `kept`)
@@ -598,7 +701,7 @@ Loads the test (a file that declares none is refused: `ERROR: <name>: not replay
 
 ### A start in the main menu
 
-`up --main-menu` starts the game without `-continueGame`, waits for the client's `Menu` state, passes the splash screen and goes through the first-launch screens (instances only), as above, and returns when `GK.Gui.Stuck()` names the main menu (`in the main menu after N s`; 180 s of menu without it fails, the game left running); it refuses `--level` and `--save`. A test declares it with `test { menu = true }` (its start key is `<main menu>`), and `test --attach` does not run such a test in a game that is in a level. `bg3_recipe` writes it for `level: "main menu"` and waits for the client's `Menu` instead of the server's `Running`.
+`up --main-menu` starts the game without `-continueGame`, passes the splash screen and goes through the first-launch screens (instances only), as above, and returns when the interface enters its `MainMenu` page (`in the main menu after N s`; [the stages of a start](#the-stages-of-a-start): no new page in 300 s fails the start, naming what `GK.Gui.Stuck()` sees, the game left running). On a build without the stages it waits for the client's `Menu` state and returns when `GK.Gui.Stuck()` names the main menu (180 s of menu without it fails). It refuses `--level` and `--save`. A test declares it with `test { menu = true }` (its start key is `<main menu>`), and `test --attach` does not run such a test in a game that is in a level. `bg3_recipe` writes it for `level: "main menu"` and waits for the client's `Menu` instead of the server's `Running`.
 
 ### Claims the game checks: `systems tally`, `systems check`, the prelude's `expect`
 
@@ -667,7 +770,7 @@ a name in a merged layout reaches a running copy at its next bridge reload, no e
 The stock loader `bin/DWrite.dll` loads `bin/BG3ScriptExtender.dll` instead of the signed build in
 its cache when `bin/ScriptExtenderUpdaterConfig.json` holds `"DebugLoadSE": true`. Switching is
 adding those files and taking them away again; no file of the game or of Script Extender changes.
-`up` and `down` use the same switch on the copy's `bin` ([`up`](#up) step 13, [`down`](#down) step 3).
+`up` and `down` use the same switch on the copy's `bin` ([`up`](#up) step 12, [`down`](#down) step 3).
 
 - `se status`: `{fork, dll, source, sha256, managed}` as indented JSON. `fork` = `DebugLoadSE` is
   true and the dll is there; `source` comes from the record; `managed` = a record exists.
@@ -713,7 +816,7 @@ The clone is brought up to date at every `up` and `instances create` (`SyncGame`
 1. `no game in <game>` unless the real `bin` holds `steam_appid.txt` or a `bg3*.exe`.
 2. Every file under the real `bin`, except the folder `db`, `BG3ScriptExtender.dll`, `BG3ScriptExtender.pdb`, `ScriptExtenderUpdaterConfig.json` and `*.log`: `ScriptExtenderSettings.json` only while the clone has none (afterwards it is the copy's own); `steam_appid.txt` *written* as `2147483646`, an app id that is not the game's, so Steam does not mirror the clone's saves into its cloud; every other file copied when it changed.
 3. The loader config of the clone, when the Script Extender cache is known and no local build is installed in the clone (no record and no `bin/BG3ScriptExtender.dll`): the real one without `DebugLoadSE`, plus `CachePath` = the real cache, so the clone does not download again; written only when different. With a local build installed [the switch](#script-extender-switch-se) writes it.
-4. `Data`: every entry but `Mods` and `Video` is linked - a folder by a folder link (a link to another target is replaced; a real folder the copy made its own is left), a file by a hard link (replaced when it is another file: the game was updated; a failure -> `could not hard-link ... Instances must be on the game's drive; set GATEKIT_INSTANCES to a folder there.`). `Data/Mods` and `Data/Video` are real folders whose entries are linked the same way, except the installed game's hot-reload mods and empty files (the installed game's splash stub).
+4. `Data`: every entry but `Mods` and `Video` is linked - a folder by a folder link (a link to another target is replaced; a real folder the copy made its own is left), a file by a hard link (replaced when it is another file: the game was updated; a failure -> `could not hard-link ... Instances must be on the game's drive; set GATEKIT_INSTANCES to a folder there.`). `Data/Mods` and `Data/Video` are real folders whose entries are linked the same way, except the installed game's hot-reload mods.
 
 Before loose files are written under `Data`, every link on the way becomes an empty real folder
 (`OwnFolder`), and the place is checked to lie inside the instance, links resolved (`Inside`).
@@ -744,7 +847,7 @@ copy's own files: [commands of a copy](#commands-of-a-copy), [the Script Extende
 
 ## `gatekit`, the toolkit
 
-`src/GateKit.Platform` (OS layer), `src/GateKit.Copies` (the copies), `src/GateKit.Cli` (assembly `gatekit`). Commands: `doctor`, `game verify` `build up down status instances [list|create NAME|rename NAME NEW|destroy NAME] crashes save destroy exec probe cover cover-fold cover-diff shot key sound [list|set|mute|unmute|unfocused] link reload watch bridge-reload bridge reload logs checkpoint reset se status|install|remove firewall`, `calls`, global `--instance NAME` and `--installed-game`. `deck` and `window [list|maximize|grid|label|release|mirror|adopt|fps]` come from `GateKit.Deck`. `test`, `run` and `systems` come from `GateKit.Testing`, which the CLI finds by its `CreateCommand()` classes. `names` comes from `GateKit.Names` and `wiki` from `GateKit.Wiki`. `symbols`, `decomp`, `registry` and `refs` come from `GateKit.Symbols`. Each has its section in this document.
+`src/GateKit.Platform` (OS layer), `src/GateKit.Copies` (the copies), `src/GateKit.Cli` (assembly `gatekit`). Commands: `doctor`, `game verify` `build up down status instances [list|create NAME|rename NAME NEW|destroy NAME] crashes save destroy exec probe cover cover-fold cover-diff trace-stacks logic-diff shot key sound [list|set|mute|unmute|unfocused] link reload watch bridge-reload bridge reload logs checkpoint reset se status|install|remove firewall`, `calls`, global `--instance NAME` and `--installed-game`. `deck` and `window [list|maximize|grid|label|release|mirror|adopt|fps]` come from `GateKit.Deck`. `test`, `run` and `systems` come from `GateKit.Testing`, which the CLI finds by its `CreateCommand()` classes. `names` comes from `GateKit.Names` and `wiki` from `GateKit.Wiki`. `symbols`, `decomp`, `registry` and `refs` come from `GateKit.Symbols`. Each has its section in this document.
 
 `--instance` is an option of the root and parses before any command. The commands of
 `GateKit.Symbols` - `symbols`, `decomp`, `registry`, `refs` - read the home's databases and the
@@ -1443,7 +1546,9 @@ fingerprint; where it holds none, a row of `functions.jsonl` of the coverage rec
   in `known_as`. A name without a scope is placed under `unplaced::`.
 - `--does` is our sentence on what the function does; left out on a rename, the earlier one stays.
 
-`decomp at` shows the names of the function under the databases' own names: the highest rung as
+`decomp at ADDRESS...` takes one address or several (a stack, a profiler's list), each answered in
+turn as one would be; exit 1 when any named nothing; with `--json` several are one array, an
+unknown one `{query, found: false}`. It shows the names of the function under the databases' own names: the highest rung as
 `named:` (with `does:`, `evidence:`, `guess:`), every other name there below it as `also:` with its
 rung, and how they stand together (below); `given_name`, `given_live`, `given_rung`,
 `given_others: [{name, rung, live}]` and `standing` with `--json`. `decomp names [text] [--json]`
@@ -1670,7 +1775,9 @@ registry's ids with `::` written `__`.
 | `registry mappings check <file> [--limit N] [--verbose]` | reads a table written by hand and, for every symbol and every binary the registry has a table for, says where the pattern lands (found once), whether a function starts there, what the registry calls the place, and whether a pattern of the function's own start is found once within `--limit` bytes (default 64) - a mapping the registry could write itself. Counts per binary, then the symbols that do not land (a pattern found several times is one a condition of the table picks among; conditions are not read) and the places the registry calls otherwise; `--verbose` lists every symbol. Reads only |
 | `registry mappings emit <id>...` | writes a `<Mapping>` for each function from the registry alone: whole instructions from its start, as short as is found exactly once in EVERY binary the registry places it in, a byte that differs between the binaries written `??`; one `Target` of type `Absolute` at `@start` with the id as its symbol; a comment with the id and its place in each binary. A function with no such pattern within the limit gets a comment that says so; exit 1 then |
 | `registry mappings emit --all [--count]` | the same for every function the registry places in a binary; `--count` prints only the functions with no mapping and the count |
+| `registry mappings emit <global>... --via <function>` | a `<Mapping>` for each global the registry places: the global has no start, so the pattern stands at the first instruction of `<function>` (an id the registry places in the same binaries) that refers to it RIP-relatively, as short as is found once in every binary, labelled `@ref1` with a target `Indirect` there; its comment names the function (`; read in <function>`), which `sync` reads to write it again |
 | `registry mappings write <file> [--limit N]` | the registry's own table in one document: the mapping of `emit` for every function the registry names and places, each named `registry:<id>` with a target that names the registry's id itself (`Name`, no `Symbol`), the functions with no mapping as comments. A GateKit build of the extender reads it as `RegistryMappings.xml` beside its dll and answers every name it finds (`Ext.Debug.GetSymbolAddress`, `GetSymbolNames` with `Source = "registry"`, and the C entries `GateKitSymbolAddress` / `GateKitSymbolCount` / `GateKitSymbolName` of the dll); `se install <folder>` copies the table from the build folder with the dll. It scans both binaries for every function: minutes |
+| `registry mappings sync <file> [--add ID...] [--check]` | keeps the mappings of a Script Extender's own table that the registry writes (each after a comment `<!-- code:<id>; places -->`) as the registry has them: the pattern of the function's start written again from the registry (`emit`), the mapping's own element and targets kept, and when the bytes are the same the mapping stays word for word and only the comment takes the registry's places. `--add` marks the table's mapping of that Name as the registry's first. A mapping whose pattern is not at the function's start or whose target lies elsewhere (a global an instruction refers to) stays written by hand and is said. `--check` writes nothing and exits 1 when a marked mapping differs: a check before a build of the extender. The table needs nothing of GateKit to be built: the marked mappings are ordinary lines of it |
 | `registry mappings adopt <file> [--binary B] [--write]` | takes the names of the table's functions into the registry: every function the table leads to in the binary (default `bg3_dx11.exe`) that the registry does not name is noted in the live layer under the table's name at rung `extender`, the mapping as its evidence and a question of what it does; the tool looks the name up in the stores as for any note. Without `--write` it only says what it would note. Places that are not a function's start (data, a place inside a function) are left |
 
 `registry questions [scope]` lists every open question of the entries (whose id, or whose `owner`,

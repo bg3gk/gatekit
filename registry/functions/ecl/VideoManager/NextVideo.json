@@ -1,0 +1,39 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::VideoManager::NextVideo",
+  "state": "described",
+  "rung": "game",
+  "does": "Takes the next video name from the movie player's queue, makes it the current one, looks its file up (the body of code:ls::VideoManager::LoadVideo, inlined: code:unplaced::FindVideoFile, then the player's loader at slot 1) and starts it; a name whose file is not found is reported stopped and the next one is tried.",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:2e11dab32a025d84",
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:9e24d4c02110e384",
+      "fp:e4d053ad9455ea7c",
+      "import:90f37ce9f6d89ffa",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342",
+      "unplaced::FindVideoFile"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "same shape as the macOS build's ecl::VideoManager::NextVideo: pops the FixedString queue at +0x18 (count +0x24, head +0x28, tail +0x2c), copies the name into +0x30 and +0x34, calls the file lookup with the client's ModManager (EoCClient+0x140) and the player's virtual at slot 1; on failure calls the stopped broadcast bg3_dx11.exe@25605617+0x1BBC1C0"
+    },
+    {
+      "kind": "watch",
+      "says": "Osi.MoviePlay(host,'Splash_Logo_Larian',1) on the server in a test level: write watches on the client's movie player (ecl::GameControl+0x190) caught +0x24 going 1->0 at bg3_dx11.exe@25605617+0x1BBBDAC and +0x30 going from none to the played name at bg3_dx11.exe@25605617+0x1BBBDE2, both inside this function; a count-only probe saw code:unplaced::FindVideoFile called once from bg3_dx11.exe@25605617+0x1BBBE6E inside it; the Larian clip then showed in the game window"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

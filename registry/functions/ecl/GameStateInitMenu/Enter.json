@@ -1,0 +1,28 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateInitMenu::Enter",
+  "state": "described",
+  "rung": "game",
+  "does": "Enters InitMenu, the first client state of a process: sets the state's frame cap and pushes the StateTrackingSystem's EnteredStateEvent; on macOS it also constructs gui::GameUI (the Noesis game UI), which is why the movie player exists before StartLoading.",
+  "fingerprint": {
+    "calls": ["fp:0b67d8a75def50b2", "fp:e4d053ad9455ea7c"],
+    "components": ["ecl::gamestate::StateTrackingSystem"],
+    "vtables": [{"slot": 3}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "slot 3 (+0x18, Enter) of the InitMenu virtual table bg3_dx11.exe@25605617+0x55F8E58, the object code:ecl::EocClient::Load queues first (id 2); macOS ecl::GameStateInitMenu::Enter bg3_macos_x64+0x3573D90 read (gui::GameUI::GameUI, EnteredStateEvent)"
+    },
+    {
+      "kind": "reach",
+      "says": "Ext.StartupVideos.Timeline(): Unknown->InitMenu 5.4-8.2 s after the process was created, InitMenu->StartLoading 1.0-1.4 s later, in 7 starts"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    }
+  ]
+}

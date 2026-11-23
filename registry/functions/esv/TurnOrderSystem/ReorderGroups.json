@@ -1,0 +1,21 @@
+{
+  "schema": "registry/function/1",
+  "id": "esv::TurnOrderSystem::ReorderGroups",
+  "state": "described",
+  "rung": "toolkit",
+  "does": "Puts a fight's turn-order groups in order: merges and splits the groups that share an initiative (esv::MergeSharedInitiativeGroups, esv::SplitSharedInitiativeGroups) and keeps, of two participants, the one eoc::TurnOrderCompare finds earlier in the existing order.",
+  "evidence": [
+    {"kind": "toolkit-name", "says": "EoCServer.dll exports it (bg3_dx11.exe@25605617+0x12FAD60)"},
+    {
+      "kind": "read",
+      "says": "its body in the Toolkit calls esv::MergeSharedInitiativeGroups, the helper at +0x110, esv::SplitSharedInitiativeGroups and eoc::TurnOrderCompare"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "how two participants of equal initiative and equal Dexterity are first placed (the tie two identical goblins came out of in either order natively): the order the joiners are taken in",
+      "about": "conditions",
+      "state": "open"
+    }
+  ]
+}

@@ -20,6 +20,7 @@ public static class WindowCommands
         command.Add(Backing("mirror", "draw this copy from the frames it shares; its own window is not seen"));
         command.Add(Backing("adopt", "put this copy's own window back in its tile"));
         command.Add(Fps());
+        command.Add(Place());
         command.SetAction(_ => Run(settings => Print(DeckApi.List(settings, GamePlatform.Current))));
         return command;
     }
@@ -108,6 +109,42 @@ public static class WindowCommands
                     ? $"{name} draws as fast as it can, in front or not"
                     : $"{name} draws at most {wanted.Value} frames a second, in front or not"
                 : $"{name}: this copy would not take a frame cap (it needs GateKit's Script Extender build)");
+        }));
+        return command;
+    }
+
+    /// <summary>`window place NAME X Y WIDTH [HEIGHT]`: puts a copy's own window (not one held in a
+    /// deck) at a place on the desktop, without bringing it to the front. With no height the window
+    /// keeps its proportions. A copy started again opens where the game puts it, so this is said
+    /// after each start.</summary>
+    static Command Place()
+    {
+        var instance = Instance("the instance whose window moves");
+        var x = new Argument<int>("x") { Description = "the left edge, in desktop pixels" };
+        var y = new Argument<int>("y") { Description = "the top edge, in desktop pixels" };
+        var width = new Argument<int>("width") { Description = "the window's outer width" };
+        var height = new Argument<int?>("height") { Description = "the outer height; leave it out to keep the proportions", Arity = ArgumentArity.ZeroOrOne };
+        var command = new Command("place", "put a copy's own window at a place on the desktop, not in front") { instance, x, y, width, height };
+        command.SetAction(parse => Run(settings =>
+        {
+            var name = parse.GetValue(instance)!;
+            if (!OperatingSystem.IsWindows()) throw new CopyException("window place moves a Windows window; elsewhere the window manager places it");
+            var copy = DeckRecord.Copies(settings, GamePlatform.Current).FirstOrDefault(c => c.Instance == name)
+                ?? throw new CopyException($"{name}: no running game of that instance");
+            if (copy.Window == 0) throw new CopyException($"{name}: its game has no window of its own yet (or a deck holds it: `window release {name}` first)");
+            var wide = parse.GetValue(width);
+            if (wide < 200) throw new CopyException("a width under 200 pixels is no window");
+            var high = parse.GetValue(height);
+            if (high is null)
+            {
+                if (Windows.Native.GetWindowRect(copy.Window, out var rect) == 0 || rect.Right <= rect.Left)
+                    throw new CopyException($"{name}: its window's size cannot be read; give the height");
+                high = (int)Math.Round(wide * (double)(rect.Bottom - rect.Top) / (rect.Right - rect.Left));
+            }
+            if (Windows.Native.SetWindowPos(copy.Window, 0, parse.GetValue(x), parse.GetValue(y), wide, high.Value,
+                    Windows.Native.SwpNoZOrder | Windows.Native.SwpNoActivate) == 0)
+                throw new CopyException($"{name}: the window would not move");
+            Console.Out.WriteLine($"{name}: window at {parse.GetValue(x)},{parse.GetValue(y)}, {wide}x{high}");
         }));
         return command;
     }

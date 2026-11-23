@@ -42,9 +42,12 @@ public sealed class GameSession
     /// With <paramref name="inMenu"/>, every couple of seconds the side spends in "Menu" (while
     /// another state is wanted) it is called with how long the menu has lasted; it may throw to
     /// give up, and answers true when it moved the game on (the menu time then starts again).
+    /// <paramref name="lookEvery"/> (default 2 s) is how often; zero calls it again as soon as it
+    /// answers, for a call that itself waits for the game's next event.
     public async Task<TimeSpan> WaitStateAsync(string wanted, Side side, TimeSpan timeout, Stopwatch? since = null, CancellationToken cancel = default,
-        Func<TimeSpan, Task<bool>>? inMenu = null)
+        Func<TimeSpan, Task<bool>>? inMenu = null, TimeSpan? lookEvery = null)
     {
+        var every = lookEvery ?? TimeSpan.FromSeconds(2);
         var watch = Stopwatch.StartNew();
         string? last = null;
         Stopwatch? menu = null;
@@ -59,7 +62,7 @@ public sealed class GameSession
             }
             if (current == wanted) return watch.Elapsed;
             if (current == "Menu" && wanted != "Menu") menu ??= Stopwatch.StartNew(); else { menu = null; asked = TimeSpan.Zero; }
-            if (inMenu is not null && menu is not null && menu.Elapsed - asked >= TimeSpan.FromSeconds(2))
+            if (inMenu is not null && menu is not null && menu.Elapsed - asked >= every)
             {
                 asked = menu.Elapsed;
                 if (await inMenu(menu.Elapsed)) { menu.Restart(); asked = TimeSpan.Zero; }
@@ -193,42 +196,122 @@ public sealed class GameSession
         var name = CheckpointName;
         if (string.IsNullOrEmpty(name) && File.Exists(_layout.CheckpointRecord)) name = File.ReadAllText(_layout.CheckpointRecord).Trim();
         if (string.IsNullOrEmpty(name)) throw new CopyException("no checkpoint to return to; run `checkpoint` first");
+        return await LoadSaveAsync(name, timeout, skipIntro, appear);
+    }
+
+    /// <summary>Removes the answers in the channel that no caller waits for any more (those of chunks
+    /// posted without a wait, `res_*.json`) written before <paramref name="before"/>: what a new
+    /// process's `up` clears, for a game that is kept and taken into another start instead.</summary>
+    public int DropUnclaimedAnswers(DateTime before)
+    {
+        if (!Directory.Exists(_layout.Channel)) return 0;
+        var dropped = 0;
+        foreach (var answer in Directory.EnumerateFiles(_layout.Channel, "res_*.json").ToList())
+            if (File.GetLastWriteTimeUtc(answer) < before)
+            {
+                FileRetry.TryDelete(answer);
+                if (!File.Exists(answer)) dropped++;
+            }
+        return dropped;
+    }
+
+    /// <summary>Takes an existing save of the copy, made in <paramref name="level"/>, as the checkpoint
+    /// <see cref="ResetAsync"/> returns to (a save just loaded is the world as it is).</summary>
+    public void AdoptCheckpoint(string save, string? level)
+    {
+        CheckpointName = save;
+        Directory.CreateDirectory(_layout.State);
+        File.WriteAllText(_layout.CheckpointRecord, save, JsonFiles.Utf8);
+        if (level is not null) File.WriteAllText(CheckpointLevelRecord, level, JsonFiles.Utf8);
+        else if (File.Exists(CheckpointLevelRecord)) File.Delete(CheckpointLevelRecord);
+    }
+
+    /// <summary>Loads the save folder <paramref name="name"/> in the running session by the game's
+    /// own load (Osi.LoadGame), as a quick load does: no new process, no main menu. Returns the time
+    /// until both sides answer again in Running and (unless <paramref name="skipIntro"/> is false)
+    /// the level's opening scene has been played through.</summary>
+    public async Task<TimeSpan> LoadSaveAsync(string name, TimeSpan? timeout = null, bool skipIntro = true, TimeSpan? appear = null)
+    {
+        _layout.RequireNamed("a save's load");
         var limit = timeout ?? TimeSpan.FromSeconds(120);
         var watch = Stopwatch.StartNew();
         var boots = new Dictionary<Side, double?> { [Side.Client] = State(Side.Client)?.Boot, [Side.Server] = State(Side.Server)?.Boot };
-        // No answer is awaited: the load tears the Lua state down before one is written.
-        Post(Side.Server, $"Osi.LoadGame(\"{name}\")");
+        var fromMenu = State(Side.Client)?.GameState == "Menu";
+        if (fromMenu)
+            // the main menu has no server: the save is loaded through the game's own load window
+            await LoadFromMenuAsync(name, limit, watch);
+        else
+            // No answer is awaited: the load tears the Lua state down before one is written.
+            Post(Side.Server, $"Osi.LoadGame(\"{name}\")");
         foreach (var side in new[] { Side.Client, Side.Server })
         {
             while (true)
             {
                 var state = State(side);
-                if (state is not null && state.Boot != boots[side] && state.GameState == "Running") break;
+                // from the menu the client's Lua may live on: its state need only reach Running
+                if (state is not null && (state.Boot != boots[side] || (fromMenu && side == Side.Client)) && state.GameState == "Running") break;
                 if (!_alive()) throw new CopyException("the game closed during the reset");
                 if (watch.Elapsed > limit)
                     throw new CopyException($"{side.Name()} did not come back from the reset in {limit.TotalSeconds:0} s; last: {Describe(State(side, null))}");
-                await Task.Delay(300);
+                // the state file is written by the bridge at the game state's change (Bridge.lua),
+                // so this looks at a file, it does not wait for a heartbeat
+                await Task.Delay(50);
             }
             await LuaAsync(side.Name(), "return true");
         }
-        if (skipIntro) await SkipScenesAsync(appear);
+        if (skipIntro)
+        {
+            var known = OpeningScene(name);
+            var scene = await SkipScenesAsync(known == false ? TimeSpan.Zero : appear);
+            if (known is null || known != scene) RecordOpeningScene(name, scene);
+        }
         return watch.Elapsed;
+    }
+
+    /// <summary>From the main menu: the save folder <paramref name="name"/> chosen in the game's load
+    /// window (GK.Gui.LoadSave: its title, the folder's name after "__", and the time the window
+    /// shows, the minute its .lsv was written, one either side) and its Load pressed, as a player
+    /// does. Each step is answered by what the window did (the window opened, the load began).</summary>
+    async Task LoadFromMenuAsync(string name, TimeSpan limit, Stopwatch watch)
+    {
+        var folder = Path.Combine(_layout.Saves, name);
+        var lsv = Directory.Exists(folder) ? Directory.EnumerateFiles(folder, "*.lsv").FirstOrDefault() : null;
+        if (lsv is null) throw new CopyException($"no save {name} in {_layout.Saves}");
+        var at = File.GetLastWriteTime(lsv);
+        var times = new[] { at, at.AddMinutes(-1), at.AddMinutes(1) }
+            .Select(t => "\"" + t.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture) + "\"");
+        var cut = name.LastIndexOf("__", StringComparison.Ordinal);
+        var title = cut >= 0 ? name[(cut + 2)..] : name;
+        var call = $"return GK.Gui.LoadSave([==[{title}]==], {{ {string.Join(", ", times)} }})";
+        for (var step = 0; step < 4; step++)
+        {
+            if (watch.Elapsed > limit) throw new CopyException($"the load window did not load {name} in {limit.TotalSeconds:0} s");
+            var answer = await LuaAsync("ui", call, TimeSpan.FromSeconds(20)) as JsonObject
+                ?? throw new CopyException("GK.Gui.LoadSave gave no answer (a bridge without it?)");
+            if (answer["ok"]?.GetValue<bool>() != true)
+                throw new CopyException("the load window: " + (answer["error"]?.ToString() ?? answer.ToJsonString()));
+            if (answer["waiting"]?.GetValue<bool>() != true) return;
+        }
+        throw new CopyException("the load window never got to loading " + name);
     }
 
     /// <summary>Plays whatever dialogue or cutscene runs twenty times faster and returns when none
     /// is left (a level's opening scene starts again after every reset).</summary>
-    public async Task SkipScenesAsync(TimeSpan? appear = null, TimeSpan? timeout = null)
+    public async Task<bool> SkipScenesAsync(TimeSpan? appear = null, TimeSpan? timeout = null)
     {
         const string count = "local n = 0; for _, s in ipairs(GK.Scenes()) do if not s.gameplay then n = n + 1 end end; return n";
+        static bool Any(JsonNode? running) => running is JsonValue v && v.TryGetValue<double>(out var n) && n > 0;
+        // Known to come with no scene (appear 0): one look, and the scene speed is not touched.
+        if (appear == TimeSpan.Zero && !Any(await ClientAsync(count))) return false;
         await ClientAsync("return GK.FastScenes(20)");
+        TimeSpan? seenAt = null;
         try
         {
             var started = Stopwatch.StartNew();
-            TimeSpan? seenAt = null;
             while (started.Elapsed < (timeout ?? TimeSpan.FromSeconds(60)))
             {
                 var running = await ClientAsync(count);
-                if (running is JsonValue v && v.TryGetValue<double>(out var n) && n > 0) seenAt ??= started.Elapsed;
+                if (Any(running)) seenAt ??= started.Elapsed;
                 else if (seenAt is not null || started.Elapsed > (appear ?? TimeSpan.FromSeconds(3))) break;
                 await Task.Delay(400);
             }
@@ -237,6 +320,34 @@ public sealed class GameSession
         {
             await ClientAsync("return GK.FastScenes(1)");
         }
+        return seenAt is not null;
+    }
+
+    // Whether a save, loaded before in this copy, came with an opening scene: the same save's story
+    // does the same at every load, so the time given a scene to appear (no game event says that none
+    // will) is spent only at a save's first load. state/opening-scenes.json { save: true|false }.
+    string OpeningScenesRecord => Path.Combine(_layout.State, "opening-scenes.json");
+
+    bool? OpeningScene(string save)
+    {
+        try
+        {
+            return File.Exists(OpeningScenesRecord) && JsonNode.Parse(File.ReadAllText(OpeningScenesRecord)) is JsonObject o
+                && o[save] is JsonValue v && v.TryGetValue<bool>(out var b) ? b : null;
+        }
+        catch (Exception e) when (e is IOException or System.Text.Json.JsonException) { return null; }
+    }
+
+    void RecordOpeningScene(string save, bool scene)
+    {
+        try
+        {
+            var o = File.Exists(OpeningScenesRecord) ? JsonNode.Parse(File.ReadAllText(OpeningScenesRecord)) as JsonObject ?? [] : [];
+            o[save] = scene;
+            Directory.CreateDirectory(_layout.State);
+            File.WriteAllText(OpeningScenesRecord, o.ToJsonString(), JsonFiles.Utf8);
+        }
+        catch (Exception e) when (e is IOException or System.Text.Json.JsonException) { }
     }
 
     /// <summary>Restarts both Lua states in place (after loose files changed) and waits until both answer.</summary>

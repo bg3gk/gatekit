@@ -1,0 +1,25 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::LoadStateMovie::Start",
+  "state": "described",
+  "rung": "game",
+  "does": "Starts a movie load state of the loading-screen manager: raises the split-screen request flag and calls code:ecl::GameControl::ShowMovie with the state's playlist name and video names, skippable, then marks itself started; the startup's studio logo is played through it.",
+  "fingerprint": {
+    "calls": ["ecl::GameControl::ShowMovie", "fp:e4d053ad9455ea7c"],
+    "components": ["ecl::splitscreen::RequestSystem"],
+    "vtables": [{"slot": 2}]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "same shape as the macOS build's ecl::LoadStateMovie::Start: the splitscreen RequestSystem flag array, then ShowMovie(GameControl, this+0x18 names, this+0x10 name, false, this+0x2c, this+0x2d), then this+0x2e = 1 (the macOS layout is 8 bytes shorter)"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {"kind": "test", "test": "startup/videos/game_clip"}
+  ]
+}

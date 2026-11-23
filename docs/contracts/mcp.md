@@ -18,9 +18,9 @@ value that is not a string is indented JSON (one space, nothing escaped; `Result
 
 #### `bg3_up`
 
-- **Arguments**: `level` (`MODULE:LEVEL`), `save` (a folder name under `Savegames/Story`), `mods` (folder names), `story_log`, `main_menu`, `game_args`.
-- **Calls**: `GameCopy.UpAsync` with those, as [`gatekit up`](cli.md#up).
-- **Result**: everything `up` printed (state changes `  12.3 s  Running`, `Script Extender for this run: ...`, `bridge pak rebuilt ...`, `playable after N s`), or `playable` when nothing was printed.
+- **Arguments**: `level` (`MODULE:LEVEL`), `save` (a folder name under `Savegames/Story`), `mods` (folder names), `story_log`, `main_menu`, `until_lua`, `first_launch`, `game_args`.
+- **Calls**: `GameCopy.UpAsync` with those, as [`gatekit up`](cli.md#up); `until_lua` is `up --until-lua`, `first_launch` is `up --first-launch`.
+- **Result**: everything `up` printed (state changes `  12.3 s  Running`, `Script Extender for this run: ...`, `bridge pak rebuilt ...`, `playable after N s`; with `until_lua`, `the bridge answers after N s (client in LoadModule)`; with `first_launch`, `on the first-launch page Eula after N s ...`), or `playable` when nothing was printed.
 - **Errors**: whatever `up` refuses (already running, a level without its module, the bridge never reported, ...) as `CopyError`.
 
 #### `bg3_down`
@@ -63,6 +63,13 @@ value that is not a string is indented JSON (one space, nothing escaped; `Result
 - **Arguments**: `lines` (default 60), `grep`, `story`.
 - **Calls**: `GameCopy.Logs` ([cli.md](cli.md#logs)).
 - **Result**: the lines joined by `\n`, or `(nothing)`.
+
+#### `bg3_timeline`
+
+- **Arguments**: `kinds` (kinds of row: `State`, `UIState`, `HintShown`, ...), `counters`, `json`.
+- **Calls**: `StartTimeline.ReadAsync`, as [`gatekit timeline`](cli.md#timeline).
+- **Result**: the lines `timeline` prints, joined by `\n`; with `json`, `{rows, total, dropped}`.
+- **Errors**: `CopyError: --kind: 'X' is not a kind of row ...`, `CopyError: this Script Extender build records no start's timeline ...`; no game as `bg3_lua`.
 
 #### `bg3_reload`
 
@@ -138,7 +145,7 @@ starting anything. The instance comes from the same settings as every other comm
 
 **The installed game is reached only when it is named** ([cli.md](cli.md#command-line-shape), where the rule and
 its one check stand). Without an instance, every tool that sends the game a chunk of Lua -
-`bg3_lua`, `bg3_call`, `bg3_dialog`, `bg3_fast_scenes`, `bg3_sound`, `bg3_state`, `bg3_wait` with
+`bg3_lua`, `bg3_call`, `bg3_dialog`, `bg3_fast_scenes`, `bg3_sound`, `bg3_state`, `bg3_timeline`, `bg3_wait` with
 an expression, the coverage tools that read the game (`bg3_pause`,
 `bg3_seen_*`, `bg3_probe*`, `bg3_verify`), the plugin tools - and every tool that goes through a writing
 command (`bg3_up`, `bg3_down`, `bg3_reload`, `bg3_key`, `bg3_checkpoint`, `bg3_reset`) answers
@@ -155,7 +162,7 @@ spec version 2025-06-18 has none - and [the transport](#transport-and-calls) kee
 ### Sound and windows
 
 The [core tools](#core-tools): `bg3_up`, `bg3_down`, `bg3_status`, `bg3_lua`, `bg3_wait`,
-`bg3_state`, `bg3_events`, `bg3_logs`, `bg3_reload`, `bg3_dialog`, `bg3_fast_scenes`,
+`bg3_state`, `bg3_events`, `bg3_logs`, `bg3_timeline`, `bg3_reload`, `bg3_dialog`, `bg3_fast_scenes`,
 `bg3_checkpoint`, `bg3_reset`, `bg3_key`, `bg3_screenshot`, `bg3_call`, `bg3_api`, and the MCP
 half of `gatekit sound`
 ([cli.md](cli.md#sound), [docs/design/deck.md](../design/deck.md#sound)):

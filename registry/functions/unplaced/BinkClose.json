@@ -1,0 +1,22 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::BinkClose",
+  "state": "described",
+  "rung": "game",
+  "does": "Closes a Bink handle: pauses it, stops its sound tracks (calls each track's close callback at track+0x1A8, for HBINK+0x12C tracks, and the lock at HBINK+0x520 when the sound mode is below 1 or 2) and frees it",
+  "fingerprint": {
+    "calls": [
+      "fp:450062806ea30872",
+      "fp:67d0c73cbf84efcd",
+      "fp:c2e93cdb6bdcf263",
+      "fp:e4d053ad9455ea7c"
+    ]
+  },
+  "evidence": [
+    {"kind": "game-name", "says": "Bink's own export name"},
+    {
+      "kind": "watch",
+      "says": "live: a game clip closed with HBINK+0x12C left at 1 (no track opened) killed the copy twice, with no dump; put back to 0 before the end, 9 runs closed cleanly"
+    }
+  ]
+}

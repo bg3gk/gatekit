@@ -1,0 +1,35 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::GameStateStartLoading::CanExit",
+  "state": "described",
+  "rung": "game",
+  "does": "Lets StartLoading end when the loading screen's current load state is ready (its virtual table +0x20, ecl::LoadStateMovie::IsReady for a movie) and a flag at +0xf9 of a client global is clear: with several playlist entries the game leaves StartLoading after the first movie, and the next ones play over the loading that follows.",
+  "fingerprint": {"vtables": [{"slot": 5}]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "slot 5 (+0x28) of the virtual table bg3_dx11.exe@25605617+0x55F7460; calls through ls::LoadingScreenManager+0x28 (the current load state) virtual table +0x20"
+    },
+    {
+      "kind": "reach",
+      "says": "new game from the main menu: a client probe saw it called twice, from bg3_dx11.exe@25605617+0x17EED71 in code:ecl::GameStateMachine::Update"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "watch",
+      "says": "a start with three entries reached the main menu 22 s sooner than with the same videos as one entry, and the last video played was a playlist of its own; with one entry every video played on black before the loading screen"
+    },
+    {"kind": "test", "test": "startup/videos/game_clip"}
+  ]
+}
