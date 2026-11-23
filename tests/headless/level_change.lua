@@ -5,7 +5,12 @@
 -- Osiris event, so the record ends at the story's own moment, not at a poll's). The record of a run
 -- drawn and a run with the fork's cuts must be the same. Event-driven, no sleeps. W3 round 4.
 
-test { level = "GustavX:Basic_Level_A", mods = {}, reset = "venue" }
+test { level = "GustavX:Basic_Level_A", mods = {}, reset = "venue",
+       -- a level's setup spreads its rows over its ticks in another order every run (bags, ids masked);
+       -- the courier's rows land on either side of the stretch's end (the race below)
+       logic_diff = { window = "family_on:family_off", rigged = true, unordered = true, mask_ids = true,
+                      set_aside = { ["bf842d88-0c39-48b8-b4a1-f9ab140ee6ca"] =
+                          "the courier (S_FOR_Courier) dies by a server timer that races the client reaching Running" } } }
 
 function run(game)
     game.wait_state("Running", "server", 60)

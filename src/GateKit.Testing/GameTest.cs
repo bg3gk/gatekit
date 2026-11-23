@@ -17,8 +17,12 @@ namespace GateKit.Testing;
 /// (test{until_lua = true}): no menu, no level, no server.</param>
 /// <param name="FirstLaunch">The test runs on the game's first first-launch page, as `up --first-launch`
 /// (test{first_launch = true}): the pages are the test's to go through.</param>
+/// <param name="DrawnStart">Why the test's headless start is drawn until the client's first Running
+/// (test{drawn_start = "why"}), or null: what the test needs that a game drawn from no frame does not
+/// set up. Outside a headless run it changes nothing.</param>
 public sealed record TestStart(string? Level = null, IReadOnlyList<string>? Mods = null, string? Save = null,
-    bool MainMenu = false, ResetRung? Reset = null, bool StartupVideos = false, bool UntilLua = false, bool FirstLaunch = false)
+    bool MainMenu = false, ResetRung? Reset = null, bool StartupVideos = false, bool UntilLua = false, bool FirstLaunch = false,
+    string? DrawnStart = null)
 {
     /// <summary>The rung declared.</summary>
     public ResetRung? Needs => Reset;
@@ -28,8 +32,9 @@ public sealed record TestStart(string? Level = null, IReadOnlyList<string>? Mods
     public bool NoLevel => MainMenu || UntilLua || FirstLaunch;
 
     /// <summary>What two tests must agree on in their start to share one game (their files too: <see cref="GameTest.Group"/>).</summary>
-    public (string?, string, bool, string?, bool) Key =>
-        (FirstLaunch ? "<first launch>" : UntilLua ? "<until lua>" : MainMenu ? "<main menu>" : Level, string.Join(",", Mods ?? []), Mods is null, Save, StartupVideos);
+    public (string?, string, bool, string?, bool, bool) Key =>
+        (FirstLaunch ? "<first launch>" : UntilLua ? "<until lua>" : MainMenu ? "<main menu>" : Level, string.Join(",", Mods ?? []), Mods is null, Save, StartupVideos,
+            DrawnStart is not null);
 }
 
 /// <summary>
@@ -70,7 +75,7 @@ public sealed class GameTest
 
     /// <summary>What two tests must agree on to share one game: their start (<see cref="TestStart.Key"/>)
     /// and their files, each destination with its source, which go into the copy before that start.</summary>
-    public ((string?, string, bool, string?, bool) Start, string Files) Group =>
+    public ((string?, string, bool, string?, bool, bool) Start, string Files) Group =>
         (Start.Key, string.Join("\n", Files.Select(f => f.Destination + "=" + f.Source)));
 
     /// <summary>The root of the tree of tests the test is in: the nearest folder above it named
@@ -173,6 +178,11 @@ public sealed class GameTest
     /// <summary>The header's `drawn`: why the test needs drawn frames (a picture, a window's look),
     /// or null. In a headless run (`--headless`) such a test is not run: UNMET with this reason.</summary>
     public string? Drawn { get; private set; }
+
+    /// <summary>The header's `logic_diff`: how `gatekit logic-check` compares the test's record of a
+    /// game run as it is with one run headless (window, rigged, unordered, mask_ids, ignore, anchor,
+    /// set_aside, rewrite), or null when the test is no differential scenario.</summary>
+    public System.Text.Json.Nodes.JsonObject? LogicDiff { get; private set; }
 
     /// <summary>The one case `-k &lt;test id&gt;/&lt;case&gt;` selects; null: every case.</summary>
     public string? OnlyCase { get; set; }
@@ -307,7 +317,7 @@ public sealed class GameTest
 
     /// <summary>The fields a test's header <c>test { ... }</c> may hold (docs/writing-tests.md, "The file").</summary>
     public static readonly IReadOnlyList<string> HeaderFields =
-        ["about", "level", "mods", "save", "menu", "reset", "surprises", "speed_ceiling", "ceiling_finding", "before", "files", "startup_videos", "until_lua", "first_launch", "drawn"];
+        ["about", "level", "mods", "save", "menu", "reset", "surprises", "speed_ceiling", "ceiling_finding", "before", "files", "startup_videos", "until_lua", "first_launch", "drawn", "drawn_start", "logic_diff"];
 
     /// <summary>Why a header holds a field it does not know (null when every field is known): a field
     /// nobody reads would otherwise be ignored without a word.</summary>
@@ -357,6 +367,7 @@ public sealed class GameTest
             CeilingFinding = LuaValues.OptionalString(options, "ceiling_finding");
             Before = LuaValues.OptionalString(options, "before");
             Drawn = LuaValues.OptionalString(options, "drawn");
+            LogicDiff = options?.Get("logic_diff") is { Type: DataType.Table } rules ? LuaValues.ToJson(rules) as System.Text.Json.Nodes.JsonObject : null;
             Files = ReadFiles(options);
             if (SpeedCeiling is not null && string.IsNullOrWhiteSpace(CeilingFinding))
                 throw new ScriptRuntimeException($"{Name}: a speed_ceiling names its finding (ceiling_finding = \"where it is written\"): "
@@ -364,7 +375,8 @@ public sealed class GameTest
             Start = new TestStart(LuaValues.OptionalString(options, "level"), LuaValues.OptionalList(options, "mods"),
                 LuaValues.OptionalString(options, "save"), LuaValues.Flag(options, "menu"),
                 LuaValues.OptionalString(options, "reset") is { } reset ? ParseReset(reset) : null,
-                LuaValues.Flag(options, "startup_videos"), LuaValues.Flag(options, "until_lua"), LuaValues.Flag(options, "first_launch"));
+                LuaValues.Flag(options, "startup_videos"), LuaValues.Flag(options, "until_lua"), LuaValues.Flag(options, "first_launch"),
+                LuaValues.OptionalString(options, "drawn_start"));
             if (Start.UntilLua && (Start.Level is not null || Start.Save is not null || Start.MainMenu))
                 throw new ScriptRuntimeException($"{Name}: until_lua runs the test when the bridge first answers, before any menu or level: it takes no level, save or menu");
             if (Start.FirstLaunch && (Start.Level is not null || Start.Save is not null || Start.MainMenu || Start.UntilLua))

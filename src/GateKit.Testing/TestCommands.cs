@@ -67,13 +67,17 @@ public static class TestCommand
         var restartGroups = new Option<bool>("--restart-groups") { Description = "close the game after each group of tests and start the next group's in a new process, instead of loading the next group's level or save in the running game" };
         var fastLoad = new Option<bool>("--fast-load") { Description = "every game the run starts loads without the game's waits (`up --fast-load`; GATEKIT_FAST_LOAD=1 for the run): the runner's loads and resets in it are faster; a game found running keeps what it was started with" };
         var headless = new Option<bool>("--headless") { Description = "every game the run starts is headless (`up --headless`; GATEKIT_HEADLESS=1 for the run): fast loads, nothing drawn, the tick waits slept, the window off the screen - tests that take pictures cannot pass; a game found running keeps what it was started with" };
+        var drawnStart = new Option<bool>("--drawn-start") { Description = "with --headless: every start drawn until the client's first Running, nothing drawn after it (`up --drawn-start`)" };
+        var headlessExcept = new Option<string?>("--headless-except") { Description = "with --headless or --fast-load: these of its switches left off in every start, comma-separated (`up --headless-except`)" };
         var keepEvents = new Option<bool>("--keep-events") { Description = "each test's output folder gets events/: the event log's files written while it ran, both sides, with the registry of kinds - what `gatekit logic-diff` compares" };
-        var command = new Command("test", "run every test in a folder and its subfolders; tests that need the same start share one game (a copy already in their level is used), each after the reset ladder; a later group goes into its level or save by the game's own load in the same game, a new process only when that cannot be; exit 0 all passed, 1 a failure, 2 a precondition unmet and nothing failed") { folder, only, clean, attach, reset, repeat, speed, trace, restartGroups, fastLoad, headless, keepEvents, json };
+        var command = new Command("test", "run every test in a folder and its subfolders; tests that need the same start share one game (a copy already in their level is used), each after the reset ladder; a later group goes into its level or save by the game's own load in the same game, a new process only when that cannot be; exit 0 all passed, 1 a failure, 2 a precondition unmet and nothing failed") { folder, only, clean, attach, reset, repeat, speed, trace, restartGroups, fastLoad, headless, drawnStart, headlessExcept, keepEvents, json };
         command.SetAction((parse, cancel) => TestHost.Run(parse, runner =>
         {
             // the starts read it (GameCopy.FastLoadAsked), wherever in the run they happen
             if (parse.GetValue(fastLoad)) Environment.SetEnvironmentVariable("GATEKIT_FAST_LOAD", "1");
             if (parse.GetValue(headless)) Environment.SetEnvironmentVariable("GATEKIT_HEADLESS", "1");
+            if (parse.GetValue(drawnStart)) Environment.SetEnvironmentVariable("GATEKIT_HEADLESS_DRAWN_START", "1");
+            if (parse.GetValue(headlessExcept) is { Length: > 0 } except) Environment.SetEnvironmentVariable("GATEKIT_HEADLESS_EXCEPT", except);
             runner.KeepEvents = parse.GetValue(keepEvents);
             runner.RestartGroups = parse.GetValue(restartGroups);
             runner.Json = parse.GetValue(json);

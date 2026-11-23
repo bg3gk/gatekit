@@ -23,6 +23,9 @@ value that is not a string is indented JSON (one space, nothing escaped; `Result
 - **Result**: everything `up` printed (state changes `  12.3 s  Running`, `Script Extender for this run: ...`, `bridge pak rebuilt ...`, `playable after N s`; with `until_lua`, `the bridge answers after N s (client in LoadModule)`; with `first_launch`, `on the first-launch page Eula after N s ...`), or `playable` when nothing was printed.
 - **Errors**: whatever `up` refuses (already running, a level without its module, the bridge never reported, ...) as `CopyError`.
 
+For an explicit headless start, use [`gatekit --instance NAME up --headless`](cli.md#up) and connect
+the MCP server to the same instance. `bg3_up` also honours `GATEKIT_HEADLESS=1` in the server's environment.
+
 #### `bg3_down`
 
 - **Calls**: `GameCopy.Down` ([cli.md](cli.md#down)).

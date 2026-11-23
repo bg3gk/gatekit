@@ -33,9 +33,9 @@ internal static class NameAtCommand
         {
             var text = new StringWriter();
             if (Run(s, query, true, text) != 0) { status = 1; all.Add(new JsonObject { ["query"] = query, ["found"] = false }); continue; }
-            all.Add(JsonNode.Parse(text.ToString()));
+            all.Add(GateKit.Json.JsonText.Parse(text.ToString(), query).Root);
         }
-        s.Out.WriteLine(all.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        s.Out.WriteLine(GateKit.Json.JsonText.Format(all));
         return status;
     }
 
@@ -74,7 +74,7 @@ internal static class NameAtCommand
                 ["standing"] = Standings.Word(standing),
                 ["notes"] = new JsonArray(named.Notes.Select(n => (JsonNode)n).ToArray()),
             };
-            w.WriteLine(o.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            w.WriteLine(GateKit.Json.JsonText.Format(o));
             return 0;
         }
 

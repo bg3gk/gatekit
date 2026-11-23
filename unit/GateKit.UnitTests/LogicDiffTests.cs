@@ -67,4 +67,41 @@ public sealed class LogicDiffTests
         Assert.Empty(LogicDiffCommand.Window(rows, "combat_started", "family_off"));
         Assert.Equal(8, LogicDiffCommand.Window(rows, null, null).Count);
     }
+
+    static string Record(params JsonObject[] rows)
+    {
+        var folder = GateKit.Testing.Scratch.NewPath("logic");
+        Directory.CreateDirectory(folder);
+        File.WriteAllLines(Path.Combine(folder, "events_server_1_1.jsonl"), rows.Select(r => r.ToJsonString()));
+        return folder;
+    }
+
+    [Fact]
+    public void A_test_s_rules_set_aside_the_game_s_own_noise_and_rewrite_its_run_numbers_and_the_bookkeeping_is_left_out()
+    {
+        var header = (JsonObject)JsonNode.Parse("""
+            { "window": "family_on:family_off", "set_aside": { "ThrowRock": "ambient throws" },
+              "rewrite": { "(instance:)\\d+": "$1#" } }
+            """)!;
+        var rules = LogicDiffCommand.RulesOf(header);
+        var a = Record(Row(1, 1, "family_on", "{}"), Row(2, 2, "game_cast", "{\"spell\":\"ThrowRock\"}"), Row(3, 3, "dialogue_started", "{\"instance\":27}"),
+            Row(4, 4, "scope_track", "{\"op\":\"x\"}"), Row(5, 5, "game_turn", "{\"key\":7}"), Row(6, 6, "family_off", "{}"));
+        var b = Record(Row(1, 1, "family_on", "{}"), Row(3, 3, "dialogue_started", "{\"instance\":31}"), Row(5, 5, "game_turn", "{\"key\":9}"),
+            Row(6, 6, "game_cast", "{\"spell\":\"ThrowRock\"}"), Row(7, 7, "game_cast", "{\"spell\":\"ThrowRock\"}"), Row(8, 8, "family_off", "{}"));
+        try
+        {
+            var (same, lines) = LogicDiffCommand.Check(a, b, rules);
+            Assert.True(same, string.Join("\n", lines));
+            Assert.Contains("A: 1 row(s) set aside: ambient throws", lines);
+            Assert.Contains("B: 2 row(s) set aside: ambient throws", lines);
+            var other = Record(Row(1, 1, "family_on", "{}"), Row(5, 5, "game_turn", "{}"), Row(6, 6, "family_off", "{}"));
+            Assert.False(LogicDiffCommand.Check(a, other, rules).Same);
+            Directory.Delete(other, true);
+        }
+        finally
+        {
+            Directory.Delete(a, true);
+            Directory.Delete(b, true);
+        }
+    }
 }

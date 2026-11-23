@@ -39,6 +39,29 @@ public sealed class TickGuardTests
     }
 
     [Fact]
+    public void A_wait_keeps_its_ticks_when_the_server_leaves_and_the_client_keeps_running()
+    {
+        using var channel = new TempFolder();
+        Beat(channel, "server", 100);
+        Beat(channel, "client", 1000);
+        var guard = new TickGuard(new BridgeClient(channel.Path), TimeSpan.FromSeconds(1), capToClock: false);
+
+        Beat(channel, "server", 110);
+        Beat(channel, "client", 1020);
+        Assert.Null(guard.Over());
+        Assert.Equal(10, guard.Ticks);
+
+        File.Delete(Path.Combine(channel.Path, "state_server.json"));
+        Beat(channel, "client", 1035);
+        Assert.Null(guard.Over());
+        Assert.Equal(25, guard.Ticks);
+
+        Beat(channel, "client", 1041);
+        Assert.NotNull(guard.Over());
+        Assert.Equal(31, guard.Ticks);
+    }
+
+    [Fact]
     public void Ticks_faster_than_the_nominal_rate_count_no_faster_than_the_clock()
     {
         // the night's W3 round 6: the fast load lifts the server's tick period while it loads, and a

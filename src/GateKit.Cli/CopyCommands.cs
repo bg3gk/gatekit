@@ -56,6 +56,7 @@ public static class CopyCommands
         yield return CoverDiff();
         yield return TraceStacksCommand.Create();
         yield return LogicDiffCommand.Create();
+        yield return LogicCheckCommand.Create();
         yield return Shot();
         yield return Key();
         yield return Sound();
@@ -191,11 +192,16 @@ public static class CopyCommands
         var firstLaunch = new Option<bool>("--first-launch") { Description = "start as the game's first launch (its switch ShowFirstTimeSetup set at the first Lua) and stop on the first first-launch page, Eula, leaving the pages to you; an instance only" };
         var coverStart = new Option<bool>("--cover-start") { Description = "cover the start before any Lua: coverage counters on every function of the executable from the extender's start, a record saved at each state the client enters up to the main menu (cover/start/ in the copy's state folder; developer mode)" };
         var fastLoad = new Option<bool>("--fast-load") { Description = "loads without the game's waits (GateKit's Script Extender build): frame caps and the server's tick lifted while loading, no streaming wait, no screen fades - for automated runs, never for pictures of a load (also GATEKIT_FAST_LOAD=1)" };
-        var headless = new Option<bool>("--headless") { Description = "a game for logic only (GateKit's Script Extender build): fast loads, the Lua collector held while loading, nothing drawn from the start, the tick waits slept instead of spun, the window off the screen - no pictures (also GATEKIT_HEADLESS=1)" };
+        var headless = new Option<bool>("--headless") { Description = "a game for logic only (GateKit's Script Extender build): fast loads, the Lua collector held while loading, nothing drawn from the process start (a start through the main menu: from the first Running), the tick waits slept instead of spun, the window off the screen; `shot` draws for its picture (also GATEKIT_HEADLESS=1)" };
+        var drawnStart = new Option<bool>("--drawn-start") { Description = "with --headless: the start drawn until the client's first Running, nothing drawn after it (also GATEKIT_HEADLESS_DRAWN_START=1)" };
+        var headlessExcept = new Option<string?>("--headless-except") { Description = "with --headless or --fast-load: these of its switches left off, comma-separated (KeepWindowOffScreen, IdleSleep, FastLoadFades, ...): which cut a difference of the logic comes from (also GATEKIT_HEADLESS_EXCEPT)" };
         var gameArgs = new Argument<string[]>("game-args") { Description = "extra game arguments, after `--`", Arity = ArgumentArity.ZeroOrMore };
-        var command = new Command("up", "back up, configure, start the game, wait until it is playable") { level, save, mods, storyLog, mainMenu, splash, startupVideos, untilLua, firstLaunch, coverStart, fastLoad, headless, gameArgs };
+        var command = new Command("up", "back up, configure, start the game, wait until it is playable") { level, save, mods, storyLog, mainMenu, splash, startupVideos, untilLua, firstLaunch, coverStart, fastLoad, headless, drawnStart, headlessExcept, gameArgs };
         command.SetAction((parse, cancel) => Run(parse, async s =>
         {
+            // the start reads them where it writes the switches (GameCopy.ConfigureExtender), as `test` sets them for its starts
+            if (parse.GetValue(drawnStart)) Environment.SetEnvironmentVariable("GATEKIT_HEADLESS_DRAWN_START", "1");
+            if (parse.GetValue(headlessExcept) is { Length: > 0 } except) Environment.SetEnvironmentVariable("GATEKIT_HEADLESS_EXCEPT", except);
             var modList = parse.GetValue(mods) is { } text ? text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) : null;
             string? coverFile = null;
             if (parse.GetValue(coverStart))

@@ -8,7 +8,16 @@
 -- (nothing drawn from the process start) must record the same. Event-driven: every wait is on the
 -- game's own state. W3 round 6.
 
-test { level = "GustavX:Basic_Level_A", mods = {}, reset = "venue" }
+test { level = "GustavX:Basic_Level_A", mods = {}, reset = "venue",
+       -- what differs between two runs of the game as it is: an ambient goblin's rock throws and the
+       -- surfaces walkers step in, and the number the game gives a dialogue instance
+       logic_diff = { window = "family_on:family_off", rigged = true, unordered = true, mask_ids = true, ignore = { "instance" },
+                      set_aside = { ["ThrowRock"] = "an ambient goblin throws rocks a different number of times in every run",
+                                    ["INSURFACE"] = "ambient walkers step in surfaces a different number of times in every run" },
+                      -- the dialogue instance's number, and the name the crypt's fire flask stack gets (001 or 002:
+                      -- two runs of the game as it is differ there too)
+                      rewrite = { [ [[^(osiris \{args:\["[^"]*",)\d+(,\],event:"Dialog(?:Started|Ended)")]] ] = "$1#$2",
+                                  [ [[(GRN_FireFlask_A_)\d{3}(_#)]] ] = "$1nnn$2" } } }
 
 function run(game)
     game.wait_state("Running", "server", 60)

@@ -65,6 +65,9 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
     public TextWriter Out { get; } = output;
 
     /// <summary>Where a run's folders go: &lt;state&gt;/runs/&lt;stamp&gt;-&lt;what&gt;.</summary>
+    /// <summary>The folder of the last suite this runner ran (RunSuiteAsync), or null.</summary>
+    public string? LastRunFolder { get; private set; }
+
     public string RunFolder(string what) => Path.Combine(GameCopy.Layout.State, "runs",
         DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture) + "-" + what);
 
@@ -341,11 +344,15 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
     /// prepared too. <paramref name="force"/>: this rung at least, whatever a test declares.</summary>
     public async Task<int> RunSuiteAsync(string folder, string? only, bool cleanAll, CancellationToken cancel = default, bool attach = false,
         ResetRung? force = null, int repeat = 1)
+        => await RunSuiteAsync(GameTest.Discover(folder, only, Out), cleanAll, cancel, attach, force, repeat);
+
+    /// <summary>Runs a suite from an already discovered selection.</summary>
+    public async Task<int> RunSuiteAsync(IReadOnlyList<GameTest> found, bool cleanAll, CancellationToken cancel = default,
+        bool attach = false, ResetRung? force = null, int repeat = 1, bool requireHeadless = false)
     {
         if (Speed is { } asked && asked != "working"
             && !(double.TryParse(asked, NumberStyles.Float, CultureInfo.InvariantCulture, out var scale) && scale > 0))
             throw new CopyException($"--speed is a positive number or `working`, not '{asked}'");
-        var found = GameTest.Discover(folder, only, Out);
         GameCopy.CleanStaleTestFiles();
         // --repeat N: the selection N times in a row, in the same session (name#2, name#3 ...)
         var tests = Enumerable.Range(1, Math.Max(1, repeat))
@@ -353,7 +360,7 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
         var running = GameCopy.GamePids().Count > 0;
         if (attach && !running) throw new CopyException("--attach needs a running game (start one with `up`)");
         if (attach) return await RunAttachedAsync(tests, cleanAll, force);
-        var groups = new Dictionary<((string?, string, bool, string?, bool), string), List<GameTest>>();
+        var groups = new Dictionary<((string?, string, bool, string?, bool, bool), string), List<GameTest>>();
         foreach (var test in tests)
         {
             if (!groups.TryGetValue(test.Group, out var list)) groups[test.Group] = list = [];
@@ -372,6 +379,7 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
         }
 
         var runFolder = RunFolder("suite");
+        LastRunFolder = runFolder;
         var results = new List<TestResult>();
         var suite = Stopwatch.StartNew();
         // The game this run started and keeps up between groups: the start it was given and the
@@ -418,8 +426,12 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
                     }
                     try
                     {
-                        session = await GameCopy.UpAsync(StartOf(start), cancel);
-                        kept = StartOf(start);
+                        // a test of the start looks at the start itself: never headless or fast
+                        var up = group.Any(IsStartTest)
+                            ? StartOf(start) with { NotHeadlessWhy = "a test of the start (startup/): its screens, videos and timings are what it looks at" }
+                            : StartOf(start);
+                        session = await GameCopy.UpAsync(up, cancel);
+                        kept = up;
                         keptBuild = GameCopy.SeStatus().Sha256;
                     }
                     catch (CopyException problem)
@@ -443,6 +455,12 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
                 var keep = false;
                 try
                 {
+                    if (requireHeadless)
+                    {
+                        var drawing = await session.LuaAsync("client", "return GK.Headless.Drawing()", cancel: cancel);
+                        if (drawing is not JsonValue value || !value.TryGetValue<bool>(out var draws) || draws)
+                            throw new CopyException("the client is still drawing; logic-check needs an active render cut from a compatible BG3GKSE build");
+                    }
                     var run = await RunGroupAsync(group, session, ours ? StartOf(start) : null, untouched: ours, cleanAll, force, runFolder, adopted: moved);
                     results.AddRange(run);
                     // a game with no files of a group, in a level or a save, stays up for the next group
@@ -504,6 +522,8 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
         if (!Keepable(group)) why = "its start is not a level or a save of its own (files, startup videos, the main menu, a test of the start)";
         else if (StartSaves.ModsKey(Effective(start.Mods)) != StartSaves.ModsKey(Effective(kept.Mods))) why = "another mod list";
         else if (GameCopy.SeStatus().Sha256 != keptBuild) why = "another Script Extender build is installed";
+        else if (GameCopy.HeadlessAsked() && (start.DrawnStart is null) != (kept.DrawnStartWhy is null))
+            why = start.DrawnStart is null ? "the running game's start was drawn, this group's is not" : "its headless start is drawn (drawn_start: " + start.DrawnStart + ")";
         else if (save is null) why = $"no save of {start.Level}'s start in this copy yet";
         if (why is not null)
         {
@@ -535,7 +555,7 @@ public sealed class TestRunner(Copies.GameCopy copy, TextWriter output)
     /// <summary>The start <c>up</c> is given for a test's group.</summary>
     public static UpOptions StartOf(TestStart start) =>
         new(start.Level, start.Save, start.Mods, MainMenu: start.MainMenu, StartupVideos: start.StartupVideos, UntilLua: start.UntilLua,
-            FirstLaunch: start.FirstLaunch);
+            FirstLaunch: start.FirstLaunch, DrawnStartWhy: start.DrawnStart);
 
     /// <summary>Whether a game in <paramref name="here"/> is where a test's start puts it: the
     /// level it declares (a save, the main menu, a start with the startup videos and a test with

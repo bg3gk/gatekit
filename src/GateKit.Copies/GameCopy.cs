@@ -38,10 +38,15 @@ namespace GateKit.Copies;
 /// loading, nothing drawn or presented from the start, the tick waits slept instead of spun, the
 /// window kept off the screen. No pictures (`shot`) and no window to look at. Also on when
 /// `GATEKIT_HEADLESS=1`.</param>
+/// <param name="DrawnStartWhy">With Headless: why this start is drawn until the client's first Running
+/// (a test's `drawn_start`), or null for the default (GameCopy.DrawnStartWhy).</param>
+/// <param name="NotHeadlessWhy">Why this start is the game as it is although the run asked for
+/// headless or fast loads (GATEKIT_HEADLESS / GATEKIT_FAST_LOAD): a test of the start itself - its
+/// screens, videos and timings are what it looks at.</param>
 public sealed record UpOptions(string? Level = null, string? Save = null, IReadOnlyList<string>? Mods = null,
     bool StoryLog = false, IReadOnlyList<string>? GameArgs = null, bool MainMenu = false, bool Splash = false,
     bool StartupVideos = false, bool UntilLua = false, bool FirstLaunch = false, string? CoverStart = null,
-    bool FastLoad = false, bool Headless = false);
+    bool FastLoad = false, bool Headless = false, string? DrawnStartWhy = null, string? NotHeadlessWhy = null);
 
 /// <summary>
 /// A game copy: the installed game or an instance. Starts the game directly (no launcher), talks
@@ -86,7 +91,40 @@ public sealed class GameCopy
     public IReadOnlyList<int> GamePids() =>
         Platform.GameProcesses().Where(p => SameFolder(Path.GetDirectoryName(p.ExecutablePath)!, Layout.Bin)).Select(p => p.Pid).ToList();
 
-    public GameSession Session() => new(Layout, () => GamePids().Count > 0, Out);
+    public GameSession Session() => new(Layout, () => GamePids().Count > 0, Out, GoneReason);
+
+    /// <summary>The game process this command started, held for its exit code.</summary>
+    ExitWatch? _exitWatch;
+
+    /// <summary>Why the game is gone, from what each witness kept: the exit code (when this command
+    /// started the game), the extender's own record of a process that ended itself (ExitWitness:
+    /// exit-&lt;pid&gt;.txt in the run's log folder, which every start empties), a crash dump left
+    /// since the start, the client's last state on the bridge.</summary>
+    public string GoneReason()
+    {
+        var said = new List<string> { "the game process is gone" };
+        if (_exitWatch?.Describe() is { } exit) said.Add(exit);
+        var witness = Directory.Exists(Layout.SeLogs)
+            ? new DirectoryInfo(Layout.SeLogs).EnumerateFiles("exit-*.txt").OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault()
+            : null;
+        if (witness is not null)
+        {
+            var lines = FileRetry.ReadAllText(witness.FullName).Split('\n').Select(l => l.TrimEnd('\r')).ToList();
+            var callers = lines.Skip(1).TakeWhile(l => l.StartsWith("  <- ", StringComparison.Ordinal)).Take(6).Select(l => l[5..]);
+            said.Add($"it ended itself: {lines.FirstOrDefault()}, called from {string.Join(" < ", callers)} ({witness.FullName})");
+        }
+        else if (_exitWatch is not null && Instance is not null)
+            said.Add("the extender saw no ExitProcess or TerminateProcess of its own (a crash, a fail-fast, or ended from outside)");
+        var since = witness?.LastWriteTimeUtc.AddMinutes(-30) ?? DateTime.UtcNow.AddMinutes(-30);
+        if (CrashDumps.Read(CrashDumps.Folder(Layout), _started ?? since).FirstOrDefault() is { } dump)
+            said.Add($"a crash dump: {dump.Path} (`gatekit crashes`)");
+        if (new GameSession(Layout, () => false, TextWriter.Null).State(Side.Client, null) is { } last)
+            said.Add($"the client's last state on the bridge: {last.GameState}");
+        return string.Join("; ", said);
+    }
+
+    /// <summary>When this command started the game (UTC), for the crash dumps of that run.</summary>
+    DateTime? _started;
 
     /// <summary>How loud this copy's game is (`gatekit sound`, the bridge's GK.Sound).</summary>
     public SoundControl Sound() => new(Session());
@@ -416,8 +454,13 @@ public sealed class GameCopy
         else backup.LendDebugProfiles(withSaves: options.Level is null);
         // A start does not wait on startup videos: GateKit's extender build hides every one, the
         // game's and the mods' (its StartupVideos switch), unless the start asks for them.
+        if (options.NotHeadlessWhy is { } asIs && (HeadlessAsked() || FastLoadAsked()))
+            Out.WriteLine($"the game as it is, not headless or fast: {asIs}");
+        var useLaunchEnvironment = options.NotHeadlessWhy is null;
         ConfigureExtender(options.StoryLog, options.StartupVideos, options.CoverStart, directSaveLoad: options.Save is not null,
-            fastLoad: options.FastLoad || FastLoadAsked(), headless: options.Headless || HeadlessAsked());
+            fastLoad: options.FastLoad || (useLaunchEnvironment && FastLoadAsked()),
+            headless: options.Headless || (useLaunchEnvironment && HeadlessAsked()),
+            menuStart: options.Save is null && options.Level is null, drawnStartWhy: options.DrawnStartWhy);
         var se = SeSwitch.ApplyForRun(Settings.ScriptExtender, Layout.SeSettings,
             keepInstalled: Instance is not null && !Settings.ScriptExtenderStock);
         ConfigureLoader();
@@ -468,6 +511,7 @@ public sealed class GameCopy
                 Directory.CreateDirectory(Layout.SeLogs);
             }
             NameProcess();
+            _started = DateTime.UtcNow;
             try { Platform.StartGame(launch); }
             catch (IOException e) { throw new CopyException(e.Message, e); }
             var appeared = Stopwatch.StartNew();
@@ -476,6 +520,9 @@ public sealed class GameCopy
                 if (appeared.Elapsed > TimeSpan.FromSeconds(60)) throw new CopyException("the game process did not appear");
                 await Task.Delay(500, cancel);
             }
+            // held from here on, so a game that ends by itself still gives its exit code (GoneReason)
+            _exitWatch?.Dispose();
+            _exitWatch = GamePids() is { Count: > 0 } pids ? Platform.WatchExit(pids[0]) : null;
             var reading = await AwaitBridgeAsync(session, cancel, options.CoverStart is null ? 1 : 4);
             if (reading is null) break;
             KillGame();
@@ -658,7 +705,7 @@ public sealed class GameCopy
         // start (GATEKIT_FIRST_LUA), its answer printed - a switch the game reads early is set here.
         if (Environment.GetEnvironmentVariable("GATEKIT_FIRST_LUA") is { Length: > 0 } early)
         {
-            try { Out.WriteLine($"  GATEKIT_FIRST_LUA: {(await session.LuaAsync("client", early, TimeSpan.FromSeconds(20), cancel))?.ToJsonString()}"); }
+            try { Out.WriteLine($"  GATEKIT_FIRST_LUA: {GateKit.Json.JsonText.Inline(await session.LuaAsync("client", early, TimeSpan.FromSeconds(20), cancel))}"); }
             catch (CopyException e) { Out.WriteLine($"  GATEKIT_FIRST_LUA failed: {e.Message}"); }
         }
         var first = Instance is not null;
@@ -852,38 +899,60 @@ public sealed class GameCopy
     /// <summary>`GATEKIT_HEADLESS=1`: every start of this process is headless (`test --headless` sets it).</summary>
     public static bool HeadlessAsked() => Environment.GetEnvironmentVariable("GATEKIT_HEADLESS") == "1";
 
-    /// <summary>A headless game's pace of skipped frames in microseconds (RenderCutSkipPaceUs):
-    /// `GATEKIT_HEADLESS_SKIP_PACE_US`, else the default; 0 is off.</summary>
+    /// <summary>A headless game's pace of skipped frames in microseconds (RenderCutSkipPaceUs), until
+    /// the client's first Running: `GATEKIT_HEADLESS_SKIP_PACE_US`, else the default; 0 is off.</summary>
     public static int HeadlessSkipPaceUs() =>
         int.TryParse(Environment.GetEnvironmentVariable("GATEKIT_HEADLESS_SKIP_PACE_US"), out var us) && us >= 0 ? us : DefaultSkipPaceUs;
 
-    /// <summary>Off (round 7). A blind start of Basic_Level_A at 4 ms: CPU by Running 71.2 -> 36.7 s,
-    /// Running 18.7 -> 17.3 s (16.7 ms: 34.4 s, Running 18.9 s). But the pace also slows an in-session
-    /// load (the client, uncapped there, waits on the main thread each tick): tests/headless/arrival
-    /// recorded 27 ambient rock throws at 4 ms against 13 with the pace off and 13-15 natively - the
-    /// new level's server runs longer before the client is ready. Kept for a blind start by hand.</summary>
-    public const int DefaultSkipPaceUs = 0;
+    /// <summary>With nothing drawn, a skipped frame returns at once and the main thread loops through
+    /// the start; paced to one update in 4 ms the start costs about half the CPU. The pace ends at the
+    /// client's first Running (RenderCutSkipPaceStartOnly): a paced load inside a session lets the new
+    /// level's server run longer before the client is ready, which changes what ambient creatures do
+    /// in the meantime.</summary>
+    public const int DefaultSkipPaceUs = 4000;
+
+    /// <summary>`GATEKIT_HEADLESS_DRAWN_START=1` (`up/test --drawn-start`): a headless start drawn
+    /// until the client's first Running, nothing drawn after it.</summary>
+    public static bool DrawnStartAsked() => Environment.GetEnvironmentVariable("GATEKIT_HEADLESS_DRAWN_START") == "1";
+
+    /// <summary>Why a headless start is drawn until the client's first Running, or null when nothing is
+    /// drawn from the process start (the default). A start through the main menu (no save and no
+    /// level named: the game's continue, `--main-menu`, `--splash`, `--first-launch`, `--until-lua`) is
+    /// drawn: with nothing drawn, the game's handling of the accepted connection (right after the
+    /// menu's continue) has a view model send an event to the interface's state machine before the
+    /// pointer to it is set, and faults (ui::StateMachineComponent::ProcessEvent, bg3_dx11.exe+0x20C8340,
+    /// reading +0x89 of a null pointer; the game's own filter then ends the process, exit code
+    /// 0xFFFF7001) - a race a drawn start does not run.</summary>
+    public static string? DrawnStartWhy(bool drawnStartAsked, bool menuStart) =>
+        drawnStartAsked ? "asked (--drawn-start)"
+        : menuStart ? "the start goes through the main menu, where a blind start can fault (GameCopy.DrawnStartWhy)"
+        : null;
 
     /// <summary>The switches of GateKit's build a headless game turns on beyond the fast loads, each
-    /// checked against the logic by the night's W3 (`logic-diff` of tests/headless): the Lua
-    /// collector held while loading, nothing drawn from the client's first Running on (the start
-    /// drawn: `RenderCutFromRunning`, written beside these - see ConfigureExtender), the tick waits slept,
-    /// PrepareRunning's most wait kept (its gate on the level's start dialogue: round 5).</summary>
+    /// checked against the logic (`gatekit logic-check`): the Lua collector held while loading,
+    /// nothing drawn (from the process start, or from the client's first Running - see
+    /// DrawnStartWhy), the tick waits slept, PrepareRunning's most wait kept (its gate on the level's
+    /// start dialogue).</summary>
     public static readonly string[] HeadlessSwitches =
         ["FastLoadLuaGC", "RenderCut", "RenderCutSkip", "IdleSleep", "FastLoadStreamingGate"];
 
-    /// <summary>`GATEKIT_HEADLESS_EXCEPT=IdleSleep,KeepWindowOffScreen`: a headless (or fast-load) start
-    /// with these of its switches left off - for finding which cut a difference of the logic comes from, one at a time
-    /// (the night's W3, round 5: a dialogue that never showed headless).</summary>
+    /// <summary>`GATEKIT_HEADLESS_EXCEPT=IdleSleep,KeepWindowOffScreen` (`up/test --headless-except`): a
+    /// headless (or fast-load) start with these of its switches left off - for finding which cut a
+    /// difference of the logic comes from, one at a time.</summary>
     public static bool HeadlessExcepted(string name) =>
         (Environment.GetEnvironmentVariable("GATEKIT_HEADLESS_EXCEPT") ?? "")
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Contains(name, StringComparer.OrdinalIgnoreCase);
 
     void ConfigureExtender(bool storyLog, bool startupVideos, string? coverStart, bool directSaveLoad = false, bool fastLoad = false,
-        bool headless = false)
+        bool headless = false, bool menuStart = false, string? drawnStartWhy = null)
     {
         fastLoad |= headless;
+        var drawnStart = !headless ? null : drawnStartWhy is not null ? "the test's drawn_start: " + drawnStartWhy : DrawnStartWhy(DrawnStartAsked(), menuStart);
+        if (headless)
+            Out.WriteLine(drawnStart is null
+                ? "headless: nothing drawn from the process start"
+                : $"headless: the start drawn until the client's first Running ({drawnStart})");
         WriteLayoutData();
         FileTree.TryRemoveTree(Layout.SeLogs);
         Directory.CreateDirectory(Layout.SeLogs);
@@ -936,21 +1005,16 @@ public sealed class GameCopy
             foreach (var name in FastLoadSwitches) s[name] = fastLoad && !HeadlessExcepted(name);
             // A headless game (GateKit's build): every run says it, so a later start draws again.
             foreach (var name in HeadlessSwitches) s[name] = headless && !HeadlessExcepted(name);
-            // The start of a headless game is drawn (round 5's RenderCutFromRunning): the interface's
-            // controls are laid out only by a drawn frame, and verbs that walk them (a hotbar slot by
-            // its action) find nothing in a game never drawn (round 6: aim/not_taken,
-            // clean/attack_in_fight). GATEKIT_HEADLESS_BLIND_START=1 draws nothing from the process
-            // start: dialogues, fights and loads stay 1:1 there (the bridge has the party replicated
-            // so the view models learn who is playable), ~790 MB less. Round 7: the hotbar verbs failed
-            // because the local player had no characters (not a layout); with the user's, hotbar and
-            // party components replicated too they pass, and the 1:1 suite holds - one selftest
-            // (fixtures_and_attention, a reaction's attention) still fails blind, so not the default yet.
-            s["RenderCutFromRunning"] = headless && Environment.GetEnvironmentVariable("GATEKIT_HEADLESS_BLIND_START") != "1";
-            // A skipped frame returns at once: with nothing drawn the main thread looped ~1,600 updates
-            // a second through the start and loads (round 6: 88 vs 68 CPU-s by Running). The pace
-            // sleeps a skipped update out to this many microseconds (GateKit's build, round 7;
-            // GATEKIT_HEADLESS_SKIP_PACE_US overrides, 0 turns it off). Every run says it.
+            // Nothing drawn from the process start, unless DrawnStartWhy says why the start is drawn
+            // (then nothing drawn from the client's first Running on). A client that never drew has
+            // its interface's view models miss the party's first changes; the bridge has the party's
+            // components replicated again and checks that the local player knows its characters
+            // (Client/Headless.lua). Every run says it.
+            s["RenderCutFromRunning"] = drawnStart is not null;
+            // With nothing drawn the main thread loops through skipped updates; until the client's
+            // first Running each is slept out to this many microseconds (DefaultSkipPaceUs). Every run says it.
             s["RenderCutSkipPaceUs"] = headless ? HeadlessSkipPaceUs() : 0;
+            s["RenderCutSkipPaceStartOnly"] = headless;
             // Measuring (GateKit's build, round 7): VirtualAlloc calls of at least N MB written into the
             // start's timeline with their callers - GATEKIT_LARGE_ALLOC_MB, else off. Every run says it.
             s["LargeAllocTraceMB"] = int.TryParse(Environment.GetEnvironmentVariable("GATEKIT_LARGE_ALLOC_MB"), out var largeMb) && largeMb > 0 ? largeMb : 0;
@@ -966,6 +1030,10 @@ public sealed class GameCopy
                 // (GK.Rolls.PinSources): a copy's differential checks get the same loot whatever the
                 // order of a level's treasure requests (the night's W3, round 6).
                 s["TreasurePin"] = true;
+                // A copy whose game ends itself (no crash, no dump) says who ended it: the extender
+                // writes exit-<pid>.txt into the run's log folder first (GateKit's build), which
+                // GoneReason reads.
+                s["ExitWitness"] = true;
                 Directory.CreateDirectory(CrashDumps.Folder(Layout));
                 s["CrashDumpDirectory"] = Platform.ToGamePath(CrashDumps.Folder(Layout));
                 s["LaunchCrashReporter"] = false;

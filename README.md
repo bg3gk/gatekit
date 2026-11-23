@@ -48,7 +48,7 @@ it is named with `--installed-game`:
 `doctor` says what it found and how to fix what is missing. `se install` fetches GateKit's build of
 Script Extender. [Getting started](docs/getting-started.md) goes through it step by step.
 
-## Three ways in
+## Work with the game
 
 - **Drive the game from an agent.** `gatekit mcp` serves a copy to any MCP client; the
   repository's `.mcp.json` registers it. → [docs/driving-the-game.md](docs/driving-the-game.md)

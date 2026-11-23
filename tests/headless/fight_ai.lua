@@ -13,7 +13,9 @@
 -- host's waits for its player), a logic_digest row (GK.Stage.Digest) of the three: positions,
 -- health, statuses, equipment.
 
-test { level = "GustavX:Basic_Level_A", mods = {} }
+test { level = "GustavX:Basic_Level_A", mods = {},
+       -- `gatekit logic-check`: the stretch the test switches on and off, every throw rigged
+       logic_diff = { window = "family_on:family_off", rigged = true } }
 
 function run(game)
     game.wait_state("Running", "server", 60)

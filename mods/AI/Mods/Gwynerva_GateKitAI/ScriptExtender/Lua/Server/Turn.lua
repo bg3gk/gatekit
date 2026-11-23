@@ -20,6 +20,27 @@ local try, uuidOf, nameOf, handle, cut, round1 = U.try, U.uuidOf, U.nameOf, U.ha
 
 AI.Think = AI.Think or { required = false }
 
+--- A weapon roll can appear in the spell book without its weapon equipped. For melee main-hand
+--- attacks the game can use an unarmed attack, so leave those to its targeting and hotbar.
+function AI.WeaponRefusal(actor, spell)
+    local roll = try(function() return Ext.Stats.Get(spell).SpellRoll end)
+    local text = type(roll) == "table" and tostring(roll.Default or "") or tostring(roll or "")
+    if text:find("MeleeWeaponAttack", 1, true) or text:find("MeleeOffHandWeaponAttack", 1, true) then return nil end
+    local offhand = text:find("RangedOffHandWeaponAttack", 1, true)
+    local main = text:find("RangedWeaponAttack", 1, true)
+    if not main and not offhand then return nil end
+
+    local function empty(slot)
+        local known, item = pcall(Osi.GetEquippedItem, actor, slot)
+        return known and (item == nil or item == "")
+    end
+    if offhand and not main then
+        if empty("Ranged Offhand Weapon") then return "requires an equipped ranged offhand weapon" end
+    elseif empty("Ranged Main Weapon") and (not offhand or empty("Ranged Offhand Weapon")) then
+        return "requires an equipped ranged weapon"
+    end
+end
+
 local function num(v)
     v = round1(tonumber(v) or 0)
     return v == math.floor(v) and string.format("%d", v) or tostring(v)
@@ -265,11 +286,14 @@ end
 --- movement: ...": those whose cost in movement is more than is left.
 function AI.ActionLines(actor, foes, movement, chars, list)
     local listSize = list
-    local groups, order, none, short = {}, { "action", "bonus", "free" }, {}, {}
+    local groups, order, none, short, unequipped = {}, { "action", "bonus", "free" }, {}, {}, {}
     for _, a in ipairs(try(GK.See.Actions, actor) or {}) do
         local group = a.ready and groupOf(a.costs or {})
+        local weapon = group and AI.WeaponRefusal(actor, a.id)
         local needs = group and tonumber((a.costs or {}).movement)
-        if needs and needs > movement + 0.01 then
+        if weapon then
+            unequipped[#unequipped + 1] = tostring(a.id) .. " (" .. weapon .. ")"
+        elseif needs and needs > movement + 0.01 then
             short[#short + 1] = tostring(a.id) .. " (" .. num(needs) .. " m)"
         elseif group then
             local tail, idle = entry(actor, a, foes, movement, list)
@@ -318,6 +342,7 @@ function AI.ActionLines(actor, foes, movement, chars, list)
     end
     if #none > 0 then out[#out + 1] = cut("no target now: " .. table.concat(none, ", "), chars) end
     if #short > 0 then out[#out + 1] = cut("too little movement: " .. table.concat(short, ", "), chars) end
+    if #unequipped > 0 then out[#out + 1] = cut("weapon missing: " .. table.concat(unequipped, ", "), chars) end
     return out
 end
 
@@ -372,7 +397,7 @@ function AI.TurnRefusal(actor, why)
     local left, res = AI.Left(actor)
     local fits = {}
     for _, line in ipairs(AI.ActionLines(actor, enemies(actor), (res.movement or { 0 })[1], AI.Limit.text * 2, AI.Limit.list)) do
-        if not (line:find("^no target now") or line:find("^too little movement")) then fits[#fits + 1] = line end
+        if line:find("^action: ") or line:find("^bonus: ") or line:find("^free: ") then fits[#fits + 1] = line end
     end
     return tostring(why) .. " | left: " .. left,
         #fits > 0 and ("fits now: " .. table.concat(fits, "; ")) or "nothing fits now: do=end"

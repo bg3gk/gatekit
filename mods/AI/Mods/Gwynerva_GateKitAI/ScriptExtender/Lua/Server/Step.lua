@@ -326,11 +326,14 @@ local function finish(state, final)
         end
         -- GateKit names its own option; the agent's is the argument of go
         if type(why) == "string" then why = why:gsub("move with provoke = true", "do=go with provoke=true to the place") end
-        -- the weapon attack aimed through the hotbar found no weapon action to aim: the agent's way
-        -- is the action itself by its name
-        if type(why) == "string" and why:find("GK.Gui.UseSlot", 1, true) then
-            why = "the weapon attack could not be aimed from the hotbar"
-            hint = "cast the attack by its name from now.can: do=cast spell=Target_MainHandAttack (melee) or Projectile_MainHandAttack (ranged) with the same target"
+        if (args["do"] == "cast" or args["do"] == "attack") and type(why) == "string" then
+            if why:find("no slot of HotBar holds ", 1, true) then
+                why = "the selected character's hotbar has no slot for " .. tostring(state.spell or "the main-hand attack")
+                hint = "check the selected character's hotbar and equipped weapons, or choose another action"
+            elseif why:find("GK.Gui.UseSlot", 1, true) then
+                why = "the hotbar action did not start targeting"
+                hint = "check the selected character's hotbar and target, or choose another action"
+            end
         end
         -- a walk the pathfinder refuses: why, and the way that leads there (AI.Ways)
         local pathWhy, pathHint
@@ -519,6 +522,12 @@ function AI.Step(args)
                 "spell is one of: " .. table.concat(ready or {}, ", "))
         end
         c.spell, state.spell = spell, spell
+        if name == "cast" then
+            local weapon = AI.WeaponRefusal(c.actor, spell)
+            if weapon then
+                return refuse(spell .. " " .. weapon, "equip the required weapon or choose another action from now.can")
+            end
+        end
     end
 
     -- the line over the head is shown once the act has begun, never for an act that is refused

@@ -38,8 +38,9 @@ that search is written down as a gap with what was tried, and replaced when the 
 
 - Whatever a caller may need to wait for has a row of its own in the log - a state that begins
   and ends, a window that opens and closes, an action that is carried out or refused, a roll
-  that is made. Where the game gives no event, one is found or made (a state read each tick and
-  turned into rows), and the gap is recorded.
+  that is made. Report success once the requested action is observed. Report a refusal or a dropped
+  request with the game's condition when it is known. Where the game gives no event, look for one
+  or report the state change as a row, and record the gap.
 - What by the game's own rules and logic comes to an end, ends with an event: the game has to
   tell its own systems, its interface and its story that the thing is over. Not having found
   that event is not the same as there being none. Before a read on the tick is written, the
@@ -57,6 +58,7 @@ that search is written down as a gap with what was tried, and replaced when the 
   timer or a tick hook of its own.
 - A limit stays as a guard against a hang, counted in game time or ticks, generous, and
   reported as "the event never came" - never as the ordinary way a step ends.
+  Check whether the game failed, declined the request or emitted a different event.
 - A test that fails only when fast is first a suspicion that something waits on the clock.
 
 ## Fair, cheat, observation

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using GateKit.Json;
 
 namespace GateKit.Cli;
 
@@ -36,8 +37,8 @@ public static partial class LogicDiffCommand
             foreach (var line in File.ReadLines(file))
             {
                 if (line.Length == 0) continue;
-                try { if (JsonNode.Parse(line) is JsonObject o) list.Add(o); }
-                catch (System.Text.Json.JsonException) { }
+                try { if (JsonText.Parse(line, file).Root is JsonObject o) list.Add(o); }
+                catch (Exception e) when (e is JsonProblemException or System.Text.Json.JsonException) { }
             }
         }
         if (byBoot.Count == 0) return [];
@@ -69,7 +70,7 @@ public static partial class LogicDiffCommand
         var anchorIds = new List<string>();
         if (anchors is { Count: > 0 })
             foreach (var row in all.Where(r => anchors.Contains(r["kind"]?.ToString() ?? "")))
-                foreach (Match m in GuidPattern().Matches(row["payload"]?.ToJsonString() ?? ""))
+                foreach (Match m in GuidPattern().Matches(JsonText.Inline(row["payload"])))
                     if (!anchorIds.Contains(m.Value, StringComparer.OrdinalIgnoreCase)) anchorIds.Add(m.Value);
         var raw = new List<(string Kind, string Text, double Tick)>();
         foreach (var row in all)
@@ -117,7 +118,7 @@ public static partial class LogicDiffCommand
             case JsonObject o:
                 sb.Append('{');
                 // keys that are ids made anew in each run must not decide the order: masked, then by value
-                foreach (var (k, v) in o.OrderBy(p => GuidPattern().Replace(p.Key, "#"), StringComparer.Ordinal).ThenBy(p => GuidPattern().Replace(p.Value?.ToJsonString() ?? "", "#"), StringComparer.Ordinal))
+                foreach (var (k, v) in o.OrderBy(p => GuidPattern().Replace(p.Key, "#"), StringComparer.Ordinal).ThenBy(p => GuidPattern().Replace(p.Value is null ? "" : JsonText.Inline(p.Value), "#"), StringComparer.Ordinal))
                 {
                     if (ignore.Contains(k)) continue;
                     sb.Append(k).Append(':');
@@ -134,7 +135,7 @@ public static partial class LogicDiffCommand
             case JsonValue v when v.TryGetValue<double>(out var d):
                 sb.Append(Math.Round(d, digits).ToString(CultureInfo.InvariantCulture));
                 break;
-            default: sb.Append(node.ToJsonString()); break;
+            default: sb.Append(JsonText.Inline(node)); break;
         }
     }
 
@@ -172,6 +173,78 @@ public static partial class LogicDiffCommand
 
     static string Cut(string s) => s.Length <= 300 ? s : s[..300] + "...";
 
+    /// <summary>How two records of one scenario are compared (`logic-diff`'s options, and a test's
+    /// `logic_diff` header for `logic-check`). SetAside: a row whose raw text (kind and payload as
+    /// JSON) matches one of these patterns is left out of both records and counted, with why it may
+    /// differ between two runs of the game as it is. Rewrite: a replacement made in every compared
+    /// row's text (a number the game hands out anew in each run). DropKinds: kinds that are the
+    /// toolkit's own bookkeeping, never the game's.</summary>
+    public sealed record Rules(string? From = null, string? To = null, bool Rigged = false, bool Unordered = false, bool MaskIds = false,
+        IReadOnlyCollection<string>? Ignore = null, IReadOnlyCollection<string>? Anchors = null,
+        IReadOnlyList<(Regex Pattern, string Why)>? SetAside = null, IReadOnlyList<(Regex Pattern, string Replacement)>? Rewrite = null,
+        IReadOnlyCollection<string>? DropKinds = null, string Side = "server", int Digits = 2, bool KeepOrder = false);
+
+    /// <summary>Compares two records by <paramref name="rules"/>: whether they hold the same rows, and the report.</summary>
+    public static (bool Same, List<string> Lines) Check(string a, string b, Rules rules, int show = 25)
+    {
+        var lines = new List<string>();
+        var ign = DefaultIgnore.Concat(rules.Ignore ?? []).Concat(rules.Rigged ? ["dice", "discarded", "rigged", "was"] : []).ToHashSet(StringComparer.Ordinal);
+        var anchors = (rules.Anchors ?? []).ToHashSet(StringComparer.Ordinal);
+        var drop = (rules.DropKinds ?? []).ToHashSet(StringComparer.Ordinal);
+        List<(string Kind, string Text)> Prepare(string folder, string name)
+        {
+            var rows = Window(Read(folder, rules.Side, null), rules.From, rules.To);
+            var kept = new List<JsonObject>();
+            var aside = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var row in rows)
+            {
+                var kind = row["kind"]?.ToString() ?? "";
+                if (drop.Contains(kind)) continue;
+                var raw = kind + " " + GateKit.Json.JsonText.Inline(row["payload"]);
+                var hit = rules.SetAside?.FirstOrDefault(p => p.Pattern.IsMatch(raw));
+                if (hit is { Pattern: not null } h) { aside[h.Why] = aside.GetValueOrDefault(h.Why) + 1; continue; }
+                kept.Add(row);
+            }
+            foreach (var (why, n) in aside) lines.Add($"{name}: {n} row(s) set aside: {why}");
+            var normal = Normalize(kept, [], [], new Dictionary<string, string>(), ign, rules.Digits, !rules.KeepOrder, anchors, rules.MaskIds);
+            if (rules.Rewrite is { Count: > 0 } rewrite)
+                normal = [.. normal.Select(r => (r.Kind, rewrite.Aggregate(r.Text, (t, p) => p.Pattern.Replace(t, p.Replacement))))];
+            if (rules.Unordered) normal = [.. normal.OrderBy(r => r.Text, StringComparer.Ordinal)];
+            return normal;
+        }
+        var left = Prepare(a, "A");
+        var right = Prepare(b, "B");
+        if (left.Count == 0 || right.Count == 0) lines.Add($"a record is empty in its window ({left.Count} and {right.Count} rows): nothing to compare");
+        var report = Compare(left, right, show).ToList();
+        lines.AddRange(report);
+        return (left.Count > 0 && right.Count > 0 && report.Any(l => l.StartsWith("THE SAME", StringComparison.Ordinal)), lines);
+    }
+
+    /// <summary>A test's `logic_diff` header as rules: window = "FROM:TO", rigged, unordered, mask_ids,
+    /// ignore = { fields }, anchor = { kinds }, set_aside = { ["pattern"] = "why" }, rewrite =
+    /// { ["pattern"] = "replacement" }; and what every check leaves out (<see cref="BookkeepingIgnore"/>,
+    /// <see cref="BookkeepingKinds"/>).</summary>
+    public static Rules RulesOf(JsonObject header)
+    {
+        static IReadOnlyList<string> List(JsonNode? node) => node is JsonArray a ? [.. a.Select(v => v?.ToString() ?? "")] : [];
+        static IReadOnlyList<(Regex, string)> Map(JsonNode? node) => node is JsonObject o
+            ? [.. o.Select(p => (new Regex(p.Key, RegexOptions.CultureInvariant), p.Value?.ToString() ?? ""))]
+            : [];
+        var span = header["window"]?.ToString()?.Split(':', 2);
+        bool Flag(string key) => header[key] is JsonValue v && v.TryGetValue<bool>(out var b) && b;
+        return new Rules(span?[0], span is { Length: 2 } ? span[1] : null, Flag("rigged"), Flag("unordered"), Flag("mask_ids"),
+            [.. BookkeepingIgnore, .. List(header["ignore"])], List(header["anchor"]), Map(header["set_aside"]), Map(header["rewrite"]),
+            BookkeepingKinds);
+    }
+
+    /// <summary>Payload fields of the toolkit's own rows that are of the run: the ledger's sequence
+    /// keys, the seeds an undo row puts back, its notes, the event log's scope counter.</summary>
+    public static readonly string[] BookkeepingIgnore = ["key", "seed", "note", "what", "scope"];
+
+    /// <summary>Kinds that are the toolkit's bookkeeping, not the game's logic: the fixtures' undo
+    /// ledger (a fixture reset carried over from an earlier test of the same Lua state writes one more).</summary>
+    public static readonly string[] BookkeepingKinds = ["scope_track"];
+
     public static Command Create()
     {
         var first = new Argument<string>("a") { Description = "a folder holding a run's events_<side>_<boot>_<n>.jsonl (copied from the channel), or one such file" };
@@ -198,7 +271,7 @@ public static partial class LogicDiffCommand
             {
                 var kindsFile = Directory.Exists(folder) ? Path.Combine(folder, $"events_{s}_kinds.json") : "";
                 if (!File.Exists(kindsFile)) continue;
-                if (JsonNode.Parse(File.ReadAllText(kindsFile))?["kinds"] is JsonObject ks)
+                if (JsonText.Parse(File.ReadAllText(kindsFile), kindsFile).Root["kinds"] is JsonObject ks)
                     foreach (var (k, v) in ks) if (v?["family"]?.ToString() is { } f) familyOf[k] = f;
             }
             var ign = DefaultIgnore.Concat(parse.GetValue(ignore) ?? []).Concat(parse.GetValue(rigged) ? ["dice", "discarded", "rigged", "was"] : []).ToHashSet(StringComparer.Ordinal);

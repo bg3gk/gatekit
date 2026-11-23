@@ -202,10 +202,11 @@ how the agent weighs it is the owner's prompt and the model's.
     Lae'zel: action 1, bonus 1, reaction 1, movement 9 m; slots 1:2/2
     leaving the reach of Imp #a1b2c3 provokes an opportunity attack
     enemies: Imp #a1b2c3 1.4 m 8 hp, #d4e5f6 7.2 m 13 hp
-    action: Projectile_MainHandAttack 18 m: 85%, all in reach | Target_MainHandAttack 1.5 m: 95%, in reach #a1b2c3 | Shout_Dash, Shout_Disengage
+    action: Target_MainHandAttack 1.5 m: 95%, in reach #a1b2c3 | Shout_Dash, Shout_Disengage
     bonus: Target_PommelStrike 1.5 m: 95%, in reach #a1b2c3 | Shout_SecondWind | Target_Shove 1.5 m
     no target now: Target_SneakAttack
     too little movement: Projectile_Jump (3 m)
+    weapon missing: Projectile_MainHandAttack (requires an equipped ranged weapon)
     also open: Astarion (action 1, bonus 1, reaction 1, movement 9 m)
 
 - **Left**: the member's `ActionResources` (`GK.See.Resources`): action, bonus action, reaction,
@@ -230,6 +231,8 @@ how the agent weighs it is the owner's prompt and the model's.
   rest; a line longer than `AI.Detail.<detail>.line` ends with how many were left out and the
   look that lists them all. An action the game gives no chance for (a contest such as Shove, a
   jump at a point) is listed with its range only.
+- **Weapon missing** lists ranged attacks from the spell book whose required weapon slot is empty.
+  A direct `cast` request for one of these actions reports the equipment requirement.
 - **Not now**: `no target now` - aimed at a creature, reaching none now (out of range, or the
   game's conditions refuse, as a sneak attack without advantage); `too little movement` - its
   cost in movement is more than is left.

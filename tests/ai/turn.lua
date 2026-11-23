@@ -8,7 +8,8 @@
 -- and its line over the head is not shown. With AI.Think.required a step without a reason is
 -- refused; the reasons are read back by ai_look's part `thoughts`, which moves no cursor. An
 -- examine reads the game's own Examine window, and what it showed of a creature's kind (its AC)
--- stays in the enemies line.
+-- stays in the enemies line. A ranged attack in the spell book without a ranged weapon is not
+-- ready to cast.
 -- Staging (cheat): GK.Fixture.Fight with a melee guard in the host's reach and another at 6 m.
 -- Every call of the bridge writes its row, so the steps that call it are cheat steps.
 -- Run: gatekit --instance <copy> test tests -k ai/turn --speed working
@@ -115,6 +116,36 @@ function run(game)
         local thoughts = ai(game, "return AI.Look({ part = 'thoughts' })")
         check(has(thoughts.now.thoughts, "letting the guards come") and has(thoughts.now.thoughts, "testing the reach (refused)"), "both reasons read back", thoughts.now)
         eq(ai(game, "return AI.Sessions.default.seq"), before, "the look moved no cursor")
+    end)
+    step("a ranged sneak attack in the spell book without a ranged weapon", "cheat", function()
+        local added = game.server([[
+            local host, spell = Osi.GetHostCharacter(), 'Projectile_SneakAttack'
+            local weapon = Osi.GetEquippedItem(host, 'Ranged Main Weapon')
+            if weapon then Osi.Unequip(host, weapon) end
+            local added = Osi.HasSpell(host, spell) ~= 1
+            if added then Osi.AddSpell(host, spell, 0, 0) end
+            return { weapon = weapon, spell = added }
+        ]])
+        game.wait("server", [[(function()
+            local host = Osi.GetHostCharacter()
+            return not Osi.GetEquippedItem(host, 'Ranged Main Weapon')
+                and #GK.See.Actions(host, nil, { filter = 'Projectile_SneakAttack' }) > 0
+        end)()]], 10)
+        local can = ai(game, "return AI.Look({ part = 'can' })").now.can
+        local cast = ai(game, string.format([[return AI.Step({ ['do'] = 'cast',
+            spell = 'Projectile_SneakAttack', target = %q, think = 'test the equipment requirement' })]], close))
+        game.server(string.format([[
+            local host = Osi.GetHostCharacter()
+            if %s then Osi.RemoveSpell(host, 'Projectile_SneakAttack', 0) end
+            local weapon = %q
+            if weapon ~= '' then Osi.Equip(host, weapon, 1, 0, 0) end
+            return true
+        ]], tostring(added.spell), added.weapon or ""))
+        local missing = has(can, "weapon missing:")
+        check(missing and contains(missing, "Projectile_SneakAttack"), "can shows the equipment requirement", can)
+        local action = has(can, "action: ")
+        check(not action or not contains(action, "Projectile_SneakAttack"), "the unavailable attack is out of the ready actions", can)
+        check(cast.ok == false and contains(cast.why_not, "requires an equipped ranged weapon"), "cast reports the missing weapon", cast)
     end)
     step("the fight is cleared", "cheat", function()
         game.server("GK.Fixture.Clear() return true", 30)

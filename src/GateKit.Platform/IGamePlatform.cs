@@ -49,6 +49,11 @@ public interface IGamePlatform
     /// <summary>Ends a process at once (no chance to save).</summary>
     void Kill(int pid);
 
+    /// <summary>Holds a running process from now on, so that once it has ended its exit code can
+    /// still be read (<see cref="ExitWatch.Describe"/>): a game that ends without a crash dump says
+    /// how it ended.</summary>
+    ExitWatch WatchExit(int pid) => new(pid, null);
+
     // --- links -----------------------------------------------------------------------
 
     /// <summary>A second name for an existing file (same drive / file system).</summary>
@@ -123,6 +128,51 @@ public interface IGamePlatform
 /// <param name="FormerStyle">Its window style before.</param>
 /// <param name="Place">Where it was on the screen: left, top, width, height.</param>
 public sealed record WindowAdoption(nint Window, nint FormerParent, nint FormerStyle, (int X, int Y, int Width, int Height) Place);
+
+/// <summary>A process held from the moment it was found, to read how it ended (<see cref="IGamePlatform.WatchExit"/>).</summary>
+public sealed class ExitWatch : IDisposable
+{
+    readonly System.Diagnostics.Process? _process;
+    readonly Func<int, string?>? _meaning;
+
+    /// <param name="pid">The process.</param>
+    /// <param name="meaning">What an exit code means on this platform, or null when it is not known.</param>
+    public ExitWatch(int pid, Func<int, string?>? meaning)
+    {
+        Pid = pid;
+        _meaning = meaning;
+        try
+        {
+            _process = System.Diagnostics.Process.GetProcessById(pid);
+            // the handle is taken now, while the process lives: its exit code outlives the process only so
+            _ = _process.SafeHandle;
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            _process?.Dispose();
+            _process = null;
+        }
+    }
+
+    public int Pid { get; }
+
+    /// <summary>The exit code once the process has ended; null while it runs or when it cannot be read.</summary>
+    public int? ExitCode
+    {
+        get
+        {
+            try { return _process is { HasExited: true } p ? p.ExitCode : null; }
+            catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException) { return null; }
+        }
+    }
+
+    /// <summary>"exit code 0x... (what it means)" once the process has ended, else null.</summary>
+    public string? Describe() => ExitCode is { } code
+        ? $"exit code 0x{code:X8}" + (_meaning?.Invoke(code) is { } meaning ? $" ({meaning})" : "")
+        : null;
+
+    public void Dispose() => _process?.Dispose();
+}
 
 /// <summary>A running game: its process id and the full path of its executable (host path).</summary>
 public sealed record GameProcess(int Pid, string ExecutablePath);

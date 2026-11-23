@@ -15,14 +15,20 @@ public sealed class GameSession
     readonly CopyLayout _layout;
     readonly Func<bool> _alive;
     readonly TextWriter _out;
+    readonly Func<string>? _whyGone;
 
-    public GameSession(CopyLayout layout, Func<bool> gameAlive, TextWriter output)
+    /// <param name="whyGone">Why the game process is gone, from what witnessed its end (GameCopy.GoneReason).</param>
+    public GameSession(CopyLayout layout, Func<bool> gameAlive, TextWriter output, Func<string>? whyGone = null)
     {
         _layout = layout;
         _alive = gameAlive;
         _out = output;
+        _whyGone = whyGone;
         Bridge = new BridgeClient(layout.Channel);
     }
+
+    /// <summary>"the game process is gone", with what is known of how it ended.</summary>
+    public string Gone() => _whyGone?.Invoke() ?? "the game process is gone";
 
     public BridgeClient Bridge { get; }
 
@@ -67,7 +73,7 @@ public sealed class GameSession
                 asked = menu.Elapsed;
                 if (await inMenu(menu.Elapsed)) { menu.Restart(); asked = TimeSpan.Zero; }
             }
-            if (!_alive()) throw new CopyException("the game process is gone");
+            if (!_alive()) throw new CopyException(Gone());
             await Task.Delay(500, cancel);
         }
         throw new CopyException($"{side.Name()} did not reach state {wanted} in {timeout.TotalSeconds:0} s; last: {Describe(State(side, null))}");
@@ -100,7 +106,8 @@ public sealed class GameSession
         try { answer = await Bridge.WaitAsync(target, id, limit, cancel, _alive); }
         catch (BridgeTimeoutException e)
         {
-            throw new CopyException($"no answer from {target.Name()}: {e.Why} (state: {Describe(State(target, null))})");
+            var why = e.Why == "the game process is gone" ? Gone() : e.Why;
+            throw new CopyException($"no answer from {target.Name()}: {why} (state: {Describe(State(target, null))})");
         }
         foreach (var line in answer.Log ?? []) _out.WriteLine($"  [{target.Name()}] {line}");
         if (!answer.Ok) throw new CopyException($"Lua error on {target.Name()}:\n{answer.Error}");
@@ -250,7 +257,7 @@ public sealed class GameSession
                 var state = State(side);
                 // from the menu the client's Lua may live on: its state need only reach Running
                 if (state is not null && (state.Boot != boots[side] || (fromMenu && side == Side.Client)) && state.GameState == "Running") break;
-                if (!_alive()) throw new CopyException("the game closed during the reset");
+                if (!_alive()) throw new CopyException("the game closed during the reset: " + Gone());
                 if (watch.Elapsed > limit)
                     throw new CopyException($"{side.Name()} did not come back from the reset in {limit.TotalSeconds:0} s; last: {Describe(State(side, null))}");
                 // the state file is written by the bridge at the game state's change (Bridge.lua),
@@ -289,7 +296,7 @@ public sealed class GameSession
             var answer = await LuaAsync("ui", call, TimeSpan.FromSeconds(20)) as JsonObject
                 ?? throw new CopyException("GK.Gui.LoadSave gave no answer (a bridge without it?)");
             if (answer["ok"]?.GetValue<bool>() != true)
-                throw new CopyException("the load window: " + (answer["error"]?.ToString() ?? answer.ToJsonString()));
+                throw new CopyException("the load window: " + (answer["error"]?.ToString() ?? GateKit.Json.JsonText.Inline(answer)));
             if (answer["waiting"]?.GetValue<bool>() != true) return;
         }
         throw new CopyException("the load window never got to loading " + name);
@@ -330,24 +337,17 @@ public sealed class GameSession
 
     bool? OpeningScene(string save)
     {
-        try
-        {
-            return File.Exists(OpeningScenesRecord) && JsonNode.Parse(File.ReadAllText(OpeningScenesRecord)) is JsonObject o
-                && o[save] is JsonValue v && v.TryGetValue<bool>(out var b) ? b : null;
-        }
-        catch (Exception e) when (e is IOException or System.Text.Json.JsonException) { return null; }
+        return File.Exists(OpeningScenesRecord) && JsonFiles.ReadObject(OpeningScenesRecord)[save] is JsonValue v
+            && v.TryGetValue<bool>(out var b) ? b : null;
     }
 
     void RecordOpeningScene(string save, bool scene)
     {
         try
         {
-            var o = File.Exists(OpeningScenesRecord) ? JsonNode.Parse(File.ReadAllText(OpeningScenesRecord)) as JsonObject ?? [] : [];
-            o[save] = scene;
-            Directory.CreateDirectory(_layout.State);
-            File.WriteAllText(OpeningScenesRecord, o.ToJsonString(), JsonFiles.Utf8);
+            JsonFiles.Edit(OpeningScenesRecord, o => o[save] = scene);
         }
-        catch (Exception e) when (e is IOException or System.Text.Json.JsonException) { }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
     /// <summary>Restarts both Lua states in place (after loose files changed) and waits until both answer.</summary>

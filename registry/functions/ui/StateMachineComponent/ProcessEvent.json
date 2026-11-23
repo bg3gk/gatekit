@@ -1,0 +1,47 @@
+{
+  "schema": "registry/function/1",
+  "id": "ui::StateMachineComponent::ProcessEvent",
+  "state": "described",
+  "rung": "inferred",
+  "does": "hands an event to the interface's state machine (a state entered or left on it); its first argument is the state machine, a null one faults at once (+0x89)",
+  "fingerprint": {
+    "calls": [
+      "fp:36ea95f2ce33bd6a",
+      "fp:5227b96c8688ff31",
+      "fp:91c3d48dff57ab4c",
+      "fp:e4d053ad9455ea7c",
+      "import:b33789c665322f52",
+      "import:bd04c300f6726048",
+      "import:be9a21e4e446c342"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "pairing",
+      "says": "at the same place of the reaction prompt's interface update where the macOS build (FUN_102ae41a0, InterruptDecisionSystem.cpp) calls ui::StateMachineComponent::ProcessEvent with OpenReactionsPopup, dx11 FUN_1416d2150 calls this with the event ui::Event::UnblockableEvent makes of the same FixedString"
+    },
+    {
+      "kind": "watch",
+      "says": "a blind start through the main menu faulted here reading +0x89 of a null first argument (exit-<pid>.txt of ExitWitness, exception 0xC0000005, address 0x89)"
+    },
+    {
+      "kind": "game-name",
+      "store": "bg3_macos_x64",
+      "tie": "name",
+      "says": "The macOS build's symbols hold this name; nothing but the name ties it to this function"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "NoesisGUIBinding.dll",
+      "tie": "name",
+      "says": "NoesisGUIBinding.dll exports this name; nothing but the name ties it to this function"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "who sets the holder's state machine pointer (+0x50 of the object the lobby's view model passes) in a start that draws nothing",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

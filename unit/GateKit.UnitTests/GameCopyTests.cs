@@ -560,6 +560,27 @@ public sealed class GameCopyTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task A_headless_start_draws_nothing_from_its_first_frame_unless_it_goes_through_the_menu_or_asks()
+    {
+        var copy = _game.GameCopy();
+        _game.Platform.OnStart = _ =>
+        {
+            _bridges.Add(new FakeBridge(copy.Layout.Channel, "client", _ => null));
+            _bridges.Add(new FakeBridge(copy.Layout.Channel, "server", _ => null));
+        };
+        await copy.UpAsync(new UpOptions(Save: "Save1", Headless: true));
+        var settings = JsonFiles.ReadObject(copy.Layout.SeSettings);
+        foreach (var name in GameCopy.HeadlessSwitches) Assert.Equal(true, (bool?)settings[name]);
+        Assert.Equal(false, (bool?)settings["RenderCutFromRunning"]);
+        Assert.Equal(GameCopy.DefaultSkipPaceUs, (int?)settings["RenderCutSkipPaceUs"]);
+        Assert.Equal(true, (bool?)settings["RenderCutSkipPaceStartOnly"]);
+        copy.Down();
+        Assert.Null(GameCopy.DrawnStartWhy(drawnStartAsked: false, menuStart: false));
+        Assert.NotNull(GameCopy.DrawnStartWhy(drawnStartAsked: false, menuStart: true));
+        Assert.NotNull(GameCopy.DrawnStartWhy(drawnStartAsked: true, menuStart: false));
+    }
+
+    [Fact]
     public void Status_and_capabilities_are_reported_plainly()
     {
         var copy = _game.GameCopy("one");

@@ -1,6 +1,6 @@
 # Working with agents
 
-How a long run of work on GateKit is organised when AI agents do it with no person watching: one
+How a long run of work on GateKit is organised when AI agents coordinate it: one
 **coordinator** and a few **executors**. The rules of the repository still hold for every one of
 them ([AGENTS.md](../AGENTS.md)); this page is how the work is divided, handed out, checked and
 kept. It is for an agent that will coordinate, and for a person who starts one.
@@ -42,7 +42,7 @@ The prompt of an executor, in this order:
    the rule on blocking windows (below). One file in the notes folder, kept current through the run.
 2. The blocking windows known so far, each with the call that closes it, and the traps found so far.
 3. Its own game copy (`--instance <name>`), its name for the live layer (`GATEKIT_WHO`), and the
-   exact start line with the Script Extender build folder.
+   exact start line with the Script Extender build selected for that process (`GATEKIT_SE`).
 4. Its fence: what it may edit (nothing, one tree, a named file), "no commit", the commands it must
    not run (`bridge-reload`, `decomp refresh`, `registry commit`), "Edit and Write only, no
    scripts" ([AGENTS.md](../AGENTS.md), rule 10), "no waits: react to the game's events"
@@ -87,10 +87,10 @@ later handle it by themselves.
 
 ## Game copies and windows
 
-- One copy per executor, named in its prompt; never the coordinator's, never the installed game.
-- Every copy's window takes a free cell of a grid on the screen, never on top of another's, so that
-  a person watching sees each copy and the real pointer rests outside every frame (the pointer
-  drags the game's aiming and hover). No more copies are started than the grid has cells.
+- Assign a separate copy to each executor and to the coordinator. Name the assigned copy in the
+  package. Use game copies for all executor work.
+- Place visible windows in separate cells with [`gatekit window place`](contracts/cli.md#window-place) on Windows.
+  Keep the real pointer outside the windows because it affects aiming and hover.
 - A copy is started once for a package and kept: another level or save is loaded in it
   (`reset --save`, `test` between groups), and it is started again only for a new Script Extender
   build, a test of the start itself (`tests/startup`), another mod list, or a game that died.
@@ -122,6 +122,8 @@ in silence.
 - A new build of the Script Extender fork goes into a new folder of the home's `se-builds`
   (`v34-<name>`); the executors are told the folder; the old ones stay.
 - A build is tried before it is handed out.
+- Set `GATEKIT_SE` for the process running a package. Reserve `se install` for setting the shared
+  default in the GateKit home.
 - A worktree an executor is running from is not rebuilt under it. With two lines of work at once,
   each has its own worktree and its own build of the toolkit; changes are ported between them by
   hand and verified.
@@ -159,5 +161,7 @@ copy is closed), and the free memory. A package past its time box is asked for w
 - An executor's unfinished tests cite ids it has not noted yet, so `registry check` refuses them:
   commit the registry alone and leave the tests to their package.
 - `Ext.Events.<name> ~= nil` is always true: ask whether an event exists by `GK.Verbs.Has`.
+- A bridge log segment can be read during an in-place write. Follow the segment and cursor rules in
+  [the bridge contract](contracts/bridge-protocol.md#the-event-log).
 - A wrapper of every verb must not call a wrapped verb.
 - A tool that is not aware of the screen's scaling reads the wrong size for a window.

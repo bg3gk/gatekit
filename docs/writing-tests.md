@@ -205,7 +205,9 @@ begins with `_` is never run as a test.
 | `files` | files put into the copy's game folder before the test's game starts: `{ ["<place in the game folder>"] = "<file name>" }` (Files beside a test, below) |
 | `startup_videos = true` | the game starts with its startup videos played, the game's and the mods' (`up --startup-videos`) |
 | `until_lua = true` | the test runs as soon as the bridge first answers, in the client's `LoadModule` state, right after the startup videos (`up --until-lua`); with no level, save or menu |
-| `drawn = "why"` | the test needs drawn frames (a picture, how a window looks); in a headless run (`test --headless`) it is not run and counts as UNMET with this reason |
+| `drawn = "why"` | the test needs drawn frames (it counts them, or reads what only a drawn frame lays out); in a headless run (`test --headless`) it is not run and counts as UNMET with this reason. A picture alone needs no `drawn`: `game.shot` draws for it |
+| `drawn_start = "why"` | the test needs what only a drawn start sets up (a reaction prompt's window); in a headless run its game's start is drawn until the client's first `Running`, nothing after - a group of its own |
+| `logic_diff = { ... }` | [`gatekit logic-check`](contracts/cli.md#cover-cover-fold-cover-diff) compares the test's rendered and headless event records using these rules |
 | `first_launch = true` | the game starts as a first launch and the test runs on its first page, `Eula`, the pages left to it (`up --first-launch`); with no level, save, menu or `until_lua`; such a start is never shared with tests that do not declare it |
 
 Every start hides the startup videos, the game's and the mods' (`up`, `--startup-videos` in

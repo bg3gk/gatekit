@@ -12,7 +12,8 @@
 -- Run: gatekit --instance <copy> test tests/figure -k client_effect
 
 test { level = "GustavX:Basic_Level_A",
-       about = "An effect entity made on the client with the effects manager's own PlayEffect plays, ends by itself when it does not loop, and obeys the manager's stop and destroy orders." }
+       about = "An effect entity made on the client with the effects manager's own PlayEffect plays, ends by itself when it does not loop, and obeys the manager's stop and destroy orders.",
+       drawn = "a client effect's time runs only in frames the game draws: in a headless game it never ends by itself" }
 
 local EFFECT = "VFX_Cinematic_Orin_Teleportation_01" -- five seconds, does not loop
 local EFFECT_ID = "09adce39-4b68-653a-576b-a94324521252"

@@ -12,7 +12,10 @@
 -- Run: gatekit --instance <copy> test tests/rolls -k rolls/log/adjusted
 
 test { level = "GustavX:Basic_Level_A", surprises = { "combat_started" },
-           about = "A roll an interrupt changes after the throw is in the roll log twice: as thrown, and as the game goes on with it." }
+           about = "A roll an interrupt changes after the throw is in the roll log twice: as thrown, and as the game goes on with it.",
+           -- the interrupt asks the player first (a reaction prompt): in a game drawn from no frame the
+           -- world froze for 431 s with no prompt window (see tests/_selftest/fixtures_and_attention.lua)
+           drawn_start = "a reaction prompt's window opens only for the selected character, which a game drawn from no frame never tells its interface" }
 
 local function uuid(id) return id and string.match(id, "(%x+%-%x+%-%x+%-%x+%-%x+)$") or id end
 

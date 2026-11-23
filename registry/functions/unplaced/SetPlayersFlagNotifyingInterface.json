@@ -1,0 +1,26 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::SetPlayersFlagNotifyingInterface",
+  "owner": "gui",
+  "state": "described",
+  "rung": "inferred",
+  "does": "a view model's flag setter (+0x820, a property change deferred) that, when the flag changes, sends an interface event for each player of a list to the interface's state machine read from the given holder's +0x50 (one event name on, another off)",
+  "fingerprint": {"calls": ["fp:5227b96c8688ff31", "fp:92dd4fee11aeea92"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its two lambdas FUN_14135f500 and FUN_14135f5d0 make the event with ui::Event::UnblockableEvent and give it to ui::StateMachineComponent::ProcessEvent with *(*(capture+0x18)+0x50)"
+    },
+    {
+      "kind": "watch",
+      "says": "reached from ecl::GameClient::OnConnectionRequestAccepted in the client's InitConnection; in a start that drew nothing the holder's +0x50 was null and the process faulted (ExitWitness)"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which view model and flag; what sets the holder's +0x50",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}

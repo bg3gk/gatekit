@@ -121,8 +121,8 @@ public sealed class GameTestTests : FakeGameRuns
         Assert.Equal(["M"], start.Mods!);
         Assert.Equal(ResetRung.Venue, start.Needs);
         Assert.Null(start.Save);
-        Assert.Equal(("A:B", "M", false, null, false), start.Key);
-        Assert.Equal((null, "", true, null, false), found[1].Start.Key);
+        Assert.Equal(("A:B", "M", false, null, false, false), start.Key);
+        Assert.Equal((null, "", true, null, false, false), found[1].Start.Key);
         Assert.Equal("only", GameTest.Discover(Tests(("only", "function run(game) end"), ("other", "function run(game) end")), "onl").Single().Name);
         Assert.Throws<CopyException>(() => GameTest.Discover(folder, "nothing"));
         Assert.ThrowsAny<CopyException>(() => GameTest.Load(Tests(("bad", "-- no run function")) + "/bad.lua"));

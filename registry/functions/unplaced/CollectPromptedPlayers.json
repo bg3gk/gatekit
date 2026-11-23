@@ -1,0 +1,27 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::CollectPromptedPlayers",
+  "owner": "gui",
+  "state": "described",
+  "rung": "inferred",
+  "does": "the set of player ids with an open reaction prompt: for every prompt event's interruptors, the character view model's player id (+0x5F8) when its player properties (+0x420) say IsSelectedCharacter (+0x760)",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:1d2066e17546c32a",
+      "fp:3a1919ec5e4b0a9a",
+      "fp:5227b96c8688ff31",
+      "fp:58b4b875fbff37c4",
+      "fp:d44a15fcc961457c",
+      "fp:e4d053ad9455ea7c",
+      "import:196f87dd222b4c83"
+    ],
+    "strings": ["85a86fc6afc6be6f"]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its body; a game whose host's IsSelectedCharacter byte was 0 never opened the prompt, set to 1 it did"
+    }
+  ]
+}

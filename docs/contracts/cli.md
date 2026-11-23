@@ -125,7 +125,7 @@ one ends, `status` says whether the game is up.` (exit 1).
 
 Synopsis:
 ```
-gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,...] [--story-log] [--main-menu | --splash | --until-lua | --first-launch] [--startup-videos] [-- GAME_ARGS...]
+gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,...] [--story-log] [--main-menu | --splash | --until-lua | --first-launch] [--startup-videos] [--fast-load] [--headless [--drawn-start] [--headless-except NAME,...]] [-- GAME_ARGS...]
 ```
 - `--level`: start a fresh test game, no menu, no save. It must be `MODULE:LEVEL` (one colon, both parts non-empty, no spaces): anything else is refused before the game starts (`level 'X' is not MODULE:LEVEL ...`), since the game given a bare level only sits in the main menu. While the client sits in `Menu` waiting for `Running` (any start), `gatekit` follows the start's stages ([the stages of a start](#the-stages-of-a-start)): each page the interface enters is looked at once (`GK.Gui.Stuck()` on the UI context), and the client leaving `Menu` ends the look; on a build without the stages it asks every 2 s. A start through the main menu first has the game skip its pages by its own switches ([the game's page switches](#the-games-page-switches)); a page that comes all the same is passed as follows. The splash screen before the main menu (`splash`) is passed with `GK.Cheat.Recover()` on every start (the event its own page raises on a key, `OpenMainMenu`); the game's own first-launch and licence screens (`firstlaunch`: Eula, Larian's mod policy, SensitiveSettings, HDR/Gamma calibration) are gone through with `GK.Cheat.Recover()` in an instance only (a copy GateKit made for itself), and in the installed game fail the start at once naming the screen. Each screen passed is printed (`  splash screen: SplashScreen raised OpenMainMenu, as its key does`). Anything else that keeps the client in `Menu` for 60 s with nothing moving it on (no new page and no look that passed one) fails the start (`the game stayed in the menu for 60 s (<what holds it>) instead of loading level 'X' ...` / `... loading a save`); the game is left running for a look and `down`.
 - `--save`: a save folder name under `Savegames/Story` to load instead of the last. The game matches `-loadSaveGame` against each save's folder name and against the name after its unique id (`<id>__<name>`), and reads its command line in the system's ANSI code page. With GateKit's Script Extender build (a local build, `se status` `fork`) the folder name is passed as it is, whatever its alphabet: the build gives the game the value in UTF-8 from the wide command line (its switch `WideCommandLine`). With the stock extender a folder name that is not ASCII is given as the name after its unique id when that is ASCII and no other save of the copy's player profiles has it, else refused before the game starts (`save folder 'S' is not ASCII, ...`). The start writes `DirectSaveLoad=true` ([Script Extender configured](#script-extender-configured)): GateKit's build loads the save without the main menu - the client goes `Init`, `LoadModule`, then the save's `StartLoading`, `StartServer` ... `Running`, no `LoadMenu` and no `Menu` (about 17 s less); a build without the switch loads it from the menu as before.
@@ -136,8 +136,31 @@ gatekit [--instance NAME] up [--level MODULE:LEVEL] [--save FOLDER] [--mods A,B,
 - `--startup-videos`: the game plays its startup videos - its own (the studio's logo, `Video/Splash_Logo_Larian.bk2`) and those the enabled mods declare ([research/studies/startup-videos.md](../../research/studies/startup-videos.md)). By default every start hides them: `StartupVideos` is written `false` into Script Extender's settings ([Script Extender configured](#script-extender-configured)); a build without that switch plays them. With this option the switch is written `true`. A start takes the length of the videos longer; the bridge answers only after them.
 - `--until-lua`: return as soon as the bridge first answers - the client's first heartbeat, in its `LoadModule` state, the first moment any Lua runs, right after the startup videos - with `the bridge answers after N s (client in <state>)`. There is no menu and no session then, and no server answers; the game goes on loading its main menu (it is started without `-continueGame`). Refused with `--level`, `--save`, `--main-menu` or `--splash`.
 - `--first-launch`: start as the game's first launch and stop on its first page. At the bridge's first answer (the client in `LoadModule`) the game's own switch is set, `Ext.Utils.GetGlobalSwitches().ShowFirstTimeSetup = true` (`  ShowFirstTimeSetup set at the first Lua (client in <state>)`; a switch that does not read true afterwards fails the start). The start's stages are then followed ([below](#the-stages-of-a-start)) to the page `Eula`; another page first, or none in 300 s, fails the start naming it, and the game is left running. `GK.Gui.Stuck()` must then name `Eula` (`firstlaunch`), and the start ends `on the first-launch page Eula after N s ...`. Nothing is pressed: the pages and the splash screen after them are the caller's (each an attention state, [bridge-protocol.md](bridge-protocol.md#attention)); `GK.Cheat.Recover()` goes through them when asked. The pages write the copy's own profile (`config.lsf`, `graphicSettings.lsx`), and the main menu's page turns the switch off; a copy that quits before the main menu shows them again at its next start. An instance only (`--first-launch is for an instance ...`); refused with `--level`, `--save`, `--main-menu`, `--splash` or `--until-lua`. Without it, a start passes the pages as above.
-- `--fast-load` (or `GATEKIT_FAST_LOAD=1` in the environment): every load of this game runs without the game's waits. The start writes `FastLoadClientFrames`, `FastLoadServerTick`, `FastLoadStreamingWait` and `FastLoadFades` `true` ([Script Extender configured](#script-extender-configured); every start writes them, `false` without the option), and GateKit's build then, at the load's own moments: lifts the client's frame caps from `StartLoading` until `Running`/`Menu` and puts them back; sets the server's tick period (30 a second) to none while the server is in a loading state and puts it back at `Running`; ends `PrepareRunning` at its first update (its streaming wait of 0.5-20 s; textures go on streaming in `Running`); and makes the screen fades instant (`FadeSpeed` 0; also the game's other fades). An in-session load of Basic_Level_A takes about 5.3 s instead of 8.4 s. Each application is a timeline row (`timeline --kind Step`, `FastLoad ...`). For automated runs only: never for pictures of a load or of a level's first seconds. A build without the switches ignores them.
-- `--headless` (or `GATEKIT_HEADLESS=1`): a game for logic only. Everything `--fast-load` does, and the start writes `FastLoadLuaGC`, `RenderCut`, `RenderCutSkip`, `IdleSleep` and `FastLoadStreamingGate` `true` (the last keeps `PrepareRunning`'s most wait, so the state still waits for the level's start dialogue as the game does) and `KeepWindowOffScreen` `true` (every start writes them, `false` without the option): the game's Lua collector held while the server loads, nothing drawn or presented from the client's first Running on (`RenderCutFromRunning`: the start is drawn, because the interface's controls are laid out only by a drawn frame and verbs that walk them - a hotbar slot by its action - find nothing in a game never drawn; `GATEKIT_HEADLESS_BLIND_START=1` draws nothing from the process start, ~790 MB less: the bridge's client, drawing nothing, asks the server at each client Running to replicate the party's `PartyMember` and `Player` again, so the interface's view model of the host learns it is a playable character - which the dialogue window, and so the server's dialogue, needs; dialogues, fights and loads are 1:1 there: the night's W3 rounds 5-6), the game threads' tick waits slept on a timer instead of spun, the window off the screen. An idle headless game in Running costs about 0.45 of a core (the same game drawn: 2.4-2.7 cores). No pictures: `shot` refuses with the reason (the last frame drawn would be a stale picture). The order of a server timer and the client's readiness is the client's wall time: at WLD_Main_A's arrival the courier's scripted death lands before `LevelGameplayStarted` drawn and after it headless (tests/headless/level_change.lua). Every start also writes `TreasurePin` `true` in a copy (inert until `GK.Rolls.PinSources`). `GATEKIT_HEADLESS_EXCEPT=Name,...` leaves the named switches off in a headless start (finding which cut a difference comes from). A build without the switches ignores them.
+- A regular start uses the game's rendering and loading timings. The two automation options require
+  a matching [GateKit Script Extender build](#script-extender-switch-se). The extender ignores settings
+  it does not support.
+- `--fast-load` (or `GATEKIT_FAST_LOAD=1`) removes the client frame cap and server tick delay during
+  a load, clears the streaming wait in `PrepareRunning` and makes fades instant. The corresponding
+  settings are `FastLoadClientFrames`, `FastLoadServerTick`, `FastLoadStreamingWait` and `FastLoadFades`.
+  Applications of these settings appear in `timeline --kind Step`. Use a regular start to inspect
+  fades, the loading screen or the game's original event timing.
+- `--headless` (or `GATEKIT_HEADLESS=1`) keeps the game process running off screen for logic automation.
+  It uses the fast-load settings with `FastLoadStreamingGate`, so `PrepareRunning` still waits for the
+  level's opening dialogue. `FastLoadLuaGC` holds Lua collection during server loads, and `RenderCut`,
+  `RenderCutSkip` and `IdleSleep` suppress rendering and sleep during tick waits. `KeepWindowOffScreen`
+  moves the window off screen. `RenderCutSkipPaceStartOnly` limits pacing to the first `Running`.
+  `GATEKIT_HEADLESS_SKIP_PACE_US` sets that pace in microseconds (default 4000, 0 disables pacing).
+  `--headless-except NAME,...` (or `GATEKIT_HEADLESS_EXCEPT`) leaves named switches off when diagnosing a difference.
+  A direct save or level start suppresses drawing from process start. The menu route (neither `--save`
+  nor `--level`) draws until the client first reaches `Running` to avoid a race initialising the
+  interface state machine. `--drawn-start` (or `GATEKIT_HEADLESS_DRAWN_START=1`) and a test's `drawn_start`
+  header also draw through startup. The start prints the mode and, for a drawn start, the reason.
+  The bridge checks that the interface knows the local party after a start without drawing and asks
+  the server to send its unchanged components again as needed (`GK.Headless.Log`). The mode can change
+  when server timers fire relative to client readiness. Use [`logic-check`](#cover-cover-fold-cover-diff) to compare
+  the event records for a scenario.
+- A copy start enables `TreasurePin` for `GK.Rolls.PinSources` and enables `ExitWitness` for process diagnostics.
+- A game that ends while `up`, `test` or a command waits on it is reported with what witnessed its end: `the game process is gone; exit code 0x...` (the code and its meaning, when this command started the game), `it ended itself: <ExitProcess|TerminateProcess> <code> ..., called from <module+RVA ...> (<file>)` - GateKit's build with `ExitWitness` writes `exit-<pid>.txt` into the run's log folder before the process ends itself: the call, its callers, the last exceptions raised (code, place, the address an access violation touched) and the last timeline rows - a crash dump left since the start (`crashes`), and the client's last state on the bridge.
 - `GAME_ARGS`: extra raw game arguments after `--`.
 
 In order (`GameCopy.UpAsync`):
@@ -372,6 +395,20 @@ game is played. Needs the Script Extender build with coverage counters
 - `gatekit cover stop` takes every counter off; the counts stay for a last `save`.
 - `gatekit trace-stacks FILE.stacks.tsv [--stage N...] [--thread ID...] [--within ADDR...] [--group name=addr,addr...] [--top N] [--names]` needs no game: the sampled stacks of a load trace (the fork's `LoadTrace`, `Ext.StartupVideos.LoadTraceDump`) summed: total samples, each named group's samples (a sample counts once when any of its functions is on the stack; leaf too), each function's inclusive and leaf samples, with `--names` the registry's id or the databases' name. An address is `module+0xRVA`, or `0xRVA` of any module.
 - `gatekit logic-diff A B [--side server|client] [--boot N] [--family F...] [--kind K...] [--ignore FIELD...] [--rigged] [--anchor KIND...] [--keep-order] [--digits N] [--show N]` needs no game: a differential check of the logic. A and B are folders holding a run's event-log segments (`events_<side>_<boot>_<n>.jsonl`, copied out of the channel after each run; the latest boot is read) or one such file. Each row is made comparable: its seq, tick, clock and scope dropped, the run's own fields (ticks, sequence numbers, return addresses; with `--rigged` also the dice drawn before a rig decided) left out, numbers rounded, every GUID numbered by first appearance (the ids `--anchor` rows name first, in their order), rows of one kind written in one tick sorted (a container's iteration). Prints the rows per kind in each (`*` where they differ), how many rows are the same in the same order, and the first differing rows; `THE SAME` and exit 0 when the records match, exit 1 otherwise. `--window FROM:TO` compares only the scenario's stretch of each record: from its last row of kind FROM through the first row of kind TO after it (`family_on:family_off` for a test that switches its families on and off; the tests run before it in the same Lua state are left out). `--mask-ids` writes every GUID as `#` instead of numbering it (a record whose bursts of equal rows name different new ids, a level's setup). `--unordered` compares the records as bags of rows (a stretch whose work the game spreads over its ticks as time allows).
+- `gatekit logic-check [FOLDER] [-k TEXT] [--native RUN] [--headless RUN] [--show N]` compares
+  rendered and headless runs. It selects only tests with a `logic_diff` header in `FOLDER` (default
+  `tests/headless`) and compares each pair of records (`<run>/<test>/events`) by the test's rules.
+  A fresh run requires a named, stopped copy and a BG3GKSE build with an active render cut in the
+  headless run. The command closes the game it starts on completion, failure or cancellation.
+  `--native RUN` and `--headless RUN` reuse a run folder from the corresponding
+  mode of `test --keep-events`. With both run folders supplied, the command needs no copy.
+  The header accepts the `logic-diff` rules `window`, `rigged`, `unordered`, `mask_ids`, `ignore`
+  and `anchor`. For differences that occur between ordinary rendered runs, `set_aside` maps a
+  regular expression over a row's kind and JSON payload to a reason for omitting that row. `rewrite`
+  maps a pattern to a replacement in the rows being compared. The check omits fixture bookkeeping
+  (`scope_track` and the fields `key`, `seed`, `note`, `what`, `scope`). It prints a verdict per
+  scenario, including counts and reasons for omitted rows. Both verdicts must be `PASS` for a
+  scenario to be compared. Missing verdicts, missing records and differences cause a nonzero exit.
 - `gatekit cover-fold FILE... [--top N] [--where inCombat|inDialog|neither] [--names]` needs no
   game: it adds the files up and reads them against the registry - how many functions ran, how
   many of them an id names, the named ones and the unnamed ones that ran the most (default 30 of
@@ -407,9 +444,18 @@ game is played. Needs the Script Extender build with coverage counters
   command fails and no window is photographed. Prints the absolute path. Failures:
   `screenshot failed: ...`, `the game accepted the screenshot but wrote no file in 10 s`,
   `the game took no picture with the extender's layer in it: ...`.
+  A headless screenshot temporarily enables drawing. Capture begins after 30 drawn frames and the
+  prior mode resumes once the capture finishes. Take screenshots outside event comparisons if the
+  comparison depends on suppressing frames.
 - `key NAME [--hold S]`: the names of `GameKeys` (`escape`, `enter`, `space`, `tab`, `backspace`,
   `left`, `up`, `right`, `down`, `f1`..`f12`, or one letter or digit); else `unknown key 'X';
   known: ...`. Pressed through the game ([bridge mods](#bridge-mods-packing-window-keys-and-screenshots), point 11). Prints nothing on success.
+
+### `window place`
+
+`gatekit window place NAME X Y WIDTH [HEIGHT]` moves a running copy's own window on Windows without
+activating it. The coordinates and outer dimensions are in desktop pixels. Omit `HEIGHT` to keep
+the window's proportions. If a deck holds the window, release it first with `window release NAME`.
 
 ### `link`, `reload`, `bridge-reload`, `watch` (hot reload)
 
@@ -613,10 +659,15 @@ allowed.
 
 ### The reset ladder
 
-`test [FOLDER] [-k TEXT] [--clean] [--attach] [--reset none|fixture|venue|game] [--repeat N] [--restart-groups] [--fast-load] [--headless] [--keep-events]`.
+`test [FOLDER] [-k TEXT] [--clean] [--attach] [--reset none|fixture|venue|game] [--repeat N] [--restart-groups] [--fast-load] [--headless [--drawn-start] [--headless-except NAME,...]] [--keep-events]`.
 `--fast-load` sets `GATEKIT_FAST_LOAD=1` for the run: every game it starts is started as `up --fast-load`, so the
 runner's loads in it (a group's move, `venue` resets) are fast; a game found running keeps what it was
-started with (`down` first to have them). `--headless` sets `GATEKIT_HEADLESS=1` the same way (`up --headless`).
+started with (`down` first to have them). `--headless` sets `GATEKIT_HEADLESS=1` the same way (`up --headless`),
+`--drawn-start` and `--headless-except` as `up`'s. In a headless run a test whose header says `drawn = "why"`
+(it needs drawn frames: it counts them, or reads what only a drawn frame lays out) is not run: UNMET with the
+reason. Tests marked `drawn_start = "why"` run in their own group with drawing enabled until the
+client first reaches `Running`. The runner restarts the game if needed to enter that group. A test
+that only needs a screenshot uses [`shot`](#shot-key) without either header.
 `--keep-events` gives each test's output folder `events/`: the event log's files written while it ran (both
 sides) and the registries of kinds, which `logic-diff` compares as they are.
 `--repeat N` runs the selection N times in a row in the same game (`name#2`, `name#3` ...). Every
@@ -795,6 +846,14 @@ adding those files and taking them away again; no file of the game or of Script 
   remove` again later`), and the kept config and the record go.
 - `--installed-game` together with `--instance` is refused by both.
 
+#### The pin (`se-release.json`)
+
+The repository's `se-release.json` identifies the matching fork build by `repository`, `tag`,
+`asset` and `sha256`. When fetching a build, GateKit verifies the archive against the pinned SHA-256
+and extracts `BG3ScriptExtender.dll` and its accompanying files into the home. The BG3GKSE release
+workflow publishes `BG3GKSE-<major>.<n>.zip` and `SHA256SUMS.txt` for a tag of the same name. To move
+the pin, update the tag, asset and the archive's SHA-256 together.
+
 ---
 
 ## How an instance is made
@@ -847,7 +906,7 @@ copy's own files: [commands of a copy](#commands-of-a-copy), [the Script Extende
 
 ## `gatekit`, the toolkit
 
-`src/GateKit.Platform` (OS layer), `src/GateKit.Copies` (the copies), `src/GateKit.Cli` (assembly `gatekit`). Commands: `doctor`, `game verify` `build up down status instances [list|create NAME|rename NAME NEW|destroy NAME] crashes save destroy exec probe cover cover-fold cover-diff trace-stacks logic-diff shot key sound [list|set|mute|unmute|unfocused] link reload watch bridge-reload bridge reload logs checkpoint reset se status|install|remove firewall`, `calls`, global `--instance NAME` and `--installed-game`. `deck` and `window [list|maximize|grid|label|release|mirror|adopt|fps]` come from `GateKit.Deck`. `test`, `run` and `systems` come from `GateKit.Testing`, which the CLI finds by its `CreateCommand()` classes. `names` comes from `GateKit.Names` and `wiki` from `GateKit.Wiki`. `symbols`, `decomp`, `registry` and `refs` come from `GateKit.Symbols`. Each has its section in this document.
+`src/GateKit.Platform` (OS layer), `src/GateKit.Copies` (the copies), `src/GateKit.Cli` (assembly `gatekit`). Commands: `doctor`, `game verify` `build up down status instances [list|create NAME|rename NAME NEW|destroy NAME] crashes save destroy exec probe cover cover-fold cover-diff trace-stacks logic-diff logic-check shot key sound [list|set|mute|unmute|unfocused] link reload watch bridge-reload bridge reload logs checkpoint reset se status|install|remove firewall`, `calls`, global `--instance NAME` and `--installed-game`. `deck` and `window [list|maximize|grid|label|release|mirror|adopt|fps]` come from `GateKit.Deck`. `test`, `run` and `systems` come from `GateKit.Testing`, which the CLI finds by its `CreateCommand()` classes. `names` comes from `GateKit.Names` and `wiki` from `GateKit.Wiki`. `symbols`, `decomp`, `registry` and `refs` come from `GateKit.Symbols`. Each has its section in this document.
 
 `--instance` is an option of the root and parses before any command. The commands of
 `GateKit.Symbols` - `symbols`, `decomp`, `registry`, `refs` - read the home's databases and the

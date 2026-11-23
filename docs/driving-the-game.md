@@ -22,6 +22,10 @@ gatekit mcp tools                                    # list the tools, nothing s
 An agent's first call is `bg3_status`: its `instance` names the copy this server drives. Two
 agents on two copies cannot disturb each other or the installed game.
 
+For game-logic automation, start the copy with `gatekit --instance world up --headless --save NAME`
+and connect MCP to the same `world` copy. Use a drawn run for actions that depend on rendered
+frames. The startup modes and their requirements are in [the CLI contract](contracts/cli.md#up).
+
 **A fair client.** Started with `GATEKIT_FAIR=1` in its environment, the server gives the client
 only the rows of the event log a player could know (`knows = player`), in `bg3_events` and in
 attention alike. The filter is the host's, set by whoever starts the server, never by the client.

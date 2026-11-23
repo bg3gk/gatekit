@@ -297,7 +297,8 @@ ticks. It gives up at once on a side whose `boot` changed (the command was dropp
 against a hang, on a side whose `tick` has not moved for 60 s or the timeout, whichever is longer.
 Without a heartbeat that carries `tick` the timeout is the host's clock. A limit of the host's own
 waits (`game.wait`, `wait_row`, `wait_attention`, `answer`) follows the server's ticks, and the
-client's clock only when no server counts: never the client's rows' `tick`, which counts frames.
+client's heartbeat clock when the server's clock is absent. A change of clock keeps the progress
+already counted. Only progress on the counting clock postpones the hang guard.
 
 ## Attention
 

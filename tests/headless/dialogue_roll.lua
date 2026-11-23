@@ -6,7 +6,8 @@
 -- own state (the attention rows of the dialogue and the roll window, the server's dialogue flag);
 -- no sleeps. W3 round 4 of the start-zone night.
 
-test { level = "GustavX:Basic_Level_A", mods = {} }
+test { level = "GustavX:Basic_Level_A", mods = {},
+       logic_diff = { window = "family_on:family_off", rigged = true } }
 
 function run(game)
     game.wait_state("Running", "server", 60)

@@ -404,7 +404,7 @@ public sealed class GameApi
         : new HashSet<string>(StringComparer.Ordinal) { Text(value, "kinds") };
 
     /// <summary>A limit of a wait in the game's ticks, read from the heads and heartbeats of this copy.</summary>
-    TickGuard Limit(TimeSpan limit) => new(_session.Bridge, limit, () => _session.Running, Attention.Log);
+    TickGuard Limit(TimeSpan limit) => new(_session.Bridge, limit, () => _session.Running, Attention.Log, gone: _session.Gone);
 
     /// <summary>The time the test spent inside a wait of `game`, by the wait's name (seconds): `wait`,
     /// `wait_row`, `wait_attention`, `answer`, `sleep`.</summary>

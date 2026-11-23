@@ -14,7 +14,8 @@
 -- Run: gatekit --instance <copy> test tests/figure -k client_bones
 
 test { level = "GustavX:Basic_Level_A",
-       about = "A named bone's live position follows a played animation and returns; skinning matrices written into a figure whose AnimationUpdate is removed stay." }
+       about = "A named bone's live position follows a played animation and returns; skinning matrices written into a figure whose AnimationUpdate is removed stay.",
+       drawn = "a client-only figure's bones move only in frames the game draws: in a headless game the wrist never rises" }
 
 local CIVILIAN = "19dc6cab-aa38-4f09-b9cf-546e1c0ecb8a" -- Humans_Female_Civilian
 local WAVE = "8d632e1b-5d4f-1def-7b2f-a06dc28e7f6e"     -- HUM_F_Rig_DFLT_CUST_Waving_01

@@ -112,4 +112,4 @@ same for GateKit's own mod.
 - The databases of the game's data and code → [offline-databases.md](offline-databases.md)
 - In-game windows → [Weave](../mods/Weave/README.md)
 - The API inside the game → [contracts/lua-api.md](contracts/lua-api.md)
-- What GateKit's Script Extender adds for any mod → its [GATEKIT.md](https://github.com/bg3gk/bg3se/blob/gatekit-native/GATEKIT.md)
+- What GateKit's Script Extender adds for any mod → its [GATEKIT.md](https://github.com/bg3gk/bg3se/blob/gatekit-v34/GATEKIT.md)

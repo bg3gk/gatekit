@@ -1,0 +1,20 @@
+{
+  "schema": "registry/function/1",
+  "id": "ecl::interrupt::PlayerPromptSystem::Update",
+  "state": "described",
+  "rung": "inferred",
+  "does": "the client's interrupt prompts each tick: adds ecl::interrupt::PlayerDecisionComponent to a prompted interrupt's entity and fills its Decisions from the player's choices (LEGACY_DecideInterrupt), then syncs requests",
+  "fingerprint": {"calls": ["fp:536bdb68e43db1bf", "fp:a71dcd5357c07e45", "fp:e4d053ad9455ea7c"]},
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "its body adds and reads ecl::interrupt::PlayerDecisionComponent over eoc::interrupt::ActionStateComponent and walks the system's +0x18 map, as the Toolkit's Update calls UpdatePlayerDecisions(+0x18) and ProcessSyncRequests(+0x58)"
+    },
+    {
+      "kind": "toolkit-name",
+      "store": "EoCClient.dll",
+      "tie": "name",
+      "says": "EoCClient.dll exports this name; nothing but the name ties it to this function"
+    }
+  ]
+}

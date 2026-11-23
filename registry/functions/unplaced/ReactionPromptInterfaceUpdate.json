@@ -1,0 +1,62 @@
+{
+  "schema": "registry/function/1",
+  "id": "unplaced::ReactionPromptInterfaceUpdate",
+  "owner": "gui",
+  "state": "described",
+  "rung": "inferred",
+  "does": "the interface's update of reaction prompts: makes the prompt's view models (VMInterruptEvent, interruptors, decisions) from the interrupt entities and sends OpenReactionsPopup / CloseReactionsPopup to the interface's state machine for each local player whose prompts begin or end",
+  "fingerprint": {
+    "calls": [
+      "fp:123b79ba6c390bab",
+      "fp:1d2066e17546c32a",
+      "fp:233464df129c475e",
+      "fp:2ecd242562bf96ea",
+      "fp:36ea95f2ce33bd6a",
+      "fp:3a1919ec5e4b0a9a",
+      "fp:3c1b457638f3ac4f",
+      "fp:5227b96c8688ff31",
+      "fp:58b4b875fbff37c4",
+      "fp:81deb24a8b75eccc",
+      "fp:862605bd6905995c",
+      "fp:91c3d48dff57ab4c",
+      "fp:92dd4fee11aeea92",
+      "fp:9df0cc9c6be99fd1",
+      "fp:bad9286556f3c320",
+      "fp:ce500b9a40ed3d76",
+      "fp:d1045bdeed38dbc1",
+      "fp:e4d053ad9455ea7c",
+      "fp:f6a56cd9a02e15e0",
+      "import:196f87dd222b4c83",
+      "ui::Event::UnblockableEvent",
+      "ui::StateMachineComponent::ProcessEvent",
+      "unplaced::CollectPromptedPlayers"
+    ],
+    "strings": ["85a86fc6afc6be6f"],
+    "components": [
+      "ecs::query::spec::Spec<ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::interrupt::ActionStateComponent>,ls::TypeList<>,ecs::QueryTypeAddedTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::interrupt::ActionStateComponent>,ls::TypeList<>,ecs::QueryTypeRemovedTag,ecs::QueryTypeAllTag>",
+      "ecs::query::spec::Spec<ls::TypeList<>,ls::TypeList<>,ls::TypeList<eoc::gamestate::PrepareRunningComponent,eoc::gamestate::RunningComponent,eoc::gamestate::SavingComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::interrupt::ActionStateComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::interrupt::ActionStateComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeDeadTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::interrupt::ZoneComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>",
+      "ecs::query::spec::Spec<ls::TypeList<eoc::interrupt::ZoneParticipantComponent>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ls::TypeList<>,ecs::QueryTypePersistentTag,ecs::QueryTypeAliveTag>"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "read",
+      "says": "it opens the window for the players unplaced::CollectPromptedPlayers gives: an interruptor counts only when its player properties say IsSelectedCharacter"
+    },
+    {
+      "kind": "reach",
+      "says": "coverage of a reaction prompt: ran every client tick drawn and in a game drawn from no frame; only drawn did it open the window"
+    }
+  ],
+  "questions": [
+    {
+      "ask": "which game function sets gui::VMPlayerCharacterProperties.IsSelectedCharacter on a selection, so a late interface can be told without a write",
+      "about": "reach",
+      "state": "open"
+    }
+  ]
+}
