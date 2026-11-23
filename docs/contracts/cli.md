@@ -851,8 +851,9 @@ adding those files and taking them away again; no file of the game or of Script 
 The repository's `se-release.json` identifies the matching fork build by `repository`, `tag`,
 `asset` and `sha256`. When fetching a build, GateKit verifies the archive against the pinned SHA-256
 and extracts `BG3ScriptExtender.dll` and its accompanying files into the home. The BG3GKSE release
-workflow publishes `BG3GKSE-<major>.<n>.zip` and `SHA256SUMS.txt` for a tag of the same name. To move
-the pin, update the tag, asset and the archive's SHA-256 together.
+workflow prepares `BG3GKSE-<major>.<n>.zip` and `SHA256SUMS.txt` in a draft for a tag of the same name.
+After the build is verified in a game copy and published, update the pin's tag, asset and archive
+SHA-256 together.
 
 ---
 
